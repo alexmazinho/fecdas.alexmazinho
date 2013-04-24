@@ -1,0 +1,98 @@
+{% if app.session.hasFlash('error-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('error-notice') }}
+    </div>
+{% endif %}
+	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
+	<div id="formllicencia-id">
+		{{ form_widget(llicencia.id, { 'id': 'parte_llicencies_id' }) }}
+	</div>
+	<div class="formllicencia-row clearfix">
+		<div id="formllicencia-persona">
+			{{ form_label(llicencia.persona, 'Assegurats del Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(llicencia.persona, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_persona_select' }) }}
+			{# form_errors(llicencia.persona) #}
+		</div>
+		<div id="formllicencia-categoria">
+			{{ form_label(llicencia.categoria, 'Tipus', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(llicencia.categoria, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_categoria_select' }) }}
+		</div> 
+		<div id="formllicencia-datacaducitat" class="data-field">
+			{{ form_label(llicencia.datacaducitatshow, 'Data de caducitat', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(llicencia.datacaducitatshow, { 'attr': {'class': 'formfield-outside'} }) }}
+			{{ form_widget(llicencia.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
+		</div> 
+	</div>
+	<div class="formllicencia-row clearfix">
+		{% if edit == true %} 
+		<div class="textaccio">
+			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_ajaxpoblacions') }}" name="modal">
+			{% if llicenciadades.persona is not null %}	modifica assegurat 
+			{% else %} nou assegurat {% endif %}
+			<img src="{{ asset('images/icon_add.png') }}"></a>
+		</div>
+		{% endif %} 
+		<div id="formllicencia-txtenviarllicencia">
+			{{ form_label(llicencia.enviarllicencia, 'Rebre llicència per correu?', { 'attr': {'class': 'formlabel-outside'} }) }}
+		</div>
+		<div id="formllicencia-enviarllicencia">
+			{{ form_widget(llicencia.enviarllicencia, { 'attr': {'class': 'formfield-outside-multicheck'} }) }}
+		</div>
+	</div>
+	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
+	<div class="formllicencia-checks clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
+		{% if edit == true %}
+	 		<div class="formlabel-outside"><label class="seleccionat-tot" for="llicencia_seleccionat-tot">Seleccionar tot</label></div>
+			<div class="formfield-outside-multicheck"><input id="llicencia_seleccionat-tot" type="checkbox" name="seleccionar-tot"></div>
+		{% endif %}
+		<div class="formlabel-outside">	{{ form_label(llicencia.apnea, 'Apnea') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.apnea) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.escafandrisme, 'Escafandrisme') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.escafandrisme) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.fotosubapnea, 'Foto Sub Apnea') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.fotosubapnea) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.fotocine, 'Fotografia Sub.') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.fotocine) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.hockey, 'Hockei Sub') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.hockey) }}</div>
+	</div>
+	<div class="formllicencia-checks clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>		
+		<div class="formlabel-outside">	{{ form_label(llicencia.natacio, 'Natació amb Aletes') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.natacio) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.biologia, 'Biologia i Medi') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.biologia) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.orientacio, 'Orientació') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.orientacio) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.pesca, 'Pesca Submarina') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.pesca) }}</div>
+		<div class="formlabel-outside">&nbsp;</div>
+	</div>
+	<div class="formllicencia-checks clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
+		<div class="formlabel-outside">	{{ form_label(llicencia.videosub, 'Video Subaquàtic') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.videosub) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.rugbi, 'Rugbi Subaquàtic') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.rugbi) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.besportiu, 'Busseig Esportiu') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.besportiu) }}</div>
+		<div class="formlabel-outside">	{{ form_label(llicencia.bampolles, 'Busseig Ampolles') }}</div>
+		<div class="formfield-outside-multicheck">{{ form_widget(llicencia.bampolles) }}</div>
+		<div class="formlabel-outside">&nbsp;</div>
+	</div>
+	{% if edit == true %}
+		<div class="textaccio">
+			<a id="formllicencia-add" href="#" name="add-llicencia">
+			confirmar llicència
+			<img src="{{ asset('images/icon_down16.png') }}"></a>
+		</div>
+		{% endif %}
+	<div class="clearfix">
+		<div id="formllicencia-fusell" style="display:none">
+			{{ form_label(llicencia.fusell, 'Fusell', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(llicencia.fusell, { 'attr': {'class': 'formfield-outside-multicheck'} }) }}
+		</div>
+		<div id="formllicencia-nocmas" style="display:none">
+			{{ form_label(llicencia.nocmas, 'No CMAS', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(llicencia.nocmas, { 'attr': {'class': 'formfield-outside-multicheck'} }) }}
+		</div>
+		<div id="formllicencia-rest">	{{ form_rest(llicencia) }}</div>
+	</div>

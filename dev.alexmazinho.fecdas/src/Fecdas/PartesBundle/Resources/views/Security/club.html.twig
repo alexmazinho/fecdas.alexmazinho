@@ -1,0 +1,190 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/club.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Gestió de clubs i usuaris{% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Gestió de clubs i usuaris</h1>
+    </header>
+   
+	<form id="formclub" action="{{ path('FecdasPartesBundle_club') }}" method="post" {{ form_enctype(form) }}  class="appform">
+		{% if admin == true %} 
+		<div id="formclub-admin">
+		
+		<div class="formclub-row clearfix" {% if club.codi is null %} style="display:none" {% endif %}>
+			<div id="formclub-clubs">
+				<label class="formlabel-outside required">Seleccionar club</label>
+				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-nouclub" class="textaccio">
+				<label class="formlabel-outside required"></label>
+				<a id="formclub-nou" href="#">
+				Nou club
+				<img src="{{ asset('images/icon_add.png') }}">
+				</a>
+			</div>
+		</div>
+		<div class="formclub-row clearfix">	
+			<div id="formclub-codishow">
+				{{ form_label(form.codishow, 'Codi', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.codishow, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-tipus">
+				{{ form_label(form.tipus, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-activat">
+				<div id="formclub-iactivat">
+					{{ form_widget(form.activat, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div>
+				<div id="formclub-lactivat">
+					{{ form_label(form.activat, 'Accés actiu', { 'attr': {'class': 'formlabel-outside'} }) }}
+				</div>
+			</div>
+		</div>
+		</div>
+		{% endif %}	
+		{{ form_widget(form.codi) }}
+		<label class="formlabel-outside required">Dades del club</label>
+		<hr>
+		<div class="formclub-row clearfix">
+			<div id="formclub-nom">
+				{{ form_label(form.nom, 'Nom*', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.nom, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-telefon">
+				{{ form_label(form.telefon, 'Telefon', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.telefon, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-cif">
+				{{ form_label(form.cif, 'CIF*', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.cif, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-mail">
+				{{ form_label(form.mail, 'Mail*', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-web">
+				{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-addrpob">
+				{{ form_label(form.addrpob, 'Població', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.addrpob, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-addrcp">
+				{{ form_label(form.addrcp, 'Codi Postal', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.addrcp, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-addrprovincia">
+				{{ form_label(form.addrprovincia, 'Provincia', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.addrprovincia, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-addradreca">
+				{{ form_label(form.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			<div id="formclub-decathlon">
+				<div id="formclub-idecathlon">
+					{{ form_widget(form.decathlon, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div>
+				<div id="formclub-ldecathlon">
+					{{ form_label(form.decathlon, 'Decathlon', { 'attr': {'class': 'formlabel-outside'} }) }}
+				</div>
+			</div>
+		</div>
+         
+        <div class="formclub-row clearfix">
+        	<div id="formclub-desarclub" class="textaccio">
+				<a id="formclub-save" href="#">
+				Desar dades
+				<img src="{{ asset('images/icon-save.png') }}">
+				</a>
+			</div>
+        	{% if admin == true and club.codi is not null %} 
+        	<div id="formclub-nouusuari" class="textaccio">
+				<a id="formclub-newuser" href="javascript:loadUserclub();">
+				Nou usuari
+				<img src="{{ asset('images/icon_dropdown.png') }}">
+				</a>
+			</div>
+			{% endif %}
+		</div>
+			
+		<div id="formclub-rest">	{{ form_rest(form) }}</div>
+		
+		<div id="error" class="sms-notice" style="display:none"> </div>
+    </form>
+
+    <div id="progressbar" style="display:none"><img src="/images/icon_progress.gif"></div>
+    <div id="edicio-usuaris">
+	    <form id="formusuariclub" action="{{ path('FecdasPartesBundle_usuariclub') }}" method="post" {{ form_enctype(form) }}  class="appform">
+			<div id="formclub-usuari" class="club-usuari" style="display: none"></div>
+			{# include "FecdasPartesBundle:Security:clubuser.html.twig" #} 
+		</form>	
+	</div>
+    
+	<div id="llista-usuarisclub">
+	{% include "FecdasPartesBundle:Security:clubllistausers.html.twig" %}
+	</div> 
+     
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+	reloadClub();
+
+	saveClub();
+
+	nouClub();
+	
+	
+/*
+	reloadParte();
+
+	removeLlicenciaClick();
+
+	removeParteButton();
+
+	partePagatButton();
+
+	partePagamentButton();
+	
+	showResumParteDetall();
+	
+	helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
+			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
+			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
+			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
+			<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
+			<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
+			<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
+			<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
+			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
+			No habilitada per competició ni per fer cursos federats.</p>\
+			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
+	*/
+	/*
+	helpBubbles("#help-tipusparte", '<p align="left"><b>Llicència Federativa Tipus A</b>: Anual fins a 31/12. Habilitada per competició</p>\
+	<p align="left"><b>Assegurança Federativa Tipus B</b>: Anual fins a 31/12. No habilitada per competició</p>\
+	<p align="left"><b>Llicència Federativa Tipus C</b>: Habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
+	<p align="left"><b>Llicència Federativa Reduïda Tipus A</b>: Darrer Qautrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
+	<p align="left"><b>Llicència Federativa Tipus E</b>: 365 dies a partir de l\'alta. Habilitada per competició</p>\
+	<p align="left"><b>Assegurança per un Dia Tipus D</b>: Assegurança per un dia. No habilitada per competició</p>');
+	
+	helpBubbles("#parte-resum-more-hide", '<p>Amaga el detall per activitats</p>');*/
+	
+});
+
+</script>
+
+
+{% endblock %}
+

@@ -1,0 +1,115 @@
+{% if app.session.hasFlash('error-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('error-notice') }}
+    </div>
+{% endif %}
+
+{% if parte.numLlicencies > 0 %}
+<div id="list-header" class="clearfix">
+	<div id="header-totals" class="col-listheader">Resum - 
+	Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
+  	fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
+   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} (iva inc.)</div>
+</div>
+<ul id="list-data">
+	<li class="data-totals data-detall">
+		<div class="parte-titol">Per categoria</div>
+  		<div class="parte-totals">Aficionats</div>
+   		<div class="parte-totals">Infantils</div>
+   		<div class="parte-totals">Tècnics</div>
+   	</li>
+	<li class="data-totals data-detall">
+		<div class="parte-totals">   	
+		<a id="parte-resum-more-show" href="#"><img style="cursor: pointer;" src="{{ asset('images/icon_dropdown.png') }}"></a>
+   		<a id="parte-resum-more-hide" href="#" style="display:none"><img style="cursor: pointer;" src="{{ asset('images/icon_dropup.png') }}"></a>
+		</div>
+  		<div class="parte-totals">{{ parte.numAficionats }}</div>
+   		<div class="parte-totals">{{ parte.numInfantils }}</div>
+   		<div class="parte-totals">{{ parte.numTecnics }}</div>
+   	</li>
+   	{% if (parte.isAsseguranca != true) %}
+   	<div id="parte-resum-more" style="display:none">
+	<li class="data-detall">
+		<div class="parte-titol">Per activitat</div>
+		<div class="parte-totals"><div class="parte-totals-t">Apnea</div><div class="parte-totals-n"> {{ parte.getNumActivitat('apnea') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Natació amb Aletes</div><div class="parte-totals-n"> {{ parte.getNumActivitat('natacio') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Video Subaquàtic</div><div class="parte-totals-n"> {{ parte.getNumActivitat('videosub') }}</div></div>
+   	</li>
+	<li class="data-detall">
+		<div class="parte-titol">&nbsp;</div>
+		<div class="parte-totals"><div class="parte-totals-t">Escafandrisme</div><div class="parte-totals-n"> {{ parte.getNumActivitat('escafandrisme') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Biologia i Medi</div><div class="parte-totals-n"> {{ parte.getNumActivitat('biologia') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Rugbi Subaquàtic</div><div class="parte-totals-n"> {{ parte.getNumActivitat('rugbi') }}</div></div>
+   	</li>
+	<li class="data-detall">
+		<div class="parte-titol">&nbsp;</div>
+		<div class="parte-totals"><div class="parte-totals-t">Foto Sub Apnea</div><div class="parte-totals-n"> {{ parte.getNumActivitat('fotosubapnea') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Orientació</div><div class="parte-totals-n"> {{ parte.getNumActivitat('orientacio') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Busseig Esportiu</div><div class="parte-totals-n"> {{ parte.getNumActivitat('besportiu') }}</div></div>
+   	</li>
+   		<li class="data-detall">
+		<div class="parte-titol">&nbsp;</div>
+		<div class="parte-totals"><div class="parte-totals-t">Fotografia Sub.</div><div class="parte-totals-n"> {{ parte.getNumActivitat('fotocine') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Pesca Submarina</div><div class="parte-totals-n"> {{ parte.getNumActivitat('pesca') }}</div></div>
+		<div class="parte-totals"><div class="parte-totals-t">Busseig Ampolles</div><div class="parte-totals-n"> {{ parte.getNumActivitat('bampolles') }}</div></div>
+   	</li>
+   		<li class="data-detall">
+		<div class="parte-titol">&nbsp;</div>
+		<div class="parte-totals"><div class="parte-totals-t">Hockei Sub</div><div class="parte-totals-n"> {{ parte.getNumActivitat('hockey') }}</div></div>
+   	</li>
+   	</div>
+   	{% endif %} 
+</ul>
+
+<div id="list-header" class="clearfix">
+	<div id="header-parteid" class="col-listheader">{{ parte.id }}</div> 
+	<!-- recull parte id, per informar input parte_id quan es fa l'alta de la 
+	primera llicència que crea el parte. Veure my-jquery-scripts / addLlicenciaClick -->
+   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
+   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
+   	<div id="header-llicenciacaducitat" class="col-listheader">Caducitat</div>
+   	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
+   	<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
+   	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
+</div>
+
+<ol id="list-data">
+	{% for llicencia in parte.llicencies %}
+		{# if llicencia.id != "" #}
+		{% if llicencia.persona.nom is defined %}
+			{% if llicencia.databaixa is null %}
+			<li class="data-detall">
+  				<div class="llicencia-id">{{ llicencia.id }}</div>
+				<div class="llicencia-personalong">{{ llicencia.persona.cognomsNom|cut(30, false, '...') }}</div>
+				<div class="llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
+				<div class="llicencia-datacaducitat"><time datetime="{{ llicencia.datacaducitat|date('c') }}">{{ llicencia.datacaducitat|date('d/m/Y') }}</time></div>
+				<div class="llicencia-activitats">{{ llicencia.activitats }}</div>
+				<div class="llicencia-enviarllicencia">		
+				{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
+				</div>
+				{# if pdf == true and admin == true #}
+				{% if parte.datapagament is not null and parte.web %}
+					<div class="llicencia-actions"><a href="{{ path('FecdasPartesBundle_licensetopdf', { 'id': llicencia.id}) }}"><img src="{{ asset('images/icon-license.jpg') }}" alt="llicència" title="llicència" width="23px"></a></div>
+				{% endif %}
+				<div class="llicencia-actions"><a class="label-edit-llicencia" href="javascript:loadLlicencia({{ llicencia.id }});"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a></div>
+				{% if admin == true and not parte.pagat %}
+					<div class="llicencia-actions"><a href="#" name="remove-llicencia" value="{{ llicencia.id }}"><img src="{{ asset('images/icon-remove.png') }}" alt="Esborra" title="Esborra" width="23px"></a></div>
+				{% endif %}
+  			</li>
+  			{% endif %}
+   		{% endif %}
+   	{% endfor %}
+</ol>
+{% else %}
+<div class="sms-notice">Encara no hi ha llicències en aquesta llistats d'assegurats</div>
+{% endif %}
+
+<!--  Prova SQL
+Select p.*, l.*, lpt.* from  m_partes p, m_llicencies l, m_llicenciespertipus lpt
+where p.id = l.parte and l.id = lpt.llicencia_id
+and l.parte = 1071
+
+Select p.*, l.*, c.* from  m_partes p, m_llicencies l, m_categoria c
+where p.id = l.parte and l.categoria = c.codisortida 
+and l.parte = 1071
+-->

@@ -1,0 +1,95 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+	<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>
+   	 {{ form_javascript(form) }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Llista de comunicacions del club{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Llistes de comunicacions</h1>
+    </header>
+    {% if app.session.hasFlash('error-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('error-notice') }}
+    </div>
+	{% endif %}
+    
+    <div id="list-forms">
+    	<form action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
+      		<div id="formpartes-clubs" class="form-left">
+				{# form_label(form.clubs, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
+				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div> 
+			<div id="formpartes-submit" class="form-right">	
+				<input type="submit" class="forminput-inside" value="Nou comunicat" name="formpartes-button-new"/>
+			</div> 
+	   	</form>
+    </div>
+    <!--  <div id="list-header" class="clearfix"> -->
+    <br/>
+   	<div id="list-header">
+   		<div id="header-parteid" class="col-listheader">id</div>
+   		<div id="header-parteany" class="col-listheader">Any</div>
+   		<div id="header-partedata" class="col-listheader">Data Alta</div>
+   		<div id="header-partetipusdesc" class="col-listheader">Tipus</div>
+   		<div id="header-partetotal" class="col-listheader">Llicències</div>
+   		<div id="header-partepagat" class="col-listheader">Pagat?</div>
+   		<div id="header-parteimport" class="col-listheader">&nbsp;</div>
+   		<div id="header-parteactions" class="col-listheader">&nbsp;</div>
+   	   	
+   	</div>
+	{% if partes|length > 0 %}
+   	<ol id="list-data">
+	{% for parte in partes %}
+   		<li class="data-detall {% if not parte.isVigent %} data-detall-fosc {% endif %}">
+	   		<div class="parte-id">{{ parte.id }}</div>
+   			<div class="parte-any">{{ parte.any }}</div>
+   			<div class="parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
+   			<div class="parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
+   			<div class="parte-total">{{ parte.numLlicencies }}</div>
+   			<div class="parte-pagat">
+			{% if parte.pagat %}
+				{% if parte.numfactura != -1 %}		
+					Si 	
+				{% else %}
+					Pend 	
+				{% endif %}
+			{% else %}
+					&nbsp; 
+			{% endif %} 
+   			</div>
+   			<div class="parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
+   			<div class="parte-actions"><a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Editar Veure" title="Editar Veure" width="23px"></a></div>
+   			{% if parte.allowRenovar and parte.numLlicencies > 0 %}
+   			<div class="parte-actions"><a class="parte-action-renew" href="{{ path('FecdasPartesBundle_renovar', { 'id': parte.id }) }}"><img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar" title="Renovar" width="23px"></a></div>
+   			{% endif %}
+   		</li>
+   		{% endfor %}
+	</ol>
+   	{% else %}
+        	<div class="sms-notice">No hi ha llistats d'assegurats per aquest club</div>
+    {% endif %}
+    <div class="sms-footer">Per esborrar alguna llista cal posar-se en contacte amb la Federació</div>
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	removeParteLink();
+
+});
+
+</script>
+
+
+{% endblock %}
+

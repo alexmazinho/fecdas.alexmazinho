@@ -1,0 +1,23 @@
+<form action="{{ path('FecdasPartesBundle_login') }}" method="post" {{ form_enctype(form) }} class="appform">
+   	{{ form_errors(form) }}
+
+   	<div id="formlogin-user">
+		{{ form_label(form.user, 'Usuari', { 'attr': {'class': 'formlabel-inside'} }) }}
+		{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
+	</div>
+
+	<div id="formlogin-pwd">
+		{{ form_label(form.pwd, 'Paraula clau', { 'attr': {'class': 'formlabel-inside'} }) }}
+		{{ form_widget(form.pwd, { 'attr': {'class': 'forminput-inside'} }) }}
+	</div>
+	
+	<!--  <input type="checkbox" id="remember_me" name="_remember_me" checked />
+	<label for="remember_me">Keep me logged in</label>-->
+    
+    <div id="formlogin-rest">	{{ form_rest(form) }}</div>
+
+    <div id="formlogin-submit">	
+		<input type="submit" class="forminput-inside" value="Entra" />
+	</div>        
+   
+</form> 

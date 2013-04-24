@@ -1,0 +1,11 @@
+parameters:
+#    fecdas_partes.example.class: Fecdas\PartesBundle\Example
+
+services:
+#    fecdas_partes.example:
+#        class: %fecdas_partes.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]
+    fecdas_partes.twig.partes_extension:
+        class: Fecdas\PartesBundle\Twig\PartesExtension
+        tags:
+            - { name: twig.extension }

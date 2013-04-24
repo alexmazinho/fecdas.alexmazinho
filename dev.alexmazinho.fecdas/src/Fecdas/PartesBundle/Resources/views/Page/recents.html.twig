@@ -1,0 +1,103 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+	<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>
+   	 {{ form_javascript(form) }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Comunicacions recents{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Comunicacions recents</h1>
+    </header>
+
+    {% if app.session.hasFlash('error-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('error-notice') }}
+    </div>
+	{% endif %}
+    
+    <div id="list-forms">
+    	<form action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
+      		<div id="formrecents-club" class="form-left">
+				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div> 
+    		<div id="formrecents-estat" class="form-left">
+				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div> 
+      		<div id="formrecents-web" class="form-left">
+      			{{ form_label(form.web) }}
+				{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div> 
+			<div id="formrecents-submit" class="form-right">	
+				<input type="submit" class="forminput-inside" value="Consulta" name="formrecents-button-search"/>
+			</div> 
+	   	</form>
+    </div>
+    <!--  <div id="list-header" class="clearfix"> -->
+    <br/>
+   	<div id="list-header">
+   		<div id="header-parterecentsid" class="col-listheader">id</div>
+   		<div id="header-parterecentsrel" class="col-listheader">Rel</div>
+   		<div id="header-parterecentsdata" class="col-listheader">Alta</div>
+   		<div id="header-parterecentsclub" class="col-listheader">Club</div>
+   		<div id="header-parterecentstipus" class="col-listheader">Tipus</div>
+   		<div id="header-parterecentsweb" class="col-listheader">Web</div>   		
+   		<div id="header-parterecentstotal" class="col-listheader">#</div>
+   		<div id="header-parterecentspreu" class="col-listheader">Preu</div>
+   		<div id="header-parterecentspagweb" class="col-listheader">Pagat<br/>On-line</div>
+   		<div id="header-parterecentsfactura" class="col-listheader">Facturat</div>
+   		<div id="header-parterecentsactions" class="col-listheader">&nbsp;</div>
+   	</div>
+	{% if partes|length > 0 %}
+   	<ol id="list-data">
+	{% for parte in partes %}
+   		<li class="data-detall">
+	   		<div class="parterecents-id">{{ parte.id }}</div>
+	   		<div class="parterecents-rel">{{ parte.numrelacio }}</div>
+   			<div class="parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
+   			<div class="parterecents-club">{{ parte.club.nom|cut(18, false, '...') }}</div>
+   			<div class="parterecents-tipus">{{ parte.tipus.codi }}</div>
+   			<div class="parterecents-web">{% if parte.web %} Si  {% else %} No {% endif %}</div>   			
+   			<div class="parterecents-total">{{ parte.numLlicencies }}</div>
+   			<div class="parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} </div>
+   			<div class="parterecents-pagweb">
+			{% if parte.datapagament is null %}
+				{% if parte.numfactura != -1 %} 	&nbsp;  {% else %} Pendent	 	
+				{% endif %}
+			{% else %}
+   				{{ parte.numFactura }} -
+				<time datetime="{{ parte.datapagament|date('c') }}">{{ parte.datapagament|date('d/m/y') }}</time>
+			{% endif %} 
+   			</div>
+   			<div class="parterecents-factura">
+   			{% if parte.datafacturacio is not null %}
+   				<time datetime="{{ parte.datafacturacio|date('c') }}">{{ parte.datafacturacio|date('d/m/y') }}</time>
+   			{% endif %}
+   			</div>
+   			<div class="parterecents-actions"><a class="parterecents-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a></div>
+   		</li>
+   		{% endfor %}
+	</ol>
+   	{% else %}
+        	<div class="sms-notice">Cap comunicació</div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	/*ordenarLlista();*/
+});
+
+</script>
+
+{% endblock %}
+

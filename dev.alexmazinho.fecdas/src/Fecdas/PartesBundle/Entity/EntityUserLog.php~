@@ -1,0 +1,50 @@
+<?php
+namespace Fecdas\PartesBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="m_userslog")
+ * 
+ * @author alex
+ *
+ */
+class EntityUserLog {
+	
+	/**
+	 * @ORM\Id
+	 * @ORM\Column(type="string", length=50)
+	 * @ORM\ManyToOne(targetEntity="EntityUser")
+	 * @ORM\JoinColumn(name="user", referencedColumnName="user")
+	 */
+	protected $user;	// Mail del club
+
+	/**
+	 * @ORM\Column(type="string", length=10)
+	 */
+	protected $accio;
+
+	/**
+	 * @ORM\Column(type="timestamp")
+	 */
+	protected $timestamp;
+	
+	/**
+	 * @ORM\Column(type="string", length=20, nullable=true)
+	 */
+	protected $remoteaddr;
+	
+	/**
+	 * @ORM\Column(type="string", length=100, nullable=true)
+	 */
+	protected $useragent;
+
+	/**
+	 * @ORM\Column(type="string", length=100, nullable=true)
+	 */
+	protected $extrainfo;
+	
+
+    
+}

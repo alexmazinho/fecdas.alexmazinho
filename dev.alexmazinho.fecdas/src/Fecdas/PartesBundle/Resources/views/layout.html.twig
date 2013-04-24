@@ -1,0 +1,97 @@
+{# src/Fecdas/PartesBundle/Resources/views/layout.html.twig #}
+{% extends '::base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+{% endblock %}
+
+
+{% block fecdas_logo %}
+	<a href="http://www.fecdas.cat" target="_blank">
+	<img src="{{ asset('images/fecdaslogo.png') }}">
+	</a>
+{% endblock %}
+
+{% block fecdas_title %}
+    Aplicació de tramitació de llistes d'assegurats<br/> <i>Federació Catalana d'Activitats Subaquàtiques</i>
+{% endblock %}
+
+{% block fecdas_login %} 
+	{# if ( not ( app.session.has('username') and app.session.has('remote_addr') ) or
+    	  ( app.session.get('remote_addr') != app.request.server.get("REMOTE_ADDR") ) )  #}
+   	{% if authenticated == false  %}
+    	<a href="javascript:login();">Iniciar sessió<img src="{{ asset('images/icon_login.png') }}"></a>
+  	{% else %}
+    	{{ app.session.get('username') }} <a href="{{ path('FecdasPartesBundle_logout') }}"><img src="{{ asset('images/icon_signout.png') }}"></a>
+	{% endif %}
+	
+	<div id="loginbox" class="login-bubble"> 
+		{% render "FecdasPartesBundle:Security:getLoginForm" %}
+		{#<a href="{{ path('FecdasPartesBundle_contact', { 'subject': 'Reiniciar password' }) }}">Password perdut?</a>#}
+		<a href="{{ path('FecdasPartesBundle_pwdrecovery') }}">Password perdut?</a>
+	</div> 
+	
+	{% if authenticated == true  %}
+		<div id="block-useractions">
+			<div><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
+			<div><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
+			<div><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
+		</div>
+	{% endif %}
+	
+{% endblock %}
+
+{% block sidebar %}
+	<nav>
+		<ul class="navigation">
+			<li><a href="{{ path('FecdasPartesBundle_homepage') }}">Pàgina principal</a></li>
+			{% if authenticated == false  %}
+			<li><a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió</a></li>
+			<li><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></li>
+			{% else %}
+				{% if admin == true  %}
+				<li><a href="{{ path('FecdasPartesBundle_recents') }}">Administració de llistes</a></li>
+				{% endif %}
+				<li><a href="{{ path('FecdasPartesBundle_partes') }}">Tramitació de llistes</a></li>
+				<li><a href="{{ path('FecdasPartesBundle_assegurats') }}">Assegurats</a></li>
+				{% if busseig == true  %}
+				<li><a href="{{ path('FecdasPartesBundle_busseig') }}">Consulta de llicències amb el DNI</a></li>
+				{% endif %}
+			{% endif %}
+		</ul>
+	</nav>
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+	if (($.browser.msie && parseInt($.browser.version, 10) < 8) ||
+	    ($.browser.webkit && parseInt($.browser.version, 10) < 14) ||
+	    ($.browser.mozilla && parseInt($.browser.version, 10) < 11) ||
+	    ($.browser.opera && parseInt($.browser.version, 10) < 11)) {
+		/* http://browsershots.org
+		IE >= 9, Firefox >= 11, Chorme >=14, Opera >= 11, Safari >= 5 */
+		location.href="/browsernotsupported.html";
+	};
+</script>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		formFocus();
+	});
+	
+	$('#block-useractions')
+	  .css('opacity', 0)
+	  .slideDown('slow')
+	  .animate(
+	    { opacity: 1 },
+	    { queue: false, duration: 'slow' }
+	  );
+	
+</script>
+
+
+{% endblock %}

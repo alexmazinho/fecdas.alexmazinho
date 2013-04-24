@@ -1,0 +1,980 @@
+@CHARSET "UTF-8";
+
+.sms-notice { text-align: center; padding: 10px;
+background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; width: 95% }
+
+input[type="submit"], button  {
+	/*border-top: 1px solid #FFFFFF;*/
+  	/* background: #CCCCCC;
+   	padding: 5px 10px;
+   -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+   -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+   box-shadow: rgba(0,0,0,1) 0 1px 0;
+   text-shadow: rgba(0,0,0,.4) 0 1px 0;
+   text-decoration: none;
+   vertical-align: middle;*/
+    
+    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#DDDDDD));
+   /*	background: -webkit-linear-gradient(top, #FFFFFF, #DDDDDD);*/
+   	background: -moz-linear-gradient(top, #FFFFFF, #DDDDDD);
+   	/*background: -ms-linear-gradient(top, #FFFFFF, #DDDDDD);*/
+   	/*background: -o-linear-gradient(top, #FFFFFF, #DDDDDD);*/
+   	-webkit-border-radius: 5px;
+   	/*-moz-border-radius: 5px;*/
+    border-radius: 5px;
+    color: #555555;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover, button:hover {
+   	border-color: #555555;
+  	background: #DDDDDD;
+}
+
+input[type="submit"]:active, button:active {
+   	border-color: #555555;
+  	background: #DDDDDD;
+}
+
+input[type="text"], 
+input[type="email"],
+input[type="password"],
+input[type="search"]  
+	{ max-width: 400px; line-height: 24px; font-size: 16px; min-height:24px; text-indent: 5px;
+	  background-color: #F5F5F5; border-radius: 5px; color: #555555;}
+	  
+input[type="email"] { max-width: 500px; }
+	  
+input[type="submit"]  { line-height: 24px; font-size: 16px; min-height: 24px; }
+input[type="checkbox"]  { margin-left: 10px; margin-top:7px;}
+
+textarea  { max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; font-size: 14px; text-indent: 5px; resize: both;}
+
+select {
+	background: #EEEEEE;
+	color: #555555;
+	-webkit-border-radius: 5px;
+   	-moz-border-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid #AAA;
+    margin: 0 2px 0 2px;
+  	overflow: hidden;
+  	padding-top: 6px;
+  	padding-bottom: 3px;
+  	padding-right: 3px;
+  	text-overflow: ellipsis;
+  	white-space: nowrap;
+  	min-height: 20px;
+  	/*text-align: center;*/
+}
+
+/* Disabled Elements */
+select[disabled="true"],
+select[disabled="disabled"]  
+{ 
+	background-color: #f0ebe2;
+    color: #777777; 
+}
+
+form.appform { font-size: 14px; }
+form.appform div { 
+	/*clear: left;*/ 
+	margin-bottom: 10px;  
+}
+
+.formlabel-inside {
+	float: left; color: #AAAAAA; position: absolute; margin-left: 10px;
+	text-align: left; min-width: 50px; vertical-align: top; padding-top: 5px; 
+}
+
+html>body .formlabel-inside { padding-top: 10px; }
+
+.formlabel-outside {
+	/*float: left; margin-left: 10px; margin-right: 10px;*/ 
+	color: #777777; position: relative; margin-bottom: 7px; 
+	text-align: left; min-width: 30px; vertical-align: top; padding-top: 10px; 
+	display:block;
+}
+
+div.formfield-outside {
+	/* float: left; */ 
+}
+
+#loginbox{
+  z-index: 1; font-family: arial; display:none; margin: 25px 20px 0; 
+  /*max-width: 250px;
+  min-width: 165px;*/ 
+  padding: 7px; position: absolute; right: 0; z-index: 1; }
+  
+#loginbox form { font-size: 12px; margin: 5px; }
+#loginbox form input { max-width: 150px; font-size: 12px; }
+
+* html #loginbox form input { /*max-width: 150px;  min-width IE hack */
+   width: expression( document.body.clientWidth > 149 ? "150px" : "auto" ); /* set min-width for IE */
+}
+
+
+#loginbox form input[type="submit"] { font-size: 12px; }
+#loginbox a { white-space: nowrap; }
+
+.login-bubble{
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+	border: 1px solid #81C6FF;
+	background: none repeat scroll 0 0 #FFFFFF;
+    border-radius: 5px 5px 5px 5px;
+}
+
+#main-col #login {
+	margin-top:70px; 
+	margin-left:30px;
+}
+
+#contact {
+	margin-top:30px; 
+	margin-left:30px;
+}
+
+#login_user, #login_pwd {
+	width: 250px;
+}
+
+
+.clearfix:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    line-height: 0;
+    visibility: hidden;
+}
+
+.clearfix {
+	display: inline-block;
+}
+ 
+html[xmlns] .clearfix {
+	display: block;
+}
+ 
+* html .clearfix {
+	height: 1%;
+}
+
+#list-forms {
+	margin-bottom: 30px;
+    /*margin-top: 10px;
+    padding-bottom: 12px;*/
+	display: block;
+	padding: 10px 10px 10px 0px; 
+}
+
+.form-left {
+    float:left;
+}
+
+.form-right {
+    float:right;
+}
+
+.formassegurats-row {
+	display: inline-block;
+	width: 98%;
+}
+
+.formassegurats-row input {
+	margin-right: 10px;
+}
+
+li.data-detall-dobleespai {
+	height: 16px;
+	line-height: 12px !important;
+	padding-top: 2px;
+}
+
+#header-asseguratid { display:none}
+#header-asseguratdni {	width: 10%; }
+#header-asseguratnom {	width: 12%; text-align: left;}
+#header-asseguratcognoms {	width: 20%;text-align: left;}
+#header-asseguratvigencia {	width: 16%; }
+#header-assegurattipusdesc { width: 30%;}
+#header-asseguratactions {}
+
+.assegurat-id {	display:none}
+.assegurat-dni {	width: 11%; text-align: left; }
+.assegurat-nom {	width: 12%; text-align: left; }
+.assegurat-cognoms {	width: 20%; text-align:left;}
+.assegurat-vigencia {	width: 16%; text-align:center;}
+.assegurat-tipusdesc {	width: 30%; text-align:left;}
+.assegurat-actions { width: 6%; text-align:right; }
+.assegurat-actions a:hover img
+ { border: 1px solid #DDDDDD; background-color:#E7F2FB}
+
+input#form_nom,
+input#form_cognoms {
+	width: 224px;
+	width: 220px\9;  /* IE less 9 hack*/
+}
+
+input#form_dni {
+	width: 124px;
+}
+
+#list-header {
+    /*background: url("/static/images/white_pixel.gif") repeat-x scroll 0 0 #F0F9FF;*/
+    background:  repeat-x scroll 0 0 #F0F9FF;
+    border-color: #82CFFA #E7F2FB #96C4EA;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+    height: 29px;
+    line-height: 29px;
+    padding: 3px 6px;
+    /*display: block;*/
+    margin-bottom: 10px;
+    display: inline-block;
+    text-align: center;
+    width: 96%;
+}
+
+.col-listheader {
+	float: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2281CF;
+    /*color: #1240A0;*/
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.textaccio {
+	/*padding-top: 4px;
+	padding-bottom: 10px;*/
+	/*margin-top: 2px;
+	width:18%;*/
+    margin-top: 13px;
+}
+
+.formllicencia-row .textaccio {
+	width:32%;
+} 
+
+.textaccio a {
+	background: #EEEEEE;
+    border-radius: 3px 3px 3px 3px;
+    /*color: #005A8C;*/
+    padding: 7px 7px 5px 5px;
+    border: 1px solid #AAAAAA;
+    text-transform: uppercase;
+    font-size:11px;
+}
+
+html>body .textaccio a {
+    padding: 5px;
+    font-size:small;
+}
+
+.textaccio img {
+	position: relative;
+	top: 3px;
+	margin-left: 0px;	
+}
+
+html>body .textaccio img {
+	margin-left: 4px;	
+}
+
+/*
+#afegirllicencia {
+  	bottom: 10px;
+    position: absolute;
+    right: 10px;
+    width: 11%;
+}
+
+#afegirllicencia a {
+	padding-top: 50px !important;
+	padding-left: 2px !important;
+}*/
+
+#list-data { 
+	border: 1px solid #81C6FF;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+    padding: 1px 1px 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-left: 0px;
+    margin-top: 0px;
+	max-height:400px;
+	width: 98%;
+}
+
+* html #list-data { /*max-height: 400px;  max-height IE hack */
+   height: expression( this.scrollHeight > 399 ? "400px" : "auto" ); /* sets max-height for IE */
+}
+
+.data-detall {
+	color: #555555;
+    line-height: 5px;
+    margin: 0 0 -1px;
+    padding: 15px 2px;
+}
+
+.data-detall-fosc {
+	background-color: #EEEEEE;
+	color: #999999;
+}
+
+html>body .data-detall {
+    line-height: 1px;
+}
+
+.data-detall div {
+	float:left;
+}
+
+li.data-detall {
+	/*-moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    position: relative;*/
+    border-color: #EDF1F5;
+    border-style: solid;
+    border-width: 1px 0;
+    font-size: 13px;
+    list-style: none outside none;
+}
+
+li.data-detall div {
+	/*padding-left: 3px;*/
+	padding: 3px 1px;
+}
+
+li.data-detall-fosc {
+    border-color: #DDDDDD;
+}
+
+#header-parteid { display:none}
+#header-parteany {	width: 6%;}
+#header-partedata {	width: 13%; text-align: center;}
+#header-partetipusdesc { width: 35%;}
+#header-partetotal {	width: 10%;text-align:right;}
+#header-partepagat {	width: 12%;}
+#header-parteimport {	width: 11%;}
+#header-parteactions {}
+
+.parte-id {	display:none}
+.parte-any {	width: 6%; text-align: center; }
+.parte-data {	width: 13%; text-align: center; }
+.parte-tipusdesc {	width: 35%; text-align:center;}
+.parte-total {	width: 8%; text-align:center;}
+.parte-pagat {	width: 12%; text-align:center;}
+.parte-import {	width: 11%; text-align:right;}
+.parte-actions { width: 6%; text-align:right; margin-top: -14px}
+.parte-actions a:hover img
+ { border: 1px solid #DDDDDD; background-color:#E7F2FB; width:21px; height:21px}
+
+#progressbar {
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 20px;
+    width: 10%;
+}
+
+form.appform .formparte-row, 
+form.appform .formclub-row,
+form.appform .formuserclub-row,
+form.appform .formllicencia-checks,
+form.appform .formllicencia-row {
+	margin-bottom: 5px;
+}
+
+.formparte-row, .formclub-row, .formuserclub-row {
+	width:100%
+}
+
+.formparte-row div,
+.formclub-row div,
+.formuserclub-row div {
+	float:left;
+	margin-right: 10px;
+	margin-bottom: 3px !important;
+}
+
+#formparte-buttons,
+#formrenovar-buttons {
+	float:right;
+	margin-top: -20px;
+	margin-right: 20px;
+	height: 0;
+}
+
+#formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
+	float:left;
+	padding-left: 5px;
+}
+
+#formparte-novallicencia {
+	margin-top: 15px;
+	width: 100%;
+}
+
+#header-parteid { display:none}
+#header-llicenciapersona {	width: 32%; text-align: left;}
+#header-llicenciapersonalong {	width: 38%; text-align: left;}
+#header-llicenciacategoria {	width: 11%; text-align: center; }
+#header-llicenciacaducitat {	width: 12%; text-align: center; }
+#header-llicenciaactivitats {	width: 20%; text-align: center; }
+#header-llicenciaactivitatslong {	width: 30%; text-align: center; }
+#header-llicenciapreu {	width: 6%; text-align: center; }
+#header-llicenciaenviarllicencia {	width: 5%; text-align: center; }
+#header-llicenciaenviarllicencia img {	
+	bottom: 3px;
+    position: relative;
+}
+#header-llicenciaactions {}
+
+.llicencia-id {	display:none}
+.llicencia-persona {	width: 32%; line-height: 10px; margin-top: -10px; }
+.llicencia-personalong {	width: 38%;  }
+.llicencia-categoria {	width: 11%; text-align: center;}
+.llicencia-datacaducitat {	width: 12%; text-align: center;}
+.llicencia-activitats {	width: 20%; text-align: center; font-size: 9px; letter-spacing: 0; line-height: 10px; margin-top: -10px;}
+.llicencia-activitatslong {	width: 29%; text-align: center; font-size: 9px; letter-spacing: 0; }
+.llicencia-preu {	width: 6%; text-align: right;}
+.llicencia-enviarllicencia {	width: 4%; text-align: center; letter-spacing:2px}
+.llicencia-no {width: 6%; text-align: center; }
+.llicencia-actions {width: 4%; margin-top: -14px}
+.llicencia-actions a:hover img
+ { border: 1px solid #DDDDDD; background-color:#E7F2FB}
+
+
+
+.parte-llicencia, .club-usuari {
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+	border: 1px solid #81C6FF;
+	/*background: none repeat scroll 0 0 #FFFFFF;*/
+    border-radius: 5px 5px 5px 5px;
+    padding: 10px 10px 0;
+    width: 95%;
+    min-height: 170px;
+    position: relative;
+}
+
+* html .parte-llicencia { /*min-height: 170px;  min-height IE hack */
+   height: expression( this.scrollHeight < 171 ? "170px" : "auto" ); /* sets min-height for IE */
+}
+
+* html .club-usuari { /*min-height: 170px;  min-height IE hack */
+   height: expression( this.scrollHeight < 171 ? "170px" : "auto" ); /* sets min-height for IE */
+}
+
+.parte-llicencia .close,
+.club-usuari .close {
+    position:relative;
+    right:-26px;
+    top:-26px;
+    cursor:pointer;
+    height:0;
+    width:35px;
+    float:right;
+}
+
+
+.formllicencia-row {
+	width: 100%;
+}
+
+.formllicencia-row  input[type="checkbox"] {
+	margin-left: 0;
+    margin-top: 20px;
+}  
+
+#formllicencia-txtenviarllicencia {
+	margin-top: 10px;
+}
+
+.formllicencia-row div {
+	float:left;
+	margin-right: 5px;
+	margin-bottom: 0px !important;
+}
+
+.formllicencia-checks  {
+	display: inline-block;
+	width: 27%;
+}
+
+.formllicencia-checks div {
+	margin-right: 10px;
+	margin-bottom: 0px !important;
+	/*float:left;
+	width: 30%;*/
+}
+
+.formllicencia-checks label {
+	float:left;
+	width:130px;
+}
+
+label.seleccionat-tot {
+	font-style: italic;
+	font-weight: bold;
+}
+
+.formllicencia-checks input[type="checkbox"] {
+	/*margin-right: 10px;*/
+	margin-left: 0;
+    margin-top: 0;
+}  
+
+select#parte_llicencies_persona_select { width: 280px; /*min-width: 200px;*/ }
+
+input#parte_datapagament,
+input#parte_dataalta_date,
+input#parte_renew_dataalta_date,
+input#datepicker,
+.data-field input { 
+	width: 100px;
+	text-align: center;
+	text-indent: 0px;
+}
+
+input#parte_dataalta_time,
+input#parte_renew_dataalta_time
+{ 
+	width: 80px;
+	text-align: center;
+	text-indent: 0px;
+	margin-left: 5px;
+}
+
+input#parte_any {
+	width: 50px;
+	text-align: center;
+	text-indent: 0px;
+}
+/*
+input#parte_numrelacioshow {
+	width: 50px;
+	text-align: right;
+	padding-right: 2px;
+}*/
+
+select#parte_club, select#club_clubs { width: 330px; /*min-width: 330px;*/ }
+
+select#parte_tipus { width: 250px; /*min-width: 250px;*/ }
+
+select#parte_renovar_club { width: 295px; }
+
+select#parte_renovar_tipus { width: 240px; }
+
+
+#formparte-dataalta { margin-right: 5px !important; }
+
+/*#formparte-dataalta label,*/
+#formparte-any label,
+/*#formparte-numrelacio label,*/
+#formparte-datapagamentcheck label,
+#formparte-datapagament label{
+	text-align: center;
+}
+
+.parte-totals {
+	width: 22%;
+	margin-right: 15px;
+}
+
+.parte-totals-t {
+	float: left;
+}
+
+.parte-totals-n {
+	float: right !important;
+}
+
+.parte-titol {
+	text-transform: uppercase;
+    font-style: italic;
+    width: 20%;
+    /*width: 30%;*/
+}
+
+#parte-resum-more {
+	margin-top: 10px;
+    width: 100%;
+}
+
+#parte-preu {
+	float: right;
+	color: #2281CF;
+	font-size: 16px;
+}
+
+#parte-preu-valor {
+	display: inline;
+}
+
+#header-totals {
+	text-align: left;
+}
+
+/* button positioned on upper right corner */
+#parte-resum-more-hide,
+#parte-resum-more-show {
+    cursor:pointer;
+    bottom: 10px;
+    position: relative;
+}
+
+input#club_codishow { width: 80px; }
+select#club_tipus { width: auto; }
+input#club_nom { width: 350px; }
+input#club_telefon { width: 116px; }
+input#club_cif { width: 116px; }
+input#club_mail { width: 298px; }
+input#club_web { width: 298px; }
+input#club_addrpob { width: 298px; }
+input#club_addrcp { width: 70px; }
+input#club_addrprovincia { width: 70px; }
+input#club_addradreca { width: 400px; }
+
+input#user_club_user { width: 298px; }
+select#user_club_role { width: auto; }
+input#user_club_pwd_first, 
+input#user_club_pwd_second, 
+input#formuserclub-randompassword { width: 150px; }
+
+#header-userclubuser {	width: 40%; text-align: left;}
+#header-userclublastaccess {	width: 29%; text-align: center;}
+#header-userclubrol {	width: 11%; text-align: center;}
+#header-userclubforceupdate {	width: 10%; text-align: center; line-height: 12px;}
+#header-userclubactions {}
+
+.userclub-user {	width: 40%; line-height: 10px; margin-top: -10px; }
+.userclub-lastaccess {	width: 30%; text-align: center; }
+.userclub-rol {	width: 10%; text-align: center; }
+.userclub-forceupdate {	width: 10%; text-align: center; }
+.userclub-actions { width: 4%; text-align:right; margin-top: -14px}
+.userclub-actions a:hover img
+ { border: 1px solid #DDDDDD; background-color:#E7F2FB}
+
+
+.formpersona-row {
+	width: 100%;
+}
+
+.formpersona-row h3 {
+	margin-top:0;
+}
+
+.formpersona-row .persona-submit {
+	float:right;
+}
+
+.formpersona-row div {
+	float:left;
+	margin-right: 10px;
+	margin-bottom: 5px !important;
+}
+
+#persona_sexe label {
+	color: #777777; 
+	/*position: relative; margin-bottom: 7px; 
+	text-align: left; min-width: 30px; vertical-align: top; padding-top: 10px; 
+	display:block;*/
+}
+
+
+input#persona_telefon1,
+input#persona_telefon2 {
+	width: 120px;
+}
+
+input#persona_mail {
+	width: 430px;
+}
+
+input#persona_nom {
+	width: 240px;
+}
+
+input#persona_cognoms {
+	width: 260px;
+}
+
+input#persona_dni {
+	width: 150px;
+}
+
+input#persona_addradreca,
+input#parte_persona_addrpob {
+	width: 300px;
+}
+
+input#parte_persona_addrcp {
+	width: 70px;
+}
+
+select#parte_persona_addrprovincia {
+	width: 130px;
+}
+
+select#parte_persona_addrcomarca {
+	width: 177px;
+}
+
+select#parte_persona_addrnacionalitat {
+	width: 365px;
+}
+
+#adreca-header { display: block; width:100% }
+
+#sms-mailpersona { float:right; color: #555555; }
+
+.ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
+
+/* Z-index of #mask must lower than #boxes .window */
+#mask {
+  	position:absolute;
+  	left: 0;
+  	top: 0;
+  	z-index:10;
+  	background-color:#FFFFFF;
+  	display:none;
+}
+
+#mask-progress {
+	display: block;
+	margin-top: 350px;
+	margin-left: auto;
+    margin-right: auto;
+}
+   
+.personform_overlay {
+  	position:fixed;
+  	width:720px;
+  	height:440px;
+  	display:none;
+  	z-index:50;
+  
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+   	-moz-box-shadow:0 0 90px 5px #000000;
+  	-webkit-box-shadow: 0 0 90px #000000;
+	border: 1px solid #81C6FF;
+    border-radius: 5px;
+  	-webkit-border-radius: 5px;
+  	-moz-border-radius: 5px;
+	background-color:#FFFFFF;
+	padding: 10px 10px 0;
+  
+  	/*background-color:#EEEEEE;
+   	border:1px solid #666;*/
+}
+
+html>body .personform_overlay {
+  	position:fixed;
+}
+
+/* close button positioned on upper right corner */
+.personform_overlay .close {
+/*    background-image:url("../images/close.png");*/
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
+}
+
+#fact-header {
+	display: inline-block;
+	width: 98%;
+	
+}
+
+#fact-header div {
+	color: #000000;
+}
+
+
+#fact-dadesclub {
+	float:left;
+	max-width: 410px;
+	min-width: 300px;
+}
+
+* html #fact-dadesclub { /*min-width: 300px;  min-width IE hack */
+   width: expression( document.body.clientWidth < 299 ? "300px" : "auto" ); /* set min-width for IE */
+}
+* html #fact-dadesclub { /*max-width: 410px;  max-width IE hack */
+   width: expression( document.body.clientWidth > 409 ? "410px" : "auto" ); /* set max-width for IE */
+}
+
+#fact-dadesfactura {
+	float:right;
+	max-width: 210px;
+	min-width: 165px;
+}
+
+* html #fact-dadesclub { /*min-width: 150px;  min-width IE hack */
+   width: expression( document.body.clientWidth < 164 ? "165px" : "auto" ); /* set min-width for IE */
+}
+* html #fact-dadesclub { /*max-width: 410px;  max-width IE hack */
+   width: expression( document.body.clientWidth > 209 ? "210px" : "auto" ); /* set max-width for IE */
+}
+
+
+#fact-detall {
+	display: inline-block;
+	width: 100%;
+}
+
+.fact-titol {
+	text-transform: uppercase;
+    /*font-weight: bold;*/
+    font-style: italic;
+    width: 80px;
+    font-size:small;
+    color: #555555 !important;
+}
+
+
+#header-factdetallid { display:none}
+#header-factdetallcodi {	width: 10%; text-align: center;}
+#header-factdetalldesc {	width: 40%; text-align: left; }
+#header-factdetallquantitat {	width: 10%; text-align: center; }
+#header-factdetallpreuunitat {	width: 10%; text-align: center; line-height: 14px;}
+#header-factdetallpreusiva {	width: 10%; text-align: center; line-height: 14px;}
+#header-factdetalliva {	width: 10%; text-align: center; line-height: 14px;}
+#header-factdetallpreutotal {	width: 10%; text-align: center; }
+
+.factdetall-id {	display:none}
+.factdetall-codi {	width: 10%; text-align: center;}
+.factdetall-desc {	width: 40%; text-align: left; line-height: 14px; margin-top: -18px; font-size:small;}
+.factdetall-quantitat {	width: 8%; text-align: center; }
+.factdetall-preuunitat {	width: 8%; text-align: right; }
+.factdetall-preusiva { width: 10%; text-align: right; }
+.factdetall-iva { width: 9%; text-align: right; }
+.factdetall-preutotal {width: 10%; text-align: right;}
+
+
+#factdetall-totals {
+	padding: 24px 2px;
+	color: #000000;
+	background-color: #EEEEEE;
+}
+#factdetall-totals div {
+ 	/*padding: 12px 1px 12px 1px;
+ 	line-height: 10px;*/
+}
+
+.factdetall-tab {	width: 66%; }
+.factdetall-totalparcial {	width: 11%; text-align: right; font-style: italic;}
+.factdetall-iva { width: 9%; text-align: right; font-style: italic;}
+.factdetall-total {	 
+	width: 10%; text-align: right; font-weight: bold;
+	border-color: #EDF1F5;
+    border-style: solid;
+    border-width: 1px 0;}
+
+.sms-footer { text-align: justify; font-style: italic; color: #555555; line-height: 20px; margin-top: 30px;}
+
+.sms-info { text-align: justify; color: #555555; line-height: 20px; margin-top: 30px;}
+
+.formdni-main, .formuser-main { margin-top: 50px; margin-left: 30px; }
+
+#formdni-dni { float:left; margin-right: 10px;}
+
+#formdni-dni .forminput-inside {
+	width: 220px;
+}
+
+#formuser-forceupdate input { float:left; margin-right: 10px; margin-left: 0px; margin-top: 10px; }
+
+#formuserclub-forceupdate, #formclub-activat, #formclub-decathlon { margin-top : 28px; } 
+
+#formuserclub-iforceupdate, #formclub-iactivat, #formclub-idecathlon { margin: 2px 0 0; }
+
+#notificacio {
+	position:absolute;
+	width:400px;
+	/*height:50px;
+	left: 10%;*/
+	top:50%; 
+	/*margin-top:-5em;
+	margin-left: 5em;*/
+}
+
+#close-notificacio {
+	text-align:center;
+}
+
+#formrecents-web label {
+	color: #555555;
+	padding-left: 10px;
+}
+
+#header-parterecentsid { display:none; }
+#header-parterecentsrel { width: 4%;}
+#header-parterecentsdata {	width: 10%; text-align: center;}
+#header-parterecentsclub {	width: 18%;}
+#header-parterecentstipus {	width: 16%;}
+#header-parterecentsweb {	width: 4%;}
+#header-parterecentstotal {	width: 4%;text-align:center;}
+#header-parterecentspreu {	width: 9%; text-align:right;}
+#header-parterecentspagweb {	width: 15%; text-align: center; line-height: 15px;}
+#header-parterecentsfactura {	width: 11%; text-align: center;}
+#header-parterecentsactions {}
+
+.parterecents-id { display:none; }
+.parterecents-rel { width: 4%; text-align:right;}
+.parterecents-data {	width: 10%; text-align: center; }
+.parterecents-club {	width: 19%; text-align:left; font-size: 0.8em;}
+.parterecents-tipus {	width: 14%; text-align:center;}
+.parterecents-web {	width: 4%; text-align:center;}
+.parterecents-total {	width: 4%; text-align:center;}
+.parterecents-preu {	width: 9%; text-align:right;}
+.parterecents-pagweb {	width: 15%; text-align:right;}
+.parterecents-factura {	width: 11%; text-align:center;}
+.parterecents-actions { width: 4%; text-align:right; margin-top: -14px}
+.parterecents-actions a:hover img
+ { border: 1px solid #DDDDDD; background-color:#E7F2FB}
+
+
+#block-useractions {
+	z-index: 1; display:none; margin: 16px 16px 0; 
+  	/*max-width: 250px;
+  	min-width: 165px; 
+  	padding: 7px; font-family: arial; */
+  	position: absolute; right: 0; z-index: 1; 
+    font-weight: bold;
+    font-style: italic;
+    text-decoration: none;
+    float:left;
+    margin-left: 2px;
+    width: 260px;
+    
+}
+
+#block-useractions div {
+	/*-webkit-border-radius: 0 0 10px 10px;
+   	-moz-border-radius: 0 0 10px 10px;*/
+    border-radius: 0 0 10px 10px;
+	background-color:#436FC6;
+    box-shadow: 0 10px 5px rgba(0, 0, 0, 0.17), 0 0 0 #000000 inset;
+    padding: 6px 10px 10px;
+    margin-left: 1px;
+	float:left;
+}
+
+#block-useractions div:hover {
+    padding-top: 10px;
+}
+
+
+#browsernotsupported {
+	margin: 70px 190px 90px;
+	color: #444444;
+}

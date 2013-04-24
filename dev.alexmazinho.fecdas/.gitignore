@@ -1,0 +1,20 @@
+# Bootstrap
+app/bootstrap*
+
+# Symfony directories
+vendor/*
+*/logs/*
+*/cache/*
+web/uploads/*
+web/bundles/*
+
+# Configuration files
+app/config/*
+
+# Backups
+web/backups/*
+web/backupbbdd.php
+
+# logs
+web/errorspagament.txt
+web/notificacions.txt

@@ -1,0 +1,21 @@
+<html> 
+<head></head>
+<body>
+<p>Benvolgut club {{ parte.club.nom }}</p>
+
+<p>La vigència de la vostra llista de federats amb data {{ parte.dataalta | date("d-m-Y") }} finalitzarà en {{ dies }} dies</p>
+
+<p>Podeu renovar-la al web de tramitació de llistes d'assegurats de la Federació Catalana d'Activitats Subaquàtiques (FECDAS)</p> 
+
+<p><a href="{{ url('FecdasPartesBundle_renovar', {'id': parte.id}) }}">
+{{ url('FecdasPartesBundle_renovar', {'id': parte.id}) }}</a></p>
+
+<p>Atentament<br/>
+FECDAS, {{ "now" | date("d/m/Y") }}.</p>
+
+<img src="{{ logo }}" alt="FECDAS" /> 
+
+</body>
+</html>
+
+

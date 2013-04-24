@@ -1,0 +1,100 @@
+<!-- app/Resources/views/base.html.twig Aplication level Template -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>{% block title %}Aplicació gestió FECDAS{% endblock %}</title>
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        {% block stylesheets %}
+            <!--  <link href='http://fonts.googleapis.com/css?family=Irish+Grover' rel='stylesheet' type='text/css'>-->
+            <!--  <link href='http://fonts.googleapis.com/css?family=La+Belle+Aurore' rel='stylesheet' type='text/css'>-->
+            <!--  <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'> -->
+            <link href="{{ asset('css/layout.css') }}" type="text/css" rel="stylesheet" />
+            <link href="{{ asset('css/jquery-bubble-popup-v3.css') }}" type="text/css" rel="stylesheet" />
+            <link href="{{ asset('css/redmond/jquery-ui-1.8.23.custom.css') }}" type="text/css" rel="stylesheet" />
+			<style>section#main-col{display:none;}</style>            
+        {% endblock %}
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
+        {% block javascriptshead %}
+        	<script src="{{ asset('js/jquery.min.js') }}" type="text/javascript"></script>
+			<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>        	
+        	<script src="{{ asset('js/jquery-bubble-popup-v3.min.js') }}" type="text/javascript"></script>
+        	<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>
+        {% endblock %}
+        <script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-37415197-1']);
+		  _gaq.push(['_trackPageview']);
+		
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
+    </head>
+    <body>
+		<section id="wrapper">
+            <header id="header">
+                <div class="logo">{% block fecdas_logo %}{% endblock %}</div>
+                <div class="title">{% block fecdas_title %}{% endblock %}</div>
+                <div class="login">{% block fecdas_login %} {% endblock %}</div>
+            </header>
+
+            <section id="left-menu">
+            {% block sidebar %}{% endblock %}
+            </section>
+            <noscript>
+				<div id="no-js">
+				<h1>Navegador sense suport JAVASCRIPT</h1>
+				<p><b>L'Aplicació de Tramitació de Llistes d'Assegurats</b> requereix de l'activació de Javascript per al seu correcte funcionament.</p>
+				<p>Podeu trobar informació sobre el llenguatge Javascript aquí: <a href="http://ca.wikipedia.org/wiki/JavaScript" target="_blank">http://ca.wikipedia.org/wiki/JavaScript</a>.</p>
+				<p>El web està optimitzat per als navegadors 
+				<a href="http://www.mozilla.org/ca/firefox" target="_blank"><b>Firefox</b></a> i 
+				<a href="https://www.google.com/chrome?hl=ca" target="_blank"><b>Chrome</b></a>, i per tant se'n recomana l'ús 
+				a continuació disposeu dels enllaços amb informació per activar Javascript 
+				als pricipals navegadors web.</p>
+				<ul>
+				<li>Firefox, <a href="http://www.enable-javascript.com/es/#firefox" target="_blank">http://www.enable-javascript.com/es/#firefox</a></li>
+				<li>Chrome, <a href="http://www.enable-javascript.com/es/#chrome" target="_blank">http://www.enable-javascript.com/es/#chrome</a></li>
+				<li>Internet Explorer, <a href="http://www.enable-javascript.com/es/#ie" target="_blank">http://www.enable-javascript.com/es/#ie</a></li>
+				<li>Safari, <a href="http://www.enable-javascript.com/es/#safari" target="_blank">http://www.enable-javascript.com/es/#safari</a></li>
+				<li>Opera, <a href="http://www.enable-javascript.com/es/#opera" target="_blank">http://www.enable-javascript.com/es/#opera</a></li>
+				</ul>
+				</div>
+			</noscript>
+
+            <section id="main-col">
+            {% block body %}{% endblock %}
+            <div id="dialog" title="Confirmation Required" style="display: none"></div>
+            </section>
+
+            <div id="browser" style="display: none;"></div>
+            <div id="footer">
+                {% block footer %}
+                	<div class="powered">
+                		<div style="float: left;">Powered by<br>Symfony2 </div>
+                		<div><img src="{{ asset('images/sf-logo.png') }}"/></div>
+                	</div>
+                	<div class="fecdas-footer"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyrigth 2012</p>
+                    	<p>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
+                    </div>
+                    <div class="created-by">
+					creat per <br/>
+					<a href="http://www.ondissenyweb.com" target="_blank"><img src="{{ asset('images/logoOndissenyweb.png') }}" width="100px"></a>
+					</div>
+                {% endblock %}
+            </div>
+        </section>
+
+        <script type="text/javascript">
+    		$('#main-col').css('display', 'inline-block');
+		</script>
+        
+       {% block javascripts %}
+       {% endblock %}
+    </body>
+</html>

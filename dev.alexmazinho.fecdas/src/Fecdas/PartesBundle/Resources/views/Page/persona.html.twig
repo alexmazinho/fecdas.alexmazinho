@@ -1,0 +1,96 @@
+<div class="personform_overlay" id="overpersona">
+	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
+	<h1>Dades personals</h1>
+	<div class="formpersona-row clearfix">
+		<div id="formpersona-nom">
+			{{ form_label(formpersona.nom, 'Nom', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.nom, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div> 
+		<div id="formpersona-cognoms">
+			{{ form_label(formpersona.cognoms, 'Cognoms', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div> 
+		<div id="formpersona-dni">
+			{{ form_label(formpersona.dni, 'DNI', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.dni, { 'attr': {'class': 'forminput-inside'} }) }}
+			<img width="20px" id="help-dni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
+		</div>
+	</div>
+	<div class="formpersona-row clearfix">
+		<div id="formpersona-datanaixement">
+			{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'forminput-outside'} }) }}
+		</div>
+		<div id="formpersona-sexe">
+			{{ form_label(formpersona.sexe, 'Sexe', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(formpersona.sexe, { 'attr': {'class': 'forminput-outside'} }) }}
+		</div>
+		<div id="formpersona-id">
+			{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
+		</div> 
+	</div> 
+	<div class="formpersona-row clearfix">
+		<div id="formpersona-tlf1">
+			{{ form_label(formpersona.telefon1, 'Telf1', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formpersona-tlf2">
+			{{ form_label(formpersona.telefon2, 'Telf2', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formpersona-mail">
+			{{ form_label(formpersona.mail, 'Adreça electrònica', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.mail, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+	</div> 
+	<div class="formpersona-row clearfix">
+	 	<div id="adreca-header">
+			<div><h3>Adreça</h3></div>
+			<div id="sms-mailpersona">* Indica l'adreça de correu per poder rebre notificacions de la Federeació</div>
+		</div>
+		<div id="formpersona-addradreca">
+			{{ form_label(formpersona.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formpersona-addrpob">
+			<label class="formlabel-inside required" for="parte_persona_addrpob">Població</label>
+			{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrpob' }) }}
+		</div>
+		<div id="formpersona-addrcp">
+			<label class="formlabel-inside required" for="parte_persona_addrcp">CP</label>
+			{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcp' }) }}
+		</div>
+	</div> 
+	<div class="formpersona-row clearfix">
+		<div id="formpersona-addrprovincia">
+			<label class="formlabel-inside required" for="parte_persona_addrprovincia">Província</label>
+			{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'forminput-inside'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia' }) }}
+		</div>
+		<div id="formpersona-addrcomarca">
+			<label class="formlabel-inside required" for="parte_persona_addrcomarca">Comarca</label>
+			{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcomarca' }) }}
+		</div>
+		<div id="formpersona-addrnacionalitat">
+			<label class="formlabel-inside required" for="parte_persona_addrnacionalitat">Nacionalitat</label>
+			{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrnacionalitat' }) }}
+		</div>
+	</div> 
+	<div class="formpersona-row clearfix">
+		<div id="formpersona-cancel" class="persona-submit">	
+			<input type="submit" id="formpersona-button-cancel" class="forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
+		</div>
+		<div id="formpersona-remove" class="persona-submit">	
+			<input type="submit" id="formpersona-button-remove" class="forminput-inside" value="Esborrar" name="formpersona-button-remove"/>
+		</div>
+		<div id="formpersona-submit" class="persona-submit">	
+			<input type="submit" id="formpersona-button-save" class="forminput-inside" value="Desar" name="formpersona-button-save"/>
+		</div>
+	</div>	
+	<div id="error-persona"></div>
+	
+	<div id="formpersona-rest">	{{ form_rest(formpersona) }}</div>
+</div>
+
+
+
+

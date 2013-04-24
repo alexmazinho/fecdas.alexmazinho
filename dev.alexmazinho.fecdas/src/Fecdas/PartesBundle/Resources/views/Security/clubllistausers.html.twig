@@ -1,0 +1,48 @@
+{% if app.session.hasFlash('error-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('error-notice') }}
+    </div>
+{% endif %}
+
+{% if club.usuaris|length > 0 %}
+<div id="list-header" class="clearfix">
+   	<div id="header-userclubuser" class="col-listheader">Usuari</div>
+   	<div id="header-userclublastaccess" class="col-listheader">Darrer accés</div>
+   	<div id="header-userclubrol" class="col-listheader">Rol</div>
+   	<div id="header-userclubforceupdate" class="col-listheader">Canvi clau</div>
+   	<div id="header-userclubactions" class="col-listheader">&nbsp;</div>
+</div>
+
+<ol id="list-data">
+	{% for userclub in club.usuaris %}
+		<li class="data-detall">
+			<div class="userclub-user">{{ userclub.user }}</div>
+			<div class="userclub-lastaccess">
+			{% if userclub.lastaccess is not null %}
+			{{ userclub.lastaccess|date("d/m/Y H:i:s") }}
+			{% else %}
+			--
+			{% endif %}
+			</div>
+			<div class="userclub-rol">{{ userclub.role }}</div>
+			<div class="userclub-forceupdate">
+			{% if userclub.forceupdate == true %}
+			Si
+			{% else %}
+			No
+			{% endif %}
+			</div>
+			<div class="userclub-actions">
+			{% if admin == true %}
+				{% if userclub.databaixa is null %}
+				<a class="label-edit-userclub" href="javascript:enableUserClick('{{ userclub.user }}', 'disable');"><img src="{{ asset('images/icon-ok.jpg') }}" alt="Desactivar Usuari" title="Desactivar Usuari" width="20px"></a>
+				{% else %}
+				<a class="label-edit-userclub" href="javascript:enableUserClick('{{ userclub.user }}', 'enable');"><img src="{{ asset('images/icon-disable.png') }}" alt="Activar Usuari" title="Activar Usuari" width="20px"></a>
+				{% endif %}
+			{% endif %}
+			</div>
+		</li>
+   	{% endfor %}
+</ol>
+{% endif %}
+

@@ -1,0 +1,57 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Recuperació de contrasenya {% endblock %}
+
+{% block fecdas_login %}
+<!-- Login page doesn't load login (bubble) form) -->
+	
+{% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Recuperació de la paraula clau</h1>
+    </header>
+	
+    {% if app.session.hasFlash('sms-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('sms-notice') }}
+    </div>
+	{% endif %}
+    
+   	<div id="login"> 
+   		<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
+   		<form action="{{ path('FecdasPartesBundle_pwdrecovery') }}" method="post" {{ form_enctype(form) }} class="appform">
+   		{{ form_errors(form) }}
+
+	   		<div id="formlogin-user">
+				{{ form_label(form.user, 'Usuari', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
+			</div>
+	
+	    	<div id="formlogin-rest">	{{ form_rest(form) }}</div>
+	
+		    <div id="formlogin-submit">	
+				<input type="submit" class="forminput-inside" value="Envia" />
+			</div>        
+   
+		</form> 
+   	
+   	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+	helpBubbles("#login_user", '<p>L\'usuari és una adreça de correu electrònic. p.e. </p>\
+				<p>maildelclub@domini.com</p>');
+				
+});
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Notificació Pagament{% endblock %}
+
+{% block fecdas_login %} {% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block body %}
+    <div id="notificacio">
+	<div class="sms-notice">
+		{% if result == 'ok' %}
+			Pagament realitzat correctament. <a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parteId }) }}">Factura Pagada</a>
+		{% else  %}
+			{% if result == 'pend' %}
+				Pagament pendent de comprovar per part de la federació
+			{% else  %}
+				S'ha produit un error durant el pagament 
+			{% endif %} 
+		{% endif %} 
+	</div>
+	<div id="close-notificacio"><a href="#">Torna</a></div>
+    </div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	
+	$("#close-notificacio").click(function() {
+		window.opener.location.href='partes';
+		window.close();
+	});
+
+	$(window).unload(function() {
+		window.opener.location.href='partes';
+		window.close();
+	});
+	
+});
+</script>
+
+
+{% endblock %}
+
+

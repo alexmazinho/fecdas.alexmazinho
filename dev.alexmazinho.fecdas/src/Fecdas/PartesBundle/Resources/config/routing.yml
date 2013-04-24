@@ -1,0 +1,161 @@
+#FecdasPartesBundle_homepage:
+#    pattern:  /fecdas/{name}
+#    defaults: { _controller: FecdasPartesBundle:Default:index }
+
+FecdasPartesBundle_homepage:
+    pattern:  /
+    defaults: { _controller: "FecdasPartesBundle:Page:index" }
+    requirements:
+        _method:  GET
+        
+FecdasPartesBundle_contact:
+    pattern:  /contact
+    defaults: { _controller: "FecdasPartesBundle:Page:contact" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_login:
+    pattern:  /login
+    defaults: { _controller: "FecdasPartesBundle:Security:login" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_pwdrecovery:
+    pattern:  /pwdrecovery
+    defaults: { _controller: "FecdasPartesBundle:Security:pwdrecovery" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_user:
+    pattern:  /user
+    defaults: { _controller: "FecdasPartesBundle:Security:user" }
+    requirements:
+        _method:  GET|POST
+
+
+FecdasPartesBundle_logout:
+    pattern:  /logout
+    defaults: { _controller: "FecdasPartesBundle:Security:logout" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_club:
+    pattern:  /club
+    defaults: { _controller: "FecdasPartesBundle:Security:club" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_usuariclub:
+    pattern:  /usuariclub
+    defaults: { _controller: "FecdasPartesBundle:Security:usuariclub" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_partes:
+    pattern:  /partes
+    defaults: { _controller: "FecdasPartesBundle:Page:partes" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_recents:
+    pattern:  /recents
+    defaults: { _controller: "FecdasPartesBundle:Page:recents" }
+    requirements:
+        _method:  GET|POST
+
+
+FecdasPartesBundle_assegurats:
+    pattern:  /assegurats
+    defaults: { _controller: "FecdasPartesBundle:Page:assegurats" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_busseig:
+    pattern:  /consultadni
+    defaults: { _controller: "FecdasPartesBundle:Page:busseig" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_parte:
+    pattern:  /parte
+    defaults: { _controller: "FecdasPartesBundle:Page:parte" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_renovar:
+    pattern:  /renovar
+    defaults: { _controller: "FecdasPartesBundle:Page:renovar" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_pagament:
+    pattern:  /pagament
+    defaults: { _controller: "FecdasPartesBundle:Page:pagament" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_notificacio:
+    pattern:  /notificacio
+    defaults: { _controller: "FecdasPartesBundle:Page:notificacio" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_notificacioOk:
+    pattern:  /notificacioOk
+    defaults: { _controller: "FecdasPartesBundle:Page:notificacioOk" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_notificacioKo:
+    pattern:  /notificacioKo
+    defaults: { _controller: "FecdasPartesBundle:Page:notificacioKo" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_llicencia:
+    pattern:  /llicencia
+    defaults: { _controller: "FecdasPartesBundle:Page:llicencia" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_persona:
+    pattern:  /persona
+    defaults: { _controller: "FecdasPartesBundle:Page:persona" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_ajaxpoblacions:
+    pattern:  /ajaxpoblacions
+    defaults: { _controller: "FecdasPartesBundle:Page:ajaxpoblacions" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_gettipuspartes:
+    pattern:  /gettipuspartes
+    defaults: { _controller: "FecdasPartesBundle:Page:gettipuspartes" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_licensetopdf:
+    pattern:  /license
+    defaults: { _controller: "FecdasPartesBundle:PDF:licensetopdf" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_partetopdf:
+    pattern:  /printparte
+    defaults: { _controller: "FecdasPartesBundle:PDF:partetopdf" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_facturatopdf:
+    pattern:  /printfactura
+    defaults: { _controller: "FecdasPartesBundle:PDF:facturatopdf" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_checkrenovacio:
+    pattern:  /checkrenovacio
+    defaults: { _controller: "FecdasPartesBundle:Cron:checkrenovacio" }
+    requirements:
+        _method:  GET

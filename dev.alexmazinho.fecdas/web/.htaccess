@@ -1,0 +1,16 @@
+#DirectoryIndex app_dev.php
+#Redirect / http://fecdas.dev/app_dev.php
+#<IfModule mod_rewrite.c>
+#    RewriteEngine On
+#    RewriteCond %{REQUEST_FILENAME} !-f
+#    RewriteRule ^(.*)$ app.php [QSA,L]
+#    RewriteRule ^$ http://fecdas.dev/app_dev.php [R=301,L]
+#    RewriteRule ^$ http://www.fecdasgestio.cat/app.php [R=301,L]
+#</IfModule>
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^(.*)$ app_dev.php [QSA,L]
+</IfModule>
+

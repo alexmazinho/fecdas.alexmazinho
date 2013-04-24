@@ -1,0 +1,225 @@
+
+/*html,body,div,span,applet,object,iframe,
+h1,h2,h3,h4,h5,h6,p,blockquote,
+pre,a,abbr,acronym,address,big,cite,code,del,
+dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,
+sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,
+fieldset,form,label,legend,table,caption,tbody,
+tfoot,thead,tr,th,td,article,aside,canvas,details,
+embed,figure,figcaption,footer,header,hgroup,menu,nav,
+output,ruby,section,summary,time,mark,audio,video
+{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}*/
+
+/*article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section
+{display:block}*/
+
+/*body {line-height:1} */
+
+/*ol,ul{list-style:none}
+blockquote,q{quotes:none}
+blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}*/
+
+/* F48A00 --> 6290bf --> 1240a0*/
+
+
+
+/************************************** Ull!!! **********************************
+
+#header {margin-bottom:3em} 			--> Normal IE < 8
+html>body #header {margin-bottom:1em}   --> Hack altres navegadors
+
+Explorer no enten la segona línea (usa la primera)
+Altres navegadors usen la segona línea
+
+Afegint això al Header fem que sigui compatible IE8 molt semblant a la resta de navegadors
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+Vigilar: margin, padding, width i height
+
+**********************************************************************************/
+
+
+body { 
+	line-height: 1;
+	font-family: Arial, Helvetica, sans-serif;
+	/*font-family: 'Open Sans', sans-serif;*/
+	font-size: 12px; 
+	width: 100%; height: 100%; 
+	color: #444444; font-size: 14px; 
+	background: url("../images/cap_fons2.jpg") repeat-x scroll center top transparent;
+	
+}
+
+.clear { clear: both; }
+
+.title { 
+	/*font-family: 'Londrina Outline';*/
+	font-size: 18px;
+}
+.title i { 
+	/*font-family: 'Londrina Outline';*/
+	font-size: 16px;
+}
+
+a img {border: none; }
+
+#wrapper { margin: -10px auto; }
+html>body #wrapper { margin: 10px auto; }
+
+#wrapper { min-width: 800px;
+/*background: url("../images/corner6.png") no-repeat scroll 650px 100px transparent;*/
+background: url("../images/corner6.png") no-repeat scroll top right transparent;}
+#wrapper a { text-decoration: none; color: #1240a0;  }
+#wrapper span.highlight { color: #1240a0; }
+
+
+html>body #header { color: #dddddd; margin-bottom: 20px; height: 30px; padding: 10px; z-index: 10}
+#header { color: #dddddd; margin-bottom: -50px; height: 30px; padding: 10px; z-index: 10}
+
+html>body #header .logo { width: 0; margin-top: -15px; float: left; display: inline-block;  }
+#header .logo { width: 0; margin-top: -10px; float: left; display: inline-block;  }
+#header .title { width: 380px; margin-left: 180px; display: inline-block; }
+html>body #header .login { max-width: 350px; float: right; display: inline-block; margin-top:auto;width: auto; }
+#header .login { max-width: 350px; float: right; display: inline-block; margin-top:-35px;width: auto; }
+#header .login img { vertical-align: middle; padding: 0 10px; }
+#header a { color: #dddddd; }
+.logo img { width : 130px; }
+
+/*#header h2 { font-family: 'Irish Grover', cursive; font-size: 92px; text-align: center; line-height: 110px; }
+#header h2 a { color: #000; }
+#header h3 { text-align: center; font-family: 'La Belle Aurore', cursive; font-size: 24px; margin-bottom: 20px; font-weight: normal; }*/
+
+html>body #left-menu { 
+	width: 130px; 
+	padding: 10px 0 10px 10px; 
+	margin-bottom: 20px; 
+	margin-top: 50px;
+}
+#left-menu { 
+	width: 150px; 
+	padding: 10px 0 10px 60px; 
+	margin-bottom: 20px; 
+	margin-top: 50px;
+}
+#left-menu { display: inline-block; float: left; }
+
+
+#left-menu ul.navigation { list-style: none; text-align: left; margin-left: -50px;}
+#left-menu .navigation li { 
+	display: inline;
+	line-height: 40px;
+}
+html>body #left-menu .navigation li a { 
+	display: inline-block; 
+	padding: 10px 15px;
+	width: 100px; 
+	line-height: 24px;
+	margin-bottom: 5px;
+}
+
+#left-menu .navigation li a { 
+	display: inline-block; 
+	padding: 10px 15px;
+	width: 140px; 
+	line-height: 24px;
+	margin-bottom: 5px;
+}
+
+
+#left-menu a {
+	color: #005A8C;
+	text-decoration: none;	
+	font-weight: bold;
+	font-size: 15px;
+	
+	border-color: #82CFFA #E7F2FB #96C4EA;
+    border-style: solid;
+    border-width: 2px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+}
+
+html>body #left-menu a:active, 
+html>body #left-menu a:visited,
+html>body #left-menu a:hover { 
+	text-decoration: none;
+	color: #2281CF;
+	background: none repeat-x scroll 0 0 #F0F9FF;
+}
+
+#left-menu a:hover { 
+	text-decoration: none;
+	color: #2281CF;
+	background: none repeat-x scroll 0 0 #F0F9FF;
+}
+
+
+
+#main-col { 
+	/*width: 639px;*/
+	width: 628px; 
+	/*min-height: 450px;  Next min-height IE hack */ 
+	min-height:420px;
+  	height:auto !important;
+  	height:420px;
+
+	display: inline-block; padding: 10px; border-left: 1px solid #ccc; margin-bottom: 10px;
+}
+
+
+#main-col a { 
+	/*color: #1240a0;*/ 
+	color: #005A8C 
+}
+#main-col h1,
+#main-col h2
+    { line-height: 1.2em; font-size: 32px; margin-bottom: 10px; margin-top: 5px; margin-left: 30px; font-weight: normal; color: #1240a0; }
+#main-col p { line-height: 1.5em; margin-bottom: 20px; }
+
+
+#footer { 
+	border-top: 1px solid #ccc; clear: both; text-align: center; padding: 10px; color: #aaa; 
+	
+/*background-image: linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);*/
+/*background-image: -o-linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);*/
+background-image: -moz-linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);
+/*background-image: -webkit-linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);*/
+/*background-image: -ms-linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);*/
+
+background-image: -webkit-gradient(
+	linear,
+	left bottom,
+	left top,
+	color-stop(0.91, rgb(255,255,255)),
+	color-stop(1, rgb(237,237,237)),
+	color-stop(1, rgb(237,237,237))
+);
+
+	
+	}
+#footer .powered { width: 15%; padding: 10px; display: inline-block; float: left; text-align: left;}
+
+#footer .fecdas-footer { float: left; width: 70%; }
+
+html>body #footer .fecdas-footer { /*float: inherit;*/}
+
+#footer .created-by { float: right; text-align:left; width: 10% }
+
+#no-js { 
+	width: 639px; 
+	/*min-height: 420px;  Next min-height IE hack */ 
+	min-height:420px;
+  	height:auto !important;
+  	height:420px; 
+	display: inline-block; padding: 10px; 
+	border-left: 1px solid #ccc; margin-bottom: 10px;
+}
+    					
+#no-js a { 
+	color: #005A8C 
+}
+#no-js h1,
+#no-js h2
+    { line-height: 1.2em; font-size: 32px; margin-bottom: 10px; margin-top: 5px; font-weight: normal; color: #1240a0; }
+#no-js p { line-height: 1.5em; margin-bottom: 20px; }
+
+#no-js ul { line-height: 2em; list-style: circle outside none;}

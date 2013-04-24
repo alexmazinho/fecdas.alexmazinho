@@ -1,0 +1,40 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/parte.html.twig #}
+
+<div>
+
+{% if app.session.hasFlash('error-notice') %}
+	<div class="sms-notice">
+   		{{ app.session.flash('error-notice') }}
+	</div>
+{% endif %}
+    
+    	{{ form_errors(form)  }}
+    	{{ form_errors(formllicencia)  }}
+		{# form_errors(form.any)  #}
+		{# form_errors(form.dataalta)  #}
+		{# form_errors(form.club)  #}
+		{# form_errors(form.numrelacio)  #}
+		{# form_errors(form.tipus)  #}
+		{# form_errors(form.club)  #}
+		{# form_errors(form.datafacturacio)  #}
+		{# for llicencia in form.llicencies #}
+			{# form_errors(llicencia) }}
+			{# form_errors(llicencia.id) }}
+			{# form_errors(llicencia.persona) }}
+			
+			{# form_errors(llicencia.categoria) }}
+			{# form_errors(llicencia.pesca) }}
+			{# form_errors(llicencia.escafandrisme) }}
+			{# form_errors(llicencia.natacio) }}
+			{# form_errors(llicencia.orientacio) }}
+			{# form_errors(llicencia.biologia) }}
+			{# form_errors(llicencia.fotocine) }}
+			{# form_errors(llicencia.ja) }}
+			{# form_errors(llicencia.hockey) }}
+			{# form_errors(llicencia.fotosubapnea) }}
+			{# form_errors(llicencia.durada365) }}
+		{# endfor #}
+    
+    
+</div>     
+

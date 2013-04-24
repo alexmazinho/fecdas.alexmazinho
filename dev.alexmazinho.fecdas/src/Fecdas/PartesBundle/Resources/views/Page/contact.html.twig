@@ -1,0 +1,42 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Contacte{% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Contacte incidències i/o suggeriments</h1>
+    </header>
+
+    {% if app.session.hasFlash('sms-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('sms-notice') }}
+    </div>
+	{% endif %}
+    <div id="contact">
+	<form action="{{ path('FecdasPartesBundle_contact') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    	{{ form_errors(form) }}
+		<div id="formcontact-name">
+			{{ form_label(form.name, 'Nom', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(form.name, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+        <div id="formcontact-email">
+			{{ form_label(form.email, 'Adreça de correu', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(form.email, { 'attr': {'class': 'forminput-inside'} }) }}
+			{{ form_errors(form.email) }}
+		</div>
+		<div id="formcontact-subject">
+			{{ form_label(form.subject, 'Assumpte', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(form.subject, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formcontact-body">
+			{{ form_label(form.body, 'Text del missatge', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(form.body, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formcontact-rest">	{{ form_rest(form) }}</div>
+        <div id="formcontact-submit">	
+			<input type="submit" class="forminput-inside" value="Tramet la consulta" />
+		</div>        
+    </form> 
+    </div>
+{% endblock %}

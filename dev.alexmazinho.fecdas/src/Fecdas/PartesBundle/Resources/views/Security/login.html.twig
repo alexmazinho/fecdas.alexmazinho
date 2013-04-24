@@ -1,0 +1,44 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Autenticació {% endblock %}
+
+{% block fecdas_login %}
+<!-- Login page doesn't load login (bubble) form) -->
+	
+{% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Entrada d'usuaris</h1>
+    </header>
+	
+    {% if app.session.hasFlash('sms-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('sms-notice') }}
+    </div>
+	{% endif %}
+    
+   	<div id="login"> {% render "FecdasPartesBundle:Security:getLoginForm" %} 
+   	<a href="{{ path('FecdasPartesBundle_pwdrecovery') }}">Password perdut?</a>
+   	</div>
+    
+   	
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+	helpBubbles("#login_user", '<p>L\'usuari és una adreça de correu electrònic. p.e. </p>\
+				<p>maildelclub@domini.com</p>');
+
+	helpBubbles("#login_pwd", '<p>Indica la teva paraula clau d\'accés al sistema</p>');
+				
+});
+</script>
+{% endblock %}

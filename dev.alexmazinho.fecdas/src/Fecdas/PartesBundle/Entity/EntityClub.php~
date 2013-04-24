@@ -1,0 +1,189 @@
+<?php
+namespace Fecdas\PartesBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="m_clubs")
+ * 
+ * @author alex
+ *
+ */
+class EntityClub {
+	
+	/**
+	 * @ORM\Id
+	 * @ORM\Column(type="string", length=6)
+	 */
+	protected $codi;	// fedeclub, CATXXX
+	
+	/**
+	 * @ORM\Column(type="string", length=30)
+	 */
+	protected $nom;
+	
+	/**
+     * @ORM\ManyToOne(targetEntity="EntityClubType")
+     * @ORM\JoinColumn(name="tipus", referencedColumnName="id")
+     */
+	protected $tipus;	// FK taula m_tipusclub
+
+	/**
+	 * @ORM\Column(type="integer", length=20, nullable=true)
+	 */
+	protected $telefon;
+
+	/**
+	 * @ORM\Column(type="string", length=50, nullable=true)
+	 */
+	protected $mail;
+	
+	/**
+	 * @ORM\Column(type="string", length=150, nullable=true)
+	 */
+	protected $web;
+	
+	/**
+	 * @ORM\Column(type="string", length=12)
+	 */
+	protected $cif;
+
+	/**
+	 * @ORM\Column(type="string", length=75, nullable=true)
+	 */
+	protected $addradreca;
+
+	/**
+	 * @ORM\Column(type="string", length=35, nullable=true)
+	 */
+	protected $addrpob;
+	
+	/**
+	 * @ORM\Column(type="string", length=5, nullable=true)
+	 */
+	protected $addrcp;
+	
+	/**
+	 * @ORM\Column(type="string", length=20, nullable=true)
+	 */
+	protected $addrprovincia;
+	
+	
+	
+    /**
+     * Set codi
+     *
+     * @param string $codi
+     */
+    public function setCodi($codi)
+    {
+        $this->codi = $codi;
+    }
+
+    /**
+     * Get codi
+     *
+     * @return string 
+     */
+    public function getCodi()
+    {
+        return $this->codi;
+    }
+
+    /**
+     * Set nom
+     *
+     * @param string $nom
+     */
+    public function setNom($nom)
+    {
+        $this->nom = $nom;
+    }
+
+    /**
+     * Get nom
+     *
+     * @return string 
+     */
+    public function getNom()
+    {
+        return $this->nom;
+    }
+
+    /**
+     * Set tipus
+     *
+     * @param Fecdas\PartesBundle\Entity\EntityClubType $tipus
+     */
+    public function setTipus(\Fecdas\PartesBundle\Entity\EntityClubType $tipus)
+    {
+        $this->tipus = $tipus;
+    }
+
+    /**
+     * Get tipus
+     *
+     * @return Fecdas\PartesBundle\Entity\EntityClubType 
+     */
+    public function getTipus()
+    {
+        return $this->tipus;
+    }
+    
+    /**
+     * Get informació club en llistes desplegables
+     *
+     * @return string
+     */
+    public function getLlistaText()
+    {
+    	return $this->codi . "-" . $this->nom;
+    }
+
+    public function _toString()
+    {
+    	return $this->codi . "-" . $this->nom;
+    }
+    
+    
+    /**
+     * Set telefon
+     *
+     * @param integer $telefon
+     */
+    public function setTelefon($telefon)
+    {
+        $this->telefon = $telefon;
+    }
+
+    /**
+     * Get telefon
+     *
+     * @return integer 
+     */
+    public function getTelefon()
+    {
+        return $this->telefon;
+    }
+
+    /**
+     * Set cif
+     *
+     * @param string $cif
+     */
+    public function setCif($cif)
+    {
+        $this->cif = $cif;
+    }
+
+    /**
+     * Get cif
+     *
+     * @return string 
+     */
+    public function getCif()
+    {
+        return $this->cif;
+    }
+}

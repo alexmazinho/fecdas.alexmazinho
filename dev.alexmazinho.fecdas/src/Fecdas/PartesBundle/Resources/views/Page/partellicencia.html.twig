@@ -7,7 +7,7 @@
 	<div id="formllicencia-id">
 		{{ form_widget(llicencia.id, { 'id': 'parte_llicencies_id' }) }}
 	</div>
-	<div class="formllicencia-row clearfix">
+	<div class="form-row clearfix">
 		<div id="formllicencia-persona">
 			{{ form_label(llicencia.persona, 'Assegurats del Club', { 'attr': {'class': 'formlabel-outside'} }) }}
 			{{ form_widget(llicencia.persona, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_persona_select' }) }}
@@ -23,10 +23,10 @@
 			{{ form_widget(llicencia.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 		</div> 
 	</div>
-	<div class="formllicencia-row clearfix">
+	<div class="form-row clearfix">
 		{% if edit == true %} 
 		<div class="textaccio">
-			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_ajaxpoblacions') }}" name="modal">
+			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
 			{% if llicenciadades.persona is not null %}	modifica assegurat 
 			{% else %} nou assegurat {% endif %}
 			<img src="{{ asset('images/icon_add.png') }}"></a>

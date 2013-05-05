@@ -13,11 +13,11 @@
 			<div class="sms-notice">{{ form_errors(form)  }}</div>
 		{% endif %}	
 
-		<div id="formrenovar-buttons">
+		<div id="buttons-top">
 			<input type="image" src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llista" title="Renovar llista" width="30px" 
 					 id="formrenovar-button-renovar" class="forminput-inside" value="Pagar" name="formrenovar-button-renovar"/>
 		</div>	
-		<div class="formparte-row clearfix">
+		<div class="form-row clearfix">
 			<div id="formparte-any">
 				<label class="formlabel-outside required">Any</label>
 				{{ form_widget(form.any, { 'id': 'parte_any', 'attr': {'class': 'formfield-outside'} }) }}
@@ -93,6 +93,8 @@
 <script type="text/javascript">
 
 $(document).ready(function(){
+	setMenuActive("menu-partes");
+	
 	validarRenovarNoBuida();
 
 	calcularPreuRenovar();

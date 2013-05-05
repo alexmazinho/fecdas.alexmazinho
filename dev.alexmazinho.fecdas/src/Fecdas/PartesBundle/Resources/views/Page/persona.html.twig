@@ -1,4 +1,4 @@
-<div class="personform_overlay" id="overpersona">
+<form id="formpersona" action="{{ path('FecdasPartesBundle_persona') }}" method="post" {{ form_enctype(formpersona) }}  class="modalform appform">
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
 	<h1>Dades personals</h1>
 	<div class="formpersona-row clearfix">
@@ -77,7 +77,7 @@
 	</div> 
 	<div class="formpersona-row clearfix">
 		<div id="formpersona-cancel" class="persona-submit">	
-			<input type="submit" id="formpersona-button-cancel" class="forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
+			<input type="submit" id="formpersona-button-cancel" class="form-button-cancel forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
 		</div>
 		<div id="formpersona-remove" class="persona-submit">	
 			<input type="submit" id="formpersona-button-remove" class="forminput-inside" value="Esborrar" name="formpersona-button-remove"/>
@@ -87,10 +87,6 @@
 		</div>
 	</div>	
 	<div id="error-persona"></div>
-	
+	<a id="formpersona-autocompleters" href="{{ path('FecdasPartesBundle_ajaxpoblacions') }}" style="display:none">
 	<div id="formpersona-rest">	{{ form_rest(formpersona) }}</div>
-</div>
-
-
-
-
+</form>

@@ -186,10 +186,46 @@ class BaseController extends Controller {
 		return $password;
 	} 
 	
+	protected function getActiveEnquesta() {
+		/* Obté enquesta activa pendent de realitzar de l'usuari registrat */
+		if ($this->isAuthenticated() != true) return null;
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
+		$strQuery .= " WHERE e.datainici <= :avui ";
+		$strQuery .= " AND (e.datafinal >= :avui OR e.datafinal IS NULL)";
+		$strQuery .= " ORDER BY e.datainici DESC";
+		
+		$avui = $this->getCurrentDate();
+		$avui = $avui->format('Y-m-d H:i:s');
+		
+		$query = $em->createQuery($strQuery)
+		->setParameter('avui', $avui);
+			
+		$enquestes = $query->getResult();
+		foreach ($enquestes as $c => $enquesta) {
+			$realitzada = $enquesta->getRealitzada($this->get('session')->get('username'));
+			if ($realitzada == null) return $enquesta;
+		}
+		return null;
+	}
+	
 	protected function logEntry($user, $accio, $remoteaddr = null, $useragent = null, $extrainfo = null) {
 		$em = $this->getDoctrine()->getEntityManager();
 		$logentry = new EntityUserLog($user, $accio, $remoteaddr, $useragent, $extrainfo);
 		$em->persist($logentry);
-		$em->flush();
+		try {
+			$em->flush();
+		} catch (\Exception $e) {
+			/* No es pot diu que EM està tancat
+			$em = $this->getDoctrine()->getEntityManager();
+			$logentry->setUser("alexmazinho@gmail.com");
+			$logentry->setAccio("LOG ERROR");
+			$logentry->setExtrainfo($e->getMessage());
+			$em->persist($logentry);
+			$em->flush();
+			*/
+		}
 	}
 }

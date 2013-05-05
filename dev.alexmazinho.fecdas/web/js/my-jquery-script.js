@@ -3,6 +3,49 @@
  * En la definició d'arrasy etc, l'últim no pot acabar amb coma */
 
 (function($){
+	
+	
+	var matched, browser;
+
+	// Use of jQuery.browser is frowned upon.
+	// More details: http://api.jquery.com/jQuery.browser
+	// jQuery.uaMatch maintained for back-compat
+	jQuery.uaMatch = function( ua ) {
+	    ua = ua.toLowerCase();
+
+	    var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+	        /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+	        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+	        /(msie) ([\w.]+)/.exec( ua ) ||
+	        ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+	        [];
+
+	    return {
+	        browser: match[ 1 ] || "",
+	        version: match[ 2 ] || "0"
+	    };
+	};
+
+	matched = jQuery.uaMatch( navigator.userAgent );
+	browser = {};
+
+	if ( matched.browser ) {
+	    browser[ matched.browser ] = true;
+	    browser.version = matched.version;
+	}
+
+	// Chrome is Webkit, but Webkit is also Safari.
+	if ( browser.chrome ) {
+	    browser.webkit = true;
+	} else if ( browser.webkit ) {
+	    browser.safari = true;
+	}
+
+	jQuery.browser = browser;
+	
+	
+	
+	/*************************************************** Utils *******************************************************/		
 	isValidEmailAddress = function(emailAddress) {
 	    var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
 	    // alert( pattern.test(emailAddress) );
@@ -38,6 +81,134 @@
 		} 
 		return true;
 	};
+	
+	setMenuActive = function(menuid) {
+		$('#'+menuid).addClass("left-menu-active");
+	};
+	
+	
+	showModalDiv = function(id) {
+        //Get the window height and width
+        var winH = $(window).height();
+        var winW = $(window).width();
+               
+        //Set the popup window to center
+        //$(id).css('top',  winH/2-$(id).height()/2);
+        $(id).css('top',  30);
+        $(id).css('left', winW/2-$(id).width()/2);
+     
+        //transition effect
+        $(id).fadeIn(2000);
+	};
+	
+	helpBubbles = function(t, ht) {
+		//create a bubble popup for each DOM element
+		//with class attribute as "button"
+		$(t).CreateBubblePopup({
+ 			themePath : '/css/jquerybubblepopup-themes',	 
+ 			themeName : 'all-orange',           
+ 			position: 'right',   
+         	innerHtml: 	ht
+		});
+	};
+	
+	formFocus = function() {
+		/*$("form.appform input, form.appform textarea, #loginbox form input")
+			.not('input[type=button], input[type=hidden]')*/
+		$(".forminput-inside")
+		.bind("focus.labelFx", function(){
+			$(this).prev().hide();
+		})
+		.bind("blur.labelFx", function(){
+			/*if ($(this).val().length == 0) {
+				$(this).prev().show();
+			} else {
+				$(this).prev().hide();
+			}*/
+			$(this).prev()[!this.value ? "show" : "hide"]();
+		})
+		.trigger("blur.labelFx");
+		$(".forminput-inside.ui-autocomplete-input")
+		.bind("focus.labelFx", function(){
+			$(this).prev().prev().hide();
+		})
+		.bind("blur.labelFx", function(){
+			$(this).prev().prev()[!this.value ? "show" : "hide"]();
+		})
+		.trigger("blur.labelFx");
+	};
+	
+	actionsModalOverlay = function() {
+	    //if close button is clicked
+	    $('.finestra-overlay .close').click(function (e) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	        $('.mask, .finestra-overlay').hide();
+	        $('finestra-overlay').html('');
+	    });    
+	     
+	    //if mask is clicked
+	    $('.mask').click(function () {
+	        $(this).hide();
+	        $('.finestra-overlay').hide();
+	        $('finestra-overlay').html('');
+	    });       
+		
+		$('.form-button-cancel').click(function (e) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	        $('.mask, .finestra-overlay').hide();
+	        $('finestra-overlay').html('');
+	    });   
+		
+		$('.modalform').submit( function(){
+		  // Send the form via Ajax
+			return false;
+		});
+		/*
+		 * Disable enter on form */
+		$(".modalform").keypress(function(e) {
+	        if (e.which == 13) {
+	        	if ($("form :submit").is(":focus")) return true;
+	        	if ($("form :textarea").is(":focus")) return true;
+	            return false;
+	        }
+	    });
+	};
+	
+	/*****************************************************************************************************************/
+	
+	/*************************************************** Menu ********************************************************/
+	
+	menuAdmClick = function() {
+		$( "#menu-adm" ).click(function(e) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+
+	        if ($('.menu-adm-item').is(':visible')) {
+	        	if ($.browser.msie) $('.menu-adm-item').hide(); 
+		    	else $('.menu-adm-item').slideUp('fast');
+
+	        	$(this).removeClass("left-menu-active");
+
+	        	$(this).find('.menu-icon').addClass('ui-icon-triangle-1-e'); /* East*/
+	        	$(this).find('.menu-icon').removeClass('ui-icon-triangle-1-s');
+	        	
+	        } else {
+	        	if ($.browser.msie) $('.menu-adm-item').show(); 
+		    	else $('.menu-adm-item').slideDown('fast');
+		        
+	        	$(this).addClass("left-menu-active");
+
+	        	$(this).find('.menu-icon').addClass('ui-icon-triangle-1-s');
+	        	$(this).find('.menu-icon').removeClass('ui-icon-triangle-1-e');
+		    }
+		});
+	};
+	
+	/*****************************************************************************************************************/
+	
+	/*************************************************** Home ********************************************************/	
 	
 	fluxhomepage = function()  {
 		//if(flux.browser.supportsTransitions) {
@@ -77,43 +248,8 @@
 	   	}
 	};
 	
+	/*****************************************************************************************************************/
 	
-	helpBubbles = function(t, ht) {
-		//create a bubble popup for each DOM element
-		//with class attribute as "button"
-		$(t).CreateBubblePopup({
- 			themePath : '/css/jquerybubblepopup-themes',	 
- 			themeName : 'all-orange',           
- 			position: 'right',   
-         	innerHtml: 	ht
-		});
-	};
-	
-	formFocus = function() {
-		/*$("form.appform input, form.appform textarea, #loginbox form input")
-			.not('input[type=button], input[type=hidden]')*/
-		$(".forminput-inside")
-		.bind("focus.labelFx", function(){
-			$(this).prev().hide();
-		})
-		.bind("blur.labelFx", function(){
-			/*if ($(this).val().length == 0) {
-				$(this).prev().show();
-			} else {
-				$(this).prev().hide();
-			}*/
-			$(this).prev()[!this.value ? "show" : "hide"]();
-		})
-		.trigger("blur.labelFx");
-		$(".forminput-inside.ui-autocomplete-input")
-		.bind("focus.labelFx", function(){
-			$(this).prev().prev().hide();
-		})
-		.bind("blur.labelFx", function(){
-			$(this).prev().prev()[!this.value ? "show" : "hide"]();
-		})
-		.trigger("blur.labelFx");
-	};
 	
 	reloadParte = function() {
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
@@ -200,21 +336,23 @@
 			var maskHeight = $(document).height();
 	        var maskWidth = $(window).width();
 	        //Set height and width to mask to fill up the whole screen
-	        $('#mask').css({'width':maskWidth,'height':maskHeight});
+	        $('.mask').css({'width':maskWidth,'height':maskHeight});
 	        //transition effect    
-	        $('#mask').fadeTo("slow",0.6); 
+	        $('.mask').fadeTo("slow",0.6); 
 	        
-			var url = $("#formpersona").attr("action");
+	        var url = $(this).attr("href");
 			var params = { 	persona: id.val() }
+
 			$.get(url,	params,
 			function(data, textStatus) {
-				$("#formllicencia-overlay").html(data);
+				$("#edicio-persona").html(data);
 				// Reload DOM events. Add handlers again. Only inside reloaded divs
 				formFocus();
 				autocompleters();
-				actionspersonaOverlay();
+				actionsModalOverlay();
+				actionsPersonaForm();
 				// Show Div
-				showModalDiv();
+				showModalDiv('#edicio-persona');
 				helpBubbles("#help-dni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
 						<p align="left">En cas de menors que no disposin de DNI</p>\
 						<p align="left">cal afegir el prèfix \'P\' o \'M\' al DNI del</p>\
@@ -225,40 +363,15 @@
 	    });
 	};
 	
-	showModalDiv = function() {
-		/*	Show mask before
-		//Get the screen height and width
-		var maskHeight = $(document).height();
-        var maskWidth = $(window).width();
-        
-        //Set height and width to mask to fill up the whole screen
-        $('#mask').css({'width':maskWidth,'height':maskHeight});
-         
-        //transition effect    
-        $('#mask').fadeTo("slow",0.6); */
-     
-        //Get the window height and width
-        var winH = $(window).height();
-        var winW = $(window).width();
-               
-        //Set the popup window to center
-        //$(id).css('top',  winH/2-$(id).height()/2);
-        $('#overpersona').css('top',  30);
-        $('#overpersona').css('left', winW/2-$('#overpersona').width()/2);
-     
-        //transition effect
-        $('#overpersona').fadeIn(2000);
-	};
-	
 	autocompleters = function() {
-		var route = $("#formllicencia-openmodal").attr("href");
+		var route = $("#formpersona-autocompleters").attr("href");
 		var $configs = {
 			source: function(request, response) {
 				var $data = {term: request.term};
 				$.getJSON(route, $data, response);
 			},
 			position: { my : "left bottom", at: "left top", collision: "none" },
-			appendTo: "#overpersona",
+			appendTo: "#edicio-persona",
 			select: function(event, ui){
 				$("#parte_persona_addrpob").val(ui.item.municipi);
 				$("#parte_persona_addrcp").val(ui.item.cp);	
@@ -273,30 +386,7 @@
 		$('#parte_persona_addrpob').autocomplete($configs);
 	};
 	
-	
-	actionspersonaOverlay = function() {
-	    //if close button is clicked
-	    $('.personform_overlay .close').click(function (e) {
-	        //Cancel the link behavior
-	        e.preventDefault();
-	        $('#mask, .personform_overlay').hide();
-	        $("#formllicencia-overlay").html("");
-	    });    
-	     
-	    //if mask is clicked
-	    $('#mask').click(function () {
-	        $(this).hide();
-	        $('.personform_overlay').hide();
-	        $("#formllicencia-overlay").html("");
-	    });       
-		
-		$('#formpersona-button-cancel').click(function (e) {
-	        //Cancel the link behavior
-	        e.preventDefault();
-	        $('#mask, .personform_overlay').hide();
-	        $("#formllicencia-overlay").html("");
-	    });   
-	
+	actionsPersonaForm = function() {
 		$("#dialog").dialog({
 			autoOpen: false,
 		    modal: true
@@ -364,27 +454,11 @@
 	        $("#dialog").dialog("open");
 	        
 	    });   
-		
-		$('#formpersona').submit( function(){
-		  // Send the form via Ajax
-			return false;
-		});
-		/*
-		 * Disable enter on form */
-		$("#formpersona").keypress(function(e) {
-	        if (e.which == 13) {
-	        	if ($("#formpersona-button-save").is(":focus")) return true;
-	        	if ($("#formpersona-button-remove").is(":focus")) return true;
-	        	if ($("#formpersona-button-cancel").is(":focus")) return true;
-	            return false;
-	        }
-	    });
-		
 	};
 	
 	submitPerson = function(action) {
 		
-		$('.personform_overlay').hide();
+		$('#edicio-persona').hide();
 		
 		var url = $('#formpersona').attr("action");
 		var params = $('#formpersona').serializeArray();
@@ -436,13 +510,13 @@
 			};
 
 			if (error == true) {
-				$('.personform_overlay').show();
+				$('#edicio-persona').show();
 				return false;
 			}
 			
-			$('#mask').hide();
+			$('.mask').hide();
 			
-			$("#formllicencia-overlay").html("");
+			$("#edicio-persona").html("");
 			
 			loadLlicenciaData(data);
 		});
@@ -897,6 +971,8 @@
 	};
 	
 	
+	/*************************************************** Clubs *******************************************************/	
+	
 	reloadClub = function() {
 		/* canvi de club */
 		$('#club_clubs').change(function() {
@@ -1084,7 +1160,8 @@
 	    }
 	    return password;
 	};
-
+	/*****************************************************************************************************************/
+	
 	
 	/************ Pedent ************************
 	

@@ -159,3 +159,49 @@ FecdasPartesBundle_checkrenovacio:
     defaults: { _controller: "FecdasPartesBundle:Cron:checkrenovacio" }
     requirements:
         _method:  GET
+
+FecdasPartesBundle_enquestes:
+    pattern:  /enquestes
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:enquestes" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_enquesta:
+    pattern:  /enquesta
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:enquesta" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_estadistiques:
+    pattern:  /estadistiques
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:estadistiques" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_estadistiquestab1:
+    pattern:  /estadistiquestab1
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:estadistiquestab1" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_estadistiquestab2:
+    pattern:  /estadistiquestab2
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:estadistiquestab2" }
+    requirements:
+        _method:  GET
+
+
+FecdasPartesBundle_enquestausuari:
+    pattern:  /enquestausuari
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:enquestausuari" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_enquestaresultats:
+    pattern:  /enquestaresultats
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:enquestaresultats" }
+    requirements:
+        _method:  GET
+
+        
+        

@@ -1,0 +1,31 @@
+	<p>Representació de l'evolució d'una pregunta amb respostes quantitatives en les diferents enquestes realitzades </p>
+
+	<div id="resultats-valors" class="resultats-hidden">{{ valors }}</div>
+	<div id="resultats-dades-evolucio" class="resultats-hidden">{{ dades }}</div>
+	<div id="resultats-mesures" class="resultats-hidden">{{ mesures }}</div>
+	
+	<div class="form-row clearfix">
+		<div class="bloc-preguntes">
+			<div id="list-header" class="clearfix">
+				<div class="col-listheader">Seleccionar pregunta ...</div> 
+			</div>
+			<ul class="connectedSortable list-variableheight">
+			{% for pregunta in preguntes %}
+				<li id="pregunta_{{ pregunta.id }}" class="list-variableheight-detall clearfix">
+	  				<div class="pregunta-id">{{ pregunta.id }}</div>
+	  				<div class="pregunta-enunciat">{{ pregunta.enunciat }}</div>
+  				</li>
+		   	{% endfor %}
+			</ul>
+		</div>
+		<div id="resultats-plot-evolucio"></div>
+    </div>
+    
+<script type="text/javascript">
+
+$(document).ready(function(){
+	createPlotEvolucio(); 
+});
+
+</script>
+

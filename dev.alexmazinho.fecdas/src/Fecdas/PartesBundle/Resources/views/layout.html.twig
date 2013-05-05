@@ -36,6 +36,9 @@
 		<div id="block-useractions">
 			<div><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
 			<div><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
+			{% if enquestausuari is defined and enquestausuari == true %}
+			<div><a class="featured enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari') }}">Enquesta</a></div>
+			{% endif %}
 			<div><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
 		</div>
 	{% endif %}
@@ -45,18 +48,20 @@
 {% block sidebar %}
 	<nav>
 		<ul class="navigation">
-			<li><a href="{{ path('FecdasPartesBundle_homepage') }}">Pàgina principal</a></li>
+			<li id="menu-home"><a href="{{ path('FecdasPartesBundle_homepage') }}">Pàgina principal</a></li>
 			{% if authenticated == false  %}
-			<li><a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió</a></li>
-			<li><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></li>
+			<li id="menu-login"><a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió</a></li>
+			<li id="menu-contact"><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></li>
 			{% else %}
 				{% if admin == true  %}
-				<li><a href="{{ path('FecdasPartesBundle_recents') }}">Administració de llistes</a></li>
+				<li id="menu-adm"><a href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Administració</a></li>
+				<li id="menu-admllistes" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_recents') }}">Llistes</a></li>
+				<li id="menu-admenquestes" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_enquestes') }}">Enquestes</a></li>
 				{% endif %}
-				<li><a href="{{ path('FecdasPartesBundle_partes') }}">Tramitació de llistes</a></li>
-				<li><a href="{{ path('FecdasPartesBundle_assegurats') }}">Assegurats</a></li>
+				<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}">Tramitació de llistes</a></li>
+				<li id="menu-assegurats"><a href="{{ path('FecdasPartesBundle_assegurats') }}">Assegurats</a></li>
 				{% if busseig == true  %}
-				<li><a href="{{ path('FecdasPartesBundle_busseig') }}">Consulta de llicències amb el DNI</a></li>
+				<li id="menu-busseig"><a href="{{ path('FecdasPartesBundle_busseig') }}">Consulta de llicències amb el DNI</a></li>
 				{% endif %}
 			{% endif %}
 		</ul>
@@ -81,6 +86,10 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		formFocus();
+
+		showEnquestaClick();
+
+		menuAdmClick();
 	});
 	
 	$('#block-useractions')

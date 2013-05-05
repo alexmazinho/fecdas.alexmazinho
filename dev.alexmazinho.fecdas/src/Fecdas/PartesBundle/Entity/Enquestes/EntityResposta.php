@@ -34,20 +34,132 @@ class EntityResposta {
 	/**
 	 * @ORM\Column(type="text", nullable=true)
 	 */
-	protected $repostatxt;
+	protected $respostatxt;
 
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $repostabool;
+	protected $respostabool;
 
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
 	 */
-	protected $repostarang;
+	protected $respostarang;
 	
 	
-	public function __construct($user, $enquesta) {
-		$this->repostabool = true;
+	public function __construct($realitzacio, $pregunta) {
+		$this->realitzacio = $realitzacio;
+		$this->pregunta = $pregunta;
+		$this->respostabool = true;
 	}
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set respostatxt
+     *
+     * @param text $respostatxt
+     */
+    public function setRespostatxt($respostatxt)
+    {
+        $this->respostatxt = $respostatxt;
+    }
+
+    /**
+     * Get respostatxt
+     *
+     * @return text 
+     */
+    public function getRespostatxt()
+    {
+        return $this->respostatxt;
+    }
+
+    /**
+     * Set respostabool
+     *
+     * @param boolean $respostabool
+     */
+    public function setRespostabool($respostabool)
+    {
+        $this->respostabool = $respostabool;
+    }
+
+    /**
+     * Get respostabool
+     *
+     * @return boolean 
+     */
+    public function getRespostabool()
+    {
+        return $this->respostabool;
+    }
+
+    /**
+     * Set respostarang
+     *
+     * @param integer $respostarang
+     */
+    public function setRespostarang($respostarang)
+    {
+        $this->respostarang = $respostarang;
+    }
+
+    /**
+     * Get respostarang
+     *
+     * @return integer 
+     */
+    public function getRespostarang()
+    {
+        return $this->respostarang;
+    }
+
+    /**
+     * Set realitzacio
+     *
+     * @param Fecdas\PartesBundle\Entity\Enquestes\EntityRealitzacio $realitzacio
+     */
+    public function setRealitzacio(\Fecdas\PartesBundle\Entity\Enquestes\EntityRealitzacio $realitzacio = null)
+    {
+        $this->realitzacio = $realitzacio;
+    }
+
+    /**
+     * Get realitzacio
+     *
+     * @return Fecdas\PartesBundle\Entity\Enquestes\EntityRealitzacio 
+     */
+    public function getRealitzacio()
+    {
+        return $this->realitzacio;
+    }
+
+    /**
+     * Set pregunta
+     *
+     * @param Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $pregunta
+     */
+    public function setPregunta(\Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $pregunta)
+    {
+        $this->pregunta = $pregunta;
+    }
+
+    /**
+     * Get pregunta
+     *
+     * @return Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta 
+     */
+    public function getPregunta()
+    {
+        return $this->pregunta;
+    }
 }

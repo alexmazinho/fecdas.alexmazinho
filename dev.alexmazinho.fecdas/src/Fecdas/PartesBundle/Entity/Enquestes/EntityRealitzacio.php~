@@ -1,0 +1,191 @@
+<?php
+namespace Fecdas\PartesBundle\Entity\Enquestes;
+
+use Doctrine\ORM\Mapping as ORM;
+use Fecdas\PartesBundle\Entity\EntityUser;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="e_realitzacions")
+ * 
+ * @author alex
+ *
+ */
+class EntityRealitzacio {
+	
+	/**
+	 * @ORM\Id
+	 * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+	 */
+	protected $id;	
+
+	/**
+	 * @ORM\ManyToOne(targetEntity="Fecdas\PartesBundle\Entity\EntityUser")
+	 * @ORM\JoinColumn(name="user", referencedColumnName="user")
+	 */
+	protected $user;	// Mail del club
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityEnquesta")
+	 * @ORM\JoinColumn(name="enquesta", referencedColumnName="id")
+	 */
+	protected $enquesta;
+	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $datadarreraccess;
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityPregunta")
+	 * @ORM\JoinColumn(name="darrerapregunta", referencedColumnName="id")
+	 */
+	protected $darrerapregunta;
+	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $datafinal;
+	
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityResposta", mappedBy="enquesta")
+	 */
+	protected $respostes;	// Owning side of the relationship
+	
+	public function __construct($user, $enquesta) {
+		$this->user = $user;
+		$this->enquesta = $enquesta;
+		$this->respostes = new \Doctrine\Common\Collections\ArrayCollection();
+	}
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set datadarreraccess
+     *
+     * @param datetime $datadarreraccess
+     */
+    public function setDatadarreraccess($datadarreraccess)
+    {
+        $this->datadarreraccess = $datadarreraccess;
+    }
+
+    /**
+     * Get datadarreraccess
+     *
+     * @return datetime 
+     */
+    public function getDatadarreraccess()
+    {
+        return $this->datadarreraccess;
+    }
+
+    /**
+     * Set datafinal
+     *
+     * @param datetime $datafinal
+     */
+    public function setDatafinal($datafinal)
+    {
+        $this->datafinal = $datafinal;
+    }
+
+    /**
+     * Get datafinal
+     *
+     * @return datetime 
+     */
+    public function getDatafinal()
+    {
+        return $this->datafinal;
+    }
+
+    /**
+     * Set user
+     *
+     * @param Fecdas\PartesBundle\Entity\EntityUser $user
+     */
+    public function setUser(\Fecdas\PartesBundle\Entity\EntityUser $user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * Get user
+     *
+     * @return Fecdas\PartesBundle\Entity\EntityUser 
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set enquesta
+     *
+     * @param Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta $enquesta
+     */
+    public function setEnquesta(\Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta $enquesta)
+    {
+        $this->enquesta = $enquesta;
+    }
+
+    /**
+     * Get enquesta
+     *
+     * @return Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta 
+     */
+    public function getEnquesta()
+    {
+        return $this->enquesta;
+    }
+
+    /**
+     * Set darrerapregunta
+     *
+     * @param Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $darrerapregunta
+     */
+    public function setDarrerapregunta(\Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $darrerapregunta)
+    {
+        $this->darrerapregunta = $darrerapregunta;
+    }
+
+    /**
+     * Get darrerapregunta
+     *
+     * @return Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta 
+     */
+    public function getDarrerapregunta()
+    {
+        return $this->darrerapregunta;
+    }
+
+    /**
+     * Add respostes
+     *
+     * @param Fecdas\PartesBundle\Entity\Enquestes\EntityResposta $respostes
+     */
+    public function addEntityResposta(\Fecdas\PartesBundle\Entity\Enquestes\EntityResposta $respostes)
+    {
+        $this->respostes[] = $respostes;
+    }
+
+    /**
+     * Get respostes
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getRespostes()
+    {
+        return $this->respostes;
+    }
+}

@@ -4,7 +4,7 @@
     </div>
 {% endif %}
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
-	<div class="formuserclub-row clearfix">
+	<div class="form-row clearfix">
 		<div id="formuserclub-user">
 			{{ form_label(userclub.user, 'Usuari*', { 'attr': {'class': 'formlabel-outside'} }) }}
 			{{ form_widget(userclub.user, { 'attr': {'class': 'formfield-outside'}}) }}
@@ -14,7 +14,7 @@
 			{{ form_widget(userclub.role, { 'attr': {'class': 'formfield-outside'}}) }}
 		</div>
 	</div>
-	<div class="formuserclub-row clearfix">
+	<div class="form-row clearfix">
 		<div id="formuserclub-passwords">
 			<div id="formuserclub-pwd">
 				{{ form_label(userclub.pwd.first, 'Nova paraula clau*', { 'attr': {'class': 'formlabel-outside'} }) }}

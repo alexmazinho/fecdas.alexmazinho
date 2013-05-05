@@ -20,9 +20,10 @@
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
         {% block javascriptshead %}
         	<script src="{{ asset('js/jquery.min.js') }}" type="text/javascript"></script>
-			<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>        	
+			<script src="{{ asset('js/jquery-ui-min.js') }}" type="text/javascript"></script>        	
         	<script src="{{ asset('js/jquery-bubble-popup-v3.min.js') }}" type="text/javascript"></script>
         	<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>
+        	<script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
         {% endblock %}
         <script type="text/javascript">
 		  var _gaq = _gaq || [];
@@ -43,7 +44,7 @@
                 <div class="title">{% block fecdas_title %}{% endblock %}</div>
                 <div class="login">{% block fecdas_login %} {% endblock %}</div>
             </header>
-
+			
             <section id="left-menu">
             {% block sidebar %}{% endblock %}
             </section>
@@ -68,10 +69,12 @@
 			</noscript>
 
             <section id="main-col">
-            {% block body %}{% endblock %}
-            <div id="dialog" title="Confirmation Required" style="display: none"></div>
-            </section>
-
+           		{% block body %}{% endblock %}
+	            <div id="dialog" title="Confirmation Required" style="display: none"></div>
+    			<div id="enquesta" class="finestra-overlay"></div>
+    			<div class="mask"><img class="mask-progress" src="/images/icon_progress.gif"></div>
+    		</section>
+ 
             <div id="browser" style="display: none;"></div>
             <div id="footer">
                 {% block footer %}
@@ -79,8 +82,7 @@
                 		<div style="float: left;">Powered by<br>Symfony2 </div>
                 		<div><img src="{{ asset('images/sf-logo.png') }}"/></div>
                 	</div>
-                	<div class="fecdas-footer"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyrigth 2012</p>
-                    	<p>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
+                	<div class="fecdas-footer"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyrigth 2012<br/>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
                     </div>
                     <div class="created-by">
 					creat per <br/>
@@ -88,6 +90,7 @@
 					</div>
                 {% endblock %}
             </div>
+           
         </section>
 
         <script type="text/javascript">

@@ -142,6 +142,8 @@ function tpv() {
 }
 
 $(document).ready(function() {
+	setMenuActive("menu-partes");
+	
     $('#formpayment').submit(function() {
     	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
         this.target = 'tpv';

@@ -12,7 +12,7 @@
 		{% if admin == true %} 
 		<div id="formclub-admin">
 		
-		<div class="formclub-row clearfix" {% if club.codi is null %} style="display:none" {% endif %}>
+		<div class="form-row clearfix" {% if club.codi is null %} style="display:none" {% endif %}>
 			<div id="formclub-clubs">
 				<label class="formlabel-outside required">Seleccionar club</label>
 				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
@@ -25,7 +25,7 @@
 				</a>
 			</div>
 		</div>
-		<div class="formclub-row clearfix">	
+		<div class="form-row clearfix">	
 			<div id="formclub-codishow">
 				{{ form_label(form.codishow, 'Codi', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.codishow, { 'attr': {'class': 'formfield-outside'} }) }}
@@ -48,7 +48,7 @@
 		{{ form_widget(form.codi) }}
 		<label class="formlabel-outside required">Dades del club</label>
 		<hr>
-		<div class="formclub-row clearfix">
+		<div class="form-row clearfix">
 			<div id="formclub-nom">
 				{{ form_label(form.nom, 'Nom*', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.nom, { 'attr': {'class': 'formfield-outside'} }) }}
@@ -95,7 +95,7 @@
 			</div>
 		</div>
          
-        <div class="formclub-row clearfix">
+        <div class="form-row clearfix">
         	<div id="formclub-desarclub" class="textaccio">
 				<a id="formclub-save" href="#">
 				Desar dades

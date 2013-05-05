@@ -72,8 +72,11 @@ class SecurityController extends BaseController
     					$this->get('session')->set('username', $form->getData()->getUser());
     					$this->get('session')->set('remote_addr', $remote_addr);
 
-    					if ($user->getForceupdate() == true) {
-    						return $this->redirect($this->generateUrl('FecdasPartesBundle_user')); 
+    					/* Comprovar enquestes pendents */
+    					$enquestapendent = $this->getActiveEnquesta();
+    					if ($enquestapendent != null) {
+    						$this->get('session')->set('enquestapendent', $enquestapendent->getId());
+    						$this->get('session')->setFlash('sms-notice', 'Hi ha una enquesta activada pendent de contestar');
     					}
     					
     					$em = $this->getDoctrine()->getEntityManager();
@@ -89,7 +92,18 @@ class SecurityController extends BaseController
     					$this->logEntry($this->get('session')->get('username'), 'LOGIN',
     							$this->get('session')->get('remote_addr'),
     							$this->getRequest()->server->get('HTTP_USER_AGENT'));
-    						
+
+    					if ($this->get('session')->has('url_request')) {
+    						/* Comprovar petició url abans de login. Exemple mail renovacions*/
+    						$url = $this->get('session')->get('url_request');
+    						$this->get('session')->remove('url_request');
+    						return $this->redirect($url);
+    					}
+
+    					if ($user->getForceupdate() == true) {
+    						return $this->redirect($this->generateUrl('FecdasPartesBundle_user'));
+    					}
+    					
     					return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
     				}
     			}

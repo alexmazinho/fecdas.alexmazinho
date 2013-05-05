@@ -25,7 +25,8 @@ use Fecdas\PartesBundle\Entity\EntityClub;
 class PageController extends BaseController {
 	public function indexAction() {
 		return $this->render('FecdasPartesBundle:Page:index.html.twig',
-				array('admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+				array('admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
+						'busseig' => $this->isCurrentBusseig(), 'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
 	public function contactAction() {
@@ -418,8 +419,12 @@ class PageController extends BaseController {
 	public function renovarAction() {
 		$this->get('session')->clearFlashes();
 		$request = $this->getRequest();
-		if ($this->isAuthenticated() != true)
+		if ($this->isAuthenticated() != true) {
+			// keep url. Redirect after login
+			$url_request = $this->getRequest()->server->get('REQUEST_URI');
+			$this->get('session')->set('url_request', $url_request);
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		}
 		
 		/* Desactivar funcionalitat temporal */
 		/*
@@ -1163,7 +1168,7 @@ class PageController extends BaseController {
 		$options['provincies'] = $this->getProvincies();
 		$options['comarques'] = $this->getComarques();
 		$options['nacions'] = $this->getNacions();
-
+		
 		if ($request->getMethod() == 'POST') {
 			$p = $request->request->get('persona');
 
@@ -1286,10 +1291,11 @@ class PageController extends BaseController {
 			$response = $this->forward('FecdasPartesBundle:Page:llicencia');
 			return $response;
 		}
-
+		
 		if ($request->isXmlHttpRequest()) {
 			// Reload form persona
 			$persona = new EntityPersona($this->getCurrentDate());
+			
 			if ($request->query->has('persona')) {
 				if ($request->query->get('persona') != "") { // Select diferent person
 					$persona = $this->getDoctrine()
@@ -1302,9 +1308,9 @@ class PageController extends BaseController {
 					$persona->setAddrnacionalitat("ESP");
 				}
 			}
-
+			
 			$formpersona = $this->createForm(new FormPersona($options), $persona);
-
+			
 			return $this->render('FecdasPartesBundle:Page:persona.html.twig',
 					array('formpersona' => $formpersona->createView(),));
 		}

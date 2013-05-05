@@ -13,12 +13,13 @@ input[type="submit"], button  {
    text-shadow: rgba(0,0,0,.4) 0 1px 0;
    text-decoration: none;
    vertical-align: middle;*/
+    background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;
     
-    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#DDDDDD));
-   /*	background: -webkit-linear-gradient(top, #FFFFFF, #DDDDDD);*/
+    /*background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#DDDDDD));
+   	background: -webkit-linear-gradient(top, #FFFFFF, #DDDDDD);
    	background: -moz-linear-gradient(top, #FFFFFF, #DDDDDD);
-   	/*background: -ms-linear-gradient(top, #FFFFFF, #DDDDDD);*/
-   	/*background: -o-linear-gradient(top, #FFFFFF, #DDDDDD);*/
+   	background: -ms-linear-gradient(top, #FFFFFF, #DDDDDD);
+   	background: -o-linear-gradient(top, #FFFFFF, #DDDDDD);*/
    	-webkit-border-radius: 5px;
    	/*-moz-border-radius: 5px;*/
     border-radius: 5px;
@@ -54,7 +55,6 @@ select {
 	background: #EEEEEE;
 	color: #555555;
 	-webkit-border-radius: 5px;
-   	-moz-border-radius: 5px;
     border-radius: 5px;
     border: 1px solid #AAA;
     margin: 0 2px 0 2px;
@@ -124,20 +124,9 @@ div.formfield-outside {
     border-radius: 5px 5px 5px 5px;
 }
 
-#main-col #login {
-	margin-top:70px; 
-	margin-left:30px;
-}
-
-#contact {
-	margin-top:30px; 
-	margin-left:30px;
-}
-
 #login_user, #login_pwd {
 	width: 250px;
 }
-
 
 .clearfix:after {
     clear: both;
@@ -192,15 +181,15 @@ li.data-detall-dobleespai {
 }
 
 #header-asseguratid { display:none}
-#header-asseguratdni {	width: 10%; }
+#header-asseguratdni {	width: 11%; text-align: center; }
 #header-asseguratnom {	width: 12%; text-align: left;}
 #header-asseguratcognoms {	width: 20%;text-align: left;}
 #header-asseguratvigencia {	width: 16%; }
-#header-assegurattipusdesc { width: 30%;}
+#header-assegurattipusdesc { width: 30%;text-align: left;}
 #header-asseguratactions {}
 
 .assegurat-id {	display:none}
-.assegurat-dni {	width: 11%; text-align: left; }
+.assegurat-dni {	width: 11%; text-align: center; }
 .assegurat-nom {	width: 12%; text-align: left; }
 .assegurat-cognoms {	width: 20%; text-align:left;}
 .assegurat-vigencia {	width: 16%; text-align:center;}
@@ -227,13 +216,13 @@ input#form_dni {
     border-width: 1px;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
     height: 29px;
-    line-height: 29px;
-    padding: 3px 6px;
+    /*line-height: 29px;*/
+    /*padding: 3px 8px;*/
     /*display: block;*/
     margin-bottom: 10px;
     display: inline-block;
     text-align: center;
-    width: 96%;
+    width: 98%;
 }
 
 .col-listheader {
@@ -241,6 +230,7 @@ input#form_dni {
     font-size: 13px;
     font-weight: 600;
     color: #2281CF;
+    padding: 8px 1px;
     /*color: #1240A0;*/
     text-decoration: none;
     cursor: pointer;
@@ -382,35 +372,29 @@ li.data-detall-fosc {
     width: 10%;
 }
 
-form.appform .formparte-row, 
-form.appform .formclub-row,
-form.appform .formuserclub-row,
-form.appform .formllicencia-checks,
-form.appform .formllicencia-row {
+.formllicencia-checks {
+	margin-bottom: 5px;	
+}
+
+.form-row {
+	width:100%;
 	margin-bottom: 5px;
 }
 
-.formparte-row, .formclub-row, .formuserclub-row {
-	width:100%
-}
-
-.formparte-row div,
-.formclub-row div,
-.formuserclub-row div {
+.form-row div {
 	float:left;
 	margin-right: 10px;
 	margin-bottom: 3px !important;
 }
 
-#formparte-buttons,
-#formrenovar-buttons {
+#buttons-top {
 	float:right;
 	margin-top: -20px;
 	margin-right: 20px;
 	height: 0;
 }
 
-#formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
+.button-top, #formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
 	float:left;
 	padding-left: 5px;
 }
@@ -422,7 +406,7 @@ form.appform .formllicencia-row {
 
 #header-parteid { display:none}
 #header-llicenciapersona {	width: 32%; text-align: left;}
-#header-llicenciapersonalong {	width: 38%; text-align: left;}
+#header-llicenciapersonalong {	width: 35%; text-align: left;}
 #header-llicenciacategoria {	width: 11%; text-align: center; }
 #header-llicenciacaducitat {	width: 12%; text-align: center; }
 #header-llicenciaactivitats {	width: 20%; text-align: center; }
@@ -430,20 +414,20 @@ form.appform .formllicencia-row {
 #header-llicenciapreu {	width: 6%; text-align: center; }
 #header-llicenciaenviarllicencia {	width: 5%; text-align: center; }
 #header-llicenciaenviarllicencia img {	
-	bottom: 3px;
+	bottom: 10px;
     position: relative;
 }
 #header-llicenciaactions {}
 
 .llicencia-id {	display:none}
 .llicencia-persona {	width: 32%; line-height: 10px; margin-top: -10px; }
-.llicencia-personalong {	width: 38%;  }
+.llicencia-personalong {	width: 35%;  }
 .llicencia-categoria {	width: 11%; text-align: center;}
 .llicencia-datacaducitat {	width: 12%; text-align: center;}
 .llicencia-activitats {	width: 20%; text-align: center; font-size: 9px; letter-spacing: 0; line-height: 10px; margin-top: -10px;}
 .llicencia-activitatslong {	width: 29%; text-align: center; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu {	width: 6%; text-align: right;}
-.llicencia-enviarllicencia {	width: 4%; text-align: center; letter-spacing:2px}
+.llicencia-enviarllicencia {	width: 7%; text-align: center; letter-spacing:2px}
 .llicencia-no {width: 6%; text-align: center; }
 .llicencia-actions {width: 4%; margin-top: -14px}
 .llicencia-actions a:hover img
@@ -735,59 +719,6 @@ select#parte_persona_addrnacionalitat {
 
 .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
 
-/* Z-index of #mask must lower than #boxes .window */
-#mask {
-  	position:absolute;
-  	left: 0;
-  	top: 0;
-  	z-index:10;
-  	background-color:#FFFFFF;
-  	display:none;
-}
-
-#mask-progress {
-	display: block;
-	margin-top: 350px;
-	margin-left: auto;
-    margin-right: auto;
-}
-   
-.personform_overlay {
-  	position:fixed;
-  	width:720px;
-  	height:440px;
-  	display:none;
-  	z-index:50;
-  
-	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
-   	-moz-box-shadow:0 0 90px 5px #000000;
-  	-webkit-box-shadow: 0 0 90px #000000;
-	border: 1px solid #81C6FF;
-    border-radius: 5px;
-  	-webkit-border-radius: 5px;
-  	-moz-border-radius: 5px;
-	background-color:#FFFFFF;
-	padding: 10px 10px 0;
-  
-  	/*background-color:#EEEEEE;
-   	border:1px solid #666;*/
-}
-
-html>body .personform_overlay {
-  	position:fixed;
-}
-
-/* close button positioned on upper right corner */
-.personform_overlay .close {
-/*    background-image:url("../images/close.png");*/
-    position:absolute;
-    right:-15px;
-    top:-15px;
-    cursor:pointer;
-    height:35px;
-    width:35px;
-}
-
 #fact-header {
 	display: inline-block;
 	width: 98%;
@@ -911,6 +842,218 @@ html>body .personform_overlay {
 	text-align:center;
 }
 
+/************************************************* Enquestes *****************************************************/
+
+
+#header-enquestaid { display:none; }
+#header-enquestadesc { width: 25%;text-align:left;}
+#header-enquestainici {	width: 14%; text-align: center;}
+#header-enquestafinal {	width: 14%; text-align: center;}
+#header-enquestaenviaments {width: 32%; text-align: center;}
+#header-enquestaactions {}
+
+.enquesta-id { display:none; float:left;}
+.enquesta-desc { width: 25%; text-align:left; line-height: 12px; float:left;}
+.enquesta-inici { width: 14%; text-align:center; float:left;}
+.enquesta-final { width: 14%; text-align:center; float:left;}
+.enquesta-enviaments-total { width: 12%; text-align:center; float:left;}
+.enquesta-enviaments-percent { display:none; float:left;}
+.enquesta-enviaments-progressbar { width: 15%; text-align:center; height: 1em; float:left; }
+.enquesta-enviaments-label { width: 5%; text-align:center; float:left;}
+.enquesta-actions { width: 80px; text-align:left; margin-top: -14px; float:right; }
+.enquesta-actions a:hover img
+ { border: 1px solid #DDDDDD; background-color:#E7F2FB}
+
+#enquesta_descripcio {
+	width: 350px;
+	max-width: 500px;	
+	height: 100px;
+}
+
+#seleccio-preguntes {
+	width: 100%;
+	display: block;
+}
+
+.bloc-preguntes {
+	width: 48%;
+	float:left;
+	display: inline-block;
+}
+
+.bloc-preguntes-dreta {
+	float:right;
+}
+
+.bloc-preguntes .col-listheader,
+.bloc-preguntes .sms-footer   {
+	text-align: center;
+    width: 100%;
+}
+
+.pregunta-id {
+	width: 10%;
+	display: inline-block;
+}
+
+.pregunta-enunciat {
+	width: 85%;
+	display: inline-block;
+}
+
+.bloc-preguntes li { 
+	padding: 8px; 
+	width: 94%; 
+	/*background:url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;*/
+    cursor:move;
+    border-radius: 4px 4px 4px 4px;
+    margin-left: 0.4em;
+}
+
+.list-variableheight {
+	list-style-type: none; 
+	margin: 0; 
+	padding: 1px; 
+	margin-bottom: 10px; 
+	border: 1px solid #81C6FF; 
+	min-height: 40px; 
+	max-height: 350px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 98%;
+}
+
+.list-variableheight-detall {
+    border-bottom: 1px solid #D3D3D3;
+    color: #777777;
+    margin: 3px 0;
+    padding: 4px;
+    width: 100%;
+}
+
+.list-variableheight-detall img {
+	margin-top: 12px;
+    position: relative;
+}
+
+#enquesta {
+  	width:800px;
+  	height:600px;
+}
+
+#formenquesta-preguntes {
+  	/*width:90%;*/
+  	height:480px;
+  	overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid #EEEEEE;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.17);
+    padding: 10px;
+}
+
+.enquesta-row {
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+.enquesta-enunciat {
+	float: left;
+	width: 75%;
+}
+
+.enquesta-resposta {
+	float: right;
+	width: 20%;
+	text-align: center;
+}
+
+textarea.enquesta-resposta {
+	float: none;
+	max-width: 100%;
+    width: 99%;
+}
+
+#enquesta-stats {
+	display:none; 
+	width: 100%;"
+}
+
+#enquesta-plots {
+	margin: 0; 
+	margin-bottom: 10px; 
+	border: 1px solid #81C6FF; 
+	min-height: 40px; 
+	max-height: 500px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 25px;
+    width: 95%;
+}
+
+
+
+#enquesta-stats-accions {
+	position: relative;
+	top: -10px;
+}
+
+#enquesta-stats-accions div {
+	display: inline-block;
+}
+
+.resultat-pregunta-data, 
+.resultats-hidden {
+	display:none;
+}
+
+.resultat-pregunta-plot {
+	height: 130px;
+}
+
+.resultat-pregunta-text {
+	min-height: 130px;
+}
+
+.resultat-pregunta-text ul {
+	list-style: disc outside none;
+}
+
+.jqplot-title {
+	font-size: inherit !important;
+}
+
+#tabs {
+	width: 100%;
+	background: none repeat scroll 0 0 transparent;
+}
+
+#resultats-plot-global {
+	height: 450px;
+    padding: 25px;
+    width: 95%;
+}
+#ui-tabs-2 .bloc-preguntes {
+	width: 35%;
+	height: 450px;
+}
+
+#ui-tabs-2 .form-row div {
+    margin-bottom: 0 !important;
+    margin-right: 0;
+}
+
+#resultats-plot-evolucio {
+	float:right;	
+	width: 60%;
+	display: inline-block;
+	height: 450px;
+}
+
+/*****************************************************************************************************************/
+
+/********************************************* Partes recents ****************************************************/
+
 #formrecents-web label {
 	color: #555555;
 	padding-left: 10px;
@@ -942,9 +1085,11 @@ html>body .personform_overlay {
 .parterecents-actions a:hover img
  { border: 1px solid #DDDDDD; background-color:#E7F2FB}
 
+/*****************************************************************************************************************/
+
 
 #block-useractions {
-	z-index: 1; display:none; margin: 16px 16px 0; 
+	z-index: 1; display:none; margin: 26px 16px 0 2px;
   	/*max-width: 250px;
   	min-width: 165px; 
   	padding: 7px; font-family: arial; */
@@ -953,21 +1098,26 @@ html>body .personform_overlay {
     font-style: italic;
     text-decoration: none;
     float:left;
-    margin-left: 2px;
-    width: 260px;
-    
+    width: auto;
 }
 
 #block-useractions div {
 	/*-webkit-border-radius: 0 0 10px 10px;
    	-moz-border-radius: 0 0 10px 10px;*/
     border-radius: 0 0 10px 10px;
-	background-color:#436FC6;
+	background-color: #67A2CF;
     box-shadow: 0 10px 5px rgba(0, 0, 0, 0.17), 0 0 0 #000000 inset;
     padding: 6px 10px 10px;
     margin-left: 1px;
 	float:left;
 }
+
+#block-useractions .featured {
+	/*color: #FADA13;*/
+	color: #F0F2CA;
+	text-decoration: blink;
+}
+
 
 #block-useractions div:hover {
     padding-top: 10px;
@@ -977,4 +1127,56 @@ html>body .personform_overlay {
 #browsernotsupported {
 	margin: 70px 190px 90px;
 	color: #444444;
+}
+
+
+/* Z-index of #mask must lower than #boxes .window */
+.mask {
+  	position:absolute;
+  	left: 0;
+  	top: 0;
+  	z-index:200;
+  	background-color:#FFFFFF;
+  	display:none;
+}
+
+.mask-progress {
+	display: block;
+	margin-top: 350px;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+.finestra-overlay {
+  	position:fixed;
+  	width:720px;
+  	height:440px;
+  	display:none;
+  	z-index:300;
+  
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+   	-moz-box-shadow:0 0 90px 5px #000000;
+  	-webkit-box-shadow: 0 0 90px #000000;
+	border: 1px solid #81C6FF;
+    border-radius: 5px;
+  	-webkit-border-radius: 5px;
+	background-color:#FFFFFF;
+	padding: 10px 10px 0;
+  
+  	/*background-color:#EEEEEE;
+   	border:1px solid #666;*/
+}
+
+html>body .finestra-overlay {
+  	position:fixed;
+}
+
+/* close button positioned on upper right corner */
+.finestra-overlay .close {
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
 }

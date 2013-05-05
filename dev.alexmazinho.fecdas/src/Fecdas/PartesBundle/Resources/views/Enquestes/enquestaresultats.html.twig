@@ -1,0 +1,24 @@
+
+{% for resposta in respostes %}
+<div class="resultat-pregunta">
+	<div class="resultat-pregunta-enunciat">{{ loop.index }}. {{ resposta.pregunta.enunciat }}</div>
+	{% if resposta.pregunta.tipus == "RANG" or resposta.pregunta.tipus == "BOOL" %}
+	<div class="resultat-pregunta-data">{{ resposta.resultats }}</div>
+	<div id="resultat-pregunta-plot_{{ resposta.pregunta.id }}" class="resultat-pregunta-plot" ></div>
+	<br/>
+	{% else %}
+		<div class="resultat-pregunta-text" >
+		<ul>
+		{% for resultat in resposta.resultats %}
+			<li>{{ resultat }}</li>
+		{% else %}
+			<li>No hi ha cap resposta</li> 
+		{% endfor %}
+		<ul>
+		</div>
+	{% endif %}	
+</div>
+
+{% endfor %}
+
+

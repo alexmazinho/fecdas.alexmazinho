@@ -24,7 +24,7 @@ class EntityUserLog {
 	/**
 	 * @ORM\Column(type="string", length=50)
 	 * @ORM\ManyToOne(targetEntity="EntityUser")
-	 * @ORM\JoinColumn(name="user", referencedColumnName="user")
+	 * @ORM\JoinColumn(name="user", referencedColumnName="usuari")
 	 */
 	protected $user;	// Mail del club
 

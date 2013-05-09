@@ -124,11 +124,18 @@ FecdasPartesBundle_persona:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_ajaxclubsnoms:
+    pattern:  /ajaxclubsnoms
+    defaults: { _controller: "FecdasPartesBundle:Page:ajaxclubsnoms" }
+    requirements:
+        _method:  GET
+
 FecdasPartesBundle_ajaxpoblacions:
     pattern:  /ajaxpoblacions
     defaults: { _controller: "FecdasPartesBundle:Page:ajaxpoblacions" }
     requirements:
         _method:  GET
+
 
 FecdasPartesBundle_gettipuspartes:
     pattern:  /gettipuspartes

@@ -109,14 +109,14 @@
     </form>
 
     <div id="progressbar" style="display:none"><img src="/images/icon_progress.gif"></div>
-    <div id="edicio-llicencies">
+    <div id="edicio-llicencies" class="maxwidth-bloc">
 	    <form id="formllicencia" action="{{ path('FecdasPartesBundle_llicencia') }}" method="post" {{ form_enctype(form) }}  class="appform">
 			<div id="formparte-llicencia" class="parte-llicencia" style="display: none"></div>
 			{#  include "FecdasPartesBundle:Page:partellicencia.html.twig" #}
 		</form>	
 	</div>
     
-	<div id="llista-llicencies">
+	<div id="llista-llicencies" class="maxwidth-bloc">
 	{% include "FecdasPartesBundle:Page:partellistallicencies.html.twig" %}
 	</div> 
 	<div class="sms-footer">Per esborrar alguna llicència cal posar-se en contacte amb la Federació</div>
@@ -145,8 +145,12 @@ $(document).ready(function(){
 	partePagamentButton();
 	
 	showResumParteDetall();
-	
-	helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
+
+	if ($("#parte_tipus option").length == 1) {
+	/* Només si hi ha disponible més d'una llicència */
+		$("#help-tipusparte").hide();
+	} else {
+		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
 			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
 			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
 			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
@@ -157,16 +161,7 @@ $(document).ready(function(){
 			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
 			No habilitada per competició ni per fer cursos federats.</p>\
 			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
-	/*
-	helpBubbles("#help-tipusparte", '<p align="left"><b>Llicència Federativa Tipus A</b>: Anual fins a 31/12. Habilitada per competició</p>\
-	<p align="left"><b>Assegurança Federativa Tipus B</b>: Anual fins a 31/12. No habilitada per competició</p>\
-	<p align="left"><b>Llicència Federativa Tipus C</b>: Habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
-	<p align="left"><b>Llicència Federativa Reduïda Tipus A</b>: Darrer Qautrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
-	<p align="left"><b>Llicència Federativa Tipus E</b>: 365 dies a partir de l\'alta. Habilitada per competició</p>\
-	<p align="left"><b>Assegurança per un Dia Tipus D</b>: Assegurança per un dia. No habilitada per competició</p>');
-	
-	helpBubbles("#parte-resum-more-hide", '<p>Amaga el detall per activitats</p>');*/
-	
+	};	
 });
 
 </script>

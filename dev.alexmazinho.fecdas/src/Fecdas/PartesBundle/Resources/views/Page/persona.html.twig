@@ -48,10 +48,6 @@
 			<div><h3>Adreça</h3></div>
 			<div id="sms-mailpersona">* Indica l'adreça de correu per poder rebre notificacions de la Federeació</div>
 		</div>
-		<div id="formpersona-addradreca">
-			{{ form_label(formpersona.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'forminput-inside'} }) }}
-		</div>
 		<div id="formpersona-addrpob">
 			<label class="formlabel-inside required" for="parte_persona_addrpob">Població</label>
 			{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrpob' }) }}
@@ -59,6 +55,10 @@
 		<div id="formpersona-addrcp">
 			<label class="formlabel-inside required" for="parte_persona_addrcp">CP</label>
 			{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcp' }) }}
+		</div>
+		<div id="formpersona-addradreca">
+			{{ form_label(formpersona.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div>
 	</div> 
 	<div class="formpersona-row clearfix">

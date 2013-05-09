@@ -95,10 +95,16 @@ html>body #wrapper {
 #no-js { 
 	min-width: 628px;
 	/*width: 50%;*/ 
-	width: 80%;
+    width: 98%;
+    max-width: 1000px;
+	/*width: 80%;*/
 	padding:10px;
     padding-bottom:60px;   /* Height of the footer */
     height: 80%;
+}
+
+* html #main-col { /*max-width: 1000px;  max-height IE hack */
+   width: expression( this.scrollWidth > 999 ? "1000px" : "auto" ); /* sets max-width for IE */
 }
 
 #footer { 
@@ -182,16 +188,28 @@ a img {border: none; }
 	background: none repeat-x scroll 0 0 #F0F9FF;
 }
 
-.left-menu-active {
+.left-menu-active a {
 	/*text-decoration: none;
 	color: #2281CF;*/
 	background: none repeat-x scroll 0 0 #F0F9FF;
 }
 
-#left-menu .navigation span {
-	left: 0.3em;
+#left-menu .navigation a .menu-subitem {
+	left: 1.3em;
+}
+
+#left-menu .navigation a span {
+	left: 0.5em;
     margin-top: 3px;
     position: absolute;
+}
+
+#left-menu .navigation a .ui-icon-triangle-1-e {
+    display: none;
+}
+
+#left-menu .navigation a:hover .ui-icon-triangle-1-e {
+    display: inline;
 }
 
 #left-menu .navigation .menu-adm-item {

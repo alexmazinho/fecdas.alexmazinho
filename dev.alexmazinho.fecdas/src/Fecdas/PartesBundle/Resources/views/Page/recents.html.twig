@@ -21,9 +21,11 @@
 	{% endif %}
     
     <div id="list-forms">
-    	<form action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    	<form id="formrecents" action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    		{{ form_widget(form.codi)}}
       		<div id="formrecents-club" class="form-left">
-				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
+				{{ form_label(form.clubs, 'Cerca club', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside '} }) }}
 			</div> 
     		<div id="formrecents-estat" class="form-left">
 				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
@@ -36,10 +38,11 @@
 				<input type="submit" class="forminput-inside" value="Consulta" name="formrecents-button-search"/>
 			</div> 
 	   	</form>
+	   	<a id="formrecents-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
     </div>
     <!--  <div id="list-header" class="clearfix"> -->
     <br/>
-   	<div id="list-header">
+   	<div id="list-header"  >
    		<div id="header-parterecentsid" class="col-listheader">id</div>
    		<div id="header-parterecentsrel" class="col-listheader">Rel</div>
    		<div id="header-parterecentsdata" class="col-listheader">Alta</div>
@@ -66,7 +69,7 @@
    			<div class="parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} </div>
    			<div class="parterecents-pagweb">
 			{% if parte.datapagament is null %}
-				{% if parte.numfactura != -1 %} 	&nbsp;  {% else %} Pendent	 	
+					{% if parte.numfactura != -1 %} 	&nbsp;  {% else %} Pendent	 	
 				{% endif %}
 			{% else %}
    				{{ parte.numFactura }} -
@@ -85,6 +88,7 @@
    	{% else %}
         	<div class="sms-notice">Cap comunicació</div>
     {% endif %}
+    
 {% endblock %}
 
 {% block javascripts %}
@@ -94,8 +98,12 @@
 <script type="text/javascript">
 
 $(document).ready(function(){
-	setMenuActive("menu-adm");
+	setMenuActive("menu-admllistes");
 	
+	$("#menu-adm").click();
+
+
+	autocompletersNomsClub("formrecents-autocompleters", "form_clubs", "form_codi");
 	/*ordenarLlista();*/
 });
 

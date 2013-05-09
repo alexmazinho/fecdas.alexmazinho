@@ -48,7 +48,7 @@ class FormPersona extends AbstractType {
     	    'required'  => false,
 			));
 		
-		$builder->add('addrpob', 'text', array(
+		$builder->add('addrpob', 'search', array(
     	    'required'  => false,
 			));
 		/*$builder->add('addrpob', 'genemu_jqueryautocompleter', array(

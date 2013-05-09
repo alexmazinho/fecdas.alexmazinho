@@ -216,6 +216,7 @@
                 placement: 'outsideGrid'
             },  
             grid: {
+            	backgroundColor: 'transparent',
                 drawBorder: false,
                 drawGridlines: false,
                 background: '#ffffff',
@@ -288,7 +289,7 @@ $('#imgChart1').append(imgElem);
                 	tickOptions: {
                 		showMark : true,
                         labelPosition: 'start',
-                        markSize: 0,
+                        markSize: 4,
                     }
                 },
             },
@@ -306,6 +307,7 @@ $('#imgChart1').append(imgElem);
                 //rowSpacing: '0px'
             },
             grid: {
+            	backgroundColor: 'transparent',
                 drawBorder: false,
             }
              
@@ -359,9 +361,9 @@ $('#imgChart1').append(imgElem);
                 	numberTicks: 11,
                 	tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                 	tickOptions: {
-                		showMark : true
-                        //labelPosition: 'start',
-                        //markSize: 0,
+                		showMark : true,
+                        labelPosition: 'start',
+                        markSize: 4,
                     }
                 },
 				
@@ -389,6 +391,7 @@ $('#imgChart1').append(imgElem);
                 placement: 'outsideGrid'
             },  
             grid: {
+            	backgroundColor: 'transparent',
                 drawBorder: false,
                 //drawGridlines: false,
                 //background: '#ffffff',

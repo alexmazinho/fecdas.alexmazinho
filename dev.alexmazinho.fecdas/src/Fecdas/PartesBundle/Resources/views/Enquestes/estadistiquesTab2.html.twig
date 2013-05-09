@@ -4,12 +4,12 @@
 	<div id="resultats-dades-evolucio" class="resultats-hidden">{{ dades }}</div>
 	<div id="resultats-mesures" class="resultats-hidden">{{ mesures }}</div>
 	
-	<div class="form-row clearfix">
+	<div class="clearfix">
 		<div class="bloc-preguntes">
 			<div id="list-header" class="clearfix">
 				<div class="col-listheader">Seleccionar pregunta ...</div> 
 			</div>
-			<ul class="connectedSortable list-variableheight">
+			<ul id="preguntes-selectable" class="list-preguntes-select list-variableheight">
 			{% for pregunta in preguntes %}
 				<li id="pregunta_{{ pregunta.id }}" class="list-variableheight-detall clearfix">
 	  				<div class="pregunta-id">{{ pregunta.id }}</div>
@@ -25,6 +25,14 @@
 
 $(document).ready(function(){
 	createPlotEvolucio(); 
+
+	$( "#preguntes-selectable" ).selectable({
+		selected: function( event, ui ) {
+			//alert($(this).html());
+		}
+	
+	});
+	
 });
 
 </script>

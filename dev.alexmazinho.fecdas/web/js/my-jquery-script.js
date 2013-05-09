@@ -84,6 +84,8 @@
 	
 	setMenuActive = function(menuid) {
 		$('#'+menuid).addClass("left-menu-active");
+		$('#'+menuid).find('span').show();
+		//$(this).find('.menu-icon').addClass('ui-icon-triangle-1-e'); /* East*/
 	};
 	
 	
@@ -113,27 +115,12 @@
 	};
 	
 	formFocus = function() {
-		/*$("form.appform input, form.appform textarea, #loginbox form input")
-			.not('input[type=button], input[type=hidden]')*/
 		$(".forminput-inside")
 		.bind("focus.labelFx", function(){
-			$(this).prev().hide();
+			$(this).parent().find("label").hide();
 		})
 		.bind("blur.labelFx", function(){
-			/*if ($(this).val().length == 0) {
-				$(this).prev().show();
-			} else {
-				$(this).prev().hide();
-			}*/
-			$(this).prev()[!this.value ? "show" : "hide"]();
-		})
-		.trigger("blur.labelFx");
-		$(".forminput-inside.ui-autocomplete-input")
-		.bind("focus.labelFx", function(){
-			$(this).prev().prev().hide();
-		})
-		.bind("blur.labelFx", function(){
-			$(this).prev().prev()[!this.value ? "show" : "hide"]();
+			$(this).parent().find("label")[!this.value ? "show" : "hide"]();
 		})
 		.trigger("blur.labelFx");
 	};
@@ -523,7 +510,7 @@
 	};
 	
 	loadLlicencia = function(n) {
-		if ($('#parte_tipus').val() == '') {
+		if ($('#parte_tipus').val() == null || $('#parte_tipus').val() == '') {
 			alert('Cal indicar un tipus de llista');
 			return;
 		}
@@ -861,7 +848,7 @@
 			$("#dialog").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
-		              //window.location.href = targetUrl;
+		              //window.location = targetUrl;
 	    	        	$(this).dialog("close");
 	    	        	$('#formparte').submit();
 	    	        },
@@ -973,21 +960,57 @@
 	
 	/*************************************************** Clubs *******************************************************/	
 	
+	autocompletersNomsClub = function(routeid, clubid, codiid) {
+		var route = $("#"+routeid).attr("href");
+		var $configs = {
+			source: function(request, response) {
+				var $data = {term: request.term};
+				$.getJSON(route, $data, response);
+			},
+			position: { my : "left top", at: "left bottom", collision: "none" },
+			appendTo: "#list-forms",
+			select: function(event, ui) {
+				$("#"+clubid).val(ui.item.nom);
+				$("#"+codiid).val(ui.item.codi);
+			}
+		};
+		$("#"+clubid).autocomplete($configs);
+	};
+	
 	reloadClub = function() {
 		/* canvi de club */
+		
 		$('#club_clubs').change(function() {
 			var url = $("#formclub").attr("action");
 			window.location = url + '?codiclub=' + this.value;
 		});
 	};
 
-	saveClub = function() {
-		/* desar club */
-		$('#formclub-save')
+	
+	copiarAdrecaClub = function() {
+		
+		$('.formclub-copiaradreca')
 	    .off('click')
 	    .click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
+	        
+	        $("#club_addrpobcorreu").val( $("#club_addrpob").val() );
+	        $("#club_addrcpcorreu").val( $("#club_addrcp").val() );
+	        $("#club_addrprovinciacorreu").val( $("#club_addrprovincia").val() );
+	        $("#club_addradrecacorreu").val( $("#club_addradreca").val() );
+	    });
+	};
+	
+	
+	saveClub = function() {
+		/* desar club */
+		$('.formclub-save')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
 	        if ($("#club_codishow").val() == "") {
 	        	alert("cal indicar el codi del club");
 				return false;
@@ -1019,6 +1042,12 @@
 	        		}
 	        	}
 	        }
+	       
+	        if ($("#club_tipusparte :selected").length < 1) {
+				alert("Cal permetre alguna llicència");
+				$( "#tabs-club" ).tabs( "option", "active", 2 );
+				return false;
+			}
 	        
     	    $('#formclub').submit();	
 		});
@@ -1036,89 +1065,51 @@
 		});
 	};
 	
-	loadUserclub = function() {
-		var url = $("#formusuariclub").attr("action");
-        var codiclub = $("#club_codi").val();
-
-    	if ($.browser.msie) $('#formclub-usuari').hide(); 
-    	else $('#formclub-usuari').slideUp('fast');
-        $('#progressbar').show();  // Rellotge
-        $.get(url, {codiclub: codiclub},
-     	function(data, textStatus) {
-        	$('#formclub-usuari').html(data);
-        	$('#progressbar').hide();  // Rellotge
-        	if ($.browser.msie) $('#formclub-usuari').show(); 
-        	else $('#formclub-usuari').slideDown('fast');
-        	
-        	addUserClick();
-        	randomPwdClick();
-        	
-    	    $("#formclub-usuari .close").click(function (e) {
-    	        //Cancel the link behavior
-    	        e.preventDefault();
-    	    	if ($.browser.msie) $('#formclub-usuari').hide(); 
-    	    	else $('#formclub-usuari').slideUp('fast');
-    	    }); 
-		});
-	};
-	
 	addUserClick = function() {
 	    $('#formuserclub-add')
 	    .off('click')
 	    .click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
-	        if ($("#user_club_user").val() == "") {
+	        if ($("#club_user").val() == "") {
 	        	alert("cal indicar el mail de l'usuari");
 				return false;
 	        } else {
-	        	if( !isValidEmailAddress( $("#user_club_user").val() ) ) {
+	        	if( !isValidEmailAddress( $("#club_user").val() ) ) {
 	        		alert("El mail no té un format correcte");
 					return false;
 	        	}
 	        }
-	        if ($("#user_club_pwd_first").val() == "" || $("#user_club_pwd_second").val() == "") {
+	        if ($("#club_pwd_first").val() == "" || $("#club_pwd_second").val() == "") {
 	        	alert("cal indicar la clau l'usuari");
 				return false;
 	        }
-	        if ($("#user_club_pwd_first").val() != $("#user_club_pwd_second").val()) {
+	        if ($("#club_pwd_first").val() != $("#club_pwd_second").val()) {
 	        	alert("Les claus no coincideixen");
 				return false;
 	        }
 	        
-	        var url = $("#formusuariclub").attr("action");
+	        var url = $("#formclub-usuarinou").attr("href");
 			
-	    	if ($.browser.msie) $('#formclub-usuari').hide(); 
-	    	else $('#formclub-usuari').slideUp('fast');
-
-			$('#progressbar').show();  // Rellotge
-			
-			var codiclub = $("#club_codi").val();
-			
-			var params = $('#formusuariclub').serializeArray();
-			params.push( {'name':'codiclub','value': codiclub} );
+			var params = $('#formclub').serializeArray();
 			
 			$.post(url, params,
 			function(data, textStatus) {
-		    	$('#progressbar').hide();  // Rellotge
-				
 		    	$("#llista-usuarisclub").html(data);
 			});
 	    });
 	};
 	
 	enableUserClick = function(struser, action) {
-        var url = $("#formusuariclub").attr("action");
-		$('#progressbar').show();  // Rellotge
+		
+        var url = $("#formclub-usuarinou").attr("href");
 		var params = { 	action: action, user: struser };
 		$.get(url, params,
 		function(data, textStatus) {
-	    	$('#progressbar').hide();  // Rellotge
 			
 	    	$("#llista-usuarisclub").html(data);
 		});
 	};
-	
 	
 	
 	randomPwdClick = function() {
@@ -1128,12 +1119,13 @@
 	    .click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
-	        $('#formuserclub-passwords').hide(); 
-	        $('#formuserclub-autopasswords').show();
+	        $('#formuserclub-pwd').hide(); 
+	        $('#formuserclub-pwdrepeat').hide();
+	        $('#formuserclub-randompwd').show();
 	        var password = randomPassword(8);
-	        $('#formuserclub-randompassword').val(password);
-	        $('#user_club_pwd_first').val(password);
-	        $('#user_club_pwd_second').val(password);
+	        $('#club_randompwd').val(password);
+	        $('#club_pwd_first').val(password);
+	        $('#club_pwd_second').val(password);
 	    });
 	};
 

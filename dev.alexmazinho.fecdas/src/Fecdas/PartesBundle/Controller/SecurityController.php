@@ -110,7 +110,6 @@ class SecurityController extends BaseController
     		}
     	}
     
-    	//return $this->render('FecdasPartesBundle:Security:login.html.twig', array('form' => $form->createView() ));
     	return $this->render('FecdasPartesBundle:Security:login.html.twig', 
 						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
@@ -299,11 +298,11 @@ class SecurityController extends BaseController
    			}
    
    			$options = array('codiclub' => $club->getCodi(),
-   					'clubs' => $clubsvalues = $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
+   					'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
    			$form = $this->createForm(new FormClub($options), $club);
    
    			$form->bindRequest($request);
-   
+
    			if ($form->isValid()) {
    				$valida = true;
    				$strErrorLog = "";
@@ -340,7 +339,6 @@ class SecurityController extends BaseController
     					$valida = false;
     				}
     			}
-    				
     			if ($valida == true) {
     				if ($club->getCodi() == "") {
     					// Nou club
@@ -372,7 +370,7 @@ class SecurityController extends BaseController
    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
    							'club : ' . $club->getCodi());
    				} else {
-   					// Existeix -> error
+   					$this->get('session')->setFlash('error-notice', $strErrorLog);
    					$this->logEntry($this->get('session')->get('username'), $strACtionLog. 'KO',
    							$this->get('session')->get('remote_addr'),
    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
@@ -380,14 +378,8 @@ class SecurityController extends BaseController
    				}
    			} else {
    				// get a ConstraintViolationList
-   				$errorstr = "";
-   				$errors = $this->get('validator')->validate($club);
-   				foreach ($errors as $error)
-   					$errorstr = $errorstr . " "
-   					. $error->getPropertyPath() . "("
-   					. $error->getMessage() . ") \n";
-   					
-   				$this->get('session')->setFlash('error-notice', $errorstr);
+   				print_r($this->getErrorMessages($form));
+   				$this->get('session')->setFlash('error-notice', "error validant les dades");
    			}
    		} else {
    			if ($this->isCurrentAdmin() != true) {
@@ -423,76 +415,73 @@ class SecurityController extends BaseController
    		}
 
    		$options = array('codiclub' => $club->getCodi(),
-   				'clubs' => $clubsvalues = $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
+   				'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
-   		if ($this->isCurrentAdmin() == true) $form->get('codishow')->setData($club->getCodi());
-   		 
+   		if ($this->isCurrentAdmin() == true) {
+   			$form->get('codishow')->setData($club->getCodi());
+   		}
+
     	return $this->render('FecdasPartesBundle:Security:club.html.twig',
-    			array('form' => $form->createView(), 'club' => $club, 'admin' => $this->isCurrentAdmin(),
+    			array('form' => $form->createView(), 'club' => $club, 
+    					'admin' => $this->isCurrentAdmin(),
     					'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
     }
     
     public function usuariclubAction() {
     	$request = $this->getRequest();
-    	$this->get('session')->clearFlashes();
+    	//$this->get('session')->clearFlashes();
     
     	if ($request->isXmlHttpRequest()) {
     		if ($request->getMethod() == 'POST') {
     			// Alta nou usuari de club
     			$requestParams = $request->request->all();
-    			$codiclub = $requestParams['codiclub'];
-    
-    			$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub);
-    
+    			
+    			$codiclub = $requestParams['club']['codi'];
+    			$useruser = $requestParams['club']['user'];
+    			$randomPassword = $requestParams['club']['pwd']['first'];
+    			$userrole = $requestParams['club']['role'];
+    			$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
+    			
     			$userclub = new EntityUser();
-    			$formuserclub = $this->createForm(new FormUserClub(array()), $userclub);
-    
-    			$formuserclub->bindRequest($request);
-    
-    			if ($formuserclub->isValid()) {
-    				$checkuser = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityUser')->find($userclub->getUser());
-    				if ($checkuser == null) {
-    					// No existeix
-    					$club->addEntityUser($userclub);
-    
-    					$randomPassword = $userclub->getPwd();
-    					$userclub->setPwd(sha1($randomPassword));
-    					
-    					$em = $this->getDoctrine()->getEntityManager();
-    					$em->persist($userclub);
-    
-    					$em->flush();
-    
-    					$this->get('session')->setFlash('error-notice', 'Nou usuari ' .
-    							$userclub->getUser() . ' , amb clau ' . $randomPassword);
-    					
-    					$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW OK',
-    							$this->get('session')->get('remote_addr'),
-    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-    							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
-    				} else {
-    					// Existeix -> error
-    					$this->get('session')->setFlash('error-notice', 'Aquest usuari ja existeix');
-    					$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW KO',
-    							$this->get('session')->get('remote_addr'),
-    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-    							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
-    				}
+    			
+    			$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub);
+
+    			$checkuser = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityUser')->find($useruser);
+    			
+    			if ($checkuser == null) {
+   					// No existeix
+    				$userclub->setClub($club);
+    				$userclub->setUser($useruser);
+    				
+    				$userclub->setPwd(sha1($randomPassword));
+    				$userclub->setRole($userrole);
+    				$userclub->setForceupdate($forceupdate);
+    				$club->addEntityUser($userclub);
+    				
+   					$em = $this->getDoctrine()->getEntityManager();
+   					$em->persist($userclub);
+   				
+   					$em->flush();
+   				
+   					$this->get('session')->setFlash('error-notice', 'Nou usuari ' .
+   							$userclub->getUser() . ', amb clau: ' . $randomPassword);
+    						
+   					$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW OK',
+   							$this->get('session')->get('remote_addr'),
+   							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+   							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     			} else {
-    				// get a ConstraintViolationList
-    				$errorstr = "";
-    				$errors = $this->get('validator')->validate($userclub);
-    				foreach ($errors as $error)
-    					$errorstr = $errorstr . " "
-    					. $error->getPropertyPath() . "("
-    					. $error->getMessage() . ") \n";
-    
-    				$this->get('session')->setFlash('error-notice', $errorstr);
+    					// Existeix -> error
+    				$this->get('session')->setFlash('error-notice', 'Aquest usuari ja existeix');
+    				$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW KO',
+    						$this->get('session')->get('remote_addr'),
+    						$this->getRequest()->server->get('HTTP_USER_AGENT'),
+    						'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     			}
+    			
     			return $this->render('FecdasPartesBundle:Security:clubllistausers.html.twig',
     					array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
     		} else {
-    			
     			if ($request->query->has('action')) {
     				// Activar o desactivar usuaris
     				$action = $request->query->get('action');
@@ -520,14 +509,7 @@ class SecurityController extends BaseController
     				
     				return $this->render('FecdasPartesBundle:Security:clubllistausers.html.twig',
     						array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
-    			} else {
-		   			// Obrir formulari alta usuari de club
-    				$userclub = new EntityUser();
-    				$formuserclub = $this->createForm(new FormUserClub(array()), $userclub);
-    				
-    				return $this->render('FecdasPartesBundle:Security:clubuser.html.twig',
-    						array('userclub' => $formuserclub->createView()));
-    			}
+    			} 
     		}
     	}
     

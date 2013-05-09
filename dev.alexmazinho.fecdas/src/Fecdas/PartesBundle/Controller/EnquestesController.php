@@ -206,7 +206,6 @@ class EnquestesController extends BaseController {
 			foreach($a_keys as $preguntakey) {
 				$dades_array = explode("_", $preguntakey);
 				$preguntaId = $dades_array[1];
-				echo $preguntaId;
 				$respostaValor =  $formenquesta[$preguntakey];
 				
 				$pregunta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityPregunta')->find($preguntaId);
@@ -353,60 +352,42 @@ class EnquestesController extends BaseController {
 
 		if ($this->isCurrentAdmin() != true) return new Response("La sessió ha expirat");
 		
-		/* Cada serie dades una pregunta */
-		/* Serie 1 */
-		$dadespregunta = array();
-		$avgpreguntaenquesta = array(); 
-		$avgpreguntaenquesta[] = "Enquesta 1";
-		$avgpreguntaenquesta[] = 2.5;
-		$dadespregunta[] =$avgpreguntaenquesta;
+		$em = $this->getDoctrine()->getEntityManager();
 		
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 2";
-		$avgpreguntaenquesta[] = 2.7;
-		$dadespregunta[] =$avgpreguntaenquesta;
+		/* Obtenir totes les preguntes */
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";
+		$strQuery .= " ORDER BY p.id";
+			
+		$query = $em->createQuery($strQuery);
 		
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 3";
-		$avgpreguntaenquesta[] = 3;
-		$dadespregunta[] =$avgpreguntaenquesta;
+		$preguntes = $query->getResult();
 		
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 4";
-		$avgpreguntaenquesta[] = 3.2;
-		$dadespregunta[] =$avgpreguntaenquesta;
+		/* Obtenir totes les enquestes */
+		$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
+		$strQuery .= " ORDER BY e.datainici";
+		$query = $em->createQuery($strQuery);
 		
-		$enunciats[] = array("label" => "enunciat 1 enunciat 1 enunciat 1 enunciat 1");
-		//$enunciats .= "[{label: 'enunciat 1 enunciat 1 enunciat 1 enunciat 1'}";
-		$dades[] = $dadespregunta;
+		$enquestes = $query->getResult();
 		
-		
-		/* Serie 2 */
-		$dadespregunta = array();
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 1";
-		$avgpreguntaenquesta[] = 1.5;
-		$dadespregunta[] =$avgpreguntaenquesta;
-		
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 2";
-		$avgpreguntaenquesta[] = 1.7;
-		$dadespregunta[] =$avgpreguntaenquesta;
-		
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 3";
-		$avgpreguntaenquesta[] = 2.1;
-		$dadespregunta[] =$avgpreguntaenquesta;
-		
-		$avgpreguntaenquesta = array();
-		$avgpreguntaenquesta[] = "Enquesta 4";
-		$avgpreguntaenquesta[] = 2.7;
-		$dadespregunta[] =$avgpreguntaenquesta;
-		
-		$enunciats[] = array("label" => "enunciat 2 enunciat 2 enunciat 2 enunciat 2");
-		//$enunciats .= ",{label: 'enunciat 2 enunciat 2 enunciat 2 enunciat 2'}]";
-		$dades[] = $dadespregunta;
-		
+		foreach ($preguntes as $c => $pregunta) {
+			if ($pregunta->getTipus() == "RANG" or $pregunta->getTipus() == "BOOL") {
+				/* Només preguntes resultat numèric */
+				$dadespregunta = array();
+				$enunciats[] = array("label" => $pregunta->getEnunciat());
+				
+				foreach ($enquestes as $c => $enquesta) {
+					/* Només enquestes amb dades */
+					if (count($enquesta->getRealitzacions()) > 0) {
+						$avgpreguntaenquesta = array();
+						$avgpreguntaenquesta[] = $enquesta->getDescripcio();
+						$avgpreguntaenquesta[] = $enquesta->getAvgPregunta($pregunta);
+						$dadespregunta[] =$avgpreguntaenquesta;
+					}
+				}
+				
+				$dades[] = $dadespregunta;
+			}
+		}
 		
 		return $this->render('FecdasPartesBundle:Enquestes:estadistiquesTab1.html.twig',
 				array('enunciats' => json_encode($enunciats), 'dades' => json_encode($dades)));
@@ -430,9 +411,6 @@ class EnquestesController extends BaseController {
 		
 		$preguntes = $query->getResult();
 		
-		//if ($request->query->has('datainici'))
-		//if ($request->query->has('datafi')) 
-		
 		/* Seleccionar enquestes entre dues dates */		
 		$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
 		$strQuery .= " ORDER BY e.datainici";
@@ -441,111 +419,60 @@ class EnquestesController extends BaseController {
 		$enquestes = $query->getResult();		
 		
 		/* Pregunta per mostrar resultats */
-		$preguntaid = 1;
+		$preguntaid = 7;
 		if ($request->query->has('preguntaid')) $preguntaid = $request->query->get('preguntaid');
+		$pregunta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityPregunta')->find($preguntaid);
 		
-		
-		
-		
-		$valors = array();  /* Cada serie */
+		$valors = array();
 		$dades = array();
-		$mesures = array("Enquesta 1","Enquesta 2","Enquesta 3","Enquesta 4"); /* Eix x*/
+		$mesures = array(); /* Eix x. Enquestes descripció */
 		
+		$dadespreguntagens = array();
+		$dadespreguntapoc = array();
+		$dadespreguntasuficient = array();
+		$dadespreguntabastant = array();
+		$dadespreguntamolt = array();
+		$dadespreguntasi = array();
+		$dadespreguntano = array();
 		
-		/* Cada serie acumulat d'un valor del rang d'una pregunta */
-		/* Serie valor 1 */
-		$dadespregunta = array();
-		$dadespregunta[] = 15;
-		$dadespregunta[] = 12;
-		$dadespregunta[] = 13;
-		$dadespregunta[] = 7;
+		foreach ($enquestes as $c => $enquesta) {
+			/* Només enquestes amb dades */
+			if (count($enquesta->getRealitzacions()) > 0) {
+				if ($pregunta->getTipus() == "RANG") {
+					/* Totals per resposta de cada pregunta */
+					$totals = $enquesta->getTotalPreguntaRang($pregunta);
+					$dadespreguntagens[] = $totals[0];
+					$dadespreguntapoc[] = $totals[1];
+					$dadespreguntasuficient[] = $totals[2];
+					$dadespreguntabastant[] = $totals[3];
+					$dadespreguntamolt[] = $totals[4];
+				}
+				if ($pregunta->getTipus() == "BOOL") {
+					/* Totals per resposta de cada pregunta */
+					$totals = $enquesta->getTotalPreguntaBool($pregunta);
+					$dadespreguntasi[] = $totals[0];
+					$dadespreguntano[] = $totals[1];
+				}
+				
+				$mesures[] = $enquesta->getDescripcio();
+			}
+		}
 		
-		/*
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 15;
-		$sumpreguntaenquesta[] = "Enquesta 1";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 12;
-		$sumpreguntaenquesta[] = "Enquesta 2";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 13;
-		$sumpreguntaenquesta[] = "Enquesta 3";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 7;
-		$sumpreguntaenquesta[] = "Enquesta 4";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		*/
-		
-		$valors[] = array("label" => "gens");
-		$dades[] = $dadespregunta;
-		
-		/* Serie valor 2 */
-		$dadespregunta = array();
-		$dadespregunta[] = 10;
-		$dadespregunta[] = 20;
-		$dadespregunta[] = 23;
-		$dadespregunta[] = 26;
-		/*
-		$dadespregunta = array();
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 10;
-		$sumpreguntaenquesta[] = "Enquesta 1";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 20;
-		$sumpreguntaenquesta[] = "Enquesta 2";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 23;
-		$sumpreguntaenquesta[] = "Enquesta 3";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 26;
-		$sumpreguntaenquesta[] = "Enquesta 4";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		*/
-		$valors[] = array("label" => "poc");
-		$dades[] = $dadespregunta;
-		
-		/* Serie valor 3 */
-		$dadespregunta = array();
-		$dadespregunta[] = 12;
-		$dadespregunta[] = 17;
-		$dadespregunta[] = 25;
-		$dadespregunta[] = 18;
-		/*
-		$dadespregunta = array();
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 12;
-		$sumpreguntaenquesta[] = "Enquesta 1";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 17;
-		$sumpreguntaenquesta[] = "Enquesta 2";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 25;
-		$sumpreguntaenquesta[] = "Enquesta 3";
-		$dadespregunta[] =$sumpreguntaenquesta;
-		
-		$sumpreguntaenquesta = array();
-		$sumpreguntaenquesta[] = 18;
-		$sumpreguntaenquesta[] = "Enquesta 4";
-		$dadespregunta[] =$sumpreguntaenquesta;*/
-		
-		$valors[] = array("label" => "suficient");
-		$dades[] = $dadespregunta;
+		if ($pregunta->getTipus() == "RANG") {
+			$valors = array(array("label" => "gens"), array("label" => "poc"), array("label" => "suficient"),
+					array("label" => "bastant"), array("label" => "molt"));  /* Cada serie */
+					
+			$dades[] = $dadespreguntagens;
+			$dades[] = $dadespreguntapoc;
+			$dades[] = $dadespreguntasuficient;
+			$dades[] = $dadespreguntabastant;
+			$dades[] = $dadespreguntamolt;
+		}
+		if ($pregunta->getTipus() == "BOOL") {
+			$valors = array(array("label" => "Si"), array("label" => "No"));  /* Cada serie */
+			$dades[] = $dadespreguntasi;
+			$dades[] = $dadespreguntano;
+		}
 		
 		return $this->render('FecdasPartesBundle:Enquestes:estadistiquesTab2.html.twig',
 				array('preguntes' => $preguntes, 'valors' => json_encode($valors), 'dades' => json_encode($dades), 'mesures' => json_encode($mesures)));

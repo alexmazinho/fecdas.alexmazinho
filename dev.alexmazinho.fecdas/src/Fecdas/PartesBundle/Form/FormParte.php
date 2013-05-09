@@ -55,16 +55,25 @@ class FormParte extends AbstractType {
 		if ($this->options['nova'] and $this->options['edit']) {
 			// Mostra només la llista dels permesos
 			if (count($llistatipus) > 0) {
+				/* Si la llista només té una llicència, required = true*/
+				
 				$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 
 						'query_builder' => function($repository) use ($llistatipus) {
 						return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
 						->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
 						->setParameter('llistatipus', $llistatipus);
-				}, 'property' => 'descripcio', 'required'  => false,  
+				}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1,  
 				);
 			} else {
 				// Per evitar errors de llista buida $llistatipus
 				$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 'property' => 'descripcio',);
+				
+				$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 'property' => 'descripcio',
+						'query_builder' => function($repository) {
+							return $repository->createQueryBuilder('t')
+							->where('t.id = -1');
+						},
+				);
 			}
 		} else {
 			$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 'property' => 'descripcio',

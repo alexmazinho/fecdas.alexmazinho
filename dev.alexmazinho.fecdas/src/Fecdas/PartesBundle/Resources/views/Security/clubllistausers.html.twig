@@ -35,10 +35,11 @@
 			<div class="userclub-actions">
 			{% if admin == true %}
 				{% if userclub.databaixa is null %}
-				<a class="label-edit-userclub" href="javascript:enableUserClick('{{ userclub.user }}', 'disable');"><img src="{{ asset('images/icon-ok.jpg') }}" alt="Desactivar Usuari" title="Desactivar Usuari" width="20px"></a>
+				<a class="label-edit-userclub" href="javascript:void(0);" onclick="enableUserClick('{{ userclub.user }}', 'disable');"><img src="{{ asset('images/icon-ok.jpg') }}" alt="Desactivar Usuari" title="Desactivar Usuari" width="20px"></a>
 				{% else %}
-				<a class="label-edit-userclub" href="javascript:enableUserClick('{{ userclub.user }}', 'enable');"><img src="{{ asset('images/icon-disable.png') }}" alt="Activar Usuari" title="Activar Usuari" width="20px"></a>
+				<a class="label-edit-userclub" href="javascript:void(0);" onclick="enableUserClick('{{ userclub.user }}', 'enable');"><img src="{{ asset('images/icon-lock.jpg') }}" alt="Activar Usuari" title="Activar Usuari" width="20px"></a>
 				{% endif %}
+				<a class="label-resetpwd-userclub" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-wizard.png') }}" alt="Reiniciar Password" title="Reiniciar Password" width="20px"></a>
 			{% endif %}
 			</div>
 		</li>

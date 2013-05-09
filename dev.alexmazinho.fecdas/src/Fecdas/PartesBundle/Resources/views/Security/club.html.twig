@@ -10,28 +10,17 @@
    
 	<form id="formclub" action="{{ path('FecdasPartesBundle_club') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		{% if admin == true %} 
-		<div id="formclub-admin">
-		
-		<div class="form-row clearfix" {% if club.codi is null %} style="display:none" {% endif %}>
-			<div id="formclub-clubs">
+		<div class="form-row clearfix">
+			<div id="formclub-clubs"  {% if club.codi is null %} style="display:none" {% endif %}>
 				<label class="formlabel-outside required">Seleccionar club</label>
 				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formclub-nouclub" class="textaccio">
-				<label class="formlabel-outside required"></label>
-				<a id="formclub-nou" href="#">
-				Nou club
-				<img src="{{ asset('images/icon_add.png') }}">
-				</a>
-			</div>
-		</div>
-		<div class="form-row clearfix">	
 			<div id="formclub-codishow">
 				{{ form_label(form.codishow, 'Codi', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.codishow, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formclub-tipus">
-				{{ form_label(form.tipus, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_label(form.tipus, 'Tipus', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formclub-activat">
@@ -42,89 +31,166 @@
 					{{ form_label(form.activat, 'Accés actiu', { 'attr': {'class': 'formlabel-outside'} }) }}
 				</div>
 			</div>
+			<div id="formclub-nouclub" class="textaccio">
+				<a id="formclub-nou" href="#">
+				Nou club
+				<img src="{{ asset('images/icon_add.png') }}">
+				</a>
+			</div>
 		</div>
-		</div>
-		{% endif %}	
+		{% endif %}
 		{{ form_widget(form.codi) }}
-		<label class="formlabel-outside required">Dades del club</label>
-		<hr>
-		<div class="form-row clearfix">
-			<div id="formclub-nom">
-				{{ form_label(form.nom, 'Nom*', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.nom, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-telefon">
-				{{ form_label(form.telefon, 'Telefon', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.telefon, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-cif">
-				{{ form_label(form.cif, 'CIF*', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.cif, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-mail">
-				{{ form_label(form.mail, 'Mail*', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-web">
-				{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-addrpob">
-				{{ form_label(form.addrpob, 'Població', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.addrpob, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-addrcp">
-				{{ form_label(form.addrcp, 'Codi Postal', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.addrcp, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-addrprovincia">
-				{{ form_label(form.addrprovincia, 'Provincia', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.addrprovincia, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-addradreca">
-				{{ form_label(form.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-decathlon">
-				<div id="formclub-idecathlon">
-					{{ form_widget(form.decathlon, { 'attr': {'class': 'formfield-outside'} }) }}
+		<div id="tabs-club">
+			<ul>
+				<li><a href="#formclub-dades-tab1">Dades del club</a></li>
+				<li><a href="#formclub-dades-tab2">Adreces</a></li>
+				{% if admin == true %} 
+				<li><a href="#formclub-dades-tab3">Llicències admeses</a></li>
+				{% endif %}
+				{% if admin == true and club.codi is not null %} 
+				<li><a href="#formclub-dades-tab4">Nou usuari</a></li>
+				{% endif %}
+			</ul>
+			<div id="formclub-dades-tab1">		
+				<div class="form-row clearfix">
+					<div id="formclub-nom">
+						{{ form_label(form.nom, 'Nom*', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.nom, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-telefon">
+						{{ form_label(form.telefon, 'Telefon', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.telefon, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-cif">
+						{{ form_label(form.cif, 'CIF*', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.cif, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
 				</div>
-				<div id="formclub-ldecathlon">
-					{{ form_label(form.decathlon, 'Decathlon', { 'attr': {'class': 'formlabel-outside'} }) }}
+				<div class="form-row clearfix">
+					<div id="formclub-mail">
+						{{ form_label(form.mail, 'Mail*', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-web">
+						{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+		        </div>
+		        <div class="form-row-bottom clearfix">
+	       			<div class="textaccio">
+					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+					</div>
 				</div>
-			</div>
-		</div>
-         
-        <div class="form-row clearfix">
-        	<div id="formclub-desarclub" class="textaccio">
-				<a id="formclub-save" href="#">
-				Desar dades
-				<img src="{{ asset('images/icon-save.png') }}">
-				</a>
-			</div>
-        	{% if admin == true and club.codi is not null %} 
-        	<div id="formclub-nouusuari" class="textaccio">
-				<a id="formclub-newuser" href="javascript:loadUserclub();">
-				Nou usuari
-				<img src="{{ asset('images/icon_dropdown.png') }}">
-				</a>
-			</div>
-			{% endif %}
-		</div>
-			
+	        </div>
+	        <div id="formclub-dades-tab2">
+	        	<div class="form-row clearfix">
+					<div id="formclub-addrpob">
+						{{ form_label(form.addrpob, 'Població', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addrpob, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-addrcp">
+						{{ form_label(form.addrcp, 'CP', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addrcp, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-addrprovincia">
+						{{ form_label(form.addrprovincia, 'Provincia', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addrprovincia, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-addradreca">
+						{{ form_label(form.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-copiar" class="textaccio">
+						<a class="formclub-copiaradreca" href="javascript:void(0);">Copiar<img src="{{ asset('images/icon_down16.png') }}"></a>
+					</div>
+		        </div>
+	        	<div class="form-row clearfix">
+					<div id="formclub-addrpobcorreu">
+						{{ form_label(form.addrpobcorreu, 'Població (Adreça de Correu)', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addrpobcorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-addrcpcorreu">
+						{{ form_label(form.addrcpcorreu, 'CP', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addrcpcorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-addrprovinciacorreu">
+						{{ form_label(form.addrprovinciacorreu, 'Provincia', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addrprovinciacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-addradrecacorreu">
+						{{ form_label(form.addradrecacorreu, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.addradrecacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+		        </div>
+		        <div class="form-row-bottom clearfix">
+	       			<div class="textaccio">
+					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+					</div>
+				</div>
+	        </div>
+	        <div id="formclub-dades-tab3" {% if admin != true %}  style="display:none" {% endif %} >
+	        	<div id="formclub-addradrecacorreu">
+						{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.tipusparte, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div>
+	        	<div class="form-row-bottom clearfix">
+	       			<div class="textaccio">
+					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+					</div>
+				</div>
+	        </div>
+	        <div id="formclub-dades-tab4" {% if admin != true or club.codi is null %}  style="display:none" {% endif %} >
+	        	<a id="formclub-usuarinou" href="{{ path('FecdasPartesBundle_usuariclub') }}" style="display:none"></a>
+				<div class="form-row clearfix">
+					<div id="formuserclub-user">
+						{{ form_label(form.user, 'Usuari*', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.user, { 'attr': {'class': 'formfield-outside', 'autocomplete': 'off'}}) }}
+					</div>
+					<div id="formuserclub-role">
+						{{ form_label(form.role, 'Rol*', { 'attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.role, { 'attr': {'class': 'formfield-outside'}}) }}
+					</div>
+				</div>
+				<div class="form-row clearfix">
+					<div id="formuserclub-passwords">
+						<div id="formuserclub-pwd">
+							{{ form_label(form.pwd.first, 'Nova paraula clau*', { 'attr': {'class': 'formlabel-outside'} }) }}
+							{{ form_widget(form.pwd.first, { 'attr': {'class': 'formfield-outside'}}) }}
+						</div> 
+						<div id="formuserclub-pwdrepeat">
+							{{ form_label(form.pwd.second, 'Repeteix la paraula clau*', { 'attr': {'class': 'formlabel-outside'} }) }}
+							{{ form_widget(form.pwd.second, { 'attr': {'class': 'formfield-outside'}}) }}
+						</div> 
+						<div id="formuserclub-randompwd" style="display:none">
+							{{ form_label(form.randompwd, 'Paraula clau generada*', { 'attr': {'class': 'formlabel-outside'} }) }}
+							{{ form_widget(form.randompwd, { 'attr': {'class': 'formfield-outside'}}) }}
+						</div> 
+					</div>
+					<div id="formuserclub-random">
+						<label class="formlabel-outside required">Auto</label>
+						<a id="formuserclub-random" href="#">
+						<img src="{{ asset('images/icon-wizard.png') }}"></a>
+					</div>
+					<div id="formuserclub-forceupdate">
+						<div id="formuserclub-iforceupdate">
+						{{ form_widget(form.forceupdate, { 'attr': {'class': 'formfield-outside-multicheck'} }) }}
+						</div>
+						<div id="formuserclub-lforceupdate">
+						{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'attr': {'class': 'formlabel-outside'} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="form-row-bottom clearfix">
+	       			<div class="textaccio">
+					<a id="formuserclub-add" href="javascript:void(0);" name="add-userclub">Confirmar usuari<img src="{{ asset('images/icon_down16.png') }}"></a>
+					</div>
+				</div>
+	        </div>
+        </div>
+				
 		<div id="formclub-rest">	{{ form_rest(form) }}</div>
-		
-		<div id="error" class="sms-notice" style="display:none"> </div>
     </form>
 
-    <div id="progressbar" style="display:none"><img src="/images/icon_progress.gif"></div>
-    <div id="edicio-usuaris">
-	    <form id="formusuariclub" action="{{ path('FecdasPartesBundle_usuariclub') }}" method="post" {{ form_enctype(form) }}  class="appform">
-			<div id="formclub-usuari" class="club-usuari" style="display: none"></div>
-			{# include "FecdasPartesBundle:Security:clubuser.html.twig" #} 
-		</form>	
-	</div>
-    
 	<div id="llista-usuarisclub">
 	{% include "FecdasPartesBundle:Security:clubllistausers.html.twig" %}
 	</div> 
@@ -138,48 +204,25 @@
 <script type="text/javascript">
 
 $(document).ready(function(){
+	setMenuActive("menu-admclubs");
+	
+	$("#menu-adm").click();
 
+	$(function() {
+		$( "#tabs-club" ).tabs();
+	});
+	
 	reloadClub();
 
 	saveClub();
 
+	copiarAdrecaClub();
+	
 	nouClub();
-	
-	
-/*
-	reloadParte();
 
-	removeLlicenciaClick();
+	addUserClick();
 
-	removeParteButton();
-
-	partePagatButton();
-
-	partePagamentButton();
-	
-	showResumParteDetall();
-	
-	helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
-			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
-			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
-			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
-			<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
-			<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
-			<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
-			<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
-			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
-			No habilitada per competició ni per fer cursos federats.</p>\
-			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
-	*/
-	/*
-	helpBubbles("#help-tipusparte", '<p align="left"><b>Llicència Federativa Tipus A</b>: Anual fins a 31/12. Habilitada per competició</p>\
-	<p align="left"><b>Assegurança Federativa Tipus B</b>: Anual fins a 31/12. No habilitada per competició</p>\
-	<p align="left"><b>Llicència Federativa Tipus C</b>: Habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
-	<p align="left"><b>Llicència Federativa Reduïda Tipus A</b>: Darrer Qautrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
-	<p align="left"><b>Llicència Federativa Tipus E</b>: 365 dies a partir de l\'alta. Habilitada per competició</p>\
-	<p align="left"><b>Assegurança per un Dia Tipus D</b>: Assegurança per un dia. No habilitada per competició</p>');
-	
-	helpBubbles("#parte-resum-more-hide", '<p>Amaga el detall per activitats</p>');*/
+	randomPwdClick();
 	
 });
 

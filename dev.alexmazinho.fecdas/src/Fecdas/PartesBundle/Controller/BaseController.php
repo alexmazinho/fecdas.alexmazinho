@@ -17,12 +17,12 @@ class BaseController extends Controller {
 	protected function isAuthenticated() {
 		if ($this->get('session')->has('username') and $this->get('session')->has('remote_addr')
 				and $this->get('session')->has('remote_addr') == $this->getRequest()->server->get('REMOTE_ADDR')) {
-			if ($this->get('kernel')->getEnvironment() == 'dev' and 
+			/*if ($this->get('kernel')->getEnvironment() == 'dev' and 
 					$this->get('session')->get('username') != 'alexmazinho@gmail.com' and
 					$this->get('session')->get('username') != 'amacia22@xtec.cat') {
 				$this->get('session')->clear();
 				return false;
-			}
+			}*/
 			return true;
 		}
 		return false;
@@ -171,17 +171,76 @@ class BaseController extends Controller {
 		return $clubsvalues;
 	}
 	
+	protected function consultaAjaxPoblacions($value) {
+		// http://fecdas.dev/app_dev.php/ajaxpoblacions?term=abx   ==> For debug
+		// Cerques només per a >= 3 lletres
+		$search = array();
+		if (strlen($value) >= 3) {
+			$em = $this->getDoctrine()->getEntityManager();
+			$query = $em
+			->createQuery(
+					"SELECT DISTINCT m.municipi, m.cp, m.provincia, m.comarca
+					FROM Fecdas\PartesBundle\Entity\EntityMunicipi m
+					WHERE m.municipi LIKE :value ORDER BY m.municipi")
+						->setParameter('value', '%' . $value . '%');
+			$result = $query->getResult();
+			
+			foreach ($result as $c => $res) {
+				$muni = array();
+				//$search[] = $res['municipi'];
+				$muni['value'] = $res['municipi'];
+				$muni['label'] = "{$res['municipi']}, {$res['cp']}, {$res['provincia']}, {$res['comarca']}";
+				$muni['municipi'] = $res['municipi'];
+				$muni['cp'] = $res['cp'];
+				$muni['provincia'] = $res['provincia'];
+				$muni['comarca'] = $res['comarca'];
+				$search[] = $muni;
+			}
+			//$search = array_slice($search, 0, 6);
+			// per exemple $search = array('Abrera', 'Agramunt', 'Agullana');
+		}
+		return $search;	
+	}
+
+	protected function consultaAjaxClubs($value) {
+		// http://fecdas.dev/app_dev.php/ajaxpoblacions?term=abx   ==> For debug
+		// Cerques només per a >= 3 lletres
+		$search = array();
+		if (strlen($value) >= 3) {
+			$em = $this->getDoctrine()->getEntityManager();
+			$query = $em
+			->createQuery(
+					"SELECT DISTINCT c.codi, c.nom
+					FROM Fecdas\PartesBundle\Entity\EntityClub c
+					WHERE c.nom LIKE :value ORDER BY c.nom")
+						->setParameter('value','%' . $value . '%');
+			$result = $query->getResult();
+				
+			foreach ($result as $c => $res) {
+				$clubnom = array();
+				$clubnom['value'] = $res['nom'];
+				$clubnom['label'] = $res['nom'];
+				$clubnom['codi'] = $res['codi'];
+				$search[] = $clubnom;
+			}
+			//$search = array_slice($search, 0, 6);
+			// per exemple $search = array('Abrera', 'Agramunt', 'Agullana');
+		}
+		return $search;
+	}
+	
+	
 	protected function generateRandomPassword() {
 		$password = '';
 		$desired_length = rand(8, 12);
-		for($length = 0; 2; $length++) {
-			$password .= chr(rand(97, 122));  // minuscules
+		for($length = 0; $length <= 2; $length++) {
+			$password .= chr(rand(97, 122));  // 3 minuscules
 		}
-		for($length = 3; 5; $length++) {
-			$password .= chr(rand(48, 57));  // numeros
+		for($length = 3; $length <= 5; $length++) {
+			$password .= chr(rand(48, 57));  // 3 numeros
 		}
 		for($length = 6; $length < $desired_length; $length++) {
-			$password .= chr(rand(65, 90));  // majuscules
+			$password .= chr(rand(65, 90));  // 2 a 6 majuscules
 		}
 		return $password;
 	} 
@@ -210,6 +269,30 @@ class BaseController extends Controller {
 		}
 		return null;
 	}
+	
+	protected function getErrorMessages(\Symfony\Component\Form\Form $form) {
+		$errors = array();
+		foreach ($form->getErrors() as $key => $error) {
+			$template = $error->getMessageTemplate();
+			$parameters = $error->getMessageParameters();
+	
+			foreach($parameters as $var => $value){
+				$template = str_replace($var, $value, $template);
+			}
+	
+			$errors[$key] = $template;
+		}
+		if ($form->hasChildren()) {
+			foreach ($form->getChildren() as $child) {
+				if (!$child->isValid()) {
+					$errors[$child->getName()] = $this->getErrorMessages($child);
+				}
+			}
+		}
+	
+		return $errors;
+	}
+	
 	
 	protected function logEntry($user, $accio, $remoteaddr = null, $useragent = null, $extrainfo = null) {
 		$em = $this->getDoctrine()->getEntityManager();

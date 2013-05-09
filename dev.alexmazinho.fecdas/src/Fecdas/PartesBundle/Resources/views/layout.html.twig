@@ -48,20 +48,24 @@
 {% block sidebar %}
 	<nav>
 		<ul class="navigation">
-			<li id="menu-home"><a href="{{ path('FecdasPartesBundle_homepage') }}">Pàgina principal</a></li>
+			<li id="menu-home"><a href="{{ path('FecdasPartesBundle_homepage') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Pàgina principal</a></li>
 			{% if authenticated == false  %}
-			<li id="menu-login"><a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió</a></li>
-			<li id="menu-contact"><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></li>
+			<li id="menu-login"><a href="{{ path('FecdasPartesBundle_login') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Iniciar sessió</a></li>
+			<li id="menu-contact"><a href="{{ path('FecdasPartesBundle_contact') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Contacte</a></li>
 			{% else %}
 				{% if admin == true  %}
 				<li id="menu-adm"><a href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Administració</a></li>
-				<li id="menu-admllistes" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_recents') }}">Llistes</a></li>
-				<li id="menu-admenquestes" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_enquestes') }}">Enquestes</a></li>
+				<li id="menu-admclubs" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_club') }}">
+				<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Clubs i usuaris</a></li>
+				<li id="menu-admllistes" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_recents') }}">
+				<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
+				<li id="menu-admenquestes" class="menu-adm-item" style="display:none"><a href="{{ path('FecdasPartesBundle_enquestes') }}">
+				<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>
 				{% endif %}
-				<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}">Tramitació de llistes</a></li>
-				<li id="menu-assegurats"><a href="{{ path('FecdasPartesBundle_assegurats') }}">Assegurats</a></li>
+				<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Tramitació de llistes</a></li>
+				<li id="menu-assegurats"><a href="{{ path('FecdasPartesBundle_assegurats') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Assegurats</a></li>
 				{% if busseig == true  %}
-				<li id="menu-busseig"><a href="{{ path('FecdasPartesBundle_busseig') }}">Consulta de llicències amb el DNI</a></li>
+				<li id="menu-busseig"><a href="{{ path('FecdasPartesBundle_busseig') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Consulta de llicències amb el DNI</a></li>
 				{% endif %}
 			{% endif %}
 		</ul>

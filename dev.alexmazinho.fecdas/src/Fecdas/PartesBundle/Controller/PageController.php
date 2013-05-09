@@ -85,17 +85,18 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getEntityManager();
 	
 		$currentWeb = 0;
-		$currentEstat = "t";
+		$currentEstat = "100";
 		$currentClub = "";
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
 			if ($request->request->has('form')) { 
 				$formdata = $request->request->get('form');
-				if (isset($formdata['clubs'])) $currentClub = $formdata['clubs'];
+				
+				if (isset($formdata['codi'])) $currentClub = $formdata['codi'];
 				if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
 				if (isset($formdata['web'])) $currentWeb = 1;
-				
+
 				$this->logEntry($this->get('session')->get('username'), 'ADMIN PARTES SEARCH',
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), 
@@ -106,28 +107,14 @@ class PageController extends BaseController {
 					$this->get('session')->get('remote_addr'),
 					$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		}
-
-		if ($currentClub != "") {
-			// Selecciona club
-			$formBuilder = $this->createFormBuilder()
-			->add('clubs', 'entity', array('class' => 'FecdasPartesBundle:EntityClub',
-					'query_builder' => function($repository) {
-					return $repository->createQueryBuilder('c')->orderBy('c.nom', 'ASC');
-			}, 'property' => 'llistaText', 'required'  => false, 
-			'data' => $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub),
-			));
-		} else {
-			$formBuilder = $this->createFormBuilder()
-			->add('clubs', 'entity', array('class' => 'FecdasPartesBundle:EntityClub',
-					'query_builder' => function($repository) {
-					return $repository->createQueryBuilder('c')->orderBy('c.nom', 'ASC');
-			}, 'property' => 'llistaText', 'required'  => false, 
-			));
-		} 
+		
+		$formBuilder = $this->createFormBuilder()->add('clubs', 'search');
+		
+		$formBuilder->add('codi', 'hidden');
 		
 		$formBuilder->add('estat', 'choice', array(
-    				'choices'   => array('t' => 'Tots', 'n' => 'No pagats', 'p' => 'Pendents', 'f' => 'Pagats'),
-					'preferred_choices' => array('t'),
+    				'choices'   => array('100' => 'Darrers 100', 't' => 'Tots', 'n' => 'No pagats', 'p' => 'Pendents', 'f' => 'Pagats'), 
+					'preferred_choices' => array('100'),
 				));
 		$formBuilder->add('web', 'checkbox', array(
     				'required'  => false,
@@ -141,23 +128,31 @@ class PageController extends BaseController {
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
 		
-		if ($currentClub != "") $strQuery .= " AND p.club = '" . $currentClub . "' ";
+		if ($currentClub != "") {
+			$clubcercar = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub);
+			$form->get('clubs')->setData($clubcercar->getNom());
+			$form->get('codi')->setData($clubcercar->getCodi());
+			$strQuery .= " AND p.club = '" .$clubcercar  . "' "	;
+		}
+			
 		if ($currentWeb != 0) $strQuery .= " AND p.web = 1 ";
-		if ($currentEstat != "t") {
+		//if ($currentEstat != "t" && $currentEstat != "100") {
 			if ($currentEstat == "n") $strQuery .= " AND p.datapagament IS NULL ";
 			if ($currentEstat == "p") $strQuery .= " AND p.numfactura = -1 ";
 			if ($currentEstat == "f") $strQuery .= " AND p.datapagament IS NOT NULL ";
-		}
-		$strQuery .= " ORDER BY p.id DESC";
+		//}
+		$strQuery .= " ORDER BY p.id DESC"; 
 
 		$query = $em->createQuery($strQuery)
-		->setParameter('ininormal', $this->getSQLIniciAnual())
-		->setParameter('ini365', $this->getSQLInici365());
+			->setParameter('ininormal', $this->getSQLIniciAnual())
+			->setParameter('ini365', $this->getSQLInici365());
+		
+		if ($currentEstat == "100") $query->setMaxResults(100);
 		
 		$partesrecents = $query->getResult();
 	
 		if ($currentWeb == 1) $form->get('web')->setData(true);
-		if ($currentEstat != 't') $form->get('estat')->setData($currentEstat);		
+		$form->get('estat')->setData($currentEstat);		
 		
 		return $this->render('FecdasPartesBundle:Page:recents.html.twig',
 				array('form' => $form->createView(), 'partes' => $partesrecents,
@@ -1588,7 +1583,6 @@ class PageController extends BaseController {
 		
 		$tipuspermesos = "";
 		foreach ($llistatipus as $c => $tipus) {
-			echo $day;
 			$entitytipus = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipus);
 			$tipuspermesos .= "<option value=" . $tipus . ">" . $entitytipus->getDescripcio() . "</option>";
 		}
@@ -1608,23 +1602,18 @@ class PageController extends BaseController {
 		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
 		$user = $repository->findOneByUser($this->get('session')->get('username'));
 
-		if ($user != null and $user->getClub()->getDecathlon() == true) {
-			// Només mostrar fusell
-			array_push($llistatipus, 8);
-		} else {	
-			$query = $em->createQuery("SELECT t FROM Fecdas\PartesBundle\Entity\EntityParteType t ORDER BY t.descripcio");
-			$tipuspartes = $query->getResult();
+		if ($user != null) {
+			$club = $user->getClub();
+			$tipuspartes = $club->getTipusparte();
 			
 			foreach ($tipuspartes as $c => $tipusparte) {
-				if ($tipusparte->getId() != 8 && $tipusparte->getId() != 9) {  // NO Decathlon ni Tecnocampus
-					$inici = '01-01';
-					$final = '12-31';
-					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
-					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
-
-					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
-						array_push($llistatipus, $tipusparte->getId());
-					}
+				$inici = '01-01';
+				$final = '12-31';
+				if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
+				if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
+				
+				if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+					array_push($llistatipus, $tipusparte->getId());
 				}
 			}
 		}
@@ -1633,42 +1622,22 @@ class PageController extends BaseController {
 	}
 	
 	public function ajaxpoblacionsAction(Request $request) {
-		// http://fecdas.dev/app_dev.php/ajaxpoblacions?term=abx   ==> For debug
-		$value = $request->get('term');
-
-		// Cerques només per a >= 3 lletres
-
-		if (strlen($value) >= 3) {
-			$em = $this->getDoctrine()->getEntityManager();
-			$query = $em
-			->createQuery(
-					"SELECT DISTINCT m.municipi, m.cp, m.provincia, m.comarca
-					FROM Fecdas\PartesBundle\Entity\EntityMunicipi m
-					WHERE m.municipi LIKE :value ORDER BY m.municipi")
-					->setParameter('value', $value . '%');
-			$result = $query->getResult();
-			foreach ($result as $c => $res) {
-				//$search[] = $res['municipi'];
-				$muni['value'] = $res['municipi'];
-				$muni['label'] = "{$res['municipi']}, {$res['cp']}, {$res['provincia']}, {$res['comarca']}";
-				$muni['municipi'] = $res['municipi'];
-				$muni['cp'] = $res['cp'];
-				$muni['provincia'] = $res['provincia'];
-				$muni['comarca'] = $res['comarca'];
-				$search[] = $muni;
-			}
-			//$search = array_slice($search, 0, 6);
-			// per exemple $search = array('Abrera', 'Agramunt', 'Agullana');
-		} else {
-			$search = array();
-		}
-
+		$search = $this->consultaAjaxPoblacions($request->get('term')); 
 		$response = new Response();
 		$response->setContent(json_encode($search));
-
+		
 		return $response;
 	}
 
+	public function ajaxclubsnomsAction(Request $request) {
+		$search = $this->consultaAjaxClubs($request->get('term'));
+		$response = new Response();
+		$response->setContent(json_encode($search));
+	
+		return $response;
+	}
+	
+	
 	private function getMaxNumFactura() {
 		$em = $this->getDoctrine()->getEntityManager();
 		$query = $em->createQuery("SELECT MAX(p.numfactura) FROM Fecdas\PartesBundle\Entity\EntityParte p

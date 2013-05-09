@@ -20,32 +20,31 @@
     </div>
 	{% endif %}
     
-    <div class="clearfix">
-    	<form action="{{ path('FecdasPartesBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
-    		<div class="formassegurats-row">
-				<div id="formassegurats-clubs" class="form-left">
-					{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
-				</div>
-	   			<div id="formassegurats-submit" class="form-right">	
-					<input type="submit" class="forminput-inside" value="Cerca" name="formassegurats-button-search"/>
-				</div> 
-    		</div>
-    		<div class="formassegurats-row">
-				<div id="formassegurats-dni" class="form-left">
-					{{ form_label(form.dni, 'DNI/NIE', { 'attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
-				</div> 
-    			<div id="formassegurats-nom" class="form-left">
-					{{ form_label(form.nom, 'Nom', { 'attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.nom, { 'attr': {'class': 'forminput-inside'} }) }}
-				</div> 
-	        	<div id="formassegurats-cognoms" class="form-left">
-					{{ form_label(form.cognoms, 'Cognoms', { 'attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
-				</div> 
-    		</div>
-	    </form>
-    </div>
+   	<form action="{{ path('FecdasPartesBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
+   		<div class="formassegurats-row clearfix">
+			<div id="formassegurats-clubs" class="form-left">
+				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+   			<div id="formassegurats-submit" class="form-right">	
+				<input type="submit" class="forminput-inside" value="Cerca" name="formassegurats-button-search"/>
+			</div> 
+   		</div>
+   		<div class="formassegurats-row clearfix">
+			<div id="formassegurats-dni" class="form-left">
+				{{ form_label(form.dni, 'DNI/NIE', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
+			</div> 
+   			<div id="formassegurats-nom" class="form-left">
+				{{ form_label(form.nom, 'Nom', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.nom, { 'attr': {'class': 'forminput-inside'} }) }}
+			</div> 
+        	<div id="formassegurats-cognoms" class="form-left">
+				{{ form_label(form.cognoms, 'Cognoms', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
+			</div> 
+   		</div>
+    </form>
+
    	<div id="list-header">
    		<div id="header-asseguratid" class="col-listheader">id</div>
    		<div id="header-asseguratdni" class="col-listheader">DNI</div>

@@ -1,7 +1,8 @@
 @CHARSET "UTF-8";
 
 .sms-notice { text-align: center; padding: 10px;
-background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; width: 95% }
+background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; }
+
 
 input[type="submit"], button  {
 	/*border-top: 1px solid #FFFFFF;*/
@@ -37,19 +38,38 @@ input[type="submit"]:active, button:active {
   	background: #DDDDDD;
 }
 
+input {
+	max-width: 400px; 
+	line-height: 24px; 
+	min-height:26px; 
+	text-indent: 5px;
+	border-radius: 5px; 
+	-webkit-border-radius: 5px;
+	border: 1px solid #AAA; 
+	color: #555555;
+	background: #EFEFEF; 
+}
+
 input[type="text"], 
 input[type="email"],
-input[type="password"],
-input[type="search"]  
-	{ max-width: 400px; line-height: 24px; font-size: 16px; min-height:24px; text-indent: 5px;
-	  background-color: #F5F5F5; border-radius: 5px; color: #555555;}
+input[type="password"] { 
+	
+}
+
+input[type="search"]  { 
+	background: #EFEFEF url(../images/icon-lupa.png) no-repeat right center;
+	min-height: 26px;
+    padding: 1px 24px 1px 2px;
+}
 	  
 input[type="email"] { max-width: 500px; }
 	  
 input[type="submit"]  { line-height: 24px; font-size: 16px; min-height: 24px; }
 input[type="checkbox"]  { margin-left: 10px; margin-top:7px;}
 
-textarea  { max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; font-size: 14px; text-indent: 5px; resize: both;}
+textarea  { 
+	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; font-size: 14px; text-indent: 5px; resize: both;
+	border: 1px solid #AAA; background: #EEEEEE; color: #555555;}
 
 select {
 	background: #EEEEEE;
@@ -87,7 +107,7 @@ form.appform div {
 	text-align: left; min-width: 50px; vertical-align: top; padding-top: 5px; 
 }
 
-html>body .formlabel-inside { padding-top: 10px; }
+html>body .formlabel-inside { padding-top: 8px; }
 
 .formlabel-outside {
 	/*float: left; margin-left: 10px; margin-right: 10px;*/ 
@@ -154,7 +174,7 @@ html[xmlns] .clearfix {
     /*margin-top: 10px;
     padding-bottom: 12px;*/
 	display: block;
-	padding: 10px 10px 10px 0px; 
+	padding: 10px 0; 
 }
 
 .form-left {
@@ -167,7 +187,7 @@ html[xmlns] .clearfix {
 
 .formassegurats-row {
 	display: inline-block;
-	width: 98%;
+	width: 100%;
 }
 
 .formassegurats-row input {
@@ -215,14 +235,14 @@ input#form_dni {
     border-style: solid;
     border-width: 1px;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
-    height: 29px;
+    height: 33px;
     /*line-height: 29px;*/
     /*padding: 3px 8px;*/
     /*display: block;*/
     margin-bottom: 10px;
     display: inline-block;
     text-align: center;
-    width: 98%;
+    width: 100%;
 }
 
 .col-listheader {
@@ -295,7 +315,6 @@ html>body .textaccio img {
     margin-left: 0px;
     margin-top: 0px;
 	max-height:400px;
-	width: 98%;
 }
 
 * html #list-data { /*max-height: 400px;  max-height IE hack */
@@ -349,7 +368,7 @@ li.data-detall-fosc {
 #header-parteany {	width: 6%;}
 #header-partedata {	width: 13%; text-align: center;}
 #header-partetipusdesc { width: 35%;}
-#header-partetotal {	width: 10%;text-align:right;}
+#header-partetotal {	width: 10%;text-align:center;}
 #header-partepagat {	width: 12%;}
 #header-parteimport {	width: 11%;}
 #header-parteactions {}
@@ -387,14 +406,23 @@ li.data-detall-fosc {
 	margin-bottom: 3px !important;
 }
 
+.form-row-bottom {
+	position:absolute;
+    bottom: 1.4em;
+    left: 1.4em;
+}
+
 #buttons-top {
-	float:right;
 	margin-top: -20px;
-	margin-right: 20px;
 	height: 0;
 }
 
-.button-top, #formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
+.button-top {
+	float:right;
+	padding-left: 5px;
+}
+
+#formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
 	float:left;
 	padding-left: 5px;
 }
@@ -441,7 +469,6 @@ li.data-detall-fosc {
 	/*background: none repeat scroll 0 0 #FFFFFF;*/
     border-radius: 5px 5px 5px 5px;
     padding: 10px 10px 0;
-    width: 95%;
     min-height: 170px;
     position: relative;
 }
@@ -612,6 +639,13 @@ select#parte_renovar_tipus { width: 240px; }
     position: relative;
 }
 
+#tabs-club {
+	width: 100%;
+	height: 300px;
+	background: none repeat scroll 0 0 transparent;
+	padding: 0px;
+}
+
 input#club_codishow { width: 80px; }
 select#club_tipus { width: auto; }
 input#club_nom { width: 350px; }
@@ -619,10 +653,15 @@ input#club_telefon { width: 116px; }
 input#club_cif { width: 116px; }
 input#club_mail { width: 298px; }
 input#club_web { width: 298px; }
-input#club_addrpob { width: 298px; }
-input#club_addrcp { width: 70px; }
-input#club_addrprovincia { width: 70px; }
-input#club_addradreca { width: 400px; }
+input#club_addrpob,input#club_addrpobcorreu { width: 250px; }
+input#club_addrcp,input#club_addrcpcorreu { width: 70px; }
+input#club_addrprovincia,input#club_addrprovinciacorreu { width: 70px; }
+input#club_addradreca,input#club_addradrecacorreu { width: 350px; }
+
+select#club_tipusparte {
+	width: 350px;
+	height: 130px;
+}
 
 input#user_club_user { width: 298px; }
 select#user_club_role { width: auto; }
@@ -640,7 +679,7 @@ input#formuserclub-randompassword { width: 150px; }
 .userclub-lastaccess {	width: 30%; text-align: center; }
 .userclub-rol {	width: 10%; text-align: center; }
 .userclub-forceupdate {	width: 10%; text-align: center; }
-.userclub-actions { width: 4%; text-align:right; margin-top: -14px}
+.userclub-actions { width: 8%; text-align:right; margin-top: -14px}
 .userclub-actions a:hover img
  { border: 1px solid #DDDDDD; background-color:#E7F2FB}
 
@@ -694,7 +733,7 @@ input#persona_dni {
 
 input#persona_addradreca,
 input#parte_persona_addrpob {
-	width: 300px;
+	width: 290px;
 }
 
 input#parte_persona_addrcp {
@@ -749,10 +788,10 @@ select#parte_persona_addrnacionalitat {
 	min-width: 165px;
 }
 
-* html #fact-dadesclub { /*min-width: 150px;  min-width IE hack */
+* html #fact-dadesfactura { /*min-width: 150px;  min-width IE hack */
    width: expression( document.body.clientWidth < 164 ? "165px" : "auto" ); /* set min-width for IE */
 }
-* html #fact-dadesclub { /*max-width: 410px;  max-width IE hack */
+* html #fact-dadesfactura { /*max-width: 410px;  max-width IE hack */
    width: expression( document.body.clientWidth > 209 ? "210px" : "auto" ); /* set max-width for IE */
 }
 
@@ -824,9 +863,9 @@ select#parte_persona_addrnacionalitat {
 
 #formuser-forceupdate input { float:left; margin-right: 10px; margin-left: 0px; margin-top: 10px; }
 
-#formuserclub-forceupdate, #formclub-activat, #formclub-decathlon { margin-top : 28px; } 
+#formuserclub-forceupdate, #formclub-activat { margin-top : 28px; } 
 
-#formuserclub-iforceupdate, #formclub-iactivat, #formclub-idecathlon { margin: 2px 0 0; }
+#formuserclub-iforceupdate, #formclub-iactivat { margin: 2px 0 0; }
 
 #notificacio {
 	position:absolute;
@@ -879,6 +918,7 @@ select#parte_persona_addrnacionalitat {
 	width: 48%;
 	float:left;
 	display: inline-block;
+	font-size: small;
 }
 
 .bloc-preguntes-dreta {
@@ -920,8 +960,8 @@ select#parte_persona_addrnacionalitat {
 	max-height: 350px;
     overflow-x: hidden;
     overflow-y: auto;
-    width: 98%;
 }
+
 
 .list-variableheight-detall {
     border-bottom: 1px solid #D3D3D3;
@@ -938,12 +978,13 @@ select#parte_persona_addrnacionalitat {
 
 #enquesta {
   	width:800px;
-  	height:600px;
+  	max-height:650px;
+  	height:auto;
 }
 
 #formenquesta-preguntes {
   	/*width:90%;*/
-  	height:480px;
+  	height:450px;
   	overflow-x: hidden;
     overflow-y: auto;
     border: 1px solid #EEEEEE;
@@ -953,19 +994,43 @@ select#parte_persona_addrnacionalitat {
 }
 
 .enquesta-row {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
+    margin-top: 10px;
     width: 100%;
+}
+
+.enquesta-row .formenquesta-button {
+	float:left;
+	padding: 3px;
+}
+
+.enquesta-descripcio {
+	width: 100%;
+	color: #555555;
+    font-style: italic;
+    line-height: 20px;
+    margin-top: 10px;
+    text-align: justify;
+    border-bottom: 1px solid #EEEEEE;
+    margin-bottom: 10px;
 }
 
 .enquesta-enunciat {
 	float: left;
 	width: 75%;
+	line-height: 20px;
 }
 
 .enquesta-resposta {
 	float: right;
 	width: 20%;
 	text-align: center;
+}
+
+#formenquesta-preguntes table {
+    position: absolute;
+    right: 0;
+    top: 50px;
 }
 
 textarea.enquesta-resposta {
@@ -990,8 +1055,6 @@ textarea.enquesta-resposta {
     padding: 25px;
     width: 95%;
 }
-
-
 
 #enquesta-stats-accions {
 	position: relative;
@@ -1019,17 +1082,14 @@ textarea.enquesta-resposta {
 	list-style: disc outside none;
 }
 
-.jqplot-title {
-	font-size: inherit !important;
-}
-
-#tabs {
+#tabs-enquestes {
 	width: 100%;
 	background: none repeat scroll 0 0 transparent;
+	padding: 0px;
 }
 
 #resultats-plot-global {
-	height: 450px;
+	height: 400px;
     padding: 25px;
     width: 95%;
 }
@@ -1038,16 +1098,40 @@ textarea.enquesta-resposta {
 	height: 450px;
 }
 
-#ui-tabs-2 .form-row div {
-    margin-bottom: 0 !important;
-    margin-right: 0;
-}
-
 #resultats-plot-evolucio {
 	float:right;	
 	width: 60%;
 	display: inline-block;
 	height: 450px;
+}
+
+#preguntes-selectable .ui-selecting { background: #FECA40; }
+#preguntes-selectable .ui-selected { background: #F39814; color: white; }
+
+#llista-usuarisclub #list-data {
+	max-height: 120px;
+}
+
+* html #llista-usuarisclub #list-data { /*max-height: 120px;  max-height IE hack */
+   height: expression( this.scrollHeight > 119 ? "120px" : "auto" ); /* sets max-height for IE */
+}
+
+
+#formclub-nouclub, #formclub-copiar {
+	float: right;
+	margin: 37px 0;
+}
+
+/*****************************************************************************************************************/
+
+/********************************************* JqPlot styling ****************************************************/
+
+.jqplot-title {
+	font-size: inherit !important;
+}
+
+.jqplot-target {
+	opacity:0.8;
 }
 
 /*****************************************************************************************************************/
@@ -1060,14 +1144,14 @@ textarea.enquesta-resposta {
 }
 
 #header-parterecentsid { display:none; }
-#header-parterecentsrel { width: 4%;}
+#header-parterecentsrel { width: 4%; text-align:right;}
 #header-parterecentsdata {	width: 10%; text-align: center;}
-#header-parterecentsclub {	width: 18%;}
-#header-parterecentstipus {	width: 16%;}
+#header-parterecentsclub {	width: 19%; text-align:left;}
+#header-parterecentstipus {	width: 13%;}
 #header-parterecentsweb {	width: 4%;}
 #header-parterecentstotal {	width: 4%;text-align:center;}
 #header-parterecentspreu {	width: 9%; text-align:right;}
-#header-parterecentspagweb {	width: 15%; text-align: center; line-height: 15px;}
+#header-parterecentspagweb {	width: 14%; text-align:right; line-height: 11px;}
 #header-parterecentsfactura {	width: 11%; text-align: center;}
 #header-parterecentsactions {}
 

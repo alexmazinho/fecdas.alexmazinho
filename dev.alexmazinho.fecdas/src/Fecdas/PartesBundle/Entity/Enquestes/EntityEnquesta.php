@@ -247,7 +247,7 @@ class EntityEnquesta {
     }
     
     /**
-     * Retorna resultats de les realitzacions d'una pregunta 
+     * Retorna resultats de totes les realitzacions de l'enquesta  
      * 
      */
     public function getResultats() {
@@ -258,7 +258,7 @@ class EntityEnquesta {
 
     		/* Arrays de respostes per cada pregunta */
     		$array_rang = array(array(0),array(0),array(0),array(0),array(0));	/* [0] - gens,  [1] - poc, .... [4] - molt */
-    		$array_bool = array(array(0),array(0));	/* [0] - Si,  [1] - No */
+    		$array_bool = array(array(0),array(0));	/* [1] - Si,  [0] - No */
     		$array_open = array();	/* [0] - resposta 1,  [1] - resposta 2 ... */
     		
     		/* Omplir els arrays */
@@ -272,7 +272,7 @@ class EntityEnquesta {
 							$array_rang[$index_array][0] = $array_rang[$index_array][0] + 1; 
 							break;
 						case "BOOL":
-							if ($resposta->getRespostabool() == 1) $array_bool[0][0] = $array_bool[0][0] + 1;
+							if ($resposta->getRespostabool() == 1) $array_bool[0][0] = $array_bool[0][0] + 1; // Ull està al revés del que podria semblar
 							else $array_bool[1][0] = $array_bool[1][0] + 1;  
 							break;
 						case "OPEN":
@@ -302,6 +302,69 @@ class EntityEnquesta {
     	}
 
     	return $respostes;
+    }
+    
+    /**
+     * Retorna mitjana de tote les respostes d'una pregunta de l'enquesta
+     *
+     */
+    public function getAvgPregunta(\Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $pregunta) {
+    	$sum = 0;
+    	$total = 0;
+    	foreach ($this->realitzacions as $c => $realitzacio) {
+    		$resposta = $realitzacio->getResposta($pregunta);
+    		if ($resposta != null) {
+    			$total++;
+    			switch ($pregunta->getTipus()) {
+    				case "RANG":
+    					$sum += $resposta->getRespostarang();
+    					break;
+    				case "BOOL":
+    					$sum += $resposta->getRespostabool();
+    					break;
+    			}
+    		}
+    	}
+    	
+    	return ($total > 0)?($sum/$total):0;
+    }
+    
+    /**
+     * Retorna total de respostes per valor (1-gens, 1-poc, etc...) d'una pregunta RANG de l'enquesta
+     *
+     */
+    public function getTotalPreguntaRang(\Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $pregunta) {
+    	$dadespregunta = array(0,0,0,0,0); /* [0] - gens,  [1] - poc, .... [4] - molt */ 
+    	if ($pregunta->getTipus() != "RANG") return $dadespregunta;
+    	
+    	foreach ($this->realitzacions as $c => $realitzacio) {
+    		$resposta = $realitzacio->getResposta($pregunta);
+    		if ($resposta != null) {
+    			$index_array = $resposta->getRespostarang()-1;
+    			$dadespregunta[$index_array] = $dadespregunta[$index_array]+1;
+    		}
+    	}
+    	 
+    	return $dadespregunta;
+    }
+
+    /**
+     * Retorna total de respostes per valor (0-No, 1-Si) d'una pregunta BOOL de l'enquesta
+     *
+     */
+    public function getTotalPreguntaBool(\Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $pregunta) {
+    	$dadespregunta = array(0,0); /* [0] - Si,  [1] - No */
+    	if ($pregunta->getTipus() != "BOOL") return $dadespregunta;
+    	 
+    	foreach ($this->realitzacions as $c => $realitzacio) {
+    		$resposta = $realitzacio->getResposta($pregunta);
+    		if ($resposta != null) {
+    			if ($resposta->getRespostabool() == 1) $dadespregunta[0] = $dadespregunta[0]+1; // incrementa si
+    			else $dadespregunta[1] = $dadespregunta[1]+1; // incrementa no
+    		}
+    	}
+    
+    	return $dadespregunta;
     }
     
 }

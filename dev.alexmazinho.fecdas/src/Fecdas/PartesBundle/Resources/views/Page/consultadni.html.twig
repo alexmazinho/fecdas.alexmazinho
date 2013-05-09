@@ -19,7 +19,6 @@
         {{ app.session.flash('error-notice') }}
     </div>
 	{% endif %}
-
 	<div class="formdni-main">
 		<form id="form-consultadni" action="{{ path('FecdasPartesBundle_busseig') }}" method="post" {{ form_enctype(form) }}  class="appform">
 	    	<div id="formdni-dni">
@@ -34,8 +33,7 @@
 		<div class="sms-footer">Consulta si una persona té una llicència / assegurança vigent a data d'avui.
 		Per garantir la protecció de les dades personals el resultat només serà afirmatiu o negatiu.
 		En cas de dubte poseu-vos en contacte directament amb la federació</div>
-	</div>
-    
+    </div>
 {% endblock %}
 
 {% block javascripts %}

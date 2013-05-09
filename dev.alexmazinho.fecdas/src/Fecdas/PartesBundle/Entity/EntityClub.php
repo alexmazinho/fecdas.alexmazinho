@@ -72,16 +72,26 @@ class EntityClub {
 	 * @ORM\Column(type="string", length=20, nullable=true)
 	 */
 	protected $addrprovincia;
-	
-	/**
-	 * @ORM\Column(type="boolean")
-	 */
-	protected $decathlon;
 
 	/**
-	 * @ORM\Column(type="boolean")
+	 * @ORM\Column(type="string", length=75, nullable=true)
 	 */
-	protected $tecnocampus;
+	protected $addradrecacorreu;
+	
+	/**
+	 * @ORM\Column(type="string", length=35, nullable=true)
+	 */
+	protected $addrpobcorreu;
+	
+	/**
+	 * @ORM\Column(type="string", length=5, nullable=true)
+	 */
+	protected $addrcpcorreu;
+	
+	/**
+	 * @ORM\Column(type="string", length=20, nullable=true)
+	 */
+	protected $addrprovinciacorreu;
 	
 	/**
 	 * @ORM\Column(type="boolean")
@@ -93,11 +103,20 @@ class EntityClub {
 	 */
 	protected $usuaris;	// Owning side of the relationship
 	
+	/**
+	 * @ORM\ManyToMany(targetEntity="EntityParteType")
+	 * @ORM\JoinTable(name="m_clubs_tipusparte",
+	 *      joinColumns={@ORM\JoinColumn(name="club", referencedColumnName="codi")},
+	 *      inverseJoinColumns={@ORM\JoinColumn(name="tipus", referencedColumnName="id")}
+	 *      )
+	 */
+	private $tipusparte;
+	
+	
 	public function __construct() {
 		$this->activat = true;
-		$this->decathlon = false;
-		$this->tecnocampus = false;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
 	public function __toString() {
@@ -342,43 +361,83 @@ class EntityClub {
     }
     
     /**
-     * Set decathlon
+     * Set addradrecacorreu
      *
-     * @param boolean $decathlon
+     * @param string $addradrecacorreu
      */
-    public function setDecathlon($decathlon)
+    public function setAddradrecacorreu($addradrecacorreu)
     {
-    	$this->decathlon = $decathlon;
+    	$this->addradrecacorreu = $addradrecacorreu;
     }
     
     /**
-     * Get decathlon
+     * Get addradrecacorreu
      *
-     * @return boolean
+     * @return string
      */
-    public function getDecathlon()
+    public function getAddradrecacorreu()
     {
-    	return $this->decathlon;
+    	return $this->addradrecacorreu;
     }
     
     /**
-     * Set tecnocampus
+     * Set addrpobcorreu
      *
-     * @param boolean $tecnocampus
+     * @param string $addrpobcorreu
      */
-    public function setTecnocampus($tecnocampus)
+    public function setAddrpobcorreu($addrpobcorreu)
     {
-    	$this->tecnocampus = $tecnocampus;
+    	$this->addrpobcorreu = $addrpobcorreu;
     }
     
     /**
-     * Get tecnocampus
+     * Get addrpobcorreu
      *
-     * @return boolean
+     * @return string
      */
-    public function getTecnocampus()
+    public function getAddrpobcorreu()
     {
-    	return $this->tecnocampus;
+    	return $this->addrpobcorreu;
+    }
+    
+    /**
+     * Set addrcpcorreu
+     *
+     * @param string $addrcpcorreu
+     */
+    public function setAddrcpcorreu($addrcpcorreu)
+    {
+    	$this->addrcpcorreu = $addrcpcorreu;
+    }
+    
+    /**
+     * Get addrcpcorreu
+     *
+     * @return string
+     */
+    public function getAddrcpcorreu()
+    {
+    	return $this->addrcpcorreu;
+    }
+    
+    /**
+     * Set addrprovinciacorreu
+     *
+     * @param string $addrprovincia
+     */
+    public function setAddrprovinciacorreu($addrprovinciacorreu)
+    {
+    	$this->addrprovinciacorreu = $addrprovinciacorreu;
+    }
+    
+    /**
+     * Get addrprovinciacorreu
+     *
+     * @return string
+     */
+    public function getAddrprovinciacorreu()
+    {
+    	return $this->addrprovinciacorreu;
     }
     
     /**
@@ -429,6 +488,32 @@ class EntityClub {
     	foreach ($usuaris as $usuari) {
     		$usuari->setClub($this);
     	}
+    }
+
+    /**
+     * Get tipusparte
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getTipusparte()
+    {
+    	return $this->tipusparte;
+    }
+    
+    /**
+     * Add tipusparte
+     *
+     * @param Fecdas\PartesBundle\Entity\EntityParteType $tipusparte
+     */
+    public function addTipusparte(\Fecdas\PartesBundle\Entity\EntityParteType $tipusparte)
+    {
+    	$this->tipusparte->add($tipusparte);
+    }
+    
+    
+    public function setTipusparte(\Doctrine\Common\Collections\ArrayCollection $tipusparte)
+    {
+    	$this->tipusparte = $tipusparte;
     }
     
 }

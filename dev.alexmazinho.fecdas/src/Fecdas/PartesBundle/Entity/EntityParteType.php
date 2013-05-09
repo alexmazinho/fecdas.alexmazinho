@@ -56,6 +56,10 @@ class EntityParteType {
 	public function __construct() {
 		$this->categories = new \Doctrine\Common\Collections\ArrayCollection();
 	}
+	
+	public function __toString() {
+		return $this->descripcio;
+	}
 
     /**
      * Set id

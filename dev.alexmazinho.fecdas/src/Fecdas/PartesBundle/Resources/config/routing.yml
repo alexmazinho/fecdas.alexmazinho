@@ -179,6 +179,13 @@ FecdasPartesBundle_enquesta:
     requirements:
         _method:  GET|POST
 
+
+FecdasPartesBundle_tancarenquesta:
+    pattern:  /tancarenquesta
+    defaults: { _controller: "FecdasPartesBundle:Enquestes:tancarenquesta" }
+    requirements:
+        _method:  GET
+
 FecdasPartesBundle_estadistiques:
     pattern:  /estadistiques
     defaults: { _controller: "FecdasPartesBundle:Enquestes:estadistiques" }

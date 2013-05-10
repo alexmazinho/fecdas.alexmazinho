@@ -215,8 +215,6 @@ li.data-detall-dobleespai {
 .assegurat-vigencia {	width: 16%; text-align:center;}
 .assegurat-tipusdesc {	width: 30%; text-align:left;}
 .assegurat-actions { width: 6%; text-align:right; }
-.assegurat-actions a:hover img
- { border: 1px solid #DDDDDD; background-color:#E7F2FB}
 
 input#form_nom,
 input#form_cognoms {
@@ -381,8 +379,6 @@ li.data-detall-fosc {
 .parte-pagat {	width: 12%; text-align:center;}
 .parte-import {	width: 11%; text-align:right;}
 .parte-actions { width: 6%; text-align:right; margin-top: -14px}
-.parte-actions a:hover img
- { border: 1px solid #DDDDDD; background-color:#E7F2FB; width:21px; height:21px}
 
 #progressbar {
 	margin-left: auto;
@@ -458,10 +454,6 @@ li.data-detall-fosc {
 .llicencia-enviarllicencia {	width: 7%; text-align: center; letter-spacing:2px}
 .llicencia-no {width: 6%; text-align: center; }
 .llicencia-actions {width: 4%; margin-top: -14px}
-.llicencia-actions a:hover img
- { border: 1px solid #DDDDDD; background-color:#E7F2FB}
-
-
 
 .parte-llicencia, .club-usuari {
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
@@ -680,9 +672,6 @@ input#formuserclub-randompassword { width: 150px; }
 .userclub-rol {	width: 10%; text-align: center; }
 .userclub-forceupdate {	width: 10%; text-align: center; }
 .userclub-actions { width: 8%; text-align:right; margin-top: -14px}
-.userclub-actions a:hover img
- { border: 1px solid #DDDDDD; background-color:#E7F2FB}
-
 
 .formpersona-row {
 	width: 100%;
@@ -900,8 +889,6 @@ select#parte_persona_addrnacionalitat {
 .enquesta-enviaments-progressbar { width: 15%; text-align:center; height: 1em; float:left; }
 .enquesta-enviaments-label { width: 5%; text-align:center; float:left;}
 .enquesta-actions { width: 80px; text-align:left; margin-top: -14px; float:right; }
-.enquesta-actions a:hover img
- { border: 1px solid #DDDDDD; background-color:#E7F2FB}
 
 #enquesta_descripcio {
 	width: 350px;
@@ -1041,7 +1028,7 @@ textarea.enquesta-resposta {
 
 #enquesta-stats {
 	display:none; 
-	width: 100%;"
+	width: 100%;
 }
 
 #enquesta-plots {
@@ -1166,8 +1153,6 @@ textarea.enquesta-resposta {
 .parterecents-pagweb {	width: 15%; text-align:right;}
 .parterecents-factura {	width: 11%; text-align:center;}
 .parterecents-actions { width: 4%; text-align:right; margin-top: -14px}
-.parterecents-actions a:hover img
- { border: 1px solid #DDDDDD; background-color:#E7F2FB}
 
 /*****************************************************************************************************************/
 

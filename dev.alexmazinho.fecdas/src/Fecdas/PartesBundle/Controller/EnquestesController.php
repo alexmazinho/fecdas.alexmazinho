@@ -46,6 +46,35 @@ class EnquestesController extends BaseController {
 						'busseig' => $this->isCurrentBusseig()));
 	}
 	
+	public function tancarenquestaAction() {
+		$request = $this->getRequest();
+		
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+		
+		if ($request->query->has('id')) {
+			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($request->query->get('id'));
+			
+			$em = $this->getDoctrine()->getEntityManager();
+			
+			$enquesta->setDatafinal($this->getCurrentDate('now'));
+			
+			$em->flush();
+			
+			$this->logEntry($this->get('session')->get('username'), 'TANCAR ENQUESTA',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), "enquesta " . $enquesta->getId());
+		} else {
+			$this->logEntry($this->get('session')->get('username'), 'TANCAR ENQUESTA ERROR',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), "enquesta " . $enquesta->getId());
+		}
+		
+		$response = $this->forward('FecdasPartesBundle:Enquestes:enquestes');
+		return $response;
+	}
+	
+	
 	public function enquestaAction() {
 		$request = $this->getRequest();
 	
@@ -76,25 +105,51 @@ class EnquestesController extends BaseController {
 				}
 			}
 
-			/*
-			 * 
-			 * Validacions de dates, que no solapin
-			 * 
-			 * $error = "..."
-			 * 
-			 * */
-			
 			$form = $this->createForm(new FormEnquesta(), $enquesta);
 			
 			$form->bindRequest($request);
 			
 			$actiontext = (is_null($enquesta->getId()))?'NEW ENQUESTA OK':'UPD ENQUESTA OK';
+
+			
+			/* Seleccionar enquestes entre dues dates */
+			$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
+			$strQuery .= " ORDER BY e.datainici";
+			$query = $em->createQuery($strQuery);
+				
+			$enquestes = $query->getResult();
+			
+			$datainici = $enquesta->getDatainici()->format('Y-m-d');
+			$datafinal = ""	;
+			
+			
+			if ($enquesta->getDatafinal() != null) {
+				$datafinal = $enquesta->getDatafinal()->format('Y-m-d');
+				if ($datainici > $datafinal) $error = "La data d'inici no pot ser posterior a la data final";
+			}
+			
+			if ($error == "") {
+				foreach ($enquestes as $c => $enquesta_iter) {
+					/* Validacions de dates, que no solapin */
+					if ($enquesta_iter != $enquesta){
+						if ($enquesta_iter->getDatafinal() == null) $error = "Encara hi ha una enquesta activa, cal tancar-la";
+						else {
+							if ($datafinal == null) {
+							// (StartA <= EndB) and (inifinite >= StartB)
+								if ($datainici <= $enquesta_iter->getDatafinal()->format('Y-m-d')) $error = "Aquesta enquesta comença abans que finalitzi una altra";
+							} else {
+							// (StartA <= EndB) and (EndA >= StartB)
+								if ($datainici <= $enquesta_iter->getDatafinal()->format('Y-m-d') and
+									$datafinal >= $enquesta_iter->getDatainici()->format('Y-m-d')) $error = "Existeix una altra enquesta activa per aquest periode";
+							}
+						}
+					}
+				}
+			}
 			
 			if ($form->isValid() && $error == "") {
-				// Esborrar totes les preguntes i tornar-les a afegir
-				
 				if ($enquesta->getId() == null) $em->persist($enquesta);
-				
+				// Esborrar totes les preguntes i tornar-les a afegir
 				if ($request->request->has('preguntes')) {
 					parse_str($request->request->get('preguntes'));  // Parse array $pregunta
 					// Esborrar primer totes les preguntes  array clear() no funciona
@@ -124,6 +179,7 @@ class EnquestesController extends BaseController {
 			}
 			
 			if ($error != "") {
+				$em->detach($enquesta);
 				$this->logEntry($this->get('session')->get('username'), (is_null($enquesta->getId()))?'NEW ENQUESTA KO':'UPD ENQUESTA KO',
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId() . "-". $error);
@@ -335,11 +391,24 @@ class EnquestesController extends BaseController {
 	}
 
 	public function estadistiquesAction() {
+		$request = $this->getRequest();
+		
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 		
+		$this->logEntry($this->get('session')->get('username'), 'VIEW ESTADISTIQUES ENQUESTES',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		
+		/* Tab / pregunta per mostrar */
+		$tab = 0;
+		$preguntaid = 1;
+		if ($request->query->has('tab')) $tab = $request->query->get('tab');
+		if ($request->query->has('preguntaid')) $preguntaid = $request->query->get('preguntaid');
+		
+		
 		return $this->render('FecdasPartesBundle:Enquestes:estadistiques.html.twig',
-			array('admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
+			array('tab' => $tab,  'pselected' => $preguntaid, 'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
 					'busseig' => $this->isCurrentBusseig()));
 	}
 	
@@ -356,7 +425,7 @@ class EnquestesController extends BaseController {
 		
 		/* Obtenir totes les preguntes */
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";
-		$strQuery .= " ORDER BY p.id";
+		$strQuery .= " WHERE p.tipus <> 'OPEN' ORDER BY p.id";
 			
 		$query = $em->createQuery($strQuery);
 		
@@ -405,7 +474,7 @@ class EnquestesController extends BaseController {
 		
 		/* Obtenir totes les preguntes */
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";
-		$strQuery .= " ORDER BY p.id";
+		$strQuery .= " WHERE p.tipus <> 'OPEN' ORDER BY p.id";
 			
 		$query = $em->createQuery($strQuery);
 		
@@ -419,7 +488,7 @@ class EnquestesController extends BaseController {
 		$enquestes = $query->getResult();		
 		
 		/* Pregunta per mostrar resultats */
-		$preguntaid = 7;
+		$preguntaid = 1;
 		if ($request->query->has('preguntaid')) $preguntaid = $request->query->get('preguntaid');
 		$pregunta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityPregunta')->find($preguntaid);
 		
@@ -475,6 +544,8 @@ class EnquestesController extends BaseController {
 		}
 		
 		return $this->render('FecdasPartesBundle:Enquestes:estadistiquesTab2.html.twig',
-				array('preguntes' => $preguntes, 'valors' => json_encode($valors), 'dades' => json_encode($dades), 'mesures' => json_encode($mesures)));
+				array('preguntes' => $preguntes, 'pselected' => $preguntaid, 
+						'valors' => json_encode($valors), 'dades' => json_encode($dades), 'mesures' => json_encode($mesures)));
 	}
+	
 }

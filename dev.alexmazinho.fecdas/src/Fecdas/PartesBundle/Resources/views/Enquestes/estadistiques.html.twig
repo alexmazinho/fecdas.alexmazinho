@@ -33,10 +33,10 @@
    	<div id="tabs-enquestes">
 		<ul>
 			<li><a href="{{ path('FecdasPartesBundle_estadistiquestab1') }}">Resultats globals</a></li>
-			<li><a href="{{ path('FecdasPartesBundle_estadistiquestab2') }}">Evolució per pregunta</a></li>
+			<li><a href="{{ path('FecdasPartesBundle_estadistiquestab2', { 'preguntaid': pselected }) }}">Evolució per pregunta</a></li>
 		</ul>
    	</div>
-     
+
 {% endblock %}
 
 {% block javascripts %}
@@ -50,7 +50,8 @@ $(document).ready(function(){
 	$("#menu-adm").click();
 
 	$(function() {
-		$( "#tabs-enquestes" ).tabs();
+		var tabactive = {{ tab }};
+		$( "#tabs-enquestes" ).tabs({ active: tabactive });
 	});
 
 	

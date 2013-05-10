@@ -11,7 +11,7 @@
 			</div>
 			<ul id="preguntes-selectable" class="list-preguntes-select list-variableheight">
 			{% for pregunta in preguntes %}
-				<li id="pregunta_{{ pregunta.id }}" class="list-variableheight-detall clearfix">
+				<li id="pregunta_{{ pregunta.id }}" class="list-variableheight-detall clearfix {% if pselected == pregunta.id %} ui-selected {%  endif %} ">
 	  				<div class="pregunta-id">{{ pregunta.id }}</div>
 	  				<div class="pregunta-enunciat">{{ pregunta.enunciat }}</div>
   				</li>
@@ -28,9 +28,15 @@ $(document).ready(function(){
 
 	$( "#preguntes-selectable" ).selectable({
 		selected: function( event, ui ) {
-			//alert($(this).html());
+			var preguntaid = $(ui.selected).find(".pregunta-id").html();
+
+			location = location.pathname + "?preguntaid="+preguntaid+"&tab=1";
+		},
+		selecting: function(event, ui) { 
+		     if ($(".ui-selected, .ui-selecting").length > 1) {
+		       $(ui.selecting).removeClass("ui-selecting");
+		     }
 		}
-	
 	});
 	
 });

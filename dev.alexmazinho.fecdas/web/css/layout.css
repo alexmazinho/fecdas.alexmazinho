@@ -111,7 +111,7 @@ html>body #wrapper {
 	position:fixed;
     bottom:0;
     width:100%;
-    height:60px;   /* Height of the footer */
+    height:50px;   /* Height of the footer */
 }
 
 #no-js ul{
@@ -269,11 +269,11 @@ html>body #left-menu a:hover {
 	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0.91,rgb(255,255,255)),color-stop(1, rgb(237,237,237)),color-stop(1, rgb(237,237,237)));
 }
 
-#footer .powered { width: 15%; padding: 15px; display: inline-block; float: left; text-align: left;}
+#footer .powered { width: 15%; padding: 15px; display: inline-block; float: left; text-align: left;  font-size: smaller;}
 
 #footer .fecdas-footer { float: left; width: 70%; }
 
-#footer .created-by { float: right; text-align:left; padding: 10px; }
+#footer .created-by { float: right; text-align:left; padding: 10px;  font-size: smaller; }
 
 #no-js { 
 	border-left: 1px solid #ccc;

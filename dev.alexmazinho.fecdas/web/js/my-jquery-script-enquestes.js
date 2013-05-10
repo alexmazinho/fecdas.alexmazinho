@@ -111,7 +111,7 @@
 			var progresslabel = $(this).next();
 
 			$(this).progressbar({
-				value: false,	
+				value: 0,	
 				change: function() {
 					progresslabel.text( $(this).progressbar( "value" ) + " %" );
 				}

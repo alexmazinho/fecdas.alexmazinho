@@ -45,34 +45,6 @@
 					<input type="submit" id="formparte-button-pagat" value="Pagament Rebut" name="formparte-button-pagat"/>
 				</div> 
 			{% endif %}
-			<div id="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-				<div class="button-top"><a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
-				<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
-				{% if edit == true %}
-				<!-- No Pagat -->
-	        		<div class="button-top">	
-						<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 
-						 id="formparte-button-payment" class="forminput-inside" value="Pagar" name="formparte-button-payment"/>
-					</div>
-					{# if admin == true %}
-					<div id="formparte-delete" class="parte-submit" >	
-						<input type="image" src="{{ asset('images/icon-remove.png') }}" alt="Esborrar llista llicències" title="Esborrar llista llicències" width="30px" 
-						id="formparte-button-delete" class="forminput-inside" value="Esborrar Llista" name="formparte-button-delete"/>
-					</div>
-					{% endif #}
-				{% else  %}
-					<!-- només factures si pagades pel web -->
-					{% if parte.numfactura is not null and parte.isFacturaValida == true %}
-						{% if parte.numfactura == -1 %}
-							<div class="button-top"><img src="{{ asset('images/icon-factura.png') }}" alt="Factura Pendent confirmar pagament" title="Factura Pendent confirmar pagament" width="30px"></div>
-						{% else %}
-							<div class="button-top"><a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parte.id}) }}">
-							<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="30px"></a></div>
-						{% endif %}
-					{% endif %}	
-				<!-- Pagat -->
-				{% endif %}	
-			</div>	
 			
 		</div>
 		<div class="form-row clearfix">
@@ -102,6 +74,34 @@
 					</a>
 				</div>
 			{% endif %}	
+			<div id="buttons-top" class="form-right" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
+				<div class="button-top"><a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
+				<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
+				{% if edit == true %}
+				<!-- No Pagat -->
+	        		<div class="button-top">	
+						<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 
+						 id="formparte-button-payment" class="forminput-inside" value="Pagar" name="formparte-button-payment"/>
+					</div>
+					{# if admin == true %}
+					<div id="formparte-delete" class="parte-submit" >	
+						<input type="image" src="{{ asset('images/icon-remove.png') }}" alt="Esborrar llista llicències" title="Esborrar llista llicències" width="30px" 
+						id="formparte-button-delete" class="forminput-inside" value="Esborrar Llista" name="formparte-button-delete"/>
+					</div>
+					{% endif #}
+				{% else  %}
+					<!-- només factures si pagades pel web -->
+					{% if parte.numfactura is not null and parte.isFacturaValida == true %}
+						{% if parte.numfactura == -1 %}
+							<div class="button-top"><img src="{{ asset('images/icon-factura.png') }}" alt="Factura Pendent confirmar pagament" title="Factura Pendent confirmar pagament" width="30px"></div>
+						{% else %}
+							<div class="button-top"><a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parte.id}) }}">
+							<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="30px"></a></div>
+						{% endif %}
+					{% endif %}	
+				<!-- Pagat -->
+				{% endif %}	
+			</div>	
 		</div>
 		<div id="formparte-rest">	{{ form_rest(form) }}</div>
 		

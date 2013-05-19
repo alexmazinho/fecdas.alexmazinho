@@ -16,20 +16,47 @@ class CronController extends BaseController {
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkrenovacio >> mailsrenovacio.txt*/
 		
 		/*
-		 * SELECT * FROM `m_partes` WHERE tipus IN (7,10) AND 
-			(
-			YEAR(`dataalta`) = YEAR(now()) OR
-			(YEAR(`dataalta`) = YEAR(now()) - 1 AND 
-			MONTH(`dataalta`) >= MONTH(now()))
-			)
-			ORDER BY dataalta
+		 * (SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.club), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
+		 		 DATE_FORMAT(p.dataalta + INTERVAL 365 DAY, '%d/%m/%Y') as datacaducitat, 
+		 		 DATE_FORMAT(p.dataalta + INTERVAL 335 DAY, '%d/%m/%Y') as datanotificacio,
+		 		 p.numrelacio, t.id, t.descripcio  
+		 		 FROM m_partes p INNER JOIN m_tipusparte t ON p.tipus = t.id 
+		 		 WHERE p.tipus IN (7,10) AND 
+				(YEAR(p.dataalta) = YEAR(now()) OR (YEAR(p.dataalta) = YEAR(now()) - 1 AND MONTH(p.dataalta) >= MONTH(now())))
+			) UNION
+			(SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.club), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
+		 		 DATE_FORMAT(p.dataalta + INTERVAL 365 DAY, '%d/%m/%Y') as datacaducitat, 
+		 		 DATE_FORMAT(p.dataalta + INTERVAL 350 DAY, '%d/%m/%Y') as datanotificacio,
+		 		 p.numrelacio, t.id, t.descripcio  
+		 		 FROM m_partes p INNER JOIN m_tipusparte t ON p.tipus = t.id 
+		 		 WHERE p.tipus IN (7,10) AND 
+				(YEAR(p.dataalta) = YEAR(now()) OR (YEAR(p.dataalta) = YEAR(now()) - 1 AND MONTH(p.dataalta) >= MONTH(now())))
+			) UNION
+			(SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.club), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
+		 		 DATE_FORMAT(p.dataalta + INTERVAL 365 DAY, '%d/%m/%Y') as datacaducitat, 
+		 		 DATE_FORMAT(p.dataalta + INTERVAL 363 DAY, '%d/%m/%Y') as datanotificacio,
+		 		 p.numrelacio, t.id, t.descripcio  
+		 		 FROM m_partes p INNER JOIN m_tipusparte t ON p.tipus = t.id 
+		 		 WHERE p.tipus IN (7,10) AND 
+				(YEAR(p.dataalta) = YEAR(now()) OR (YEAR(p.dataalta) = YEAR(now()) - 1 AND MONTH(p.dataalta) >= MONTH(now())))
+			) ORDER BY datanotificacio
+
 		 * */
 		
 		$request = $this->getRequest();
 
-		$sortida = '';
+		$sortida = $this->checkRenovacio(30);
+		
+		$sortida .= $this->checkRenovacio(15);
+		
+		$sortida .= $this->checkRenovacio(2);
+		
+		return new Response($sortida);
+	}
+	
+	private function checkRenovacio($dies) {
+		$sortida = 'Avís renovació ' . $dies . ', en data '. date('Y-m-d') . '\n';
 		$subject = '';
-		$tomails = array("alexmazinho@gmail.com");
 		$body = '';
 		
 		$em = $this->getDoctrine()->getEntityManager();
@@ -37,7 +64,7 @@ class CronController extends BaseController {
 		// 30 dies
 		$aux = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
 		//echo $aux->format('Y-m-d') . "<br/>";
-		$aux->add(new \DateInterval('P30D'));
+		$aux->add(new \DateInterval('P'.$dies.'D'));
 		//echo $aux->format('Y-m-d H:i:s') . "<br/>";
 		$iniNotificacio = $aux->format('Y-m-d H:i:s'); // Format Mysql
 		$aux->add(new \DateInterval('P1D'));
@@ -59,29 +86,43 @@ class CronController extends BaseController {
 		$partesrenovar = $query->getResult();
 		
 		foreach ($partesrenovar as $c => $parte_iter) {
+			$bccmails = array();
+			$tomails = array();
+			
 			$subject = '::Renovació Llista FECDAS::';
-			if ($parte_iter->getClub()->getMail() != null) $subject .= ' (club sense adreça de correu)';
-			
+				
+			if ($parte_iter->getClub()->getMail() == null) $subject .= ' (club sense adreça de correu)';
+			else {
+				if ($this->get('kernel')->getEnvironment() == 'prod') {
+					$bccmails[] = $this->getAdminMails();
+					$tomails[] = $parte_iter->getClub()->getMail();
+				} else {
+					$bccmails[] = "alexmazinho@gmail.com";
+				}
+			}
+				
 			$message = \Swift_Message::newInstance()
-				->setSubject($subject)
-				->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-				->setTo($tomails);
-			
+			->setSubject($subject)
+			->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
+			->setBcc($bccmails)
+			->setTo($tomails);
+				
 			$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
-			
+				
 			$body = $this->renderView('FecdasPartesBundle:Cron:renovacioEmail.html.twig',
-					array('parte' => $parte_iter, 'dies' => 30, 'logo' => $logosrc));
-			
+					array('parte' => $parte_iter, 'dies' => $dies, 'logo' => $logosrc));
+				
 			$message->setBody($body, 'text/html');
-			
-			$sortida .= $body;  
+				
+			$sortida .= $body;
 			$this->get('mailer')->send($message);
-			
+				
 			$this->logEntry('alexmazinho@gmail.com', 'CRON RENEW',
 					$this->getRequest()->server->get('REMOTE_ADDR'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), 
+					'club ' . $parte_iter->getClub()->getNom() . ', parte ' . $parte_iter->getId() . ', dies ' .  $dies);
 		}
 		
-		return new Response($sortida);
+		return $sortida;
 	}
 }

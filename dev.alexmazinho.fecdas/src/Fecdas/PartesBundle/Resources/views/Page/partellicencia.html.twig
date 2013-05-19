@@ -25,7 +25,7 @@
 	</div>
 	<div class="form-row clearfix">
 		{% if edit == true %} 
-		<div class="textaccio" class="form-left">
+		<div class="textaccio form-left">
 			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
 			{% if llicenciadades.persona is not null %}	modifica assegurat 
 			{% else %} nou assegurat {% endif %}
@@ -101,7 +101,7 @@
 		</div>
 	</div>
 	{% if edit == true %}
-		<div class="textaccio">
+		<div class="textaccio form-left">
 			<a id="formllicencia-add" href="javascript:void(0);" name="add-llicencia">
 			confirmar llicència
 			<img src="{{ asset('images/icon_down16.png') }}"></a>

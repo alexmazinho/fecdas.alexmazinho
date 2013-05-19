@@ -1,23 +1,56 @@
+/* CSS reset */
+* { margin: 0; padding: 0px; }
 
-/*html,body,div,span,applet,object,iframe,
-h1,h2,h3,h4,h5,h6,p,blockquote,
-pre,a,abbr,acronym,address,big,cite,code,del,
-dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,
-sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,
-fieldset,form,label,legend,table,caption,tbody,
-tfoot,thead,tr,th,td,article,aside,canvas,details,
-embed,figure,figcaption,footer,header,hgroup,menu,nav,
-output,ruby,section,summary,time,mark,audio,video
-{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}*/
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+	/*font-family: Arial, Helvetica, sans-serif;*/
+	font-family: helvetica monospace, arial, sans-serif;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
 
-/*article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section
-{display:block}*/
-
-/*body {line-height:1} */
-
-/*ol,ul{list-style:none}
-blockquote,q{quotes:none}
-blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}*/
+input, textarea {
+	font-family: helvetica monospace,arial,sans-serif;
+    font-size: 14px;
+}
 
 /* F48A00 --> 6290bf --> 1240a0*/
 
@@ -42,11 +75,7 @@ ol,ul{ list-style:none;	margin: 0;  padding: 0; }
 
 html,
 body { 
-	/*line-height: 1px;*/
-	font-family: Arial, Helvetica, sans-serif;
-	/*font-family: 'Open Sans', sans-serif;*/
 	font-size: 12px; 
-	
 	color: #444444; font-size: 14px; 
 	background: url("../images/cap_fons3.png") repeat-x scroll center top transparent;
 }
@@ -55,8 +84,6 @@ body {
 /******************************** Posicionament blocs ********************************/
 html,
 body { 
-	margin:0;
-   	padding:0;
    	height:100%;
 }
 
@@ -213,6 +240,16 @@ a img {border: none; }
     position: absolute;
 }
 
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	#left-menu .navigation a .menu-subitem {
+		left: 1.8em;
+	}
+	
+	#left-menu .navigation a span {
+    	left: 1.1em;
+  	}
+}
+
 #left-menu .navigation a .ui-icon-triangle-1-e {
     display: none;
 }
@@ -248,7 +285,7 @@ html>body #left-menu a:hover {
     { line-height: 1.2em; font-size: 32px; margin-bottom: 10px; margin-top: 5px; margin-left: 30px; font-weight: normal; color: #1240a0; }
 #main-col header { line-height: 1.5em; margin-bottom: 20px; text-align: justify; width:770px }
 
-#main-col #login {
+#main-col .login {
 	margin-top:70px; 
 	margin-left:30px;
 }
@@ -280,7 +317,7 @@ html>body #left-menu a:hover {
 
 #footer .powered { width: 15%; padding: 15px; display: inline-block; float: left; text-align: left;  font-size: smaller;}
 
-#footer .fecdas-footer { float: left; width: 60%; }
+#footer .fecdas-footer { float: left; width: 60%; padding: 10px; }
 
 #footer .created-by { float: right; text-align:left; padding: 10px;  font-size: smaller; }
 

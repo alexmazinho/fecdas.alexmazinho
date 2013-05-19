@@ -1371,6 +1371,36 @@ class PageController extends BaseController {
 						'busseig' => $this->isCurrentBusseig()));
 	}
 	
+	public function notificacioTestAction() {
+		
+		$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text');
+		$formBuilder->add('Ds_MerchantData', 'text', array('required' => false));
+		$formBuilder->add('Ds_Date', 'text');
+		$formBuilder->add('Ds_Hour', 'text');
+		$formBuilder->add('Ds_Order', 'text');
+		$formBuilder->add('Ds_PayMethod', 'text', array('required' => false));
+		$formBuilder->add('accio', 'choice', array(
+				'choices'   => array($this->generateUrl('FecdasPartesBundle_notificacio') => 'FecdasPartesBundle_notificacio', 
+									$this->generateUrl('FecdasPartesBundle_notificacioOk') => 'FecdasPartesBundle_notificacioOk',
+									$this->generateUrl('FecdasPartesBundle_notificacioKo') => 'FecdasPartesBundle_notificacioKo'),
+				'required'  => true,
+		));
+		
+		$form = $formBuilder->getForm();
+		$form->get('Ds_Response')->setData(0);
+		$form->get('Ds_MerchantData')->setData("1&dev&alexmazinho@gmail.com");
+		$form->get('Ds_Date')->setData(date('d/m/Y'));
+		$form->get('Ds_Hour')->setData(date('h:i'));
+		$form->get('Ds_Order')->setData(date('Ymdhi'));
+		$form->get('Ds_PayMethod')->setData('');
+		
+		return $this->render('FecdasPartesBundle:Page:notificacioTest.html.twig',
+				array('form' => $form->createView(), 
+						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
+						'busseig' => $this->isCurrentBusseig()));
+	}
+	
+	
 	public function notificacioAction() {
 		// Crida asincrona des de TPV
 		// En entorn de proves escriu fitxer notificacions.txt
@@ -1379,7 +1409,7 @@ class PageController extends BaseController {
 		$dades = $request->request->get('Ds_MerchantData');
 
 		$resposta = $request->request->get('Ds_Response');
-
+		
 		$dades_array = explode("&", $dades);
 		$parteId = $dades_array[0];
 		$environment = $dades_array[1];
@@ -1392,15 +1422,32 @@ class PageController extends BaseController {
 							$parteId, $request->request->get('Ds_Date'),
 							$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
 							$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
+					
+					$this->logEntry($username, 'TPV ASINC NO FIN',
+							$this->getRequest()->server->get('REMOTE_ADDR'),
+							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+							$parteId . "-" . $resposta . "-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
+							"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
+
 				} else {
 					$this->writeFileNotificacio("notificacions.txt", "************** Notificació OK finalitzada **************",
 							$parteId, $request->request->get('Ds_Date'),
 							$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
 							$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
-				}
+					
+					$this->logEntry($username, 'TPV ASINC OK',
+							$this->getRequest()->server->get('REMOTE_ADDR'),
+							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+							$parteId . "-" . $resposta . "-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
+							"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
+											}
 			} else {
 				$this->writeFileNotificacio("errorspagament.txt", "************** Error NO POST **************",
 						$parteId, '', '', '', '', '');
+				
+				$this->logEntry($username, 'TPV ASINC ERROR',
+						$this->getRequest()->server->get('REMOTE_ADDR'),
+						$this->getRequest()->server->get('HTTP_USER_AGENT'));
 			}
 		} else {
 			$this->writeFileNotificacio("errorspagament.txt", "************** Notificació proves **************",
@@ -1408,20 +1455,11 @@ class PageController extends BaseController {
 					$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
 					$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
 
-			$this->logEntry("alexmazinho@gmail.com", 'NOTIFICACIO TPV',
-					$this->getRequest()->server->get('REMOTE_ADDR'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
-				
-			$this->logEntry($username, 'NOTIFICACIO TPV',
+			$this->logEntry($username, 'TPV ASINC PROVES',
 					$this->getRequest()->server->get('REMOTE_ADDR'),
 					$this->getRequest()->server->get('HTTP_USER_AGENT'), 
-					" parte: " . $parteid . " resposta: " . $resposta . " hora: " . $request->request->get('Ds_Hour') .
-					" ordre: " . $request->request->get('Ds_Order') . " metode: " . $request->request->get('Ds_PayMethod'));
-			
-			$this->writeFileNotificacio("errorspagament.txt", "************** Notificació proves FI **************",
-					$parteId, $request->request->get('Ds_Date'),
-					$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
-					$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
+					$parteId . "-" . $resposta . "-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
+					"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
 			
 		}
 
@@ -1435,10 +1473,18 @@ class PageController extends BaseController {
 			if ($request->query->get('Ds_MerchantData') != "") {
 				$dades_array = explode("&", $request->query->get('Ds_MerchantData'));
 				$parteId = $dades_array[0];
+				$username = $dades_array[2];
 				
 				$updOK = $this->actualitzarPagament($parteId, $request);
 				
 				if ($updOK == true) {
+					$this->logEntry($username, 'TPV OK',
+							$this->getRequest()->server->get('REMOTE_ADDR'),
+							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+							$parteId . "-" . $request->request->get('Ds_Response')	.
+							"-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
+							"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
+					
 					return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
 							array('result' => 'ok', 'parteId' => $parteId));
 				}
@@ -1446,10 +1492,16 @@ class PageController extends BaseController {
 		}				
 
 		$this->writeFileNotificacio("errorspagament.txt", " ************** Error notificacioOkAction **************",
-				$parteId, $request->query->get('Ds_Date'),
+				0, $request->query->get('Ds_Date'),
 				$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'),
 				$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));
 		
+		$this->logEntry('alexmazinho@gmail.com', 'TPV OK NO DATA',
+				$this->getRequest()->server->get('REMOTE_ADDR'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'),
+				(isset($parteId))?$parteId:$request->request->get('Ds_MerchantData') . "-" . $request->request->get('Ds_Response')	. 
+				"-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
+				"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod')); 
 		
 		return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
 				array('result' => 'ko')); 

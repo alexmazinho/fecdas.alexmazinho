@@ -99,6 +99,13 @@ FecdasPartesBundle_pagament:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_notificaciotest:
+    pattern:  /notificaciotest
+    defaults: { _controller: "FecdasPartesBundle:Page:notificaciotest" }
+    requirements:
+        _method:  GET|POST
+
+
 FecdasPartesBundle_notificacio:
     pattern:  /notificacio
     defaults: { _controller: "FecdasPartesBundle:Page:notificacio" }

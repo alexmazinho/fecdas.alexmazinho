@@ -36,14 +36,14 @@
 				{{ form_widget(form.pwd.second, { 'attr': {'class': 'forminput-inside'} }) }}
 			 </div> 
 			 <div id="formuser-forceupdate">
-				{{ form_widget(form.forceupdate, { 'attr': {'class': 'formfield-outside-multicheck'} }) }}
-				{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'attr': {'class': 'formlabel-outside'} }) }}
+			 	{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			 </div>
 			 <div id="formuser-rest">
 			 	{{ form_widget(form.recoverytoken) }}
 			 	{{ form_widget(form.usertoken) }}
 			 	{{ form_rest(form) }}</div>
-       	 	 <div id="formuser-submit" class="parte-submit">	
+       	 	 <div id="formuser-submit" class="parte-submit form-left" >	
 		 	 	<input type="submit" id="formuser-button-submit" class="forminput-inside" value="Actualitza" name="formuser-button-submit"/>
 			 </div>
 	    </form>

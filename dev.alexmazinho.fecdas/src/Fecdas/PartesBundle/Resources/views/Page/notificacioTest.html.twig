@@ -1,0 +1,102 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block title %}Test Notificacions {% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+
+<style>
+	input {width:400px; margin-bottom:10px;}
+	#urltest div {width:400px;} 
+</style>
+{% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Test Notificacions TPV</h1>
+    </header>
+	
+    {% if app.session.hasFlash('sms-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('sms-notice') }}
+    </div>
+	{% endif %}
+    
+   	<form id="testform" action="{{ path('FecdasPartesBundle_notificacio') }}" method="post" {{ form_enctype(form) }} class="appform">
+   	{{ form_errors(form) }}
+
+   	<div id="urltest">
+   	<div>
+		{{ form_label(form.accio, 'Acció', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.accio, { 'id': 'accio', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+   	<div>
+		{{ form_label(form.Ds_Response, 'Codi resposta', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.Ds_Response, { 'id': 'Ds_Response', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+	<div>
+		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (ipdparte&entorn&usuari)', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.Ds_MerchantData, { 'id': 'Ds_MerchantData', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+   	<div>
+		{{ form_label(form.Ds_Date, 'Data', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.Ds_Date, { 'id': 'Ds_Date', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+   	<div>
+		{{ form_label(form.Ds_Hour, 'Hora', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.Ds_Hour, { 'id': 'Ds_Hour', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+   	<div>
+		{{ form_label(form.Ds_Order, 'Ordre (12 dig)', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.Ds_Order, { 'id': 'Ds_Order', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+   	<div>
+		{{ form_label(form.Ds_PayMethod, 'Mètode (Pot estar buit)', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_widget(form.Ds_PayMethod, { 'id': 'Ds_PayMethod', 'attr': {'class': 'forminput-outside'} }) }}
+	</div>
+	
+	
+	{{ form_rest(form) }}
+
+    <div>	
+		<input type="submit" class="forminput-inside" value="Test" />
+	</div>        
+   
+</form> 
+    
+   	
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+	$(document).ready(function(){
+
+		$("#testform").submit(function(e) {
+			e.preventDefault();
+
+			var params = new Array();
+			var url = $('#accio').val();
+				
+			params.push( {'name':'Ds_Response','value': $('#Ds_Response').val() } );
+			params.push( {'name':'Ds_MerchantData','value': $('#Ds_MerchantData').val()} );
+			params.push( {'name':'Ds_Date','value': $('#Ds_Date').val() } );
+			params.push( {'name':'Ds_Hour','value': $('#Ds_Hour').val() } );
+			params.push( {'name':'Ds_Order','value': $('#Ds_Order').val() } );
+			params.push( {'name':'Ds_PayMethod','value': $('#Ds_PayMethod').val() } );
+				
+			$.post(url, params,
+			function(data, textStatus) {
+				//alert(data);
+				window.location;
+			});
+			  
+			return false;
+
+		});
+	});
+</script>
+{% endblock %}

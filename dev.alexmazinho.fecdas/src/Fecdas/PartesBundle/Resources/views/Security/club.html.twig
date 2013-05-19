@@ -29,11 +29,8 @@
 					{{ form_widget(form.activat, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 			</div>
-			<div id="formclub-nouclub" class="textaccio">
-				<a id="formclub-nou" href="#">
-				Nou club
-				<img src="{{ asset('images/icon_add.png') }}">
-				</a>
+			<div id="formclub-nouclub" class="textaccio form-right">
+				<a id="formclub-nou" href="javascript:void(0);">Nou club<img src="{{ asset('images/icon_add.png') }}"></a>
 			</div>
 		</div>
 		{% endif %}
@@ -74,10 +71,8 @@
 						{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
 		        </div>
-		        <div class="form-row-bottom clearfix">
-	       			<div class="textaccio">
+		        <div class="form-row-bottom textaccio clearfix">
 					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
-					</div>
 				</div>
 	        </div>
 	        <div id="formclub-dades-tab2" class="formclub-tab">
@@ -98,8 +93,8 @@
 						{{ form_label(form.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-copiar" class="textaccio">
-						<a class="formclub-copiaradreca" href="javascript:void(0);">Copiar<img src="{{ asset('images/icon_down16.png') }}"></a>
+					<div id="formclub-copiar" class="textaccio form-right">
+						<a id="formclub-copiaradreca" href="javascript:void(0);">Copiar<img src="{{ asset('images/icon_down16.png') }}"></a>
 					</div>
 		        </div>
 	        	<div class="form-row clearfix">

@@ -65,7 +65,6 @@ input[type="search"]  {
 input[type="email"] { max-width: 500px; }
 	  
 input[type="submit"]  { line-height: 24px; font-size: 16px; min-height: 24px; }
-input[type="checkbox"]  { margin-left: 10px; margin-top:7px;}
 
 textarea  { 
 	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; font-size: 14px; text-indent: 5px; resize: both;
@@ -99,7 +98,7 @@ select[disabled="disabled"]
 form.appform { font-size: 14px; }
 form.appform div { 
 	/*clear: left;*/ 
-	margin-bottom: 10px;  
+	/*margin-bottom: 10px;*/  
 }
 
 .formlabel-inside {
@@ -177,22 +176,25 @@ html[xmlns] .clearfix {
 	padding: 10px 0; 
 }
 
-.form-left {
-    float:left;
+.formassegurats-submit {
+	float:right;
 }
 
-.form-right {
-    float:right;
+.formlabel-lefttocheckbox {
+	/*clear: left;*/
+	display: block;
+	float: left;
+	text-align: right;
+	/*width: 100px;*/
+}
+.formcheckbox-right {
+	/*clear: right;*/
+	float: left;
+	margin-left: 10px;
+	margin-top: 1px;
+	/*width: 200px;*/
 }
 
-.formassegurats-row {
-	display: inline-block;
-	width: 100%;
-}
-
-.formassegurats-row input {
-	margin-right: 10px;
-}
 
 li.data-detall-dobleespai {
 	height: 16px;
@@ -209,12 +211,14 @@ li.data-detall-dobleespai {
 #header-asseguratactions {}
 
 .assegurat-id {	display:none}
-.assegurat-dni {	width: 11%; text-align: center; }
-.assegurat-nom {	width: 12%; text-align: left; }
-.assegurat-cognoms {	width: 20%; text-align:left;}
-.assegurat-vigencia {	width: 16%; text-align:center;}
-.assegurat-tipusdesc {	width: 30%; text-align:left;}
-.assegurat-actions { width: 6%; text-align:right; }
+.assegurat-dni { float:left; width: 11%; text-align: center; }
+.assegurat-nom { float:left; width: 12%; text-align: left; }
+.assegurat-cognoms { float:left; width: 20%; text-align:left;}
+.assegurat-vigencia { float:left; width: 16%; text-align:center;}
+.assegurat-tipusdesc { float:left; width: 30%; text-align:left;}
+.assegurat-novigent { float:left; width: 46%; }
+.assegurat-actions { float:right; width: 3%; text-align:right; }
+
 
 input#form_nom,
 input#form_cognoms {
@@ -261,10 +265,6 @@ input#form_dni {
 	width:18%;*/
     margin-top: 13px;
 }
-
-.formllicencia-row .textaccio {
-	width:32%;
-} 
 
 .textaccio a {
 	background: #EEEEEE;
@@ -336,7 +336,7 @@ html>body .data-detall {
 }
 
 .data-detall div {
-	float:left;
+	/*float:left;*/
 }
 
 li.data-detall {
@@ -366,19 +366,19 @@ li.data-detall-fosc {
 #header-parteany {	width: 6%;}
 #header-partedata {	width: 13%; text-align: center;}
 #header-partetipusdesc { width: 35%;}
-#header-partetotal {	width: 10%;text-align:center;}
+#header-partetotal {	width: 9%;text-align:center;}
 #header-partepagat {	width: 12%;}
-#header-parteimport {	width: 11%;}
+#header-parteimport {	width: 9%; text-align:right;}
 #header-parteactions {}
 
 .parte-id {	display:none}
-.parte-any {	width: 6%; text-align: center; }
-.parte-data {	width: 13%; text-align: center; }
-.parte-tipusdesc {	width: 35%; text-align:center;}
-.parte-total {	width: 8%; text-align:center;}
-.parte-pagat {	width: 12%; text-align:center;}
-.parte-import {	width: 11%; text-align:right;}
-.parte-actions { width: 6%; text-align:right; margin-top: -14px}
+.parte-any { float: left;width: 6%; text-align: center; }
+.parte-data { float: left;width: 13%; text-align: center; }
+.parte-tipusdesc { float: left;	width: 35%; text-align:center;}
+.parte-total { float: left;	width: 10%; text-align:center;}
+.parte-pagat { float: left;	width: 12%; text-align:center;}
+.parte-import {	float: left; width: 11%; text-align:right;}
+.parte-actions { float: right; width: 3%; text-align:right; margin-top: -14px}
 
 #progressbar {
 	margin-left: auto;
@@ -387,19 +387,30 @@ li.data-detall-fosc {
     width: 10%;
 }
 
-.formllicencia-checks {
-	margin-bottom: 5px;	
+#formllicencia-enviarllicencia{
+	margin-top:17px
+	
 }
 
 .form-row {
 	width:100%;
-	margin-bottom: 5px;
+	margin-bottom: 10px;
 }
 
 .form-row div {
-	float:left;
+	/*float:left;
 	margin-right: 10px;
-	margin-bottom: 3px !important;
+	margin-bottom: 3px !important;*/
+}
+
+.form-left {
+    float:left;
+    margin-right: 10px;
+}
+
+.form-right {
+    float:right;
+    /*margin-right: 10px;*/
 }
 
 .form-row-bottom {
@@ -409,12 +420,13 @@ li.data-detall-fosc {
 }
 
 #buttons-top {
-	margin-top: -20px;
+	margin-top: 30px;
 	height: 0;
+	float: right;
 }
 
 .button-top {
-	float:right;
+	float: right;
 	padding-left: 5px;
 }
 
@@ -425,7 +437,7 @@ li.data-detall-fosc {
 
 #formparte-novallicencia {
 	margin-top: 15px;
-	width: 100%;
+	margin-bottom: 15px;
 }
 
 #header-parteid { display:none}
@@ -444,25 +456,26 @@ li.data-detall-fosc {
 #header-llicenciaactions {}
 
 .llicencia-id {	display:none}
-.llicencia-persona {	width: 32%; line-height: 10px; margin-top: -10px; }
-.llicencia-personalong {	width: 35%;  }
-.llicencia-categoria {	width: 11%; text-align: center;}
-.llicencia-datacaducitat {	width: 12%; text-align: center;}
-.llicencia-activitats {	width: 20%; text-align: center; font-size: 9px; letter-spacing: 0; line-height: 10px; margin-top: -10px;}
-.llicencia-activitatslong {	width: 29%; text-align: center; font-size: 9px; letter-spacing: 0; }
-.llicencia-preu {	width: 6%; text-align: right;}
-.llicencia-enviarllicencia {	width: 7%; text-align: center; letter-spacing:2px}
-.llicencia-no {width: 6%; text-align: center; }
-.llicencia-actions {width: 4%; margin-top: -14px}
+.llicencia-persona { float: left; width: 32%; line-height: 10px; margin-top: -10px; }
+.llicencia-personalong { float: left; width: 35%;  }
+.llicencia-categoria { float: left;	width: 11%; text-align: center;}
+.llicencia-datacaducitat { float: left;	width: 12%; text-align: center;}
+.llicencia-activitats {	float: left; width: 20%; text-align: center; font-size: 9px; letter-spacing: 0; line-height: 10px; margin-top: -10px;}
+.llicencia-activitatslong {	float: left; width: 29%; text-align: center; font-size: 9px; letter-spacing: 0; }
+.llicencia-preu { float: left; width: 6%; text-align: right;}
+.llicencia-enviarllicencia { float: left; width: 7%; text-align: center; letter-spacing:2px}
+.llicencia-no { float: left; width: 6%; text-align: center; }
+.llicencia-actions {float: right; width: 3%; margin-top: -14px}
 
 .parte-llicencia, .club-usuari {
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
 	border: 1px solid #81C6FF;
 	/*background: none repeat scroll 0 0 #FFFFFF;*/
     border-radius: 5px 5px 5px 5px;
-    padding: 10px 10px 0;
+    padding: 10px 10px 15px;
     min-height: 170px;
     position: relative;
+    margin-bottom: 10px;
 }
 
 * html .parte-llicencia { /*min-height: 170px;  min-height IE hack */
@@ -484,53 +497,38 @@ li.data-detall-fosc {
     float:right;
 }
 
+#formllicencia .formlabel-lefttocheckbox {
+	display: inline-block;
+	width:130px;
+	text-align: left;
+}
 
-.formllicencia-row {
+.llicencia-check {
+	float:left;
+	padding-right: 10px;
+	padding-top: 5px;
+}
+
+#formllicencia .formcheckbox-right {
+	margin-right: 10px;
+}
+
+.seleccionar-tot {
+	font-style: italic;
+	font-weight: bold;
 	width: 100%;
 }
 
-.formllicencia-row  input[type="checkbox"] {
-	margin-left: 0;
-    margin-top: 20px;
-}  
-
-#formllicencia-txtenviarllicencia {
-	margin-top: 10px;
-}
-
-.formllicencia-row div {
+div#parte_dataalta_date {
 	float:left;
-	margin-right: 5px;
-	margin-bottom: 0px !important;
+	width: auto;
 }
 
-.formllicencia-checks  {
-	display: inline-block;
-	width: 27%;
-}
-
-.formllicencia-checks div {
-	margin-right: 10px;
-	margin-bottom: 0px !important;
-	/*float:left;
-	width: 30%;*/
-}
-
-.formllicencia-checks label {
+div#parte_dataalta_time {
 	float:left;
-	width:130px;
+	width: auto;
 }
 
-label.seleccionat-tot {
-	font-style: italic;
-	font-weight: bold;
-}
-
-.formllicencia-checks input[type="checkbox"] {
-	/*margin-right: 10px;*/
-	margin-left: 0;
-    margin-top: 0;
-}  
 
 select#parte_llicencies_persona_select { width: 280px; /*min-width: 200px;*/ }
 
@@ -565,7 +563,7 @@ input#parte_numrelacioshow {
 	padding-right: 2px;
 }*/
 
-select#parte_club, select#club_clubs { width: 330px; /*min-width: 330px;*/ }
+select#parte_club { width: 330px; /*min-width: 330px;*/ }
 
 select#parte_tipus { width: 250px; /*min-width: 250px;*/ }
 
@@ -573,8 +571,6 @@ select#parte_renovar_club { width: 295px; }
 
 select#parte_renovar_tipus { width: 240px; }
 
-
-#formparte-dataalta { margin-right: 5px !important; }
 
 /*#formparte-dataalta label,*/
 #formparte-any label,
@@ -585,6 +581,7 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 .parte-totals {
+	float: left;
 	width: 22%;
 	margin-right: 15px;
 }
@@ -598,6 +595,7 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 .parte-titol {
+	float: left;
 	text-transform: uppercase;
     font-style: italic;
     width: 20%;
@@ -631,24 +629,68 @@ select#parte_renovar_tipus { width: 240px; }
     position: relative;
 }
 
+/********************************************* Clubs i users ****************************************************/
+
 #tabs-club {
 	width: 100%;
 	height: 300px;
 	background: none repeat scroll 0 0 transparent;
 	padding: 0px;
+	margin-bottom: 10px;
 }
 
-input#club_codishow { width: 80px; }
-select#club_tipus { width: auto; }
+#formclub {
+	min-width: 750px;	
+}
+
+* html #formclub { /*max-height: 120px;  max-height IE hack */
+   height: expression( this.scrollHeight > 749 ? "750px" : "auto" ); /* sets max-height for IE */
+}
+
+.formclub-tab {
+	padding: 10px 15px;
+}
+
+.formclub-tab .form-row {
+	margin-bottom: 0;
+}
+
+#llista-usuarisclub {
+	min-width: 750px;	
+}
+
+#llista-usuarisclub #list-data {
+	max-height: 120px;
+}
+
+* html #llista-usuarisclub #list-data { /*max-height: 120px;  max-height IE hack */
+   height: expression( this.scrollHeight > 119 ? "120px" : "auto" ); /* sets max-height for IE */
+}
+
+#formclub-nouclub, #formclub-copiar {
+	float: right;
+	margin: 37px 0;
+}
+
+#formclub-clubs  { width: 35%; }
+#formclub-codishow { width: 9%; }
+#formclub-tipus  { width: 14%; }
+#formclub-activat { width: 14%; }
+#formclub select, #formclub input  { width: 100%; }
+
+#formclub-activat, #formuserclub-forceupdate { margin-top : 40px; color: #777777; } 
+
+#formclub-addrpob, #formclub-addrpobcorreu { width: 30%; }
+#formclub-addrcp, #formclub-addrcpcorreu { width: 7%; }
+#formclub-addrprovincia, #formclub-addrprovinciacorreu { width: 14%; }
+#formclub-addradreca, #formclub-addradrecacorreu { width: 30%; }
+
+
 input#club_nom { width: 350px; }
 input#club_telefon { width: 116px; }
 input#club_cif { width: 116px; }
 input#club_mail { width: 298px; }
 input#club_web { width: 298px; }
-input#club_addrpob,input#club_addrpobcorreu { width: 250px; }
-input#club_addrcp,input#club_addrcpcorreu { width: 70px; }
-input#club_addrprovincia,input#club_addrprovinciacorreu { width: 70px; }
-input#club_addradreca,input#club_addradrecacorreu { width: 350px; }
 
 select#club_tipusparte {
 	width: 350px;
@@ -661,34 +703,39 @@ input#user_club_pwd_first,
 input#user_club_pwd_second, 
 input#formuserclub-randompassword { width: 150px; }
 
+#formuser-forceupdate input { float:left; margin-right: 10px; margin-left: 0px; margin-top: 10px; }
+
 #header-userclubuser {	width: 40%; text-align: left;}
 #header-userclublastaccess {	width: 29%; text-align: center;}
 #header-userclubrol {	width: 11%; text-align: center;}
 #header-userclubforceupdate {	width: 10%; text-align: center; line-height: 12px;}
 #header-userclubactions {}
 
-.userclub-user {	width: 40%; line-height: 10px; margin-top: -10px; }
-.userclub-lastaccess {	width: 30%; text-align: center; }
-.userclub-rol {	width: 10%; text-align: center; }
-.userclub-forceupdate {	width: 10%; text-align: center; }
-.userclub-actions { width: 8%; text-align:right; margin-top: -14px}
+.userclub-user { float:left;width: 40%; line-height: 10px; margin-top: -10px; }
+.userclub-lastaccess { float:left; width: 30%; text-align: center; }
+.userclub-rol {	float:left; width: 10%; text-align: center; }
+.userclub-forceupdate {	float:left; width: 10%; text-align: center; }
+.userclub-actions { float:right; width: 8%; text-align:right; margin-top: -14px}
 
-.formpersona-row {
-	width: 100%;
-}
+/*****************************************************************************************************************/
 
-.formpersona-row h3 {
+
+/************************************************* Persona  ******************************************************/
+
+#edicio-persona h3 {
 	margin-top:0;
 }
 
-.formpersona-row .persona-submit {
-	float:right;
+#edicio-persona .form-row {
+	padding-bottom:6px;
 }
 
-.formpersona-row div {
-	float:left;
-	margin-right: 10px;
-	margin-bottom: 5px !important;
+#formpersona-cancel {
+	padding-right:20px;
+}
+
+.persona-submit {
+	padding-left:10px;
 }
 
 #persona_sexe label {
@@ -705,7 +752,7 @@ input#persona_telefon2 {
 }
 
 input#persona_mail {
-	width: 430px;
+	width: 435px;
 }
 
 input#persona_nom {
@@ -741,16 +788,21 @@ select#parte_persona_addrnacionalitat {
 	width: 365px;
 }
 
-#adreca-header { display: block; width:100% }
+#adreca-header { display: block; width:100%; position: relative; }
 
-#sms-mailpersona { float:right; color: #555555; }
+#sms-mailpersona { float:right; color: #555555; position:absolute; right: 20px; top: 0;}
 
 .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
 
+
+/************************************************* Persona Fin  ******************************************************/
+
+/************************************************* Factures  ******************************************************/
+
+
 #fact-header {
 	display: inline-block;
-	width: 98%;
-	
+	width: 100%;
 }
 
 #fact-header div {
@@ -762,6 +814,7 @@ select#parte_persona_addrnacionalitat {
 	float:left;
 	max-width: 410px;
 	min-width: 300px;
+	padding-bottom: 10px
 }
 
 * html #fact-dadesclub { /*min-width: 300px;  min-width IE hack */
@@ -784,13 +837,21 @@ select#parte_persona_addrnacionalitat {
    width: expression( document.body.clientWidth > 209 ? "210px" : "auto" ); /* set max-width for IE */
 }
 
+#fact-dadesfactura #list-data {
+	margin-bottom: 10px;
+}
 
 #fact-detall {
 	display: inline-block;
 	width: 100%;
 }
 
+#fact-detall #list-header {
+	height: 40px;
+}
+
 .fact-titol {
+	float: left;
 	text-transform: uppercase;
     /*font-weight: bold;*/
     font-style: italic;
@@ -802,21 +863,21 @@ select#parte_persona_addrnacionalitat {
 
 #header-factdetallid { display:none}
 #header-factdetallcodi {	width: 10%; text-align: center;}
-#header-factdetalldesc {	width: 40%; text-align: left; }
+#header-factdetalldesc {	width: 36%; text-align: left; }
 #header-factdetallquantitat {	width: 10%; text-align: center; }
-#header-factdetallpreuunitat {	width: 10%; text-align: center; line-height: 14px;}
-#header-factdetallpreusiva {	width: 10%; text-align: center; line-height: 14px;}
-#header-factdetalliva {	width: 10%; text-align: center; line-height: 14px;}
-#header-factdetallpreutotal {	width: 10%; text-align: center; }
+#header-factdetallpreuunitat {	width: 10%; text-align: right; line-height: 14px;}
+#header-factdetallpreusiva {	width: 10%; text-align: right; line-height: 14px;}
+#header-factdetalliva {	width: 10%; text-align: right; line-height: 14px;}
+#header-factdetallpreutotal {	width: 10%; text-align: right; }
 
 .factdetall-id {	display:none}
-.factdetall-codi {	width: 10%; text-align: center;}
-.factdetall-desc {	width: 40%; text-align: left; line-height: 14px; margin-top: -18px; font-size:small;}
-.factdetall-quantitat {	width: 8%; text-align: center; }
-.factdetall-preuunitat {	width: 8%; text-align: right; }
-.factdetall-preusiva { width: 10%; text-align: right; }
-.factdetall-iva { width: 9%; text-align: right; }
-.factdetall-preutotal {width: 10%; text-align: right;}
+.factdetall-codi {	float: left; width: 10%; text-align: center;}
+.factdetall-desc {	float: left; width: 36%; text-align: left; }
+.factdetall-quantitat {	float: left; width: 10%; text-align: center; }
+.factdetall-preuunitat { float: left; width: 10%; text-align: right; }
+.factdetall-preusiva { float: left; width: 10%; text-align: right; }
+.factdetall-iva { float: left; width: 10%; text-align: right; }
+.factdetall-preutotal { float: left; width: 10%; text-align: right;}
 
 
 #factdetall-totals {
@@ -829,10 +890,11 @@ select#parte_persona_addrnacionalitat {
  	line-height: 10px;*/
 }
 
-.factdetall-tab {	width: 66%; }
-.factdetall-totalparcial {	width: 11%; text-align: right; font-style: italic;}
-.factdetall-iva { width: 9%; text-align: right; font-style: italic;}
-.factdetall-total {	 
+.factdetall-tab { float: left;	width: 66%; }
+.factdetall-totalparcial { float: left;	width: 11%; text-align: right; font-style: italic;}
+.factdetall-iva { font-style: italic;}
+.factdetall-total {	
+	float: left;
 	width: 10%; text-align: right; font-weight: bold;
 	border-color: #EDF1F5;
     border-style: solid;
@@ -842,6 +904,8 @@ select#parte_persona_addrnacionalitat {
 
 .sms-info { text-align: justify; color: #555555; line-height: 20px; margin-top: 30px;}
 
+/************************************************* Factures  Fin ******************************************************/
+
 .formdni-main, .formuser-main { margin-top: 50px; margin-left: 30px; }
 
 #formdni-dni { float:left; margin-right: 10px;}
@@ -849,12 +913,6 @@ select#parte_persona_addrnacionalitat {
 #formdni-dni .forminput-inside {
 	width: 220px;
 }
-
-#formuser-forceupdate input { float:left; margin-right: 10px; margin-left: 0px; margin-top: 10px; }
-
-#formuserclub-forceupdate, #formclub-activat { margin-top : 28px; } 
-
-#formuserclub-iforceupdate, #formclub-iactivat { margin: 2px 0 0; }
 
 #notificacio {
 	position:absolute;
@@ -869,6 +927,32 @@ select#parte_persona_addrnacionalitat {
 #close-notificacio {
 	text-align:center;
 }
+
+/************************************************* Login  ******************************************************/
+
+#login div {
+	padding-bottom: 10px;
+}
+
+/*****************************************************************************************************************/
+
+
+/************************************************* Form User ******************************************************/
+
+.formuser-main div {
+	padding-bottom: 10px;
+}
+
+/*****************************************************************************************************************/
+
+
+/************************************************* Contacte ******************************************************/
+
+#contact div {
+	padding-bottom: 10px;
+}
+
+/*****************************************************************************************************************/
 
 /************************************************* Enquestes *****************************************************/
 
@@ -1076,13 +1160,18 @@ textarea.enquesta-resposta {
 }
 
 #resultats-plot-global {
-	height: 400px;
-    padding: 25px;
+	height: 430px;
+    padding-right: 25px;
     width: 95%;
 }
 #ui-tabs-2 .bloc-preguntes {
 	width: 35%;
-	height: 450px;
+	
+}
+
+.list-preguntes-select {
+	height: 470px;
+    max-height: 400px;
 }
 
 #resultats-plot-evolucio {
@@ -1092,24 +1181,26 @@ textarea.enquesta-resposta {
 	height: 450px;
 }
 
+
 #preguntes-selectable .ui-selecting { background: #FECA40; }
 #preguntes-selectable .ui-selected { background: #F39814; color: white; }
 
-#llista-usuarisclub #list-data {
-	max-height: 120px;
+#formenquesta-preguntes .jqplot-table-legend {
+	font-size: 0.65em;
 }
 
-* html #llista-usuarisclub #list-data { /*max-height: 120px;  max-height IE hack */
-   height: expression( this.scrollHeight > 119 ? "120px" : "auto" ); /* sets max-height for IE */
+table.jqplot-table-legend {
+	max-width: 250px;	
+	font-size: 2.1em;
 }
 
-
-#formclub-nouclub, #formclub-copiar {
-	float: right;
-	margin: 37px 0;
+* html table.jqplot-table-legend { /*max-height: 120px;  max-height IE hack */
+   height: expression( this.scrollHeight > 249 ? "250px" : "auto" ); /* sets max-height for IE */
 }
 
 /*****************************************************************************************************************/
+
+
 
 /********************************************* JqPlot styling ****************************************************/
 
@@ -1125,16 +1216,17 @@ textarea.enquesta-resposta {
 
 /********************************************* Partes recents ****************************************************/
 
-#formrecents-web label {
-	color: #555555;
-	padding-left: 10px;
+
+
+#formrecents-web  {
+	margin-top: 7px;
 }
 
 #header-parterecentsid { display:none; }
 #header-parterecentsrel { width: 4%; text-align:right;}
-#header-parterecentsdata {	width: 10%; text-align: center;}
-#header-parterecentsclub {	width: 19%; text-align:left;}
-#header-parterecentstipus {	width: 13%;}
+#header-parterecentsdata {	width: 9%; text-align: center;}
+#header-parterecentsclub {	width: 18%; text-align:left;}
+#header-parterecentstipus {	width: 11%;}
 #header-parterecentsweb {	width: 4%;}
 #header-parterecentstotal {	width: 4%;text-align:center;}
 #header-parterecentspreu {	width: 9%; text-align:right;}
@@ -1143,16 +1235,16 @@ textarea.enquesta-resposta {
 #header-parterecentsactions {}
 
 .parterecents-id { display:none; }
-.parterecents-rel { width: 4%; text-align:right;}
-.parterecents-data {	width: 10%; text-align: center; }
-.parterecents-club {	width: 19%; text-align:left; font-size: 0.8em;}
-.parterecents-tipus {	width: 14%; text-align:center;}
-.parterecents-web {	width: 4%; text-align:center;}
-.parterecents-total {	width: 4%; text-align:center;}
-.parterecents-preu {	width: 9%; text-align:right;}
-.parterecents-pagweb {	width: 15%; text-align:right;}
-.parterecents-factura {	width: 11%; text-align:center;}
-.parterecents-actions { width: 4%; text-align:right; margin-top: -14px}
+.parterecents-rel { float: left;width: 4%; text-align:right;}
+.parterecents-data { float: left;width: 9%; text-align: center; }
+.parterecents-club { float: left;width: 18%; text-align:left; font-size: 0.8em;}
+.parterecents-tipus { float: left;width: 12%; text-align:center;}
+.parterecents-web {	float: left; width: 4%; text-align:center;}
+.parterecents-total { float: left; width: 4%; text-align:center;}
+.parterecents-preu { float: left; width: 9%; text-align:right;}
+.parterecents-pagweb { float: left;	width: 15%; text-align:right;}
+.parterecents-factura {	float: left;width: 11%; text-align:center;}
+.parterecents-actions { float: right; width: 3%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/
 

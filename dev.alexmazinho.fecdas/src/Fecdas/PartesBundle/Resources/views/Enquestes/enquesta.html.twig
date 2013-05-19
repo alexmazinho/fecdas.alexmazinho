@@ -23,14 +23,14 @@
 			{{ form_widget(form.id) }}
 		</div>
 		<div class="form-row clearfix">
-			<div id="formenquesta-desc">
+			<div id="formenquesta-desc" class="form-left">
 				{{ form_label(form.descripcio, 'Descripció', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.descripcio, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formenquesta-dates">
+			<div id="formenquesta-dates" class="form-left">
 				<label class="formlabel-outside required">S'activarà en data</label>
 				{{ form_widget(form.datainici, { 'attr': {'class': 'formfield-outside'} }) }}
-				<br/><br/>
+				
 				<label class="formlabel-outside required">Es tancarà en data</label>
 				{{ form_widget(form.datafinal, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>

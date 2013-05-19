@@ -31,8 +31,8 @@
 				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div> 
       		<div id="formrecents-web" class="form-left">
-      			{{ form_label(form.web) }}
-				{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
+      			{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.web, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div> 
 			<div id="formrecents-submit" class="form-right">	
 				<input type="submit" class="forminput-inside" value="Consulta" name="formrecents-button-search"/>
@@ -81,7 +81,10 @@
    				<time datetime="{{ parte.datafacturacio|date('c') }}">{{ parte.datafacturacio|date('d/m/y') }}</time>
    			{% endif %}
    			</div>
-   			<div class="parterecents-actions"><a class="parterecents-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a></div>
+   			<div class="parterecents-actions"><a class="parterecents-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}">
+   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure" title="Veure" width="23px"></a></div>
+   			<div class="parterecents-actions"><a class="parterecents-action-sincro" href="{{ path('FecdasPartesBundle_sincroaccess', { 'id': parte.id }) }}">
+   				<img src="{{ asset('images/icon-access.jpg') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a></div>
    		</li>
    		{% endfor %}
 	</ol>
@@ -101,7 +104,6 @@ $(document).ready(function(){
 	setMenuActive("menu-admllistes");
 	
 	$("#menu-adm").click();
-
 
 	autocompletersNomsClub("formrecents-autocompleters", "form_clubs", "form_codi");
 	/*ordenarLlista();*/

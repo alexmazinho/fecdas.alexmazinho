@@ -453,7 +453,7 @@ class EntityPersona {
      */
     public function addEntityLlicencia(\Fecdas\PartesBundle\Entity\EntityLlicencia $llicencies)
     {
-        $this->llicencies[] = $llicencies;
+        $this->llicencies->add($llicencies);
     }
 
     /**
@@ -605,5 +605,17 @@ class EntityPersona {
     {
     	return strtoupper($this->cognoms) . ', ' . $this->nom;
     }
-    
+
+    /**
+     * 
+     * @return Fecdas\PartesBundle\Entity\EntityLlicencia
+     */
+    public function getLlicenciaVigent() {
+    	foreach ($this->llicencies as $llicencia) {
+    		if ($llicencia->getParte() != null and $llicencia->getParte()->isVigent()) {
+    			return $llicencia;
+    		}
+    	} 
+    	return null;
+    }
 }

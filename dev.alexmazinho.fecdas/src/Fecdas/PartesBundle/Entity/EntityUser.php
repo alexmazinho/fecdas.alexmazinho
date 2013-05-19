@@ -64,7 +64,6 @@ class EntityUser {
 	protected $databaixa;
 	
 	public function __construct() {
-		$this->armes = false;
 		$this->forceupdate = true;
 	}
 	

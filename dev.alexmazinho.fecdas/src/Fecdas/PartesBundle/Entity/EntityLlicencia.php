@@ -42,7 +42,7 @@ class EntityLlicencia {
 	protected $persona;
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityParte", inversedBy="partedetalls")
+	 * @ORM\ManyToOne(targetEntity="EntityParte", inversedBy="llicencies")
 	 * @ORM\JoinColumn(name="parte", referencedColumnName="id")
 	 */
 	protected $parte;  // Inverse side relationship

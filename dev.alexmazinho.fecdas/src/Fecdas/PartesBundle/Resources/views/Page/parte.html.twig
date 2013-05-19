@@ -18,35 +18,6 @@
 		{%  if form_errors(form) is not empty %}
 			<div class="sms-notice">{{ form_errors(form)  }}</div>
 		{% endif %}	
-		<div id="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-			<div class="button-top"><a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
-			<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
-			{% if edit == true %}
-			<!-- No Pagat -->
-        		<div class="button-top">	
-					<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 
-					 id="formparte-button-payment" class="forminput-inside" value="Pagar" name="formparte-button-payment"/>
-				</div>
-				{# if admin == true %}
-				<div id="formparte-delete" class="parte-submit" >	
-					<input type="image" src="{{ asset('images/icon-remove.png') }}" alt="Esborrar llista llicències" title="Esborrar llista llicències" width="30px" 
-					id="formparte-button-delete" class="forminput-inside" value="Esborrar Llista" name="formparte-button-delete"/>
-				</div>
-				{% endif #}
-			{% else  %}
-				<!-- només factures si pagades pel web -->
-				{% if parte.numfactura is not null and parte.isFacturaValida == true %}
-					{% if parte.numfactura == -1 %}
-						<div class="button-top"><img src="{{ asset('images/icon-factura.png') }}" alt="Factura Pendent confirmar pagament" title="Factura Pendent confirmar pagament" width="30px"></div>
-					{% else %}
-						<div class="button-top"><a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="30px"></a></div>
-					{% endif %}
-				{% endif %}	
-			<!-- Pagat -->
-			{% endif %}	
-		</div>			
-		
 		<did style="float:right;height: 0;">
 			
 		</did>
@@ -54,26 +25,55 @@
 			{{ form_widget(form.id) }}
 		</div>
 		<div class="form-row clearfix">
-			<div id="formparte-any">
+			<div id="formparte-any" class="form-left">
 				<label class="formlabel-outside required">Any</label>
 				{# form_label(form.dataalta, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.any, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formparte-club">
+			<div id="formparte-club" class="form-left">
 				{{ form_label(form.club, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.club, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formparte-datapagament" {% if parte.datapagament is null %} style="display: none" {% endif %}>
+			<div id="formparte-datapagament" class="form-left" {% if parte.datapagament is null %} style="display: none" {% endif %}>
 				<label class="formlabel-outside required">Data Pagament</label>
 				{# form_label(form.datapagament, 'Data Facturació', { 'attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			{% if admin == true and parte.datapagament is null and parte.id is not null %}
-				<div id="formparte-submit">
+				<div id="formparte-submit" class="form-left">
 					<label class="formlabel-outside required">&nbsp;</label>
 					<input type="submit" id="formparte-button-pagat" value="Pagament Rebut" name="formparte-button-pagat"/>
 				</div> 
 			{% endif %}
+			<div id="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
+				<div class="button-top"><a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
+				<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
+				{% if edit == true %}
+				<!-- No Pagat -->
+	        		<div class="button-top">	
+						<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 
+						 id="formparte-button-payment" class="forminput-inside" value="Pagar" name="formparte-button-payment"/>
+					</div>
+					{# if admin == true %}
+					<div id="formparte-delete" class="parte-submit" >	
+						<input type="image" src="{{ asset('images/icon-remove.png') }}" alt="Esborrar llista llicències" title="Esborrar llista llicències" width="30px" 
+						id="formparte-button-delete" class="forminput-inside" value="Esborrar Llista" name="formparte-button-delete"/>
+					</div>
+					{% endif #}
+				{% else  %}
+					<!-- només factures si pagades pel web -->
+					{% if parte.numfactura is not null and parte.isFacturaValida == true %}
+						{% if parte.numfactura == -1 %}
+							<div class="button-top"><img src="{{ asset('images/icon-factura.png') }}" alt="Factura Pendent confirmar pagament" title="Factura Pendent confirmar pagament" width="30px"></div>
+						{% else %}
+							<div class="button-top"><a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parte.id}) }}">
+							<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="30px"></a></div>
+						{% endif %}
+					{% endif %}	
+				<!-- Pagat -->
+				{% endif %}	
+			</div>	
+			
 		</div>
 		<div class="form-row clearfix">
 			{#<div id="formparte-numrelacio">
@@ -81,12 +81,12 @@
 				{{ form_widget(form.numrelacioshow) }}
 				{{ form_widget(form.numrelacio) }}
 			</div>#}
-			<div id="formparte-dataalta">
+			<div id="formparte-dataalta" class="form-left">
 				<label class="formlabel-outside required">Validesa des de</label>
 				{# form_label(form.dataalta, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formparte-tipus" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
+			<div id="formparte-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
 				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 				<img width="20px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
@@ -95,7 +95,7 @@
          
         <div class="form-row clearfix">
         	{% if edit == true %}
-				<div id="formparte-novallicencia" class="textaccio">
+				<div id="formparte-novallicencia" class="textaccio form-left">
 					<a id="displayText" href="javascript:void(0);" onclick="loadLlicencia.call(this, 0)" >
 					Nova llicència
 					<img src="{{ asset('images/icon_dropdown.png') }}">
@@ -109,7 +109,7 @@
     </form>
 
     <div id="progressbar" style="display:none"><img src="/images/icon_progress.gif"></div>
-    <div id="edicio-llicencies" class="maxwidth-bloc">
+    <div id="edicio-llicencies" >
 	    <form id="formllicencia" action="{{ path('FecdasPartesBundle_llicencia') }}" method="post" {{ form_enctype(form) }}  class="appform">
 			<div id="formparte-llicencia" class="parte-llicencia" style="display: none"></div>
 			{#  include "FecdasPartesBundle:Page:partellicencia.html.twig" #}

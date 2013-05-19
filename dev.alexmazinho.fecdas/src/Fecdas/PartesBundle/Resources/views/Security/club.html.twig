@@ -11,24 +11,22 @@
 	<form id="formclub" action="{{ path('FecdasPartesBundle_club') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		{% if admin == true %} 
 		<div class="form-row clearfix">
-			<div id="formclub-clubs"  {% if club.codi is null %} style="display:none" {% endif %}>
+			<div id="formclub-clubs"  {% if club.codi is null %} style="display:none" {% endif %}  class="form-left">
 				<label class="formlabel-outside required">Seleccionar club</label>
 				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formclub-codishow">
+			<div id="formclub-codishow"  class="form-left">
 				{{ form_label(form.codishow, 'Codi', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.codishow, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formclub-tipus">
+			<div id="formclub-tipus"  class="form-left">
 				{{ form_label(form.tipus, 'Tipus', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formclub-activat">
-				<div id="formclub-iactivat">
-					{{ form_widget(form.activat, { 'attr': {'class': 'formfield-outside'} }) }}
-				</div>
-				<div id="formclub-lactivat">
-					{{ form_label(form.activat, 'Accés actiu', { 'attr': {'class': 'formlabel-outside'} }) }}
+			<div id="formclub-activat"  class="form-left">
+				<div id="formclub-forceupdate">
+					{{ form_label(form.activat, 'Accés actiu', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+					{{ form_widget(form.activat, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 			</div>
 			<div id="formclub-nouclub" class="textaccio">
@@ -51,27 +49,27 @@
 				<li><a href="#formclub-dades-tab4">Nou usuari</a></li>
 				{% endif %}
 			</ul>
-			<div id="formclub-dades-tab1">		
+			<div id="formclub-dades-tab1" class="formclub-tab">		
 				<div class="form-row clearfix">
-					<div id="formclub-nom">
+					<div id="formclub-nom"  class="form-left">
 						{{ form_label(form.nom, 'Nom*', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.nom, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-telefon">
+					<div id="formclub-telefon"  class="form-left">
 						{{ form_label(form.telefon, 'Telefon', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.telefon, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-cif">
+					<div id="formclub-cif"  class="form-left">
 						{{ form_label(form.cif, 'CIF*', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.cif, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
 				</div>
 				<div class="form-row clearfix">
-					<div id="formclub-mail">
+					<div id="formclub-mail"  class="form-left">
 						{{ form_label(form.mail, 'Mail*', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-web">
+					<div id="formclub-web"  class="form-left">
 						{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
@@ -82,21 +80,21 @@
 					</div>
 				</div>
 	        </div>
-	        <div id="formclub-dades-tab2">
+	        <div id="formclub-dades-tab2" class="formclub-tab">
 	        	<div class="form-row clearfix">
-					<div id="formclub-addrpob">
+					<div id="formclub-addrpob"  class="form-left">
 						{{ form_label(form.addrpob, 'Població', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addrpob, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-addrcp">
+					<div id="formclub-addrcp"  class="form-left">
 						{{ form_label(form.addrcp, 'CP', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addrcp, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-addrprovincia">
+					<div id="formclub-addrprovincia"  class="form-left">
 						{{ form_label(form.addrprovincia, 'Provincia', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addrprovincia, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-addradreca">
+					<div id="formclub-addradreca"  class="form-left">
 						{{ form_label(form.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
@@ -105,19 +103,19 @@
 					</div>
 		        </div>
 	        	<div class="form-row clearfix">
-					<div id="formclub-addrpobcorreu">
+					<div id="formclub-addrpobcorreu"  class="form-left">
 						{{ form_label(form.addrpobcorreu, 'Població (Adreça de Correu)', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addrpobcorreu, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-addrcpcorreu">
+					<div id="formclub-addrcpcorreu"  class="form-left">
 						{{ form_label(form.addrcpcorreu, 'CP', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addrcpcorreu, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-addrprovinciacorreu">
+					<div id="formclub-addrprovinciacorreu"  class="form-left">
 						{{ form_label(form.addrprovinciacorreu, 'Provincia', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addrprovinciacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-addradrecacorreu">
+					<div id="formclub-addradrecacorreu"  class="form-left">
 						{{ form_label(form.addradrecacorreu, 'Adreça', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addradrecacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
@@ -128,8 +126,8 @@
 					</div>
 				</div>
 	        </div>
-	        <div id="formclub-dades-tab3" {% if admin != true %}  style="display:none" {% endif %} >
-	        	<div id="formclub-addradrecacorreu">
+	        <div id="formclub-dades-tab3" class="formclub-tab" {% if admin != true %}  style="display:none" {% endif %} >
+	        	<div id="formclub-addradrecacorreu" >
 						{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.tipusparte, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div>
@@ -139,25 +137,25 @@
 					</div>
 				</div>
 	        </div>
-	        <div id="formclub-dades-tab4" {% if admin != true or club.codi is null %}  style="display:none" {% endif %} >
+	        <div id="formclub-dades-tab4" class="formclub-tab" {% if admin != true or club.codi is null %}  style="display:none" {% endif %} >
 	        	<a id="formclub-usuarinou" href="{{ path('FecdasPartesBundle_usuariclub') }}" style="display:none"></a>
 				<div class="form-row clearfix">
-					<div id="formuserclub-user">
+					<div id="formuserclub-user"  class="form-left">
 						{{ form_label(form.user, 'Usuari*', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.user, { 'attr': {'class': 'formfield-outside', 'autocomplete': 'off'}}) }}
 					</div>
-					<div id="formuserclub-role">
+					<div id="formuserclub-role"  class="form-left">
 						{{ form_label(form.role, 'Rol*', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.role, { 'attr': {'class': 'formfield-outside'}}) }}
 					</div>
 				</div>
 				<div class="form-row clearfix">
 					<div id="formuserclub-passwords">
-						<div id="formuserclub-pwd">
+						<div id="formuserclub-pwd" class="form-left">
 							{{ form_label(form.pwd.first, 'Nova paraula clau*', { 'attr': {'class': 'formlabel-outside'} }) }}
 							{{ form_widget(form.pwd.first, { 'attr': {'class': 'formfield-outside'}}) }}
 						</div> 
-						<div id="formuserclub-pwdrepeat">
+						<div id="formuserclub-pwdrepeat" class="form-left">
 							{{ form_label(form.pwd.second, 'Repeteix la paraula clau*', { 'attr': {'class': 'formlabel-outside'} }) }}
 							{{ form_widget(form.pwd.second, { 'attr': {'class': 'formfield-outside'}}) }}
 						</div> 
@@ -166,18 +164,14 @@
 							{{ form_widget(form.randompwd, { 'attr': {'class': 'formfield-outside'}}) }}
 						</div> 
 					</div>
-					<div id="formuserclub-random">
+					<div id="formuserclub-random"  class="form-left">
 						<label class="formlabel-outside required">Auto</label>
 						<a id="formuserclub-random" href="#">
 						<img src="{{ asset('images/icon-wizard.png') }}"></a>
 					</div>
-					<div id="formuserclub-forceupdate">
-						<div id="formuserclub-iforceupdate">
-						{{ form_widget(form.forceupdate, { 'attr': {'class': 'formfield-outside-multicheck'} }) }}
-						</div>
-						<div id="formuserclub-lforceupdate">
-						{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'attr': {'class': 'formlabel-outside'} }) }}
-						</div>
+					<div id="formuserclub-forceupdate" class="form-left">
+						{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+						{{ form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) }}
 					</div>
 				</div>
 				<div class="form-row-bottom clearfix">

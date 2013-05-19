@@ -201,6 +201,101 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	}
 				
+	public function  llistestopdfAction() {
+		$request = $this ->getRequest();
+		
+		$club = null;
+		if ($request->query->has('club')) {
+			$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')
+				->find($request->query->get('club'));
+		} else {
+			$club = $this->getCurrentClub();			
+		}
+		
+		if ($club == null) return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage')); 
+
+		$currentClub = $club->getCodi();
+		
+		$this->logEntry($this->get('session')->get('username'), 'PRINT LLISTES',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
+
+		$partesclub = $this->consultaPartesClub($currentClub);
+		
+		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+			
+		$pdf->init($params = array('author' => 'FECDAS', 'title' => "Llistes de l'any " . date("Y")),
+				true, "Club " . $club->getNom());
+			
+		$pdf->AddPage();
+		
+		// set color for background
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		// set color for text
+		$pdf->SetTextColor(0, 0, 0); // Negre
+		
+		$y_ini = $pdf->getY();
+		$x_ini = $pdf->getX();
+		
+		$y = $y_ini;
+		$x = $x_ini;
+		
+		$pdf->SetFont('dejavusans', '', 16, '', true);
+		$text = '<b>Llistes de comunicacions de l\'any '. date("Y") .'</b>';
+		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
+
+		$y += 15;
+		
+		$pdf->SetTextColor(100, 100, 100);
+		
+		$pdf->SetFont('dejavusans', '', 12, '', true);
+		$text = '<i>Imprimida en data  ' . date("d/m/Y") .'</i>';
+		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
+		
+		$pdf->SetTextColor(0, 0, 0); // Negre
+		$pdf->SetFont('dejavusans', '', 10, '', true);
+		
+		$tbl = '<table border="1" cellpadding="5" cellspacing="0">
+				  <tr style="background-color:#DDDDDD;">
+				  <td width="60" align="center">Any</td>
+				  <td width="110" align="center">Data alta</td>
+				  <td width="287" align="center">Tipus de llista</td>
+				  <td width="80" align="center">Llicències</td>
+				  <td width="100" align="right">Preu</td>
+				 </tr>';
+		
+		$totalLlicencies = 0;
+		$totalPreu = 0;
+		
+		foreach ($partesclub as $c => $parte) {
+			$totalLlicencies += $parte->getNumLlicencies();
+			$totalPreu += $parte->getPreuTotalIVA();
+			$tbl .= '<tr><td align="center">' . $parte->getAny() . '</td>';
+			$tbl .= '<td align="center">' . $parte->getDataalta()->format('d/m/Y') .  '</td>';
+			$tbl .= '<td align="center">' . $parte->getTipus()->getDescripcio() .  '</td>';
+			$tbl .= '<td align="center">' . $parte->getNumLlicencies(). '</td>';
+			$tbl .= '<td align="right">' . number_format($parte->getPreuTotalIVA(), 2, ',', '.') .  '&nbsp;€</td></tr>';
+		}
+		
+		$tbl .= '<tr><td colspan="3" align="right"><b>Total</b></td>';
+		$tbl .= '<td align="center">' . $totalLlicencies . '</td>';
+		$tbl .= '<td align="right">' .  number_format($totalPreu, 2, ',', '.') . '&nbsp;€</td></tr>';
+		$tbl .= '</table>';
+		
+		$pdf->Ln(10);
+		
+		$pdf->writeHTML($tbl, false, false, false, false, '');
+		
+		// reset pointer to the last page
+		$pdf->lastPage();
+			
+		// Close and output PDF document
+		$response = new Response($pdf->Output("comunicacions_" . $currentClub . "_" . date("Ymd") . ".pdf", "D"));
+		$response->headers->set('Content-Type', 'application/pdf');
+		return $response;
+		
+	}
 	
 	public function partetopdfAction() {
 		$request = $this ->getRequest();

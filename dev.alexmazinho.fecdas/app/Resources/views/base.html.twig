@@ -14,7 +14,8 @@
             <!--  <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'> -->
             <link href="{{ asset('css/layout.css') }}" type="text/css" rel="stylesheet" />
             <link href="{{ asset('css/jquery-bubble-popup-v3.css') }}" type="text/css" rel="stylesheet" />
-            <link href="{{ asset('css/redmond/jquery-ui-1.8.23.custom.css') }}" type="text/css" rel="stylesheet" />
+            <link href="{{ asset('css/redmond/jquery.ui.theme.css') }}" type="text/css" rel="stylesheet" />
+            <link href="{{ asset('css/redmond/jquery-ui.min.css') }}" type="text/css" rel="stylesheet" />
 			<style>section#main-col{display:none;}</style>            
         {% endblock %}
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
@@ -45,35 +46,37 @@
                 <div class="login">{% block fecdas_login %} {% endblock %}</div>
             </header>
 			
-            <section id="left-menu">
-            {% block sidebar %}{% endblock %}
-            </section>
-            <noscript>
-				<div id="no-js">
-				<h1>Navegador sense suport JAVASCRIPT</h1>
-				<p><b>L'Aplicació de Tramitació de Llistes d'Assegurats</b> requereix de l'activació de Javascript per al seu correcte funcionament.</p>
-				<p>Podeu trobar informació sobre el llenguatge Javascript aquí: <a href="http://ca.wikipedia.org/wiki/JavaScript" target="_blank">http://ca.wikipedia.org/wiki/JavaScript</a>.</p>
-				<p>El web està optimitzat per als navegadors 
-				<a href="http://www.mozilla.org/ca/firefox" target="_blank"><b>Firefox</b></a> i 
-				<a href="https://www.google.com/chrome?hl=ca" target="_blank"><b>Chrome</b></a>, i per tant se'n recomana l'ús 
-				a continuació disposeu dels enllaços amb informació per activar Javascript 
-				als pricipals navegadors web.</p>
-				<ul>
-				<li>Firefox, <a href="http://www.enable-javascript.com/es/#firefox" target="_blank">http://www.enable-javascript.com/es/#firefox</a></li>
-				<li>Chrome, <a href="http://www.enable-javascript.com/es/#chrome" target="_blank">http://www.enable-javascript.com/es/#chrome</a></li>
-				<li>Internet Explorer, <a href="http://www.enable-javascript.com/es/#ie" target="_blank">http://www.enable-javascript.com/es/#ie</a></li>
-				<li>Safari, <a href="http://www.enable-javascript.com/es/#safari" target="_blank">http://www.enable-javascript.com/es/#safari</a></li>
-				<li>Opera, <a href="http://www.enable-javascript.com/es/#opera" target="_blank">http://www.enable-javascript.com/es/#opera</a></li>
-				</ul>
-				</div>
-			</noscript>
-
-            <section id="main-col">
-           		{% block body %}{% endblock %}
-	            <div id="dialog" title="Confirmation Required" style="display: none"></div>
-    			<div id="enquesta" class="finestra-overlay"></div>
-    			<div class="mask"><img class="mask-progress" src="/images/icon_progress.gif"></div>
-    		</section>
+			<section id="main" class="clearfix">
+	            <div id="left-menu">
+	            {% block sidebar %}{% endblock %}
+	            </div>
+	            <noscript>
+					<div id="no-js">
+					<h1>Navegador sense suport JAVASCRIPT</h1>
+					<p><b>L'Aplicació de Tramitació de Llistes d'Assegurats</b> requereix de l'activació de Javascript per al seu correcte funcionament.</p>
+					<p>Podeu trobar informació sobre el llenguatge Javascript aquí: <a href="http://ca.wikipedia.org/wiki/JavaScript" target="_blank">http://ca.wikipedia.org/wiki/JavaScript</a>.</p>
+					<p>El web està optimitzat per als navegadors 
+					<a href="http://www.mozilla.org/ca/firefox" target="_blank"><b>Firefox</b></a> i 
+					<a href="https://www.google.com/chrome?hl=ca" target="_blank"><b>Chrome</b></a>, i per tant se'n recomana l'ús 
+					a continuació disposeu dels enllaços amb informació per activar Javascript 
+					als pricipals navegadors web.</p>
+					<ul>
+					<li>Firefox, <a href="http://www.enable-javascript.com/es/#firefox" target="_blank">http://www.enable-javascript.com/es/#firefox</a></li>
+					<li>Chrome, <a href="http://www.enable-javascript.com/es/#chrome" target="_blank">http://www.enable-javascript.com/es/#chrome</a></li>
+					<li>Internet Explorer, <a href="http://www.enable-javascript.com/es/#ie" target="_blank">http://www.enable-javascript.com/es/#ie</a></li>
+					<li>Safari, <a href="http://www.enable-javascript.com/es/#safari" target="_blank">http://www.enable-javascript.com/es/#safari</a></li>
+					<li>Opera, <a href="http://www.enable-javascript.com/es/#opera" target="_blank">http://www.enable-javascript.com/es/#opera</a></li>
+					</ul>
+					</div>
+				</noscript>
+	
+	            <div id="main-col">
+	           		{% block body %}{% endblock %}
+	    			<div id="enquesta" class="finestra-overlay"></div>
+	    			<div id="dialeg" title="Confirmation Required" style="display: none"></div>
+	    			<div class="mask"><img class="mask-progress" src="/images/icon_progress.gif"></div>
+	    		</div>
+	    	</section>
  
             <div id="browser" style="display: none;"></div>
             <div id="footer">

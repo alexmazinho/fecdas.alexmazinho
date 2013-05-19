@@ -63,6 +63,11 @@ FecdasPartesBundle_recents:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_sincroaccess:
+    pattern:  /sincroaccess
+    defaults: { _controller: "FecdasPartesBundle:Page:sincroaccess" }
+    requirements:
+        _method:  GET
 
 FecdasPartesBundle_assegurats:
     pattern:  /assegurats
@@ -154,6 +159,13 @@ FecdasPartesBundle_partetopdf:
     defaults: { _controller: "FecdasPartesBundle:PDF:partetopdf" }
     requirements:
         _method:  GET
+
+FecdasPartesBundle_llistestopdf:
+    pattern:  /printllistes
+    defaults: { _controller: "FecdasPartesBundle:PDF:llistestopdf" }
+    requirements:
+        _method:  GET
+
 
 FecdasPartesBundle_facturatopdf:
     pattern:  /printfactura

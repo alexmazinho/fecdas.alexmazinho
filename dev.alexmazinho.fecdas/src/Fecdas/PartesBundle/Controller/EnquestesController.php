@@ -448,7 +448,8 @@ class EnquestesController extends BaseController {
 					/* Només enquestes amb dades */
 					if (count($enquesta->getRealitzacions()) > 0) {
 						$avgpreguntaenquesta = array();
-						$avgpreguntaenquesta[] = $enquesta->getDescripcio();
+						$avgpreguntaenquesta[] = $enquesta->getDatainici()->format('d-m-Y');
+						
 						$avgpreguntaenquesta[] = $enquesta->getAvgPregunta($pregunta);
 						$dadespregunta[] =$avgpreguntaenquesta;
 					}
@@ -494,7 +495,7 @@ class EnquestesController extends BaseController {
 		
 		$valors = array();
 		$dades = array();
-		$mesures = array(); /* Eix x. Enquestes descripció */
+		$mesures = array(); /* Eix x. Enquesta data */
 		
 		$dadespreguntagens = array();
 		$dadespreguntapoc = array();
@@ -510,11 +511,17 @@ class EnquestesController extends BaseController {
 				if ($pregunta->getTipus() == "RANG") {
 					/* Totals per resposta de cada pregunta */
 					$totals = $enquesta->getTotalPreguntaRang($pregunta);
-					$dadespreguntagens[] = $totals[0];
+					$totalRespostes = $totals[0]+$totals[1]+$totals[2]+$totals[3]+$totals[4];
+					$dadespreguntagens[] = ($totalRespostes == 0)?0:$totals[0]/$totalRespostes*100;
+					$dadespreguntapoc[] = ($totalRespostes == 0)?0:$totals[1]/$totalRespostes*100;
+					$dadespreguntasuficient[] = ($totalRespostes == 0)?0:$totals[2]/$totalRespostes*100;
+					$dadespreguntabastant[] = ($totalRespostes == 0)?0:$totals[3]/$totalRespostes*100;
+					$dadespreguntamolt[] = ($totalRespostes == 0)?0:$totals[4]/$totalRespostes*100;
+					/*$dadespreguntagens[] = $totals[0];
 					$dadespreguntapoc[] = $totals[1];
 					$dadespreguntasuficient[] = $totals[2];
 					$dadespreguntabastant[] = $totals[3];
-					$dadespreguntamolt[] = $totals[4];
+					$dadespreguntamolt[] = $totals[4];*/
 				}
 				if ($pregunta->getTipus() == "BOOL") {
 					/* Totals per resposta de cada pregunta */
@@ -523,7 +530,7 @@ class EnquestesController extends BaseController {
 					$dadespreguntano[] = $totals[1];
 				}
 				
-				$mesures[] = $enquesta->getDescripcio();
+				$mesures[] = $enquesta->getDatainici()->format('d-m-Y');
 			}
 		}
 		

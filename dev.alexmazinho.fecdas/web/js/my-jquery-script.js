@@ -297,58 +297,73 @@
 			
 		$('#parte_llicencies_persona_select').change(function() {
 			var persona = $(this).val();
-	
-			if (persona == "") {
-				//alert("cal seleccionar una persona de la llista d'assegurats");
-				//$(this).val(oldvalue);
-				$('#formllicencia-openmodal').html('nou assegurat <img src=\"/images/icon_add.png\">');
-				return false;
-			};
+
 			// Si selecció persona, canvia text
 			if (persona == "") $('#formllicencia-openmodal').html('nou assegurat <img src=\"/images/icon_add.png\">');
 			else $('#formllicencia-openmodal').html('modifica assegurat <img src=\"/images/icon_add.png\">');
+
+			showPersonClickLlicencia($("#parte_llicencies_persona_select").val());
+			
 		});
 	};
 	
-	showPersonClick = function(id) {
+	showPersonClickLlicencia = function(id) {
 	    //select all the a tag with name equal to modal
 		$('#formllicencia-openmodal')
 	    .off('click')
 	    .click(function(e) {
-	        //Cancel the link behavior
+			//Cancel the link behavior
 	        e.preventDefault();
-	        
-	        // Show mask before overlay
-	        //Get the screen height and width
-			var maskHeight = $(document).height();
-	        var maskWidth = $(window).width();
-	        //Set height and width to mask to fill up the whole screen
-	        $('.mask').css({'width':maskWidth,'height':maskHeight});
-	        //transition effect    
-	        $('.mask').fadeTo("slow",0.6); 
-	        
 	        var url = $(this).attr("href");
-			var params = { 	persona: id.val() }
-
-			$.get(url,	params,
-			function(data, textStatus) {
-				$("#edicio-persona").html(data);
-				// Reload DOM events. Add handlers again. Only inside reloaded divs
-				formFocus();
-				autocompleters();
-				actionsModalOverlay();
-				actionsPersonaForm();
-				// Show Div
-				showModalDiv('#edicio-persona');
-				helpBubbles("#help-dni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
-						<p align="left">En cas de menors que no disposin de DNI</p>\
-						<p align="left">cal afegir el prèfix \'P\' o \'M\' al DNI del</p>\
-						<p align="left">pare o la mare respectivament. P.e. <b>P12345678X.</b></p>\
-						<p align="left">Per estrangers indicar el número d\'identificació equivalet</p>');
-
-			});
+	        showPersonModal(id, url, true);
 	    });
 	};
+	
+	showPersonClickAssegurats = function() {
+	    //select all the a tag with name equal to modal
+		$('.assegurats-openmodal')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
+	        var id = $(this).parent().parent().find(".assegurat-id").html(); 
+	        var url = $(this).attr("href");
+	        showPersonModal(id, url, false);
+	    });
+	};
+	
+	
+	showPersonModal = function(id, url, llicencia) {
+        // Show mask before overlay
+        //Get the screen height and width
+		var maskHeight = $(document).height();
+        var maskWidth = $(window).width();
+        //Set height and width to mask to fill up the whole screen
+        $('.mask').css({'width':maskWidth,'height':maskHeight});
+        //transition effect    
+        $('.mask').fadeTo("slow",0.6); 
+        
+		var params = { 	persona: id }
+		
+		$.get(url,	params,
+		function(data, textStatus) {
+			
+			$("#edicio-persona").html(data);
+			// Reload DOM events. Add handlers again. Only inside reloaded divs
+			formFocus();
+			autocompleters();
+			actionsModalOverlay();
+			actionsPersonaForm(llicencia);
+			// Show Div
+			showModalDiv('#edicio-persona');
+			helpBubbles("#help-dni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
+					<p align="left">En cas de menors que no disposin de DNI</p>\
+					<p align="left">cal afegir el prèfix \'P\' o \'M\' al DNI del</p>\
+					<p align="left">pare o la mare respectivament. P.e. <b>P12345678X.</b></p>\
+					<p align="left">Per estrangers indicar el número d\'identificació equivalet</p>');
+		});
+	}
 	
 	autocompleters = function() {
 		var route = $("#formpersona-autocompleters").attr("href");
@@ -373,8 +388,8 @@
 		$('#parte_persona_addrpob').autocomplete($configs);
 	};
 	
-	actionsPersonaForm = function() {
-		$("#dialog").dialog({
+	actionsPersonaForm = function(llicencia) {
+		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true
 	    });
@@ -385,13 +400,13 @@
 	        $("#error-persona").html();
 	        //var targetUrl = $(this).attr("href");
 	
-	        $("#dialog").dialog({
+	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
 		              //window.location.href = targetUrl;
 	    	        	$(this).dialog("close");
 	    	        	//$("#formpersona").submit();	 // Submit form
-	    	        	submitPerson("remove");
+	    	        	submitPerson("remove", llicencia);
 	        		},
 	            	"Cancel·lar" : function() {
 	              		$(this).dialog("close");
@@ -399,11 +414,11 @@
 	          	},
 	        	title: "Confirmació per esborrar",
 	        	height: 180,
-	        	zIndex:	2999
+	        	zIndex:	350
 	        });
 	
-	        $("#dialog").html("Segur que vols esborrar <br/>aquestes dades personals?");
-	        $("#dialog").dialog("open");
+	        $("#dialeg").html("Segur que vols esborrar <br/>aquestes dades personals?");
+	        $("#dialeg").dialog("open");
 	    });   
 		
 		$('#formpersona-button-save').click(function (e) {
@@ -411,18 +426,19 @@
 	        e.preventDefault();
 	        $("#error-persona").html();
 	        
-	        $("#dialog").dialog({
+	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
 	    	        	$(this).dialog("close");
 	    	        	if ($('#parte_persona_id').val() != "") {
 	    	        		// Modificació no valida DNI
-	    	        		submitPerson("save");
+	    	        		submitPerson("save", llicencia);
 	    	        	} else {
-	    	        		if (validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val())) {
-	    	        			submitPerson("save");
+	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());
+	    	        		if (error == "") {
+	    	        			submitPerson("save", llicencia);
 	    	        		} else {
-	    	        			alert("Format DNI incorrecte 12345678X o P12345678X o M12345678X");
+	    	        			alert(error);
 	    	        		};
 	    	        	};
 	        	    	return false;  
@@ -434,40 +450,44 @@
 	        	title: "Valida les dades",
 	        	height: 180,
 	        	width: 320,
-	        	zIndex:	2999
+	        	zIndex:	350
 	        });
 	
-	        $("#dialog").html("Comprova que les dades són correctes.<br/> Després no les podràs modificar.");
-	        $("#dialog").dialog("open");
+	        $("#dialeg").html("Comprova que les dades són correctes.<br/> Després no les podràs modificar.");
+	        $("#dialeg").dialog("open");
 	        
 	    });   
 	};
 	
-	submitPerson = function(action) {
+	submitPerson = function(action, llicencia) {
 		
 		$('#edicio-persona').hide();
 		
 		var url = $('#formpersona').attr("action");
 		var params = $('#formpersona').serializeArray();
-			
-		 if ($("#parte_dataalta_date_day").length ) {
-	        	// Existeix "parte_dataalta_date_day"
-	        	var alta_data = $("#parte_dataalta_date_day").val();
-	        	alta_data += "/" + $("#parte_dataalta_date_month").val();
-	        	alta_data += "/" + $("#parte_dataalta_date_year").val();
-	        	alta_data += " " + $("#parte_dataalta_time_hour").val();
-	        	alta_data += ":" + $("#parte_dataalta_time_minute").val();
-	        	alta_data += ":00";
-	    } else {
-	        	var alta_data = $("#parte_dataalta_date").val() + " " + $("#parte_dataalta_time").val();
-	    }
+		
+		if (llicencia == true) {
+			if ($("#parte_dataalta_date_day").length ) {
+		        	// Existeix "parte_dataalta_date_day"
+		        	var alta_data = $("#parte_dataalta_date_day").val();
+		        	alta_data += "/" + $("#parte_dataalta_date_month").val();
+		        	alta_data += "/" + $("#parte_dataalta_date_year").val();
+		        	alta_data += " " + $("#parte_dataalta_time_hour").val();
+		        	alta_data += ":" + $("#parte_dataalta_time_minute").val();
+		        	alta_data += ":00";
+		    } else {
+		        	var alta_data = $("#parte_dataalta_date").val() + " " + $("#parte_dataalta_time").val();
+		    }
+		
+			params.push( {'name':'dataalta','value': alta_data} );
+			params.push( {'name':'tipusparte','value': $('#parte_tipus').val()} );
+			params.push( {'name':'codiclub','value': $('#parte_club').val()} );
+			params.push( {'name':'llicenciaId','value': $('#parte_llicencies_id').val()} );
+		}
 		
 		params.push( {'name':'action','value': action} );
-		params.push( {'name':'dataalta','value': alta_data} );
-		params.push( {'name':'tipusparte','value': $('#parte_tipus').val()} );
-		params.push( {'name':'codiclub','value': $('#parte_club').val()} );
-		params.push( {'name':'llicenciaId','value': $('#parte_llicencies_id').val()} );
-
+		params.push( {'name':'llicencia','value': llicencia} );
+		
 		$.post(url, params,
 		function(data, textStatus) {
 			var error = false;
@@ -505,7 +525,7 @@
 			
 			$("#edicio-persona").html("");
 			
-			loadLlicenciaData(data);
+			if (llicencia == true) loadLlicenciaData(data);
 		});
 	};
 	
@@ -555,7 +575,7 @@
     	
     	// Reload DOM events. Add handlers again
     	selectpersona();
-    	showPersonClick($("#parte_llicencies_persona_select"));
+    	showPersonClickLlicencia($("#parte_llicencies_persona_select").val());
     	addLlicenciaClick();
     	selectAllChecks();
     	
@@ -598,7 +618,7 @@
 	        
 	        var id = $(this).attr('value');
 	        
-	        $("#dialog").dialog({
+	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
 		              //window.location.href = targetUrl;
@@ -627,11 +647,11 @@
 	        	title: "Confirmació per esborrar",
 	        	height: 180,
 	        	width: 280,
-	        	zIndex:	2999
+	        	zIndex:	350
 	        });
 	
-	        $("#dialog").html("Segur que vols esborrar <br/>aquesta llicència?");
-	        $("#dialog").dialog("open");
+	        $("#dialeg").html("Segur que vols esborrar <br/>aquesta llicència?");
+	        $("#dialeg").dialog("open");
 	    
 	    });
 	};
@@ -715,14 +735,14 @@
 	};
 
 	partePagatButton = function() {
-		$("#dialog").dialog({
+		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true
 	    });
 		
 		$('#formparte-button-pagat').click(function(e) {
 			e.preventDefault();
-			$("#dialog").dialog({
+			$("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
 	    	        	$(this).dialog("close");
@@ -743,10 +763,10 @@
 		        },
 		        title: "Confirmació pagament del parte",
 		        height: 190,
-		        zIndex:	2999
+		        zIndex:	350
 		    });
 		
-		    $("#dialog").html("<p>Indica la data <input type='text' id='datepicker' disabled='disabled'/></p>");
+		    $("#dialeg").html("<p>Indica la data <input type='text' id='datepicker' disabled='disabled'/></p>");
 		    
 		    $( "#datepicker" ).datepicker({
 	            showOn: "button",
@@ -757,20 +777,20 @@
 		    
 		    $( "#datepicker" ).datepicker( "setDate", new Date() );
 		    
-		    $("#dialog").dialog("open");
+		    $("#dialeg").dialog("open");
 		});
 	};
 	
 	
 	partePagamentButton = function() {
-		$("#dialog").dialog({
+		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true
 	    });
 		
 		$('#formparte-button-payment').click(function(e) {
 			e.preventDefault();
-			$("#dialog").dialog({
+			$("#dialeg").dialog({
 	          	buttons : {
 	            	"Continuar" : function() {
 	    	        	$(this).dialog("close");
@@ -785,10 +805,10 @@
 		        title: "Abans de continuar...",
 		        height: 350,
 		        width: 550,
-		        zIndex:	2999
+		        zIndex:	350
 		    });
 		
-		    $("#dialog").html("<p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, " +
+		    $("#dialeg").html("<p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, " +
 		    		"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p>" +
 		    		"<p>2100 0900 95 0211628657</p>" +
 		    		"<p>I rebrà al seu club les llicències i la factura.</p>" +
@@ -798,7 +818,7 @@
 		    		"<li>Mitjançant transferència des d'una altra entitat</li></ul>" +
 		    		"<p>Gràcies</p>");
 		    
-		    $("#dialog").dialog("open");
+		    $("#dialeg").dialog("open");
 		});
 	};
 	
@@ -809,12 +829,12 @@
 			$(this).click(function(e) {
 				e.preventDefault();
 				
-				$("#dialog").dialog({
+				$("#dialeg").dialog({
 					autoOpen: false,
 				    modal: true
 			    });
 
-				$("#dialog").dialog({
+				$("#dialeg").dialog({
 		          	buttons : {
 		            	"Confirmar" : function() {
 		    	        	$(this).dialog("close");
@@ -830,22 +850,22 @@
 			        zIndex:	2999
 			    });
 				
-			    $("#dialog").html("Segur que vols esborrar <br/>aquesta llista?");
-			    $("#dialog").dialog("open");
+			    $("#dialeg").html("Segur que vols esborrar <br/>aquesta llista?");
+			    $("#dialeg").dialog("open");
 			});
 		});
 		
 	};
 
 	removeParteButton = function() {
-		$("#dialog").dialog({
+		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true
 	    });
 		
 		$('#formparte-button-delete').click(function(e) {
 			e.preventDefault();
-			$("#dialog").dialog({
+			$("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
 		              //window.location = targetUrl;
@@ -862,8 +882,8 @@
 		        zIndex:	2999
 		    });
 		
-		    $("#dialog").html("Segur que vols esborrar <br/>aquesta llista?");
-		    $("#dialog").dialog("open");
+		    $("#dialeg").html("Segur que vols esborrar <br/>aquesta llista?");
+		    $("#dialeg").dialog("open");
 		});
 	};
 
@@ -871,9 +891,9 @@
 		$("#llicencia_seleccionat-tot").click(function(){
 			var checked = $(this).is(':checked');
 			if (checked) {
-				$('.formfield-outside-multicheck input').each(function(){ this.checked = true; });				
+				$('.formcheckbox-right').each(function(){ this.checked = true; });				
 			} else {
-				$('.formfield-outside-multicheck input').each(function(){ this.checked = false; });
+				$('.formcheckbox-right').each(function(){ this.checked = false; });
 			};
 		});
 	};
@@ -881,11 +901,14 @@
 	validarDadesPersona = function(dni, nacionalitat) {
 		/* Només valida si nacionalitat és Espanyola */
 		if (nacionalitat == "ESP") {
-			/* Si comença per X acceptar tot */
-			if (dni.substring(0,1) == 'X' || dni.substring(0,1) == 'x') return true;  
+			var JuegoCaracteres="TRWAGMYFPDXBNJZSQVHLCKET";
 			
-			if(dni.length < 9) return false;  
-			if(dni.length > 10) return false;
+			/* Si comença per X acceptar tot */
+			if (dni.substring(0,1) == 'X' || dni.substring(0,1) == 'x') 
+				return "Cal cambiar la nacionalitat d'aquesta persona";  
+			
+			if(dni.length < 9) return "Format DNI incorrecte, menor de 9 dígits, potser cal omplir a zeros per l'esquerra \nExemples:12345678X o P12345678X o M12345678X";  
+			if(dni.length > 10) return "Format DNI incorrecte, major de 10 dígits \nExemples:12345678X o P12345678X o M12345678X";
 			
 			var dniprefix;
 			var dninum;
@@ -898,14 +921,20 @@
 				dniprefix = dni.substring(0,1);
 				dninum = dni.substring(1,9);
 				dnillletra = dni.substring(9);
-				if (dniprefix != 'P' && dniprefix != 'M') return false
+				if (dniprefix != 'P' && dniprefix != 'M') return "Format DNI incorrecte, per a menors indicar prefix 'P' o 'M'" +
+																"\nsegons sigui del pare o de la mare\nExemples:P12345678X o M12345678X";
 			}
-			if (isNaN(dninum )) return false;
-			if (!isNaN(dnillletra )) return false;
+			if (isNaN(dninum )) return  "Format DNI incorrecte, error en la part numèrica\nExemples:12345678X o P12345678X o M12345678X";
 			
-	        return true;
+			dnilletracalculada = JuegoCaracteres.charAt(dninum % 23);
+			
+			if (!isNaN(dnillletra ) || dnillletra != dnilletracalculada) 
+				return "Format DNI incorrecte, error en la lletra.\n" +
+						"El valor esperat era " + dnilletracalculada;
+			
+	        return "";
 		}
-		return true;
+		return "";
 		
 	};
 

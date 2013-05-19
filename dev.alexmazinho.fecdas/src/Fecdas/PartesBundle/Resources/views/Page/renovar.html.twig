@@ -13,23 +13,23 @@
 			<div class="sms-notice">{{ form_errors(form)  }}</div>
 		{% endif %}	
 
-		<div id="buttons-top">
-			<input type="image" src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llista" title="Renovar llista" width="30px" 
-					 id="formrenovar-button-renovar" class="forminput-inside" value="Pagar" name="formrenovar-button-renovar"/>
-		</div>	
 		<div class="form-row clearfix">
-			<div id="formparte-any">
+			<div id="formparte-any" class="form-left">
 				<label class="formlabel-outside required">Any</label>
 				{{ form_widget(form.any, { 'id': 'parte_any', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formparte-club">
+			<div id="formparte-club" class="form-left">
 				{{ form_label(form.club, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.club, { 'id': 'parte_renovar_club', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formparte-tipus" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
+			<div id="formparte-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
 				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'id': 'parte_renovar_tipus', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
+			<div id="buttons-top">
+				<input type="image" src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llista" title="Renovar llista" width="30px" 
+					 id="formrenovar-button-renovar" class="forminput-inside" value="Pagar" name="formrenovar-button-renovar"/>
+			</div>	
         </div>
 		{% if app.session.hasFlash('error-notice') %}
     	<div class="sms-notice">

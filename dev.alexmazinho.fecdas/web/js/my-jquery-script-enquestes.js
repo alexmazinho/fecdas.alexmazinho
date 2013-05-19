@@ -191,6 +191,7 @@
                     	tickRenderer: $.jqplot.AxisTickRenderer,
                     	tickOptions: {
                     		showLabel: false,
+                    		fontSize: '14px',
                     		mark: null
                     	}
 	                },
@@ -270,22 +271,24 @@ $('#imgChart1').append(imgElem);
             },
             series: enunciats,
             axesDefaults: {
-                labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+                labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                tickOptions: {
+                    fontSize: '14px'
+                }
             },
             axes: {
                 // These options will set up the x axis like a category axis.
                 xaxis: {
                 	renderer: $.jqplot.CategoryAxisRenderer,
-                	tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {
-                        angle: -30
+                	tickOptions: {
+                		mark : 'cross',
                     }
                 },
                 yaxis: {
                 	min: 0,
                 	max: 5,
                 	numberTicks: 6,
-                	tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                 	tickOptions: {
                 		showMark : true,
                         labelPosition: 'start',
@@ -318,7 +321,7 @@ $('#imgChart1').append(imgElem);
 		var dades = $.parseJSON($("#resultats-dades-evolucio").html());
 		var valors = $.parseJSON($("#resultats-valors").html());
 		var mesures = $.parseJSON($("#resultats-mesures").html());
-		
+		//var totals = array(80, 76, 76, 50);
 		
 		var plot1 = $.jqplot('resultats-plot-evolucio', dades,{
 			title: {
@@ -333,40 +336,40 @@ $('#imgChart1').append(imgElem);
                     highlightMouseDown: true,
                     barMargin: 25,
                     barDirection: 'vertical',
+                    dataLabels: ['value', 'percent'],
+                    dataLabelFormatString: "%d %d%%",
                     animation: {
                         show: true
                     }
                 },
                 pointLabels: { 
                 	show: true, 
-                	//stackedValue: true 
+                	formatString: "%#.2f %%"
                 }
             },
             series: valors,
-			 axesDefaults: {
-	                labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+			axesDefaults: {
+	                labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+	                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+	                tickOptions: {
+	                    fontSize: '14px'
+	                }
 	            },
 			axes: {
 				xaxis: {
                 	renderer: $.jqplot.CategoryAxisRenderer,
-                	tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {
-                        angle: -30
-                    },
                     ticks: mesures
                 },
                 yaxis: {
                 	min: 0,
                 	max: 150,
                 	numberTicks: 11,
-                	tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                 	tickOptions: {
                 		showMark : true,
                         labelPosition: 'start',
                         markSize: 4,
                     }
                 },
-				
 				/*
                 yaxis: {
                     renderer: $.jqplot.CategoryAxisRenderer,

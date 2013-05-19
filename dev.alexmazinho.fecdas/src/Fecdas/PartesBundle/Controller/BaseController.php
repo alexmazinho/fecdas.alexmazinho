@@ -73,6 +73,26 @@ class BaseController extends Controller {
 		return false;
 	}
 	
+	protected function consultaPartesClub($club) {
+		$em = $this->getDoctrine()->getEntityManager();
+	
+		// Consultar no només les vigents sinó totes
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
+		$strQuery .= "WHERE p.club = :club ";
+		$strQuery .= " AND p.databaixa IS NULL ";
+		$strQuery .= " AND p.dataalta >= :ininormal";
+		$strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC";
+	
+		$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
+		$inianual = $inianual->format('Y-m-d H:i:s');
+	
+		$query = $em->createQuery($strQuery)
+		->setParameter('club', $club)
+		->setParameter('ininormal', $inianual);
+			
+		return $query->getResult();
+	}
+	
 	protected function getSQLIniciAnual() {
 		/* Normal 31/12  	dataalta >= 01/01/current year */
 		$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") . "-01-01 00:00:00");

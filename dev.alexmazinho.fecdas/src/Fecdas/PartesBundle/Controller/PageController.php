@@ -161,13 +161,49 @@ class PageController extends BaseController {
 	}
 	
 	
+	public function sincroaccessAction() {
+		$request = $this->getRequest();
+	
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+	
+		$em = $this->getDoctrine()->getEntityManager();
+
+		$parteid = $request->query->get("id");
+		
+		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
+		
+		if ($parte != null) {
+			$parte->setDatamodificacio($this->getCurrentDate());
+			
+			foreach ($parte->getLlicencies() as $llicencia_iter) {
+				if ($llicencia_iter->getDatabaixa() == null) $llicencia_iter->setDatamodificacio($this->getCurrentDate());
+			}
+			
+			$em->flush();
+
+			$this->get('session')->setFlash('error-notice', 'Llista preparada per tornar a sincronitzar');
+			
+			$this->logEntry($this->get('session')->get('username'), 'SINCRO ACCESS',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
+		} else {
+			$this->get('session')->setFlash('error-notice', 'Error en el procés de sincronització');
+			
+			$this->logEntry($this->get('session')->get('username'), 'SINCRO ACCESS ERROR',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
+		}
+		
+		$response = $this->forward('FecdasPartesBundle:Page:recents');
+		return $response;
+	}
+	
 	public function partesAction() {
 		$request = $this->getRequest();
 
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
-
-		$em = $this->getDoctrine()->getEntityManager();
 
 		$currentClub = $this->getCurrentClub()->getCodi();
 
@@ -198,35 +234,12 @@ class PageController extends BaseController {
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
 		
-		
 		$form = $this->createClubsForm($currentClub)->getForm(); 
 
-		/*
-		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
-		$strQuery .= "WHERE p.club = :club ";
-		$strQuery .= " AND p.databaixa IS NULL ";
-		$strQuery .= " AND ";
-		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
-		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
-		$strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC";*/
-		// Consultar no només les vigents sinó totes
-		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
-		$strQuery .= "WHERE p.club = :club ";
-		$strQuery .= " AND p.databaixa IS NULL ";
-		$strQuery .= " AND p.dataalta >= :ininormal";
-		$strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC"; 
-
-		$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
-		$inianual = $inianual->format('Y-m-d H:i:s');
-		
-		$query = $em->createQuery($strQuery)
-			->setParameter('club', $currentClub)
-			->setParameter('ininormal', $inianual);
-			
-		$partesclub = $query->getResult();
+		$partesclub = $this->consultaPartesClub($currentClub);
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
-				array('form' => $form->createView(), 'partes' => $partesclub,
+				array('form' => $form->createView(), 'partes' => $partesclub, 'club' => $currentClub,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
 						'busseig' => $this->isCurrentBusseig()));
 	}
@@ -243,6 +256,7 @@ class PageController extends BaseController {
 		$currentDNI = "";
 		$currentNom = "";
 		$currentCognoms = "";
+		$currentVigent = false;
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
@@ -252,6 +266,7 @@ class PageController extends BaseController {
 				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
 				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
 				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
+				if (isset($formdata['vigent'])) $currentVigent = ($formdata['vigent'] == 1)?true:false;
 				
 				$this->logEntry($this->get('session')->get('username'), 'VIEW PERSONES SEARCH',
 						$this->get('session')->get('remote_addr'),
@@ -269,29 +284,23 @@ class PageController extends BaseController {
 		$formBuilder->add('dni', 'search', array('required'  => false,));
 		$formBuilder->add('nom', 'search', array('required'  => false,));
 		$formBuilder->add('cognoms', 'search', array('required'  => false,));
+		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent,
+				'attr' => (array('onchange' => 'this.form.submit()'))));
 		$form = $formBuilder->getForm(); 
 
 		$em = $this->getDoctrine()->getEntityManager();
 		
-		// Consulta actives i futures del club
-		$strQuery = "SELECT l FROM Fecdas\PartesBundle\Entity\EntityLlicencia l ";
-		$strQuery .= " JOIN l.parte p JOIN p.tipus t JOIN l.persona e";
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
 		$strQuery .= " WHERE p.club = :club ";
 		$strQuery .= " AND p.databaixa IS NULL ";
-		$strQuery .= " AND ";
-		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
-		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365)) ";
 		
-		if ($currentDNI != "") $strQuery .= " AND e.dni LIKE :dni "; 
-		if ($currentNom != "") $strQuery .= " AND e.nom LIKE :nom ";
-		if ($currentCognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
+		if ($currentDNI != "") $strQuery .= " AND p.dni LIKE :dni ";
+		if ($currentNom != "") $strQuery .= " AND p.nom LIKE :nom ";
+		if ($currentCognoms != "") $strQuery .= " AND p.cognoms LIKE :cognoms ";
+
+		$strQuery .= " ORDER BY p.cognoms, p.nom";
 		
-		$strQuery .= " ORDER BY e.cognoms, e.nom";
-			
-		$query = $em->createQuery($strQuery)
-			->setParameter('club', $currentClub)
-			->setParameter('ininormal', $this->getSQLIniciAnual())
-			->setParameter('ini365', $this->getSQLInici365());
+		$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
 		
 		if ($currentDNI != "") {
 			$query->setParameter('dni', "%" . $currentDNI . "%");
@@ -306,10 +315,10 @@ class PageController extends BaseController {
 			$form->get('cognoms')->setData($currentCognoms);
 		}
 		
-		$llicenciesclub = $query->getResult();
+		$persones = $query->getResult();
 	
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
-				array('form' => $form->createView(), 'llicencies' => $llicenciesclub,
+				array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
 						'busseig' => $this->isCurrentBusseig()));
 	}
@@ -1165,6 +1174,7 @@ class PageController extends BaseController {
 		$options['nacions'] = $this->getNacions();
 		
 		if ($request->getMethod() == 'POST') {
+			
 			$p = $request->request->get('persona');
 
 			$codiclub = "";
@@ -1283,11 +1293,15 @@ class PageController extends BaseController {
 				return new Response("novaliderror");
 			}
 
-			$response = $this->forward('FecdasPartesBundle:Page:llicencia');
-			return $response;
+			if ($request->request->get('llicencia') == true) { 
+				$response = $this->forward('FecdasPartesBundle:Page:llicencia');
+				return $response;
+			} else {
+				return new Response();
+			}
 		}
-		
 		if ($request->isXmlHttpRequest()) {
+			
 			// Reload form persona
 			$persona = new EntityPersona($this->getCurrentDate());
 			

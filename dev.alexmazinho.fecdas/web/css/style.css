@@ -241,6 +241,16 @@ input#form_dni {
     cursor: pointer;
 }
 
+/* Columnes sense opció a ordenar */
+.listheader-noorder {
+	cursor: default;
+}
+
+.listheader-order {
+	display: inline-block;
+    position: absolute;
+}
+
 .textaccio a {
 	background: #EEEEEE;
     border-radius: 3px 3px 3px 3px;
@@ -342,9 +352,9 @@ li.data-detall-fosc {
 #header-parteany {	width: 6%;}
 #header-partedata {	width: 13%; text-align: center;}
 #header-partetipusdesc { width: 35%;}
-#header-partetotal {	width: 9%;text-align:center;}
+#header-partetotal {	width: 10%;text-align:center;}
 #header-partepagat {	width: 12%;}
-#header-parteimport {	width: 9%; text-align:right;}
+#header-parteimport {	width: 10%; text-align:right;}
 #header-parteactions {}
 
 .parte-id {	display:none}

@@ -163,6 +163,64 @@
 	    });
 	};
 	
+	twoDigit = function (n){
+	    return n > 9 ? "" + n: "0" + n;
+	}
+	
+	sortLlista = function(listheaderid, llistaid) {
+	    $('.'+listheaderid)
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+
+	        var current = $(this);
+	        /* first remove all other order icons */
+	        $(this).parent().children().not(current).each(function() {
+		        $(this).find(".listheader-order").removeClass("ui-icon ui-icon-triangle-1-s");
+		        $(this).find(".listheader-order").removeClass("ui-icon ui-icon-triangle-1-n");
+	        });
+	        
+	        var orderasc = true;
+	        var ordericon = $(this).find(".listheader-order");
+	        
+	        if (ordericon.hasClass("ui-icon-triangle-1-s")) {
+	        	ordericon.removeClass("ui-icon-triangle-1-s");
+	        	ordericon.addClass("ui-icon-triangle-1-n");
+	        	orderasc = false;
+	        } else {
+	        	ordericon.addClass("ui-icon ui-icon-triangle-1-s");
+	        }
+	        
+	        var index = $(this).index();  // Elements dins <ul><ol> començant per 1
+	        
+	        var items = $('#'+llistaid+' li').get();
+			
+			items.sort(function(a,b){
+				var keyA = $(a).children().eq(index).html();
+				var keyB = $(b).children().eq(index).html();
+
+				if ( !isNaN( parseInt( keyA ) ) ) {
+					keyA =  parseInt( keyA );
+				}
+
+				if ( !isNaN( parseInt( keyB ) ) ) {
+					keyB =  parseInt( keyB );
+				}
+				
+				if (keyA < keyB) return (orderasc == true)?-1:1;
+				if (keyA > keyB) return (orderasc == true)?1:-1;
+				return 0;
+			});
+			
+			var ul = $('#'+llistaid);
+			
+			$.each(items, function(i, li){
+				ul.append(li);
+			});
+	    });
+	};
+	
 	/*****************************************************************************************************************/
 	
 	/*************************************************** Menu ********************************************************/
@@ -1182,48 +1240,6 @@
 	    return password;
 	};
 	/*****************************************************************************************************************/
-	
-	
-	/************ Pedent ************************
-	
-	var SORTER = {};
-	SORTER.sort = function(which, dir) {
-		alert ("Hola");
-	  SORTER.dir = (dir == "desc") ? -1 : 1;
-	  $(which).each(function() {
-		  alert ("Hola2");
-	    // Find the list items and sort them
-	    var sorted = $(this).find("> li").sort(function(a, b) {
-	    	alert ($(a).html());
-	      return $(a).text().toLowerCase() > $(b).text().toLowerCase() ?
-	        SORTER.dir : -SORTER.dir;
-	    });
-	    $(this).append(sorted);
-	  });
-	};
-	
-	sortList = function(ul, sortDescending) {
-		ul = document.getElementById(ul);
-
-		// Get the list items and setup an array for sorting
-		var lis = ul.getElementsByTagName("LI");
-		var vals = [];
-
-		// Populate the array
-		for(var i = 0, l = lis.length; i < l; i++)
-			vals.push(lis[i].innerHTML);
-
-		// Sort it
-		vals.sort();
-
-		// Sometimes you gotta DESC
-		if(sortDescending)
-			vals.reverse();
-
-		// Change the list on the page
-		for(var i = 0, l = lis.length; i < l; i++)
-			lis[i].innerHTML = vals[i];
-	};*/
 	
 	
 })(jQuery);

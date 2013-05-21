@@ -49,12 +49,12 @@
 	{% endif %}
    	<div id="list-header">
    		<div id="header-asseguratid" class="col-listheader">id</div>
-   		<div id="header-asseguratdni" class="col-listheader">DNI</div>
-   		<div id="header-asseguratnom" class="col-listheader">Nom</div>
-   		<div id="header-asseguratcognoms" class="col-listheader">Cognoms</div>
-   		<div id="header-asseguratvigencia" class="col-listheader">Vigència</div>
-   		<div id="header-assegurattipusdesc" class="col-listheader">Tipus</div>
-   		<div id="header-asseguratactions" class="col-listheader">&nbsp;</div>
+   		<div id="header-asseguratdni" class="col-listheader">DNI<span class="listheader-order"></span></div>
+   		<div id="header-asseguratnom" class="col-listheader">Nom<span class="listheader-order"></span></div>
+   		<div id="header-asseguratcognoms" class="col-listheader">Cognoms<span class="listheader-order"></span></div>
+   		<div id="header-asseguratvigencia" class="col-listheader listheader-noorder">Vigència</div>
+   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Tipus</div>
+   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">&nbsp;</div>
    	</div>
 	{% if persones|length > 0 %}
    	<ol id="list-data">
@@ -110,6 +110,11 @@ $(document).ready(function(){
 	<p>La cerca no distingeix majúscules o minúscules</p>');
 
 	showPersonClickAssegurats();
+
+	sortLlista("col-listheader", "list-data");
+	
+	
+	
 	
 });
 

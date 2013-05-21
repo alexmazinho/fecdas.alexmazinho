@@ -1481,14 +1481,14 @@ class PageController extends BaseController {
 					$this->logEntry($username, 'TPV OK',
 							$this->getRequest()->server->get('REMOTE_ADDR'),
 							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-							$parteId . "-" . $request->request->get('Ds_Response')	.
-							"-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
-							"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
+							$parteId . "-" . $request->query->get('Ds_Response')	.
+							"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
+							"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod'));
 					
 					return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
 							array('result' => 'ok', 'parteId' => $parteId));
 				}
-			}
+			} 
 		}				
 
 		$this->writeFileNotificacio("errorspagament.txt", " ************** Error notificacioOkAction **************",
@@ -1499,9 +1499,9 @@ class PageController extends BaseController {
 		$this->logEntry('alexmazinho@gmail.com', 'TPV OK NO DATA',
 				$this->getRequest()->server->get('REMOTE_ADDR'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'),
-				(isset($parteId))?$parteId:$request->request->get('Ds_MerchantData') . "-" . $request->request->get('Ds_Response')	. 
-				"-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
-				"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod')); 
+				((isset($parteId))?$parteId:$request->query->get('Ds_MerchantData')) . "-" . $request->query->get('Ds_Response')	. 
+				"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
+				"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod')); 
 		
 		return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
 				array('result' => 'ko')); 
@@ -1521,6 +1521,13 @@ class PageController extends BaseController {
 					$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'),
 					$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));			
 			
+			$this->logEntry('alexmazinho@gmail.com', 'TPV PEND',
+					$this->getRequest()->server->get('REMOTE_ADDR'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'),
+					((isset($parteId))?$parteId:$request->query->get('Ds_MerchantData')) . "-" . $request->query->get('Ds_Response')	.
+					"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
+					"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod'));
+			
 			// Enviar mail a Remei i posar factura pendent numfactura = -1
 			$mails = $this->getFacturacioMails(); 
 			$this->sendMailPagamentPendent($mails, $parteId);
@@ -1532,6 +1539,13 @@ class PageController extends BaseController {
 				$parteId, $request->query->get('Ds_Date'),
 				$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'),
 				$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));
+		
+		$this->logEntry('alexmazinho@gmail.com', 'TPV PEND KO',
+				$this->getRequest()->server->get('REMOTE_ADDR'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'),
+				((isset($parteId))?$parteId:$request->query->get('Ds_MerchantData')) . "-" . $request->query->get('Ds_Response')	.
+				"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
+				"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod'));
 		
 		return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
 				array('result' => 'ko'));

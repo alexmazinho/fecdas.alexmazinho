@@ -140,6 +140,7 @@ html>body #wrapper {
 	min-width: 550px; /* Params resize */ 
     width: 75%;			 /* Params resize */ 
     max-width: 1000px;
+    min-height:600px;
 	padding:10px;
     padding-bottom:10px;   /* Height of the footer */
   	position: relative;
@@ -147,6 +148,7 @@ html>body #wrapper {
 
 * html #main-col { /*max-width: 1000px;  max-height IE hack */
    width: expression( this.scrollWidth > 999 ? "1000px" : "auto" ); /* sets max-width for IE */
+   height: expression( this.scrollHeight < 601 ? "600px" : "auto" ); /* sets min-height for IE */
 }
 
 

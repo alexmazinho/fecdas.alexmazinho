@@ -202,7 +202,8 @@ class SecurityController extends BaseController
     	
     	return $this->render('FecdasPartesBundle:Security:user.html.twig',
     			array('form' => $form->createView(),'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-    					'busseig' => $this->isCurrentBusseig()));
+    					'busseig' => $this->isCurrentBusseig(),
+    					'enquestausuari' => $this->get('session')->has('enquestapendent')));
     }
     
     
@@ -270,9 +271,6 @@ class SecurityController extends BaseController
     
     public function clubAction() {
     	/*
-    	 * Per activar aquest canvi cal modificar taules users i clubs
-    	* Activar el check Decathlon als clubs corresponents
-    	* Pujar imatges noves
     	*
     	*/
     	$this->get('session')->clearFlashes();
@@ -424,7 +422,9 @@ class SecurityController extends BaseController
     	return $this->render('FecdasPartesBundle:Security:club.html.twig',
     			array('form' => $form->createView(), 'club' => $club, 
     					'admin' => $this->isCurrentAdmin(),
-    					'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+    					'authenticated' => $this->isAuthenticated(), 
+    					'busseig' => $this->isCurrentBusseig(),
+    					'enquestausuari' => $this->get('session')->has('enquestapendent')));
     }
     
     public function usuariclubAction() {

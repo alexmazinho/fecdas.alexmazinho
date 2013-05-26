@@ -236,7 +236,8 @@ class EnquestesController extends BaseController {
 	public function enquestausuariAction() {
 		$request = $this->getRequest();
 		
-		if ($this->isAuthenticated() != true or $this->get('session')->has('enquestapendent') != true) return "error";
+		//if ($this->isAuthenticated() != true or $this->get('session')->has('enquestapendent') != true) return new Response("error");
+		if ($this->isAuthenticated() != true) return new Response("error");
 		
 		$action = "";
 		if ($request->getMethod() == 'POST') {

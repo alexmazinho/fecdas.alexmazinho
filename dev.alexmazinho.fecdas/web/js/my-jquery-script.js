@@ -61,7 +61,8 @@
 	    	height: 170,
 	    	title: "Avís. Suport de navegadors"
     	});
-		if (isBrowserOk() == true && !($.browser.webkit || $.browser.mozilla)) {
+		/*if (isBrowserOk() == true && !($.browser.webkit || $.browser.mozilla)) {*/
+		if (isBrowserOk() == false) {
 			var strHtml = "<p>Navegadors recomanats:</p>";
 			strHtml += "<p><a href=\"http://www.mozilla.org/ca/firefox/fx/\" target=\"_blank\">Firefox 11+</a></p>";
 			strHtml += "<p><a href=\"http://google-chrome.softonic.com/descargar\" target=\"_blank\">Chrome 14+</a></p>";

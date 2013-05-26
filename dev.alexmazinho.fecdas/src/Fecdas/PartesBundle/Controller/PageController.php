@@ -69,7 +69,8 @@ class PageController extends BaseController {
 
 		return $this->render('FecdasPartesBundle:Page:contact.html.twig',
 				array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig(), 
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
 	public function recentsAction() {
@@ -157,7 +158,8 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:recents.html.twig',
 				array('form' => $form->createView(), 'partes' => $partesrecents,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
 	
@@ -241,7 +243,8 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
 				array('form' => $form->createView(), 'partes' => $partesclub, 'club' => $currentClub,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
 	public function asseguratsAction() {
@@ -320,7 +323,8 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
 				array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
 	private function createClubsForm($currentClub) {
@@ -417,7 +421,8 @@ class PageController extends BaseController {
 
 		return $this->render('FecdasPartesBundle:Page:consultadni.html.twig',
 				array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
 	public function renovarAction() {
@@ -587,7 +592,8 @@ class PageController extends BaseController {
 			
 		return $this->render('FecdasPartesBundle:Page:renovar.html.twig',
 				array('form' => $form->createView(), 'parte' => $parte, 'avisos' => $avisos, 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(),	'busseig' => $this->isCurrentBusseig()));
+						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
 	public function parteAction() {
@@ -747,7 +753,8 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:parte.html.twig',
 				array('form' => $form->createView(), 'parte' => $parte, 'pdf' => $pdf, 'edit' => $edit, 'admin' =>$this->isCurrentAdmin(),
 						'tipusparte' => $parte->getTipus()->getId(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
 	private function updateParte(Request $request) {
@@ -1368,7 +1375,8 @@ class PageController extends BaseController {
 				array('formpayment' => $formpayment->createView(), 'payment' => $payment,
 						'parte' => $parte, 'detall' => $detallfactura, 'admin' => $this->isCurrentAdmin(),
 						'totals' => $totalfactura, 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
 	public function notificacioTestAction() {
@@ -1397,7 +1405,8 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:notificacioTest.html.twig',
 				array('form' => $form->createView(), 
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+						'busseig' => $this->isCurrentBusseig(),
+						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
 	

@@ -54,9 +54,7 @@ input, textarea {
 
 /* F48A00 --> 6290bf --> 1240a0*/
 
-
-
-/************************************** Ull!!! **********************************
+/************************************* Ull!!! **********************************
 
 #header {margin-bottom:3em} 			--> Normal IE < 8
 html>body #header {margin-bottom:1em}   --> Hack altres navegadors
@@ -69,6 +67,35 @@ Afegint això al Header fem que sigui compatible IE8 molt semblant a la resta de
 
 Vigilar: margin, padding, width i height
 
+
+Dels següents hacks normalment cal corregir firefox i prou
+Chorme / Safari / IExplorer van junts
+
+Només Firefox
+
+@-moz-document url-prefix() {
+	.selector {
+		css ...
+	}
+}
+
+Només Chrome i safari
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {  
+	.selector {
+		css  ...
+	}
+}
+
+Només Opera
+
+@media all and (-webkit-min-device-pixel-ratio:10000), not all and (-webkit-min-device-pixel-ratio:0) {
+	.selector {
+		css  ...
+	}
+}
+
+	
 **********************************************************************************/
 
 ol,ul{ list-style:none;	margin: 0;  padding: 0; }
@@ -233,23 +260,22 @@ a img {border: none; }
 }
 
 #left-menu .navigation a .menu-subitem {
-	left: 1.3em;
+	left: 1.8em;
 }
 
 #left-menu .navigation a span {
-	left: 0.5em;
+	left: 1.1em;
     margin-top: 3px;
     position: absolute;
 }
 
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-	#left-menu .navigation a .menu-subitem {
-		left: 1.8em;
-	}
-	
+@-moz-document url-prefix() { 
 	#left-menu .navigation a span {
-    	left: 1.1em;
-  	}
+		left: 0.5em;
+	}
+	#left-menu .navigation a .menu-subitem {
+		left: 1.3em;
+	}
 }
 
 #left-menu .navigation a .ui-icon-triangle-1-e {
@@ -306,7 +332,7 @@ html>body #left-menu a:hover {
 	/*clear: both;*/ 
 	text-align: center; 
 	color: #aaa; 
-    background:#6cf;
+    /*background:#6cf;*/
 	
 	background-image: linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);
 	/*background-image: -o-linear-gradient(bottom, rgb(255,255,255) 91%, rgb(237,237,237) 100%, rgb(237,237,237) 100%);*/
@@ -316,6 +342,7 @@ html>body #left-menu a:hover {
 
 	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0.91,rgb(255,255,255)),color-stop(1, rgb(237,237,237)),color-stop(1, rgb(237,237,237)));
 }
+
 
 #footer .powered { width: 15%; padding: 15px; display: inline-block; float: left; text-align: left;  font-size: smaller;}
 

@@ -43,6 +43,11 @@ input[type="image"] {
 	background: none;
 }
 
+input[type="checkbox"] {
+	background: none repeat scroll 0 0 transparent;
+	border: none;
+}
+
 input {
 	max-width: 400px; 
 	line-height: 24px; 
@@ -165,18 +170,20 @@ html[xmlns] .clearfix {
 	text-align: right;
 	/*width: 100px;*/
 }
+
+
 .formcheckbox-right {
 	/*clear: right;*/
 	float: left;
 	margin-left: 10px;
-	margin-top: 1px;
+	margin-top: -5px;
 	/*width: 200px;*/
 }
 
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@-moz-document url-prefix() {
 	.formcheckbox-right {
-    	margin-top: -4px;
-  	}
+		margin-top: 1px;
+	}
 }
 
 li.data-detall-dobleespai {
@@ -731,6 +738,10 @@ input#formuserclub-randompassword { width: 150px; }
 
 /************************************************* Persona  ******************************************************/
 
+#edicio-persona {
+	
+}
+
 #edicio-persona h3 {
 	margin-top:0;
 }
@@ -797,7 +808,7 @@ select#parte_persona_addrnacionalitat {
 	width: 365px;
 }
 
-#adreca-header { display: block; width:100%; position: relative; }
+#adreca-header { display: block; width:100%; position: relative; margin-bottom: 7px; }
 
 #sms-mailpersona { float:right; color: #555555; position:absolute; right: 20px; top: 0;}
 
@@ -1348,7 +1359,7 @@ table.jqplot-table-legend {
 
 .finestra-overlay {
   	position:fixed;
-  	width:720px;
+  	width:740px;
   	height:440px;
   	display:none;
   	z-index:300;

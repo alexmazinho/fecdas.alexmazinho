@@ -1198,7 +1198,16 @@
 	    	$("#llista-usuarisclub").html(data);
 		});
 	};
-	
+
+	resetPwdUserClick = function(struser) {
+		
+        var url = $("#formclub-usuarinou").attr("href");
+		var params = { 	action: 'resetpwd', user: struser };
+		$.get(url, params,
+		function(data, textStatus) {
+	    	$("#llista-usuarisclub").html(data);
+		});
+	};
 	
 	randomPwdClick = function() {
 		/* Generate random Password */

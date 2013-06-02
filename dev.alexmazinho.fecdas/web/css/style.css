@@ -466,13 +466,13 @@ li.data-detall-fosc {
 	/*background: none repeat scroll 0 0 #FFFFFF;*/
     border-radius: 5px 5px 5px 5px;
     padding: 10px 10px 15px;
-    min-height: 230px;
+    min-height: 170px;
     position: relative;
     margin-bottom: 10px;
 }
 
 .parte-llicencia {
-	height: 300px;
+	/*height: 300px;*/
 }
 
 .parte-llicencia .textaccio {
@@ -523,6 +523,10 @@ li.data-detall-fosc {
 	font-style: italic;
 	font-weight: bold;
 	width: 100%;
+}
+
+.check-correu {
+	width: 70%;
 }
 
 div#parte_dataalta_date {

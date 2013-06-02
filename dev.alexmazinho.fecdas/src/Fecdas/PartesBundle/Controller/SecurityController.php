@@ -377,7 +377,7 @@ class SecurityController extends BaseController
    			} else {
    				// get a ConstraintViolationList
    				print_r($this->getErrorMessages($form));
-   				$this->get('session')->setFlash('error-notice', "error validant les dades");
+   				$this->get('session')->setFlash('error-notice', "error validant les dades".implode(",",$this->getErrorMessages($form)));
    			}
    		} else {
    			if ($this->isCurrentAdmin() != true) {
@@ -491,6 +491,12 @@ class SecurityController extends BaseController
     				if ($userclub != null) {
     					if ($action == 'enable') $userclub->setDatabaixa(null);
     					if ($action == 'disable') $userclub->setDatabaixa($this->getCurrentDate());
+    					if ($action == 'resetpwd') {
+    						$randomPassword = $this->generateRandomPassword();
+    						$userclub->setPwd(sha1($randomPassword));
+    						$this->get('session')->setFlash('error-notice', 'Clau de l\'usuari ' .
+    								$userclub->getUser() . ', canviada: ' . $randomPassword);
+    					}
     					
     					$club = $userclub->getClub();
 

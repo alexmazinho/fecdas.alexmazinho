@@ -32,9 +32,9 @@
 			<img src="{{ asset('images/icon_add.png') }}"></a>
 		</div>
 		{% endif %} 
-		<div class="llicencia-check" class="form-left">
+		<div class="llicencia-check check-correu" class="form-left">
 			{{ form_label(llicencia.enviarllicencia, 'Rebre llicència per correu?', { 'attr': {'class': 'formlabel-righttocheckbox'} }) }}
-			{{ form_widget(llicencia.enviarllicencia, { 'attr': {'class': 'formcheckbox-left'} }) }}
+			{{ form_widget(llicencia.enviarllicencia, { 'attr': {'class': 'formcheckbox-right'} }) }}
 		</div>
 	</div>
 	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
@@ -101,12 +101,14 @@
 		</div>
 	</div>
 	{% if edit == true %}
+	<div class="form-row clearfix">
 		<div class="textaccio form-left">
 			<a id="formllicencia-add" href="javascript:void(0);" name="add-llicencia">
 			confirmar llicència
 			<img src="{{ asset('images/icon_down16.png') }}"></a>
 		</div>
-		{% endif %}
+	</div>
+	{% endif %}
 	<div class="clearfix">
 		<div id="formllicencia-fusell" style="display:none">
 			{{ form_label(llicencia.fusell, 'Fusell', { 'attr': {'class': 'formlabel-outside'} }) }}

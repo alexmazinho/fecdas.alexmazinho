@@ -37,6 +37,16 @@ class EntityClub {
 	protected $telefon;
 
 	/**
+	 * @ORM\Column(type="integer", length=20, nullable=true)
+	 */
+	protected $fax;
+
+	/**
+	 * @ORM\Column(type="integer", length=20, nullable=true)
+	 */
+	protected $mobil;
+	
+	/**
 	 * @ORM\Column(type="string", length=50, nullable=true)
 	 * @Assert\NotBlank()
 	 */
@@ -220,6 +230,46 @@ class EntityClub {
         return $this->telefon;
     }
 
+    /**
+     * Set fax
+     *
+     * @param integer $fax
+     */
+    public function setFax($fax)
+    {
+    	$this->fax = $fax;
+    }
+    
+    /**
+     * Get fax
+     *
+     * @return integer
+     */
+    public function getFax()
+    {
+    	return $this->fax;
+    }
+
+    /**
+     * Set mobil
+     *
+     * @param integer $mobil
+     */
+    public function setMobil($mobil)
+    {
+    	$this->mobil = $mobil;
+    }
+    
+    /**
+     * Get mobil
+     *
+     * @return integer
+     */
+    public function getMobil()
+    {
+    	return $this->mobil;
+    }
+    
     /**
      * Set cif
      *

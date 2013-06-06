@@ -250,7 +250,7 @@ class PDFController extends BaseController {
 		$pdf->SetTextColor(100, 100, 100);
 		
 		$pdf->SetFont('dejavusans', '', 12, '', true);
-		$text = '<i>Imprimida en data  ' . date("d/m/Y") .'</i>';
+		$text = '<i>Impresa en data  ' . date("d/m/Y") .'</i>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
 		
 		$pdf->SetTextColor(0, 0, 0); // Negre

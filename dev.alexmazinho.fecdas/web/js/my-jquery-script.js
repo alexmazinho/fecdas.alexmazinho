@@ -812,6 +812,27 @@
 	    	        	    name: 'parte[datapagat]',
 	    	        	    value: $( "#datepicker" ).val(),  
 	    	        	}).appendTo('#formparte');
+
+	    	        	$('<input>').attr({
+	    	        	    type: 'hidden',
+	    	        	    id: 'estatpagat',
+	    	        	    name: 'parte[estatpagat]',
+	    	        	    value: $( "#pagatestat" ).val(),    
+	    	        	}).appendTo('#formparte');
+	    	        	
+	    	        	$('<input>').attr({
+	    	        	    type: 'hidden',
+	    	        	    id: 'dadespagat',
+	    	        	    name: 'parte[dadespagat]',
+	    	        	    value: $( "#pagatdades" ).val(),    
+	    	        	}).appendTo('#formparte');
+
+	    	        	$('<input>').attr({
+	    	        	    type: 'hidden',
+	    	        	    id: 'comentaripagat',
+	    	        	    name: 'parte[comentaripagat]',
+	    	        	    value: $( "#pagatcomentari" ).val(),    
+	    	        	}).appendTo('#formparte');
 	    	        	
 	    	        	$('#formparte').submit();
 	    	        },
@@ -821,11 +842,18 @@
 		            }
 		        },
 		        title: "Confirmació pagament del parte",
-		        height: 190,
+		        height: 450,
+		        width: 350,
 		        zIndex:	350
 		    });
 		
 		    $("#dialeg").html("<p>Indica la data <input type='text' id='datepicker' disabled='disabled'/></p>");
+		    $("#dialeg").append("<p>Raó del pagament <select type='text' id='pagatestat' required='required'>" +
+		    					"<option selected='selected' value='TPV CORRECCIO'>Correcció errada TPV</option>" +
+		    					"<option value='METALLIC WEB'>Pagament en metàlic</option>" +
+		    					"<option value='TRANS WEB'>Transferència rebuda</option></select></p>");
+		    $("#dialeg").append("<p>Número de comanda TPV o rebut <input type='text' id='pagatdades' required='required'/></p>");
+		    $("#dialeg").append("<p>Comentari<textarea id='pagatcomentari' required='required'/></p>");
 		    
 		    $( "#datepicker" ).datepicker({
 	            showOn: "button",
@@ -1117,6 +1145,14 @@
 	        }
 	        if ($("#club_telefon").val() != "" && isNaN($("#club_telefon").val())) {
 	        	alert("El telèfon ha de ser numèric");
+				return false;
+	        }
+	        if ($("#club_fax").val() != "" && isNaN($("#club_fax").val())) {
+	        	alert("El fax ha de ser numèric");
+				return false;
+	        }
+	        if ($("#club_mobil").val() != "" && isNaN($("#club_mobil").val())) {
+	        	alert("El mòbil ha de ser numèric");
 				return false;
 	        }
 	        if ($("#club_addrcp").val() != "") {

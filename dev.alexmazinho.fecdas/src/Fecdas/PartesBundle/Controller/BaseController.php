@@ -11,7 +11,6 @@ class BaseController extends Controller {
 		//function to fake date, testing purpouse
 		$currentdate = is_null($time) ? new \DateTime() : new \DateTime($time); 		
 		return $currentdate;
-		
 	}
 	
 	protected function isAuthenticated() {

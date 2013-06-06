@@ -2,7 +2,6 @@
 namespace Fecdas\PartesBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
@@ -61,6 +60,21 @@ class EntityParte {
 	 * @ORM\Column(type="date", nullable = true)
 	 */
 	protected $datapagament;
+
+	/**
+	 * @ORM\Column(type="string", length=15, nullable=true)
+	 */
+	protected $estatpagament;  // NULL, TPV PEND, TPV OK, TPV CORRECCIO, METALLIC WEB, TRANS WEB, METALLIC GES,TRANS GES
+	
+	/**
+	 * @ORM\Column(type="string", length=15, nullable=true)
+	 */
+	protected $dadespagament;  // Num comanda TPV o num pago Gestor
+
+	/**
+	 * @ORM\Column(type="text", nullable=true)
+	 */
+	protected $comentari;  // Comentaris del pagament o del parte en general
 	
 	/**
 	 * @ORM\Column(type="date", nullable = true)
@@ -68,7 +82,7 @@ class EntityParte {
 	protected $datafacturacio;
 
 	/**
-	 * @ORM\Column(type="integer", nullable = true)
+	 * @ORM\Column(type="string", length=10, nullable = true)
 	 */
 	protected $numfactura;
 	
@@ -259,13 +273,74 @@ class EntityParte {
     }
 
     /**
+     * Set estatpagament
+     *
+     * @param string $estatpagament
+     */
+    public function setEstatpagament($estatpagament)
+    {
+    	$this->estatpagament = $estatpagament;
+    }
+    
+    /**
+     * Get estatpagament
+     *
+     * @return string
+     */
+    public function getEstatpagament()
+    {
+    	return $this->estatpagament;
+    }
+    
+    /**
+     * Set dadespagament
+     *
+     * @param string $dadespagament
+     */
+    public function setDadespagament($dadespagament)
+    {
+    	$this->dadespagament = $dadespagament;
+    }
+    
+    /**
+     * Get dadespagament
+     *
+     * @return string
+     */
+    public function getDadespagament()
+    {
+    	return $this->dadespagament;
+    }
+    
+    /**
+     * Set comentari
+     *
+     * @param text $comentari
+     */
+    public function setComentari($comentari)
+    {
+    	$this->comentari = $comentari;
+    }
+    
+    /**
+     * Get comentari
+     *
+     * @return text
+     */
+    public function getComentari()
+    {
+    	return $this->comentari;
+    }
+    
+    /**
      * Get pagat
      *
      * @return boolean
      */
     public function isPagat()
     {
-    	return (boolean) $this->datapagament != null or $this->numfactura == -1;
+    	//return (boolean) $this->datapagament != null or $this->numfactura == -1;
+    	return (boolean) $this->datapagament != null;
     }
     
     /**
@@ -291,7 +366,7 @@ class EntityParte {
     /**
      * Set numfactura
      *
-     * @param integer $numfactura
+     * @param string $numfactura
      */
     public function setNumfactura($numfactura)
     {
@@ -301,7 +376,7 @@ class EntityParte {
     /**
      * Get numfactura
      *
-     * @return integer
+     * @return string
      */
     public function getNumfactura()
     {
@@ -311,7 +386,7 @@ class EntityParte {
     /**
      * Set importfactura
      *
-     * @param integer $importfactura
+     * @param decimal $importfactura
      */
     public function setImportfactura($importfactura)
     {

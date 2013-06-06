@@ -91,13 +91,15 @@
 			if ($('#accio').val() == "/notificacio") {
 				$.post(url, params,
 				function(data, textStatus) {
+					alert("fi post" + data);
 					location.reload();
-				});
+				}).fail(function() { alert("Error post"); });
 			} else {
 				$.get(url, params,
 				function(data, textStatus) {
+					alert("fi get"  + data);
 					location.reload();
-				});
+				}).fail(function() { alert("Error get"); });
 			}
 				
 			return false;

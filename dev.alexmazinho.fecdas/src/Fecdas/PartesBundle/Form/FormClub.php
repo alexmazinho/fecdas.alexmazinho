@@ -47,6 +47,14 @@ class FormClub extends AbstractType {
 				'required'  => false,
 		));
 		
+		$builder->add('fax', 'text', array(
+				'required'  => false,
+		));
+		
+		$builder->add('mobil', 'text', array(
+				'required'  => false,
+		));
+		
 		$builder->add('mail', 'email');
 
 		$builder->add('web', 'text', array(

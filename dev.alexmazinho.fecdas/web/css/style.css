@@ -106,6 +106,11 @@ select[disabled="disabled"]
     color: #777777; 
 }
 
+#dialeg p {
+	padding-bottom: 10px;
+}
+
+
 form.appform { font-size: 14px; }
 form.appform div { 
 	/*clear: left;*/ 
@@ -710,6 +715,8 @@ select#parte_renovar_tipus { width: 240px; }
 
 input#club_nom { width: 350px; }
 input#club_telefon { width: 116px; }
+input#club_fax { width: 116px; }
+input#club_mobil { width: 116px; }
 input#club_cif { width: 116px; }
 input#club_mail { width: 298px; }
 input#club_web { width: 298px; }

@@ -403,7 +403,7 @@ class PageController extends BaseController {
 							$inicivigencia = $llicencia->getParte()->getDataalta();
 							if ($inicivigencia <= $dataactual) {
 								$trobada = true;
-								$smsok .= $llicencia->getDatacaducitat()->format('d/m/Y');
+								$smsok .= $llicencia->getParte()->getDatacaducitat()->format('d/m/Y');
 							}
 						}
 					}
@@ -658,10 +658,13 @@ class PageController extends BaseController {
 				
 					// Actualitzar data pagament
 					$datapagat = \DateTime::createFromFormat('d/m/Y', $p['datapagat']); 
-					
+					/*
+					 $numfactura = $this->getMaxNumFactura();
+					$parte->setNumFactura($numfactura);*/
 					$parte->setDatapagament($datapagat);
-					$numfactura = $this->getMaxNumFactura();
-					$parte->setNumFactura($numfactura);
+					$parte->setEstatpagament($p['estatpagat']); 
+					if ($p['dadespagat'] != '') $parte->setDadespagament($p['dadespagat']);
+					if ($p['comentaripagat'] != '') $parte->setComentari($p['comentaripagat']);
 					$parte->setImportFactura($parte->getPreuTotalIVA());
 					$parte->setDatamodificacio($this->getCurrentDate());
 
@@ -790,9 +793,9 @@ class PageController extends BaseController {
 				$valida = false;
 			}
 			// Comprovació Pagat. No hauria de passar mai			
-			if ($parte->isPagat()) {
+			if ($parte->getDatapagament() != null) {
 				$this->get('session')->setFlash('error-notice',
-						'No es poden esborrar llicències que ja estan facturades');
+						'No es poden esborrar llicències que ja estan pagades');
 				$em->refresh($llicencia);
 				$valida = false;
 			}
@@ -959,17 +962,24 @@ class PageController extends BaseController {
 				$errorstr = "";
 				$errors = $this->get('validator')->validate($parte);
 				foreach ($errors as $error)
-					$errorstr = $errorstr . "campp: "
+					$errorstr = $errorstr . " campp: "
 					. $error->getPropertyPath() . "("
 					. $error->getMessage() . ") \n";
 
 				$errors = $this->get('validator')->validate($llicencia);
 				foreach ($errors as $error)
-					$errorstr = $errorstr . "campl: "
+					$errorstr = $errorstr . " campl: "
 					. $error->getPropertyPath() . "("
 					. $error->getMessage() . ") \n";
-
-				$this->get('session')->setFlash('error-notice', $errorstr);
+				
+				$errors = $this->get('validator')->validate($form);
+				foreach ($errors as $error)
+					$errorstr = $errorstr . " campl: "
+						. $error->getPropertyPath() . "("
+						. $error->getMessage() . ") \n";
+				
+				$this->get('session')->setFlash('error-notice', "error validant les dades".$errorstr); 
+				
 			}
 		}
 		$pdf = $this->showPDF($parte);
@@ -1409,172 +1419,138 @@ class PageController extends BaseController {
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
-	
-	public function notificacioAction() {
-		// Crida asincrona des de TPV
-		// En entorn de proves escriu fitxer notificacions.txt
-		$request = $this->getRequest();
-
-		$dades = $request->request->get('Ds_MerchantData');
-
-		$resposta = $request->request->get('Ds_Response');
-		
-		$dades_array = explode("&", $dades);
-		$parteId = $dades_array[0];
-		$environment = $dades_array[1];
-		$username = $dades_array[2];
-
-		if ($environment == "prod") {
-			if ($request->getMethod() == 'POST') {
-				if ($resposta != 0) {
-					$this->writeFileNotificacio("errorspagament.txt", "************** Notificació no finalitzada **************", 
-							$parteId, $request->request->get('Ds_Date'),
-							$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
-							$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
-					
-					$this->logEntry($username, 'TPV ASINC NO FIN',
-							$this->getRequest()->server->get('REMOTE_ADDR'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-							$parteId . "-" . $resposta . "-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
-							"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
-
-				} else {
-					$this->writeFileNotificacio("notificacions.txt", "************** Notificació OK finalitzada **************",
-							$parteId, $request->request->get('Ds_Date'),
-							$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
-							$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
-					
-					$this->logEntry($username, 'TPV ASINC OK',
-							$this->getRequest()->server->get('REMOTE_ADDR'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-							$parteId . "-" . $resposta . "-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
-							"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
-											}
-			} else {
-				$this->writeFileNotificacio("errorspagament.txt", "************** Error NO POST **************",
-						$parteId, '', '', '', '', '');
-				
-				$this->logEntry($username, 'TPV ASINC ERROR',
-						$this->getRequest()->server->get('REMOTE_ADDR'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'));
-			}
-		} else {
-			$this->writeFileNotificacio("errorspagament.txt", "************** Notificació proves **************",
-					$parteId, $request->request->get('Ds_Date'),
-					$request->request->get('Ds_Hour'), $request->request->get('Ds_Order'),
-					$request->request->get('Ds_PayMethod'), $request->request->get('Ds_Response'));
-
-			$this->logEntry($username, 'TPV ASINC PROVES',
-					$this->getRequest()->server->get('REMOTE_ADDR'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), 
-					$parteId . "-" . $resposta . "-" . $request->request->get('Ds_Date') . "-" . $request->request->get('Ds_Hour') .
-					"-" . $request->request->get('Ds_Order') . "-" . $request->request->get('Ds_PayMethod'));
-			
-		}
-
-		return new Response("");
-	}
-
 	public function notificacioOkAction() {
+		// Resposta TPV on-line, genera resposta usuaris correcte
 		$request = $this->getRequest();
-		
-		if ($request->query->has('Ds_MerchantData')) {
-			if ($request->query->get('Ds_MerchantData') != "") {
-				$dades_array = explode("&", $request->query->get('Ds_MerchantData'));
-				$parteId = $dades_array[0];
-				$username = $dades_array[2];
-				
-				$updOK = $this->actualitzarPagament($parteId, $request);
-				
-				if ($updOK == true) {
-					$this->logEntry($username, 'TPV OK',
-							$this->getRequest()->server->get('REMOTE_ADDR'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-							$parteId . "-" . $request->query->get('Ds_Response')	.
-							"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
-							"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod'));
-					
-					return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
-							array('result' => 'ok', 'parteId' => $parteId));
-				}
-			} 
-		}				
-
-		$this->writeFileNotificacio("errorspagament.txt", " ************** Error notificacioOkAction **************",
-				0, $request->query->get('Ds_Date'),
-				$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'),
-				$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));
-		
-		$this->logEntry('alexmazinho@gmail.com', 'TPV OK NO DATA',
-				$this->getRequest()->server->get('REMOTE_ADDR'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'),
-				((isset($parteId))?$parteId:$request->query->get('Ds_MerchantData')) . "-" . $request->query->get('Ds_Response')	. 
-				"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
-				"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod')); 
-		
-		return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
-				array('result' => 'ko')); 
-	}
-
-	public function notificacioKoAction() {
-		$request = $this->getRequest();
-
-		$resposta = $request->query->get('Ds_Response');
-		$metode = $request->query->get('Ds_PayMethod');
-		$dades_array = explode("&", $request->query->get('Ds_MerchantData'));
-		$parteId = $dades_array[0];
-		
-		if (($resposta == '0930' or $resposta == '9930') and $metode == 'R') {
-			$this->writeFileNotificacio("notificacions.txt", " ************** Pagament pendent de revisió **************", 
-					$parteId, $request->query->get('Ds_Date'),
-					$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'),
-					$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));			
-			
-			$this->logEntry('alexmazinho@gmail.com', 'TPV PEND',
-					$this->getRequest()->server->get('REMOTE_ADDR'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'),
-					((isset($parteId))?$parteId:$request->query->get('Ds_MerchantData')) . "-" . $request->query->get('Ds_Response')	.
-					"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
-					"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod'));
-			
-			// Enviar mail a Remei i posar factura pendent numfactura = -1
-			$mails = $this->getFacturacioMails(); 
-			$this->sendMailPagamentPendent($mails, $parteId);
-			
+	
+		$tpvresponse = $this->tpvResponse($request->query);
+		$remoteaddr = $this->getRequest()->server->get('REMOTE_ADDR');
+		$useragent = $this->getRequest()->server->get('HTTP_USER_AGENT');
+	
+		if ($tpvresponse['parteId'] > 0) {
+			$this->logEntry($tpvresponse['username'], 'TPV NOTIFICA OK', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+	
 			return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
-					array('result' => 'pend'));
-		} 
-		$this->writeFileNotificacio("errorspagament.txt", " ************** Error notificacioKoAction **************",
-				$parteId, $request->query->get('Ds_Date'),
-				$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'),
-				$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));
-		
-		$this->logEntry('alexmazinho@gmail.com', 'TPV PEND KO',
-				$this->getRequest()->server->get('REMOTE_ADDR'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'),
-				((isset($parteId))?$parteId:$request->query->get('Ds_MerchantData')) . "-" . $request->query->get('Ds_Response')	.
-				"-" . $request->query->get('Ds_Date') . "-" . $request->query->get('Ds_Hour') .
-				"-" . $request->query->get('Ds_Order') . "-" . $request->query->get('Ds_PayMethod'));
-		
+					array('result' => 'ok', 'parteId' => $tpvresponse['parteId']));
+		}
+	
+		$this->logEntry($tpvresponse['username'], 'TPV NOTIFICA NO DATA', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+	
+		return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
+				array('result' => 'ko', 'parteId' => 0));
+	}
+	
+	public function notificacioKoAction() {
+		// Resposta TPV on-line, genera resposta usuaris incorrecte		
+		$request = $this->getRequest();
+	
+		$tpvresponse = $this->tpvResponse($request->query);
+		$remoteaddr = $this->getRequest()->server->get('REMOTE_ADDR');
+		$useragent = $this->getRequest()->server->get('HTTP_USER_AGENT');
+	
+		if ($tpvresponse['pendent'] == true) {
+			$this->logEntry($tpvresponse['username'], 'TPV NOTIFICA PEND', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+				
+			return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
+					array('result' => 'pend', 'parteId' => $tpvresponse['parteId'] ) );
+		}
+	
+		$this->logEntry($tpvresponse['username'], 'TPV NOTIFICA KO', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+	
 		return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
 				array('result' => 'ko'));
 	}
+	
+	public function notificacioAction() {
+		// Crida asincrona des de TPV. Actualització dades pagament del parte
+		$request = $this->getRequest();
 
-	private function sendMailPagamentPendent ($mails, $parteId) {
+		$tpvresponse = $this->tpvResponse($request->request);
+		$remoteaddr = $this->getRequest()->server->get('REMOTE_ADDR');
+		$useragent = $this->getRequest()->server->get('HTTP_USER_AGENT');
+		
+		if ($request->getMethod() == 'POST') {
+			if ($tpvresponse['Ds_Response'] == 0) {
+				// Ok
+				$updOK = $this->actualitzarPagament($tpvresponse['parteId'], $tpvresponse['Ds_Order']);
+			
+				if ($updOK == true) {
+					$this->writeNotificacio("************** Notificació OK finalitzada **************", $tpvresponse); 
+
+					$this->logEntry($tpvresponse['username'], 'TPV OK',	$remoteaddr, $useragent, $tpvresponse['logEntry']);
+				} else {
+					$this->writeErrorPagament("************** Notificació KO error actualitzant parte **************", $tpvresponse);
+					
+					$this->logEntry($tpvresponse['username'], 'TPV KO',	$remoteaddr, $useragent, $tpvresponse['logEntry']);
+				}
+			} else {
+				if ($tpvresponse['pendent'] == true) {
+					// Pendent
+					// Enviar mail a Remei 
+					$this->sendMailPagamentPendent($tpvresponse['parteId'], $tpvresponse['Ds_Order']);
+						
+					$this->writeNotificacio(" ************** Pagament pendent de revisió **************", $tpvresponse);
+						
+					$this->logEntry($tpvresponse['username'], 'TPV PEND', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+				} else {
+					// Altres. Error
+					$this->writeErrorPagament("************** Notificació error **************", $tpvresponse);
+						
+					$this->logEntry($tpvresponse['username'], 'TPV ERROR', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+				}
+			}
+		} else {
+			$this->writeErrorPagament("************** Error NO POST **************", $tpvresponse);
+			
+			$this->logEntry($tpvresponse['username'], 'TPV NO POST', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+		}
+			
+		return new Response("");
+	}
+	
+	private function actualitzarPagament($parteId, $ordre) {
+		
+		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
+	
+		if ($parte != null) {
+			$em = $this->getDoctrine()->getEntityManager();
+			// Actualitzar data pagament
+			/*
+				$numfactura = $this->getMaxNumFactura();
+			$parte->setNumFactura($numfactura);*/
+			$parte->setEstatPagament("TPV OK");
+			$parte->setDadespagament($ordre);
+			$parte->setDatapagament($this->getCurrentDate());
+			$parte->setImportFactura($parte->getPreuTotalIVA());
+			$parte->setDatamodificacio($this->getCurrentDate());
+				
+			$em->flush();
+			return true;
+		}
+		return false;
+	}
+	
+	private function sendMailPagamentPendent ($parteId, $ordre) {
+		$mails = $this->getFacturacioMails();
+		
 		$em = $this->getDoctrine()->getEntityManager();
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
-		
+	
 		if ($parte != null) {
-			$parte->setNumFactura(-1);
+			//$parte->setNumFactura(-1);
+			$parte->setEstatpagament("TPV PEND");
+			$parte->setDadespagament($ordre);
+			$parte->setDatamodificacio($this->getCurrentDate());
+				
 			//$parte->setDatamodificacio($this->getCurrentDate()); No canviar res que calgui detectar ACCESS
 			$em->flush();
-			
+				
 			$message = \Swift_Message::newInstance()
-				->setSubject('::Parte pendent de confirmació::')
-				->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-				->setTo($mails)
-				->setBody($this->renderView('FecdasPartesBundle:Page:partePendentEmail.txt.twig',
-					array('parte' => $parte)));
+			->setSubject('::Parte pendent de confirmació::')
+			->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
+			//->setTo($mails)
+			->setTo(array("alexmazinho@gmail.com"))
+			->setBody($this->renderView('FecdasPartesBundle:Page:partePendentEmail.txt.twig', array('parte' => $parte)));
 			$this->get('mailer')->send($message);
 		} else {
 			// Error, no hauria de passar
@@ -1586,51 +1562,67 @@ class PageController extends BaseController {
 			$this->get('mailer')->send($message);
 		}
 	}
+
+	private function tpvResponse($tpvdata) {
 	
-	
-	private function actualitzarPagament($parteId, $request) {
-		$em = $this->getDoctrine()->getEntityManager();
-		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
-		
-		if ($parte != null) {
-			// Actualitzar data pagament
-			$parte->setDatapagament($this->getCurrentDate());
-			$numfactura = $this->getMaxNumFactura();
-			$parte->setNumFactura($numfactura);
-			$parte->setImportFactura($parte->getPreuTotalIVA());
-			$parte->setDatamodificacio($this->getCurrentDate());
-			$em->flush();
-			return true;
-		} else {
-			$this->writeFileNotificacio("errorspagament.txt", " ************** Error actualitzarPagament **************", 
-					$parteId, $request->query->get('Ds_Date'), 
-					$request->query->get('Ds_Hour'), $request->query->get('Ds_Order'), 
-					$request->query->get('Ds_PayMethod'), $request->query->get('Ds_Response'));
+		$tpvresponse = array('parteId' => 0, 'environment' => '', 'username' => 'logerror@fecdasgestio.cat',
+				'Ds_Response' => '', 'Ds_Order' => 0, 'Ds_Date' => '', 'Ds_Hour' => '',
+				'Ds_PayMethod' => '', 'logEntry' => '', 'pendent' => false);
+		if ($tpvdata->has('Ds_MerchantData') and $tpvdata->get('Ds_MerchantData') != '') {
+			$dades = $tpvdata->get('Ds_MerchantData');
+			$dades_array = explode("&", $dades);
+				
+			$tpvresponse['parteId'] = $dades_array[0];
+			$tpvresponse['environment'] = $dades_array[1];
+			$tpvresponse['username'] = $dades_array[2];
 		}
-		return false;
+	
+		if ($tpvdata->has('Ds_Response')) $tpvresponse['Ds_Response'] = $tpvdata->get('Ds_Response');
+		if ($tpvdata->has('Ds_Order')) $tpvresponse['Ds_Order'] = $tpvdata->get('Ds_Order');
+		if ($tpvdata->has('Ds_Date')) $tpvresponse['Ds_Date'] = $tpvdata->get('Ds_Date');
+		if ($tpvdata->has('Ds_Hour')) $tpvresponse['Ds_Hour'] = $tpvdata->get('Ds_Hour');
+		if ($tpvdata->has('Ds_PayMethod')) $tpvresponse['Ds_PayMethod'] = $tpvdata->get('Ds_PayMethod');
+	
+		if (($tpvresponse['Ds_Response'] == '0930' or $tpvresponse['Ds_Response'] == '9930') and $tpvdata->get('Ds_PayMethod') == 'R') {
+			$tpvresponse['pendent'] = true;
+		}
+		
+		$tpvresponse['logEntry'] = $tpvresponse['parteId'] . "-" . $tpvresponse['Ds_Response'] . "-" .
+				$tpvresponse['environment'] . "-" . $tpvresponse['Ds_Date'] . "-" .
+				$tpvresponse['Ds_Hour'] . "-" . $tpvresponse['Ds_Order'] . "-" . $tpvresponse['Ds_PayMethod'];
+	
+		return $tpvresponse;
 	}
 	
-	private function writeFileNotificacio($file, $sms, $parteId, $data, $hora, $ordre, $metode, $resposta)  {
+	private function writeNotificacio($sms, $tpvresponse)  {
+		$this->writeFile("notificacions.txt", $sms, $tpvresponse);
+	} 
+
+	private function writeErrorPagament($sms, $tpvresponse)  {
+		$this->writeFile("errorspagament.txt", $sms, $tpvresponse);
+	}
+	
+	private function writeFile($file, $sms, $tpvresponse)  {
 		$fh = fopen($file, 'a') or die("can't open file"); 
 
 		fwrite($fh, $sms . "\n");
 		fwrite($fh, "ara : " . date("d/m/Y H:i:s", time()) .  "\n");
-		fwrite($fh, "parte: ". $parteId."\n");
-		fwrite($fh, "data : ".$data."\n");
-		fwrite($fh, "hora : ".$hora."\n");
-		fwrite($fh, "ordre: ".$ordre."\n");
-		fwrite($fh, "metode: ".$metode."\n");
-		fwrite($fh, "resposta: ".$resposta."\n");
+		fwrite($fh, "entorn: ". $tpvresponse['environment']."\n");
+		fwrite($fh, "parte: ". $tpvresponse['parteId']."\n");
+		fwrite($fh, "data : ".$tpvresponse['Ds_Date']."\n");
+		fwrite($fh, "hora : ".$tpvresponse['Ds_Hour']."\n");
+		fwrite($fh, "ordre: ".$tpvresponse['Ds_Order']."\n");
+		fwrite($fh, "metode: ".$tpvresponse['Ds_PayMethod']."\n");
+		fwrite($fh, "resposta: ".$tpvresponse['Ds_Response']."\n");
 		fclose($fh);
 	}
 	
 	private function showPDF(EntityParte $parte) {
-		//return (boolean) (($parte->isCurrentYear() == true) and ($parte->isPagat() == true)); // Allow pdf
 		return true;
 	}
 
 	private function allowEdit(EntityParte $parte) {
-		return (boolean) ($parte->isPagat() == false); // Allow edition
+		return (boolean) ($parte->getDatapagament() == null); // Allow edition
 	}
 
 	private function getFormOptions() {
@@ -1726,7 +1718,7 @@ class PageController extends BaseController {
 		return $response;
 	}
 	
-	
+	/*	
 	private function getMaxNumFactura() {
 		$em = $this->getDoctrine()->getEntityManager();
 		$query = $em->createQuery("SELECT MAX(p.numfactura) FROM Fecdas\PartesBundle\Entity\EntityParte p
@@ -1735,5 +1727,5 @@ class PageController extends BaseController {
 		if ($numfactura == null) $numfactura = 0; 
 		if ($numfactura == -1) $numfactura = 0; // Pendents
 		return $numfactura + 1;
-	}
+	}*/
 }

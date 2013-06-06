@@ -55,17 +55,7 @@
    			<div class="parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
    			<div class="parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
    			<div class="parte-total">{{ parte.numLlicencies }}</div>
-   			<div class="parte-pagat">
-			{% if parte.pagat %}
-				{% if parte.numfactura != -1 %}		
-					Si 	
-				{% else %}
-					Pend 	
-				{% endif %}
-			{% else %}
-					&nbsp; 
-			{% endif %} 
-   			</div>
+   			<div class="parte-pagat">{% if parte.datapagament is not null and parte.web %}Si{% else %}&nbsp;{% endif %}</div>
    			<div class="parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
    			<div class="parte-actions"><a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Editar Veure" title="Editar Veure" width="23px"></a></div>
    			{% if parte.allowRenovar and parte.numLlicencies > 0 %}

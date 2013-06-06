@@ -2,7 +2,6 @@
 namespace Fecdas\PartesBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
@@ -33,12 +32,12 @@ class EntityParte {
 	protected $club;	// FK taula m_clubs
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $numrelacio;
 	
 	/**
-	 * @ORM\Column(type="date")
+	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataalta;
 
@@ -60,23 +59,99 @@ class EntityParte {
 	/**
 	 * @ORM\Column(type="date", nullable = true)
 	 */
+	protected $datapagament;
+
+	/**
+	 * @ORM\Column(type="string", length=15, nullable=true)
+	 */
+	protected $estatpagament;  // MANUAL, TPV PEND, TPV OK, PEND, METALLIC, TRANSF
+	
+	/**
+	 * @ORM\Column(type="string", length=15, nullable=true)
+	 */
+	protected $dadespagament;  // Num comanda TPV o num pago Gestor
+
+	/**
+	 * @ORM\Column(type="text", nullable=true)
+	 */
+	protected $comentari;  // Comentaris del pagament o del parte en general
+	
+	/**
+	 * @ORM\Column(type="date", nullable = true)
+	 */
 	protected $datafacturacio;
+
+	/**
+	 * @ORM\Column(type="string", length=10, nullable = true)
+	 */
+	protected $numfactura;
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
+	 */
+	protected $importfactura;
 	
 	/**
 	 * @ORM\Column(type="string", length=38, nullable=true)
 	 */
 	protected $idparte_access;
+
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $web;
+
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $renovat;
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityLlicencia", mappedBy="parte")
 	 */
 	protected $llicencies;	// Owning side of the relationship
 	
-	public function __construct() {
-		$this->setDataentrada(new \DateTime());
+	public function __construct($currentDate) {
+		$this->setDataentrada($currentDate);
+		$this->web = true;
+		$this->renovat = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
+	public function __clone() {
+		$this->id = null;
+		$this->numrelacio = null;
+		$this->datapagament = null;
+		$this->datafacturacio = null;
+		$this->numfactura = null;
+		$this->importfactura = null;
+		$this->idparte_access = null;
+		$this->web = true;
+		$this->renovat = false;
+	}
+	
+	public function cloneLlicencies($currentDate) {
+		// Get current collection
+		$llicencies = $this->getLlicencies();
+	
+		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
+		foreach ($llicencies as $llicencia_iter) {
+			if ($llicencia_iter->getDatabaixa() == null) {
+				$cloneLlicencia = clone $llicencia_iter;
+				
+				/* Init camps */
+				$cloneLlicencia->setDataEntrada($currentDate);
+				$cloneLlicencia->setDatamodificacio($currentDate);
+				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat());
+				$cloneLlicencia->setIdparteAccess(null);
+				$cloneLlicencia->getIdpartedetall_access(null);
+				
+				$this->llicencies->add($cloneLlicencia);
+				$cloneLlicencia->setParte($this);
+			}
+		}
+	}
+	
     /**
      * Get id
      *
@@ -121,7 +196,7 @@ class EntityParte {
     /**
      * Set dataalta
      *
-     * @param date $dataalta
+     * @param datetime $dataalta
      */
     public function setDataalta($dataalta)
     {
@@ -131,7 +206,7 @@ class EntityParte {
     /**
      * Get dataalta
      *
-     * @return date 
+     * @return datetime
      */
     public function getDataalta()
     {
@@ -178,33 +253,93 @@ class EntityParte {
     }
 
     /**
+     * Set datapagament
+     *
+     * @param date $datapagament
+     */
+    public function setDatapagament($datapagament)
+    {
+        $this->datapagament = $datapagament;
+    }
+
+    /**
+     * Get datapagament
+     *
+     * @return date 
+     */
+    public function getDatapagament()
+    {
+        return $this->datapagament;
+    }
+
+    /**
+     * Get pagat
+     *
+     * @return boolean
+     */
+    public function isPagat()
+    {
+    	return (boolean) $this->datapagament != null or $this->numfactura == -1;
+    }
+    
+    /**
      * Set datafacturacio
      *
      * @param date $datafacturacio
      */
     public function setDatafacturacio($datafacturacio)
     {
-        $this->datafacturacio = $datafacturacio;
+    	$this->datafacturacio = $datafacturacio;
     }
-
+    
     /**
      * Get datafacturacio
      *
-     * @return date 
+     * @return date
      */
     public function getDatafacturacio()
     {
-        return $this->datafacturacio;
+    	return $this->datafacturacio;
     }
-
+    
     /**
-     * Get facturat
+     * Set numfactura
      *
-     * @return boolean
+     * @param integer $numfactura
      */
-    public function isFacturat()
+    public function setNumfactura($numfactura)
     {
-    	return (boolean) $this->datafacturacio != null;
+    	$this->numfactura = $numfactura;
+    }
+    
+    /**
+     * Get numfactura
+     *
+     * @return integer
+     */
+    public function getNumfactura()
+    {
+    	return $this->numfactura;
+    }
+    
+    /**
+     * Set importfactura
+     *
+     * @param decimal $importfactura
+     */
+    public function setImportfactura($importfactura)
+    {
+    	$this->importfactura = $importfactura;
+    }
+    
+    /**
+     * Get importfactura
+     *
+     * @return decimal
+     */
+    public function getImportfactura()
+    {
+    	return $this->importfactura;
     }
     
     /**
@@ -268,6 +403,85 @@ class EntityParte {
     }
 
     /**
+     * Set web
+     *
+     * @param boolean $web
+     */
+    public function setWeb($web)
+    {
+    	$this->web = $web;
+    }
+    
+    /**
+     * Get web
+     *
+     * @return boolean
+     */
+    public function getWeb()
+    {
+    	return $this->web;
+    }
+
+    /**
+     * Set renovat
+     *
+     * @param boolean $renovat
+     */
+    public function setRenovat($renovat)
+    {
+    	$this->renovat = $renovat;
+    }
+    
+    /**
+     * Get renovat
+     *
+     * @return boolean
+     */
+    public function getRenovat()
+    {
+    	return $this->renovat;
+    }
+    
+    /**
+     * Set datamodificacio
+     *
+     * @param datetime $datamodificacio
+     */
+    public function setDatamodificacio($datamodificacio)
+    {
+    	$this->datamodificacio = $datamodificacio;
+    }
+    
+    /**
+     * Get datamodificacio
+     *
+     * @return datetime
+     */
+    public function getDatamodificacio()
+    {
+    	return $this->datamodificacio;
+    }
+    
+    /**
+     * Set databaixa
+     *
+     * @param datetime $databaixa
+     */
+    public function setDatabaixa($databaixa)
+    {
+    	$this->databaixa = $databaixa;
+    }
+    
+    /**
+     * Get databaixa
+     *
+     * @return datetime
+     */
+    public function getDatabaixa()
+    {
+    	return $this->databaixa;
+    }
+    /**
      * Add llicencia
      *
      * @param Fecdas\PartesBundle\Entity\EntityLlicencia $llicencia
@@ -299,6 +513,31 @@ class EntityParte {
     {
     	return $this->llicencies;
     }
+
+    
+    public function getLlicenciesSortedByName()
+    {
+    	$arr = $this->llicencies->toArray();
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+    		return ($a->getPersona()->getCognoms() < $b->getPersona()->getCognoms())? -1:1;;
+    	});
+    	return $arr;
+    }
+    
+    /**
+     * Set llicencies
+     *
+     * @param $llicencies Doctrine\Common\Collections\ArrayCollection
+     */
+	/*
+    public function setLlicencies(ArrayCollection $llicencies)
+    {
+    	$this->llicencies = $llicencies;
+    }*/
+    
     
     /**
      * Obté número de llicències (actives)
@@ -316,7 +555,7 @@ class EntityParte {
     	}
     	return $count;
     }
-
+    
     /**
      * Obté número d'aficionats (llicències actives)
      *
@@ -345,7 +584,7 @@ class EntityParte {
     }
     
     
-    private function getNumLlicenciesCategoria($simbol)
+    public function getNumLlicenciesCategoria($simbol)
     {
     	// Només si no estan donades de baixa
     	$count = 0;
@@ -356,44 +595,138 @@ class EntityParte {
     	return $count;
     }
     
+    public function getPreuTotalNet() {
+    	// Retorna el preu total sense IVA de totes les llicències actives del Parte
+    	$preu = 0;
+    	foreach ($this->getLlicencies() as $c => $llicencia_iter) {
+    		if ($llicencia_iter->getDatabaixa() == null) {
+    			$preu += $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
+    		}
+    	}
+    	return $preu;
+    }
     
-    /**
-     * Set datamodificacio
-     *
-     * @param datetime $datamodificacio
-     */
-    public function setDatamodificacio($datamodificacio)
+    public function getPreuTotalIVA() {
+    	// Retorna el preu total amb IVA de totes les llicències actives del Parte
+    	$iva = $this->getTipus()->getIVA();
+    	$factor = ($iva/100) + 1;
+    	return $this->getPreuTotalNet() * $factor;
+    }
+    
+    public function getDataCaducitat() {
+    	//$datacaducitat = clone $this->getDataalta(); // Important treballar amb còpies no amb referències
+    	//$datacaducitat = clone $this->dataalta;
+    	$datacaducitat = new \DateTime($this->dataalta->format("Y-m-d"));
+    	if ($this->getTipus()->getId() != 9) { // No un dia
+    		if ($this->getTipus()->getEs365() == true) {
+    			$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
+    		} else {
+    			$datacaducitat = \DateTime::createFromFormat("Y-m-d", $datacaducitat->format("Y") . "-12-31");
+    		}
+    	}
+		return $datacaducitat;
+    }
+    
+    public function getNumActivitat($activitat)
     {
-        $this->datamodificacio = $datamodificacio;
+    	// Només si no estan donades de baixa
+    	$count = 0;
+    	foreach($this->llicencies as $c=>$llicencia_iter) {
+    		if ($llicencia_iter->getDatabaixa() == null) {
+    			switch ($activitat) {
+    				case 'pesca':
+    					if ($llicencia_iter->getPesca() == true) $count++;
+    					break;
+    				case 'escafandrisme':
+    					if ($llicencia_iter->getEscafandrisme() == true) $count++;
+    					break;
+    				case 'natacio':
+    					if ($llicencia_iter->getNatacio() == true) $count++;
+    					break;
+    				case 'orientacio':
+    					if ($llicencia_iter->getOrientacio() == true) $count++;
+    					break;
+    				case 'biologia':
+    					if ($llicencia_iter->getBiologia() == true) $count++;
+    					break;
+    				case 'fotocine':
+    					if ($llicencia_iter->getFotocine() == true) $count++;
+    					break;
+    				case 'hockey':
+    					if ($llicencia_iter->getHockey() == true) $count++;
+    					break;
+   					case 'fotosubapnea':
+   						if ($llicencia_iter->getFotosubapnea() == true) $count++;
+   						break;
+					case 'videosub':
+						if ($llicencia_iter->getVideosub() == true) $count++;
+						break;
+					case 'apnea':
+						if ($llicencia_iter->getApnea() == true) $count++;
+						break;
+					case 'rugbi':
+						if ($llicencia_iter->getRugbi() == true) $count++;
+						break;
+					case 'besportiu':
+						if ($llicencia_iter->getBesportiu() == true) $count++;
+						break;
+					case 'bampolles':
+						if ($llicencia_iter->getBampolles() == true) $count++;
+						break;
+    			}
+    		}
+    	}
+    	return $count;
+    }
+    
+    public function hasIVA() {
+    	if ($this->tipus->getIva() > 0) return true;
+    	return false;
+    }
+    
+    public function isAsseguranca() {
+    	// Per indicar si cal mostrar les estadístiques pantalla llicència parte
+    	if ($this->tipus->getId() == 2 || $this->tipus->getId() == 6 ||
+    		$this->tipus->getId() == 8 || $this->tipus->getId() == 10 ||
+    		$this->tipus->getId() == 11) return true;
+    	return false;
     }
 
-    /**
-     * Get datamodificacio
-     *
-     * @return datetime 
-     */
-    public function getDatamodificacio()
-    {
-        return $this->datamodificacio;
+    public function allowRenovar() {
+    	// Només renoven alguns tipus de parte
+    	if ($this->tipus->getId() == 1 || $this->tipus->getId() == 2 ||
+    			$this->tipus->getId() == 4 || $this->tipus->getId() == 7 ||
+    			$this->tipus->getId() == 10) {
+    		if ($this->getAny() == date("Y") || $this->getAny() == date("Y") -1) return true;
+    		else return false;
+    	}
+    	return false;
     }
     
-    /**
-     * Set databaixa
-     *
-     * @param datetime $databaixa
-     */
-    public function setDatabaixa($databaixa)
-    {
-    	$this->databaixa = $databaixa;
+    public function isVigent() {
+    	/* Normal 31/12  	dataalta >= 01/01/current year */
+    	$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") . "-01-01 00:00:00");
+    	/* 365	dataalta >= avui / (current year - 1) */
+    	$ini365 = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
+    	
+    	return  ($this->tipus->getEs365() == 0 and $this->dataalta >= $inianual) or 	
+    			($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);
     }
     
-    /**
-     * Get databaixa
-     *
-     * @return datetime
-     */
-    public function getDatabaixa()
+    public function isFacturaValida()
     {
-    	return $this->databaixa;
+    	// Les factures no són vàlides si s'ha esborrat alguna llicència després de pagar-la
+    	$count = 0;
+    	if ($this->numfactura != null and $this->datapagament != null) {
+    		foreach($this->llicencies as $c=>$llicencia_iter) {
+    			if ($llicencia_iter->getDatabaixa() != null) {
+    				if ($llicencia_iter->getDatabaixa() >= $this->datapagament) {
+    					return false;
+    				}
+    			}
+    		}
+    	}
+    	return true;
     }
+    
 }

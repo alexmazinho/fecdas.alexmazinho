@@ -9,7 +9,7 @@
     <div id="notificacio">
 	<div class="sms-notice">
 		{% if result == 'ok' %}
-			Pagament realitzat correctament. <a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parteId }) }}">Factura Pagada</a>
+			Pagament realitzat correctament 
 		{% else  %}
 			{% if result == 'pend' %}
 				Pagament pendent de comprovar per part de la federació
@@ -17,8 +17,15 @@
 				S'ha produit un error durant el pagament 
 			{% endif %} 
 		{% endif %} 
+		
 	</div>
-	<div id="close-notificacio"><a href="#">Torna</a></div>
+	<div id="close-notificacio">
+		{% if result == 'ok' or result == 'pend' %}
+		<a href="{{ path('FecdasPartesBundle_parte', { 'id': parteId }) }}">Torna</a>
+		{% else  %}
+		<a href="{{ path('FecdasPartesBundle_partes') }}">Torna</a>
+		{% endif %}
+	</div>
     </div>
 {% endblock %}
 

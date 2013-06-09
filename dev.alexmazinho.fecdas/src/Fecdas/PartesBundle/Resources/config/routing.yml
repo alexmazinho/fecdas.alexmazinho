@@ -173,12 +173,18 @@ FecdasPartesBundle_llistestopdf:
     requirements:
         _method:  GET
 
-
 FecdasPartesBundle_facturatopdf:
     pattern:  /printfactura
     defaults: { _controller: "FecdasPartesBundle:PDF:facturatopdf" }
     requirements:
         _method:  GET
+
+FecdasPartesBundle_albaratopdf:
+    pattern:  /printalbara
+    defaults: { _controller: "FecdasPartesBundle:PDF:albaratopdf" }
+    requirements:
+        _method:  GET
+
 
 FecdasPartesBundle_checkrenovacio:
     pattern:  /checkrenovacio

@@ -86,6 +86,7 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getEntityManager();
 	
 		$currentWeb = 0;
+		$currentSincro = 0;
 		$currentEstat = "100";
 		$currentClub = "";
 		
@@ -97,11 +98,14 @@ class PageController extends BaseController {
 				if (isset($formdata['codi'])) $currentClub = $formdata['codi'];
 				if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
 				if (isset($formdata['web'])) $currentWeb = 1;
+				if (isset($formdata['sincro'])) $currentSincro = 1;
 
 				$this->logEntry($this->get('session')->get('username'), 'ADMIN PARTES SEARCH',
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), 
-						"club: " . $currentClub . " estat: " . $currentEstat . " web: " . $currentWeb );
+						"club: " . $currentClub . " estat: " . 
+						$currentEstat . " web: " . $currentWeb .
+						$currentSincro . " sync: " . $currentSincro );
 			}
 		} else {
 			$this->logEntry($this->get('session')->get('username'), 'ADMIN PARTES',
@@ -109,7 +113,7 @@ class PageController extends BaseController {
 					$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		}
 		
-		$formBuilder = $this->createFormBuilder()->add('clubs', 'search');
+		$formBuilder = $this->createFormBuilder()->add('clubs', 'search', array('required' => false));
 		
 		$formBuilder->add('codi', 'hidden');
 		
@@ -118,6 +122,9 @@ class PageController extends BaseController {
 					'preferred_choices' => array('100'),
 				));
 		$formBuilder->add('web', 'checkbox', array(
+    				'required'  => false,
+				));
+		$formBuilder->add('sincro', 'checkbox', array(
     				'required'  => false,
 				));
 		$form = $formBuilder->getForm();
@@ -137,6 +144,7 @@ class PageController extends BaseController {
 		}
 			
 		if ($currentWeb != 0) $strQuery .= " AND p.web = 1 ";
+		if ($currentSincro != 0) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
 		//if ($currentEstat != "t" && $currentEstat != "100") {
 			if ($currentEstat == "n") $strQuery .= " AND p.datapagament IS NULL ";
 			if ($currentEstat == "p") $strQuery .= " AND p.numfactura = -1 ";
@@ -153,6 +161,7 @@ class PageController extends BaseController {
 		$partesrecents = $query->getResult();
 	
 		if ($currentWeb == 1) $form->get('web')->setData(true);
+		if ($currentSincro == 1) $form->get('sincro')->setData(true);
 		$form->get('estat')->setData($currentEstat);		
 		
 		return $this->render('FecdasPartesBundle:Page:recents.html.twig',
@@ -241,7 +250,7 @@ class PageController extends BaseController {
 		$partesclub = $this->consultaPartesClub($currentClub);
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
-				array('form' => $form->createView(), 'partes' => $partesclub, 'club' => $currentClub,
+				array('form' => $form->createView(), 'partes' => $partesclub, 
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
 						'busseig' => $this->isCurrentBusseig(),
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
@@ -321,7 +330,7 @@ class PageController extends BaseController {
 		$persones = $query->getResult();
 	
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
-				array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent,
+				array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent, 'club' => $currentClub,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
 						'busseig' => $this->isCurrentBusseig(),
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
@@ -1377,7 +1386,7 @@ class PageController extends BaseController {
 
 		$preu = $totalfactura['total'];
 		$desc = 'Pagament a FECDAS, llista d\'assegurats del club ' . $parte->getClub()->getCodi() . ' en data ' . $parte->getDataalta()->format('d/m/Y');
-		$dades =  $parte->getId() . "&" . $this->get('kernel')->getEnvironment() . "&" . $this->get('session')->get('username');
+		$dades =  $parte->getId() . ";" . $this->get('kernel')->getEnvironment() . ";" . $this->get('session')->get('username');
 		$payment = new EntityPayment($preu, $desc, $parte->getClub()->getNom(), $dades);
 		$formpayment = $this->createForm(new FormPayment(), $payment);
 
@@ -1406,7 +1415,7 @@ class PageController extends BaseController {
 		
 		$form = $formBuilder->getForm();
 		$form->get('Ds_Response')->setData(0);
-		$form->get('Ds_MerchantData')->setData("1&dev&alexmazinho@gmail.com");
+		$form->get('Ds_MerchantData')->setData("1;dev;alexmazinho@gmail.com");
 		$form->get('Ds_Date')->setData(date('d/m/Y'));
 		$form->get('Ds_Hour')->setData(date('h:i'));
 		$form->get('Ds_Order')->setData(date('Ymdhi'));
@@ -1570,7 +1579,7 @@ class PageController extends BaseController {
 				'Ds_PayMethod' => '', 'logEntry' => '', 'pendent' => false);
 		if ($tpvdata->has('Ds_MerchantData') and $tpvdata->get('Ds_MerchantData') != '') {
 			$dades = $tpvdata->get('Ds_MerchantData');
-			$dades_array = explode("&", $dades);
+			$dades_array = explode(";", $dades);
 				
 			$tpvresponse['parteId'] = $dades_array[0];
 			$tpvresponse['environment'] = $dades_array[1];

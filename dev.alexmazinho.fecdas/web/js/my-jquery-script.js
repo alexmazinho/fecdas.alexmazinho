@@ -201,12 +201,12 @@
 				var keyA = $(a).children().eq(index).html();
 				var keyB = $(b).children().eq(index).html();
 
-				if ( !isNaN( parseInt( keyA ) ) ) {
-					keyA =  parseInt( keyA );
+				if ( !isNaN( parseInt( keyA.replace(/,/g, '') ) ) ) {
+					keyA =  parseInt( keyA.replace(/,/g, '') );
 				}
 
-				if ( !isNaN( parseInt( keyB ) ) ) {
-					keyB =  parseInt( keyB );
+				if ( !isNaN( parseInt( keyB.replace(/,/g, '') ) ) ) {
+					keyB =  parseInt( keyB.replace(/,/g, '') );
 				}
 				
 				if (keyA < keyB) return (orderasc == true)?-1:1;
@@ -754,38 +754,45 @@
 		    	
 	        	// Parte nou creat, deixa només el tipus de parte seleccionat
 	        	$("#parte_tipus option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 	        	
 	        	// Parte nou creat, deixa només el club seleccionat
 	        	$("#parte_club option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 
 	        	// Parte nou creta, desactiva data
 	        	$("#parte_dataalta_date_day option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 	        	$("#parte_dataalta_date_month option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 	        	$("#parte_dataalta_date_year option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 	        	$("#parte_dataalta_time_hour option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 	        	$("#parte_dataalta_time_minute option:not(:selected)").each(function(i, item){
-	        		$(item).remove()
+	        		$(item).remove();
 	        	});
 	        	
 	        	if ($("#parte_id").val() == "")	{  // Set form parte_id
-	        		var hrefprint = $("#formparte-print a").attr("href");
+	        		
+	        		
+	        		var hrefpartetopdf = $("#parte-to-pdf a").attr("href");
+	        		var hreffacturatopdf = $("#factura-to-pdf a").attr("href");
+	        		
 	        		$("#parte_id").val($("#header-parteid").html());
 	        		if ($("#parte_id").val() != "") {
-	        			hrefprint += "?id=" + $("#parte_id").val();
-	        			$("#formparte-buttons").show();
-	        			$("#formparte-print a").attr("href", hrefprint);
+	        			hrefpartetopdf += "?id=" + $("#parte_id").val();
+	        			hreffacturatopdf += "?id=" + $("#parte_id").val();
+	        			
+	        			$("#buttons-top").show();
+	        			$("#parte-to-pdf a").attr("href", hrefpartetopdf);
+	        			$("#factura-to-pdf a").attr("href", hreffacturatopdf);
 	        		}
 	        	};
 			});
@@ -810,28 +817,28 @@
 	    	        	    type: 'hidden',
 	    	        	    id: 'datapagat',
 	    	        	    name: 'parte[datapagat]',
-	    	        	    value: $( "#datepicker" ).val(),  
+	    	        	    value: $( "#datepicker" ).val() 
 	    	        	}).appendTo('#formparte');
 
 	    	        	$('<input>').attr({
 	    	        	    type: 'hidden',
 	    	        	    id: 'estatpagat',
 	    	        	    name: 'parte[estatpagat]',
-	    	        	    value: $( "#pagatestat" ).val(),    
+	    	        	    value: $( "#pagatestat" ).val()    
 	    	        	}).appendTo('#formparte');
 	    	        	
 	    	        	$('<input>').attr({
 	    	        	    type: 'hidden',
 	    	        	    id: 'dadespagat',
 	    	        	    name: 'parte[dadespagat]',
-	    	        	    value: $( "#pagatdades" ).val(),    
+	    	        	    value: $( "#pagatdades" ).val()    
 	    	        	}).appendTo('#formparte');
 
 	    	        	$('<input>').attr({
 	    	        	    type: 'hidden',
 	    	        	    id: 'comentaripagat',
 	    	        	    name: 'parte[comentaripagat]',
-	    	        	    value: $( "#pagatcomentari" ).val(),    
+	    	        	    value: $( "#pagatcomentari" ).val()    
 	    	        	}).appendTo('#formparte');
 	    	        	
 	    	        	$('#formparte').submit();
@@ -1224,21 +1231,20 @@
 	    });
 	};
 	
-	enableUserClick = function(struser, action) {
-		
-        var url = $("#formclub-usuarinou").attr("href");
-		var params = { 	action: action, user: struser };
-		$.get(url, params,
-		function(data, textStatus) {
-			
-	    	$("#llista-usuarisclub").html(data);
-		});
-	};
-
 	resetPwdUserClick = function(struser) {
 		
         var url = $("#formclub-usuarinou").attr("href");
 		var params = { 	action: 'resetpwd', user: struser };
+		$.get(url, params,
+		function(data, textStatus) {
+	    	$("#llista-usuarisclub").html(data);
+		});
+	};
+	
+	removedUserClick = function(struser) {
+		
+        var url = $("#formclub-usuarinou").attr("href");
+		var params = { 	action: 'remove', user: struser };
 		$.get(url, params,
 		function(data, textStatus) {
 	    	$("#llista-usuarisclub").html(data);

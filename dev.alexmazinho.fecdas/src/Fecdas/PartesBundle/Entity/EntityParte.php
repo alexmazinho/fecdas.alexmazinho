@@ -342,7 +342,7 @@ class EntityParte {
     	//return (boolean) $this->datapagament != null or $this->numfactura == -1;
     	return (boolean) $this->datapagament != null;
     }
-    
+
     /**
      * Set datafacturacio
      *
@@ -761,6 +761,31 @@ class EntityParte {
     		if ($this->getAny() == date("Y") || $this->getAny() == date("Y") -1) return true;
     		else return false;
     	}
+    	return false;
+    }
+
+    /**
+     * Allow edit
+     *
+     * @return boolean
+     */
+    public function isAllowEdit()
+    {
+    	$currentdate = new \DateTime();
+    	
+    	return (boolean) $this->datapagament == null and $this->dataalta >= $currentdate;
+    }
+    
+    /**
+     * Pendent Sincronitzar
+     *
+     * @return boolean
+     */
+    public function isPendentSincronitzar()
+    {
+    	if ($this->idparte_access == null) return true;
+    	if ($this->idparte_access != null and $this->datamodificacio != null) return true;
+    	
     	return false;
     }
     

@@ -489,8 +489,18 @@ class SecurityController extends BaseController
     				$userclub = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityUser')->find($request->query->get('user'));
 
     				if ($userclub != null) {
-    					if ($action == 'enable') $userclub->setDatabaixa(null);
-    					if ($action == 'disable') $userclub->setDatabaixa($this->getCurrentDate());
+    					if ($action == 'remove') {
+    						/* Change email, add prefix . Actualitza en cascada el registre per no perdre'l 
+    						 * Permet tornar a fer servir l'usuari */
+    						$userclub->setDatabaixa($this->getCurrentDate());
+    						
+    						$upduser = $userclub->getUser();
+    						for($i = 0; $i <= 6; $i++) {
+    							$upduser = chr(rand(97, 122)) . $upduser;
+    						}
+    						$userclub->setUser($upduser);
+    						
+    					}
     					if ($action == 'resetpwd') {
     						$randomPassword = $this->generateRandomPassword();
     						$userclub->setPwd(sha1($randomPassword));

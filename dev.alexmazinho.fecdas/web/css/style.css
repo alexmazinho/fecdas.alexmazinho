@@ -1277,33 +1277,51 @@ table.jqplot-table-legend {
 /********************************************* Partes recents ****************************************************/
 
 
+#list-recents, #formrecents {
+	width: 1000px;
+	
+}
 
-#formrecents-web  {
+#formrecents-web,#formrecents-sincro  {
 	margin-top: 7px;
+}
+
+li.parte-pendent-sincro {
+	color: #c989a4;
+	font-weight: bold;
+}
+
+li.parte-pendent-sincro .parterecents-actions {
+	background-color: #ffffff;
 }
 
 #header-parterecentsid { display:none; }
 #header-parterecentsrel { width: 4%; text-align:right;}
 #header-parterecentsdata {	width: 9%; text-align: center;}
-#header-parterecentsclub {	width: 18%; text-align:left;}
-#header-parterecentstipus {	width: 11%;}
-#header-parterecentsweb {	width: 4%;}
-#header-parterecentstotal {	width: 4%;text-align:center;}
-#header-parterecentspreu {	width: 9%; text-align:right;}
-#header-parterecentspagweb {	width: 14%; text-align:right; line-height: 11px;}
-#header-parterecentsfactura {	width: 11%; text-align: center;}
+#header-parterecentsclub {	width: 13%; text-align:left;}
+#header-parterecentstipus {	width: 10%;}
+#header-parterecentstotal {	width: 2%;text-align:center;}
+#header-parterecentspreu {	width: 6%; text-align:right;}
+#header-parterecentspagat {	width: 11%; text-align:center;}
+#header-parterecentdadespagat {	width: 19%; text-align:center; }
+
+
+
+#header-parterecentsfactura {	width: 14%; text-align: left;}
 #header-parterecentsactions {}
 
 .parterecents-id { display:none; }
 .parterecents-rel { float: left;width: 4%; text-align:right;}
 .parterecents-data { float: left;width: 9%; text-align: center; }
-.parterecents-club { float: left;width: 18%; text-align:left; font-size: 0.8em;}
-.parterecents-tipus { float: left;width: 12%; text-align:center;}
-.parterecents-web {	float: left; width: 4%; text-align:center;}
-.parterecents-total { float: left; width: 4%; text-align:center;}
-.parterecents-preu { float: left; width: 9%; text-align:right;}
-.parterecents-pagweb { float: left;	width: 15%; text-align:right;}
-.parterecents-factura {	float: left;width: 11%; text-align:center;}
+.parterecents-club { float: left;width: 13%; text-align:left; font-size: 0.8em;}
+.parterecents-tipus { float: left;width: 11%; text-align:center;}
+.parterecents-total { float: left; width: 2%; text-align:center;}
+.parterecents-preu { float: left; width: 6%; text-align:right;}
+.parterecents-pagat { float: left;	width: 11%; text-align:center;}
+.parterecents-dadespagat { float: left;	width: 19%; text-align:center;}
+
+
+.parterecents-factura {	float: left;width: 15%; text-align:left;}
 .parterecents-actions { float: right; width: 3%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/

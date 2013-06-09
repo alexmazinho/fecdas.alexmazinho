@@ -61,7 +61,7 @@ class EntityPayment {
 
 		//$this->numordre = date('ymdHis');
 
-		$dades_array = explode("&", $dades);
+		$dades_array = explode(";", $dades);
 		$parteId = $dades_array[0];
 		$this->environment = $dades_array[1];
 		

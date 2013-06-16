@@ -692,6 +692,7 @@
 	    	 	        	$("#llista-llicencies").html(data);
 	    	 	        	removeLlicenciaClick();
 	    	 	        	showResumParteDetall();
+	    	 	        	sortLlista("col-listheader", "list-data");
 	    	 	        	// Hide llicencia
 	    	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	    	 		    	else $('#formparte-llicencia').slideUp('fast');
@@ -750,7 +751,7 @@
 				$("#llista-llicencies").html(data);
 	        	removeLlicenciaClick();
 	        	showResumParteDetall();
-	        	
+	        	sortLlista("col-listheader", "list-data");
 		    	
 	        	// Parte nou creat, deixa només el tipus de parte seleccionat
 	        	$("#parte_tipus option:not(:selected)").each(function(i, item){

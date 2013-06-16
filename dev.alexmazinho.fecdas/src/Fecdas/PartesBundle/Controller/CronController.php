@@ -17,7 +17,7 @@ class CronController extends BaseController {
 		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p ";
 		$strQuery .= "WHERE p.databaixa IS NULL  ";
-		$strQuery .= " AND p.importparte IS NULL  ";
+		$strQuery .= " AND p.importparte = 0 ";
 		$strQuery .= " AND p.id <= :maxid ";
 		$strQuery .= " AND p.web = 1 ORDER BY p.id ";
 		

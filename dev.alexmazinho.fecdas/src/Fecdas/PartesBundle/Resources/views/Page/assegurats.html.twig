@@ -22,10 +22,9 @@
 				{{ form_label(form.vigent, 'Només mostrar llista amb llicència vigent', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
-			<!-- <div class="button-top"><a href="{# path('FecdasPartesBundle_llistestopdf', { 'club': club }) #}">
-				<img src="{# asset('images/icon-pdf.png') #}" alt="Descarregar les llistes" 
-				title="Descarregar les llistes" width="25px"></a></div> -->
-			
+			<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', { 'club': club }) }}">
+				<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
+				title="Descarregar les llistes" width="25px"></a></div> 
 		</div>
    		<div class="form-row clearfix">
 			<div id="formassegurats-dni" class="form-left">
@@ -57,7 +56,7 @@
    		<div id="header-asseguratnom" class="col-listheader">Nom<span class="listheader-order"></span></div>
    		<div id="header-asseguratcognoms" class="col-listheader">Cognoms<span class="listheader-order"></span></div>
    		<div id="header-asseguratvigencia" class="col-listheader listheader-noorder">Vigència</div>
-   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Tipus</div>
+   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicència</div>
    		<div id="header-asseguratactions" class="col-listheader listheader-noorder">&nbsp;</div>
    	</div>
 	{% if persones|length > 0 %}
@@ -72,9 +71,9 @@
 		   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
 		   			<div class="assegurat-vigencia">
 				   		<time datetime="{{ persona.llicenciaVigent.parte.dataalta|date('c') }}">{{ persona.llicenciaVigent.parte.dataalta|date('d/m/Y') }}</time>
-				   		<time datetime="{{ persona.llicenciaVigent.datacaducitat|date('c') }}">{{ persona.llicenciaVigent.datacaducitat|date('d/m/Y') }}</time>
+				   		<time datetime="{{ persona.llicenciaVigent.parte.datacaducitat|date('c') }}">{{ persona.llicenciaVigent.parte.datacaducitat|date('d/m/Y') }}</time>
 			   		</div>
-					<div class="assegurat-tipusdesc">{{ persona.llicenciaVigent.parte.tipus.descripcio }}</div>
+					<div class="assegurat-tipusdesc">{{ persona.llicenciaVigent.categoria.descripcio }}</div>
 	   				<div class="assegurat-actions"><a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}">
 	   					<img src="{{ asset('images/icon-view.png') }}" alt="Veure Llista" title="Veure llicència" width="23px"></a></div>
 	   			{% else %}

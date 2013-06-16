@@ -89,7 +89,12 @@ class EntityParte {
 	/**
 	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
 	 */
-	protected $importfactura;
+	protected $importpagament;
+
+	/**
+	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
+	 */
+	protected $importparte;  /* No fer servir només per a Xavi */
 	
 	/**
 	 * @ORM\Column(type="string", length=38, nullable=true)
@@ -124,7 +129,8 @@ class EntityParte {
 		$this->datapagament = null;
 		$this->datafacturacio = null;
 		$this->numfactura = null;
-		$this->importfactura = null;
+		$this->importpagament = null;
+		$this->importparte = null;
 		$this->idparte_access = null;
 		$this->web = true;
 		$this->renovat = false;
@@ -384,23 +390,43 @@ class EntityParte {
     }
     
     /**
-     * Set importfactura
+     * Set importpagament
      *
-     * @param decimal $importfactura
+     * @param decimal $importpagament
      */
-    public function setImportfactura($importfactura)
+    public function setImportpagament($importpagament)
     {
-    	$this->importfactura = $importfactura;
+    	$this->importpagament = $importpagament;
     }
     
     /**
-     * Get importfactura
+     * Get importpagament
      *
      * @return decimal
      */
-    public function getImportfactura()
+    public function getImportpagament()
     {
-    	return $this->importfactura;
+    	return $this->importpagament;
+    }
+    
+    /**
+     * Set importparte
+     *
+     * @param decimal $importparte
+     */
+    public function setImportparte($importparte)
+    {
+    	$this->importparte = $importparte;
+    }
+    
+    /**
+     * Get importparte
+     *
+     * @return decimal
+     */
+    public function getImportparte()
+    {
+    	return $this->importparte;
     }
     
     /**

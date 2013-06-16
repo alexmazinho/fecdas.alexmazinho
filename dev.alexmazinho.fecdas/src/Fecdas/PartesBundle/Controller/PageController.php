@@ -144,6 +144,8 @@ class PageController extends BaseController {
 		}
 			
 		if ($currentWeb != 0) $strQuery .= " AND p.web = 1 ";
+		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
+		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
 		if ($currentSincro != 0) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
 		//if ($currentEstat != "t" && $currentEstat != "100") {
 			if ($currentEstat == "n") $strQuery .= " AND p.datapagament IS NULL ";
@@ -674,7 +676,7 @@ class PageController extends BaseController {
 					$parte->setEstatpagament($p['estatpagat']); 
 					if ($p['dadespagat'] != '') $parte->setDadespagament($p['dadespagat']);
 					if ($p['comentaripagat'] != '') $parte->setComentari($p['comentaripagat']);
-					$parte->setImportFactura($parte->getPreuTotalIVA());
+					$parte->setImportpagament($parte->getPreuTotalIVA());
 					$parte->setDatamodificacio($this->getCurrentDate());
 
 					$this->get('session')->setFlash('error-notice',	'Pagament confirmat ');
@@ -811,6 +813,9 @@ class PageController extends BaseController {
 			if ($valida == true) {
 				// Persistència
 				$parte->setDatamodificacio($this->getCurrentDate());
+				
+				$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
+				
 				$em->flush();
 				$logaction = 'LLICENCIA DEL OK';
 			} else {
@@ -865,8 +870,8 @@ class PageController extends BaseController {
 				if ($parte->getId() != null) $parte->setDataalta($partedataalta); // Restore dataalta				
 				
 				$valida = true;
-				if ($this->validaDataLlicencia($parte->getDataalta()) == false) {
-					// NO llicències amb data passada
+				if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) {
+					// NO llicències amb data passada. Excepte administradors
 					$this->get('session')->setFlash('error-notice',
 							'No es poden donar d\'alta ni actualitzar llicències amb data passada');
 					$valida = false;
@@ -933,6 +938,9 @@ class PageController extends BaseController {
 						}
 					}
 					else $logaction = 'PARTE NEW OK';
+					
+					$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
+					
 					$this->get('session')->setFlash('error-notice', 'Llicència enviada correctament');
 										
 					$em->flush(); 
@@ -1054,9 +1062,9 @@ class PageController extends BaseController {
 		
 		foreach ($lpersonaarevisar as $c => $llicencia_iter) {
 			if ($llicencia_iter->getId() != $llicencia->getId() and 
-				$llicencia_iter->getDatabaixa() == null) {
+				$llicencia_iter->getDatabaixa() == null ) {
 				// No comprovo la pròpia llicència
-				
+ 
 				$inicivigencia_existent = $llicencia_iter->getParte()->getDataalta();
 				
 				// Cal anar en compte, les llicències importades tenen un dia més
@@ -1269,8 +1277,10 @@ class PageController extends BaseController {
 					else {
 						// Canviar format Nom i COGNOMS
 						$logaction = "PERSONA NEW OK";
-						$persona->setCognoms(strtoupper($persona->getCognoms()));
-						$persona->setNom(ucfirst(strtolower($persona->getNom())));
+						
+						// Specials chars ñ, à, etc... 
+						$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
+						$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
 						$this->get('session')->setFlash('error-notice', "Dades personals afegides correctament");
 					}
 						
@@ -1530,7 +1540,7 @@ class PageController extends BaseController {
 			$parte->setEstatPagament("TPV OK");
 			$parte->setDadespagament($ordre);
 			$parte->setDatapagament($this->getCurrentDate());
-			$parte->setImportFactura($parte->getPreuTotalIVA());
+			$parte->setImportpagament($parte->getPreuTotalIVA());
 			$parte->setDatamodificacio($this->getCurrentDate());
 				
 			$em->flush();

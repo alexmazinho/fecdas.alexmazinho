@@ -178,7 +178,7 @@ class PDFController extends BaseController {
 					$text = '<b>FACTURA PAGADA</b>';
 					$pdf->writeHTML($text, true, false, false, false, '');
 					
-					if ((number_format($parte->getPreuTotalIVA(), 2, ',', '.') != number_format($parte->getImportfactura(), 2, ',', '.'))
+					if ((number_format($parte->getPreuTotalIVA(), 2, ',', '.') != number_format($parte->getImportpagament(), 2, ',', '.'))
 					or $parte->isFacturaValida() == false) {
 						// Ha canviat la factura, mostra avís factura obsoleta
 						$pdf->SetFont('dejavusans', '', 14, '', true);
@@ -258,7 +258,7 @@ class PDFController extends BaseController {
 	
 				$pdf->SetFont('dejavusans', '', 10, '', true);
 	
-				$club = $parte->getClub();
+				$club = $parte->getClub(); 
 				$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
 				$tbl .= '<tr><td width="250"><b>' . $club->getNom() . '</b></td></tr>';
 				$tbl .= '<tr><td>' . $club->getCif() . '</td></tr>';
@@ -395,7 +395,7 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	}
 	
-	public function  llistestopdfAction() {
+	public function  asseguratstopdfAction() {
 		/* Llistat d'assegurats vigents */
 		$request = $this ->getRequest();
 		
@@ -411,16 +411,26 @@ class PDFController extends BaseController {
 
 		$currentClub = $club->getCodi();
 		
-		$this->logEntry($this->get('session')->get('username'), 'PRINT LLISTES',
+		$this->logEntry($this->get('session')->get('username'), 'PRINT ASSEGURATS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
 
-		$partesclub = $this->consultaPartesClub($currentClub);
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
+		$strQuery .= " WHERE p.club = :club ";
+		$strQuery .= " AND p.databaixa IS NULL ";
+		$strQuery .= " ORDER BY p.cognoms, p.nom";
+		
+		$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
+		
+		$persones = $query->getResult();
 		
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
-		$pdf->init($params = array('author' => 'FECDAS', 'title' => "Llistes de l'any " . date("Y")),
+		$pdf->init($params = array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
 				true, "Club " . $club->getNom());
 			
 		$pdf->AddPage();
@@ -436,57 +446,58 @@ class PDFController extends BaseController {
 		$y = $y_ini;
 		$x = $x_ini;
 		
-		$pdf->SetFont('dejavusans', '', 16, '', true);
-		$text = '<b>Llistes de comunicacions de l\'any '. date("Y") .'</b>';
+		$pdf->SetFont('dejavusans', '', 12, '', true);
+		$text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
 
 		$y += 15;
 		
-		$pdf->SetTextColor(100, 100, 100);
+		$pdf->SetFont('dejavusans', '', 9, '', true);
 		
-		$pdf->SetFont('dejavusans', '', 12, '', true);
-		$text = '<i>Impresa en data  ' . date("d/m/Y") .'</i>';
-		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
-		
-		$pdf->SetTextColor(0, 0, 0); // Negre
-		$pdf->SetFont('dejavusans', '', 10, '', true);
-		
-		$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				  <tr style="background-color:#DDDDDD;">
-				  <td width="60" align="center">Any</td>
-				  <td width="110" align="center">Data alta</td>
-				  <td width="287" align="center">Tipus de llista</td>
-				  <td width="80" align="center">Llicències</td>
-				  <td width="100" align="right">Preu</td>
+		$tbl = '<table border="0.5" cellpadding="7" cellspacing="0">
+				  <tr style="background-color:#DDDDDD;font-weight: bold;font-size: medium;">
+				  <td width="35">&nbsp;</td>
+				  <td width="155" align="left">Nom</td>
+				  <td width="75" align="center">DNI</td>
+				  <td width="240" align="left">Llicència / assegurança</td>
+				  <td width="135" align="center">Vigència</td>
 				 </tr>';
 		
-		$totalLlicencies = 0;
-		$totalPreu = 0;
+		$total = 0;
 		
-		foreach ($partesclub as $c => $parte) {
-			$totalLlicencies += $parte->getNumLlicencies();
-			$totalPreu += $parte->getPreuTotalIVA();
-			$tbl .= '<tr><td align="center">' . $parte->getAny() . '</td>';
-			$tbl .= '<td align="center">' . $parte->getDataalta()->format('d/m/Y') .  '</td>';
-			$tbl .= '<td align="center">' . $parte->getTipus()->getDescripcio() .  '</td>';
-			$tbl .= '<td align="center">' . $parte->getNumLlicencies(). '</td>';
-			$tbl .= '<td align="right">' . number_format($parte->getPreuTotalIVA(), 2, ',', '.') .  '&nbsp;€</td></tr>';
+		foreach ($persones as $c => $persona) {
+			$llicencia = $persona->getLlicenciaVigent(); 
+			if ($llicencia != null) {
+				$total++; 
+				$tbl .= '<tr nobr="true" style="font-size: small;"><td align="center">' . $total . '</td>';
+				$tbl .= '<td align="left">' . $persona->getCognoms() . ', ' . $persona->getNom() . '</td>';
+				$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
+				$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
+				$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
+						. ' - ' . $llicencia->getParte()->getDatacaducitat()->format('d/m/Y') .  '</td></tr>';
+			}
 		}
 		
-		$tbl .= '<tr><td colspan="3" align="right"><b>Total</b></td>';
-		$tbl .= '<td align="center">' . $totalLlicencies . '</td>';
-		$tbl .= '<td align="right">' .  number_format($totalPreu, 2, ',', '.') . '&nbsp;€</td></tr>';
 		$tbl .= '</table>';
 		
 		$pdf->Ln(10);
 		
 		$pdf->writeHTML($tbl, false, false, false, false, '');
 		
+		$pdf->setPage(1); // Move to first page
+		
+		$pdf->setY($y_ini);
+		$pdf->setX($pdf->getPageWidth() - 100);
+		
+		$pdf->SetFont('dejavusans', '', 13, '', true);
+		$text = '<b>Total : '. $total . '</b>';
+		$pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $text, '', 1, 1, true, 'R', true);
+		
 		// reset pointer to the last page
 		$pdf->lastPage();
 			
 		// Close and output PDF document
-		$response = new Response($pdf->Output("comunicacions_" . $currentClub . "_" . date("Ymd") . ".pdf", "D"));
+		$response = new Response($pdf->Output("assegurats_" . $currentClub . "_" . date("Ymd") . ".pdf", "D"));
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
 		
@@ -545,17 +556,7 @@ class PDFController extends BaseController {
 				$y += 15;
 				
 				$datainici = $parte->getDataalta();
-				if ($parte->getTipus()->getEs365() == true) {
-					$datafi = $datainici;
-					$datafi->add(new \DateInterval('P365D')); // Add 365 dies
-				} else {
-					if ($parte->getTipus()->getId() == 9) {
-						// Un dia
-						$datafi = $datainici;
-					} else {
-						$datafi = \DateTime::createFromFormat("Y-m-d", $parte->getDataalta()->format("Y") . "-12-31");
-					}
-				}
+				$datafi = $parte->getDataCaducitat();
 
 				$pdf->SetFont('dejavusans', '', 10, '', true);
 				$text = '<p>Llista d\'esportistes que representen el CLUB:   ';
@@ -713,7 +714,7 @@ class PDFController extends BaseController {
 				$y = $y_ini;
 				$x = $x_ini;
 				
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Aquesta llicència és provisional i té una validesa màxima de 60 dies", 0, 0, 0, true, 'C', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Aquesta llicència és provisional i té una validesa màxima de 30 dies", 0, 0, 0, true, 'C', true);
 				
 				$x += 45;
 				$y += 10;
@@ -758,10 +759,12 @@ class PDFController extends BaseController {
 				$y += 5;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
 
-				$datacaduca = $llicencia->getParte()->getDataalta();
-				$datacaduca->add(new \DateInterval('P60D'));  // 60 dies
+				//$datacaduca = $llicencia->getParte()->getDataalta();
+				// Caducat 30 dies des de data impressió
+				$datacaduca = $this->getCurrentDate();
+				$datacaduca->add(new \DateInterval('P30D'));  // 30 dies
 				
-				if ($datacaduca > $llicencia->getDatacaducitat()) $datacaduca = $llicencia->getDatacaducitat();
+				if ($datacaduca > $llicencia->getParte()->getDatacaducitat()) $datacaduca = $llicencia->getParte()->getDatacaducitat();
 				
 				$x += 32;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);

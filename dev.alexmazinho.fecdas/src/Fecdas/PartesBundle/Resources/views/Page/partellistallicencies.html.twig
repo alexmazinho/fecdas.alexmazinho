@@ -5,13 +5,13 @@
 {% endif %}
 
 {% if parte.numLlicencies > 0 %}
-<div id="list-header" class="clearfix">
+<div id="summary-header" class="clearfix">
 	<div id="header-totals" class="col-listheader">Resum - 
 	Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
   	fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
    	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} (iva inc.)</div>
 </div>
-<ul id="list-data">
+<ul id="summary-data">
 	<li class="data-totals data-detall">
 		<div class="parte-titol">Per categoria</div>
   		<div class="parte-totals">Aficionats</div>
@@ -65,24 +65,24 @@
 	<div id="header-parteid" class="col-listheader">{{ parte.id }}</div> 
 	<!-- recull parte id, per informar input parte_id quan es fa l'alta de la 
 	primera llicència que crea el parte. Veure my-jquery-scripts / addLlicenciaClick -->
-   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
-   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
-   	<div id="header-llicenciacaducitat" class="col-listheader">Caducitat</div>
+   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències<span class="listheader-order"></span></div>
+   	<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
+   	<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
    	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
    	<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
    	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
 </div>
 
 <ol id="list-data">
-	{% for llicencia in parte.llicencies %}
+	{% for llicencia in parte.llicenciessortedbyname %}
 		{# if llicencia.id != "" #}
 		{% if llicencia.persona.nom is defined %}
 			{% if llicencia.databaixa is null %}
 			<li class="data-detall">
   				<div class="llicencia-id">{{ llicencia.id }}</div>
 				<div class="llicencia-personalong">{{ llicencia.persona.cognomsNom|cut(30, false, '...') }}</div>
+				<div class="llicencia-dni">{{ llicencia.persona.dni }}</div>
 				<div class="llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
-				<div class="llicencia-datacaducitat"><time datetime="{{ llicencia.datacaducitat|date('c') }}">{{ llicencia.datacaducitat|date('d/m/Y') }}</time></div>
 				<div class="llicencia-activitats">{{ llicencia.activitats }}</div>
 				<div class="llicencia-enviarllicencia">		
 				{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}

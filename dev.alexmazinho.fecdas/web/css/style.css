@@ -201,7 +201,7 @@ li.data-detall-dobleespai {
 #header-asseguratdni {	width: 11%; text-align: center; }
 #header-asseguratnom {	width: 12%; text-align: left;}
 #header-asseguratcognoms {	width: 20%;text-align: left;}
-#header-asseguratvigencia {	width: 16%; }
+#header-asseguratvigencia {	width: 15%; }
 #header-assegurattipusdesc { width: 30%;text-align: left;}
 #header-asseguratactions {}
 
@@ -210,7 +210,7 @@ li.data-detall-dobleespai {
 .assegurat-nom { float:left; width: 12%; text-align: left; }
 .assegurat-cognoms { float:left; width: 20%; text-align:left;}
 .assegurat-vigencia { float:left; width: 16%; text-align:center;}
-.assegurat-tipusdesc { float:left; width: 30%; text-align:left;}
+.assegurat-tipusdesc { float:left; width: 31%; text-align:left;}
 .assegurat-novigent { float:left; width: 46%; }
 .assegurat-actions { float:right; width: 3%; text-align:right; }
 
@@ -225,7 +225,7 @@ input#form_dni {
 	width: 124px;
 }
 
-#list-header {
+#list-header, #summary-header {
     /*background: url("/static/images/white_pixel.gif") repeat-x scroll 0 0 #F0F9FF;*/
     background:  repeat-x scroll 0 0 #F0F9FF;
     border-color: #82CFFA #E7F2FB #96C4EA;
@@ -301,7 +301,7 @@ html>body .textaccio img {
 	padding-left: 2px !important;
 }*/
 
-#list-data { 
+#list-data, #summary-data { 
 	border: 1px solid #81C6FF;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
     padding: 1px 1px 10px;
@@ -316,6 +316,11 @@ html>body .textaccio img {
 * html #list-data { /*max-height: 400px;  max-height IE hack */
    height: expression( this.scrollHeight > 399 ? "400px" : "auto" ); /* sets max-height for IE */
 }
+
+* html #summary-data { /*max-height: 400px;  max-height IE hack */
+   height: expression( this.scrollHeight > 399 ? "400px" : "auto" ); /* sets max-height for IE */
+}
+
 
 .data-detall {
 	color: #555555;
@@ -441,8 +446,8 @@ li.data-detall-fosc {
 #header-parteid { display:none}
 #header-llicenciapersona {	width: 32%; text-align: left;}
 #header-llicenciapersonalong {	width: 35%; text-align: left;}
+#header-llicenciadni {	width: 12%; text-align: center; }
 #header-llicenciacategoria {	width: 11%; text-align: center; }
-#header-llicenciacaducitat {	width: 12%; text-align: center; }
 #header-llicenciaactivitats {	width: 20%; text-align: center; }
 #header-llicenciaactivitatslong {	width: 30%; text-align: center; }
 #header-llicenciapreu {	width: 6%; text-align: center; }
@@ -456,8 +461,8 @@ li.data-detall-fosc {
 .llicencia-id {	display:none}
 .llicencia-persona { float: left; width: 32%; line-height: 10px; margin-top: -10px; }
 .llicencia-personalong { float: left; width: 35%;  }
+.llicencia-dni { float: left;	width: 12%; text-align: center;}
 .llicencia-categoria { float: left;	width: 11%; text-align: center;}
-.llicencia-datacaducitat { float: left;	width: 12%; text-align: center;}
 .llicencia-activitats {	float: left; width: 20%; text-align: center; font-size: 9px; letter-spacing: 0; line-height: 10px; margin-top: -10px;}
 .llicencia-activitatslong {	float: left; width: 29%; text-align: center; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { float: left; width: 6%; text-align: right;}
@@ -877,7 +882,7 @@ select#parte_persona_addrnacionalitat {
 	width: 100%;
 }
 
-#fact-detall #list-header {
+#fact-detall #list-header, #summary-header {
 	height: 40px;
 }
 
@@ -1298,14 +1303,12 @@ li.parte-pendent-sincro .parterecents-actions {
 #header-parterecentsid { display:none; }
 #header-parterecentsrel { width: 4%; text-align:right;}
 #header-parterecentsdata {	width: 9%; text-align: center;}
-#header-parterecentsclub {	width: 13%; text-align:left;}
-#header-parterecentstipus {	width: 10%;}
+#header-parterecentsclub {	width: 12%; text-align:left;}
+#header-parterecentstipus {	width: 9%;}
 #header-parterecentstotal {	width: 2%;text-align:center;}
 #header-parterecentspreu {	width: 6%; text-align:right;}
 #header-parterecentspagat {	width: 11%; text-align:center;}
-#header-parterecentdadespagat {	width: 19%; text-align:center; }
-
-
+#header-parterecentdadespagat {	width: 21%; text-align:center; }
 
 #header-parterecentsfactura {	width: 14%; text-align: left;}
 #header-parterecentsactions {}
@@ -1313,12 +1316,12 @@ li.parte-pendent-sincro .parterecents-actions {
 .parterecents-id { display:none; }
 .parterecents-rel { float: left;width: 4%; text-align:right;}
 .parterecents-data { float: left;width: 9%; text-align: center; }
-.parterecents-club { float: left;width: 13%; text-align:left; font-size: 0.8em;}
-.parterecents-tipus { float: left;width: 11%; text-align:center;}
+.parterecents-club { float: left;width: 12%; text-align:left; font-size: 0.8em;}
+.parterecents-tipus { float: left;width: 10%; text-align:center;}
 .parterecents-total { float: left; width: 2%; text-align:center;}
 .parterecents-preu { float: left; width: 6%; text-align:right;}
 .parterecents-pagat { float: left;	width: 11%; text-align:center;}
-.parterecents-dadespagat { float: left;	width: 19%; text-align:center;}
+.parterecents-dadespagat { float: left;	width: 21%; text-align:center;}
 
 
 .parterecents-factura {	float: left;width: 15%; text-align:left;}

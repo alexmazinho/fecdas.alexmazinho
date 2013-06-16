@@ -167,9 +167,9 @@ FecdasPartesBundle_partetopdf:
     requirements:
         _method:  GET
 
-FecdasPartesBundle_llistestopdf:
+FecdasPartesBundle_asseguratstopdf:
     pattern:  /printllistes
-    defaults: { _controller: "FecdasPartesBundle:PDF:llistestopdf" }
+    defaults: { _controller: "FecdasPartesBundle:PDF:asseguratstopdf" }
     requirements:
         _method:  GET
 
@@ -189,6 +189,12 @@ FecdasPartesBundle_albaratopdf:
 FecdasPartesBundle_checkrenovacio:
     pattern:  /checkrenovacio
     defaults: { _controller: "FecdasPartesBundle:Cron:checkrenovacio" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_checkupdatepreu:
+    pattern:  /checkupdatepreu/{maxid}
+    defaults: { _controller: "FecdasPartesBundle:Cron:checkupdatepreu" }
     requirements:
         _method:  GET
 
@@ -242,5 +248,5 @@ FecdasPartesBundle_enquestaresultats:
     requirements:
         _method:  GET
 
-        
+
         

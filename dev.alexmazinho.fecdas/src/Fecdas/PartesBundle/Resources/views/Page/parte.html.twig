@@ -66,7 +66,7 @@
         </div>
          
         <div class="form-row clearfix">
-        	{% if parte.allowedit == true %}
+        	{% if (admin == true and parte.datapagament is null) or parte.allowedit == true %}
 				<div id="formparte-novallicencia" class="textaccio form-left">
 					<a id="displayText" href="javascript:void(0);" onclick="loadLlicencia.call(this, 0)" >
 					Nova llicència
@@ -141,6 +141,8 @@ $(document).ready(function(){
 	
 	showResumParteDetall();
 
+	sortLlista("col-listheader", "list-data");
+	
 	if ($("#parte_tipus option").length == 1) {
 	/* Només si hi ha disponible més d'una llicència */
 		$("#help-tipusparte").hide();

@@ -9,6 +9,43 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 class CronController extends BaseController {
 
+	public function checkupdatepreuAction($maxid) {
+		
+		if ($this->isCurrentAdmin() != true) return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		
+		/* Update preu partes web */
+		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p ";
+		$strQuery .= "WHERE p.databaixa IS NULL  ";
+		$strQuery .= " AND p.importparte IS NULL  ";
+		$strQuery .= " AND p.id <= :maxid ";
+		$strQuery .= " AND p.web = 1 ORDER BY p.id ";
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		$query = $em->createQuery($strQuery)->setParameter('maxid', $maxid);
+		$partesweb = $query->getResult();
+		
+		foreach ($partesweb as $c => $parte) {
+			
+			$parte->setImportparte($parte->getPreuTotalIVA());
+			
+			if ($parte->getImportpagament() != null) {
+				if ($parte->getImportparte() != $parte->getImportpagament()) {
+					$this->logEntry('alexmazinho@gmail.com', 'UPD PREU ERROR',
+							$this->getRequest()->server->get('REMOTE_ADDR'),
+							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+							$parte->getId() . " . calculat: " . $parte->getImportparte() . "  pagament: " .$parte->getImportpagament());
+				}
+			} 
+		}
+		
+		/* Commit final */
+		$em->flush();
+		
+		return new Response("");
+	}
+	
 	public function checkrenovacioAction() {
 		// Avís renovació partes: 30 dies, 15 dies i 2 dies
 		// Preguntar si inclou tipus 8 (Decathlon), en cas que si recordar que aquests no es poden renovar automàticament
@@ -86,7 +123,7 @@ class CronController extends BaseController {
 		$partesrenovar = $query->getResult();
 		
 		foreach ($partesrenovar as $c => $parte_iter) {
-			$bccmails = array();
+			$bccmails = array('alexmazinho@gmail.com');
 			$tomails = array();
 			
 			$subject = '::Renovació Llista FECDAS::';

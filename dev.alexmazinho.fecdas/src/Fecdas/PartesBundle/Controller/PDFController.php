@@ -541,7 +541,7 @@ class PDFController extends BaseController {
 				$text = '<b>MODEL ' . $parte->getTipus()->getDescripcio() . '</b>';
 				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
 				
-				if ($parte->isVigent() and $parte->getDatapagament() == null) {
+				if ($parte->getWeb() == true and $parte->getDatapagament() == null) {
 					// Si no les paguen o confirmen on-line surt el missatge
 					$y += 10;
 					$pdf->SetTextColor(100, 100, 100); // GRis

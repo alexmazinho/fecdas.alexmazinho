@@ -704,7 +704,7 @@ class EntityParte {
     	//$datacaducitat = clone $this->getDataalta(); // Important treballar amb còpies no amb referències
     	//$datacaducitat = clone $this->dataalta;
     	$datacaducitat = new \DateTime($this->dataalta->format("Y-m-d"));
-    	if ($this->getTipus()->getId() != 9) { // No un dia
+    	if ($this->getTipus()->getId() != 11) { // No un dia
     		if ($this->getTipus()->getEs365() == true) {
     			$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
     		} else {
@@ -773,8 +773,8 @@ class EntityParte {
     
     public function isAsseguranca() {
     	// Per indicar si cal mostrar les estadístiques pantalla llicència parte
-    	if ($this->tipus->getId() == 2 || $this->tipus->getId() == 6 ||
-    		$this->tipus->getId() == 8 || $this->tipus->getId() == 10 ||
+    	if ($this->tipus->getId() == 2 || $this->tipus->getId() == 8 ||
+    		$this->tipus->getId() == 9 || $this->tipus->getId() == 10 ||
     		$this->tipus->getId() == 11) return true;
     	return false;
     }
@@ -816,6 +816,13 @@ class EntityParte {
     }
     
     public function isVigent() {
+    	
+    	if ($this->tipus->getId() == 11) {
+    		$currentdate = new \DateTime();
+    		if ($this->dataalta->format("Y-m-d") == $currentdate->format("Y-m-d")) return true;
+    		else return false;
+    	}
+    	
     	/* Normal 31/12  	dataalta >= 01/01/current year */
     	$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") . "-01-01 00:00:00");
     	/* 365	dataalta >= avui / (current year - 1) */

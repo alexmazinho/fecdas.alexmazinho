@@ -26,9 +26,10 @@
 				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'id': 'parte_renovar_tipus', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="buttons-top">
-				<input type="image" src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llista" title="Renovar llista" width="30px" 
-					 id="formrenovar-button-renovar" class="forminput-inside" value="Pagar" name="formrenovar-button-renovar"/>
+			<div class="form-right">
+				<div class="formlabel-outside required">&nbsp;</div>			
+				<input type="submit" alt="Renovar llista" title="Renovar llista" 
+					 id="formrenovar-button-renovar" class="forminput-inside" value="Renovar" name="formrenovar-button-renovar"/>
 			</div>	
         </div>
 		{% if app.session.hasFlash('error-notice') %}

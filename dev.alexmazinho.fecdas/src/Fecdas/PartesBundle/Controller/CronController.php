@@ -123,19 +123,20 @@ class CronController extends BaseController {
 		$partesrenovar = $query->getResult();
 		
 		foreach ($partesrenovar as $c => $parte_iter) {
-			$bccmails = array('alexmazinho@gmail.com');
+			$bccmails = array();
 			$tomails = array();
 			
 			$subject = '::Renovació Llista FECDAS::';
+
+			//$bccmails = $this->getAdminMails();
+			$bccmails = array("alexmazinho@gmail.com");  // Test
 				
-			if ($parte_iter->getClub()->getMail() == null) $subject .= ' (club sense adreça de correu)';
-			else {
-				if ($this->get('kernel')->getEnvironment() == 'prod') {
-					$bccmails[] = $this->getAdminMails();
-					$tomails[] = $parte_iter->getClub()->getMail();
-				} else {
-					$bccmails[] = "alexmazinho@gmail.com";
-				}
+			
+			if ($parte_iter->getClub()->getMail() == null) {
+				$subject .= ' (club sense adreça de correu)';
+				$tomails = array("alexmazinho@gmail.com");  
+			} else {
+				$tomails[] = $parte_iter->getClub()->getMail();
 			}
 				
 			$message = \Swift_Message::newInstance()

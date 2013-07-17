@@ -1,0 +1,114 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+   	 {{ form_javascript(form) }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Importar llicències CSV{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Importar llicències</h1>
+    </header>
+
+	<div class="formcsv-main">
+		{% if app.session.hasFlash('error-notice') %}
+	    <div class="sms-notice">
+	        {{ app.session.flash('error-notice') }}
+	    </div>
+		{% endif %}
+		<form id="formcsv-import" action="{{ path('FecdasPartesBundle_importcsv') }}" method="post" {{ form_enctype(form) }}  class="appform">
+			{{ form_widget(form.codi) }}
+			<div class="form-row clearfix">
+				{%  if admin == true %}
+				<div id="formcsv-club" class="form-left">
+					{{ form_label(form.club, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_widget(form.club, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div>
+				<a id="formcsv-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
+				{% endif %}
+				<div id="formcsv-dataalta" class="form-left">
+					<label class="formlabel-outside required">Validesa des de</label>
+					{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div>
+				<div id="formcsv-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
+					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
+					<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
+				</div>
+			</div>
+			<div class="form-row clearfix">
+				<div id="formcsv-file" class="prettyFile">
+					<label class="formlabel-outside required">Fitxer de llicències (CSV)</label>
+					{# form_label(form.importfile, 'Fitxer de llicències', { 'attr': {'class': 'formlabel-inside'} }) #}
+					{{ form_widget(form.importfile, { 'attr': {'class': 'forminput-inside'} }) }}
+					<div class="input-append formfield-outside">
+	       				<input class="input-large" type="text">
+	       				<div class="textaccio">
+							<a id="browse-file" href="javascript:void(0);"><img width="20" src="{{ asset('images/icon-browse.gif') }}" >navegar</a>
+						</div>
+	    			</div>
+				</div> 
+			</div>
+			<div id="formcsv-button" class="parte-submit">	
+				<input type="submit" id="formcsv-button-submit" class="forminput-inside" value="Importar" name="formcsv-button-submit"/>
+			</div>
+			
+			 {{ form_rest(form) }}
+	    </form>
+		
+		
+		<div class="info-bloc">
+		<p class="info-bold">Instruccions i recursos diversos d'ajuda</p>
+		<p>El fitxer de llicències CSV (Comma-separated values) és un fitxer senzill on cada fila conté les dades d'una llicència 
+		separades per <span class="info-bold">";"</span>. A més cada dada ha d'estar delimitada per dobles cometes <span class="info-bold">" "</span>.</p> 
+		<p>CSV és un format obert i universal, la majoria de paquests d'ofimàtica permeten desar les dades en aquest format: 
+		<span class="info-bold">Excel, Access, Open Office, Libre Office, etc... </span> </p>
+		<p>Als següents enllaços disposeu d'un fitxer d'exemple en el format requerit, conté la capcelera amb les dades que cal incloure en l'ordre correcte. 
+		També hi ha un document amb una descripció més detallada dels diferents camps.</p>
+		<div class="info-resource"><a href="{{ asset('media/exemple.csv')  }}" target="_blank"><img width="30" src="{{ asset('images/icon-csv.png') }}">Fitxer buit amb capcelera</a></div>
+		<div class="info-resource"><a href="{{ asset('media/intruccions_importcsv.pdf')  }}" target="_blank"><img width="30" src="{{ asset('images/icon-pdf.png') }}">Descripció dels camps</a></div></div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	setMenuActive("menu-import");
+
+	if ($("#parte_tipus option").length == 1) {
+		/* Només si hi ha disponible més d'una llicència */
+			$("#help-tipusparte").hide();
+	} else {
+		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
+				<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
+				<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 30/09<br/>(Hoquei, Rugby i Natació amb Aletes)</p>\
+				<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
+				<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
+				<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
+				<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
+				<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
+				Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
+				No habilitada per competició ni per fer cursos federats.</p>\
+				<p align="left"><b>D</b>: Assegurança per un dia.</p>');
+	};	
+
+	autocompletersNomsClub("formcsv-autocompleters", "form_club", "form_codi");
+	
+	prepareFileInput();
+
+    reloadTipusParte();
+	
+});
+
+</script>
+
+
+{% endblock %}
+

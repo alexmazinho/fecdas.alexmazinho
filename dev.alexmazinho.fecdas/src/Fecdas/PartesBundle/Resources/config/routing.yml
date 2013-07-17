@@ -99,6 +99,18 @@ FecdasPartesBundle_pagament:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_importcsv:
+    pattern:  /importcsv
+    defaults: { _controller: "FecdasPartesBundle:Page:importcsv" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_confirmcsv:
+    pattern:  /confirmcsv
+    defaults: { _controller: "FecdasPartesBundle:Page:confirmcsv" }
+    requirements:
+        _method:  GET
+
 FecdasPartesBundle_notificaciotest:
     pattern:  /notificaciotest
     defaults: { _controller: "FecdasPartesBundle:Page:notificaciotest" }
@@ -191,6 +203,13 @@ FecdasPartesBundle_checkrenovacio:
     defaults: { _controller: "FecdasPartesBundle:Cron:checkrenovacio" }
     requirements:
         _method:  GET
+
+FecdasPartesBundle_renovarllicencia:
+    pattern:  /renovarllicencia
+    defaults: { _controller: "FecdasPartesBundle:Cron:renovarllicencia" }
+    requirements:
+        _method:  GET|POST
+
 
 FecdasPartesBundle_checkupdatepreu:
     pattern:  /checkupdatepreu/{maxid}

@@ -201,16 +201,14 @@ li.data-detall-dobleespai {
 #header-asseguratdni {	width: 11%; text-align: center; }
 #header-asseguratnom {	width: 12%; text-align: left;}
 #header-asseguratcognoms {	width: 20%;text-align: left;}
-#header-asseguratvigencia {	width: 15%; }
-#header-assegurattipusdesc { width: 30%;text-align: left;}
+#header-assegurattipusdesc { width: 42%;text-align: left;}
 #header-asseguratactions {}
 
 .assegurat-id {	display:none}
 .assegurat-dni { float:left; width: 11%; text-align: center; }
 .assegurat-nom { float:left; width: 12%; text-align: left; }
 .assegurat-cognoms { float:left; width: 20%; text-align:left;}
-.assegurat-vigencia { float:left; width: 16%; text-align:center;}
-.assegurat-tipusdesc { float:left; width: 31%; text-align:left;}
+.assegurat-tipusdesc { float:left; width: 43%; text-align:left;}
 .assegurat-novigent { float:left; width: 46%; }
 .assegurat-actions { float:right; width: 3%; text-align:right; }
 
@@ -487,6 +485,11 @@ li.data-detall-fosc {
 
 .parte-llicencia .textaccio {
 	width: 22%;
+	min-width: 200px;
+}
+
+* html .parte-llicencia .textaccio { /*min-width: 200px;  min-width IE hack */
+   height: expression( this.scrollWidth < 201 ? "200px" : "auto" ); /* sets min-height for IE */
 }
 
 #formparte-llicencia .form-row {
@@ -512,7 +515,7 @@ li.data-detall-fosc {
     float:right;
 }
 
-#formllicencia .formlabel-lefttocheckbox {
+.parte-llicencia .formlabel-lefttocheckbox {
 	display: inline-block;
 	width:130px;
 	text-align: left;
@@ -538,6 +541,11 @@ li.data-detall-fosc {
 .check-correu {
 	width: 70%;
 }
+
+.check-correu label {
+	width: auto !important;
+}
+
 
 div#parte_dataalta_date {
 	float:left;
@@ -648,6 +656,15 @@ select#parte_renovar_tipus { width: 240px; }
     bottom: 10px;
     position: relative;
 }
+
+
+/********************************************* Renovació llicència ****************************************************/
+
+#llicencia_renovar_personashow {
+    width: 280px;
+}
+
+/******************************************** Renovació llicència fin *************************************************/
 
 /********************************************* Clubs i users ****************************************************/
 
@@ -963,6 +980,93 @@ select#parte_persona_addrnacionalitat {
 #close-notificacio {
 	text-align:center;
 }
+
+/************************************************* Import CSV  ******************************************************/
+
+.formcsv-main { margin-left: 30px; }
+
+.prettyFile input { display: none; }
+
+.input-append {
+	width: 440px;
+}
+
+.input-append input { display: inline-block; vertica-align: middle; }
+ 
+.input-append .input-large {
+    padding: 4px;
+    width: 300px;
+}
+
+.input-append .textaccio {
+	display: inline-block;
+		
+}
+
+.input-append .textaccio img {
+	margin-right: 5px;
+	top: 5px;
+	margin-left: 0;
+}
+
+div#form_dataalta_date {
+    float: left;
+    width: auto;
+}
+
+div#form_dataalta_time {
+    float: left;
+    width: auto;
+}
+
+.info-bloc {
+	color: #555555;
+    line-height: 25px;
+    margin-top: 30px;
+    text-align: justify;
+}
+
+.info-resource {
+	margin-top: 10px;
+}
+
+span.info-bold {
+	color: #1240A0;
+	font-weight: bold;
+}
+
+p.info-bold {
+	color: #1240A0;
+	font-size: large;
+	font-weight: bold;
+}
+
+.formcsv-main #summary-header {
+	line-height: 21px;
+	height: 50px;
+}
+
+.formcsv-main .parte-totals,
+.formcsv-main .parte-titol {
+	margin-right: 0;
+	width: 24%;
+}
+
+.formcsv-main .parte-totals {
+	text-align: center;
+}
+
+
+.formcsv-main #header-llicenciapersonalong {	width: 50%; text-align: left;}
+.formcsv-main #header-llicenciadni {	width: 30%; text-align: center; }
+.formcsv-main #header-llicenciacategoria {	width: 18%; text-align: center; }
+
+.formcsv-main .llicencia-personalong { float: left; width: 50%;  }
+.formcsv-main .llicencia-dni { float: left;	width: 30%; text-align: center;}
+.formcsv-main .llicencia-categoria { float: left;	width: 18%; text-align: center;}
+
+
+/************************************************* Import CSV  Fin ******************************************************/
 
 /************************************************* Login  ******************************************************/
 

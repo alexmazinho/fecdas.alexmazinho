@@ -986,9 +986,9 @@
 		$("#llicencia_seleccionat-tot").click(function(){
 			var checked = $(this).is(':checked');
 			if (checked) {
-				$('.formcheckbox-right').each(function(){ this.checked = true; });				
+				$('.formcheckbox-right').not("#llicencia_renovar_enviarllicencia").each(function(){ this.checked = true; });				
 			} else {
-				$('.formcheckbox-right').each(function(){ this.checked = false; });
+				$('.formcheckbox-right').not("#llicencia_renovar_enviarllicencia").each(function(){ this.checked = false; });
 			};
 		});
 	};
@@ -1294,5 +1294,53 @@
 	};
 	/*****************************************************************************************************************/
 	
+	
+	/*****************************************************************************************************************/
+	
+	prepareFileInput = function () {
+		$("#form_importfile").change(function() {
+	        var info  = '';
+
+	   		// Display filename (without fake path)
+	        var path = $(this).val().split('\\');
+	        info     = path[path.length - 1];
+
+	        $(".input-append input").val(info);
+	    });
+
+		$(".input-append").click(function(e) {
+	        e.preventDefault();
+	        // Make as the real input was clicked
+	        $("#form_importfile").click();
+	    });
+	}
+	
+	
+	reloadTipusParte = function() {
+		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
+		$('#form_tipus').val('');
+		
+			
+		/* Canvi Data */
+		$('#form_dataalta_date_day').change(function() {
+	    	// Update select tipus parte	
+			var url = $('#formcsv-tipus').data('ajax-route');
+			var params = { 	day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
+			$.get(url,	params,
+			function(data) {
+				$('select#form_tipus').html(data); 
+			});
+		});
+
+		$('#form_dataalta_date_month').change(function() {
+	    	// Update select tipus parte	
+			var url = $('#formcsv-tipus').data('ajax-route');
+			var params = { 	day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
+			$.get(url,	params,
+			function(data) {
+				$('select#form_tipus').html(data); 
+			});
+		});
+	};
 	
 })(jQuery);

@@ -1,0 +1,83 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Importar llicències CSV{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Importar llicències. Confirmar</h1>
+    </header>
+
+	<div class="formcsv-main">
+		<div class="form-row clearfix">
+			<div class="textaccio form-right">
+				<a id="confirm-csv" href="{{ urlconfirm }}">Confirmar llicències<img width="16" src="{{ asset('images/icon-save.png') }}" ></a> 
+			</div>
+		</div>
+		{% if app.session.hasFlash('error-notice') %}
+	    <div class="sms-notice">
+	        {{ app.session.flash('error-notice') }}
+	    </div>
+		{% endif %}
+		<div id="summary-header" class="clearfix">
+			<div id="header-totals" class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}<br/>Aquestes llicències seran vàlides des de 
+			<time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time> fins a 
+			<time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
+		   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
+		</div>
+		<ul id="summary-data">
+			<li class="data-totals data-detall">
+				<div class="parte-titol">Resum</div>
+		  		<div class="parte-totals">Aficionats</div>
+		   		<div class="parte-totals">Infantils</div>
+		   		<div class="parte-totals">Tècnics</div>
+		   	</li>
+			<li class="data-totals data-detall">
+				<div class="parte-totals">   	
+				</div>
+		  		<div class="parte-totals">{{ parte.numAficionats }}</div>
+		   		<div class="parte-totals">{{ parte.numInfantils }}</div>
+		   		<div class="parte-totals">{{ parte.numTecnics }}</div>
+		   	</li>
+		</ul>
+		
+		<div id="list-header" class="clearfix">
+		   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències<span class="listheader-order"></span></div>
+	   		<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
+	   		<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
+		</div>
+
+		<ol id="list-data">
+			{% for llicencia in parte.llicenciessortedbyname %}
+				{% if llicencia.persona.nom is defined %}
+				<li class="data-detall">
+					<div class="llicencia-personalong">{{ llicencia.persona.cognomsNom|cut(90, false, '...') }}</div>
+					<div class="llicencia-dni">{{ llicencia.persona.dni }}</div>
+					<div class="llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
+	  			</li>
+	  			{% endif %}
+		   	{% endfor %}
+		</ol>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	setMenuActive("menu-import");
+	
+});
+
+</script>
+
+
+{% endblock %}
+

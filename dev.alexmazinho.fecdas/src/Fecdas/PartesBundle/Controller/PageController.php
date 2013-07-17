@@ -3,8 +3,11 @@ namespace Fecdas\PartesBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityRepository;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
+use Fecdas\PartesBundle\Classes\CSV_Reader;
 
 use Fecdas\PartesBundle\Form\FormContact;
 use Fecdas\PartesBundle\Form\FormPayment;
@@ -20,7 +23,8 @@ use Fecdas\PartesBundle\Entity\EntityLlicencia;
 use Fecdas\PartesBundle\Entity\EntityPayment;
 use Fecdas\PartesBundle\Entity\EntityUser;
 use Fecdas\PartesBundle\Entity\EntityClub;
-//use Fecdas\PartesBundle\Classes\TcpdfBridge;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 
 class PageController extends BaseController {
 	public function indexAction() {
@@ -73,6 +77,341 @@ class PageController extends BaseController {
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 
+	public function importcsvAction() {
+		$request = $this->getRequest();
+		
+		$request->getSession()->clearFlashes();
+		
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		
+		/* Form importcsv */
+		
+		$currentDate = $this->getCurrentDate('now');
+		$currentYear = $currentDate->format('Y');
+		$currentMonth = $currentDate->format('m');
+		$currentDay = $currentDate->format('d');
+		
+		$llistatipus = $this->getLlistaTipusParte($currentDay, $currentMonth);
+			
+		$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
+		
+		$atributs = array('accept' => '.csv');
+
+		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs));
+		
+		$formbuilder->add('dataalta', 'datetime',
+					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy',
+							'years' => range($currentYear, $currentYear+1)));
+		
+		$formbuilder->add('tipus', 'entity', 
+					array('class' => 'FecdasPartesBundle:EntityParteType',
+						'query_builder' => function($repository) use ($llistatipus) {
+						return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
+							->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
+							->setParameter('llistatipus', $llistatipus);
+						}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1,
+					));
+		
+		/* Admins poden escollir club */
+		$formbuilder->add('codi', 'hidden');
+		if ($this->isCurrentAdmin() == true) {
+			$formbuilder->add('club', 'search');
+		}
+		
+		$form = $formbuilder->getForm();
+		
+		$currentDate->add(new \DateInterval('PT1200S')); // Add 20 minutes
+		$form->get('dataalta')->setData($currentDate);
+		$form->get('codi')->setData($this->getCurrentClub()->getCodi());
+		
+		if ($request->getMethod() == 'POST') {
+			
+			$form->bindRequest($request);
+			
+			if ($form->isValid()) {
+				$file = $form->get('importfile')->getData();
+				try {
+				
+					if (!$file->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $file->getMaxFilesize());
+					
+					$parte = new EntityParte($this->getCurrentDate());
+
+					$tipusparte = $form->get('tipus')->getData();
+					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
+					
+					$parte->setDataalta($form->get('dataalta')->getData());
+
+					if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) 
+							throw new \Exception('No es poden donar d\'alta llicències amb data passada');						
+					
+					$codiclub = $form->get('codi')->getData();
+					if ($codiclub == null or $codiclub == "") throw new \Exception('No s\'ha definit el club');
+					
+					$parte->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
+					$parte->setTipus($tipusparte);
+					
+					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
+						or $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
+					
+					$temppath = $file->getPath()."/".$file->getFileName();
+					
+					$this->importFileCSVData($temppath, $parte);					
+					
+					$this->get('session')->setFlash('error-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
+					
+					$tempname = $this->getCurrentDate()->format('Ymd')."_".$codiclub."_".$file->getFileName();
+					
+					/* Copy file for future confirmation */
+					$file->move($this->getTempUploadDir(), $tempname);
+					
+					$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV OK',
+							$this->get('session')->get('remote_addr'),
+							$this->getRequest()->server->get('HTTP_USER_AGENT'), $file->getFileName());
+					
+					/* Generate URL to send CSV confirmation */
+					$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
+							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
+							'club' => $parte->getClub()->getCodi(), 'tempfile' => $this->getTempUploadDir()."/".$tempname
+					));
+					
+					// Redirect to confirm page					
+					return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
+							array('parte' => $parte, 'urlconfirm' => $urlconfirm, 'admin' => $this->isCurrentAdmin(),
+									'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+				} catch (\Exception $e) {
+					$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV ERROR',
+							$this->get('session')->get('remote_addr'),
+							$this->getRequest()->server->get('HTTP_USER_AGENT'), $e->getMessage());
+							
+					$this->get('session')->setFlash('error-notice',$e->getMessage());
+							
+					$form->get('tipus')->setData($tipusparte); /* No funciona !?!?*/
+				}					
+			} else {
+				// Fitxer massa gran normalment
+				$this->get('session')->setFlash('error-notice',implode(",",$this->getErrorMessages($form)));					
+			}
+		} else {
+			$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV VIEW',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		}
+
+		return $this->render('FecdasPartesBundle:Page:importcsv.html.twig',
+				array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(),
+						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+	}
+	
+	public function confirmcsvAction() {
+		$request = $this->getRequest();
+	
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+	
+		if (!$request->query->has('tipus') or !$request->query->has('club') or 
+			!$request->query->has('dataalta') or !$request->query->has('tempfile'))
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+		
+		/* Registre abans de tractar fitxer per evitar flush en cas d'error */
+		$this->logEntry($this->get('session')->get('username'), 'CONFIRM CSV',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $request->query->get('tempfile'));
+		
+		$tipusparte = $request->query->get('tipus');
+		$codiclub = $request->query->get('club');
+		$dataalta = $datanaixement = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
+		$temppath = $request->query->get('tempfile');
+		
+		try {
+			$parte = new EntityParte($this->getCurrentDate());
+			$parte->setDatamodificacio($this->getCurrentDate());
+			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipusparte));
+			$parte->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
+			$parte->setDataalta($dataalta);
+				
+			$this->importFileCSVData($temppath, $parte, true);
+
+			$em = $this->getDoctrine()->getEntityManager();
+			
+			$em->persist($parte);
+			
+			$em->flush();
+			
+			$this->get('session')->setFlash('error-notice',"Llicències enviades correctament");
+			
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
+			
+		} catch (\Exception $e) {
+			$this->get('session')->setFlash('error-notice',$e->getMessage());
+		}
+		
+		/* No hauria de passar mai, el fitxer està validat */
+		$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
+				'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
+				'club' => $parte->getClub()->getCodi(), 'tempfile' => $temppath
+		));
+		
+		return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
+				array('parte' => $parte, 'urlconfirm' => $urlconfirm, 'admin' => $this->isCurrentAdmin(),
+						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+	}
+	
+	private function importFileCSVData ($file, $parte, $persist = false) {
+		$reader = new CSV_Reader();
+		$reader->setCsv($file);
+		$reader->readLayoutFromFirstRow();
+		//$reader->setLayout(array('first_name', 'last_name'));
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		$fila = 0;
+		while($reader->process()) {
+			$fila++;
+			
+			$row = $reader->getRow();
+			//our logic here
+			
+			if(!isset($row['categoria']) or $row['categoria'] == null) throw new \Exception('Hi ha una llicència sense categoria (DNI: ' . $row['dni'] . ')');
+			
+			if(!isset($row['dni']) or $row['dni'] == null or $row['dni'] == "") throw new \Exception('Hi ha una llicència sense dni (fila: ' . $fila . ')');
+			
+			if ($row['categoria'] != 'A' and $row['categoria'] != 'I' and $row['categoria'] != 'T')
+				throw new \Exception('Hi ha una llicència amb una categoria incorrecte, els valors vàlids són A, I, T (DNI: ' . $row['dni'] . ')');
+			
+			$categoria = $em->getRepository('FecdasPartesBundle:EntityCategoria')
+					->findOneBy(array('tipusparte' => $parte->getTipus()->getId(), 'simbol' => $row['categoria']));
+			
+			if ($categoria == null) throw new \Exception('No existeix aquesta categoria per al tipus de llista indicat (DNI: ' . $row['dni'] . ')');
+			
+			/* Gestionar dades personals */
+			$persona = $em->getRepository('FecdasPartesBundle:EntityPersona')->findOneBy(array('dni' => $row['dni'], 'club' => $parte->getClub()->getCodi()));
+
+			if ($persona == null) {
+				/* Noves dades personals. Nom, cognoms, data naixement i sexe obligatoris */
+				if(!isset($row['nom']) or $row['nom'] == null or $row['nom'] == "") throw new \Exception('Manca el nom de la persona en una llicència (DNI: ' . $row['dni'] . ')');
+				if(!isset($row['cognoms']) or $row['cognoms'] == null or $row['cognoms'] == "") throw new \Exception('Manquen els cognoms de la persona en una llicència (DNI: ' . $row['dni'] . ')');
+				if(!isset($row['sexe']) or $row['sexe'] == null) throw new \Exception('Manca indicar el sexe de la persona en una llicència (fila: ' . $fila . ')');
+				if(!isset($row['naixement']) or $row['naixement'] == null or $row['naixement'] == "") throw new \Exception('Manca indicar la data de naixement de la persona en una llicència (DNI: ' . $row['dni'] . ')');
+				if(!isset($row['nacionalitat']) or $row['nacionalitat'] == null or $row['nacionalitat'] == "") throw new \Exception('Manca indicar la nacionalitat de la persona en una llicència (DNI: ' . $row['dni'] . ')');
+				
+				if ($row['sexe'] != 'H' and $row['sexe'] != 'D') 
+					throw new \Exception('Manca indicar correctament el sexe de la persona en una llicència, els valors vàlids són H i D (DNI: ' . $row['dni'] . ')');
+				
+				$nacio = $em->getRepository('FecdasPartesBundle:EntityNacio')->findOneByCodi($row['nacionalitat']);
+				
+				if ($nacio == null) throw new \Exception('La nacionalitat de la persona és incorrecte (DNI: ' . $row['dni'] . ')');
+				
+				$datanaixement = \DateTime::createFromFormat('Y-m-d', $row['naixement']);
+
+				if ($datanaixement == null) throw new \Exception('La data de naixement de la persona és incorrecte, el format és YYYY-MM-DD (DNI: ' . $row['dni'] . ')');
+				
+				$persona = new EntityPersona($this->getCurrentDate());
+				$persona->setClub($parte->getClub());
+				$persona->setDni($row['dni']);
+
+				$persona->setNom(mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8"));
+				$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
+				
+				
+				$persona->setSexe($row['sexe']);
+				$persona->setDatanaixement($datanaixement);
+				$persona->setAddrnacionalitat($row['nacionalitat']);
+				
+				if ($row['nacionalitat'] == 'ESP') {
+					/* Només validar DNI nacionalitat espanyola */
+					$dnivalidar = $row['dni'];
+					
+					/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
+					if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($cadena) - 1);
+					
+					if ($this->esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI ' . $dnivalidar . ' d\'una de les persones és incorrecte (fila: ' . $fila . ')');
+				}
+				
+				if ($persist == true) $em->persist($persona); 
+				
+			} else {
+				/* Dades personals existents. Nom, cognoms, data naixement i sexe no es modifiquen, la resta s'actualitza segons valors del fitxer */
+			}
+			
+			$persona->setDatamodificacio($this->getCurrentDate());
+			
+			if (isset($row['telefon1']) and $row['telefon1'] != null and $row['telefon1'] != "") $persona->setTelefon1($row['telefon1']);
+			if (isset($row['telefon2']) and $row['telefon2'] != null and $row['telefon2'] != "") $persona->setTelefon2($row['telefon2']);
+			if (isset($row['mail']) and $row['mail'] != null and $row['mail'] != "") $persona->setMail($row['mail']);
+			if (isset($row['adreca']) and $row['adreca'] != null and $row['adreca'] != "") $persona->setAddradreca(utf8_encode($row['adreca']));
+			if (isset($row['poblacio']) and $row['poblacio'] != null and $row['poblacio'] != "") $persona->setAddradreca(utf8_encode($row['poblacio']));
+			if (isset($row['cp']) and $row['cp'] != null and $row['cp'] != "") $persona->setAddrcp($row['cp']);
+			if (isset($row['provincia']) and $row['provincia'] != null and $row['provincia'] != "") $persona->setAddrprovincia(mb_convert_case($row['provincia'], MB_CASE_TITLE, "utf-8"));
+			if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
+			
+			
+			/* Creació i validació de la llicència */
+			
+			$llicencia = new EntityLlicencia($this->getCurrentDate());
+			$llicencia->setDatamodificacio($this->getCurrentDate());
+			$llicencia->setCategoria($categoria);
+			$llicencia->setPersona($persona);
+			$llicencia->setDatacaducitat($parte->getDatacaducitat());
+			
+			$parte->addEntityLlicencia($llicencia);
+			
+			if ($this->validaLlicenciaInfantil($llicencia) == false) {
+				throw new \Exception('L\'edat d\'una de les persones no correspon amb el tipus de llicència (DNI: ' . $row['dni'] . ')');
+			}
+			
+			if ($this->validaPersonaRepetida($parte, $llicencia) == false) {
+				throw new \Exception('Una de les persones ja té una llicència en aquesta llista (DNI: ' . $row['dni'] . ')');
+			}
+			
+			$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona());
+			if ($dataoverlapllicencia != null) {
+				// Comprovar que no hi ha llicències vigents
+				// Per la pròpia persona
+				throw new \Exception('Una de les persones ja té una llicència per a l\'any actual en aquest club, en data ' .
+							$dataoverlapllicencia->format('d/m/Y') . ' (DNI: ' . $row['dni'] . ')');
+			}
+			
+			// Comprovar que no hi ha llicències vigents de la persona en difents clubs, per DNI
+			// Les persones s'associen a un club, mirar si existeix a un altre club
+			
+			/*
+			 * 
+			 * 
+			 * Trec de moment aquesta validació, és transparent a l'usuari i no se si li fan molt de cas al mail 
+			 * 
+			$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
+			$strQuery .= " WHERE p.dni = :dni ";
+			$strQuery .= " AND p.club <> :club ";
+			$strQuery .= " AND p.databaixa IS NULL";
+													
+			$query = $em->createQuery($strQuery)
+					->setParameter('dni', $llicencia->getPersona()->getDni())
+					->setParameter('club', $llicencia->getPersona()->getClub()->getCodi());
+											
+			$personaaltresclubs = $query->getResult();
+											
+			foreach ($personaaltresclubs as $c => $persona_iter) {
+				$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $persona_iter);
+				if ($dataoverlapllicencia != null) {
+					// Enviar mail a FECDAS
+					$mails = $this->getAdminMails();
+					$this->sendMailLlicenciaDuplicada($mails, $llicencia->getPersona(), $persona_iter, $dataoverlapllicencia);
+				}
+			}
+			
+			*/
+			
+			if ($persist == true) $em->persist($llicencia);
+			
+		} 
+		
+		if ($fila == 0) throw new \Exception('No s\'ha trobat cap llicència al fitxer');
+		
+		$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
+		
+	}
+	
 	public function recentsAction() {
 		$request = $this->getRequest();
 	
@@ -172,7 +511,6 @@ class PageController extends BaseController {
 						'busseig' => $this->isCurrentBusseig(),
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
-	
 	
 	public function sincroaccessAction() {
 		$request = $this->getRequest();
@@ -492,6 +830,8 @@ class PageController extends BaseController {
 		
 		$parte->cloneLlicencies($this->getCurrentDate());
 	
+		$parte->setImportparte($parte->getPreuTotalIVA());  // Actualitza preu si escau
+		
 		$options = $this->getFormOptions();
 		$options['nova'] = false;  // No permet selecció data
 		$options['admin'] = false; // No permet selecció club
@@ -533,7 +873,7 @@ class PageController extends BaseController {
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
 				
-				$this->get('session')->setFlash('error-notice',	'Llista creada correctament');
+				$this->get('session')->setFlash('error-notice',	'Llista de llicències enviada correctament');
 						
 				return $this->redirect($this->generateUrl('FecdasPartesBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
 				
@@ -608,8 +948,10 @@ class PageController extends BaseController {
 	}
 
 	public function parteAction() {
-		$this->get('session')->clearFlashes();
+
 		$request = $this->getRequest();
+
+		if ($request->query->has('source') == false) $this->get('session')->clearFlashes(); // No ve de renovació
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
@@ -1011,76 +1353,6 @@ class PageController extends BaseController {
 		return true;
 	} 
 	
-	private function validaLlicenciaInfantil(EntityLlicencia $llicencia) {
-		// Valida menors, nascuts després del 01-01 any actual - 12
-		$nascut = $llicencia->getPersona()->getDatanaixement();
-		
-		/*$nascut = new \DateTime(date("Y-m-d", strtotime($llicencia->getPersona()->getDatanaixement()->format('Y-m-d'))));
-		 echo $nascut->format("Y-m-d");*/
-		$limit = \DateTime::createFromFormat('Y-m-d', ($llicencia->getParte()->getAny()-12) . "-01-01");
-		if ($llicencia->getCategoria()->getSimbol() == "I" && $nascut < $limit) return false;
-		if ($llicencia->getCategoria()->getSimbol() != "I" && $nascut > $limit) return false;
-		return true;
-	}
-	
-	private function validaPersonaRepetida(EntityParte $parte, EntityLlicencia $llicencia) {
-		// Parte ja té llicència aquesta persona
-		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
-			if ($llicencia_iter->getId() != $llicencia->getId() and 
-				$llicencia_iter->getDatabaixa() == null) {
-				// NO valido la pròpia llicència, en cas d'update
-				if ($llicencia_iter->getPersona()->getId() == $llicencia->getPersona()->getId()) return false;
-			}
-		}
-		return true;
-	} 
-	
-	private function validaPersonaTeLlicenciaVigent(EntityLlicencia $llicencia, EntityPersona $persona) {
-		// Comprovar que no hi ha altres llicències vigents per a la persona
-		// Que solapin amb la llicència  
-		$em = $this->getDoctrine()->getEntityManager();
-		
-		// Consulta actives i futures de la persona
-		// Pot ser que es coli alguna llicència un dia any actual anterior data d'avui
-		$strQuery = "SELECT l FROM Fecdas\PartesBundle\Entity\EntityLlicencia l ";
-		$strQuery .= " JOIN l.parte p JOIN p.tipus t";
-		$strQuery .= " WHERE l.persona = :persona ";
-		$strQuery .= " AND p.databaixa IS NULL ";
-		$strQuery .= " AND ";
-		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
-		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
-			
-		$query = $em->createQuery($strQuery)
-			->setParameter('persona', $persona->getId())
-			->setParameter('ininormal', $this->getSQLIniciAnual())  // 01/01 de l'any actual 
-			->setParameter('ini365', $this->getSQLInici365());		// Avui fa un any
-		
-		$lpersonaarevisar = $query->getResult();
-		
-		$inicivigencia_nova = $llicencia->getParte()->getDataalta();
-		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat();
-		
-		foreach ($lpersonaarevisar as $c => $llicencia_iter) {
-			if ($llicencia_iter->getId() != $llicencia->getId() and 
-				$llicencia_iter->getDatabaixa() == null ) {
-				// No comprovo la pròpia llicència
- 
-				$inicivigencia_existent = $llicencia_iter->getParte()->getDataalta();
-				
-				// Cal anar en compte, les llicències importades tenen un dia més
-				//$fivigencia_existent = $llicencia_iter->getDatacaducitat();
-				$fivigencia_existent = $llicencia_iter->getParte()->getDataCaducitat();
-				
-				// Comprovar si sol·lapen
-				if (($fivigencia_nova >= $inicivigencia_existent) && 
-					($inicivigencia_nova <= $fivigencia_existent)) {
-					return $llicencia_iter->getParte()->getDataalta(); // Error, sol·lapen
-				}
-			}
-		}
-		return null;		
-	}
-	
 	// Totes les llicències entren en vigència en data d'alta
 	/*
 	private function getIniciLlicencia(EntityLlicencia $llicencia) {
@@ -1202,7 +1474,7 @@ class PageController extends BaseController {
 
 		$options = array();
 		/* Get provincies, comarques, nacions*/
-		$options['nova'] = false;
+		$options['edit'] = false;
 		$options['provincies'] = $this->getProvincies();
 		$options['comarques'] = $this->getComarques();
 		$options['nacions'] = $this->getNacions();
@@ -1218,11 +1490,12 @@ class PageController extends BaseController {
 
 			if ($p['id'] != "") {
 				$persona = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityPersona')->find($p['id']);
+				if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms 
 			} else {
 				$persona = new EntityPersona($this->getCurrentDate());
 				// Assignar club
 				$persona->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
-				$options['nova'] = true;
+				$options['edit'] = true;
 			}
 
 			$formpersona = $this->createForm(new FormPersona($options), $persona);
@@ -1344,10 +1617,11 @@ class PageController extends BaseController {
 			if ($request->query->has('persona')) {
 				if ($request->query->get('persona') != "") { // Select diferent person
 					$persona = $this->getDoctrine()
-					->getRepository('FecdasPartesBundle:EntityPersona')
-					->find($request->query->get('persona'));
+							->getRepository('FecdasPartesBundle:EntityPersona')
+							->find($request->query->get('persona'));
+					if ($this->isCurrentAdmin()) $options['edit'] = true;
 				} else {
-					$options['nova'] = true;
+					$options['edit'] = true;
 					$persona->setDatanaixement(	new \DateTime(date("Y-m-d", strtotime(date("Y-m-d") . " -40 year"))));
 					$persona->setSexe("H");
 					$persona->setAddrnacionalitat("ESP");
@@ -1644,11 +1918,6 @@ class PageController extends BaseController {
 		return (boolean) ($parte->getDatapagament() == null); // Allow edition
 	}
 
-	private function getFormOptions() {
-		return array('edit' => false, 'admin' => false, 'nova' => false,
-				'codiclub' => '', 'tipusparte' => 1, 'llistatipus' => array(), 'any' => Date('Y'));
-	}
-
 	private function prepareLlicencia($tipusparteId, $datacaducitat) {
 		//dummy llicencia by default
 		$llicencia = new EntityLlicencia($this->getCurrentDate());
@@ -1682,6 +1951,8 @@ class PageController extends BaseController {
 		$llistatipus = $this->getLlistaTipusParte($day, $month);
 		
 		$tipuspermesos = "";
+		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus
+		
 		foreach ($llistatipus as $c => $tipus) {
 			$entitytipus = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipus);
 			$tipuspermesos .= "<option value=" . $tipus . ">" . $entitytipus->getDescripcio() . "</option>";

@@ -376,7 +376,7 @@ class SecurityController extends BaseController
    				}
    			} else {
    				// get a ConstraintViolationList
-   				print_r($this->getErrorMessages($form));
+   				//print_r($this->getErrorMessages($form));
    				$this->get('session')->setFlash('error-notice', "error validant les dades".implode(",",$this->getErrorMessages($form)));
    			}
    		} else {

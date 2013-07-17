@@ -3,7 +3,6 @@
 
 {% block javascriptshead %}
  	{{ parent() }}
-	<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>
    	 {{ form_javascript(form) }}
 {% endblock %}
 
@@ -27,7 +26,7 @@
 			</div> 
 			<div id="formdni-dni-consultadni" class="parte-submit">	
 				<input type="submit" id="formdni-dni-button-submit" class="forminput-inside" value="Consulta" name="formdni-dni-button-submit"/>
-				<img width="20px" id="help-querydni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
+				<img width="21px" id="help-querydni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 			</div>
 	    </form>
 		<div class="sms-footer">Consulta si una persona té una llicència / assegurança vigent a data d'avui.

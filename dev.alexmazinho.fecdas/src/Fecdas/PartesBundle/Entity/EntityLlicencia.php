@@ -171,14 +171,16 @@ class EntityLlicencia {
 		$this->orientacio = false;
 		$this->biologia = false;
 		$this->fotocine = false;
-		$this->ja = false;
 		$this->hockey = false;
 		$this->fotosubapnea = false;
 		$this->videosub = false;
 		$this->apnea = false;
+		$this->rugbi = false;
+		$this->besportiu = false;
+		$this->bampolles = false;
 		$this->nocmas = false;
-		$this->durada365 = false;
 		$this->fusell = false;
+		$this->enviarllicencia = true;
 	}
 	
 	public function __toString() {

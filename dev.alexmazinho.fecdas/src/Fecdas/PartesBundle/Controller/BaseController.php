@@ -4,6 +4,8 @@ namespace Fecdas\PartesBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Fecdas\PartesBundle\Entity\EntityParte;
+use Fecdas\PartesBundle\Entity\EntityLlicencia;
+use Fecdas\PartesBundle\Entity\EntityPersona;
 use Fecdas\PartesBundle\Entity\EntityUserLog;
 
 class BaseController extends Controller {
@@ -50,16 +52,22 @@ class BaseController extends Controller {
 
 	
 	protected function getAdminMails() {
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array("alexmazinho@gmail.com");
+		
 		$mails = array("secretari@fecdas.cat", "alexmazinho@gmail.com");
 		return $mails;
 	}
 	
 	protected function getFacturacioMails() {
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array("alexmazinho@gmail.com");
+		
 		$mails = array("remei@fecdas.cat", "alexmazinho@gmail.com");
 		return $mails;
 	}
 	
 	protected function getContactMails() {
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array("alexmazinho@gmail.com");
+		
 		$mails = array("info@fecdas.cat", "alexmazinho@gmail.com");
 		return $mails;
 	}
@@ -70,6 +78,11 @@ class BaseController extends Controller {
 		if ($club == null) return false;
 		if ($club->getTipus()->getId() >= 0 && $club->getTipus()->getId() <= 7) return true; 
 		return false;
+	}
+	
+	protected function getFormOptions() {
+		return array('edit' => false, 'admin' => false, 'nova' => false,
+				'codiclub' => '', 'tipusparte' => 1, 'llistatipus' => array(), 'any' => Date('Y'));
 	}
 	
 	protected function consultaPartesClub($club) {
@@ -105,6 +118,77 @@ class BaseController extends Controller {
 		$ini365 = $ini365->format('Y-m-d H:i:s');
 		return $ini365;
 	}
+	
+	protected function validaLlicenciaInfantil(EntityLlicencia $llicencia) {
+		// Valida menors, nascuts després del 01-01 any actual - 12
+		$nascut = $llicencia->getPersona()->getDatanaixement();
+	
+		/*$nascut = new \DateTime(date("Y-m-d", strtotime($llicencia->getPersona()->getDatanaixement()->format('Y-m-d'))));
+		 echo $nascut->format("Y-m-d");*/
+		$limit = \DateTime::createFromFormat('Y-m-d', ($llicencia->getParte()->getAny()-12) . "-01-01");
+		if ($llicencia->getCategoria()->getSimbol() == "I" && $nascut < $limit) return false;
+		if ($llicencia->getCategoria()->getSimbol() != "I" && $nascut > $limit) return false;
+		return true;
+	}
+	
+	protected function validaPersonaRepetida(EntityParte $parte, EntityLlicencia $llicencia) {
+		// Parte ja té llicència aquesta persona
+		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+			if ($llicencia_iter->getId() != $llicencia->getId() and
+			$llicencia_iter->getDatabaixa() == null) {
+				// NO valido la pròpia llicència, en cas d'update
+				if ($llicencia_iter->getPersona()->getId() == $llicencia->getPersona()->getId()) return false;
+			}
+		}
+		return true;
+	}
+	
+	protected function validaPersonaTeLlicenciaVigent(EntityLlicencia $llicencia, EntityPersona $persona) {
+		// Comprovar que no hi ha altres llicències vigents per a la persona
+		// Que solapin amb la llicència
+		$em = $this->getDoctrine()->getEntityManager();
+	
+		// Consulta actives i futures de la persona
+		// Pot ser que es coli alguna llicència un dia any actual anterior data d'avui
+		$strQuery = "SELECT l FROM Fecdas\PartesBundle\Entity\EntityLlicencia l ";
+		$strQuery .= " JOIN l.parte p JOIN p.tipus t";
+		$strQuery .= " WHERE l.persona = :persona ";
+		$strQuery .= " AND p.databaixa IS NULL ";
+		$strQuery .= " AND ";
+		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
+		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
+					
+		$query = $em->createQuery($strQuery)
+			->setParameter('persona', $persona->getId())
+			->setParameter('ininormal', $this->getSQLIniciAnual())  // 01/01 de l'any actual
+			->setParameter('ini365', $this->getSQLInici365());		// Avui fa un any
+	
+		$lpersonaarevisar = $query->getResult();
+	
+		$inicivigencia_nova = $llicencia->getParte()->getDataalta();
+		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat();
+	
+		foreach ($lpersonaarevisar as $c => $llicencia_iter) {
+			if ($llicencia_iter->getId() != $llicencia->getId() and
+				$llicencia_iter->getDatabaixa() == null ) {
+				// No comprovo la pròpia llicència
+	
+				$inicivigencia_existent = $llicencia_iter->getParte()->getDataalta();
+	
+				// Cal anar en compte, les llicències importades tenen un dia més
+				//$fivigencia_existent = $llicencia_iter->getDatacaducitat();
+				$fivigencia_existent = $llicencia_iter->getParte()->getDataCaducitat();
+	
+				// Comprovar si sol·lapen
+				if (($fivigencia_nova >= $inicivigencia_existent) &&
+					($inicivigencia_nova <= $fivigencia_existent)) {
+					return $llicencia_iter->getParte()->getDataalta(); // Error, sol·lapen
+				}
+			}
+		}
+		return null;
+	}
+	
 	
 	protected function getDetallFactura(EntityParte $parte) {
 		$detallfactura = array();
@@ -264,6 +348,36 @@ class BaseController extends Controller {
 		return $password;
 	} 
 	
+	protected function esDNIvalid ($cadena)
+	{
+		// longitud
+		if (strlen($cadena) != 9) return false;
+	
+		// valors letra
+		$lletres = array(
+				0 => 'T', 1 => 'R', 2 => 'W', 3 => 'A', 4 => 'G', 5 => 'M',
+				6 => 'Y', 7 => 'F', 8 => 'P', 9 => 'D', 10 => 'X', 11 => 'B',
+				12 => 'N', 13 => 'J', 14 => 'Z', 15 => 'S', 16 => 'Q', 17 => 'V',
+				18 => 'L', 19 => 'H', 20 => 'C', 21 => 'K',22 => 'E'
+		);
+	
+		//Comprovar DNI
+		if (preg_match('/^[0-9]{8}[A-Z]$/i', $cadena))
+		{
+			//Comprovar lletra
+			if (strtoupper($cadena[strlen($cadena) - 1]) !=
+			$lletres[((int) substr($cadena, 0, strlen($cadena) - 1)) % 23])
+				return false;
+	
+			//Ok
+			return true;
+		}
+		 
+		//ko
+		return false;
+	}
+	
+	
 	protected function getActiveEnquesta() {
 		/* Obté enquesta activa pendent de realitzar de l'usuari registrat */
 		if ($this->isAuthenticated() != true) return null;
@@ -287,6 +401,12 @@ class BaseController extends Controller {
 			if ($realitzada == null) return $enquesta;
 		}
 		return null;
+	}
+	
+	protected function getTempUploadDir()
+	{
+		/* Temporary upload folder. Variable __DIR__ és el directori del fitxer */
+		return __DIR__.'/../../../../tmp';
 	}
 	
 	protected function getErrorMessages(\Symfony\Component\Form\Form $form) {

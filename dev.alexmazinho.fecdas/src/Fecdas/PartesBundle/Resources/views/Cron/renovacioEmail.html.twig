@@ -1,14 +1,14 @@
 <html> 
 <head></head>
 <body>
-<p>Benvolgut club {{ parte.club.nom }}</p>
+<p>Benvolgut club {{ llicencia.parte.club.nom }}</p>
 
-<p>La vigència de la vostra llista de federats amb data {{ parte.dataalta | date("d-m-Y") }} finalitzarà en {{ dies }} dies</p>
+<p>La vigència de la llicència amb data {{ llicencia.parte.dataalta | date("d-m-Y") }} finalitzarà en {{ dies }} dies</p>
 
 <p>Podeu renovar-la al web de tramitació de llistes d'assegurats de la Federació Catalana d'Activitats Subaquàtiques (FECDAS)</p> 
 
-<p><a href="{{ url('FecdasPartesBundle_renovar', {'id': parte.id}) }}">
-{{ url('FecdasPartesBundle_renovar', {'id': parte.id}) }}</a></p>
+<p><a href="{{ url('FecdasPartesBundle_renovarllicencia', {'id': llicencia.id}) }}">
+{{ url('FecdasPartesBundle_renovarllicencia', {'id': llicencia.id}) }}</a></p>
 
 <p>Atentament<br/>
 FECDAS, {{ "now" | date("d/m/Y") }}.</p>

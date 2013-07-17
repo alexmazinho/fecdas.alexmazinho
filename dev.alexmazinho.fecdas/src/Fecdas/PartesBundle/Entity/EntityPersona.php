@@ -145,6 +145,10 @@ class EntityPersona {
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
+	public function __toString() {
+		return $this->getLlistaText();
+	}
+	
     /**
      * Get id
      *
@@ -605,17 +609,40 @@ class EntityPersona {
     {
     	return strtoupper($this->cognoms) . ', ' . $this->nom;
     }
-
+    
     /**
      * 
      * @return Fecdas\PartesBundle\Entity\EntityLlicencia
      */
     public function getLlicenciaVigent() {
     	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->getParte() != null and $llicencia->getParte()->isVigent()) {
+    		if ($llicencia->getDatabaixa() == null and $llicencia->getParte() != null and $llicencia->getParte()->isVigent()) {
     			return $llicencia;
     		}
     	} 
+    	return null;
+    }
+    
+    public function getLlicenciesSortedByDate()
+    {
+    	/* Ordenades de última a primera */
+    	$arr = $this->llicencies->toArray();
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+    		return ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? -1:1;;
+    	});
+    	return $arr;
+    }
+    
+    public function getLastLlicencia() {
+    	$llicenciesOrdenades = $this->getLlicenciesSortedByDate();
+    	
+    	foreach ($llicenciesOrdenades as $llicencia) {
+    		if ($llicencia->getDatabaixa() == null) return $llicencia;
+    	}
+    	
     	return null;
     }
 }

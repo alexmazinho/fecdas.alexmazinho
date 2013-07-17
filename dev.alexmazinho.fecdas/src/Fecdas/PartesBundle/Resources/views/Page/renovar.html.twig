@@ -43,7 +43,7 @@
 			<div id="header-totals" class="col-listheader"> 
 			Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
   			fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> € (iva inc.)</div>
+  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
 		</div>
 		{% if avisos != "" %}
     	<div class="sms-notice"><b>Avisos</b> <br/><br/>{{ avisos|raw }}</div>

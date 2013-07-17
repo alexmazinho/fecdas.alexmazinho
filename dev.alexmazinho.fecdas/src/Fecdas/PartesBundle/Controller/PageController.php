@@ -132,12 +132,14 @@ class PageController extends BaseController {
 			if ($form->isValid()) {
 				$file = $form->get('importfile')->getData();
 				try {
-				
+					$em = $this->getDoctrine()->getEntityManager();
+					
 					if (!$file->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $file->getMaxFilesize());
 					
 					$parte = new EntityParte($this->getCurrentDate());
 
-					$tipusparte = $form->get('tipus')->getData();
+					$tipusdesc = $form->get('tipus')->getData();
+					$tipusparte = $em->getRepository('FecdasPartesBundle:EntityParteType')->findOneBy(array('descripcio' => $tipusdesc));
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
 					
 					$parte->setDataalta($form->get('dataalta')->getData());
@@ -185,12 +187,18 @@ class PageController extends BaseController {
 							$this->getRequest()->server->get('HTTP_USER_AGENT'), $e->getMessage());
 							
 					$this->get('session')->setFlash('error-notice',$e->getMessage());
-							
-					$form->get('tipus')->setData($tipusparte); /* No funciona !?!?*/
 				}					
 			} else {
 				// Fitxer massa gran normalment
 				$this->get('session')->setFlash('error-notice',implode(",",$this->getErrorMessages($form)));					
+			}
+			
+			// Restore tipus parte del POST
+			
+			if ($tipusparte != null)  {
+				$tipusparte->getDescripcio();
+				$form->get('tipus')->setData($tipusparte); /* No funciona !?!?*/
+				
 			}
 		} else {
 			$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV VIEW',
@@ -230,11 +238,9 @@ class PageController extends BaseController {
 			$parte->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
 			$parte->setDataalta($dataalta);
 				
-			$this->importFileCSVData($temppath, $parte, true);
-
 			$em = $this->getDoctrine()->getEntityManager();
 			
-			$em->persist($parte);
+			$this->importFileCSVData($temppath, $parte, true);
 			
 			$em->flush();
 			
@@ -264,6 +270,8 @@ class PageController extends BaseController {
 		//$reader->setLayout(array('first_name', 'last_name'));
 		
 		$em = $this->getDoctrine()->getEntityManager();
+
+		if ($persist == true) $em->persist($parte);
 		
 		$fila = 0;
 		while($reader->process()) {
@@ -321,9 +329,8 @@ class PageController extends BaseController {
 				if ($row['nacionalitat'] == 'ESP') {
 					/* Només validar DNI nacionalitat espanyola */
 					$dnivalidar = $row['dni'];
-					
 					/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
-					if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($cadena) - 1);
+					if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
 					
 					if ($this->esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI ' . $dnivalidar . ' d\'una de les persones és incorrecte (fila: ' . $fila . ')');
 				}
@@ -354,14 +361,16 @@ class PageController extends BaseController {
 			$llicencia->setPersona($persona);
 			$llicencia->setDatacaducitat($parte->getDatacaducitat());
 			
-			$parte->addEntityLlicencia($llicencia);
+			if ($persist == true) $em->persist($llicencia);
 			
+			if ($this->validaDNIRepetit($parte, $llicencia) == false) {
+				throw new \Exception('Una de les persones ja té una llicència en aquesta llista (DNI: ' . $row['dni'] . ')');
+			}
+
+			$parte->addEntityLlicencia($llicencia);
+
 			if ($this->validaLlicenciaInfantil($llicencia) == false) {
 				throw new \Exception('L\'edat d\'una de les persones no correspon amb el tipus de llicència (DNI: ' . $row['dni'] . ')');
-			}
-			
-			if ($this->validaPersonaRepetida($parte, $llicencia) == false) {
-				throw new \Exception('Una de les persones ja té una llicència en aquesta llista (DNI: ' . $row['dni'] . ')');
 			}
 			
 			$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona());
@@ -402,7 +411,7 @@ class PageController extends BaseController {
 			
 			*/
 			
-			if ($persist == true) $em->persist($llicencia);
+			
 			
 		} 
 		

@@ -135,9 +135,20 @@ class BaseController extends Controller {
 		// Parte ja té llicència aquesta persona
 		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
 			if ($llicencia_iter->getId() != $llicencia->getId() and
-			$llicencia_iter->getDatabaixa() == null) {
+				$llicencia_iter->getDatabaixa() == null) {
 				// NO valido la pròpia llicència, en cas d'update
 				if ($llicencia_iter->getPersona()->getId() == $llicencia->getPersona()->getId()) return false;
+				if ($llicencia_iter->getPersona()->getDni() == $llicencia->getPersona()->getDni()) return false;
+			}
+		}
+		return true;
+	}
+	
+	protected function validaDNIRepetit(EntityParte $parte, EntityLlicencia $llicencia) {
+		// Parte ja té aquest dni. Comprovar abans d'afegir la llicència
+		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+			if ($llicencia_iter->getDatabaixa() == null) {
+				if ($llicencia_iter->getPersona()->getDni() == $llicencia->getPersona()->getDni()) return false;
 			}
 		}
 		return true;
@@ -358,21 +369,21 @@ class BaseController extends Controller {
 				0 => 'T', 1 => 'R', 2 => 'W', 3 => 'A', 4 => 'G', 5 => 'M',
 				6 => 'Y', 7 => 'F', 8 => 'P', 9 => 'D', 10 => 'X', 11 => 'B',
 				12 => 'N', 13 => 'J', 14 => 'Z', 15 => 'S', 16 => 'Q', 17 => 'V',
-				18 => 'L', 19 => 'H', 20 => 'C', 21 => 'K',22 => 'E'
+				18 => 'H', 19 => 'L', 20 => 'C', 21 => 'K',22 => 'E'
 		);
 	
 		//Comprovar DNI
 		if (preg_match('/^[0-9]{8}[A-Z]$/i', $cadena))
 		{
 			//Comprovar lletra
-			if (strtoupper($cadena[strlen($cadena) - 1]) !=
-			$lletres[((int) substr($cadena, 0, strlen($cadena) - 1)) % 23])
-				return false;
-	
+			$dnisenselletra = (int) substr($cadena, 0, strlen($cadena) - 1);
+			$illetra =  $dnisenselletra % 23 ; 
+			
+			if (strtoupper($cadena[strlen($cadena) - 1]) != $lletres[$illetra]) return false;
+				
 			//Ok
 			return true;
 		}
-		 
 		//ko
 		return false;
 	}

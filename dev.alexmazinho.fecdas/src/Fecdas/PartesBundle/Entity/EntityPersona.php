@@ -611,6 +611,22 @@ class EntityPersona {
     }
     
     /**
+     * Get adreça completa
+     *
+     * @return string
+     */
+    public function getAdrecaCompleta()
+    {
+    	$strAdreca = "";
+    	if ($this->addradreca != null) $strAdreca .= $this->addradreca . ".";
+    	if ($this->addrcp != null) $strAdreca .= $this->addrcp . " ";
+    	if ($this->addrpob != null) $strAdreca .= $this->addrpob . " ";
+    	if ($this->addrprovincia != null) $strAdreca .= "(". $this->addrprovincia . ") ";
+    	
+    	return  $strAdreca;
+    }
+    
+    /**
      * 
      * @return Fecdas\PartesBundle\Entity\EntityLlicencia
      */
@@ -631,7 +647,7 @@ class EntityPersona {
     		if ($a === $b) {
     			return 0;
     		}
-    		return ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? -1:1;;
+    		return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
     	});
     	return $arr;
     }

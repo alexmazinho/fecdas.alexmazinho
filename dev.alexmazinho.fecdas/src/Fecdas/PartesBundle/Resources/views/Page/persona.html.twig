@@ -14,6 +14,10 @@
 			{{ form_label(formpersona.dni, 'DNI', { 'attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.dni, { 'attr': {'class': 'forminput-inside'} }) }}
 			<img width="21px" id="help-dni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
+			<div id="formpersona-estranger">
+				<label class="formlabel-lefttocheckbox" for="formpersona-check-estranger">Estranger?</label>
+				<input id="formpersona-check-estranger" class="formcheckbox-right" type="checkbox" value="1">
+			</div>
 		</div>
 	</div>
 	<div class="form-row clearfix">

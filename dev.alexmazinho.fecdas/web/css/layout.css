@@ -220,6 +220,8 @@ a img {border: none; }
 
 #left-menu { display: inline-block; }
 
+#left-menu .submenu { display: none; padding-left: 10px; }
+
 #left-menu ul.navigation { text-align: left; }
 #left-menu .navigation li { 
 	display: block;
@@ -234,8 +236,10 @@ a img {border: none; }
 	margin-bottom: 5px;
 }
 
+
 #left-menu a {
-	color: #005A8C;
+	/*color: #005A8C;*/
+	color:#2281CF;
 	text-decoration: none;	
 	font-weight: bold;
 	font-size: 15px;
@@ -244,16 +248,20 @@ a img {border: none; }
     border-style: solid;
     border-width: 2px;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+    background: none repeat-x scroll 0 0 #FFFFFF;
+}
+
+#left-menu a:visited {
+	
 }
 
 #left-menu a:active,
-#left-menu a:visited,
 #left-menu a:hover { 
-	color: #2281CF;
+	color: #005A8C;
 	background: none repeat-x scroll 0 0 #F0F9FF;
 }
 
-.left-menu-active a {
+#left-menu .left-menu-active {
 	/*text-decoration: none;
 	color: #2281CF;*/
 	background: none repeat-x scroll 0 0 #F0F9FF;
@@ -286,9 +294,6 @@ a img {border: none; }
     display: inline;
 }
 
-#left-menu .navigation .menu-adm-item {
-	padding-left: 10px;
-}
 
 /*
 html>body #left-menu a:active, 

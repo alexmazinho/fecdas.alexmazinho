@@ -19,10 +19,9 @@
     </div>
 	{% endif %}
     
-   	<div id="login"> 
-   		<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
+   	<div class="login"> 
    		<form action="{{ path('FecdasPartesBundle_pwdrecovery') }}" method="post" {{ form_enctype(form) }} class="appform">
-   		{{ form_errors(form) }}
+   			<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
 
 	   		<div id="formlogin-user">
 				{{ form_label(form.user, 'Usuari', { 'attr': {'class': 'formlabel-inside'} }) }}

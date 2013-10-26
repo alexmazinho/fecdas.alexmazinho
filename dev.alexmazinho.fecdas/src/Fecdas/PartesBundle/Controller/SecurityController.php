@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Fecdas\PartesBundle\Form\FormLogin;
 use Fecdas\PartesBundle\Form\FormUser;
-use Fecdas\PartesBundle\Form\FormPwdRecovery;
 use Fecdas\PartesBundle\Form\FormClub;
 use Fecdas\PartesBundle\Form\FormUserClub;
 use Fecdas\PartesBundle\Entity\EntityUser;
@@ -213,17 +212,22 @@ class SecurityController extends BaseController
     		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
     	}
     	 
-    	$userlogin = new EntityUser();
-    	$form = $this->createForm(new FormPwdRecovery(), $userlogin);
-    
+    	$formbuilder = $this->createFormBuilder()->add('user', 'email');
+    	$form = $formbuilder->getForm();
+    	
     	$request = $this->getRequest();
     	 
     	if ($request->getMethod() == 'POST') {
     		$form->bindRequest($request);
     		if ($form->isValid()) {
+    			
+    			$userEmail = $form->get('user')->getData();
+    			//$userEmail = $form->getData()->getUser();
+    			
     			$em = $this->getDoctrine()->getEntityManager();
     			$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
-    			$user = $repository->findOneByUser($form->getData()->getUser());
+    			$user = $repository->findOneByUser($userEmail);
+    			
     			if (!$user) {
     				$this->get('session')->setFlash('sms-notice', 'Aquest usuari no existeix a la base de dades');
     			} else {
@@ -240,8 +244,8 @@ class SecurityController extends BaseController
     				$message = \Swift_Message::newInstance()
     				->setSubject('::Recuperació accés aplicació gestió FECDAS::')
     				->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-    				->setTo(array($form->getData()->getUser()));
-
+    				->setTo(array($userEmail));
+    				
     				$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));    				
     				
     				$body = $this->renderView('FecdasPartesBundle:Security:recuperacioClauEmail.html.twig',
@@ -251,12 +255,12 @@ class SecurityController extends BaseController
     				
     				$this->get('mailer')->send($message);
     				
-    				$this->logEntry($form->getData()->getUser(), 'PWD RECOVER',
+    				$this->logEntry($userEmail, 'PWD RECOVER',
     						$this->getRequest()->server->get('REMOTE_ADDR'),
     						$this->getRequest()->server->get('HTTP_USER_AGENT'));
     				
     				$this->get('session')->clear();
-    				$this->get('session')->setFlash('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $form->getData()->getUser());
+    				$this->get('session')->setFlash('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
     				
     				return $this->render('FecdasPartesBundle:Security:logout.html.twig',
     						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));

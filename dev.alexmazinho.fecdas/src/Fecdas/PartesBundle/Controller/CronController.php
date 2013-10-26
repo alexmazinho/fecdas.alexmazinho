@@ -249,8 +249,8 @@ class CronController extends BaseController {
 		/* Si abans data caducitat renovació per tot el periode
 		 * En cas contrari només des d'ara
 		*/
-		if ($llicenciaarenovar->getParte()->getDataCaducitat() > $data_alta) {
-			$data_alta = $llicenciaarenovar->getParte()->getDataCaducitat();
+		if ($llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 1 ")) > $data_alta) {
+			$data_alta = $llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 2 "));
 			$data_alta->setTime(00, 00);
 			$data_alta->add(new \DateInterval('P1D')); // Add 1 dia
 		}
@@ -265,7 +265,7 @@ class CronController extends BaseController {
 		/* Init camps */
 		$cloneLlicencia->setDataEntrada($this->getCurrentDate());
 		$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
-		$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat());
+		$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
 		$cloneLlicencia->setIdparteAccess(null);
 		$cloneLlicencia->getIdpartedetall_access(null);
 		
@@ -287,7 +287,7 @@ class CronController extends BaseController {
 		
 		$form->get('cloneid')->setData($llicenciaid);  // Posar id
 		$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms
-		$form->get('datacaducitatshow')->setData($parte->getDataCaducitat()); 
+		$form->get('datacaducitatshow')->setData($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 4 "))); 
 		
 		/*
 		 * Validacions  de les llicències

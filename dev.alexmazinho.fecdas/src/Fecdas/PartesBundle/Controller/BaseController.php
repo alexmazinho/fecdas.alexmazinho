@@ -177,7 +177,7 @@ class BaseController extends Controller {
 		$lpersonaarevisar = $query->getResult();
 	
 		$inicivigencia_nova = $llicencia->getParte()->getDataalta();
-		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat();
+		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat($this->getLogMailUserData("validaPersonaTeLlicenciaVigent outer "));
 	
 		foreach ($lpersonaarevisar as $c => $llicencia_iter) {
 			if ($llicencia_iter->getId() != $llicencia->getId() and
@@ -188,7 +188,7 @@ class BaseController extends Controller {
 	
 				// Cal anar en compte, les llicències importades tenen un dia més
 				//$fivigencia_existent = $llicencia_iter->getDatacaducitat();
-				$fivigencia_existent = $llicencia_iter->getParte()->getDataCaducitat();
+				$fivigencia_existent = $llicencia_iter->getParte()->getDataCaducitat($this->getLogMailUserData("validaPersonaTeLlicenciaVigent inner "));
 	
 				// Comprovar si sol·lapen
 				if (($fivigencia_nova >= $inicivigencia_existent) &&
@@ -460,5 +460,9 @@ class BaseController extends Controller {
 			$em->flush();
 			*/
 		}
+	}
+	
+	protected function getLogMailUserData($source = null) {
+		return $source." ".$this->get('session')->get('username')." (".$this->getRequest()->server->get('HTTP_USER_AGENT').")";
 	}
 }

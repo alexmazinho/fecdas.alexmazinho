@@ -474,7 +474,7 @@ class PDFController extends BaseController {
 				$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
 				$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
 				$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
-						. ' - ' . $llicencia->getParte()->getDatacaducitat()->format('d/m/Y') .  '</td></tr>';
+						. ' - ' . $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction  "))->format('d/m/Y') .  '</td></tr>';
 			}
 		}
 		
@@ -556,7 +556,7 @@ class PDFController extends BaseController {
 				$y += 15;
 				
 				$datainici = $parte->getDataalta();
-				$datafi = $parte->getDataCaducitat();
+				$datafi = $parte->getDataCaducitat($this->getLogMailUserData("partetopdfAction  "));
 
 				$pdf->SetFont('dejavusans', '', 10, '', true);
 				$text = '<p>Llista d\'esportistes que representen el CLUB:   ';
@@ -764,7 +764,7 @@ class PDFController extends BaseController {
 				$datacaduca = $this->getCurrentDate();
 				$datacaduca->add(new \DateInterval('P30D'));  // 30 dies
 				
-				if ($datacaduca > $llicencia->getParte()->getDatacaducitat()) $datacaduca = $llicencia->getParte()->getDatacaducitat();
+				if ($datacaduca > $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 1 "))) $datacaduca = $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 2 "));
 				
 				$x += 32;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);

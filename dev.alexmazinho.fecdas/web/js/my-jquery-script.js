@@ -84,9 +84,20 @@
 	};
 	
 	setMenuActive = function(menuid) {
-		$('#'+menuid).addClass("left-menu-active");
-		$('#'+menuid).find('span').show();
-		//$(this).find('.menu-icon').addClass('ui-icon-triangle-1-e'); /* East*/
+		var menuItem = $('#'+menuid); 
+		
+		menuItem.children('a').addClass("left-menu-active"); /* <a a/> under menu li*/
+		menuItem.find('span').show();
+		
+		/* Drop down main parent main menu */
+		var parentMenuItem = $('#'+menuid).parents('li');
+		var mainAction = parentMenuItem.children('.main-menu-action');
+		var subMenu = parentMenuItem.children('.submenu');
+		
+		mainAction.addClass("left-menu-active");	
+		mainAction.find('.menu-icon').removeClass('ui-icon-triangle-1-e');
+		mainAction.find('.menu-icon').addClass('ui-icon-triangle-1-s');
+		subMenu.show(); 
 	};
 	
 	
@@ -226,23 +237,22 @@
 	
 	/*************************************************** Menu ********************************************************/
 	
-	menuAdmClick = function() {
-		$( "#menu-adm" ).click(function(e) {
-	        //Cancel the link behavior
-	        e.preventDefault();
+	mainMenuClick = function() {
+		$( ".main-menu-action" ).on('click', function(e, t){
+			e.preventDefault();
 
-	        if ($('.menu-adm-item').is(':visible')) {
-	        	if ($.browser.msie) $('.menu-adm-item').hide(); 
-		    	else $('.menu-adm-item').slideUp('fast');
-
-	        	$(this).removeClass("left-menu-active");
-
-	        	$(this).find('.menu-icon').addClass('ui-icon-triangle-1-e'); /* East*/
-	        	$(this).find('.menu-icon').removeClass('ui-icon-triangle-1-s');
-	        	
+	        var subMenu = $(this).parent('li').children('.submenu');
+	        
+	        if (subMenu.is(':visible')) {
+	        	subMenuHide($(this).parent('li'));
 	        } else {
-	        	if ($.browser.msie) $('.menu-adm-item').show(); 
-		    	else $('.menu-adm-item').slideDown('fast');
+	        	/* Close all submenus */
+	        	$('.submenu').each( function() {
+	        		subMenuHide($('.navigation').children());
+	        	});
+	        	
+	        	if ($.browser.msie) subMenu.show(); 
+		    	else subMenu.slideDown('fast');
 		        
 	        	$(this).addClass("left-menu-active");
 
@@ -251,6 +261,18 @@
 		    }
 		});
 	};
+	
+	subMenuHide = function(mainMenuItem) {
+		var mainAction = mainMenuItem.children('.main-menu-action');
+		var subMenu = mainMenuItem.children('.submenu');
+		
+		if ($.browser.msie) subMenu.hide(); 
+    	else subMenu.slideUp('fast');
+		
+		mainAction.removeClass("left-menu-active");
+		mainAction.find('.menu-icon').addClass('ui-icon-triangle-1-e'); // East
+		mainAction.find('.menu-icon').removeClass('ui-icon-triangle-1-s');
+	}
 	
 	/*****************************************************************************************************************/
 	
@@ -414,6 +436,10 @@
 			autocompleters();
 			actionsModalOverlay();
 			actionsPersonaForm(llicencia);
+			/* Check estranger */
+			if ($('#parte_persona_id').val() != "") {
+				$("#formpersona-estranger").hide();
+			}
 			// Show Div
 			showModalDiv('#edicio-persona');
 			helpBubbles("#help-dni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
@@ -493,7 +519,9 @@
 	    	        		// Modificació no valida DNI
 	    	        		submitPerson("save", llicencia);
 	    	        	} else {
-	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());
+	    	        		/* Alex. Validar nou check estranger */
+	    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());*/
+	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#formpersona-check-estranger").is(':checked'));
 	    	        		if (error == "") {
 	    	        			submitPerson("save", llicencia);
 	    	        		} else {
@@ -993,14 +1021,16 @@
 		});
 	};
 	
-	validarDadesPersona = function(dni, nacionalitat) {
+	validarDadesPersona = function(dni, estranger) {
 		/* Només valida si nacionalitat és Espanyola */
-		if (nacionalitat == "ESP") {
+		/*if (nacionalitat == "ESP") {*/
+		
+		if (!estranger) {
 			var JuegoCaracteres="TRWAGMYFPDXBNJZSQVHLCKET";
 			
 			/* Si comença per X acceptar tot */
-			if (dni.substring(0,1) == 'X' || dni.substring(0,1) == 'x') 
-				return "Cal cambiar la nacionalitat d'aquesta persona";  
+			if (dni.substring(0,1) == 'X' || dni.substring(0,1) == 'x')
+				return "Cal indicar que es tracta d'un document de nacionalitat estranger";  
 			
 			if(dni.length < 9) return "Format DNI incorrecte, menor de 9 dígits, potser cal omplir a zeros per l'esquerra \nExemples:12345678X o P12345678X o M12345678X";  
 			if(dni.length > 10) return "Format DNI incorrecte, major de 10 dígits \nExemples:12345678X o P12345678X o M12345678X";

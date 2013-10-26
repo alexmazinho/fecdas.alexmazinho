@@ -148,7 +148,7 @@ class EntityParte {
 				/* Init camps */
 				$cloneLlicencia->setDataEntrada($currentDate);
 				$cloneLlicencia->setDatamodificacio($currentDate);
-				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat());
+				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat("cloneLlicencies"));
 				$cloneLlicencia->setIdparteAccess(null);
 				$cloneLlicencia->getIdpartedetall_access(null);
 				
@@ -700,14 +700,38 @@ class EntityParte {
     	return $this->getPreuTotalNet() * $factor;
     }
     
-    public function getDataCaducitat() {
+    public function getDataCaducitat($source = null) {
     	//$datacaducitat = clone $this->getDataalta(); // Important treballar amb còpies no amb referències
     	//$datacaducitat = clone $this->dataalta;
+
+    	if ($this->dataalta == null) {
+    		// mime type to display message in HTML
+    		$headers = "From: webadmin@fecdasgestio.cat\r\n";
+    		$headers .= "MIME-Version: 1.0\r\n";
+    		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+    		/* Error punyetero. Debug */
+    		if ($source == null) {
+	    		error_log("getDataCaducitat amb dataalta null (Origen desconegut)", 1, "alexmazinho@gmail.com",$headers);
+    		} else {
+    			error_log("getDataCaducitat amb dataalta null (".$source.")", 1, "alexmazinho@gmail.com",$headers);
+    		}
+    		$this->setDataalta(new \DateTime());
+    	}
+    	
     	$datacaducitat = new \DateTime($this->dataalta->format("Y-m-d"));
     	if ($this->getTipus()->getId() != 11) { // No un dia
     		if ($this->getTipus()->getEs365() == true) {
-    			$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
+    			/* Competició. En 365 datafinal indica data de caducitat */
+    			if ($this->getTipus()->getFinal() != null) {
+    				// Si dataalta > datafinal  --> any següent, sinó any dataalta 
+    				if ($datacaducitat->format("m-d") > $this->getTipus()->getFinal()) $currentYear = $datacaducitat->format("Y") + 1; 
+    				else $currentYear = $datacaducitat->format("Y");
+    				$datacaducitat = \DateTime::createFromFormat("Y-m-d", $currentYear."-".$this->getTipus()->getFinal());
+    			} else {
+    				$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
+    			}
     		} else {
+    			/* Anuals caduquen a 31/12*/
     			$datacaducitat = \DateTime::createFromFormat("Y-m-d", $datacaducitat->format("Y") . "-12-31");
     		}
     	}
@@ -816,20 +840,27 @@ class EntityParte {
     }
     
     public function isVigent() {
-    	
+    	$currentdate = new \DateTime();
     	if ($this->tipus->getId() == 11) {
-    		$currentdate = new \DateTime();
     		if ($this->dataalta->format("Y-m-d") == $currentdate->format("Y-m-d")) return true;
     		else return false;
     	}
-    	
-    	/* Normal 31/12  	dataalta >= 01/01/current year */
+    	/*
+    	// Normal 31/12  	dataalta >= 01/01/current year 
     	$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") . "-01-01 00:00:00");
-    	/* 365	dataalta >= avui / (current year - 1) */
+    	// 365	dataalta >= avui / (current year - 1) 
     	$ini365 = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
-    	
-    	return  ($this->tipus->getEs365() == 0 and $this->dataalta >= $inianual) or 	
-    			($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);
+    	return  ($this->tipus->getEs365() == 0 and $this->dataalta >= $inianual) or
+    		($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);*/
+    	   
+    	/* Dataalta <= avui and avui <= Caducitat */
+    	return ( $this->dataalta->format('Y-m-d') <= $currentdate->format('Y-m-d') 
+    			and $currentdate->format('Y-m-d') <= $this->getDataCaducitat("isVigent")->format("Y-m-d"));
+    }
+    
+    public function isPassat() {
+    	$currentdate = new \DateTime();
+    	return ($currentdate->format('Y-m-d') > $this->getDataCaducitat("isPassat")->format("Y-m-d"));
     }
     
     public function isFacturaValida()

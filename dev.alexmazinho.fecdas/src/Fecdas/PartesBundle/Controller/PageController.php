@@ -274,15 +274,17 @@ class PageController extends BaseController {
 		if ($persist == true) $em->persist($parte);
 		
 		$fila = 0;
+		
+		implode($reader->getLayout());
+		
 		while($reader->process()) {
 			$fila++;
 			
 			$row = $reader->getRow();
 			//our logic here
-			
+			if(!isset($row['dni']) or $row['dni'] == null or $row['dni'] == "") throw new \Exception('Hi ha una llicència sense dni (fila: ' . $fila . '), o el format és incorrecte');
+						
 			if(!isset($row['categoria']) or $row['categoria'] == null) throw new \Exception('Hi ha una llicència sense categoria (DNI: ' . $row['dni'] . ')');
-			
-			if(!isset($row['dni']) or $row['dni'] == null or $row['dni'] == "") throw new \Exception('Hi ha una llicència sense dni (fila: ' . $fila . ')');
 			
 			if ($row['categoria'] != 'A' and $row['categoria'] != 'I' and $row['categoria'] != 'T')
 				throw new \Exception('Hi ha una llicència amb una categoria incorrecte, els valors vàlids són A, I, T (DNI: ' . $row['dni'] . ')');
@@ -299,7 +301,7 @@ class PageController extends BaseController {
 				/* Noves dades personals. Nom, cognoms, data naixement i sexe obligatoris */
 				if(!isset($row['nom']) or $row['nom'] == null or $row['nom'] == "") throw new \Exception('Manca el nom de la persona en una llicència (DNI: ' . $row['dni'] . ')');
 				if(!isset($row['cognoms']) or $row['cognoms'] == null or $row['cognoms'] == "") throw new \Exception('Manquen els cognoms de la persona en una llicència (DNI: ' . $row['dni'] . ')');
-				if(!isset($row['sexe']) or $row['sexe'] == null) throw new \Exception('Manca indicar el sexe de la persona en una llicència (fila: ' . $fila . ')');
+				if(!isset($row['sexe']) or $row['sexe'] == null) throw new \Exception('Manca indicar el sexe de la persona en una llicència (DNI: ' . $row['dni'] . ')');
 				if(!isset($row['naixement']) or $row['naixement'] == null or $row['naixement'] == "") throw new \Exception('Manca indicar la data de naixement de la persona en una llicència (DNI: ' . $row['dni'] . ')');
 				if(!isset($row['nacionalitat']) or $row['nacionalitat'] == null or $row['nacionalitat'] == "") throw new \Exception('Manca indicar la nacionalitat de la persona en una llicència (DNI: ' . $row['dni'] . ')');
 				
@@ -326,7 +328,7 @@ class PageController extends BaseController {
 				$persona->setDatanaixement($datanaixement);
 				$persona->setAddrnacionalitat($row['nacionalitat']);
 				
-				if ($row['nacionalitat'] == 'ESP') {
+				if (mb_strtoupper($row['estranger'], "utf-8") == 'N') {
 					/* Només validar DNI nacionalitat espanyola */
 					$dnivalidar = $row['dni'];
 					/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
@@ -346,12 +348,11 @@ class PageController extends BaseController {
 			if (isset($row['telefon1']) and $row['telefon1'] != null and $row['telefon1'] != "") $persona->setTelefon1($row['telefon1']);
 			if (isset($row['telefon2']) and $row['telefon2'] != null and $row['telefon2'] != "") $persona->setTelefon2($row['telefon2']);
 			if (isset($row['mail']) and $row['mail'] != null and $row['mail'] != "") $persona->setMail($row['mail']);
-			if (isset($row['adreca']) and $row['adreca'] != null and $row['adreca'] != "") $persona->setAddradreca(utf8_encode($row['adreca']));
-			if (isset($row['poblacio']) and $row['poblacio'] != null and $row['poblacio'] != "") $persona->setAddradreca(utf8_encode($row['poblacio']));
+			if (isset($row['adreca']) and $row['adreca'] != null and $row['adreca'] != "") $persona->setAddradreca($row['adreca']);
+			if (isset($row['poblacio']) and $row['poblacio'] != null and $row['poblacio'] != "") $persona->setAddrpob($row['poblacio']);
 			if (isset($row['cp']) and $row['cp'] != null and $row['cp'] != "") $persona->setAddrcp($row['cp']);
 			if (isset($row['provincia']) and $row['provincia'] != null and $row['provincia'] != "") $persona->setAddrprovincia(mb_convert_case($row['provincia'], MB_CASE_TITLE, "utf-8"));
 			if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
-			
 			
 			/* Creació i validació de la llicència */
 			
@@ -359,7 +360,7 @@ class PageController extends BaseController {
 			$llicencia->setDatamodificacio($this->getCurrentDate());
 			$llicencia->setCategoria($categoria);
 			$llicencia->setPersona($persona);
-			$llicencia->setDatacaducitat($parte->getDatacaducitat());
+			$llicencia->setDatacaducitat($parte->getDatacaducitat($this->getLogMailUserData("importFileCSVData ")));
 			
 			if ($persist == true) $em->persist($llicencia);
 			
@@ -761,7 +762,7 @@ class PageController extends BaseController {
 							$inicivigencia = $llicencia->getParte()->getDataalta();
 							if ($inicivigencia <= $dataactual) {
 								$trobada = true;
-								$smsok .= $llicencia->getParte()->getDatacaducitat()->format('d/m/Y');
+								$smsok .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("busseigAction "))->format('d/m/Y');
 							}
 						}
 					}
@@ -828,8 +829,8 @@ class PageController extends BaseController {
 		 * En cas contrari només des d'ara
 		*/
 		$data_alta = $this->getCurrentDate('now');
-		if ($partearenovar->getDataCaducitat() >= $data_alta) {
-			$data_alta = $partearenovar->getDataCaducitat();
+		if ($partearenovar->getDataCaducitat($this->getLogMailUserData("renovarAction 1 ")) >= $data_alta) {
+			$data_alta = $partearenovar->getDataCaducitat($this->getLogMailUserData("renovarAction 2 "));
 			$data_alta->setTime(00, 00);
 			$data_alta->add(new \DateInterval('P1D')); // Add 1
 		}
@@ -1362,31 +1363,6 @@ class PageController extends BaseController {
 		return true;
 	} 
 	
-	// Totes les llicències entren en vigència en data d'alta
-	/*
-	private function getIniciLlicencia(EntityLlicencia $llicencia) {
-		if ($llicencia->getParte()->getTipus()->getEs365() == true) { // Llicencia entrada 365
-			$inicivigencia = $llicencia->getParte()->getDataalta();
-		} else {
-			// Llicència entrada anual (o un dia o reduïda)
-			switch ($llicencia->getParte()->getTipus()->getId()) {
-				case 5:
-					// Reduïda
-					$anyinicivigencia = $llicencia->getParte()->getDataalta()->format('Y');
-					$inicivigencia = \DateTime::createFromFormat('Y-m-d H:i:s', $anyinicivigencia . "-09-01 00:00:00");
-					break;
-				case 9:
-					// Un dia
-					$inicivigencia = $llicencia->getDatacaducitat();
-					break;
-				default:
-					$anyinicivigencia = $llicencia->getParte()->getDataalta()->format('Y');
-					$inicivigencia = \DateTime::createFromFormat('Y-m-d H:i:s', $anyinicivigencia . "-01-01 00:00:00");
-			}
-		}
-		return $inicivigencia;
-	}*/
-	
 	private function sendMailLlicenciaDuplicada ($mails, EntityPersona $personaNova, EntityPersona $personaExistent, \DateTime $datallicencia) {
 		$message = \Swift_Message::newInstance()
 			->setSubject('::Llicència Duplicada Diferents Clubs::')
@@ -1444,7 +1420,7 @@ class PageController extends BaseController {
 				$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipusid));
 
 				// Noves llicències, permeten edició no pdf
-				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat());
+				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
 				
 				$edit = true;
 				$pdf = false;
@@ -1987,13 +1963,18 @@ class PageController extends BaseController {
 			$tipuspartes = $club->getTipusparte();
 			
 			foreach ($tipuspartes as $c => $tipusparte) {
-				$inici = '01-01';
-				$final = '12-31';
-				if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
-				if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
-				
-				if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+				if ($tipusparte->getEs365() == true) {
+					/* 365 directament sempre. Es poden usar en qualsevol moment  */
 					array_push($llistatipus, $tipusparte->getId());
+				} else { 
+					$inici = '01-01';
+					$final = '12-31';
+					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
+					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
+					
+					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+						array_push($llistatipus, $tipusparte->getId());
+					}
 				}
 			}
 		}

@@ -6,6 +6,7 @@ class CSV_Reader {
 	protected $_csv = null; //  CSV file
 	protected $_layout = array(); //array that defines layout of CSV
 	protected $_row = null; //current row of the CSV we are on
+	protected $_separador = ';'; //CSV separador
 	
 	/**
 	 * Set our CSV Layout, what fields correspond to what
@@ -46,12 +47,23 @@ class CSV_Reader {
 	public function readLayoutFromFirstRow(){
 		$this->_init(); 
 		$this->_layout = array(); //reset for multiple
-		$line = fgetcsv($this->_handle, 4096, ';');
+		$line = fgetcsv($this->_handle, 4096, $this->_separador);
 		if(!$line){
 			fclose($this->_handle);
 			throw new \Exception('Fitxer invàlid, manca la capcelera');
 		}
-	
+
+		if(count($line) <= 1){  /* Separador incorrecte "," per exemple*/
+			$this->_separador = ',';
+			fclose($this->_handle);
+			$this->_init();
+			$line = fgetcsv($this->_handle, 4096, $this->_separador);
+			if(!$line){
+				fclose($this->_handle);
+				throw new \Exception('Fitxer invàlid, manca la capcelera');
+			}
+		}
+		
 		foreach($line as $key){
 			$this->_layout[] = strtolower($key);
 		}
@@ -62,6 +74,8 @@ class CSV_Reader {
 	 * @throws Exception
 	 */
 	protected function _init(){
+		//echo "locale " . system('locale -a'); 
+		//setlocale(LC_ALL, 'ca_ES.utf8');
 		ini_set('auto_detect_line_endings', 1);
 		$this->_init = true;
 		$this->_handle = fopen($this->_csv, "r");
@@ -77,7 +91,7 @@ class CSV_Reader {
 		if(!$this->_init){
 			$this->_init();
 		}
-		$line = fgetcsv($this->_handle, 4096, ';');
+		$line = fgetcsv($this->_handle, 4096, $this->_separador);
 		if(!$line){
 			fclose($this->_handle);
 			return false;
@@ -86,6 +100,11 @@ class CSV_Reader {
 		$row = array();
 		foreach($this->_layout as $key){
 			if(isset($line[$i])){
+				// UTF8
+				if(!mb_check_encoding($line[$i], 'UTF-8')
+					OR !($line[$i] === mb_convert_encoding(mb_convert_encoding($line[$i], 'UTF-32', 'UTF-8' ), 'UTF-8', 'UTF-32'))) {
+					$line[$i] = mb_convert_encoding($line[$i], 'UTF-8');
+				}
 				$row[$key] = $line[$i];
 			} else {
 				$row[$key] = NULL;

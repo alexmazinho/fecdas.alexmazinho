@@ -328,8 +328,10 @@ html>body .textaccio img {
 }
 
 .data-detall-fosc {
-	background-color: #EEEEEE;
-	color: #999999;
+	background-color: #F9F9F9;
+    color: #BBBBBB;
+	/*background-color: #EEEEEE;
+	color: #999999;*/
 }
 
 html>body .data-detall {
@@ -360,25 +362,27 @@ li.data-detall div {
 }
 
 li.data-detall-fosc {
-    border-color: #DDDDDD;
+    /*border-color: #DDDDDD;*/
 }
 
 #header-parteid { display:none}
 #header-parteany {	width: 6%;}
 #header-partedata {	width: 13%; text-align: center;}
-#header-partetipusdesc { width: 35%;}
+#header-partetipusdesc { width: 25%; }
 #header-partetotal {	width: 10%;text-align:center;}
 #header-partepagat {	width: 12%;}
 #header-parteimport {	width: 10%; text-align:right;}
+#header-partefactura {	width: 11%; text-align:right;}
 #header-parteactions {}
 
 .parte-id {	display:none}
 .parte-any { float: left;width: 6%; text-align: center; }
 .parte-data { float: left;width: 13%; text-align: center; }
-.parte-tipusdesc { float: left;	width: 35%; text-align:center;}
+.parte-tipusdesc { float: left;	width: 25%; text-align:center;white-space: nowrap;}
 .parte-total { float: left;	width: 10%; text-align:center;}
 .parte-pagat { float: left;	width: 12%; text-align:center;}
 .parte-import {	float: left; width: 11%; text-align:right;}
+.parte-factura {	float: left; width: 11%; text-align:right;}
 .parte-actions { float: right; width: 3%; text-align:right; margin-top: -14px}
 
 #progressbar {
@@ -796,6 +800,8 @@ input#formuserclub-randompassword { width: 150px; }
 	/*position: relative; margin-bottom: 7px; 
 	text-align: left; min-width: 30px; vertical-align: top; padding-top: 10px; 
 	display:block;*/
+	padding-left: 3px;
+    padding-right: 10px;
 }
 
 
@@ -839,6 +845,18 @@ select#parte_persona_addrcomarca {
 
 select#parte_persona_addrnacionalitat {
 	width: 365px;
+}
+
+#formpersona-dni {
+	position: relative;
+}
+
+#formpersona-estranger {
+	position: absolute;
+	top: 40px;
+}
+#formpersona-estranger label {
+	display: block !important;
 }
 
 #adreca-header { display: block; width:100%; position: relative; margin-bottom: 7px; }
@@ -1056,14 +1074,85 @@ p.info-bold {
 	text-align: center;
 }
 
+.formcsv-main #list-header,
+.formcsv-main #summary-header {
+	display: table-header-group;
+	width:100%;
+	margin-bottom: 0;
+	
+}
+.formcsv-main .col-listheader {
+	display: table-cell;
+	padding: 4px;
+	float: none;
+	border-bottom:1px solid #96C4EA;
+	border-top:1px solid #82CFFA;
+	vertical-align: middle;
+	text-align: center;
+	/*border-color: #82CFFA #E7F2FB #96C4EA;*/
+    /*box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;*/
+}
 
-.formcsv-main #header-llicenciapersonalong {	width: 50%; text-align: left;}
-.formcsv-main #header-llicenciadni {	width: 30%; text-align: center; }
-.formcsv-main #header-llicenciacategoria {	width: 18%; text-align: center; }
+.formcsv-main .table-scroll {
+	display: block;
+	max-height: 400px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid #81C6FF;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+    margin-bottom: 10px;
+    margin-left: 0;
+    margin-top: 0;
+    width: 100%;
+}
 
-.formcsv-main .llicencia-personalong { float: left; width: 50%;  }
-.formcsv-main .llicencia-dni { float: left;	width: 30%; text-align: center;}
-.formcsv-main .llicencia-categoria { float: left;	width: 18%; text-align: center;}
+.formcsv-main #list-data,
+.formcsv-main #summary-data {
+	display: table;
+	/*border-collapse: collapse;*/
+	width:100%;
+	border: none;
+	padding: 0;
+}
+.formcsv-main .data-detall {
+	display: table-row;
+	line-height: inherit;
+} 
+.formcsv-main .data-detall-cell  {
+	display: table-cell;
+	padding: 4px;
+	float: none;
+	vertical-align: middle;
+	text-align: center;
+	border-color: #EDF1F5;
+    border-style: solid;
+    border-width: 1px 0 0;
+}
+
+.formcsv-main #header-totals {
+	text-align: left;
+	width: 80%;
+}
+.formcsv-main #parte-preu {
+    font-size: 16px;
+    float: none;
+    text-align: right;
+    width: 20%;
+}
+
+.formcsv-main #header-llicenciapersonalong {	width: 20%; text-align: left;}
+.formcsv-main #header-llicenciaaddr {	width: 30%; text-align: left; }
+.formcsv-main #header-llicenciadni {	width: 8%;  }
+.formcsv-main #header-llicenciacategoria {	width: 10%;  }
+.formcsv-main #header-llicencianaixement {	width: 10%;  }
+
+
+.formcsv-main .llicencia-personalong { width: 20%; text-align: left;}
+.formcsv-main .llicencia-addr {	width: 30%; text-align: left; }
+.formcsv-main .llicencia-dni { width: 8%; }
+.formcsv-main .llicencia-categoria { width: 10%; }
+.formcsv-main .llicencia-naixement { width: 10%; }
+
 
 
 /************************************************* Import CSV  Fin ******************************************************/
@@ -1101,6 +1190,11 @@ p.info-bold {
 .login div {
 	padding-bottom: 10px;
 }
+
+.login p {
+	padding-bottom: 10px;
+}
+
 
 /*****************************************************************************************************************/
 

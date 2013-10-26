@@ -29,6 +29,7 @@
 			<time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
 		   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
 		</div>
+		<br/>
 		<ul id="summary-data">
 			<li class="data-totals data-detall">
 				<div class="parte-titol">Resum</div>
@@ -45,23 +46,29 @@
 		   	</li>
 		</ul>
 		
-		<div id="list-header" class="clearfix">
+		<div id="list-header">
 		   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències<span class="listheader-order"></span></div>
+	   		<div id="header-llicenciaaddr" class="col-listheader">Adreça<span class="listheader-order"></span></div>
 	   		<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
-	   		<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
+	   		<div id="header-llicencianaixement" class="col-listheader">Data de naixement<span class="listheader-order"></span></div>
+	   		<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>	   		
 		</div>
-
+		<br/>
+		<div class="table-scroll">
 		<ol id="list-data">
 			{% for llicencia in parte.llicenciessortedbyname %}
 				{% if llicencia.persona.nom is defined %}
 				<li class="data-detall">
-					<div class="llicencia-personalong">{{ llicencia.persona.cognomsNom|cut(90, false, '...') }}</div>
-					<div class="llicencia-dni">{{ llicencia.persona.dni }}</div>
-					<div class="llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
+					<div class="data-detall-cell llicencia-personalong">{{ llicencia.persona.cognomsNom|cut(90, false, '...') }}</div>
+					<div class="data-detall-cell llicencia-addr">{{ llicencia.persona.adrecaCompleta }}</div>					
+					<div class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</div>
+					<div class="data-detall-cell llicencia-naixement">{{ llicencia.persona.datanaixement|date('d/m/Y') }}</div>
+					<div class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
 	  			</li>
 	  			{% endif %}
 		   	{% endfor %}
 		</ol>
+		</div>
     </div>
 {% endblock %}
 
@@ -71,9 +78,29 @@
 
 <script type="text/javascript">
 
+	$.fn.hasOverflowY = function() {
+	    var $this = $(this);
+	    var $children = $this.find('*');
+	    var len = $children.length;
+	
+	    if (len) {
+	        var maxHeight = 0
+	        $children.map(function(){
+	            maxHeight = Math.max(maxHeight, $(this).outerHeight(true));
+	        });
+	        return maxHeight > $this.height();
+	    }
+	
+	    return false;
+	};
+
 $(document).ready(function(){
 	setMenuActive("menu-import");
-	
+
+	var tableScroll = $('.table-scroll');
+	if (tableScroll.hasOverflowY()) {
+		$('.table-scroll').css({"width":"102%"});
+	}
 });
 
 </script>

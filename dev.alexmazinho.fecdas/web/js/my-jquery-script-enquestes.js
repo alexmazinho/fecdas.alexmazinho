@@ -18,11 +18,11 @@
 		$( '#sortableno' ).sortable({
 			connectWith: '.connectedSortable',
 			receive: function( event, ui ) {
-				$('.sms-footer').hide(); 
+				$('.pregunta-excluded').hide(); 
 			},
 			remove: function( event, ui ) {
 				if ($(this).children().length == 1) {
-					$('.sms-footer').show(); 
+					$('.pregunta-excluded').show(); 
 				};
 			}
 	 	});
@@ -107,8 +107,8 @@
 	loadProgressEnquestes = function() {
 		$( ".enquesta-enviaments-progressbar" ).each(function( index ) {
 			var progressbar = $(this);
-			var valorinicial = $(this).prev().html();
-			var progresslabel = $(this).next();
+			var valorinicial = $(this).parent().prev().html();
+			var progresslabel = $(this).parent().next();
 
 			$(this).progressbar({
 				value: 0,	

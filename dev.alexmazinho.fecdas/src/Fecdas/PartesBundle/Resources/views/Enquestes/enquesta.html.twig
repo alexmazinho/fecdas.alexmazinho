@@ -52,33 +52,40 @@
     
 	<div id="seleccio-preguntes">
 		<div class="bloc-preguntes">
-			<div id="list-header" class="clearfix">
-				<div class="col-listheader">Preguntes seleccionades</div> 
+			<div class="table-header">	
+				<div id="list-header">
+					<div class="col-listheader">Preguntes seleccionades</div> 
+				</div>
 			</div>
-			<ul id="sortablesi" class="connectedSortable list-variableheight">
-				{% for pregunta in preguntessi %}
-					<li id="pregunta_{{ pregunta.id }}" class="list-variableheight-detall clearfix">
-		  				<div class="pregunta-id">{{ pregunta.id }}</div>
-		  				<div class="pregunta-enunciat">{{ pregunta.enunciat }}</div>
-	  				</li>
-			   	{% endfor %}
-			</ul>
+			<div class="table-scroll">	
+				<ul id="sortablesi" class="connectedSortable">
+					{% for pregunta in preguntessi %}
+						<li id="pregunta_{{ pregunta.id }}" class="data-detall">
+		  					<div class="data-detall-cell pregunta-id">{{ pregunta.id }}</div>
+		  					<div class="data-detall-cell pregunta-enunciat">{{ pregunta.enunciat }}</div>
+	  					</li>
+			   		{% endfor %}
+				</ul>
+			</div>
 		</div>
 		<div class="bloc-preguntes bloc-preguntes-dreta">
-			<div id="list-header" class="clearfix">
-				<div class="col-listheader">Preguntes excloses</div> 
+			<div class="table-header">
+				<div id="list-header">
+					<div class="col-listheader">Preguntes excloses</div> 
+				</div>
 			</div>
-			
-			<ul id="sortableno" class="connectedSortable list-variableheight">
-				{% for pregunta in preguntesno %}
-					<li id="pregunta_{{ pregunta.id }}"  class="list-variableheight-detall  clearfix">
-		  				<div class="pregunta-id">{{ pregunta.id }}</div>
-		  				<div class="pregunta-enunciat">{{ pregunta.enunciat }}</div>
-	  				</li>
-	  			{% else %}
-	  				<div class="sms-footer">cap pregunta exclosa</div>
-			   	{% endfor %}
-			</ul>
+			<div class="table-scroll">
+				<ul id="sortableno" class="connectedSortable">
+					{% for pregunta in preguntesno %}
+						<li id="pregunta_{{ pregunta.id }}"  class="data-detall">
+			  				<div class="data-detall-cell pregunta-id">{{ pregunta.id }}</div>
+			  				<div class="data-detall-cell pregunta-enunciat">{{ pregunta.enunciat }}</div>
+		  				</li>
+		  			{% else %}
+		  				<li class="data-detall"><div class="data-detall-cell pregunta-excluded">cap pregunta exclosa</div></li>
+				   	{% endfor %}
+				</ul>
+			</div>
 		</div>
 	</div> 
      
@@ -99,6 +106,10 @@ $(document).ready(function(){
 
 	submitEnquestes();
 
+	var tableScroll = $('.table-scroll');
+	if (tableScroll.hasOverflowY()) {
+		$('.table-scroll').css({"width":"101.5%"});
+	}
 });
 
 </script>

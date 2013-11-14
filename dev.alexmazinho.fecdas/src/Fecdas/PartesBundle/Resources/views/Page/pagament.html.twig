@@ -23,31 +23,31 @@
     <div id="fact-header">
     	<input id="parte_id" type="hidden" value="{{ parte.id }}" name="parte[id]">
 	   	<div id="fact-dadesclub">
-    		<ol id="list-data">
+    		<ol class="fact-summary-table table-noscroll">
 	   			<li class="data-detall">
-	   				<div class="fact-titol">Club</div>
-	   				<div id="fact-club">{{ parte.club.nom }}</div>
+	   				<div class="data-detall-cell fact-titol">Club</div>
+	   				<div id="fact-club" class="data-detall-cell">{{ parte.club.nom }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
-	   		   		<div class="fact-titol">Adreça</div>
-	   		   		<div id="fact-adreca">{{ parte.club.addradreca }}</div>
+	   		   		<div class="data-detall-cell fact-titol">Adreça</div>
+	   		   		<div id="fact-adreca" class="data-detall-cell">{{ parte.club.addradreca }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
-	   		   		<div class="fact-titol">Població</div>
-	   		   		<div id="fact-pobcp">{{ parte.club.addrpob }} ({{ parte.club.addrcp}}) </div>
+	   		   		<div class="data-detall-cell fact-titol">Població</div>
+	   		   		<div id="fact-pobcp" class="data-detall-cell">{{ parte.club.addrpob }} ({{ parte.club.addrcp}}) </div>
 	   		   	</li>
 	   		   	<li class="data-detall">
-	   		   		<div class="fact-titol">Província</div>
-	   		   		<div id="fact-prov">{{ parte.club.addrprovincia }}</div>
+	   		   		<div class="data-detall-cell fact-titol">Província</div>
+	   		   		<div id="fact-prov" class="data-detall-cell">{{ parte.club.addrprovincia }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
-	   		   		<div class="fact-titol">Telèfon</div>
-	   		   		<div id="fact-telefon">{{ parte.club.telefon }}</div>
+	   		   		<div class="data-detall-cell fact-titol">Telèfon</div>
+	   		   		<div id="fact-telefon" class="data-detall-cell">{{ parte.club.telefon }}</div>
 		   		</li>
 			</ol>
 	   	</div>	   		
 	   	<div id="fact-dadesfactura">
-    		<ol id="list-data">
+    		<ol class="fact-summary-table table-noscroll">
     			<!-- El num factura va fora, el procés és en el retorn del TPV -->
     			<!-- 
 	   			<li class="data-detall">
@@ -55,12 +55,12 @@
 	   		   		<div id="fact-num">{# parte.numfactura #}</div>
 	   		   	</li> -->
 	   			<li class="data-detall">
-	   		   		<div class="fact-titol">Data</div>
-	   		   		<div id="fact-data">{{ "now"|date("m/d/Y") }}</div>
+	   		   		<div class="data-detall-cell fact-titol">Data</div>
+	   		   		<div id="fact-data" class="data-detall-cell">{{ "now"|date("m/d/Y") }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
-	   		   		<div class="fact-titol">CIF</div>
-	   		   		<div id="fact-cif">{{ parte.club.cif }}</div>
+	   		   		<div class="data-detall-cell fact-titol">CIF</div>
+	   		   		<div id="fact-cif" class="data-detall-cell">{{ parte.club.cif }}</div>
 	   		   	</li>
 	   		</ol>
 	   		
@@ -85,8 +85,9 @@
 	   		</form>
 	   	</div>
     </div>
-    <div id="fact-detall">
-    	<div id="list-header" class="clearfix">
+   
+    <div class="table-header">
+    	<div id="list-header" >
    			<div id="header-factdetallid" class="col-listheader">id</div>
    			<div id="header-factdetallcodi" class="col-listheader">Codi</div>
 		   	<div id="header-factdetalldesc" class="col-listheader">Descripció</div>
@@ -96,36 +97,39 @@
 		   	<div id="header-factdetalliva" class="col-listheader">I.V.A.<br/>({{ parte.tipus.iva }}%)</div>
 		   	<div id="header-factdetallpreutotal" class="col-listheader">Total</div>
    		</div>
-   		
-   		{% if detall|length > 0 %}
-   		<ol id="list-data">
-		{% for lineadetall in detall %}
-	   		<li class="data-detall">
-		   		<div class="factdetall-id">{# llicencia.id #}</div>
-		   		<div class="factdetall-codi">{{ lineadetall.codi }}</div>
-		   		<div class="factdetall-desc">{{ lineadetall.desc }}</div>
-		   		<div class="factdetall-quantitat">{{ lineadetall.quant }}</div>
-		   		<div class="factdetall-preuunitat">{{ lineadetall.preuunitat|number_format(2, '.', ',') }}</div>
-		   		<div class="factdetall-preusiva">{{ lineadetall.preusiva|number_format(2, '.', ',') }}</div>
-		   		<div class="factdetall-iva">{{ lineadetall.iva|number_format(2, '.', ',') }}</div>
-		   		<div class="factdetall-preutotal">{{ lineadetall.totaldetall|number_format(2, '.', ',') }}</div>
-	   		</li>
-   		{% endfor %}
-   			<li id="factdetall-totals" class="data-detall">
-   				<div class="factdetall-tab"></div>
-		   		<div class="factdetall-totalparcial">{{ totals.totalparcial|number_format(2, '.', ',') }}</div>
-		   		<div class="factdetall-iva">{{ totals.iva|number_format(2, '.', ',') }}</div>
-		   		<div class="factdetall-total">{{ totals.total|number_format(2, '.', ',') }} €</div>
-		   	</li>	
-		</ol>
-		
+   	</div>
+	{% if detall|length > 0 %}
+   		<div class="table-scroll">
+	   		<ol id="list-data">
+			{% for lineadetall in detall %}
+		   		<li class="data-detall">
+			   		<div class="data-detall-cell factdetall-id">{# llicencia.id #}</div>
+			   		<div class="data-detall-cell factdetall-codi">{{ lineadetall.codi }}</div>
+			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.desc }}</div>
+			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.quant }}</div>
+			   		<div class="data-detall-cell factdetall-preuunitat">{{ lineadetall.preuunitat|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-preusiva">{{ lineadetall.preusiva|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ lineadetall.iva|number_format(2, '.', ',') }}</div>
+			   		<div class="data-detall-cell factdetall-preutotal">{{ lineadetall.totaldetall|number_format(2, '.', ',') }} €</div>
+		   		</li>
+	   		{% endfor %}
+	   		</ol>
+	   		<ol id="list-data">
+	   			<li id="factdetall-totals" class="data-detall">
+	   				<div class="data-detall-cell factdetall-tab"></div>
+			   		<div class="data-detall-cell factdetall-totalparcial">{{ totals.totalparcial|number_format(2, '.', ',') }}</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ totals.iva|number_format(2, '.', ',') }}</div>
+			   		<div class="data-detall-cell factdetall-total">{{ totals.total|number_format(2, '.', ',') }} €</div>
+			   	</li>	
+			</ol>
+		</div>
 		{%  if (parte.hasIVA == false) %}
 		<div class="sms-footer">Factura exempta d'I.V.A. segons la llei 49/2002</div>
 		{% endif %}
   	 	{% else %}
       	<div class="sms-notice">No hi ha llicències en aquesta llista</div>
   		{% endif %}
-    </div>
+    
 
 {% endblock %}
 

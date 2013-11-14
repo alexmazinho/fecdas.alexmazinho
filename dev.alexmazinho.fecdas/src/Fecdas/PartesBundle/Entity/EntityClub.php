@@ -114,6 +114,11 @@ class EntityClub {
 	protected $usuaris;	// Owning side of the relationship
 	
 	/**
+	 * @ORM\OneToMany(targetEntity="EntityParte", mappedBy="club")
+	 */
+	protected $partes;	// Owning side of the relationship
+	
+	/**
 	 * @ORM\ManyToMany(targetEntity="EntityParteType")
 	 * @ORM\JoinTable(name="m_clubs_tipusparte",
 	 *      joinColumns={@ORM\JoinColumn(name="club", referencedColumnName="codi")},
@@ -122,10 +127,21 @@ class EntityClub {
 	 */
 	private $tipusparte;
 	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityClubEstat")
+	 * @ORM\JoinColumn(name="estat", referencedColumnName="codi")
+	 */
+	protected $estat;	// FK taula m_clubestats
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=6, scale=2)
+	 */
+	protected $limitcredit;
 	
 	public function __construct() {
 		$this->activat = true;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->partes = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
@@ -541,6 +557,38 @@ class EntityClub {
     }
 
     /**
+     * Get partes
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getPartes()
+    {
+    	return $this->partes;
+    }
+    
+    /**
+     * Add parte
+     *
+     * @param Fecdas\PartesBundle\Entity\EntityParte $parte
+     */
+    /*
+    public function addEntityParte(\Fecdas\PartesBundle\Entity\EntityParte $parte)
+    {
+    	$parte->setClub($this);
+    	$this->partes->add($parte);
+    }*/
+    
+    
+    public function setPartes(\Doctrine\Common\Collections\ArrayCollection $partes)
+    {
+    	$this->partes = $partes;
+    	foreach ($partes as $parte) {
+    		$parte->setClub($this);
+    	}
+    }
+    
+    
+    /**
      * Get tipusparte
      *
      * @return Doctrine\Common\Collections\ArrayCollection
@@ -566,4 +614,69 @@ class EntityClub {
     	$this->tipusparte = $tipusparte;
     }
     
+    
+    /**
+     * Set estat
+     *
+     * @param Fecdas\PartesBundle\Entity\EntityClubEstat $estat
+     */
+    public function setEstat(\Fecdas\PartesBundle\Entity\EntityClubEstat $estat)
+    {
+    	$this->estat = $estat;
+    }
+    
+    /**
+     * Get estat
+     *
+     * @return Fecdas\PartesBundle\Entity\EntityClubEstat
+     */
+    public function getEstat()
+    {
+    	return $this->estat;
+    }
+    
+    /**
+     * Set limitcredit
+     *
+     * @param decimal $limitcredit
+     */
+    public function setLimitcredit($limitcredit)
+    {
+    	$this->limitcredit = $limitcredit;
+    }
+    
+    /**
+     * Get limitcredit
+     *
+     * @return decimal
+     */
+    public function getLimitcredit()
+    {
+    	return $this->limitcredit;
+    }
+    
+    /**
+     * Dades del club any actual
+     *
+     * @return array
+     */
+    
+    public function getDadesCurrent()
+    {
+    	$dades = array();
+    	$npartes = 0;
+    	$nllicencies = 0;
+    	$nimport = 0;
+    	foreach($this->partes as $c => $parte_iter) {
+    		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
+    			$npartes++;
+    			$nllicencies +=  $parte_iter->getNumLlicencies();
+    			$nimport += $parte_iter->getPreuTotalIVA();
+    		}
+    	}
+    	$dades['partes'] = $npartes;
+    	$dades['llicencies'] = $nllicencies;
+    	$dades['import'] = $nimport;
+    	return $dades;
+    }
 }

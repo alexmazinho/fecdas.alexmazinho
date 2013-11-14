@@ -50,60 +50,66 @@
         {{ app.session.flash('error-notice') }}
     </div>
 	{% endif %}
-   	<div id="list-header">
-   		<div id="header-asseguratid" class="col-listheader">id</div>
-   		<div id="header-asseguratdni" class="col-listheader">DNI<span class="listheader-order"></span></div>
-   		<div id="header-asseguratnom" class="col-listheader">Nom<span class="listheader-order"></span></div>
-   		<div id="header-asseguratcognoms" class="col-listheader">Cognoms<span class="listheader-order"></span></div>
-   		<div id="header-asseguratvigencia" class="col-listheader listheader-noorder">Vigència</div>
-   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicència</div>
-   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">&nbsp;</div>
-   	</div>
-	{% if persones|length > 0 %}
-   	<ol id="list-data">
-	{% for persona in persones %}
-		{% if vigents != true or (vigents == true and persona.llicenciaVigent is not null)  %}
-	   		<li class="data-detall-dobleespai data-detall">
-		   		<div class="assegurat-id">{{ persona.id }}</div>
-		   		<div class="assegurat-dni">{{ persona.dni }}</div>
-		   		<div class="assegurat-nom">{{ persona.nom }}</div>
-		   		<div class="assegurat-cognoms">{{ persona.cognoms }}</div>
-		   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
-					<div class="assegurat-tipusdesc">{{ persona.llicenciaVigent.categoria.descripcio }} fins al {{ persona.llicenciaVigent.parte.datacaducitat|date('d/m/Y') }}</div>
-					<div class="assegurat-actions"><a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
-	   					<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a></div>
-	   				<div class="assegurat-actions"><a class="llicencia-renovar" href="{{ path('FecdasPartesBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}">
-	   					<img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llicència" title="Renovar llicència" width="23px"></a></div>
-	   				<div class="assegurat-actions"><a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}">
-	   					<img src="{{ asset('images/icon-view.png') }}" alt="Veure llicència" title="Veure llicència" width="23px"></a></div>
-	   			{% else %}
-	   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-		   				<div class="assegurat-novigent">Darrera llicència finalitzada en data {{ persona.lastLlicencia.parte.datacaducitat|date('d/m/Y') }}</div>
-		   				
-		   				<div class="assegurat-actions"><a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
-	   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a></div>
-	   					<div class="assegurat-actions"><a class="llicencia-renovar" href="{{ path('FecdasPartesBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}">
-	   						<img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llicència" title="Renovar llicència" width="23px"></a></div>
-	   					<div class="assegurat-actions"><a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}">
-	   						<img src="{{ asset('images/icon-view.png') }}" alt="Veure llicència" title="Veure llicència" width="23px"></a></div>
-	   				{% else %}
-	   					<div class="assegurat-novigent">Persona sense historial de llicències</div>
-	   					
-	   					<div class="assegurat-actions"><a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
-	   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a></div>
-	   					<div class="assegurat-actions"></div>
-	   					<div class="assegurat-actions"></div>
-	   					
-	   				{% endif %}	
-		   		{% endif %}		
-	   		</li>
-   		{% endif %}	
-	{% endfor %}
-	</ol>
-   	{% else %}
-   		
-        <div class="sms-notice">No hi ha assegurats vigents per aquest club</div>
-    {% endif %}
+	<div id="llista-assegurats">
+		<div class="table-header">	
+		   	<div id="list-header">
+		   		<div id="header-asseguratid" class="col-listheader">id</div>
+		   		<div id="header-asseguratdni" class="col-listheader">DNI<span class="listheader-order"></span></div>
+		   		<div id="header-asseguratnom" class="col-listheader">Nom<span class="listheader-order"></span></div>
+		   		<div id="header-asseguratcognoms" class="col-listheader">Cognoms<span class="listheader-order"></span></div>
+		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Vigència de la llicència</div>
+		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">&nbsp;</div>
+		   	</div>
+	   	</div>
+		{% if persones|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for persona in persones %}
+				{% if vigents != true or (vigents == true and persona.llicenciaVigent is not null)  %}
+			   		<li class="data-detall">
+				   		<div class="data-detall-cell assegurat-id">{{ persona.id }}</div>
+				   		<div class="data-detall-cell assegurat-dni">{{ persona.dni }}</div>
+				   		<div class="data-detall-cell assegurat-nom">{{ persona.nom }}</div>
+				   		<div class="data-detall-cell assegurat-cognoms">{{ persona.cognoms }}</div>
+				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
+							<div class="data-detall-cell assegurat-tipusdesc">{{ persona.llicenciaVigent.categoria.descripcio }} fins al {{ persona.llicenciaVigent.parte.datacaducitat|date('d/m/Y') }}</div>
+							<div class="data-detall-cell assegurat-actions">
+			   				<a class="llicencia-renovar" href="{{ path('FecdasPartesBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}">
+			   					<img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llicència" title="Renovar llicència" width="23px"></a>
+			   				<a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}">
+			   					<img src="{{ asset('images/icon-view.png') }}" alt="Veure llicència" title="Veure llicència" width="23px"></a>
+							<a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
+			   					<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
+			   				</div>
+			   			{% else %}
+			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
+				   				<div class="data-detall-cell assegurat-novigent">Darrera llicència finalitzada en data {{ persona.lastLlicencia.parte.datacaducitat|date('d/m/Y') }}</div>
+				   				
+				   				<div class="data-detall-cell assegurat-actions">
+			   					<a class="llicencia-renovar" href="{{ path('FecdasPartesBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}">
+			   						<img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llicència" title="Renovar llicència" width="23px"></a>
+			   					<a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}">
+			   						<img src="{{ asset('images/icon-view.png') }}" alt="Veure llicència" title="Veure llicència" width="23px"></a>
+				   				<a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
+			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
+			   					</div>
+			   				{% else %}
+			   					<div class="data-detall-cell assegurat-novigent">Persona sense historial de llicències</div>
+			   					
+			   					<div class="data-detall-cell assegurat-actions"><a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
+			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a></div>
+			   				{% endif %}	
+				   		{% endif %}		
+			   		</li>
+		   		{% endif %}	
+			{% endfor %}
+			</ol>
+		</div>
+	   	{% else %}
+	   		
+	        <div class="sms-notice">No hi ha assegurats vigents per aquest club</div>
+	    {% endif %}
+	</div>
     
     <div id="edicio-persona" class="finestra-overlay"></div>
     
@@ -129,10 +135,11 @@ $(document).ready(function(){
 	showPersonClickAssegurats();
 
 	sortLlista("col-listheader", "list-data");
-	
-	
-	
-	
+
+	var tableScroll = $('.table-scroll');
+	if (tableScroll.hasOverflowY()) {
+		$('.table-scroll').css({"width":"101.5%"});
+	}
 });
 
 </script>

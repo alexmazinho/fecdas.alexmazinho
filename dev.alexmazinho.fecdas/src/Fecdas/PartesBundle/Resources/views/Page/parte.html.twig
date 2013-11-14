@@ -142,6 +142,13 @@ $(document).ready(function(){
 	showResumParteDetall();
 
 	sortLlista("col-listheader", "list-data");
+
+	$('.table-scroll').each(function() {
+		if ($(this).hasOverflowY()) {
+			$(this).css({"width":"101.5%"});
+		}
+	});
+	
 	
 	if ($("#parte_tipus option").length == 1) {
 	/* Només si hi ha disponible més d'una llicència */

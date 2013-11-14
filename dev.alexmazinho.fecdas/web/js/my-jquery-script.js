@@ -233,6 +233,22 @@
 	    });
 	};
 	
+	$.fn.hasOverflowY = function() {
+	    var $this = $(this);
+	    var $children = $this.find('*');
+	    var len = $children.length;
+	
+	    if (len) {
+	        var maxHeight = 0
+	        $children.map(function(){
+	            maxHeight = Math.max(maxHeight, $(this).outerHeight(true));
+	        });
+	        return maxHeight > $this.height();
+	    }
+	
+	    return false;
+	};
+	
 	/*****************************************************************************************************************/
 	
 	/*************************************************** Menu ********************************************************/
@@ -679,8 +695,12 @@
 	    $("#parte-resum-more-show").click(function (e) {
 	        //Cancel the link behavior
 	        e.preventDefault();
-	    	if ($.browser.msie) $('#parte-resum-more').show(); 
-	    	else $('#parte-resum-more').slideDown('fast');
+	        
+	        //$('#summary-data-hidden').toggle();
+	        $('#summary-data-hidden').css('display', 'table');
+/*
+	    	if ($.browser.msie) $('#summary-data-hidden').show(); 
+	    	else $('#summary-data-hidden').slideDown('fast');*/
 	    	$(this).hide();
 	    	$("#parte-resum-more-hide").show();
 	    });    
@@ -688,8 +708,8 @@
 	    $("#parte-resum-more-hide").click(function (e) {
 	        //Cancel the link behavior
 	        e.preventDefault();
-	    	if ($.browser.msie) $('#parte-resum-more').hide(); 
-	    	else $('#parte-resum-more').slideUp('fast');
+	    	if ($.browser.msie) $('#summary-data-hidden').hide(); 
+	    	else $('#summary-data-hidden').slideUp('fast');
 	    	$(this).hide();
 	    	$("#parte-resum-more-show").show();
 	    });    

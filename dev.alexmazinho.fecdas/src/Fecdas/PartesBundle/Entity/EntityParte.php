@@ -26,7 +26,7 @@ class EntityParte {
 	protected $tipus;	// FK taula m_tipuspartes
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub")
+	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="partes")
 	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
 	 */
 	protected $club;	// FK taula m_clubs
@@ -110,6 +110,11 @@ class EntityParte {
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $renovat;
+
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $pendent;
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityLlicencia", mappedBy="parte")
@@ -120,6 +125,7 @@ class EntityParte {
 		$this->setDataentrada($currentDate);
 		$this->web = true;
 		$this->renovat = false;
+		$this->pendent = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
@@ -134,6 +140,7 @@ class EntityParte {
 		$this->idparte_access = null;
 		$this->web = true;
 		$this->renovat = false;
+		$this->pendent = false;
 	}
 	
 	public function cloneLlicencies($currentDate) {
@@ -528,6 +535,26 @@ class EntityParte {
     {
     	return $this->renovat;
     }
+
+    /**
+     * Set pendent
+     *
+     * @param boolean $pendent
+     */
+    public function setPendent($pendent)
+    {
+    	$this->pendent = $pendent;
+    }
+    
+    /**
+     * Get pendent
+     *
+     * @return boolean
+     */
+    public function getPendent()
+    {
+    	return $this->pendent;
+    }
     
     /**
      * Set datamodificacio
@@ -877,6 +904,14 @@ class EntityParte {
     		}
     	}
     	return true;
+    }
+    
+    public function  getInfoLlistat() {
+    	if ($this->pendent) return "llista pendent de pagament sense validesa";
+
+    	if ($this->datapagament != null) return "llista pagada";
+
+    	return "";
     }
     
 }

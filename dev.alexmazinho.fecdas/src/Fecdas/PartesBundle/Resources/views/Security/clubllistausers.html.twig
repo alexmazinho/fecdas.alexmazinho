@@ -5,43 +5,46 @@
 {% endif %}
 
 {% if club.usuaris|length > 0 %}
-<div id="list-header" class="clearfix">
-   	<div id="header-userclubuser" class="col-listheader">Usuari</div>
-   	<div id="header-userclublastaccess" class="col-listheader">Darrer accés</div>
-   	<div id="header-userclubrol" class="col-listheader">Rol</div>
-   	<div id="header-userclubforceupdate" class="col-listheader">Canvi clau</div>
-   	<div id="header-userclubactions" class="col-listheader">&nbsp;</div>
-</div>
-
-<ol id="list-data">
-	{% for userclub in club.usuaris %}
-		{% if userclub.databaixa is null %}
-		<li class="data-detall">
-			<div class="userclub-user">{{ userclub.user }}</div>
-			<div class="userclub-lastaccess">
-			{% if userclub.lastaccess is not null %}
-			{{ userclub.lastaccess|date("d/m/Y H:i:s") }}
-			{% else %}
-			--
-			{% endif %}
-			</div>
-			<div class="userclub-rol">{{ userclub.role }}</div>
-			<div class="userclub-forceupdate" class="form-left">
-			{% if userclub.forceupdate == true %}
-			Si
-			{% else %}
-			No
-			{% endif %}
-			</div>
-			<div class="userclub-actions">
-			{% if admin == true %}
-				<a class="label-remove-userclub" href="javascript:void(0);" onclick="removedUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-trash.png') }}" alt="Esborrar usuari" title="Esborrar usuari" width="23px"></a>
-				<a class="label-resetpwd-userclub" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-wizard.png') }}" alt="Reiniciar Password" title="Reiniciar Password" width="20px"></a>
-			{% endif %}
-			</div>
-		</li>
-		{% endif %}
-   	{% endfor %}
-</ol>
+	<div class="table-header">	
+		<div id="list-header">
+		   	<div id="header-userclubuser" class="col-listheader">Usuari</div>
+		   	<div id="header-userclublastaccess" class="col-listheader">Darrer accés</div>
+		   	<div id="header-userclubrol" class="col-listheader">Rol</div>
+		   	<div id="header-userclubforceupdate" class="col-listheader">Canvi clau</div>
+		   	<div id="header-userclubactions" class="col-listheader">&nbsp;</div>
+		</div>
+	</div>
+	<div class="table-scroll">
+		<ol id="list-data">
+			{% for userclub in club.usuaris %}
+				{% if userclub.databaixa is null %}
+				<li class="data-detall">
+					<div class="data-detall-cell userclub-user">{{ userclub.user }}</div>
+					<div class="data-detall-cell userclub-lastaccess">
+					{% if userclub.lastaccess is not null %}
+					{{ userclub.lastaccess|date("d/m/Y H:i:s") }}
+					{% else %}
+					--
+					{% endif %}
+					</div>
+					<div class="data-detall-cell userclub-rol">{{ userclub.role }}</div>
+					<div class="data-detall-cell userclub-forceupdate" class="form-left">
+					{% if userclub.forceupdate == true %}
+					Si
+					{% else %}
+					No
+					{% endif %}
+					</div>
+					<div class="data-detall-cell userclub-actions">
+					{% if admin == true %}
+						<a class="label-remove-userclub" href="javascript:void(0);" onclick="removedUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-trash.png') }}" alt="Esborrar usuari" title="Esborrar usuari" width="23px"></a>
+						<a class="label-resetpwd-userclub" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-wizard.png') }}" alt="Reiniciar Password" title="Reiniciar Password" width="20px"></a>
+					{% endif %}
+					</div>
+				</li>
+				{% endif %}
+		   	{% endfor %}
+		</ol>
+	</div>
 {% endif %}
 

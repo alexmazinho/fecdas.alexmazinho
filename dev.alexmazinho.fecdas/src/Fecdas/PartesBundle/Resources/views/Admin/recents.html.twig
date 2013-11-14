@@ -1,0 +1,130 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasPartesBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+
+  	{{ form_javascript(form) }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Comunicacions recents{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Comunicacions recents</h1>
+    </header>
+
+    {% if app.session.hasFlash('error-notice') %}
+    <div class="sms-notice">
+        {{ app.session.flash('error-notice') }}
+    </div>
+	{% endif %}
+    
+    <div id="list-forms">
+    	<form id="formrecents" action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    		{{ form_widget(form.codi)}}
+      		<div id="formrecents-club" class="form-left">
+				{{ form_label(form.clubs, 'Cerca club', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside '} }) }}
+			</div> 
+    		<div id="formrecents-estat" class="form-left">
+				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div> 
+      		<div id="formrecents-web" class="form-left">
+      			{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.web, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			</div> 
+      		<div id="formrecents-sincro" class="form-left">
+      			{{ form_label(form.sincro, 'Pendents sincronitzar', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.sincro, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			</div> 
+			<div id="formrecents-submit" class="form-right">	
+				<input type="submit" class="forminput-inside" value="Consulta" name="formrecents-button-search"/>
+			</div> 
+	   	</form>
+	   	<a id="formrecents-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
+    </div>
+    <!--  <div id="list-header" class="clearfix"> -->
+    <br/>
+    <div id="list-recents">
+    	<div class="table-header">	
+	   		<div id="list-header">
+		   		<div id="header-parterecentsid" class="col-listheader">id</div>
+		   		<div id="header-parterecentsrel" class="col-listheader">Rel<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsdata" class="col-listheader">Alta<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsclub" class="col-listheader">Club<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentstipus" class="col-listheader">Tipus<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentstotal" class="col-listheader">#<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentspreu" class="col-listheader">Preu<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentspagat" class="col-listheader">Pagat<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentdadespagat" class="col-listheader">comanda/rebut<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsfactura" class="col-listheader">Facturat<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsactions" class="col-listheader">&nbsp;</div>
+		   	</div>
+		</div>
+		{% if partes|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for parte in partes %}
+		   		<li class="data-detall {% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}">
+			   		<div class="data-detall-cell parterecents-id">{{ parte.id }}</div>
+			   		<div class="data-detall-cell parterecents-rel">{{ parte.numrelacio }}</div>
+		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
+		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
+		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }}</div>
+		   			<div class="data-detall-cell parterecents-total">{{ parte.numLlicencies }}</div>
+		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} </div>
+		   			<div class="data-detall-cell parterecents-pagat">
+					{% if parte.datapagament is null %}&nbsp; {% else %} 
+					<time datetime="{{ parte.datapagament|date('c') }}">{{ parte.datapagament|date('d/m/y') }}</time>				
+					{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell parterecents-dadespagat">{{ parte.dadespagament }} {{ parte.estatpagament }}</div>
+		   			<div class="data-detall-cell parterecents-factura">
+		   			{% if parte.datafacturacio is not null %}
+		   				<time datetime="{{ parte.datafacturacio|date('c') }}">{{ parte.datafacturacio|date('d/m/y') }}</time>
+		   			{% endif %}
+		   			{% if parte.numfactura is null %} &nbsp;  {% else %} - {{ parte.numFactura }} {% endif %}
+		   			</div>
+		   			<div class="data-detall-cell parterecents-actions">
+		   			<a class="parterecents-action-sincro" href="{{ path('FecdasPartesBundle_sincroaccess', { 'id': parte.id }) }}">
+		   				<img src="{{ asset('images/icon-access.jpg') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
+		   			<a class="parterecents-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}">
+		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure" title="Veure" width="23px"></a>
+					</div>
+		   		</li>
+		   		{% endfor %}
+			</ol>
+		</div>
+   	{% else %}
+        	<div class="sms-notice">Cap comunicació</div>
+    {% endif %}
+    </div>
+    
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	setMenuActive("menu-admllistes");
+	
+	$("#menu-adm").click();
+
+	autocompletersNomsClub("formrecents-autocompleters", "form_clubs", "form_codi");
+
+	sortLlista("col-listheader", "list-data");
+
+	var tableScroll = $('.table-scroll');
+	if (tableScroll.hasOverflowY()) {
+		$('.table-scroll').css({"width":"101.5%"});
+	}
+});
+
+</script>
+
+{% endblock %}
+

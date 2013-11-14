@@ -34,19 +34,9 @@ class EntityCategoria {
 	protected $descripcio;
 
 	/**
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
+	 * @ORM\OneToMany(targetEntity="EntityCategoriaPreu", mappedBy="categoria")
 	 */
-	protected $preu;
-
-	/**
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
-	 */
-	protected $preupre;
-	
-	/**
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
-	 */
-	protected $preupost;
+	protected $preus;	// Owning side of the relationship
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityParteType", inversedBy="categories")
@@ -54,6 +44,14 @@ class EntityCategoria {
 	 */
 	protected $tipusparte;
 
+	public function __construct() {
+		$this->preus = new \Doctrine\Common\Collections\ArrayCollection();
+	}
+	
+	public function __toString() {
+		return $this->codisortida;
+	}
+	
     /**
      * Set codisortida
      *
@@ -141,8 +139,7 @@ class EntityCategoria {
      */
     public function getLlistaText()
     {
-    	$factor = ($this->tipusparte->getIva()/100) + 1;
-    	return $this->categoria . " " . number_format($this->preu * $factor, 2, ',', '') . " €";
+    	return $this->getLlistaTextAny(Date('Y'));
     }
 
     /**
@@ -152,10 +149,16 @@ class EntityCategoria {
      */
     public function getLlistaTextPost()
     {
-    	$factor = ($this->tipusparte->getIva()/100) + 1;
-    	return $this->categoria . " " . number_format($this->preupost * $factor, 2, ',', '') . " €";
+    	return $this->getLlistaTextAny(Date('Y') + 1);
     }
     
+    private function getLlistaTextAny($any)
+    {
+    	$preu = $this->getPreuAny($any);
+    	$factor = ($this->tipusparte->getIva()/100) + 1;
+    	return $this->categoria . " " . number_format($preu * $factor, 2, ',', '') . " €";
+    }
+        
     /**
      * Set descripcio
      *
@@ -177,23 +180,13 @@ class EntityCategoria {
     }
 
     /**
-     * Set preu
+     * Get preus
      *
-     * @param decimal $preu
+     * @return Doctrine\Common\Collections\ArrayCollection
      */
-    public function setPreu($preu)
+    public function getPreus()
     {
-        $this->preu = $preu;
-    }
-
-    /**
-     * Get preu
-     *
-     * @return decimal 
-     */
-    public function getPreu()
-    {
-        return $this->preu;
+    	return $this->preus;
     }
     
     /**
@@ -203,9 +196,11 @@ class EntityCategoria {
      */
     public function getPreuAny($any)
     {
-    	$current = Date('Y');
-    	if ($any == $current) return $this->preu; 
-    	if ($any < $current) return $this->preupre;
-    	return $this->preupost;
+    	
+    	foreach($this->preus as $c=>$preu) {
+    		if ($preu->getAnypreu() == $any) return $preu->getpreu();
+    	}
+    	/* Never shhould happen */
+    	return 0;
     }
 }

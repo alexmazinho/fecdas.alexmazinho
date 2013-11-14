@@ -60,20 +60,22 @@
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Clubs i usuaris</a></li>
 					<li id="menu-admllistes"><a href="{{ path('FecdasPartesBundle_recents') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
+					<li id="menu-admsaldos"><a href="{{ path('FecdasPartesBundle_clubs') }}">
+					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos</a></li>
 					<li id="menu-admenquestes"><a href="{{ path('FecdasPartesBundle_enquestes') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>
 				</ul></li>
 				{% endif %}
 				<li id="menu-tram"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Tramitació</a>
 				<ul class="submenu">
-					<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Tramitació de llistes</a></li>
+					<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències</a></li>
 					<li id="menu-import"><a href="{{ path('FecdasPartesBundle_importcsv') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Importació de llicències</a></li>
 				</ul></li>				
 				<li id="menu-cons"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Consulta</a>
 				<ul class="submenu">	
 					<li id="menu-assegurats"><a href="{{ path('FecdasPartesBundle_assegurats') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Assegurats</a></li>
 					{% if busseig == true  %}
-					<li id="menu-busseig"><a href="{{ path('FecdasPartesBundle_busseig') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Consulta de llicències amb el DNI</a></li>
+					<li id="menu-busseig"><a href="{{ path('FecdasPartesBundle_busseig') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències amb el DNI</a></li>
 					{% endif %}
 				</ul></li>
 			{% endif %}

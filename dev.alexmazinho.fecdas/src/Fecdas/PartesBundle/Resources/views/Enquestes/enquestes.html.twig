@@ -42,41 +42,45 @@
    			<div class="button-top"><a href="{{ path('FecdasPartesBundle_enquesta') }}">
    				<img src="{{ asset('images/icon-addfolder.png') }}" alt="Crear una enquesta" title="Crear una enquesta" width="30px"></a></div>
 		</div>
-	   	<div id="list-header">
-	   		<div id="header-enquestaid" class="col-listheader">id</div>
-	   		<div id="header-enquestadesc" class="col-listheader">Descripció</div>
-	   		<div id="header-enquestainici" class="col-listheader">Activa des de</div>
-	   		<div id="header-enquestafinal" class="col-listheader">fins</div>
-	   		<div id="header-enquestaenviaments" class="col-listheader">Enviaments</div>
-	   		<div id="header-enquestaactions" class="col-listheader">&nbsp;</div>
+		<div class="table-header">
+		   	<div id="list-header">
+		   		<div id="header-enquestaid" class="col-listheader">id</div>
+		   		<div id="header-enquestadesc" class="col-listheader">Descripció</div>
+		   		<div id="header-enquestainici" class="col-listheader">Activa des de</div>
+		   		<div id="header-enquestafinal" class="col-listheader">fins</div>
+		   		<div id="header-enquestaenviaments" class="col-listheader">Enviaments</div>
+		   		<div id="header-enquestaactions" class="col-listheader">&nbsp;</div>
+		   	</div>
 	   	</div>
 		{% if enquestes|length > 0 %}
-	   	<ul class="list-variableheight">
-		{% for enquesta in enquestes %}
-	   		<li class="list-variableheight-detall clearfix">
-		   		<div class="enquesta-id">{{ enquesta.id }}</div>
-	   			<div class="enquesta-desc">{{ enquesta.descripcio|nl2br }}</div>
-	   			<div class="enquesta-inici"><time datetime="{{ enquesta.datainici|date('c') }}">{{ enquesta.datainici|date('d/m/Y') }}</time></div>
-	   			<div class="enquesta-final">
-	   			{% if enquesta.datafinal is not null %}<time datetime="{{ enquesta.datafinal|date('c') }}">{{ enquesta.datafinal|date('d/m/Y') }}</time>
-	   			{% else %}--
-	   			{% endif %}
-	   			</div>
-	   			<div class="enquesta-enviaments-total">{{ enquesta.realitzacions|length }} de {{ poblacio }}</div>
-	   			<div class="enquesta-enviaments-percent">{{ ((enquesta.realitzacions|length/poblacio)*100)|number_format }}</div>
-	   			<div class="enquesta-enviaments-progressbar"></div>
-	   			<div class="enquesta-enviaments-label">0 %</div>
-	   			<div class="enquesta-actions">
-	   			<a class="enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari', { 'id': enquesta.id }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Mostrar enquesta" title="Mostrar enquesta" width="20px"></a>
-	   			<a class="enquesta-action-stats" href="{{ path('FecdasPartesBundle_enquestaresultats', {'id' : enquesta.id}) }}"><img src="{{ asset('images/icon-barpoll.png') }}" alt="Veure resultats" title="Veure resultats" width="20px"></a>
-	   			{% if enquesta.realitzacions|length == 0 %}
-	   			<a class="enquesta-action-adm" href="{{ path('FecdasPartesBundle_enquesta', { 'id': enquesta.id }) }}"><img src="{{ asset('images/icon-edit.png') }}" alt="Editar" title="Editar" width="20px"></a></div>
-	   			{% else %}
-	   			<a class="enquesta-action-tancar" href="{{ path('FecdasPartesBundle_tancarenquesta', { 'id': enquesta.id }) }}"><img src="{{ asset('images/icon-lock.jpg') }}" alt="Tancar" title="Tancar" width="20px"></a></div>
-	   			{% endif %}
-	   		</li>
-	   		{% endfor %}
-		</ul>
+		<div class="table-scroll">
+		   	<ul id="list-data">
+			{% for enquesta in enquestes %}
+		   		<li class="data-detall list-variableheight-detall">
+			   		<div class="data-detall-cell enquesta-id">{{ enquesta.id }}</div>
+		   			<div class="data-detall-cell enquesta-desc">{{ enquesta.descripcio|nl2br }}</div>
+		   			<div class="data-detall-cell enquesta-inici"><time datetime="{{ enquesta.datainici|date('c') }}">{{ enquesta.datainici|date('d/m/Y') }}</time></div>
+		   			<div class="data-detall-cell enquesta-final">
+		   			{% if enquesta.datafinal is not null %}<time datetime="{{ enquesta.datafinal|date('c') }}">{{ enquesta.datafinal|date('d/m/Y') }}</time>
+		   			{% else %}--
+		   			{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell enquesta-enviaments-total">{{ enquesta.realitzacions|length }} de {{ poblacio }}</div>
+		   			<div class="data-detall-cell enquesta-enviaments-percent">{{ ((enquesta.realitzacions|length/poblacio)*100)|number_format }}</div>
+		   			<div class="data-detall-cell enquesta-enviaments-bar"><div class="enquesta-enviaments-progressbar"></div></div>
+		   			<div class="data-detall-cell enquesta-enviaments-label">0 %</div>
+		   			<div class="data-detall-cell enquesta-actions">
+		   			<a class="enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari', { 'id': enquesta.id }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Mostrar enquesta" title="Mostrar enquesta" width="20px"></a>
+		   			<a class="enquesta-action-stats" href="{{ path('FecdasPartesBundle_enquestaresultats', {'id' : enquesta.id}) }}"><img src="{{ asset('images/icon-barpoll.png') }}" alt="Veure resultats" title="Veure resultats" width="20px"></a>
+		   			{% if enquesta.realitzacions|length == 0 %}
+		   			<a class="enquesta-action-adm" href="{{ path('FecdasPartesBundle_enquesta', { 'id': enquesta.id }) }}"><img src="{{ asset('images/icon-edit.png') }}" alt="Editar" title="Editar" width="20px"></a></div>
+		   			{% else %}
+		   			<a class="enquesta-action-tancar" href="{{ path('FecdasPartesBundle_tancarenquesta', { 'id': enquesta.id }) }}"><img src="{{ asset('images/icon-lock.jpg') }}" alt="Tancar" title="Tancar" width="20px"></a></div>
+		   			{% endif %}
+		   		</li>
+		   		{% endfor %}
+			</ul>
+		</div>
 	   	{% else %}
 	        <div class="sms-notice">Encara no hi ha disponible cap enquesta</div>
 	    {% endif %}

@@ -29,19 +29,19 @@
 				<input type="submit" class="forminput-inside" value="Consulta" name="formclubs-button-filter"/>
 			</div> 
 	   	</form>
-	   	<a id="formclubs-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
     </div>
-    <br/>
     <div id="list-clubs">
     	<div class="table-header">	
 	   		<div id="list-header">
 		   		<div id="header-clubscodi" class="col-listheader">codi</div>
 		   		<div id="header-clubsnom" class="col-listheader">Club<span class="listheader-order"></span></div>
 		   		<div id="header-clubspartes" class="col-listheader">Llistes {{"now"|date('Y')}}<span class="listheader-order"></span></div>
-		   		<div id="header-clubsllicencies" class="col-listheader">Llicències<span class="listheader-order"></span></div>
+		   		<div id="header-clubspagats" class="col-listheader">Pagades per web<span class="listheader-order"></span></div>
+		   		<div id="header-clubsllicencies" class="col-listheader">Llic. {{"now"|date('Y')}}<span class="listheader-order"></span></div>
 		   		<div id="header-clubsimport" class="col-listheader">Import<span class="listheader-order"></span></div>
-		   		<div id="header-clubspagatweb" class="col-listheader">Pagat Web<span class="listheader-order"></span></div>
+		   		<div id="header-clubspagatweb" class="col-listheader">Web<br/>(Pagat)<span class="listheader-order"></span></div>
 		   		<div id="header-clubsestat" class="col-listheader">Estat<span class="listheader-order"></span></div>
+		   		<div id="header-clubslimit" class="col-listheader">Límit de crèdit<span class="listheader-order"></span></div>
 		   		<div id="header-clubsactions" class="col-listheader">&nbsp;</div>
 		   	</div>
 		</div>
@@ -55,12 +55,24 @@
 			   		<div class="data-detall-cell club-codi">{{ club.codi }}</div>
 			   		<div class="data-detall-cell club-nom">{{ club.nom }}</div>
 		   			<div class="data-detall-cell club-partes">{{ dades['partes'] }}</div>
+		   			<div class="data-detall-cell club-pagats">{{ dades['pagats'] }}</div>
 		   			<div class="data-detall-cell club-llicencies">{{ dades['llicencies'] }}</div>
 		   			<div class="data-detall-cell club-import">{{ dades['import'] |number_format(2, ',') }} €</div>
-		   			<div class="data-detall-cell club-pagatweb">{{ 0|number_format(2, ',') }} €</div>
-		   			<div class="data-detall-cell club-estat">{{ club.estat.descripcio }}</div>
+		   			<div class="data-detall-cell club-pagatweb">{{ dades['importweb'] |number_format(2, ',') }} €</div>
+		   			<div class="data-detall-cell club-estat">
+		   			{{ club.estat.descripcio }}
+		   			{% if club.estat.control == 0 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell club-limit">{{ club.limitcredit|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell club-actions">
-		   			No action
+		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'DIFB' }) }}">
+		   				<img src="{{ asset('images/icon_green.gif') }}" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" width="23px"></a>
+		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'IMME' }) }}">
+		   				<img src="{{ asset('images/icon_orange.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" width="23px"></a>
+		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'NOTR' }) }}">
+		   				<img src="{{ asset('images/icon_red.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Sense tramitació'" width="23px"></a>
+		   			<a class="clubs-action-view" href="{{ path('FecdasPartesBundle_club', { 'codiclub': club.codi }) }}">
+		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure dades del club" title="Veure dades del club" width="23px"></a>
 					</div>
 		   		</li>
 		   		{% endif %}
@@ -68,7 +80,7 @@
 			</ol>
 		</div>
    	{% else %}
-        	<div class="sms-notice">Cap club</div>
+        	<div class="sms-notice">No hi cap club en aquest estat</div>
     {% endif %}
     </div>
     
@@ -82,6 +94,8 @@
 
 $(document).ready(function(){
 	setMenuActive("menu-admsaldos");
+
+	clubCanviEstat();
 	
 	$("#menu-adm").click();
 

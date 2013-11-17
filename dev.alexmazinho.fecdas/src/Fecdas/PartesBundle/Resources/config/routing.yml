@@ -69,6 +69,13 @@ FecdasPartesBundle_clubs:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_canviestatclub:
+    pattern:  /canviestatclub
+    defaults: { _controller: "FecdasPartesBundle:Admin:canviestatclub" }
+    requirements:
+        _method:  GET
+
+
 FecdasPartesBundle_sincroaccess:
     pattern:  /sincroaccess
     defaults: { _controller: "FecdasPartesBundle:Admin:sincroaccess" }

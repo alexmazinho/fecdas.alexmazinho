@@ -665,18 +665,28 @@ class EntityClub {
     {
     	$dades = array();
     	$npartes = 0;
+    	$npartespagatsweb = 0;
     	$nllicencies = 0;
     	$nimport = 0;
+    	$nimportweb = 0;
     	foreach($this->partes as $c => $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			$npartes++;
     			$nllicencies +=  $parte_iter->getNumLlicencies();
     			$nimport += $parte_iter->getPreuTotalIVA();
+    			if ($parte_iter->isPagat() && 
+    				$parte_iter->getEstatpagament() == "TPV OK" &&
+    				$parte_iter->getImportPagament() != null) {
+    				$nimportweb += $parte_iter->getImportPagament();
+    				$npartespagatsweb++;
+    			}
     		}
     	}
     	$dades['partes'] = $npartes;
+    	$dades['pagats'] = $npartespagatsweb;
     	$dades['llicencies'] = $nllicencies;
     	$dades['import'] = $nimport;
+    	$dades['importweb'] = $nimportweb;
     	return $dades;
     }
 }

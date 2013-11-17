@@ -1672,7 +1672,7 @@ class PageController extends BaseController {
 	}
 	
 	private function sendMailPagamentPendent ($parteId, $ordre) {
-		$mails = $this->getFacturacioMails();
+		// $mails = $this->getFacturacioMails(); Ja no s'envien a Remei 
 		
 		$em = $this->getDoctrine()->getEntityManager();
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);

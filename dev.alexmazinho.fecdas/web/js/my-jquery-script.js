@@ -127,6 +127,7 @@
 	};
 	
 	formFocus = function() {
+		
 		$(".forminput-inside")
 		.bind("focus.labelFx", function(){
 			$(this).parent().find("label").hide();
@@ -325,11 +326,22 @@
 	   		//alert("hidden");
 	       	$('#loginbox').show();  
 	       		
+	       	autofillLoginCheck();
+	       	
 	   		helpBubbles("#login_user", '<p>L\'usuari és una adreça de correu electrònic. p.e. </p>\
 	       					<p>maildelclub@domini.com</p>');
 
 	       	helpBubbles("#login_pwd", '<p>Indica la teva paraula clau d\'accés al sistema</p>');
 	   	}
+	};
+	
+	autofillLoginCheck = function()  {
+	   	if($('#login_user').val() != '') {
+	   		$('#login_user').parent().find("label").hide();
+	    };
+	   	if($('#login_pwd').val() != '') {
+	   		$('#login_pwd').parent().find("label").hide();
+	    }
 	};
 	
 	/*****************************************************************************************************************/
@@ -849,82 +861,6 @@
 	    });
 	};
 
-	partePagatButton = function() {
-		$("#dialeg").dialog({
-			autoOpen: false,
-		    modal: true
-	    });
-		
-		$('#formparte-button-pagat').click(function(e) {
-			e.preventDefault();
-			$("#dialeg").dialog({
-	          	buttons : {
-	            	"Confirmar" : function() {
-	    	        	$(this).dialog("close");
-	    	        	
-	    	        	$('<input>').attr({
-	    	        	    type: 'hidden',
-	    	        	    id: 'datapagat',
-	    	        	    name: 'parte[datapagat]',
-	    	        	    value: $( "#datepicker" ).val() 
-	    	        	}).appendTo('#formparte');
-
-	    	        	$('<input>').attr({
-	    	        	    type: 'hidden',
-	    	        	    id: 'estatpagat',
-	    	        	    name: 'parte[estatpagat]',
-	    	        	    value: $( "#pagatestat" ).val()    
-	    	        	}).appendTo('#formparte');
-	    	        	
-	    	        	$('<input>').attr({
-	    	        	    type: 'hidden',
-	    	        	    id: 'dadespagat',
-	    	        	    name: 'parte[dadespagat]',
-	    	        	    value: $( "#pagatdades" ).val()    
-	    	        	}).appendTo('#formparte');
-
-	    	        	$('<input>').attr({
-	    	        	    type: 'hidden',
-	    	        	    id: 'comentaripagat',
-	    	        	    name: 'parte[comentaripagat]',
-	    	        	    value: $( "#pagatcomentari" ).val()    
-	    	        	}).appendTo('#formparte');
-	    	        	
-	    	        	$('#formparte').submit();
-	    	        },
-		            "Cancel·lar" : function() {
-		    			//Cancel submit behavior
-		            	$(this).dialog("close");
-		            }
-		        },
-		        title: "Confirmació pagament del parte",
-		        height: 450,
-		        width: 350,
-		        zIndex:	350
-		    });
-		
-		    $("#dialeg").html("<p>Indica la data <input type='text' id='datepicker' disabled='disabled'/></p>");
-		    $("#dialeg").append("<p>Raó del pagament <select type='text' id='pagatestat' required='required'>" +
-		    					"<option selected='selected' value='TPV CORRECCIO'>Correcció errada TPV</option>" +
-		    					"<option value='METALLIC WEB'>Pagament en metàlic</option>" +
-		    					"<option value='TRANS WEB'>Transferència rebuda</option></select></p>");
-		    $("#dialeg").append("<p>Número de comanda TPV o rebut <input type='text' id='pagatdades' required='required'/></p>");
-		    $("#dialeg").append("<p>Comentari<textarea id='pagatcomentari' required='required'/></p>");
-		    
-		    $( "#datepicker" ).datepicker({
-	            showOn: "button",
-	            buttonImage: "/images/icon-calendar.gif",
-	            buttonImageOnly: true,
-	            dateFormat: 'dd/mm/yy'
-	        });
-		    
-		    $( "#datepicker" ).datepicker( "setDate", new Date() );
-		    
-		    $("#dialeg").dialog("open");
-		});
-	};
-	
-	
 	partePagamentButton = function() {
 		$("#dialeg").dialog({
 			autoOpen: false,

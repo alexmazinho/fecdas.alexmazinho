@@ -34,6 +34,8 @@
 
 $(document).ready(function(){
 	setMenuActive("menu-login");
+
+	window.setTimeout(autofillLoginCheck, 50);  // Remove autofill
 	
 	helpBubbles("#login_user", '<p>L\'usuari és una adreça de correu electrònic. p.e. </p>\
 				<p>maildelclub@domini.com</p>');
@@ -41,5 +43,6 @@ $(document).ready(function(){
 	helpBubbles("#login_pwd", '<p>Indica la teva paraula clau d\'accés al sistema</p>');
 				
 });
+
 </script>
 {% endblock %}

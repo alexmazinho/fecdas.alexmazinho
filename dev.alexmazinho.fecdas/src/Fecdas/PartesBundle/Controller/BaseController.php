@@ -59,9 +59,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function getFacturacioMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array("alexmazinho@gmail.com");
-		
-		$mails = array("remei@fecdas.cat", "alexmazinho@gmail.com");
+		$mails = array("remei@fecdas.cat");
 		return $mails;
 	}
 	
@@ -465,4 +463,40 @@ class BaseController extends Controller {
 	protected function getLogMailUserData($source = null) {
 		return $source." ".$this->get('session')->get('username')." (".$this->getRequest()->server->get('HTTP_USER_AGENT').")";
 	}
+	
+	
+	protected function buildAndSendMail($subject, $tomails, $body, $bccmails = array()) {
+		$bccmails[] = "alexmazinho@gmail.com";
+		if ($this->get('kernel')->getEnvironment() != 'prod') {
+			$tomails = array("alexmazinho@gmail.com");  // Entorns de test
+			$bccmails = array("alexmazinho@gmail.com");
+		}
+		
+		$from = $this->container->getParameter('fecdas_partes.emails.contact_email');
+		
+		$message = \Swift_Message::newInstance()
+		->setSubject($subject)
+		->setFrom($from)
+		->setBcc($bccmails)
+		->setTo($tomails);
+			
+		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
+		
+		$footer = "<p>Atentament<br/>";
+		$footer .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
+		$footer .= "<p><small>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES<br/>";
+		$footer .= "08930  SANT ADRIÀ DE BESÒS<br/>";
+		$footer .= "Tel. 93-356 05 43<br/>";
+		$footer .= "Fax: 93-356 30 73<br/>";
+		$footer .= "E-mail: Info@fecdas.cat<br/>";
+		$footer .= "</small></p>"; 
+		$footer .= "<img src=".$logosrc." alt='FECDAS' />";
+		
+		$body = "<html><head></head><body>".$body.$footer."</body></html>";
+		
+		$message->setBody($body, 'text/html');
+		
+		$this->get('mailer')->send($message); 
+	}
+	
 }

@@ -27,6 +27,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 class AdminController extends BaseController {
+	const CLUBS_DEFAULT_STATE = 1;
+	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
+	
 	
 	public function recentsAction() {
 		$request = $this->getRequest();
@@ -166,6 +169,66 @@ class AdminController extends BaseController {
 		return $response;
 	}
 	
+	public function canviestatclubAction () {
+		$request = $this->getRequest();
+		
+		if ($this->isCurrentAdmin() != true) return new Response("no admin");
+		
+		$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($request->query->get('codiclub'));
+		$estat = $request->query->get('action');
+		$limitcredit = $request->query->get('limitcredit');
+		if ($limitcredit == "") $limitcredit = null;
+		
+		if ($club == null) {
+			$this->logEntry($this->get('session')->get('username'), 'CLUB STATE ERROR',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), $request->query->get('codiclub'));
+			return new Response("ko");
+		}
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		switch ($estat) {
+			case 'DIFB':  // Pagament diferit
+
+				if ($request->query->get('imprimir') == 'true') $estat = 'DIFA'; 
+
+				break;
+			case 'IMME':  // Pagament immediat
+				
+				break;
+			case 'NOTR':  // Sense tramitació
+				
+				// Enviar notificació mail
+				$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
+				if ($club->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+				
+				$bccmails = $this->getFacturacioMails();
+				$tomails = array($club->getMail());
+				$body = "<p>Benvolgut club ".$club->getNom()."</p>";
+				$body .= "<p>Us fem saber que, a partir de la recepció d’aquest correu, 
+						per a la realització de tràmits en el sistema de gestió de 
+						llicències federatives i assegurances de la FECDAS us caldrà 
+						contactar prèviament amb la federació</p>";
+				
+				$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			
+				break;
+		}
+
+		$estatAnterior = $club->getEstat();
+		$estat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClubEstat')->find($estat);
+		$club->setEstat($estat);
+		$club->setLimitcredit($limitcredit);
+		$em->flush();
+		
+		$this->logEntry($this->get('session')->get('username'), 'CLUB STATE OK',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $club->getNom()." ".$estatAnterior->getCodi()." -> ".$estat->getCodi());
+		
+		return new Response("ok");
+	}
+	
 	public function clubsAction() {
 		$request = $this->getRequest();
 	
@@ -178,8 +241,9 @@ class AdminController extends BaseController {
 	
 		$em = $this->getDoctrine()->getEntityManager();
 	
-		$currentEstat = "TOT";
-	
+		$states = explode(";", self::CLUBS_STATES);
+		$currentEstat = self::CLUBS_DEFAULT_STATE;
+		
 		if ($request->getMethod() == 'POST') {
 		// Criteris de cerca
 			if ($request->request->has('form')) {
@@ -189,7 +253,7 @@ class AdminController extends BaseController {
 	
 				$this->logEntry($this->get('session')->get('username'), 'SALDO CLUBS FILTER',
 							$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), "Filtre estat: " . $currentEstat );
+						$this->getRequest()->server->get('HTTP_USER_AGENT'), "Filtre estat: " . $states[$currentEstat] );
 			}
 		} else {
 			$this->logEntry($this->get('session')->get('username'), 'SALDO CLUBS',
@@ -198,17 +262,18 @@ class AdminController extends BaseController {
 			}
 	
 			$formBuilder = $this->createFormBuilder()->add('estat', 'choice', array(
-					'choices'   => array('TOT' => 'Tots', 'DIF' => 'Pagament diferit', 'IMM' => 'Pagament immediat', 'NOT' => 'Sense tramitació'),
-					'preferred_choices' => array('TOT'),
+					'choices'   => $states,
+					//'choices'   => array('Tots' => 'Tots', 'Pagament diferit' => 'Pagament diferit', 'Pagament immediat' => 'Pagament immediat', 'Sense tramitació' => 'Sense tramitació'),
+					'preferred_choices' => array(self::CLUBS_DEFAULT_STATE),
 			));
 			$form = $formBuilder->getForm();
 	
 			// Crear índex taula partes per data entrada
-			$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c ";
-			if ($currentEstat != "TOT") $strQuery .= "WHERE c.estat = :filtreestat ";
+			$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c JOIN c.estat e ";
+			if ($currentEstat != 0) $strQuery .= " WHERE e.descripcio = :filtreestat ";
 			$strQuery .= " ORDER BY c.nom";
 			$query = $em->createQuery($strQuery);
-			if ($currentEstat != "TOT") $query->setParameter('filtreestat', $currentEstat);
+			if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
 			$clubs = $query->getResult();
 			$form->get('estat')->setData($currentEstat);
 	

@@ -264,7 +264,7 @@ html[xmlns] .clearfix {
 }
 
 .table-scroll, .table-noscroll {
-	display: block;
+	display: inline-block;
 	max-height: 400px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -1481,7 +1481,7 @@ li.parte-pendent-sincro .parterecents-actions {
 
 
 #list-clubs, #formclubs {
-	width: 1000px;
+	width: 100%;
 }
 
 /*
@@ -1493,24 +1493,50 @@ li.parte-pendent-sincro .parterecents-actions {
 	background-color: #ffffff;
 }*/
 
+
 #header-clubscodi { display:none; }
-#header-clubsnom { width: 20%; text-align:left;}
-#header-clubspartes {	width: 5%; }
-#header-clubsllicencies {	width: 5%; }
-#header-clubsimport {	width: 9%;}
-#header-clubspagatweb {	width: 2%;}
-#header-clubsestat {	width: 6%; text-align:right;}
-#header-clubsactions { width: 10%;}
+#header-clubsnom { width: 22%; text-align:left;}
+#header-clubspartes {	width: 6%; }
+#header-clubspagats {	width: 6%; }
+#header-clubsllicencies {	width: 6%; }
+#header-clubsimport {	width: 9%;text-align:right;}
+#header-clubspagatweb {	width: 10%; text-align:right;}
+#header-clubsestat {	width: 15%; }
+#header-clubslimit {	width: 7%; }
+#header-clubsactions { width: 14%;}
 
 .club-codi { display:none; }
-.club-nom { width: 20%; text-align:left;}
-.club-partes { width: 5%;  }
-.club-llicencies { width: 5%; }
-.club-import { width: 10%; }
-.club-pagatweb { width: 2%; }
-.club-estat { width: 6%; text-align:right;}
-.club-actions { width: 10%; text-align:right; margin-top: -14px}
+.club-nom { width: 22%; text-align:left;}
+.club-partes { width: 6%;  }
+.club-pagats { width: 6%;  }
+.club-llicencies { width: 6%; }
+.club-import { width: 10%; text-align:right;}
+.club-pagatweb { width: 10%; text-align:right;}
+.club-estat { width: 15%; }
+.club-estat span {
+	font-style: italic;
+}
+.club-limit { width: 7%; }
+.club-actions { width: 13%; text-align:right; margin-top: -14px}
 
+/* Dialog */
+#club-limitcredit {
+	width: 100px;
+}
+
+.club-dialog-label {
+	width: 190px;
+	padding-right: 20px;
+	display: inline-block;
+}
+.club-dialog-action, .club-dialog-row {
+	padding: 5px 0;
+}
+ 
+.club-dialog-action {
+	font-weight: bold;
+	font-size: 1.1em;
+}
 /*****************************************************************************************************************/
 
 #block-useractions {

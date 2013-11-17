@@ -6,6 +6,11 @@
     <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
 {% endblock %}
 
+ {% block javascriptshead %}
+    {{ parent() }}
+    <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
+{% endblock %}
 
 {% block fecdas_logo %}
 	<a href="http://www.fecdas.cat" target="_blank">
@@ -61,7 +66,7 @@
 					<li id="menu-admllistes"><a href="{{ path('FecdasPartesBundle_recents') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
 					<li id="menu-admsaldos"><a href="{{ path('FecdasPartesBundle_clubs') }}">
-					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos</a></li>
+					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos clubs</a></li>
 					<li id="menu-admenquestes"><a href="{{ path('FecdasPartesBundle_enquestes') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>
 				</ul></li>

@@ -866,6 +866,11 @@ class EntityParte {
     	return false;
     }
     
+    /**
+     * Comprova si el parte és vigent
+     *
+     * @return boolean
+     */
     public function isVigent() {
     	$currentdate = new \DateTime();
     	if ($this->tipus->getId() == 11) {
@@ -885,14 +890,25 @@ class EntityParte {
     			and $currentdate->format('Y-m-d') <= $this->getDataCaducitat("isVigent")->format("Y-m-d"));
     }
     
+    
+    /**
+     * Comprova si ha finalitzat la vigència del parte
+     *
+     * @return boolean
+     */
     public function isPassat() {
     	$currentdate = new \DateTime();
     	return ($currentdate->format('Y-m-d') > $this->getDataCaducitat("isPassat")->format("Y-m-d"));
     }
     
+    /**
+     * Comprova si la factura es vàlida. 
+     * Les factures no són vàlides si s'ha esborrat alguna llicència després de pagar-la
+     *
+     * @return boolean
+     */
     public function isFacturaValida()
     {
-    	// Les factures no són vàlides si s'ha esborrat alguna llicència després de pagar-la
     	$count = 0;
     	if ($this->numfactura != null and $this->datapagament != null) {
     		foreach($this->llicencies as $c=>$llicencia_iter) {
@@ -906,11 +922,36 @@ class EntityParte {
     	return true;
     }
     
-    public function  getInfoLlistat() {
-    	if ($this->pendent) return "llista pendent de pagament sense validesa";
+    /**
+     * Missatge llista de partes
+     *
+     * @return string
+     */
+    public function getInfoLlistat() {
+    	// Missatge que es mostra a la llista de partes
+    	$textInfo = "";
+    	
+    	if ($this->pendent) return "Pendent de confirmació";
+    	
+    	if ($this->numfactura != null) $textInfo = "Fra. ". $this->numfactura;
+    	else {
+    		if ($this->getAny() >= 2013) $textInfo = "Factura pendent";
+    	}
+    	
+    	if ($this->datapagament != null and $this->estatpagament == "TPV OK") $textInfo .=  ". Pagament on-line";
 
-    	if ($this->datapagament != null) return "llista pagada";
-
+    	return $textInfo;
+    }
+    
+    /**
+     * Missatges tramitació de partes
+     *
+     * @return string
+     */
+    public function getInfoParte() {
+    	// Missatges que es mostra a la tramitació de partes
+    	if ($this->pendent) return "*Aquesta tramitació tindrà validesa quan es confirmi el seu pagament";
+    
     	return "";
     }
     

@@ -18,13 +18,15 @@ class FormParte extends AbstractType {
 		$builder->add('id', 'hidden');
 
 		$current_year = date("Y");
+		$end_year = date("Y");
+		if (date("m") == 12 and date("d") >= 10) $end_year++; // A partir 10/12 poden fer llicències any següent 
 		
 		if (!$this->options['nova'])
 			$builder->add('dataalta', 'datetime',
 					array('date_widget' => 'single_text','time_widget' => 'single_text', 'date_format' => 'dd/MM/yyyy', 'read_only' => true));
 		else 
 			$builder->add('dataalta', 'datetime',
-					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy', 'years' => range($current_year, $current_year+1)));
+					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy', 'years' => range($current_year, $end_year)));
 		
 		$builder->add('any', 'text', array(
 				'property_path'  => false,

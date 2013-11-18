@@ -39,43 +39,47 @@
 		{% endif %}		
         
 	{% if form.llicencies|length > 0 and form.llicencies|length == parte.numLlicencies %}
-		<div id="list-header" class="clearfix">
-			<div id="header-totals" class="col-listheader"> 
-			Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
-  			fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
+		<div class="table-header" class="clearfix">
+			<div id="summary-header">
+				<div id="header-totals" class="col-listheader"> 
+				Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
+	  			fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
+	  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
+  			</div>
 		</div>
 		{% if avisos != "" %}
     	<div class="sms-notice"><b>Avisos</b> <br/><br/>{{ avisos|raw }}</div>
 		{% endif %}
-		
-		<div id="list-header" class="clearfix">
-		   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
-		   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
-		   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
-		   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
-   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
-		   	<div id="header-llicenciaactions" class="col-listheader">Renovar?</div>
+		<div class="table-header">
+			<div id="list-header">
+			   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
+			   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
+			   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
+			   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
+	   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
+			   	<div id="header-llicenciaactions" class="col-listheader">Renovar?</div>
+			</div>
 		</div>
-
-		<ol id="list-data">
-		{% for llicencia in form.llicencies %}
-			<li class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %}">
-				<div class="llicencia-personalong">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
-				<div class="llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
-				<div class="llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
-				<div class="llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>
-				<div class="llicencia-enviarllicencia">		
-				{% if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
-				</div>
-				{% if llicencia.renovar is defined %}
-				<div class="llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>
-				{% else %}
-				<div class="llicencia-no">No</div>
-				{% endif %}
-  			</li>
-	   	{% endfor %}
-		</ol>
+		<div class="table-scroll">
+			<ol id="list-data">
+			{% for llicencia in form.llicencies %}
+				<li class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %}">
+					<div class="data-detall-cell llicencia-personalong">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
+					<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
+					<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
+					<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>
+					<div class="data-detall-cell llicencia-enviarllicencia">		
+					{% if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
+					</div>
+					{% if llicencia.renovar is defined %}
+					<div class="data-detall-cell llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>
+					{% else %}
+					<div class="data-detall-cell llicencia-no">No</div>
+					{% endif %}
+	  			</li>
+		   	{% endfor %}
+			</ol>
+		</div>
 {% else %}
 		<div class="sms-notice">No hi ha llicències en aquesta llistats d'assegurats</div>
 {% endif %}

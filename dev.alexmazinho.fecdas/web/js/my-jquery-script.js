@@ -734,7 +734,6 @@
 	    .click(function(e) {
 	    	//Cancel the link behavior
 	        e.preventDefault();
-	        
 	        var id = $(this).attr('value');
 	        
 	        $("#dialeg").dialog({

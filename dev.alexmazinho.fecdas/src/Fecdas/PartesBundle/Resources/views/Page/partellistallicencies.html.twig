@@ -63,8 +63,9 @@
 	   	</li>
 	   	</div>
 	</ul>
+	{% endif %} 
 </div>
-   	{% endif %} 
+   	
 
 <div class="table-header">
 	<div id="list-header">
@@ -110,15 +111,6 @@
 	</ol>
 </div>
 {% else %}
-<div class="sms-notice">Encara no hi ha llicències en aquesta llistats d'assegurats</div>
+<div class="sms-notice">No hi ha llicències en aquesta llistats d'assegurats</div>
 {% endif %}
 
-<!--  Prova SQL
-Select p.*, l.*, lpt.* from  m_partes p, m_llicencies l, m_llicenciespertipus lpt
-where p.id = l.parte and l.id = lpt.llicencia_id
-and l.parte = 1071
-
-Select p.*, l.*, c.* from  m_partes p, m_llicencies l, m_categoria c
-where p.id = l.parte and l.categoria = c.codisortida 
-and l.parte = 1071
--->

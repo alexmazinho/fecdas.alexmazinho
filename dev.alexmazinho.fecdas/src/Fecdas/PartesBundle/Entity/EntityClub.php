@@ -689,4 +689,33 @@ class EntityClub {
     	$dades['importweb'] = $nimportweb;
     	return $dades;
     }
+    
+    /**
+     * Missatge llista de partes
+     *
+     * @return string
+     */
+    public function getInfoLlistat() {
+    	if ($this->estat->getCodi() == 'IMME') return "*Les tramitacions tindran validesa quan es confirmi el seu pagament";
+    	if ($this->estat->getCodi() == 'NOTR') return "*Per poder fer tràmits en aquest sistema, cal que us poseu en contacte amb la FECDAS";
+    	return "";
+    }
+    
+    /**
+     * Indica si el club pot tramitar llicències
+     *
+     * @return boolean
+     */
+    public function potTramitar() {
+    	return $this->estat->getCodi() != 'NOTR';
+    }
+    
+    /**
+     * Indica si els els partes del club queden pendents de pagament 
+     *
+     * @return boolean
+     */
+    public function pendentPagament() {
+    	return $this->estat->getCodi() != 'DIFA' and $this->estat->getCodi() != 'DIFB';
+    }
 }

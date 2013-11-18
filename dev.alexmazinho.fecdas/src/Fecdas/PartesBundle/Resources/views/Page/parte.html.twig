@@ -18,13 +18,12 @@
 		{%  if form_errors(form) is not empty %}
 			<div class="sms-notice">{{ form_errors(form)  }}</div>
 		{% endif %}	
-		<did style="float:right;height: 0;">
-			
-		</did>
+		
 		<div id="formparte-id">
 			{{ form_widget(form.id) }}
 		</div>
-		<div class="form-row clearfix">
+		<div class="sms-header-info">{{ parte.infoParte }}</div> 
+		<div class="form-row">
 			<div id="formparte-any" class="form-left">
 				<label class="formlabel-outside required">Any</label>
 				{# form_label(form.dataalta, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}

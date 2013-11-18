@@ -283,8 +283,8 @@ html[xmlns] .clearfix {
 /***************** Fi llistes ******************/
 
 #list-forms {
-	margin-bottom: 30px;
-    /*margin-top: 10px;
+	/*margin-bottom: 30px;
+    margin-top: 10px;
     padding-bottom: 12px;*/
 	display: block;
 	padding: 10px 0; 
@@ -381,27 +381,6 @@ html>body .textaccio img {
 	padding-left: 2px !important;
 }*/
 
-
-
-#header-parteid { display:none}
-#header-parteany {	width: 5%; }
-#header-partedata {	width: 10%; }
-#header-partetipusdesc { width: 20%; }
-#header-partetotal {	width: 10%;}
-#header-parteimport {	width: 10%; text-align:right;}
-#header-partefactura {	width: 7%; }
-#header-parteestat {	width: 15%; }
-#header-parteactions { width: 13%; }
-
-.parte-id {	display:none}
-.parte-any { width: 5%;  }
-.parte-data { width: 10%; }
-.parte-tipusdesc { width: 20%; }
-.parte-total { width: 10%; }
-.parte-import {	width: 10%; text-align:right;}
-.parte-factura { width: 7%; }
-.parte-estat { width: 15%; text-align:left;}
-.parte-actions { width: 13%; text-align:right; margin-top: -14px; padding-right: 10px }
 
 #progressbar {
 	margin-left: auto;
@@ -680,13 +659,37 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 
+
+/********************************************* Llista de partes ****************************************************/
+
+#header-parteid { display:none}
+#header-parteany {	width: 5%; }
+#header-partedata {	width: 10%; }
+#header-partetipusdesc { width: 26%; }
+#header-partetotal {	width: 10%;}
+#header-parteimport {	width: 10%; text-align:right;}
+#header-parteestat {	width: 21%; text-align: left; }
+#header-parteactions { width: 8%; }
+
+.parte-id {	display:none}
+.parte-any { width: 5%;  }
+.parte-data { width: 10%; }
+.parte-tipusdesc { width: 26%; }
+.parte-total { width: 10%; }
+.parte-import {	width: 10%; text-align:right;}
+.parte-estat { width: 21%; text-align:left;}
+.parte-actions { width: 8%; text-align:right; margin-top: -14px; padding-right: 10px }
+
+
+/********************************************* Llista de partes Fi ****************************************************/
+
 /********************************************* Renovació llicència ****************************************************/
 
 #llicencia_renovar_personashow {
     width: 280px;
 }
 
-/******************************************** Renovació llicència fin *************************************************/
+/******************************************** Renovació llicència Fi *************************************************/
 
 /********************************************* Clubs i users ****************************************************/
 
@@ -1017,6 +1020,15 @@ select#parte_persona_addrnacionalitat {
 .sms-footer { text-align: justify; font-style: italic; color: #555555; line-height: 20px; margin-top: 30px;}
 
 .sms-info { text-align: justify; color: #555555; line-height: 20px; margin-top: 30px;}
+
+.sms-header-info {     
+	display: inline-block;
+    padding: 10px 0 5px;
+    width: 100%; 
+    color: #2281CF;
+    font-size: 1.1em;
+    font-weight: bold;
+}
 
 /************************************************* Factures  Fin ******************************************************/
 
@@ -1481,7 +1493,7 @@ li.parte-pendent-sincro .parterecents-actions {
 
 
 #list-clubs, #formclubs {
-	width: 100%;
+	width: 1000px;
 }
 
 /*

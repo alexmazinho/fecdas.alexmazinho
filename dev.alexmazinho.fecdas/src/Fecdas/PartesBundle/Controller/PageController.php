@@ -27,6 +27,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 class PageController extends BaseController {
+	const MONTH_TRAMITAR_ANY_SEG = 12;
+	const DAY_TRAMITAR_ANY_SEG = 10;
+	
 	public function indexAction() {
 		return $this->render('FecdasPartesBundle:Page:index.html.twig',
 				array('admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
@@ -85,12 +88,21 @@ class PageController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		
+		if (!$this->getCurrentClub()->potTramitar()) {
+			$this->get('session')->setFlash('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
+			return $response;
+		}
+		
 		/* Form importcsv */
 		
 		$currentDate = $this->getCurrentDate('now');
 		$currentYear = $currentDate->format('Y');
+		$endYear = $currentDate->format('Y');
 		$currentMonth = $currentDate->format('m');
 		$currentDay = $currentDate->format('d');
+		
+		if ($currentMonth == 12 and $currentDay >= 10) $endYear++; // A partir 10/12 poden fer llicències any següent
 		
 		$llistatipus = $this->getLlistaTipusParte($currentDay, $currentMonth);
 			
@@ -102,7 +114,7 @@ class PageController extends BaseController {
 		
 		$formbuilder->add('dataalta', 'datetime',
 					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy',
-							'years' => range($currentYear, $currentYear+1)));
+							'years' => range($currentYear, $endYear)));
 		
 		$formbuilder->add('tipus', 'entity', 
 					array('class' => 'FecdasPartesBundle:EntityParteType',
@@ -462,8 +474,15 @@ class PageController extends BaseController {
 
 		$partesclub = $this->consultaPartesClub($currentClub);
 		
+		$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub);
+		
+		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
+			// A partir 10/12 poden fer llicències any següent
+			$request->getSession()->setFlash('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
+		}
+		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
-				array('form' => $form->createView(), 'partes' => $partesclub, 
+				array('form' => $form->createView(), 'partes' => $partesclub,  'club' => $club,
 						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
 						'busseig' => $this->isCurrentBusseig(),
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
@@ -657,6 +676,12 @@ class PageController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		}
 		
+		if (!$this->getCurrentClub()->potTramitar()) {
+			$this->get('session')->setFlash('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
+			return $response;
+		}
+		
 		/* Desactivar funcionalitat temporal */
 		/*
 		$this->get('session')->setFlash('error-notice',	'Aquesta funcionalitat encara no està disponible');
@@ -829,6 +854,12 @@ class PageController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 
+		if (!$this->getCurrentClub()->potTramitar()) {
+			$this->get('session')->setFlash('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
+			return $response;
+		}
+		
 		$options = $this->getFormOptions();
 		$parteid = 0;
 		$action = "";
@@ -891,6 +922,7 @@ class PageController extends BaseController {
 					$parte->setEstatpagament($p['estatpagat']); 
 					if ($p['dadespagat'] != '') $parte->setDadespagament($p['dadespagat']);
 					if ($p['comentaripagat'] != '') $parte->setComentari($p['comentaripagat']);
+					$parte->setPendent(false);
 					$parte->setImportpagament($parte->getPreuTotalIVA());
 					$parte->setDatamodificacio($this->getCurrentDate());
 
@@ -956,6 +988,9 @@ class PageController extends BaseController {
 			$parte->setDataalta($data_alta);
 			if (!isset($currentClub)) $currentClub = $this->getCurrentClub();
 			$parte->setClub($currentClub);
+			
+			if ($currentClub->pendentPagament()) $parte->setPendent(true);
+			
 			// El tipus de parte es necessari per saber els checks de llicència que cal ocultar
 			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find(1));
 
@@ -1082,7 +1117,10 @@ class PageController extends BaseController {
 				$parte->setDatamodificacio($this->getCurrentDate());
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				
-				if ($parte->getId() != null) $parte->setDataalta($partedataalta); // Restore dataalta				
+				if ($parte->getId() != null) $parte->setDataalta($partedataalta); // Restore dataalta	
+				else {
+					if ($parte->getClub()->pendentPagament() == true) $parte->setPendent(true);  // Nous partes pendents
+				}	
 				
 				$valida = true;
 				if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) {
@@ -1660,6 +1698,7 @@ class PageController extends BaseController {
 				$numfactura = $this->getMaxNumFactura();
 			$parte->setNumFactura($numfactura);*/
 			$parte->setEstatPagament("TPV OK");
+			$parte->setPendent(false);
 			$parte->setDadespagament($ordre);
 			$parte->setDatapagament($this->getCurrentDate());
 			$parte->setImportpagament($parte->getPreuTotalIVA());

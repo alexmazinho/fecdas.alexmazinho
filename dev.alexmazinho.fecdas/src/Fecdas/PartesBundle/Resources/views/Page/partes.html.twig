@@ -25,12 +25,12 @@
 					{# form_label(form.clubs, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
 					{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div> 
-				{% if true %} Les llistes pedents de pagament no tenen validesa fins que es confirmi el seu pagament {% endif %}
 				<div id="formpartes-submit" class="form-right">	
 					<input type="submit" class="forminput-inside" value="Nou comunicat" name="formpartes-button-new"/>
 				</div> 
 		   	</form>
 	    </div>
+	    <div class="sms-header-info clearfix">{{ club.infoLlistat }}</div> 
 	    <div class="table-header">	
 		   	<div id="list-header">
 		   		<div id="header-parteid" class="col-listheader">id</div>
@@ -39,8 +39,7 @@
 		   		<div id="header-partetipusdesc" class="col-listheader">Tipus<span class="listheader-order"></span></div>
 		   		<div id="header-partetotal" class="col-listheader">Llicències<span class="listheader-order"></span></div>
 		   		<div id="header-parteimport" class="col-listheader">Preu<span class="listheader-order"></span></div>
-		   		<div id="header-partefactura" class="col-listheader">Factura<span class="listheader-order"></span></div>
-		   		<div id="header-parteestat" class="col-listheader"> &nbsp;<span class="listheader-order"></span></div>
+		   		<div id="header-parteestat" class="col-listheader">Informació<span class="listheader-order"></span></div>
 		   		<div id="header-parteactions" class="col-listheader"> &nbsp;</div>
 		   	</div>
 	   	</div>
@@ -55,13 +54,6 @@
 		   			<div class="data-detall-cell parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
 		   			<div class="data-detall-cell parte-total">{{ parte.numLlicencies }}</div>
 		   			<div class="data-detall-cell parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
-		   			<div class="data-detall-cell parte-factura">
-		   			{% if parte.numfactura is not null %}
-		   				{{ parte.numfactura }}
-		   			{% else %}
-		   				{% if parte.getPendent or parte.dataalta|date('Y') < 2013 %}&nbsp;{% else %}pendent{% endif %}
-		   			{% endif %}
-		   			</div>
 		   			<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}

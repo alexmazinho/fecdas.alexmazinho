@@ -931,11 +931,17 @@ class EntityParte {
     	// Missatge que es mostra a la llista de partes
     	$textInfo = "";
     	
+    	if ($this->databaixa != null) return "Llista anulada";
+    	
+    	if ($this->isVigent() == false) return "Aquesta llista ja no està vigent";
+    	
     	if ($this->pendent) return "Pendent de confirmació";
     	
-    	if ($this->numfactura != null) $textInfo = "Fra. ". $this->numfactura;
-    	else {
-    		if ($this->getAny() >= 2013) $textInfo = "Factura pendent";
+    	if ($this->numfactura != null and $this->datafacturacio) {
+    		$textInfo .= "Fra. ". $this->numfactura;
+    		$textInfo .= " - ". $this->datafacturacio->format("d/m/Y");
+    	} else {
+    		if ($this->getAny() >= 2013) $textInfo .= "Factura pendent";
     	}
     	
     	if ($this->datapagament != null and $this->estatpagament == "TPV OK") $textInfo .=  ". Pagament on-line";
@@ -953,6 +959,28 @@ class EntityParte {
     	if ($this->pendent) return "*Aquesta tramitació tindrà validesa quan es confirmi el seu pagament";
     
     	return "";
+    }
+    
+    /**
+     * Comprova si el club pot imprimir les llicències 
+     * Clubs DIFA  --> sempre
+     * Clubs DIFB i IMME --> llicències pagades i web
+     * Clubs NOTR --> Mai
+     *
+     * @return boolean
+     */
+    public function allowPrintLlicencia()
+    {
+    	if ($this->web == false) return false;  // No web no permet imprimir
+    	
+    	if ($this->club->getEstat()->getCodi() == "DIFA") return true;  // DIFA sempre
+    	
+    	if ($this->club->getEstat()->getCodi() != "DIFB" and 
+    		$this->club->getEstat()->getCodi() != "IMME") return false; // NOTR mai 
+
+    	if ($this->dadespagament != null) return true;  // La resta poden imprimir si està pagat
+    	
+    	return false;
     }
     
 }

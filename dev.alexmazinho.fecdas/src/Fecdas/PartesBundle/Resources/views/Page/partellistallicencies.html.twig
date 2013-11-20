@@ -96,8 +96,8 @@
 					{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
 					</div>
 					<div class="data-detall-cell llicencia-actions">
-					{% if parte.datapagament is not null and parte.web %}
-						<a href="{{ path('FecdasPartesBundle_licensetopdf', { 'id': llicencia.id}) }}"><img src="{{ asset('images/icon-license.jpg') }}" alt="llicència" title="llicència" width="23px"></a>
+					{% if parte.allowPrintLlicencia == true %}
+						<a href="{{ path('FecdasPartesBundle_licensetopdf', { 'id': llicencia.id}) }}"><img src="{{ asset('images/icon-license.png') }}" alt="llicència" title="llicència" width="23px"></a>
 					{% endif %}
 					<a class="label-edit-llicencia" href="javascript:loadLlicencia({{ llicencia.id }});"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a>
 					{% if admin == true and not parte.pagat %}

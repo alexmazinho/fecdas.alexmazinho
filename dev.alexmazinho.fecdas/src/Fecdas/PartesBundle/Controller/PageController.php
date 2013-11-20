@@ -500,7 +500,7 @@ class PageController extends BaseController {
 		$currentDNI = "";
 		$currentNom = "";
 		$currentCognoms = "";
-		$currentVigent = false;
+		$currentVigent = true;
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 

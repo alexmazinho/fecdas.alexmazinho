@@ -107,7 +107,6 @@
 	            		
 	            		$.get(hrefCanviEstat, params,
 	            		function(data, textStatus) {
-	            			alert(data);
 	            	    	$('#formclubs').submit();
 	            		});
 

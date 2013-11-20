@@ -236,10 +236,12 @@
 	
 	$.fn.hasOverflowY = function() {
 	    var $this = $(this);
-	    var $children = $this.find('*');
+	    var $children = $this.find('li');
 	    var len = $children.length;
 	
 	    if (len) {
+	    	if (len > 20) return true; // segur que hi ha scroll
+	    	
 	        var maxHeight = 0
 	        $children.map(function(){
 	            maxHeight = Math.max(maxHeight, $(this).outerHeight(true));

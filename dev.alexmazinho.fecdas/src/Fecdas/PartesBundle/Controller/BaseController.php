@@ -9,6 +9,12 @@ use Fecdas\PartesBundle\Entity\EntityPersona;
 use Fecdas\PartesBundle\Entity\EntityUserLog;
 
 class BaseController extends Controller {
+	const MAIL_ADMINTEST = "alexmazinho@gmail.com";  /* Canviar. Crear nou mail  */
+	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";
+	const MAIL_FACTURACIO = "remei@fecdas.cat";
+	const MAIL_LLICENCIES = "secretari@fecdas.cat";
+	const MAIL_CONTACTE = "info@fecdas.cat";
+	
 	protected function getCurrentDate($time = null) {
 		//function to fake date, testing purpouse
 		$currentdate = is_null($time) ? new \DateTime() : new \DateTime($time); 		
@@ -18,12 +24,6 @@ class BaseController extends Controller {
 	protected function isAuthenticated() {
 		if ($this->get('session')->has('username') and $this->get('session')->has('remote_addr')
 				and $this->get('session')->has('remote_addr') == $this->getRequest()->server->get('REMOTE_ADDR')) {
-			/*if ($this->get('kernel')->getEnvironment() == 'dev' and 
-					$this->get('session')->get('username') != 'alexmazinho@gmail.com' and
-					$this->get('session')->get('username') != 'amacia22@xtec.cat') {
-				$this->get('session')->clear();
-				return false;
-			}*/
 			return true;
 		}
 		return false;
@@ -52,21 +52,21 @@ class BaseController extends Controller {
 
 	
 	protected function getAdminMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array("alexmazinho@gmail.com");
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
 		
-		$mails = array("secretari@fecdas.cat", "alexmazinho@gmail.com");
+		$mails = array(self::MAIL_LLICENCIES, self::MAIL_ADMIN);
 		return $mails;
 	}
 	
 	protected function getFacturacioMails() {
-		$mails = array("remei@fecdas.cat");
+		$mails = array(self::MAIL_FACTURACIO);
 		return $mails;
 	}
 	
 	protected function getContactMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array("alexmazinho@gmail.com");
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
 		
-		$mails = array("info@fecdas.cat", "alexmazinho@gmail.com");
+		$mails = array(self::MAIL_CONTACTE, self::MAIL_ADMINTEST);
 		return $mails;
 	}
 	
@@ -449,14 +449,7 @@ class BaseController extends Controller {
 		try {
 			$em->flush();
 		} catch (\Exception $e) {
-			/* No es pot diu que EM està tancat
-			$em = $this->getDoctrine()->getEntityManager();
-			$logentry->setUser("alexmazinho@gmail.com");
-			$logentry->setAccio("LOG ERROR");
-			$logentry->setExtrainfo($e->getMessage());
-			$em->persist($logentry);
-			$em->flush();
-			*/
+			error_log ("Error saving app log to mysql", 0);
 		}
 	}
 	
@@ -466,10 +459,9 @@ class BaseController extends Controller {
 	
 	
 	protected function buildAndSendMail($subject, $tomails, $body, $bccmails = array()) {
-		$bccmails[] = "alexmazinho@gmail.com";
+		$bccmails[] = self::MAIL_ADMINTEST;
 		if ($this->get('kernel')->getEnvironment() != 'prod') {
-			$tomails = array("alexmazinho@gmail.com");  // Entorns de test
-			$bccmails = array("alexmazinho@gmail.com");
+			$tomails = array(self::MAIL_ADMINTEST);  // Entorns de test
 		}
 		
 		$from = $this->container->getParameter('fecdas_partes.emails.contact_email');
@@ -488,7 +480,7 @@ class BaseController extends Controller {
 		$footer .= "08930  SANT ADRIÀ DE BESÒS<br/>";
 		$footer .= "Tel. 93-356 05 43<br/>";
 		$footer .= "Fax: 93-356 30 73<br/>";
-		$footer .= "E-mail: Info@fecdas.cat<br/>";
+		$footer .= "E-mail: ".self::MAIL_CONTACTE."<br/>";
 		$footer .= "</small></p>"; 
 		$footer .= "<img src=".$logosrc." alt='FECDAS' />";
 		

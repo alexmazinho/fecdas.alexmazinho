@@ -27,12 +27,15 @@
 				{{ form_label(form.clubs, 'Cerca club', { 'attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside '} }) }}
 			</div> 
-    		<div id="formrecents-estat" class="form-left">
-				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
+      		<div id="formrecents-estat" class="form-left">
+				{{ form_widget(form.estat, { 'attr': {'class': 'forminput-outside '} }) }}
 			</div> 
-      		<div id="formrecents-web" class="form-left">
-      			{{ form_label(form.web, 'Web', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.web, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			<div id="formrecents-pagament" class="form-left">
+				{{ form_widget(form.pagament, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div> 
+      		<div id="formrecents-baixa" class="form-left">
+      			{{ form_label(form.baixa, 'Veure baixes', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.baixa, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div> 
       		<div id="formrecents-sincro" class="form-left">
       			{{ form_label(form.sincro, 'Pendents sincronitzar', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
@@ -54,7 +57,6 @@
 		   		<div id="header-parterecentsdata" class="col-listheader">Alta<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentsclub" class="col-listheader">Club<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentstipus" class="col-listheader">Tipus<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentstotal" class="col-listheader">#<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentspreu" class="col-listheader">Preu<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentspagat" class="col-listheader">Pagat<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentdadespagat" class="col-listheader">comanda/rebut<span class="listheader-order"></span></div>
@@ -66,29 +68,26 @@
 		<div class="table-scroll">
 		   	<ol id="list-data">
 			{% for parte in partes %}
-		   		<li class="data-detall {% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}">
+		   		<li class="data-detall 
+		   		{% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}
+		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
 			   		<div class="data-detall-cell parterecents-id">{{ parte.id }}</div>
 			   		<div class="data-detall-cell parterecents-rel">{{ parte.numrelacio }}</div>
 		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
 		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
-		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }}</div>
-		   			<div class="data-detall-cell parterecents-total">{{ parte.numLlicencies }}</div>
-		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} </div>
+		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }} ({{ parte.numLlicencies }})</div>
+		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell parterecents-pagat">
 					{% if parte.datapagament is null %}&nbsp; {% else %} 
 					<time datetime="{{ parte.datapagament|date('c') }}">{{ parte.datapagament|date('d/m/y') }}</time>				
 					{% endif %}
 		   			</div>
 		   			<div class="data-detall-cell parterecents-dadespagat">{{ parte.dadespagament }} {{ parte.estatpagament }}</div>
-		   			<div class="data-detall-cell parterecents-factura">
-		   			{% if parte.datafacturacio is not null %}
-		   				<time datetime="{{ parte.datafacturacio|date('c') }}">{{ parte.datafacturacio|date('d/m/y') }}</time>
-		   			{% endif %}
-		   			{% if parte.numfactura is null %} &nbsp;  {% else %} - {{ parte.numFactura }} {% endif %}
+		   			<div class="data-detall-cell parterecents-factura">{{ parte.infoLlistat }}
 		   			</div>
 		   			<div class="data-detall-cell parterecents-actions">
 		   			<a class="parterecents-action-sincro" href="{{ path('FecdasPartesBundle_sincroaccess', { 'id': parte.id }) }}">
-		   				<img src="{{ asset('images/icon-access.jpg') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
+		   				<img src="{{ asset('images/icon-access.png') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
 		   			<a class="parterecents-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}">
 		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure" title="Veure" width="23px"></a>
 					</div>

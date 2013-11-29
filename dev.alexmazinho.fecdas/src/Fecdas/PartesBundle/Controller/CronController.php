@@ -38,7 +38,7 @@ class CronController extends BaseController {
 			
 			if ($parte->getImportpagament() != null) {
 				if ($parte->getImportparte() != $parte->getImportpagament()) {
-					$this->logEntry('alexmazinho@gmail.com', 'UPD PREU ERROR',
+					$this->logEntry(self::MAIL_ADMIN, 'UPD PREU ERROR',
 							$this->getRequest()->server->get('REMOTE_ADDR'),
 							$this->getRequest()->server->get('HTTP_USER_AGENT'),
 							$parte->getId() . " . calculat: " . $parte->getImportparte() . "  pagament: " .$parte->getImportpagament());
@@ -128,38 +128,23 @@ class CronController extends BaseController {
 		$partesrenovar = $query->getResult();
 		
 		$tomails = array();
-		$bccmails = array("alexmazinho@gmail.com");  // Test
+		$subject = "Notificació. Renovació llicència FECDAS";
 		
 		foreach ($partesrenovar as $c => $parte_iter) {
 			/* Per cada parte */
-			$subject = '::Renovació Llicència FECDAS::';
 			if ($parte_iter->getClub()->getMail() == null) {
-				$subject .= ' (club sense adreça de correu)';
-				$tomails = array("alexmazinho@gmail.com");
+				$subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
 			} else {
-				if ($this->get('kernel')->getEnvironment() == 'prod') {  // Només a producció
-					$tomails[] = $parte_iter->getClub()->getMail();
-				}
+				$tomails[] = $parte_iter->getClub()->getMail();
 			}
 			
 			foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
 				/* Per cada llicència del parte */
 				if ($this->checkSendMail($llicencia_iter) == true) {
-					$message = \Swift_Message::newInstance()
-						->setSubject($subject)
-						->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-						->setBcc($bccmails)
-						->setTo($tomails);
-					
-					$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
-					
 					$body = $this->renderView('FecdasPartesBundle:Cron:renovacioEmail.html.twig',
-							array('llicencia' => $llicencia_iter, 'dies' => $dies, 'logo' => $logosrc));
-						
-					$message->setBody($body, 'text/html');
-						
+							array('llicencia' => $llicencia_iter, 'dies' => $dies));
+					$this->buildAndSendMail($subject, $tomails, $body);
 					$sortida .= $body;
-					$this->get('mailer')->send($message);
 						
 					$this->logEntry('alexmazinho@gmail.com', 'CRON RENEW',
 							$this->getRequest()->server->get('REMOTE_ADDR'),
@@ -349,4 +334,223 @@ class CronController extends BaseController {
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
+	public function revisarclubsAction() {
+		/* Revisar difeències saldos gestors
+		 * Detectar si un club de pagament diferit supera el límit 
+		 * Detectar clubs amb partes sense factura */
+		$request = $this->getRequest();
+		$sortida = "<style type='text/css'>";
+		$sortida .= "table	{ border-collapse:collapse; font-family: Arial; font-size: 13px; }";
+		$sortida .= "table, th, td { border: 1px solid black; }";
+		$sortida .= "th { padding: 5px; background-color: #E7F2FB; color: #2281CF; font-weight: bold; }";
+		$sortida .= "td { padding: 5px; color: #555555 }";
+		$sortida .= ".codi { display:none }";
+		$sortida .= ".club { width:17% }";
+		$sortida .= ".importclub { width:9%; text-align: right }";
+		$sortida .= ".importerror { background-color: red }";
+		$sortida .= ".incidencies { width:55% }";
+		$sortida .= "</style>";
+		
+		$sortida .= "<h1>Informe diari de clubs en data " . $this->getCurrentDate()->format('d/m/Y') .  "</h1>";
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		$states = explode(";", self::CLUBS_STATES);
+		
+		// Crear índex taula partes per data entrada
+		$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c";
+		$query = $em->createQuery($strQuery);
+		$clubs = $query->getResult();
+
+		$sortida .= "<h2>Nombre de clubs: " . count($clubs) . "</h2>";
+
+		$sortida .= "<table>";
+		$sortida .= "<tr><th class='codi'>Codi</th><th class='club'>Club</th><th class='importclub'>Import llics. web</th>";
+		$sortida .= "<th class='importclub'>Import llics. gestor</th><th class='importclub'>Saldo</th>";
+		$sortida .= "<th class='incidencies'>Incidències</th></tr>";
+		
+		foreach ($clubs as $c => $club_iter) {
+			$incidencies = "";
+			$filaClub = "<tr><td class='codi'>" . $club_iter->getCodi() . "</td>";
+			$filaClub .= "<td>" . $club_iter->getNom() . "</td>";
+
+			$dadesClub = $club_iter->getDadesCurrent(true);
+			
+			$difLlicencies = $dadesClub['import'] - $club_iter->getTotalllicencies();
+
+			$classImport = "importclub";
+			if (abs($difLlicencies) > 0.001) {
+				// Valida dades web i gestor
+				$incidencies .= ">> (Incidència) Diferència totals llicències web i gestor " .number_format($difLlicencies, 2, ',', ' ') .  "<br/>";
+				$classImport .= " importerror";
+			}
+
+			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['import'], 2, ',', '.') . "€</td>"; // Import llicències web
+			$filaClub .= "<td class='".$classImport."'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències gestor
+			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['deutegestor'], 2, ',', '.') . "€</td>"; // Saldo web
+			
+			if ($club_iter->getEstat()->getControl() != true || 
+				$club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
+				// Init data notificació
+				$club_iter->setLimitnotificacio(null);
+			}
+			
+			if ($club_iter->getEstat()->getControl() == true) {
+				// Clubs amb control. Mirar crèdit 
+				if ($club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
+					$incidencies .= ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit() . "<br/>";
+				} else {
+					if ($dadesClub['deutegestor'] > $club_iter->getLimitcredit()) {
+						// Comprovar si ja s'ha enviat la notificació
+						if ($club_iter->getLimitnotificacio() == null) {
+							$incidencies .= ">> (Notificació) Superat el límit de dèbit, s'envia la notifiació al club per correu<br/>";
+							// Enviar notificació mail
+							$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
+							if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+								
+							$bccmails = $this->getFacturacioMails();
+							$tomails = array($club_iter->getMail());
+							$body = "<p>Benvolgut club ".$club_iter->getNom()."</p>";
+							$body .= "<p>Us fem saber que l’import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
+							Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";
+								
+							$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+
+							$club_iter->setLimitnotificacio($this->getCurrentDate());
+						} else {
+							$incidencies .= ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
+						}
+					}
+				}
+			}
+			
+			// Mirar partes sense sincronitzar de més d'una setmana
+			if (count($dadesClub['err_sincro']) > 0) {
+				$incidencies .= ">> (Incidència) Partes sense sincronitzar: " . implode(", ", $dadesClub['err_sincro']) . "<br/>";
+			}
+			// Mirar partes sense dades factura de més d'una setmana
+			if (count($dadesClub['err_facturadata']) > 0) {
+				$incidencies .= ">> (Incidència) Núm. relació dels Partes sense data facturació: " . implode(", ", $dadesClub['err_facturadata']) . "<br/>";
+			}
+			if (count($dadesClub['err_facturanum']) > 0) {
+				$incidencies .= ">> (Incidència) Núm. relació dels Partes sense número de factura: " . implode(", ", $dadesClub['err_facturanum']) . "<br/>";
+			}
+			
+			if ($incidencies != "") { // Afegir club a la taula 
+				$filaClub .= "<td>" . $incidencies . "</td></tr>";
+				$sortida .= $filaClub;
+			}
+		}
+		$sortida .= "</table>";
+		
+		$em->flush();
+		
+		$subject = "Informe diari de l'estat dels clubs";
+		$bccmails = array();
+		$tomails = array(self::MAIL_ADMINTEST);
+		$body = $sortida;
+		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+		
+		$this->logEntry(self::MAIL_ADMIN, 'CHECK CLUBS DIARI',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		
+		return new Response($sortida);
+	}
+	
+	
+	public function checkpendentsAction() {
+		/* Revisar partes pendents
+		 * Donar de baixa si pendents i fa més de 10 dies que van entrar al sistema  
+		 * Avisar per mail si falten 2 dies per donar de baixa (fa 8 dies de l'entrada)
+		 * */
+		$sortida = "";
+		$request = $this->getRequest();
+
+		$current = $this->getCurrentDate();
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		/* Update preu partes web */
+		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p ";
+		$strQuery .= "WHERE p.databaixa IS NULL  ";
+		$strQuery .= " AND p.pendent = 1 ";
+		$query = $em->createQuery($strQuery);
+	
+		$partespendents = $query->getResult();
+	
+		foreach ($partespendents as $c => $parte_iter) {
+			$interval = $current->diff($parte_iter->getDataentrada());
+			$diesPendent = $interval->format('%a');  //r 	Sign "-" when negative, empty when positive
+
+			// Revisar incidències. Parte sincronitzat  o pagat 
+			if ($this->incidenciespendentsAction($parte_iter) == false) { 
+				if ($diesPendent == self::DIES_PENDENT_AVIS) {
+					// Enviar mail falten 2 dies
+					$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
+					if ($parte_iter->getClub()->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+					
+					$bccmails = $this->getLlicenciesMails();
+					$tomails = array($parte_iter->getClub()->getMail());
+					$body = "<p>Benvolgut club ".$parte_iter->getClub()->getNom()."</p>";
+					$body .= "<p>Us fem saber que la tramitació de llicències/assegurances 
+							feta en la data del " . $parte_iter->getDataentrada()->format('d-m-Y') . " s'anul·larà en 48 hores 
+							tret que se'n faci efectiu el pagament</p>";
+					
+					$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+					$sortida .= " Parte pendent >> Notificació per mail falten 2 dies ". $parte_iter->getClub()->getNom();
+					$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+				} else {
+					if ($diesPendent > self::DIES_PENDENT_MAX) {
+						// Esborrar
+						$parte_iter->setDatamodificacio($current);
+						$parte_iter->setDatabaixa($current);
+						foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
+							$llicencia_iter->setDatamodificacio($current);
+							$llicencia_iter->setDatabaixa($current);
+						}
+						$em->flush();
+						
+						$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();
+						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+					} else {
+						// Esperar
+						$sortida .= " Parte pendent >> ". $parte_iter->getClub()->getNom();
+						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+					}
+				}
+			}
+		}
+	
+		$this->logEntry(self::MAIL_ADMIN, 'CHECK PENDENTS DIARI',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		
+		return new Response($sortida);
+	}
+	
+	public function incidenciespendentsAction($parte) {
+		// Revisar incidències. Parte sincronitzat  o pagat. Enviar mail
+		$subject = ":: Incidència revisió partes pendents ::";
+		$bccmails = array();
+		$tomails = array(self::MAIL_ADMINTEST);
+		
+		if ($parte->getIdparteAccess() != null) {
+			$body = "<h1>Parte pendent sincronitzat</h1>";
+			$body .= "<h2>Club : " . $parte->getClub()->getNom() . "</h2>";
+			$body .= "<p>Parte " .  $parte->getId() . " entrat el dia ". $parte->getDataentrada()->format('d-m-Y') ."</p>";
+			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			return true;
+		}
+		if ($parte->getDatapagament() != null || $parte->getImportpagament() != null) {
+			$body = "<h1>Parte pendent pagat</h1>";
+			$body .= "<h2>Club : " . $parte->getClub()->getNom() . "</h2>";
+			$body .= "<h3>Valor 'pendent' no atualitzat  correctament</h3>";
+			$body .= "<p>Parte " .  $parte->getId() . " entrat el dia ". $parte->getDataentrada()->format('d-m-Y') ."</p>";
+			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			return true;
+		}
+		return false;
+	}
 }

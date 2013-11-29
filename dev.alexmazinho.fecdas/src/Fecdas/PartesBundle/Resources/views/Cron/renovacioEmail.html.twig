@@ -1,6 +1,3 @@
-<html> 
-<head></head>
-<body>
 <p>Benvolgut club {{ llicencia.parte.club.nom }}</p>
 
 <p>La vigència de la llicència amb data {{ llicencia.parte.dataalta | date("d-m-Y") }} finalitzarà en {{ dies }} dies</p>
@@ -9,13 +6,3 @@
 
 <p><a href="{{ url('FecdasPartesBundle_renovarllicencia', {'id': llicencia.id}) }}">
 {{ url('FecdasPartesBundle_renovarllicencia', {'id': llicencia.id}) }}</a></p>
-
-<p>Atentament<br/>
-FECDAS, {{ "now" | date("d/m/Y") }}.</p>
-
-<img src="{{ logo }}" alt="FECDAS" /> 
-
-</body>
-</html>
-
-

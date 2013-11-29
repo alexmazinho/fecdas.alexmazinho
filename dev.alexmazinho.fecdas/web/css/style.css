@@ -1506,20 +1506,34 @@ li.parte-pendent-sincro .parterecents-actions {
 	background-color: #ffffff;
 }*/
 
+.detall-saldos {
+	display: none;
+}
+
+.jquerybubblepopup-innerHtml h3 { font-weight: bold; padding:5px; }
+.jquerybubblepopup-innerHtml p { text-align: left; padding:3px; }
+.jquerybubblepopup-innerHtml p span { float:right; }
+
+#list-clubs .data-detall,
+#list-clubs .col-listheader {
+	font-size: 0.9em;
+}
 
 #header-clubscodi { display:none; }
-#header-clubsnom { width: 22%; text-align:left;}
+#header-clubsnom { width: 15%; text-align:left;}
 #header-clubspartes {	width: 6%; }
 #header-clubspagats {	width: 6%; }
 #header-clubsllicencies {	width: 6%; }
-#header-clubsimport {	width: 9%;text-align:right;}
+#header-clubsimport {	width: 10%;text-align:right;}
 #header-clubspagatweb {	width: 10%; text-align:right;}
 #header-clubsestat {	width: 15%; }
 #header-clubslimit {	width: 7%; }
+#header-clubsgessaldos {	width: 9%;text-align:right; }
 #header-clubsactions { width: 14%;}
 
+
 .club-codi { display:none; }
-.club-nom { width: 22%; text-align:left;}
+.club-nom { width: 15%; text-align:left;}
 .club-partes { width: 6%;  }
 .club-pagats { width: 6%;  }
 .club-llicencies { width: 6%; }
@@ -1530,6 +1544,7 @@ li.parte-pendent-sincro .parterecents-actions {
 	font-style: italic;
 }
 .club-limit { width: 7%; }
+.club-gessaldos { width: 9%; text-align:right;  cursor: pointer; color:#2281CF}
 .club-actions { width: 13%; text-align:right; margin-top: -14px}
 
 /* Dialog */

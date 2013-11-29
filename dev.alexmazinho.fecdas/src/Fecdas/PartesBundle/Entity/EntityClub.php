@@ -137,6 +137,31 @@ class EntityClub {
 	 * @ORM\Column(type="decimal", precision=6, scale=2)
 	 */
 	protected $limitcredit;
+
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $limitnotificacio;
+
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
+	protected $romanent;
+
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
+	protected $totalpagaments;
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
+	protected $totalllicencies;
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
+	protected $totalaltres;
 	
 	public function __construct() {
 		$this->activat = true;
@@ -656,12 +681,112 @@ class EntityClub {
     }
     
     /**
-     * Dades del club any actual
+     * Set limitnotificacio
+     *
+     * @param datetime $limitnotificacio
+     */
+    public function setLimitnotificacio($limitnotificacio)
+    {
+    	$this->limitnotificacio = $limitnotificacio;
+    }
+    
+    /**
+     * Get limitnotificacio
+     *
+     * @return datetime
+     */
+    public function getLimitnotificacio()
+    {
+    	return $this->limitnotificacio;
+    }
+    
+    /**
+     * Set romanent
+     *
+     * @param decimal $romanent
+     */
+    public function setRomanent($romanent)
+    {
+    	$this->romanent = $romanent;
+    }
+    
+    /**
+     * Get romanent
+     *
+     * @return decimal
+     */
+    public function getRomanent()
+    {
+    	return $this->romanent;
+    }
+    
+    /**
+     * Set totalpagaments
+     *
+     * @param decimal $totalpagaments
+     */
+    public function setTotalpagaments($totalpagaments)
+    {
+    	$this->totalpagaments = $totalpagaments;
+    }
+    
+    /**
+     * Get totalpagaments
+     *
+     * @return decimal
+     */
+    public function getTotalpagaments()
+    {
+    	return $this->totalpagaments;
+    }
+    
+    /**
+     * Set totalllicencies
+     *
+     * @param decimal $totalllicencies
+     */
+    public function setTotalllicencies($totalllicencies)
+    {
+    	$this->totalllicencies = $totalllicencies;
+    }
+    
+    /**
+     * Get totalllicencies
+     *
+     * @return decimal
+     */
+    public function getTotalllicencies()
+    {
+    	return $this->totalllicencies;
+    }
+
+    /**
+     * Set totalaltres
+     *
+     * @param decimal $totalaltres
+     */
+    public function setTotalaltres($totalaltres)
+    {
+    	$this->totalaltres = $totalaltres;
+    }
+    
+    /**
+     * Get totalaltres
+     *
+     * @return decimal
+     */
+    public function getTotalaltres()
+    {
+    	return $this->totalaltres;
+    }
+    
+    /**
+     * Dades del club any actual. Opcionalment comprova errors
      *
      * @return array
      */
     
-    public function getDadesCurrent()
+    public function getDadesCurrent($errors = false)
     {
     	$dades = array();
     	$npartes = 0;
@@ -669,6 +794,9 @@ class EntityClub {
     	$nllicencies = 0;
     	$nimport = 0;
     	$nimportweb = 0;
+    	$dades['err_facturadata'] = array();
+    	$dades['err_facturanum'] = array();
+    	$dades['err_sincro'] = array();
     	foreach($this->partes as $c => $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			$npartes++;
@@ -680,6 +808,18 @@ class EntityClub {
     				$nimportweb += $parte_iter->getImportPagament();
     				$npartespagatsweb++;
     			}
+    			if ($errors){ // Només si tenen més d'una setmana
+    				$weekAgo = new \DateTime(date("Y-m-d", strtotime("-1 week")));
+    				if ($parte_iter->getDataentrada() < $weekAgo) {
+    					// No sincronitzats. Afegir relacio
+    					if ($parte_iter->getIdparteAccess() == null) $dades['err_sincro'][] = $parte_iter->getDataalta()->format('d/m/Y');
+    					else {
+		    				// 	Sense dades de facturació
+	    					if ($parte_iter->getDatafacturacio() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
+	    					if ($parte_iter->getNumfactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
+    					}
+    				}
+    			}
     		}
     	}
     	$dades['partes'] = $npartes;
@@ -687,6 +827,7 @@ class EntityClub {
     	$dades['llicencies'] = $nllicencies;
     	$dades['import'] = $nimport;
     	$dades['importweb'] = $nimportweb;
+    	$dades['deutegestor'] = $this->romanent + $this->totalllicencies + $this->totalaltres - $this->totalpagaments;
     	return $dades;
     }
     

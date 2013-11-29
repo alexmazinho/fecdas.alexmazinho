@@ -38,11 +38,12 @@
 		   		<div id="header-clubspartes" class="col-listheader">Llistes {{"now"|date('Y')}}<span class="listheader-order"></span></div>
 		   		<div id="header-clubspagats" class="col-listheader">Pagades per web<span class="listheader-order"></span></div>
 		   		<div id="header-clubsllicencies" class="col-listheader">Llic. {{"now"|date('Y')}}<span class="listheader-order"></span></div>
-		   		<div id="header-clubsimport" class="col-listheader">Import<span class="listheader-order"></span></div>
+		   		<div id="header-clubsimport" class="col-listheader">Import<br/>Llic. web<span class="listheader-order"></span></div>
 		   		<div id="header-clubspagatweb" class="col-listheader">Web<br/>(Pagat)<span class="listheader-order"></span></div>
 		   		<div id="header-clubsestat" class="col-listheader">Estat<span class="listheader-order"></span></div>
 		   		<div id="header-clubslimit" class="col-listheader">Límit de crèdit<span class="listheader-order"></span></div>
-		   		<div id="header-clubsactions" class="col-listheader">&nbsp;</div>
+		   		<div id="header-clubsgessaldos" class="col-listheader">Deute Gestor<span class="listheader-order"></span></div>
+			   	<div id="header-clubsactions" class="col-listheader">&nbsp;</div>
 		   	</div>
 		</div>
 		{% if clubs|length > 0 %}
@@ -64,6 +65,17 @@
 		   			{% if club.estat.control == 0 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
 		   			</div>
 		   			<div class="data-detall-cell club-limit">{{ club.limitcredit|number_format(2, ',') }} €</div>
+		   			<div class="data-detall-cell club-gessaldos">
+		   				{{ dades['deutegestor']|number_format(2, ',') }} €
+			   			<div class="detall-saldos">
+							<h3>Detall saldos del Gestor</h3>
+							<p>Total: <span>{{ dades['deutegestor']|number_format(2, ',') }} €</span></p>
+				   			<p>Romanent: <span>{{ club.romanent|number_format(2, ',') }} €</span></p>
+				   			<p>Factures Llicències:&nbsp;&nbsp;<span>{{ club.totalllicencies|number_format(2, ',') }} €</span></p>
+				   			<p>Altres factures: <span>{{ club.totalaltres|number_format(2, ',') }} €</span></p>
+				   			<p>Pagaments rebuts: <span>{{ club.totalpagaments|number_format(2, ',') }} €</span></p>
+			   			</div>
+		   			</div>
 		   			<div class="data-detall-cell club-actions">
 		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'DIFB' }) }}">
 		   				<img src="{{ asset('images/icon_green.gif') }}" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" width="23px"></a>
@@ -101,10 +113,13 @@ $(document).ready(function(){
 
 	sortLlista("col-listheader", "list-data");
 
+	helpBubblesLlista(".club-gessaldos", ".detall-saldos"); 
+	
 	var tableScroll = $('.table-scroll');
 	if (tableScroll.hasOverflowY()) {
 		$('.table-scroll').css({"width":"101.5%"});
 	}
+
 });
 
 </script>

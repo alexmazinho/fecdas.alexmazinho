@@ -126,6 +126,22 @@
 		});
 	};
 	
+	helpBubblesLlista = function(t, ht) {
+		$(t).CreateBubblePopup();
+		
+		//set customized mouseover event for each button
+		$(t).mouseover(function(){
+			$(this).ShowBubblePopup({
+				themePath : '/css/jquerybubblepopup-themes',	 
+	 			themeName : 'all-orange',           
+	 			position: 'right',   
+				innerHtml: $(this).children(ht).html()					 
+		  });
+		}); //end mouseover event
+
+	};
+	
+	
 	formFocus = function() {
 		
 		$(".forminput-inside")

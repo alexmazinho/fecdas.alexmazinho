@@ -223,10 +223,21 @@ FecdasPartesBundle_renovarllicencia:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_revisarclubs:
+    pattern:  /revisarclubs
+    defaults: { _controller: "FecdasPartesBundle:Cron:revisarclubs" }
+    requirements:
+        _method:  GET
 
 FecdasPartesBundle_checkupdatepreu:
     pattern:  /checkupdatepreu/{maxid}
     defaults: { _controller: "FecdasPartesBundle:Cron:checkupdatepreu" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_checkpendents:
+    pattern:  /checkpendents
+    defaults: { _controller: "FecdasPartesBundle:Cron:checkpendents" }
     requirements:
         _method:  GET
 

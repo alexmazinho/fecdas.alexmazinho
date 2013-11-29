@@ -1464,6 +1464,7 @@ class PageController extends BaseController {
 						$request->request->set('currentperson', $persona->getId());
 					} else {
 						$logaction = "PERSONA DEL OK";
+						$persona->setDatamodificacio($this->getCurrentDate());
 						$persona->setDatabaixa($this->getCurrentDate());
 						$em->persist($persona); // Per delete seria remove
 						$em->flush();

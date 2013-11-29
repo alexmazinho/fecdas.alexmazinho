@@ -27,11 +27,6 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 class AdminController extends BaseController {
-	const CLUBS_DEFAULT_STATE = 1;
-	const RECENTS_CLUBS_DEFAULT_STATE = 0;
-	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
-	
-	
 	public function recentsAction() {
 		$request = $this->getRequest();
 	
@@ -288,10 +283,11 @@ class AdminController extends BaseController {
 			$this->get('session')->get('remote_addr'),
 					$this->getRequest()->server->get('HTTP_USER_AGENT'));
 			}
-	
+			
 			$formBuilder = $this->createFormBuilder()->add('estat', 'choice', array(
 					'choices'   => $states,
-					'preferred_choices' => array(self::CLUBS_DEFAULT_STATE),  // Estat per defecte sempre 
+					'preferred_choices' => array(self::CLUBS_DEFAULT_STATE),  // Estat per defecte sempre
+					'attr' => (array('onchange' => 'this.form.submit()'))
 			));
 			$form = $formBuilder->getForm();
 	

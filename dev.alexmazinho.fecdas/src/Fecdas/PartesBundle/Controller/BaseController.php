@@ -14,6 +14,11 @@ class BaseController extends Controller {
 	const MAIL_FACTURACIO = "remei@fecdas.cat";
 	const MAIL_LLICENCIES = "secretari@fecdas.cat";
 	const MAIL_CONTACTE = "info@fecdas.cat";
+	const CLUBS_DEFAULT_STATE = 1;
+	const RECENTS_CLUBS_DEFAULT_STATE = 0;
+	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
+	const DIES_PENDENT_AVIS = 8;
+	const DIES_PENDENT_MAX = 10;
 	
 	protected function getCurrentDate($time = null) {
 		//function to fake date, testing purpouse
@@ -60,6 +65,11 @@ class BaseController extends Controller {
 	
 	protected function getFacturacioMails() {
 		$mails = array(self::MAIL_FACTURACIO);
+		return $mails;
+	}
+
+	protected function getLlicenciesMails() {
+		$mails = array(self::MAIL_LLICENCIES, self::MAIL_ADMIN);
 		return $mails;
 	}
 	

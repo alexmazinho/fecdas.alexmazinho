@@ -54,8 +54,7 @@ class CronController extends BaseController {
 	
 	public function checkrenovacioAction() {
 		// Avís renovació partes: 30 dies, 15 dies i 2 dies
-		// Preguntar si inclou tipus 8 (Decathlon), en cas que si recordar que aquests no es poden renovar automàticament
-		/* Planificar cron
+		/* Planificar cron diari
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkrenovacio >> mailsrenovacio.txt*/
 		
 		/*
@@ -158,6 +157,8 @@ class CronController extends BaseController {
 	}
 	
 	private function checkSendMail($llicencia) {
+		/* Comprovació per si cal enviar mail renovació */
+		
 		if ($llicencia->getDatabaixa() != null) return false;
 
 		/* Comprovar si és la darrera llicència */
@@ -334,10 +335,13 @@ class CronController extends BaseController {
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
-	public function revisarclubsAction() {
+	public function checkclubsAction() {
 		/* Revisar difeències saldos gestors
 		 * Detectar si un club de pagament diferit supera el límit 
 		 * Detectar clubs amb partes sense factura */
+		/* Planificar cron diari
+		 * wget -O - -q http://fecdas.dev/app_dev.php/checkclubs >> mailsrenovacio.txt*/
+		
 		$request = $this->getRequest();
 		$sortida = "<style type='text/css'>";
 		$sortida .= "table	{ border-collapse:collapse; font-family: Arial; font-size: 13px; }";
@@ -357,8 +361,7 @@ class CronController extends BaseController {
 		
 		$states = explode(";", self::CLUBS_STATES);
 		
-		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c";
+		$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c WHERE c.activat = 1";
 		$query = $em->createQuery($strQuery);
 		$clubs = $query->getResult();
 
@@ -368,6 +371,8 @@ class CronController extends BaseController {
 		$sortida .= "<tr><th class='codi'>Codi</th><th class='club'>Club</th><th class='importclub'>Import llics. web</th>";
 		$sortida .= "<th class='importclub'>Import llics. gestor</th><th class='importclub'>Saldo</th>";
 		$sortida .= "<th class='incidencies'>Incidències</th></tr>";
+		
+		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
 		
 		foreach ($clubs as $c => $club_iter) {
 			$incidencies = "";
@@ -389,15 +394,11 @@ class CronController extends BaseController {
 			$filaClub .= "<td class='".$classImport."'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències gestor
 			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['deutegestor'], 2, ',', '.') . "€</td>"; // Saldo web
 			
-			if ($club_iter->getEstat()->getControl() != true || 
-				$club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
-				// Init data notificació
-				$club_iter->setLimitnotificacio(null);
-			}
-			
-			if ($club_iter->getEstat()->getControl() == true) {
-				// Clubs amb control. Mirar crèdit 
+			//echo $this->getCurrentDate()->format('Y-m-d') . " > " . $datainiciRevisarSaldos->format('Y-m-d') . "</br>";   
+			if ($this->getCurrentDate() >= $datainiciRevisarSaldos) {
 				if ($club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
+					// Init data notificació
+					$club_iter->setLimitnotificacio(null);
 					$incidencies .= ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit() . "<br/>";
 				} else {
 					if ($dadesClub['deutegestor'] > $club_iter->getLimitcredit()) {
@@ -415,15 +416,27 @@ class CronController extends BaseController {
 							Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";
 								
 							$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-
+							
 							$club_iter->setLimitnotificacio($this->getCurrentDate());
 						} else {
 							$incidencies .= ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
 						}
+						// Estat -> sense tramitació 
+						$club_iter->setEstat($estat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClubEstat')->find(self::CLUB_SENSE_TRAMITACIO));
+					} else {
+						$club_iter->setLimitnotificacio(null);
 					}
 				}
 			}
 			
+			// Mirar possibles errors de configuració del club
+			if ($dadesClub['err_config'] != '') {
+				$incidencies .= ">> (Incidència) Errors de configuració <br/>" . $dadesClub['err_config'] . "<br/>";
+			}
+			// Mirar partes amb dades imports / pagaments erronis 
+			if (count($dadesClub['err_imports']) > 0) {
+				$incidencies .= ">> (Incidència) Partes dades amb errors: " . implode(", ", $dadesClub['err_imports']) . "<br/>";
+			}
 			// Mirar partes sense sincronitzar de més d'una setmana
 			if (count($dadesClub['err_sincro']) > 0) {
 				$incidencies .= ">> (Incidència) Partes sense sincronitzar: " . implode(", ", $dadesClub['err_sincro']) . "<br/>";
@@ -449,21 +462,23 @@ class CronController extends BaseController {
 		$bccmails = array();
 		$tomails = array(self::MAIL_ADMINTEST);
 		$body = $sortida;
-		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+		//$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 		
-		$this->logEntry(self::MAIL_ADMIN, 'CHECK CLUBS DIARI',
+		$this->logEntry(self::MAIL_ADMIN, 'CRON CLUBS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		
 		return new Response($sortida);
 	}
 	
-	
 	public function checkpendentsAction() {
 		/* Revisar partes pendents
 		 * Donar de baixa si pendents i fa més de 10 dies que van entrar al sistema  
 		 * Avisar per mail si falten 2 dies per donar de baixa (fa 8 dies de l'entrada)
 		 * */
+		/* Planificar cron diari
+		 * wget -O - -q http://fecdas.dev/app_dev.php/checkpendents >> mailsrenovacio.txt*/
+		
 		$sortida = "";
 		$request = $this->getRequest();
 
@@ -485,7 +500,7 @@ class CronController extends BaseController {
 			$diesPendent = $interval->format('%a');  //r 	Sign "-" when negative, empty when positive
 
 			// Revisar incidències. Parte sincronitzat  o pagat 
-			if ($this->incidenciespendentsAction($parte_iter) == false) { 
+			if ($this->incidenciesPendents($parte_iter) == false) { 
 				if ($diesPendent == self::DIES_PENDENT_AVIS) {
 					// Enviar mail falten 2 dies
 					$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
@@ -523,14 +538,14 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMIN, 'CHECK PENDENTS DIARI',
+		$this->logEntry(self::MAIL_ADMIN, 'CRON PENDENTS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		
 		return new Response($sortida);
 	}
 	
-	public function incidenciespendentsAction($parte) {
+	private function incidenciesPendents($parte) {
 		// Revisar incidències. Parte sincronitzat  o pagat. Enviar mail
 		$subject = ":: Incidència revisió partes pendents ::";
 		$bccmails = array();
@@ -553,4 +568,80 @@ class CronController extends BaseController {
 		}
 		return false;
 	}
+	
+	
+	public function checkpartesdiaAction() {
+		/* Revisar partes tramitats durant el dia
+		 * Donar de baixa si pendents i fa més de 10 dies que van entrar al sistema
+		* Avisar per mail si falten 2 dies per donar de baixa (fa 8 dies de l'entrada)
+		* */
+		/* Planificar cron diari
+		 * wget -O - -q http://fecdas.dev/app_dev.php/checkpartesdia >> mailsrenovacio.txt*/
+	
+		$sortida = "";
+		$request = $this->getRequest();
+	
+		$current = $this->getCurrentDate();
+	
+		$em = $this->getDoctrine()->getEntityManager();
+	
+		/* Update preu partes web */
+		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p ";
+		$strQuery .= "WHERE p.databaixa IS NULL  ";
+		$strQuery .= " AND p.pendent = 1 ";
+		$query = $em->createQuery($strQuery);
+	
+		$partespendents = $query->getResult();
+	
+		foreach ($partespendents as $c => $parte_iter) {
+			$interval = $current->diff($parte_iter->getDataentrada());
+			$diesPendent = $interval->format('%a');  //r 	Sign "-" when negative, empty when positive
+	
+			// Revisar incidències. Parte sincronitzat  o pagat
+			if ($this->incidenciesPendents($parte_iter) == false) {
+				if ($diesPendent == self::DIES_PENDENT_AVIS) {
+					// Enviar mail falten 2 dies
+					$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
+					if ($parte_iter->getClub()->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+						
+					$bccmails = $this->getLlicenciesMails();
+					$tomails = array($parte_iter->getClub()->getMail());
+					$body = "<p>Benvolgut club ".$parte_iter->getClub()->getNom()."</p>";
+					$body .= "<p>Us fem saber que la tramitació de llicències/assegurances
+							feta en la data del " . $parte_iter->getDataentrada()->format('d-m-Y') . " s'anul·larà en 48 hores
+							tret que se'n faci efectiu el pagament</p>";
+						
+					$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+					$sortida .= " Parte pendent >> Notificació per mail falten 2 dies ". $parte_iter->getClub()->getNom();
+					$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+				} else {
+					if ($diesPendent > self::DIES_PENDENT_MAX) {
+						// Esborrar
+						$parte_iter->setDatamodificacio($current);
+						$parte_iter->setDatabaixa($current);
+						foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
+							$llicencia_iter->setDatamodificacio($current);
+							$llicencia_iter->setDatabaixa($current);
+						}
+						$em->flush();
+	
+						$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();
+						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+					} else {
+						// Esperar
+						$sortida .= " Parte pendent >> ". $parte_iter->getClub()->getNom();
+						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+					}
+				}
+			}
+		}
+	
+		$this->logEntry(self::MAIL_ADMIN, 'CRON PARTES DIA',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+	
+		return new Response($sortida);
+	}
+	
 }

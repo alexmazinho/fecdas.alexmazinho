@@ -161,6 +161,11 @@ class EntityClub {
 	/**
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
+	protected $totalkits;
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
 	protected $totalaltres;
 	
 	public function __construct() {
@@ -761,6 +766,26 @@ class EntityClub {
     }
 
     /**
+     * Set totalkits
+     *
+     * @param decimal $totalkits
+     */
+    public function setTotalkits($totalkits)
+    {
+    	$this->totalkits = $totalkits;
+    }
+    
+    /**
+     * Get totalkits
+     *
+     * @return decimal
+     */
+    public function getTotalkits()
+    {
+    	return $this->totalkits;
+    }
+    
+    /**
      * Set totalaltres
      *
      * @param decimal $totalaltres
@@ -797,6 +822,8 @@ class EntityClub {
     	$dades['err_facturadata'] = array();
     	$dades['err_facturanum'] = array();
     	$dades['err_sincro'] = array();
+    	$dades['err_imports'] = array();
+    	$dades['err_config'] = '';
     	foreach($this->partes as $c => $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			$npartes++;
@@ -808,7 +835,29 @@ class EntityClub {
     				$nimportweb += $parte_iter->getImportPagament();
     				$npartespagatsweb++;
     			}
-    			if ($errors){ // Només si tenen més d'una setmana
+    			if ($errors){ 
+    				// Varis, validacions imports i dades pagaments
+    				// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
+    				// Error si import calculat és null
+    				// Error si no coincideix import calculat del parte i import pagament
+    				if (($parte_iter->getDatapagament() != null ||
+    					$parte_iter->getEstatpagament() != null ||
+    					$parte_iter->getDadespagament() != null ||
+    					$parte_iter->getImportpagament() != null) && 
+    					($parte_iter->getDatapagament() == null || 
+    					$parte_iter->getEstatpagament() == null || 
+    					$parte_iter->getDadespagament() == null || 
+    					$parte_iter->getImportpagament() == null)) {
+    					$dades['err_imports'][] = "(falten dades pagament) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+    				}
+    				
+    				if ($parte_iter->getImportparte() == null) 
+    					$dades['err_imports'][] = "(import incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+    				else {
+	    				if ($parte_iter->getImportpagament() != null && $parte_iter->getImportpagament() != $parte_iter->getImportparte()) 
+	    					$dades['err_imports'][] = "(imports no coincidents) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+    				}
+    				// Només si tenen més d'una setmana
     				$weekAgo = new \DateTime(date("Y-m-d", strtotime("-1 week")));
     				if ($parte_iter->getDataentrada() < $weekAgo) {
     					// No sincronitzats. Afegir relacio
@@ -822,12 +871,17 @@ class EntityClub {
     			}
     		}
     	}
+    	if ($errors) {
+    		/* Afegir errors de configuració */
+    		if (count($this->tipusparte) == 0) $dades['err_config'] .= "Aquest club no té cap tipus de parte activat per tramitar</br>";
+    		if (count($this->usuaris) == 0) $dades['err_config'] .= "Aquest club no té cap usuari activat per tramitar</br>";
+    	}
     	$dades['partes'] = $npartes;
     	$dades['pagats'] = $npartespagatsweb;
     	$dades['llicencies'] = $nllicencies;
     	$dades['import'] = $nimport;
     	$dades['importweb'] = $nimportweb;
-    	$dades['deutegestor'] = $this->romanent + $this->totalllicencies + $this->totalaltres - $this->totalpagaments;
+    	$dades['deutegestor'] = round($this->romanent + $this->totalllicencies + $this->totalkits + $this->totalaltres - $this->totalpagaments,2);
     	return $dades;
     }
     

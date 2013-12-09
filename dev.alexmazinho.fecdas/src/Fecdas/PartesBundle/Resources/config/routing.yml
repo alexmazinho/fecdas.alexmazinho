@@ -6,18 +6,21 @@ FecdasPartesBundle_homepage:
     pattern:  /
     defaults: { _controller: "FecdasPartesBundle:Page:index" }
     requirements:
+        _scheme:  http
         _method:  GET
         
 FecdasPartesBundle_contact:
     pattern:  /contact
     defaults: { _controller: "FecdasPartesBundle:Page:contact" }
     requirements:
+        _scheme:  http
         _method:  GET|POST
 
 FecdasPartesBundle_login:
     pattern:  /login
     defaults: { _controller: "FecdasPartesBundle:Security:login" }
     requirements:
+        _scheme:  https
         _method:  GET|POST
 
 FecdasPartesBundle_pwdrecovery:
@@ -75,6 +78,11 @@ FecdasPartesBundle_canviestatclub:
     requirements:
         _method:  GET
 
+FecdasPartesBundle_confirmapagament:
+    pattern:  /confirmapagament
+    defaults: { _controller: "FecdasPartesBundle:Admin:confirmapagament" }
+    requirements:
+        _method:  GET
 
 FecdasPartesBundle_sincroaccess:
     pattern:  /sincroaccess
@@ -223,9 +231,9 @@ FecdasPartesBundle_renovarllicencia:
     requirements:
         _method:  GET|POST
 
-FecdasPartesBundle_revisarclubs:
-    pattern:  /revisarclubs
-    defaults: { _controller: "FecdasPartesBundle:Cron:revisarclubs" }
+FecdasPartesBundle_checkclubs:
+    pattern:  /checkclubs
+    defaults: { _controller: "FecdasPartesBundle:Cron:checkclubs" }
     requirements:
         _method:  GET
 

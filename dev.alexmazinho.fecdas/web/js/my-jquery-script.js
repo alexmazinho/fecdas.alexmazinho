@@ -379,6 +379,14 @@
 		$('#parte_club').change(function() {
 	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	    	else $('#formparte-llicencia').slideUp('fast');
+	    	
+	    	// Update select tipus parte	
+			var url = $('#formparte-tipus').data('ajax-route');
+			var params = { 	club:$("#parte_club").val(), day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
+			$.get(url,	params,
+			function(data) {
+				$('select#parte_tipus').html(data); 
+			});
 		});
 		
 		/* Canvi Data */
@@ -388,7 +396,7 @@
 
 	    	// Update select tipus parte	
 			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { 	day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
+			var params = { 	club:$("#parte_club").val(), day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
 			$.get(url,	params,
 			function(data) {
 				$('select#parte_tipus').html(data); 
@@ -401,7 +409,7 @@
 	    	
 	    	// Update select tipus parte	
 			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { 	day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
+			var params = { 	club:$("#parte_club").val(), day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
 			$.get(url,	params,
 			function(data) {
 				$('select#parte_tipus').html(data); 
@@ -1323,12 +1331,22 @@
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
 		$('#form_tipus').val('');
 		
+		/* Canvi Club */
+		$('#form_club').change(function() {
+			// Update select tipus parte	
+			var url = $('#formcsv-tipus').data('ajax-route');
+			var params = { 	club:$("#form_codi").val(), day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
+			$.get(url,	params,
+			function(data) {
+				$('select#form_tipus').html(data); 
+			});
+		});
 			
 		/* Canvi Data */
 		$('#form_dataalta_date_day').change(function() {
 	    	// Update select tipus parte	
 			var url = $('#formcsv-tipus').data('ajax-route');
-			var params = { 	day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
+			var params = { 	club:$("#form_codi").val(), day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
 			$.get(url,	params,
 			function(data) {
 				$('select#form_tipus').html(data); 
@@ -1338,7 +1356,7 @@
 		$('#form_dataalta_date_month').change(function() {
 	    	// Update select tipus parte	
 			var url = $('#formcsv-tipus').data('ajax-route');
-			var params = { 	day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
+			var params = { 	club:$("#form_codi").val(), day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
 			$.get(url,	params,
 			function(data) {
 				$('select#form_tipus').html(data); 

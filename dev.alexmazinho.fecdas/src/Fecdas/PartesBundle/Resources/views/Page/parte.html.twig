@@ -39,19 +39,14 @@
 				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			{% if admin == true and parte.datapagament is null and parte.id is not null %}
-				<div id="formparte-submit" class="form-left">
-					<label class="formlabel-outside required">&nbsp;</label>
-					<input type="submit" id="formparte-button-pagat" value="Pagament Rebut" name="formparte-button-pagat"/>
-				</div> 
+			<div id="formparte-submit" class="form-left textaccio">
+				<label class="formlabel-outside required" for="formparte-button-pagat">&nbsp;</label>
+				<a id="formparte-button-pagat" class="form-left" href="{{ path('FecdasPartesBundle_confirmapagament', { 'id': parte.id }) }}">Pagament Rebut</a>
+			</div>
 			{% endif %}
 			
 		</div>
 		<div class="form-row clearfix">
-			{#<div id="formparte-numrelacio">
-				{{ form_label(form.numrelacio, 'Relació', { 'attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.numrelacioshow) }}
-				{{ form_widget(form.numrelacio) }}
-			</div>#}
 			<div id="formparte-dataalta" class="form-left">
 				<label class="formlabel-outside required">Validesa des de</label>
 				{# form_label(form.dataalta, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
@@ -132,10 +127,10 @@ $(document).ready(function(){
 
 	removeLlicenciaClick();
 
-	removeParteButton();
+	/*removeParteButton();*/
 
-	partePagatButton();
-
+	confirmarPartePagat();
+	
 	partePagamentButton();
 	
 	showResumParteDetall();

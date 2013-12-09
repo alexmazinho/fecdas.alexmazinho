@@ -541,13 +541,13 @@ class PDFController extends BaseController {
 				$text = '<b>MODEL ' . $parte->getTipus()->getDescripcio() . '</b>';
 				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
 				
-				if ($parte->getWeb() == true and $parte->getDatapagament() == null) {
+				if ($parte->getWeb() == true and ($parte->getDatapagament() == null or $parte->getPendent() == true)) {
 					// Si no les paguen o confirmen on-line surt el missatge
 					$y += 10;
 					$pdf->SetTextColor(100, 100, 100); // GRis
 					$pdf->SetFillColor(200, 200, 200); //Blanc
 					$pdf->SetFont('dejavusans', 'BI', 14, '', true);
-					$text = '<p>## Aquestes llicències estan pendents de pagament ##</p>';
+					$text = '<p>## Aquestes llicències tindran validesa quan es confirmi el seu pagament ##</p>';
 					$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
 					$pdf->SetTextColor(0, 0, 0); // Negre
 					$pdf->SetFillColor(255, 255, 255); //Blanc

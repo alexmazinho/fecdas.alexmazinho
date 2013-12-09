@@ -154,6 +154,44 @@ class AdminController extends BaseController {
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
+	public function confirmapagamentAction() {
+		$request = $this->getRequest();
+		
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		
+		$em = $this->getDoctrine()->getEntityManager();
+		
+		$parteid = $request->query->get('id');
+		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($request->query->get('id'));
+		
+		if ($parte != null) {
+			// Actualitzar data pagament
+			$datapagat = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
+			$parte->setDatapagament($datapagat);
+			$parte->setEstatpagament($request->query->get('estatpagat'));
+			if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
+			if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
+			$parte->setPendent(false);
+			$parte->setImportpagament($parte->getPreuTotalIVA());
+			$parte->setDatamodificacio($this->getCurrentDate());
+			
+			$em->flush();
+			
+			$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT OK',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+
+			return new Response("ok");
+		}
+		
+		$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT KO',
+				$this->get('session')->get('remote_addr'),
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+
+		return new Response("ko");
+	}
+	
 	public function sincroaccessAction() {
 		$request = $this->getRequest();
 	

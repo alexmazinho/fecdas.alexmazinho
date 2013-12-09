@@ -104,7 +104,7 @@ class PageController extends BaseController {
 		
 		if ($currentMonth == 12 and $currentDay >= 10) $endYear++; // A partir 10/12 poden fer llicències any següent
 		
-		$llistatipus = $this->getLlistaTipusParte($currentDay, $currentMonth);
+		$llistatipus = $this->getLlistaTipusParte($this->getCurrentClub()->getCodi(), $currentDay, $currentMonth);
 			
 		$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
 		
@@ -865,29 +865,10 @@ class PageController extends BaseController {
 		$action = "";
 				
 		if ($request->getMethod() == 'POST') {
-			/*if ($request->request->has('formparte-button-payment') or
-				$request->request->has('formparte-button-payment_x')) { // Pagament. _x si imatge coordenades
-				$response = $this->forward('FecdasPartesBundle:Page:pagament');
+			if ($request->request->has('parte')) { 
+				$response = $this->forward('FecdasPartesBundle:Page:pagament');  // Pagament continuar
 				return $response;
-			}*/
-			if ($request->request->has('parte')) { // Esborrar parte
-				$p = $request->request->get('parte');
-				$parteid = $p['id'];
-				
-				$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
-				// Es pot confirmar qualsevol Parte, encara que estigui facturat
-				//if ($parte != null and $parte->getDataFacturacio() != null) {
-				//	$this->get('session')->setFlash('error-notice',	'Aquesta llista ja no es pot pagar on-line');
-				//} else {
-					if (isset ($p['datapagat'])) { // confirmar Pagament pendent
-						$action = "pagat";
-					} else {
-						//$action = "remove"; // Opció eliminada
-						$response = $this->forward('FecdasPartesBundle:Page:pagament');  // Pagament continuar
-						return $response;
-					}
-				//}
-			} 
+			}
 			if ($request->request->has('form')) { // Nou parte des de Partes
 				$formdata = $request->request->get('form');  
 				if (isset($formdata['clubs'])) {
@@ -905,84 +886,9 @@ class PageController extends BaseController {
 		if ($parteid > 0) {
 			// 	Update or delete
 			$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
-				
-			if ($action == 'pagat') {
-				if (!$this->isCurrentAdmin()) {
-					$this->get('session')->setFlash('error-notice',	'Només pot confirmar pagaments l\'administrador');
-				} else {
-					// Persistència
-					$em = $this->getDoctrine()->getEntityManager();
-				
-					// Actualitzar data pagament
-					$datapagat = \DateTime::createFromFormat('d/m/Y', $p['datapagat']); 
-					/*
-					 $numfactura = $this->getMaxNumFactura();
-					$parte->setNumFactura($numfactura);*/
-					$parte->setDatapagament($datapagat);
-					$parte->setEstatpagament($p['estatpagat']); 
-					if ($p['dadespagat'] != '') $parte->setDadespagament($p['dadespagat']);
-					if ($p['comentaripagat'] != '') $parte->setComentari($p['comentaripagat']);
-					$parte->setPendent(false);
-					$parte->setImportpagament($parte->getPreuTotalIVA());
-					$parte->setDatamodificacio($this->getCurrentDate());
-
-					$this->get('session')->setFlash('error-notice',	'Pagament confirmat ');
-					
-					$em->flush();
-					
-					$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT',
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
-					
-				}
-			}
-			
-			if ($action == 'remove') { // Delete
-				/*  No es poden esborrar partes 
-				$valida = true;
-				if (!$this->isCurrentAdmin()) {
-					$this->get('session')->setFlash('error-notice',
-							'Només pot esborrar l\'administrador');
-					$valida = false;
-				}
-				// Comprovació any actual no pagat. NO hauria de passar								
-				if ($parte->isPagat()) {
-					$this->get('session')->setFlash('error-notice',
-							'No es poden esborrar llistes que ja estan facturades');
-					$valida = false;
-				}
-				if ($valida == true) {
-					// Persistència
-					$em = $this->getDoctrine()->getEntityManager();
-						
-					$parte->setDatamodificacio($this->getCurrentDate());
-					$parte->setDatabaixa($this->getCurrentDate());
-					foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
-						$llicencia_iter->setDatamodificacio($this->getCurrentDate());
-						$llicencia_iter->setDatabaixa($this->getCurrentDate());
-					}
-
-					$this->get('session')->setFlash('error-notice',
-							'Llista esborrada correctament. Club ' . $parte->getClub()->getCodi() . ' en data ' . $parte->getDataalta()->format('d/m/Y'));
-					$em->flush();
-				}
-
-				$response = $this->forward('FecdasPartesBundle:Page:partes', array(),array('club' => $parte->getClub()->getCodi()));
-				return $response;
-				*/
-			}
 		} else {
 			$parte = new EntityParte($this->getCurrentDate());
 			$options['nova'] = true;
-			/* NO gestionar NumRelació
-			 $em = $this->getDoctrine()->getEntityManager();
-			$query = $em->createQuery("SELECT MAX(p.numrelacio)	FROM Fecdas\PartesBundle\Entity\EntityParte p
-					WHERE p.dataalta >= :ini AND p.dataalta <= :fi")
-			->setParameter('ini', date("Y-m-d", strtotime(date("Y") . "-01-01")))
-			->setParameter('fi', date("Y-m-d", strtotime(date("Y") . "-12-31")));
-			$nounumrelacio = $query->getSingleScalarResult() + 1;
-			$parte->setNumrelacio($nounumrelacio);
-			*/
 			$data_alta = $this->getCurrentDate('now');
 			$data_alta->add(new \DateInterval('PT1200S')); // Add 20 minutes
 			$parte->setDataalta($data_alta);
@@ -994,7 +900,7 @@ class PageController extends BaseController {
 			// El tipus de parte es necessari per saber els checks de llicència que cal ocultar
 			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find(1));
 
-			$options['llistatipus'] = $this->getLlistaTipusParte($parte->getDataalta()->format('d'), $parte->getDataalta()->format('m'));
+			$options['llistatipus'] = $this->getLlistaTipusParte($currentClub->getCodi(), $parte->getDataalta()->format('d'), $parte->getDataalta()->format('m'));
 		}
 		
 		$pdf = $this->showPDF($parte);
@@ -1009,11 +915,7 @@ class PageController extends BaseController {
 		$form = $this->createForm(new FormParte($options), $parte);
 		
 		$form->get('any')->setData($parte->getAny());
-		//$form->get('numrelacioshow')->setData($parte->getNumrelacio());
 		
-		if ($request->isXmlHttpRequest()) {
-
-		}
 		return $this->render('FecdasPartesBundle:Page:parte.html.twig',
 				array('form' => $form->createView(), 'parte' => $parte, 'pdf' => $pdf, 'edit' => $edit, 'admin' =>$this->isCurrentAdmin(),
 						'tipusparte' => $parte->getTipus()->getId(), 'authenticated' => $this->isAuthenticated(),
@@ -1833,10 +1735,11 @@ class PageController extends BaseController {
 	}
 
 	public function gettipuspartesAction(Request $request) {
+		$club = $request->get('club');
 		$day = $request->get('day');
 		$month = $request->get('month');
-			
-		$llistatipus = $this->getLlistaTipusParte($day, $month);
+		
+		$llistatipus = $this->getLlistaTipusParte($club, $day, $month);
 		
 		$tipuspermesos = "";
 		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus
@@ -1852,32 +1755,39 @@ class PageController extends BaseController {
 		return $response;
 	}  
 
-	private function getLlistaTipusParte($day, $month) {
+	private function getLlistaTipusParte($codiclub, $day, $month) {
 		$llistatipus = array();
 
 		$currentmonthday = sprintf("%02d", $month) . "-" . sprintf("%02d", $day);
 
 		$em = $this->getDoctrine()->getEntityManager();
 		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
-		$user = $repository->findOneByUser($this->get('session')->get('username'));
-
-		if ($user != null) {
-			$club = $user->getClub();
-			$tipuspartes = $club->getTipusparte();
+		/* Llista tipus parte administrador en funció del club seleccionat. Llista d'un club segons club de l'usuari */
+		$club = null;
+		if ($this->isCurrentAdmin()) {
+			$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub);
+		}
+		else {
+			$user = $repository->findOneByUser($this->get('session')->get('username'));
+			if ($user != null) $club = $user->getClub();
+		}
+		
+		if ($club == null) return $llistatipus;  // Sense info del club!!?
+		
+		$tipuspartes = $club->getTipusparte();
 			
-			foreach ($tipuspartes as $c => $tipusparte) {
-				if ($tipusparte->getEs365() == true) {
-					/* 365 directament sempre. Es poden usar en qualsevol moment  */
+		foreach ($tipuspartes as $c => $tipusparte) {
+			if ($tipusparte->getEs365() == true) {
+				/* 365 directament sempre. Es poden usar en qualsevol moment  */
+				array_push($llistatipus, $tipusparte->getId());
+			} else { 
+				$inici = '01-01';
+				$final = '12-31';
+				if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
+				if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
+				
+				if ($currentmonthday >= $inici and $currentmonthday <= $final) {
 					array_push($llistatipus, $tipusparte->getId());
-				} else { 
-					$inici = '01-01';
-					$final = '12-31';
-					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
-					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
-					
-					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
-						array_push($llistatipus, $tipusparte->getId());
-					}
 				}
 			}
 		}

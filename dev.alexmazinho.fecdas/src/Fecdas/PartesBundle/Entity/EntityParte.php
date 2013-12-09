@@ -831,6 +831,7 @@ class EntityParte {
     }
 
     public function allowRenovar() {
+    	if ($this->pendent == true) return false; // Pendents no s'han de sincronitzar
     	// Només renoven alguns tipus de parte
     	if ($this->tipus->getId() == 1 || $this->tipus->getId() == 2 ||
     			$this->tipus->getId() == 4 || $this->tipus->getId() == 7 ||
@@ -860,6 +861,8 @@ class EntityParte {
      */
     public function isPendentSincronitzar()
     {
+    	if ($this->databaixa != null) return false; // Baixes no cal sincronitzar
+    	if ($this->pendent == true) return false; // Pendents no s'han de sincronitzar
     	if ($this->idparte_access == null) return true;
     	if ($this->idparte_access != null and $this->datamodificacio != null) return true;
     	
@@ -933,9 +936,9 @@ class EntityParte {
     	
     	if ($this->databaixa != null) return "Llista anulada";
     	
-    	if ($this->isVigent() == false) return "Aquesta llista ja no està vigent";
+    	if ($this->isVigent() == false) return "Aquesta llista no està vigent";
     	
-    	if ($this->pendent) return "Pendent de confirmació";
+    	if ($this->pendent) return "Pendent confirmació pagament";
     	
     	if ($this->numfactura != null and $this->datafacturacio) {
     		$textInfo .= "Fra. ". $this->numfactura;

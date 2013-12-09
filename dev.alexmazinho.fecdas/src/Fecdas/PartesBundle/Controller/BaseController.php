@@ -17,8 +17,11 @@ class BaseController extends Controller {
 	const CLUBS_DEFAULT_STATE = 1;
 	const RECENTS_CLUBS_DEFAULT_STATE = 0;
 	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
+	const CLUB_SENSE_TRAMITACIO = 'NOTR';
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
+	const INICI_REVISAR_CLUBS_DAY = '09';
+	const INICI_REVISAR_CLUBS_MONTH = '12';
 	
 	protected function getCurrentDate($time = null) {
 		//function to fake date, testing purpouse

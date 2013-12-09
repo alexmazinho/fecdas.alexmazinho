@@ -38,7 +38,7 @@
 				{{ form_widget(form.baixa, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div> 
       		<div id="formrecents-sincro" class="form-left">
-      			{{ form_label(form.sincro, 'Pendents sincronitzar', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+      			{{ form_label(form.sincro, 'No sincronitzats', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.sincro, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div> 
 			<div id="formrecents-submit" class="form-right">	
@@ -70,6 +70,7 @@
 			{% for parte in partes %}
 		   		<li class="data-detall 
 		   		{% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}
+				{% if parte.pendent == true  %} parte-pendent {% endif %}
 		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
 			   		<div class="data-detall-cell parterecents-id">{{ parte.id }}</div>
 			   		<div class="data-detall-cell parterecents-rel">{{ parte.numrelacio }}</div>
@@ -86,13 +87,18 @@
 		   			<div class="data-detall-cell parterecents-factura">{{ parte.infoLlistat }}
 		   			</div>
 		   			<div class="data-detall-cell parterecents-actions">
+		   			{% if parte.pendent != true  %}
 		   			<a class="parterecents-action-sincro" href="{{ path('FecdasPartesBundle_sincroaccess', { 'id': parte.id }) }}">
 		   				<img src="{{ asset('images/icon-access.png') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
+		   			{% else %}
+		   			<a class="parterecents-action-pagament" href="{{ path('FecdasPartesBundle_confirmapagament', { 'id': parte.id }) }}">
+		   				<img src="{{ asset('images/icon-euro.png') }}" alt="Confirmar pagament" title="Confirmar pagament" width="23px"></a>
+		   			{% endif %}
 		   			<a class="parterecents-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}">
 		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure" title="Veure" width="23px"></a>
 					</div>
 		   		</li>
-		   		{% endfor %}
+		   	{% endfor %}
 			</ol>
 		</div>
    	{% else %}
@@ -110,9 +116,11 @@
 
 $(document).ready(function(){
 	setMenuActive("menu-admllistes");
-	
+
 	$("#menu-adm").click();
 
+	confirmarPartePagat();
+	
 	autocompletersNomsClub("formrecents-autocompleters", "form_clubs", "form_codi");
 
 	sortLlista("col-listheader", "list-data");

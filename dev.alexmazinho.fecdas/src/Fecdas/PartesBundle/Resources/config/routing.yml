@@ -248,7 +248,19 @@ FecdasPartesBundle_checkpendents:
     defaults: { _controller: "FecdasPartesBundle:Cron:checkpendents" }
     requirements:
         _method:  GET
+        
+FecdasPartesBundle_checkpartesdia:
+    pattern:  /checkpartesdia
+    defaults: { _controller: "FecdasPartesBundle:Cron:checkpartesdia" }
+    requirements:
+        _method:  GET
 
+FecdasPartesBundle_informesaldos:
+    pattern:  /informesaldos
+    defaults: { _controller: "FecdasPartesBundle:Cron:informesaldos" }
+    requirements:
+        _method:  GET
+        
 FecdasPartesBundle_enquestes:
     pattern:  /enquestes
     defaults: { _controller: "FecdasPartesBundle:Enquestes:enquestes" }

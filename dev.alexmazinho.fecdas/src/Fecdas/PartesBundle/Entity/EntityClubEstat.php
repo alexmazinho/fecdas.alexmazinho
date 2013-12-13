@@ -23,10 +23,6 @@ class EntityClubEstat {
 	 */
 	protected $descripcio;
 	
-	/**
-	 * @ORM\Column(type="boolean")
-	 */
-	protected $control;
 
 	public function __toString() {
 		return $this->descripcio;
@@ -70,25 +66,5 @@ class EntityClubEstat {
     public function getDescripcio()
     {
         return $this->descripcio;
-    }
-
-    /**
-     * Set control
-     *
-     * @param boolean $control
-     */
-    public function setControl($control)
-    {
-    	$this->control = $control;
-    }
-    
-    /**
-     * Get control
-     *
-     * @return boolean
-     */
-    public function getControl()
-    {
-    	return $this->control;
     }
 }

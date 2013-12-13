@@ -62,7 +62,7 @@
 		   			<div class="data-detall-cell club-pagatweb">{{ dades['importweb'] |number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell club-estat">
 		   			{{ club.estat.descripcio }}
-		   			{% if club.estat.control == 0 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
+		   			{% if club.impressio == 1 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
 		   			</div>
 		   			<div class="data-detall-cell club-limit">{{ club.limitcredit|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell club-gessaldos">
@@ -78,7 +78,7 @@
 			   			</div>
 		   			</div>
 		   			<div class="data-detall-cell club-actions">
-		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'DIFB' }) }}">
+		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'DIFE' }) }}">
 		   				<img src="{{ asset('images/icon_green.gif') }}" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" width="23px"></a>
 		   			<a class="clubs-action-upd" href="{{ path('FecdasPartesBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'IMME' }) }}">
 		   				<img src="{{ asset('images/icon_orange.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" width="23px"></a>

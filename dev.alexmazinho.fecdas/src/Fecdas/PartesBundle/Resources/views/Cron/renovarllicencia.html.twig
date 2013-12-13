@@ -15,8 +15,10 @@
 	{% endif %}		
     
 	<form id="formrenovar" action="{{ path('FecdasPartesBundle_renovarllicencia') }}" method="post" {{ form_enctype(form) }}  class="appform">
-	    <div id="list-header" class="clearfix">
-			<div class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}</div>
+		<div class="table-header">	
+	    	<div id="list-header">
+				<div class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}</div>
+			</div>
 		</div>
 	
 		<div id="formparte-llicencia" class="parte-llicencia">

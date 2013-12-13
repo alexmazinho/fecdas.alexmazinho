@@ -250,9 +250,10 @@ class AdminController extends BaseController {
 		$em = $this->getDoctrine()->getEntityManager();
 		
 		switch ($estat) {
-			case 'DIFB':  // Pagament diferit
+			case 'DIFE':  // Pagament diferit
 
-				if ($request->query->get('imprimir') == 'true') $estat = 'DIFA'; 
+				if ($request->query->get('imprimir') == 'true') $club->setImpressio(true);
+				else $club->setImpressio(false);
 
 				break;
 			case 'IMME':  // Pagament immediat

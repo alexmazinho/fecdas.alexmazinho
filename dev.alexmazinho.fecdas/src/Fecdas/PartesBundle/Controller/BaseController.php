@@ -204,7 +204,7 @@ class BaseController extends Controller {
 				// Comprovar si sol·lapen
 				if (($fivigencia_nova >= $inicivigencia_existent) &&
 					($inicivigencia_nova <= $fivigencia_existent)) {
-					return $llicencia_iter->getParte()->getDataalta(); // Error, sol·lapen
+					return $llicencia_iter->getParte(); // Error, sol·lapen
 				}
 			}
 		}
@@ -485,19 +485,24 @@ class BaseController extends Controller {
 		->setBcc($bccmails)
 		->setTo($tomails);
 			
-		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
-		
+		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo-mail.png'));
+
 		$footer = "<p>Atentament<br/>";
 		$footer .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
-		$footer .= "<p><small>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES<br/>";
+		
+		$footer .= "<div style='float:left;padding-right:20px'><img src=".$logosrc." alt='FECDAS' /></div>";
+		$footer .= "<div style='float:left;'>";
+		$footer .= "<small>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES<br/>";
 		$footer .= "08930  SANT ADRIÀ DE BESÒS<br/>";
 		$footer .= "Tel. 93-356 05 43<br/>";
 		$footer .= "Fax: 93-356 30 73<br/>";
 		$footer .= "E-mail: ".self::MAIL_CONTACTE."<br/>";
-		$footer .= "</small></p>"; 
-		$footer .= "<img src=".$logosrc." alt='FECDAS' />";
+		$footer .= "</small></div>"; 
 		
-		$body = "<html><head></head><body>".$body.$footer."</body></html>";
+		
+		$body = "<html style='font-family: Helvetica,Arial,sans-serif;'><head></head><body>".$body.$footer."</body></html>";
+		
+		echo $body; 
 		
 		$message->setBody($body, 'text/html');
 		

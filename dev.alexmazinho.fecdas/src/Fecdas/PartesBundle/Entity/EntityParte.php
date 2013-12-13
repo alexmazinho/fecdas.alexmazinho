@@ -966,8 +966,8 @@ class EntityParte {
     
     /**
      * Comprova si el club pot imprimir les llicències 
-     * Clubs DIFA  --> sempre
-     * Clubs DIFB i IMME --> llicències pagades i web
+     * Clubs DIFE amb impressio   --> sempre
+     * Clubs IMME --> llicències pagades i web
      * Clubs NOTR --> Mai
      *
      * @return boolean
@@ -976,10 +976,9 @@ class EntityParte {
     {
     	if ($this->web == false) return false;  // No web no permet imprimir
     	
-    	if ($this->club->getEstat()->getCodi() == "DIFA") return true;  // DIFA sempre
+    	if ($this->club->getEstat()->getCodi() == "DIFE" and $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
     	
-    	if ($this->club->getEstat()->getCodi() != "DIFB" and 
-    		$this->club->getEstat()->getCodi() != "IMME") return false; // NOTR mai 
+    	if ($this->club->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
 
     	if ($this->dadespagament != null) return true;  // La resta poden imprimir si està pagat
     	

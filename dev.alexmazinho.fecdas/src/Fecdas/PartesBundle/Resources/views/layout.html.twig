@@ -26,19 +26,11 @@
 	{# if ( not ( app.session.has('username') and app.session.has('remote_addr') ) or
     	  ( app.session.get('remote_addr') != app.request.server.get("REMOTE_ADDR") ) )  #}
    	{% if authenticated == false  %}
-    	<a href="javascript:login();">Iniciar sessió<img src="{{ asset('images/icon_login.png') }}"></a>
+    	<a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió<img src="{{ asset('images/icon_login.png') }}"></a>
   	{% else %}
     	{{ app.session.get('username') }} <a href="{{ path('FecdasPartesBundle_logout') }}"><img src="{{ asset('images/icon_signout.png') }}"></a>
-	{% endif %}
-	
-	<div id="loginbox" class="login-bubble"> 
-		{% render "FecdasPartesBundle:Security:getLoginForm" %}
-		{#<a href="{{ path('FecdasPartesBundle_contact', { 'subject': 'Reiniciar password' }) }}">Password perdut?</a>#}
-		<a href="{{ path('FecdasPartesBundle_pwdrecovery') }}">Password perdut?</a>
-	</div> 
-	
-	{% if authenticated == true  %}
-		<div id="block-useractions">
+
+    	<div id="block-useractions">
 			<div><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
 			<div><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
 			{% if enquestausuari is defined and enquestausuari == true %}
@@ -46,7 +38,7 @@
 			{% endif %}
 			<div><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
 		</div>
-	{% endif %}
+   	{% endif %}
 	
 {% endblock %}
 

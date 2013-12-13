@@ -386,54 +386,19 @@ class PageController extends BaseController {
 				throw new \Exception('L\'edat d\'una de les persones no correspon amb el tipus de llicència (DNI: ' . $row['dni'] . ')');
 			}
 			
-			$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona());
-			if ($dataoverlapllicencia != null) {
+			$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona());
+			if ($parteoverlap != null) {
 				// Comprovar que no hi ha llicències vigents
 				// Per la pròpia persona
 				throw new \Exception('Una de les persones ja té una llicència per a l\'any actual en aquest club, en data ' .
-							$dataoverlapllicencia->format('d/m/Y') . ' (DNI: ' . $row['dni'] . ')');
+							$parteoverlap->getDataalta()->format('d/m/Y') . ' (DNI: ' . $row['dni'] . ')');
 			}
-			
-			// Comprovar que no hi ha llicències vigents de la persona en difents clubs, per DNI
-			// Les persones s'associen a un club, mirar si existeix a un altre club
-			
-			/*
-			 * 
-			 * 
-			 * Trec de moment aquesta validació, és transparent a l'usuari i no se si li fan molt de cas al mail 
-			 * 
-			$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-			$strQuery .= " WHERE p.dni = :dni ";
-			$strQuery .= " AND p.club <> :club ";
-			$strQuery .= " AND p.databaixa IS NULL";
-													
-			$query = $em->createQuery($strQuery)
-					->setParameter('dni', $llicencia->getPersona()->getDni())
-					->setParameter('club', $llicencia->getPersona()->getClub()->getCodi());
-											
-			$personaaltresclubs = $query->getResult();
-											
-			foreach ($personaaltresclubs as $c => $persona_iter) {
-				$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $persona_iter);
-				if ($dataoverlapllicencia != null) {
-					// Enviar mail a FECDAS
-					$mails = $this->getAdminMails();
-					$this->sendMailLlicenciaDuplicada($mails, $llicencia->getPersona(), $persona_iter, $dataoverlapllicencia);
-				}
-			}
-			
-			*/
-			
-			
-			
 		} 
 		
 		if ($fila == 0) throw new \Exception('No s\'ha trobat cap llicència al fitxer');
 		
 		$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
-		
 	}
-
 	
 	public function partesAction() {
 		$request = $this->getRequest();
@@ -785,41 +750,15 @@ class PageController extends BaseController {
 			foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
 				// Comprovar que no hi ha llicències vigents
 				// Per la pròpia persona
-				$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia_iter, $llicencia_iter->getPersona());
-				if ($dataoverlapllicencia != null) {
+				$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia_iter, $llicencia_iter->getPersona());
+				if ($parteoverlap != null) {
 					$form->get('llicencies')->get($c)->get('renovar')->setData(false);
 					$form->get('llicencies')->get($c)->remove('renovar');
 					
 					$avisos .= "- El Federat " . $llicencia_iter->getPersona()->getNom() . " " . $llicencia_iter->getPersona()->getCognoms();
 					$avisos .= " ja té una llicència vigent en aquest club, en data ";
-					$avisos .= $dataoverlapllicencia->format('d/m/Y') . "<br/>";
+					$avisos .= $parteoverlap->getDataalta()->format('d/m/Y') . "<br/>";
 					continue;
-				}
-			
-				// Comprovar que no hi ha llicències vigents de la persona en difents clubs, per DNI
-				// Les persones s'associen a un club, mirar si existeix a un altre club
-				$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-				$strQuery .= " WHERE p.dni = :dni ";
-				$strQuery .= " AND p.club <> :club ";
-				$strQuery .= " AND p.databaixa IS NULL";
-			
-				$em = $this->getDoctrine()->getEntityManager();
-				$query = $em->createQuery($strQuery)
-				->setParameter('dni', $llicencia_iter->getPersona()->getDni())
-				->setParameter('club', $llicencia_iter->getPersona()->getClub()->getCodi());
-			
-				$personaaltresclubs = $query->getResult();
-			
-				foreach ($personaaltresclubs as $p => $persona_iter) {
-					$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia_iter, $persona_iter);
-					if ($dataoverlapllicencia != null) {
-						$form->get('llicencies')->get($c)->get('renovar')->setData(false);
-						$form->get('llicencies')->get($c)->remove('renovar');
-						
-						$avisos .= "- El Federat " . $llicencia_iter->getPersona()->getNom() . " " . $llicencia_iter->getPersona()->getCognoms();
-						$avisos .= " ja té una llicència vigent<br/>";
-						continue;
-					}
 				}
 			
 				if ($this->validaLlicenciaInfantil($llicencia_iter) == false) {
@@ -1050,36 +989,12 @@ class PageController extends BaseController {
 				if ($valida == true) {
 					// Comprovar que no hi ha llicències vigents 
 					// Per la pròpia persona
-					$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
-					if ($dataoverlapllicencia != null) {
+					$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
+					if ($parteoverlap != null) {
 						$this->get('session')->setFlash('error-notice',
 								'Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
-								$dataoverlapllicencia->format('d/m/Y'));
+								$parteoverlap->getDataalta()->format('d/m/Y'));
 						$valida = false;
-					}
-				}
-				
-				if ($valida == true) {
-					// Comprovar que no hi ha llicències vigents de la persona en difents clubs, per DNI
-					// Les persones s'associen a un club, mirar si existeix a un altre club
-					$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-					$strQuery .= " WHERE p.dni = :dni ";
-					$strQuery .= " AND p.club <> :club ";
-					$strQuery .= " AND p.databaixa IS NULL";
-							
-					$query = $em->createQuery($strQuery)
-						->setParameter('dni', $llicencia->getPersona()->getDni())
-						->setParameter('club', $llicencia->getPersona()->getClub()->getCodi());
-					
-					$personaaltresclubs = $query->getResult();
-							
-					foreach ($personaaltresclubs as $c => $persona_iter) {
-						$dataoverlapllicencia = $this->validaPersonaTeLlicenciaVigent($llicencia, $persona_iter);
-						if ($dataoverlapllicencia != null) {
-							// Enviar mail a FECDAS
-							$mails = $this->getAdminMails();
-							$this->sendMailLlicenciaDuplicada($mails, $llicencia->getPersona(), $persona_iter, $dataoverlapllicencia);
-						}
 					}
 				}
 				
@@ -1165,16 +1080,6 @@ class PageController extends BaseController {
 		if ($dataalta < $avui) return false;
 		return true;
 	} 
-	
-	private function sendMailLlicenciaDuplicada ($mails, EntityPersona $personaNova, EntityPersona $personaExistent, \DateTime $datallicencia) {
-		$message = \Swift_Message::newInstance()
-			->setSubject('::Llicència Duplicada Diferents Clubs::')
-			->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-			->setTo($mails)
-			->setBody($this->renderView('FecdasPartesBundle:Page:llicenciaDuplicadaEmail.txt.twig', 
-					array('personanova' => $personaNova, 'personaexistent' => $personaExistent, 'datallicencia' => $datallicencia)));
-		$this->get('mailer')->send($message);
-	}
 	
 	public function llicenciaAction() {
 		$request = $this->getRequest();

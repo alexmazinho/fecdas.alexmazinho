@@ -134,6 +134,11 @@ class EntityClub {
 	protected $estat;	// FK taula m_clubestats
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $impressio;
+	
+	/**
 	 * @ORM\Column(type="decimal", precision=6, scale=2)
 	 */
 	protected $limitcredit;
@@ -665,6 +670,27 @@ class EntityClub {
     	return $this->estat;
     }
     
+    
+    /**
+     * Set impressio
+     *
+     * @param boolean $impressio
+     */
+    public function setImpressio($impressio)
+    {
+    	$this->impressio = $impressio;
+    }
+    
+    /**
+     * Get impressio
+     *
+     * @return boolean
+     */
+    public function getImpressio()
+    {
+    	return $this->impressio;
+    }
+    
     /**
      * Set limitcredit
      *
@@ -881,8 +907,17 @@ class EntityClub {
     	$dades['llicencies'] = $nllicencies;
     	$dades['import'] = $nimport;
     	$dades['importweb'] = $nimportweb;
-    	$dades['deutegestor'] = round($this->romanent + $this->totalllicencies + $this->totalkits + $this->totalaltres - $this->totalpagaments,2);
+    	$dades['deutegestor'] = $this->getDeutegestor();
     	return $dades;
+    }
+    
+    /**
+     * Retorna el deute del club
+     *
+     * @return decimal
+     */
+    public function getDeutegestor() {
+    	return round($this->romanent + $this->totalllicencies + $this->totalkits + $this->totalaltres - $this->totalpagaments, 2);
     }
     
     /**
@@ -906,11 +941,21 @@ class EntityClub {
     }
     
     /**
-     * Indica si els els partes del club queden pendents de pagament 
+     * Indica si els partes del club queden pendents de pagament 
      *
      * @return boolean
      */
     public function pendentPagament() {
-    	return $this->estat->getCodi() != 'DIFA' and $this->estat->getCodi() != 'DIFB';
+    	return $this->estat->getCodi() != 'DIFE';
     }
+    
+    /**
+     * Indica si cal controlar el crèdit del club 
+     *
+     * @return boolean
+     */
+    public function controlCredit() {
+    	return $this->estat->getCodi() == 'DIFE';
+    }
+    
 }

@@ -736,8 +736,9 @@ class PDFController extends BaseController {
 						'', false, false, 1, false, false, false);
 				
 				// set color for text and font
-				$pdf->SetTextColor(255, 255, 255); // Blanc
+				$pdf->SetTextColor(240, 240, 240); // Gris
 				$pdf->SetFillColor(255, 255, 255); // 
+				/*
 				$pdf->SetFont('dejavusans', 'B', 5.5, '', true);
 				
 				$x = $x_ini + 47;
@@ -757,18 +758,47 @@ class PDFController extends BaseController {
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Entitat: " . $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
 				
 				$y += 5;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);*/
 
+				$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
+				
+				$x = $x_ini + 54.2;
+				$y = $y_ini + 39.2;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 62.5;
+				$y = $y_ini + 43;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 65;
+				$y = $y_ini + 46.7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 63.6;
+				$y = $y_ini + 50.7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 56;
+				$y = $y_ini + 54.5;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 60;
+				$y = $y_ini + 58.3;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
+				
 				//$datacaduca = $llicencia->getParte()->getDataalta();
 				// Caducat 30 dies des de data impressió
 				$datacaduca = $this->getCurrentDate();
 				$datacaduca->add(new \DateInterval('P30D'));  // 30 dies
 				
 				if ($datacaduca > $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 1 "))) $datacaduca = $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 2 "));
-				
+				/*
 				$x += 32;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
-								
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);*/
+				$x += 41;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				
+				
 				// reset pointer to the last page
 				$pdf->lastPage();
 				

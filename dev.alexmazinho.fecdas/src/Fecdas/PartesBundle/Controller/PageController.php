@@ -94,6 +94,8 @@ class PageController extends BaseController {
 			return $response;
 		}
 		
+		$em = $this->getDoctrine()->getEntityManager();
+		
 		/* Form importcsv */
 		
 		$currentDate = $this->getCurrentDate('now');
@@ -101,11 +103,26 @@ class PageController extends BaseController {
 		$endYear = $currentDate->format('Y');
 		$currentMonth = $currentDate->format('m');
 		$currentDay = $currentDate->format('d');
-		
+
 		if ($currentMonth == 12 and $currentDay >= 10) $endYear++; // A partir 10/12 poden fer llicències any següent
 		
+		// Data modificada, refer llista tipus
+		$tipusparte = null;
+		if ($request->getMethod() == 'POST' and $request->request->has('form')) {
+				$formdata = $request->request->get('form');
+				if (isset($formdata['dataalta'])) {
+					$currentDay = $formdata['dataalta']['date']['day'];
+					$currentMonth = $formdata['dataalta']['date']['month'];
+				}
+				if (isset($formdata['tipus'])) {
+					echo $formdata['tipus'];
+					$tipusparte = $em->getRepository('FecdasPartesBundle:EntityParteType')->find($formdata['tipus']);
+					echo $tipusparte->getDescripcio();
+				}
+		}
+		
 		$llistatipus = $this->getLlistaTipusParte($this->getCurrentClub()->getCodi(), $currentDay, $currentMonth);
-			
+		
 		$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
 		
 		$atributs = array('accept' => '.csv');
@@ -122,7 +139,7 @@ class PageController extends BaseController {
 						return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
 							->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
 							->setParameter('llistatipus', $llistatipus);
-						}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1,
+						}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1
 					));
 		
 		/* Admins poden escollir club */
@@ -144,8 +161,6 @@ class PageController extends BaseController {
 			if ($form->isValid()) {
 				$file = $form->get('importfile')->getData();
 				try {
-					$em = $this->getDoctrine()->getEntityManager();
-					
 					if (!$file->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $file->getMaxFilesize());
 					
 					$parte = new EntityParte($this->getCurrentDate());
@@ -202,16 +217,9 @@ class PageController extends BaseController {
 				}					
 			} else {
 				// Fitxer massa gran normalment
-				$this->get('session')->setFlash('error-notice',implode(",",$this->getErrorMessages($form)));					
+				$this->get('session')->setFlash('error-notice',"Error important ek fitxer");
 			}
-			
-			// Restore tipus parte del POST
-			
-			if ($tipusparte != null)  {
-				$tipusparte->getDescripcio();
-				$form->get('tipus')->setData($tipusparte); /* No funciona !?!?*/
-				
-			}
+
 		} else {
 			$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV VIEW',
 					$this->get('session')->get('remote_addr'),

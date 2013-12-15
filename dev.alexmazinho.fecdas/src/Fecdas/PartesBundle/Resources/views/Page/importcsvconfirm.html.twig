@@ -31,21 +31,23 @@
 			   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
 			</div>
 		</div>
-		<ul id="summary-data">
-			<li class="data-totals data-detall">
-				<div class="parte-titol">Resum</div>
-		  		<div class="parte-totals">Aficionats</div>
-		   		<div class="parte-totals">Infantils</div>
-		   		<div class="parte-totals">Tècnics</div>
-		   	</li>
-			<li class="data-totals data-detall">
-				<div class="parte-totals">   	
-				</div>
-		  		<div class="parte-totals">{{ parte.numAficionats }}</div>
-		   		<div class="parte-totals">{{ parte.numInfantils }}</div>
-		   		<div class="parte-totals">{{ parte.numTecnics }}</div>
-		   	</li>
-		</ul>
+		<div class="table-noscroll">
+			<ul id="summary-data">
+				<li class="data-totals data-detall">
+					<div class="data-detall-cell parte-titol">Resum</div>
+			  		<div class="data-detall-cell parte-totals">Aficionats</div>
+			   		<div class="data-detall-cell parte-totals">Infantils</div>
+			   		<div class="data-detall-cell parte-totals">Tècnics</div>
+			   	</li>
+				<li class="data-totals data-detall">
+					<div class="data-detall-cell parte-totals">   	
+					</div>
+			  		<div class="data-detall-cell parte-totals">{{ parte.numAficionats }}</div>
+			   		<div class="data-detall-cell parte-totals">{{ parte.numInfantils }}</div>
+			   		<div class="data-detall-cell parte-totals">{{ parte.numTecnics }}</div>
+			   	</li>
+			</ul>
+		</div>
 		<div class="table-header">
 			<div id="list-header">
 			   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències<span class="listheader-order"></span></div>

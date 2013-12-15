@@ -115,9 +115,7 @@ class PageController extends BaseController {
 					$currentMonth = $formdata['dataalta']['date']['month'];
 				}
 				if (isset($formdata['tipus'])) {
-					echo $formdata['tipus'];
 					$tipusparte = $em->getRepository('FecdasPartesBundle:EntityParteType')->find($formdata['tipus']);
-					echo $tipusparte->getDescripcio();
 				}
 		}
 		
@@ -469,7 +467,8 @@ class PageController extends BaseController {
 	
 		$em = $this->getDoctrine()->getEntityManager();
 	
-		$currentClub = $this->getCurrentClub()->getCodi();
+		if ($this->isCurrentAdmin()) $currentClub = "";
+		else $currentClub = $this->getCurrentClub()->getCodi();
 		$currentDNI = "";
 		$currentNom = "";
 		$currentCognoms = "";
@@ -483,8 +482,9 @@ class PageController extends BaseController {
 				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
 				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
 				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
-				if (isset($formdata['vigent'])) $currentVigent = ($formdata['vigent'] == 1)?true:false;
-				
+				if (isset($formdata['vigent'])) $currentVigent = true;
+				else $currentVigent = false;
+								
 				$this->logEntry($this->get('session')->get('username'), 'VIEW PERSONES SEARCH',
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'),
@@ -497,7 +497,7 @@ class PageController extends BaseController {
 					$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		}
 	
-		$formBuilder = $this->createClubsForm($currentClub); 
+		$formBuilder = $this->createClubsForm($currentClub, false); 
 		$formBuilder->add('dni', 'search', array('required'  => false,));
 		$formBuilder->add('nom', 'search', array('required'  => false,));
 		$formBuilder->add('cognoms', 'search', array('required'  => false,));
@@ -508,28 +508,41 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getEntityManager();
 		
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-		$strQuery .= " WHERE p.club = :club ";
-		$strQuery .= " AND p.databaixa IS NULL ";
+		$strQuery .= " WHERE p.databaixa IS NULL ";
 		
+		if ($currentClub != "") $strQuery .= " AND p.club = :club ";
 		if ($currentDNI != "") $strQuery .= " AND p.dni LIKE :dni ";
 		if ($currentNom != "") $strQuery .= " AND p.nom LIKE :nom ";
 		if ($currentCognoms != "") $strQuery .= " AND p.cognoms LIKE :cognoms ";
 
 		$strQuery .= " ORDER BY p.cognoms, p.nom";
 		
-		$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
+		//$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
+		$query = $em->createQuery($strQuery);
 		
-		if ($currentDNI != "") {
-			$query->setParameter('dni', "%" . $currentDNI . "%");
-			$form->get('dni')->setData($currentDNI);
-		}
-		if ($currentNom != "") {
-			$query->setParameter('nom', "%" . $currentNom . "%");
-			$form->get('nom')->setData($currentNom);
-		}
-		if ($currentCognoms != "") {
-			$query->setParameter('cognoms', "%" . $currentCognoms . "%");
-			$form->get('cognoms')->setData($currentCognoms);
+		
+		if ($currentClub == "" and $currentDNI == "" and $currentNom == "" and $currentCognoms == "") {
+			// Sense club. Si no s'indica filtre dades personals mostr 0 resultats
+			$query = $em->createQuery($strQuery)->setMaxResults(0);				
+		} else {
+			// Algun filtre
+			$query = $em->createQuery($strQuery);
+			if ($currentClub != "") {
+				$query->setParameter('club', $currentClub);
+				$form->get('clubs')->setData($currentClub);
+			}
+			if ($currentDNI != "") {
+				$query->setParameter('dni', "%" . $currentDNI . "%");
+				$form->get('dni')->setData($currentDNI);
+			}
+			if ($currentNom != "") {
+				$query->setParameter('nom', "%" . $currentNom . "%");
+				$form->get('nom')->setData($currentNom);
+			}
+			if ($currentCognoms != "") {
+				$query->setParameter('cognoms', "%" . $currentCognoms . "%");
+				$form->get('cognoms')->setData($currentCognoms);
+			}
 		}
 		
 		$persones = $query->getResult();
@@ -541,13 +554,14 @@ class PageController extends BaseController {
 						'enquestausuari' => $this->get('session')->has('enquestapendent')));
 	}
 	
-	private function createClubsForm($currentClub) {
+	private function createClubsForm($currentClub, $required = true) {
 		$clubsvalues = $this->getClubsSelect();
 		
 		if ($this->isCurrentAdmin()) {
 			$formBuilder = $this->createFormBuilder()
 			->add('clubs', 'choice', array('choices' => $clubsvalues,
 					'data' => $currentClub,
+					'required'  => $required,
 					'attr' => (array('onchange' => 'this.form.submit()'))));
 		} else {
 			$formBuilder = $this->createFormBuilder()

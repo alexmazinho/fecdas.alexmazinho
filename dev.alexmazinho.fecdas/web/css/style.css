@@ -352,18 +352,23 @@ html[xmlns] .clearfix {
 }
 
 #header-asseguratid { display:none}
+#header-asseguratclub {	width: 15%;  }
 #header-asseguratdni {	width: 11%;  }
 #header-asseguratnom {	width: 12%; text-align: left;}
 #header-asseguratcognoms {	width: 18%;text-align: left;}
 #header-assegurattipusdesc { width: 35%;text-align: left;}
+#header-assegurattipusdescadm { width: 20%;text-align: left;} /* ample = #header-assegurattipusdesc - #header-asseguratclub */
 #header-asseguratactions { width: 14%; }
 
 .assegurat-id {	display:none}
+.assegurat-club { width: 15%;  }
 .assegurat-dni { width: 11%;  }
 .assegurat-nom { width: 12%; text-align: left; }
 .assegurat-cognoms { width: 18%; text-align:left;}
 .assegurat-tipusdesc { width: 35%; text-align:left;}
 .assegurat-novigent { width: 35%; text-align:left; }
+.assegurat-tipusdescadm { width: 20%; text-align:left;} /* ample = .assegurat-tipusdesc - .assegurat-club */
+.assegurat-novigentadm { width: 20%; text-align:left; } /* ample = .assegurat-novigent - .assegurat-club */
 .assegurat-actions { width: 14%; text-align:right; }
 
 input#form_nom,

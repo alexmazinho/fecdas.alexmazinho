@@ -10,7 +10,7 @@
 
 {% block body %}
 	<header>
-        <h1>Relació d'assegurats vigents</h1>
+        <h1>Relació d'assegurats</h1>
     </header>
 
    	<form action="{{ path('FecdasPartesBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
@@ -54,10 +54,12 @@
 		<div class="table-header">	
 		   	<div id="list-header">
 		   		<div id="header-asseguratid" class="col-listheader">id</div>
+		   		{% if admin == true %}<div id="header-asseguratclub" class="col-listheader">Club<span class="listheader-order"></span></div>{% endif %}
 		   		<div id="header-asseguratdni" class="col-listheader">DNI<span class="listheader-order"></span></div>
 		   		<div id="header-asseguratnom" class="col-listheader">Nom<span class="listheader-order"></span></div>
 		   		<div id="header-asseguratcognoms" class="col-listheader">Cognoms<span class="listheader-order"></span></div>
-		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Vigència de la llicència</div>
+		   		{% if admin == true %}<div id="header-assegurattipusdescadm" class="col-listheader listheader-noorder">Vigència de la llicència</div>
+		   		{% else %}<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Vigència de la llicència</div>{% endif %}
 		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">&nbsp;</div>
 		   	</div>
 	   	</div>
@@ -68,11 +70,15 @@
 				{% if vigents != true or (vigents == true and persona.llicenciaVigent is not null)  %}
 			   		<li class="data-detall">
 				   		<div class="data-detall-cell assegurat-id">{{ persona.id }}</div>
+				   		{% if admin == true %}
+				   		<div class="data-detall-cell assegurat-club">{% if  persona.club is not null %}{{ persona.club.nom }}{% else %}--{% endif %}</div>
+				   		{% endif %}
 				   		<div class="data-detall-cell assegurat-dni">{{ persona.dni }}</div>
 				   		<div class="data-detall-cell assegurat-nom">{{ persona.nom }}</div>
 				   		<div class="data-detall-cell assegurat-cognoms">{{ persona.cognoms }}</div>
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
-							<div class="data-detall-cell assegurat-tipusdesc">{{ persona.llicenciaVigent.categoria.descripcio }} fins al {{ persona.llicenciaVigent.parte.datacaducitat|date('d/m/Y') }}</div>
+							{% if admin == true %}<div class="data-detall-cell assegurat-tipusdescadm">{{ persona.llicenciaVigent.categoria.descripcio }} fins al {{ persona.llicenciaVigent.parte.datacaducitat|date('d/m/Y') }}</div>
+							{% else %}<div class="data-detall-cell assegurat-tipusdesc">{{ persona.llicenciaVigent.categoria.descripcio }} fins al {{ persona.llicenciaVigent.parte.datacaducitat|date('d/m/Y') }}</div>{% endif %}
 							<div class="data-detall-cell assegurat-actions">
 							{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
 							<a class="action-cell llicencia-imprimir" href="{{ path('FecdasPartesBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}">
@@ -89,7 +95,8 @@
 			   				</div>
 			   			{% else %}
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-				   				<div class="data-detall-cell assegurat-novigent">Darrera llicència finalitzada en data {{ persona.lastLlicencia.parte.datacaducitat|date('d/m/Y') }}</div>
+				   				{% if admin == true %}<div class="data-detall-cell assegurat-novigentadm">Darrera llicència finalitzada en data {{ persona.lastLlicencia.parte.datacaducitat|date('d/m/Y') }}</div>
+				   				{% else %}<div class="data-detall-cell assegurat-novigent">Darrera llicència finalitzada en data {{ persona.lastLlicencia.parte.datacaducitat|date('d/m/Y') }}</div>{% endif %}
 				   				
 				   				<div class="data-detall-cell assegurat-actions">
 			   					<a class="llicencia-renovar" href="{{ path('FecdasPartesBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}">
@@ -100,7 +107,8 @@
 			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
 			   					</div>
 			   				{% else %}
-			   					<div class="data-detall-cell assegurat-novigent">Persona sense historial de llicències</div>
+			   					{% if admin == true %}<div class="data-detall-cell assegurat-novigentadm">Persona sense historial de llicències</div>
+			   					{% else %}<div class="data-detall-cell assegurat-novigent">Persona sense historial de llicències</div>{% endif %}
 			   					
 			   					<div class="data-detall-cell assegurat-actions"><a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
 			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a></div>
@@ -113,7 +121,7 @@
 		</div>
 	   	{% else %}
 	   		
-	        <div class="sms-notice">No hi ha assegurats vigents per aquest club</div>
+	        <div class="sms-notice">Cerca sense resultats</div>
 	    {% endif %}
 	</div>
     

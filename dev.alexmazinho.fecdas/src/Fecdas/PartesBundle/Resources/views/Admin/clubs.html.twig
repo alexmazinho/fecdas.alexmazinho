@@ -64,7 +64,7 @@
 		   			{{ club.estat.descripcio }}
 		   			{% if club.impressio == 1 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
 		   			</div>
-		   			<div class="data-detall-cell club-limit">{{ club.limitcredit|number_format(2, ',') }} €</div>
+		   			<div class="data-detall-cell club-limit" data-limit="{{ club.limitcredit|number_format(2, '.') }}">{{ club.limitcredit|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell club-gessaldos">
 		   				{{ dades['deutegestor']|number_format(2, ',') }} €
 			   			<div class="detall-saldos">
@@ -75,6 +75,7 @@
 				   			<p>Factures kits: <span>{{ club.totalkits|number_format(2, ',') }} €</span></p>
 				   			<p>Altres factures: <span>{{ club.totalaltres|number_format(2, ',') }} €</span></p>
 				   			<p>Pagaments rebuts: <span>{{ club.totalpagaments|number_format(2, ',') }} €</span></p>
+				   			<p>Ajust subvencions: <span>{{ club.ajustsubvencions|number_format(2, ',') }} €</span></p>
 			   			</div>
 		   			</div>
 		   			<div class="data-detall-cell club-actions">

@@ -478,11 +478,17 @@ class CronController extends BaseController {
 	
 	
 	public function informesaldosAction() {
-		/* Informe trimestral de saldos als clubs */
-		/* Planificar cron diari
+		/* Informe trimestral de saldos als clubs 
+		 * 31 de març, 30 de juny, 30 setembre i 30 novembre
+		 * Planificar cron diari
 		 * wget -O - -q http://fecdas.dev/app_dev.php/informesaldos >> informesaldos.txt*/
 
 		$sortida = "";
+		
+		// Comprovar les dates de l'enviament 
+		$datesinforme = explode(";", self::DATES_INFORME_TRIMESTRAL);
+		$current_dm = $this->getCurrentDate()->format('d/m');
+		if (!in_array($current_dm, $datesinforme)) return new Response("N/A");
 		
 		$request = $this->getRequest();
 	
@@ -528,9 +534,9 @@ class CronController extends BaseController {
 			$body .= "<p>Per a qualsevol dubte, us podeu posar en contacte amb la Federació Catalana d'Activitats Subaquàtiques (FECDAS)</p>";
 			
 		
-			if ($club_iter->getCodi()=='CAT020') $this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 			
-			//$sortida .= $body;
+			$sortida .= $body;
 		}
 	
 	

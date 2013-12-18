@@ -178,8 +178,9 @@ class PDFController extends BaseController {
 					$text = '<b>FACTURA PAGADA</b>';
 					$pdf->writeHTML($text, true, false, false, false, '');
 					
-					if ((number_format($parte->getPreuTotalIVA(), 2, ',', '.') != number_format($parte->getImportpagament(), 2, ',', '.'))
-					or $parte->isFacturaValida() == false) {
+					if ($parte->isFacturaValida() == false) {
+					/*if ((number_format($parte->getPreuTotalIVA(), 2, ',', '.') != number_format($parte->getImportpagament(), 2, ',', '.'))
+					or $parte->isFacturaValida() == false) {*/
 						// Ha canviat la factura, mostra avís factura obsoleta
 						$pdf->SetFont('dejavusans', '', 14, '', true);
 						$y = $y_ini + 120;

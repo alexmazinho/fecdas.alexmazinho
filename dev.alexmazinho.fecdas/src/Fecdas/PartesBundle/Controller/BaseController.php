@@ -18,10 +18,12 @@ class BaseController extends Controller {
 	const RECENTS_CLUBS_DEFAULT_STATE = 0;
 	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
 	const CLUB_SENSE_TRAMITACIO = 'NOTR';
+	const CLUB_PAGAMENT_DIFERIT = 'DIFE';
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
 	const INICI_REVISAR_CLUBS_DAY = '09';
 	const INICI_REVISAR_CLUBS_MONTH = '12';
+	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
 	
 	protected function getCurrentDate($time = null) {
 		//function to fake date, testing purpouse

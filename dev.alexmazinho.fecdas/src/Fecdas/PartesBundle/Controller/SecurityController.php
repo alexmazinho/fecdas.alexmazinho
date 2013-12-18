@@ -345,6 +345,7 @@ class SecurityController extends BaseController
     				if ($club->getCodi() == "") {
     					// Nou club
     					$club->setCodi($codiclub);
+    					$club->setEstat($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClubEstat')->find(self::CLUB_PAGAMENT_DIFERIT));
     					$em->persist($club);
     				
 	    				// Crear el primer usuari de club, amb el mail del club
@@ -419,6 +420,7 @@ class SecurityController extends BaseController
    		$options = array('codiclub' => $club->getCodi(),
    				'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
+   		$form->get('saldoclub')->setData($club->getDeutegestor() * (-1));
    		if ($this->isCurrentAdmin() == true) {
    			$form->get('codishow')->setData($club->getCodi());
    		}

@@ -69,7 +69,7 @@
 				</div>
 			{% endif %}	
 			<div id="buttons-top" class="form-right" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-				{% if parte.datapagament is null %}
+				{% if not parte.pagat and parte.pendentSincronitzar %}
 				<!-- No Pagat -->
 	        	<div class="button-top">	
 					<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 

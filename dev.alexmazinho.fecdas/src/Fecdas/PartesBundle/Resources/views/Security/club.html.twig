@@ -41,9 +41,10 @@
 				<li><a href="#formclub-dades-tab2">Adreces</a></li>
 				{% if admin == true %} 
 				<li><a href="#formclub-dades-tab3">Llicències admeses</a></li>
-				{% endif %}
-				{% if admin == true and club.codi is not null %} 
-				<li><a href="#formclub-dades-tab4">Nou usuari</a></li>
+				<li><a href="#formclub-dades-tab4">Saldos</a></li>
+					{% if club.codi is not null %} 
+						<li><a href="#formclub-dades-tab5">Nou usuari</a></li>
+					{% endif %}
 				{% endif %}
 			</ul>
 			<div id="formclub-dades-tab1" class="formclub-tab">		
@@ -131,8 +132,9 @@
 					</div>
 				</div>
 	        </div>
-	        <div id="formclub-dades-tab3" class="formclub-tab" {% if admin != true %}  style="display:none" {% endif %} >
-	        	<div id="formclub-addradrecacorreu" >
+	        {% if admin == true %} 
+	        <div id="formclub-dades-tab3" class="formclub-tab" >
+	        	<div id="formclub-club_tipusparte" >
 						{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.tipusparte, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div>
@@ -142,7 +144,68 @@
 					</div>
 				</div>
 	        </div>
-	        <div id="formclub-dades-tab4" class="formclub-tab" {% if admin != true or club.codi is null %}  style="display:none" {% endif %} >
+	        <div id="formclub-dades-tab4" class="formclub-tab" >
+	        	<div class="colleft">
+		        	<div id="formclub-estat" class="formfield-row">
+							{{ form_label(form.estat, 'Estat:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.estat, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+		        	<div id="formclub-impressio" class="formfield-row">
+							{{ form_label(form.impressio, 'Impressió llicències:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.impressio, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+		        	<div id="formclub-limitcredit" class="formfield-row">
+							{{ form_label(form.limitcredit, 'Límit de crèdit:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.limitcredit, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+		        	<div id="formclub-limitnotificacio" class="formfield-row">
+							{{ form_label(form.limitnotificacio, 'Notificació límit superat:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.limitnotificacio, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+				</div>
+				<div class="colmiddle">
+		        	<div id="formclub-ajustsubvencions" class="formfield-row">
+							{{ form_label(form.ajustsubvencions, 'Ajust subvencions:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.ajustsubvencions, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+					<div id="formclub-totalllicencies" class="formfield-row">
+							{{ form_label(form.totalllicencies, 'Total llicències:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.totalllicencies, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+		        	<div id="formclub-totalkits" class="formfield-row">
+							{{ form_label(form.totalkits, 'Total kits:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.totalkits, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+		        	<div id="formclub-totalaltres" class="formfield-row">
+							{{ form_label(form.totalaltres, 'Total altres:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.totalaltres, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+				</div>
+				<div class="colright">
+		        	<div id="formclub-romanent" class="formfield-row">
+							{{ form_label(form.romanent, 'Romanent:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.romanent, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+		        	<div id="formclub-totalpagaments" class="formfield-row">
+							{{ form_label(form.totalpagaments, 'Total pagaments:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.totalpagaments, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+					<div id="formclub-dummy" class="formfield-row">
+						<div class="formlabel-left" >&nbsp;</div>
+						<div class="formfield-right">&nbsp;</div>
+					</div>
+		        	<div id="formclub-saldoclub" class="formfield-row">
+							{{ form_label(form.saldoclub, 'Saldo:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.saldoclub, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+				</div>
+				<div class="form-row-bottom clearfix">
+	       			<div class="textaccio">
+					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+					</div>
+				</div>
+	        </div>
+	        <div id="formclub-dades-tab5" class="formclub-tab" {% if club.codi is null %}  style="display:none" {% endif %} >
 	        	<a id="formclub-usuarinou" href="{{ path('FecdasPartesBundle_usuariclub') }}" style="display:none"></a>
 				<div class="form-row clearfix">
 					<div id="formuserclub-user"  class="form-left">
@@ -185,6 +248,7 @@
 					</div>
 				</div>
 	        </div>
+	       	{% endif %}
         </div>
 				
 		<div id="formclub-rest">	{{ form_rest(form) }}</div>
@@ -214,7 +278,7 @@ $(document).ready(function(){
 	reloadClub();
 
 	saveClub();
-
+	
 	copiarAdrecaClub();
 	
 	nouClub();

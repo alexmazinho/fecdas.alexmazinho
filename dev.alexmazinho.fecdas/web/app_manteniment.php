@@ -19,11 +19,16 @@
        </div>
 
        <div id="footer">
-          	<div class="powered">
-               	<div style="float: left;">Powered by<br>Symfony2 </div>
-               	<div><img src="images/sf-logo.png"/></div></div>
-               	<div><p><a href="http://www.fecdas.cat">FECDAS</a> - copyrigth 2012. created by <b>Àlex Macia</b></p>
-                  	<p>Federació Catalana d`Activitats Subaquàtiques NIF: Q5855006B</p></div>
-           </div>
+           	<div class="powered">
+           		<div style="float: left;">Powered by<br>Symfony2 </div>
+              		<div><img src="/images/sf-logo.png" width="25px"/></div>
+               	</div>
+           	<div class="fecdas-footer"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyrigth 2012<br/>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p></div>
+                <div class="created-by">
+				creat per <br/>
+				<a href="http://www.ondissenyweb.com" target="_blank"><img src="/images/logoOndissenyweb.png" width="75px"></a>
+			</div>
+       </div>
+       
     </body>
 </html>

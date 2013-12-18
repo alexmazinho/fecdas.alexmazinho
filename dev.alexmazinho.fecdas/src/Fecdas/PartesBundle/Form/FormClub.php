@@ -37,6 +37,60 @@ class FormClub extends AbstractType {
 			$builder->add('activat', 'checkbox', array(
 					'required'  => false,
 			));
+			
+		
+			$builder->add('estat', 'entity', array('class' => 'FecdasPartesBundle:EntityClubEstat', 'property' => 'descripcio',
+					'query_builder' => function($repository) {
+						return $repository->createQueryBuilder('e')->orderBy('e.codi', 'ASC');
+					})
+			);
+				
+			$builder->add('impressio', 'checkbox', array(
+					'required'  => false,
+			));
+			
+			$builder->add('limitcredit', 'money', array(
+					'grouping' => true,
+			));
+			
+			$builder->add('limitnotificacio', 'text', array(
+					'read_only'  => true,
+			));
+
+			$builder->add('romanent', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+			));
+			
+			$builder->add('totalpagaments', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+			));
+
+			$builder->add('totalllicencies', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+			));
+				
+			$builder->add('totalkits', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+			));
+				
+			$builder->add('totalaltres', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+			));
+				
+			$builder->add('ajustsubvencions', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+			));
+			$builder->add('saldoclub', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+					'property_path' => false,
+			));
 		}
 
 		$builder->add('codi', 'hidden');
@@ -102,6 +156,9 @@ class FormClub extends AbstractType {
 		));
 		
 		$builder->add('tipusparte');
+		
+		
+		
 		/*
 		 * INSERT INTO m_clubs_tipusparte 
 		   SELECT p.codi, t.id FROM m_clubs p, m_tipusparte t WHERE t.id <> 8 AND t.id <> 9  -- Clubs normals

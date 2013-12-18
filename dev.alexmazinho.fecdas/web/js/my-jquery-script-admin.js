@@ -90,9 +90,17 @@
 	        				return false;
 	        	        }
 
-	            		var params = { limitcredit: $("#club-limitcredit").val(), imprimir: $("#club-imprimir").is(':checked') };
-	            		
-	            		$.get(hrefCanviEstat, params,
+            			var maskHeight = $(document).height();
+            	        var maskWidth = $(window).width();
+
+            	        //Set height and width to mask to fill up the whole screen
+            	        $('.mask').css({'width':maskWidth,'height':maskHeight});
+            	        //transition effect    
+            	        $('.mask').fadeTo("slow",0.6); 
+
+            	        var params = { limitcredit: $("#club-limitcredit").val(), imprimir: $("#club-imprimir").is(':checked') };
+
+            	        $.get(hrefCanviEstat, params,
 	            		function(data, textStatus) {
 	            	    	$('#formclubs').submit();
 	            		});
@@ -108,9 +116,11 @@
 		        width: 400,
 		        zIndex:	350
 		    });
-		
-		    $("#dialeg").html("<div class='club-dialog-action'>"+estat+"</div>");
-		    $("#dialeg").append("<div class='club-dialog-row'><div class='club-dialog-label'>Límit de crèdit per al club (€)</div> <input id='club-limitcredit' type='text' /></div>");			    
+			
+			$("#dialeg").html("<div class='club-dialog-action'>"+$(this).parents().children('.club-nom').html()+"</div>");
+		    $("#dialeg").append("<div class='club-dialog-action'>"+estat+"</div>");
+		    $("#dialeg").append("<div class='club-dialog-row'><div class='club-dialog-label'>Límit de crèdit per al club (€)</div>" +
+		    		" <input id='club-limitcredit' type='text' value='"+$(this).parents().children('.club-limit').attr('data-limit')+"' /></div>");			    
 		    $("#dialeg").append("<div class='club-dialog-row'><div class='club-dialog-label'>Impressió web de llicències pendents de pagament?</div>" +
 		    					"<input id='club-imprimir' type='checkbox' value=1' /></div>");
 			if (!mostrarForm) $("#dialeg").find('.club-dialog-row').hide();

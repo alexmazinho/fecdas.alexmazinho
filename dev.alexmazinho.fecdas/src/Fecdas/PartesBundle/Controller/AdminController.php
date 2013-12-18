@@ -173,7 +173,7 @@ class AdminController extends BaseController {
 			if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
 			if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
 			$parte->setPendent(false);
-			$parte->setImportpagament($parte->getPreuTotalIVA());
+			//$parte->setImportpagament($parte->getPreuTotalIVA());
 			$parte->setDatamodificacio($this->getCurrentDate());
 			
 			$em->flush();

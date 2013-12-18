@@ -791,7 +791,7 @@
 	          	},
 	        	title: "Confirmació per esborrar",
 	        	height: 180,
-	        	width: 280,
+	        	width: 300,
 	        	zIndex:	350
 	        });
 	
@@ -1124,7 +1124,7 @@
 	
 	copiarAdrecaClub = function() {
 		
-		$('.formclub-copiaradreca')
+		$('#formclub-copiaradreca')
 	    .off('click')
 	    .click(function(e) {
 			//Cancel the link behavior

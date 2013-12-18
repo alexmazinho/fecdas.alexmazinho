@@ -121,7 +121,7 @@ select {
     border: 1px solid #AAA;
     margin: 0 2px 0 2px;
   	overflow: hidden;
-  	padding-top: 6px;
+  	padding-top: 4px;
   	padding-bottom: 3px;
   	padding-right: 3px;
   	text-overflow: ellipsis;
@@ -132,11 +132,14 @@ select {
 
 /* Disabled Elements */
 select[disabled="true"],
-select[disabled="disabled"]  
+select[disabled="disabled"],
+input[disabled="true"],
+input[disabled="disabled"]  
 { 
-	background-color: #f0ebe2;
+	/*background-color: #f0ebe2;*/
     color: #777777; 
 }
+
 
 #dialeg p {
 	padding-bottom: 10px;
@@ -800,6 +803,42 @@ select#club_tipusparte {
 	width: 350px;
 	height: 130px;
 }
+
+#formclub-dades-tab4 input,
+#formclub-dades-tab4 select { display: inline; }
+
+#formclub-dades-tab4 label { padding-top: 10px; }
+
+#formclub-dades-tab4 .colleft { width: 40%; vertical-align: top; display: inline-block; }
+#formclub-dades-tab4 .colmiddle { width: 27%; vertical-align: top; display: inline-block; }
+#formclub-dades-tab4 .colright { width: 27%; vertical-align: top; display: inline-block; }
+
+.formfield-row {
+	display: table-row;
+}
+
+#formclub-dades-tab4 .formlabel-left {
+	display: table-cell;
+	padding: 10px 10px 10px 0;
+}
+
+#formclub-dades-tab4 .formfield-right {
+	display: table-cell;
+	width: 80px;
+	text-align: right;
+}
+#formclub-dades-tab4 #formclub-dummy .formfield-right,
+#formclub-dades-tab4 #formclub-dummy .formfield-left {
+	width:auto;
+}
+
+
+#formclub-dades-tab4 #club_estat { width: 180px; text-align: left;}
+#formclub-dades-tab4 #club_limitcredit { width:100px;  }
+#formclub-dades-tab4 #club_limitnotificacio { width:100px; text-align: center; }
+#formclub-dades-tab4 #formclub-saldoclub label,
+#formclub-dades-tab4 #formclub-saldoclub input { font-weight: bold }
+
 
 input#user_club_user { width: 298px; }
 select#user_club_role { width: auto; }
@@ -1582,7 +1621,7 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 .club-dialog-label {
-	width: 190px;
+	width: 210px;
 	padding-right: 20px;
 	display: inline-block;
 }
@@ -1593,6 +1632,10 @@ li.parte-pendent-sincro .parterecents-actions {
 .club-dialog-action {
 	font-weight: bold;
 	font-size: 1.1em;
+}
+
+.ui-button .ui-button-text {
+    font-size: 0.8em;
 }
 /*****************************************************************************************************************/
 

@@ -172,9 +172,23 @@ class EntityClub {
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
 	protected $totalaltres;
+
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
+	protected $ajustsubvencions;
+	
 	
 	public function __construct() {
 		$this->activat = true;
+		$this->impressio = false;
+		$this->limitcredit = 0;
+		$this->romanent = 0;
+		$this->totalpagaments = 0;
+		$this->totalllicencies = 0;
+		$this->totalkits = 0;
+		$this->totalaltres = 0;
+		$this->ajustsubvencions = 0;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->partes = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
@@ -832,6 +846,26 @@ class EntityClub {
     }
     
     /**
+     * Set ajustsubvencions
+     *
+     * @param decimal $ajustsubvencions
+     */
+    public function setAjustsubvencions($ajustsubvencions)
+    {
+    	$this->ajustsubvencions = $ajustsubvencions;
+    }
+    
+    /**
+     * Get ajustsubvencions
+     *
+     * @return decimal
+     */
+    public function getAjustsubvencions()
+    {
+    	return $this->ajustsubvencions;
+    }
+    
+    /**
      * Dades del club any actual. Opcionalment comprova errors
      *
      * @return array
@@ -852,28 +886,35 @@ class EntityClub {
     	$dades['err_config'] = '';
     	foreach($this->partes as $c => $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
-    			$npartes++;
-    			$nllicencies +=  $parte_iter->getNumLlicencies();
-    			$nimport += $parte_iter->getPreuTotalIVA();
-    			if ($parte_iter->isPagat() && 
-    				$parte_iter->getEstatpagament() == "TPV OK" &&
-    				$parte_iter->getImportPagament() != null) {
-    				$nimportweb += $parte_iter->getImportPagament();
-    				$npartespagatsweb++;
-    			}
+    			/* Només mirar sincronitzats */
+    			if ($parte_iter->getIdparteAccess() != null) {
+	    			$npartes++;
+	    			$nllicencies +=  $parte_iter->getNumLlicencies();
+	    			$nimport += $parte_iter->getPreuTotalIVA();
+	    			if ($parte_iter->isPagat() && 
+	    				$parte_iter->getEstatpagament() == "TPV OK" &&
+	    				$parte_iter->getImportPagament() != null) {
+	    				$nimportweb += $parte_iter->getImportPagament();
+	    				$npartespagatsweb++;
+	    			}
+    			}    			
     			if ($errors){ 
     				// Varis, validacions imports i dades pagaments
     				// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
     				// Error si import calculat és null
     				// Error si no coincideix import calculat del parte i import pagament
+    				if ($parte_iter->isPagat() &&
+    					$parte_iter->getEstatpagament() == "TPV OK" &&
+    					$parte_iter->getImportPagament() == null) {
+    					$dades['err_imports'][] = "(Pagament TPV incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+    				}
+    				
     				if (($parte_iter->getDatapagament() != null ||
     					$parte_iter->getEstatpagament() != null ||
-    					$parte_iter->getDadespagament() != null ||
-    					$parte_iter->getImportpagament() != null) && 
+    					$parte_iter->getDadespagament() != null) && 
     					($parte_iter->getDatapagament() == null || 
     					$parte_iter->getEstatpagament() == null || 
-    					$parte_iter->getDadespagament() == null || 
-    					$parte_iter->getImportpagament() == null)) {
+    					$parte_iter->getDadespagament() == null)) {
     					$dades['err_imports'][] = "(falten dades pagament) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				}
     				
@@ -917,7 +958,7 @@ class EntityClub {
      * @return decimal
      */
     public function getDeutegestor() {
-    	return round($this->romanent + $this->totalllicencies + $this->totalkits + $this->totalaltres - $this->totalpagaments, 2);
+    	return round($this->romanent + $this->totalllicencies + $this->totalkits + $this->totalaltres - $this->totalpagaments - $this->ajustsubvencions, 2);
     }
     
     /**

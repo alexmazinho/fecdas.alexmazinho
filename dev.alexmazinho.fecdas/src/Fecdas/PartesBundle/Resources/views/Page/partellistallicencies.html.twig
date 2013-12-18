@@ -61,7 +61,6 @@
 			<div class="data-detall-cell parte-titol">&nbsp;</div>
 			<div class="data-detall-cell parte-totals"><div class="parte-totals-t">Hockei Sub</div><div class="parte-totals-n"> {{ parte.getNumActivitat('hockey') }}</div></div>
 	   	</li>
-	   	</div>
 	</ul>
 	{% endif %} 
 </div>
@@ -100,7 +99,7 @@
 						<a href="{{ path('FecdasPartesBundle_licensetopdf', { 'id': llicencia.id}) }}"><img src="{{ asset('images/icon-license.png') }}" alt="llicència" title="llicència" width="23px"></a>
 					{% endif %}
 					<a class="label-edit-llicencia" href="javascript:loadLlicencia({{ llicencia.id }});"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a>
-					{% if admin == true and not parte.pagat %}
+					{% if admin == true and not parte.pagat and parte.pendentSincronitzar %}
 						<a href="#" name="remove-llicencia" value="{{ llicencia.id }}"><img src="{{ asset('images/icon-remove.png') }}" alt="Esborra" title="Esborra" width="23px"></a>
 					{% endif %}
 					</div>

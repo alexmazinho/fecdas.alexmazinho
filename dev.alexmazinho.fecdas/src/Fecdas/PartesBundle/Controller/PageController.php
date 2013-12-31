@@ -984,6 +984,12 @@ class PageController extends BaseController {
 				else {
 					if ($parte->getClub()->pendentPagament() == true) $parte->setPendent(true);  // Nous partes pendents
 				}	
+
+				/* Comprovació datacaducitat */
+				if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
+					error_log("DataCaducitat llicencia incorrecte " . $llicencia->getDatacaducitat()->format('d/m/Y') . " " . $parte->getDataCaducitat($this->getLogMailUserData("updateParte 1 "))->format('d/m/Y') , 0);
+					$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
+				}
 				
 				$valida = true;
 				if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) {
@@ -1016,6 +1022,17 @@ class PageController extends BaseController {
 						$this->get('session')->setFlash('error-notice',
 								'Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
 								$parteoverlap->getDataalta()->format('d/m/Y'));
+						$valida = false;
+					}
+				}
+				
+				$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
+				if ($valida == true and 
+					$this->getCurrentDate() >= $datainiciRevisarSaldos and $parte->getClub()->controlCredit() == true) {
+					// Comprovació de saldos clubs DIFE
+					if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
+						$this->get('session')->setFlash('error-notice',	'l\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
+						Per poder fer noves gestions, cal que contacteu amb la FECDAS');
 						$valida = false;
 					}
 				}
@@ -1105,7 +1122,6 @@ class PageController extends BaseController {
 	
 	public function llicenciaAction() {
 		$request = $this->getRequest();
-
 		if ($request->isXmlHttpRequest()) {
 			$options = $this->getFormOptions();
 
@@ -1131,7 +1147,10 @@ class PageController extends BaseController {
 			if (isset($requestParams['codiclub'])) $codiclub = $requestParams['codiclub'];
 			if (isset($requestParams['tipusparte'])) $tipusid = $requestParams['tipusparte'];
 			if (isset($requestParams['dataalta'])) 	{
-				$dataalta_parte = \DateTime::createFromFormat('d/m/Y H:i:s', $requestParams['dataalta']);
+				//$dataalta_parte = \DateTime::createFromFormat('d/m/Y H:i:s', $requestParams['dataalta']);
+				$dataalta_parte = \DateTime::createFromFormat('j/n/Y h:i:s', $requestParams['dataalta']); /* Sense 0's davant */
+			} else {
+				error_log("sense data alta >> desde pantalla dades personals",0);
 			}
 			if (isset($requestParams['llicenciaId']) and $requestParams['llicenciaId'] > 0)
 				$llicenciaId = $requestParams['llicenciaId'];

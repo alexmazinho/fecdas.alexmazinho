@@ -809,9 +809,11 @@ select#club_tipusparte {
 
 #formclub-dades-tab4 label { padding-top: 10px; }
 
-#formclub-dades-tab4 .colleft { width: 40%; vertical-align: top; display: inline-block; }
-#formclub-dades-tab4 .colmiddle { width: 27%; vertical-align: top; display: inline-block; }
-#formclub-dades-tab4 .colright { width: 27%; vertical-align: top; display: inline-block; }
+#formclub-dades-tab4 .colleft { width: 40%; vertical-align: top; display: inline-block; padding-right: 10px;}
+#formclub-dades-tab4 .colmiddle { width: 27%; font-size: 0.9em; vertical-align: top; display: inline-block; padding-right: 10px;}
+#formclub-dades-tab4 .colmiddle input { min-height: inherit; font-size: 0.9em; }
+#formclub-dades-tab4 .colright { width: 27%; font-size: 0.9em; vertical-align: top; display: inline-block; }
+#formclub-dades-tab4 .colright input { min-height: inherit; font-size: 0.9em; }
 
 .formfield-row {
 	display: table-row;
@@ -824,7 +826,7 @@ select#club_tipusparte {
 
 #formclub-dades-tab4 .formfield-right {
 	display: table-cell;
-	width: 80px;
+	width: 70px;
 	text-align: right;
 }
 #formclub-dades-tab4 #formclub-dummy .formfield-right,

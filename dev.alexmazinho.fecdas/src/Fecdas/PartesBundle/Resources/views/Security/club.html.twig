@@ -168,8 +168,12 @@
 							{{ form_label(form.ajustsubvencions, 'Ajust subvencions:', { 'attr': {'class': 'formlabel-left'} }) }}
 							{{ form_widget(form.ajustsubvencions, { 'attr': {'class': 'formfield-right'} }) }}
 					</div>
+					<div id="formclub-totalllicenciesweb" class="formfield-row">
+							{{ form_label(form.totalllicenciesweb, 'Total llicències:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_widget(form.totalllicenciesweb, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
 					<div id="formclub-totalllicencies" class="formfield-row">
-							{{ form_label(form.totalllicencies, 'Total llicències:', { 'attr': {'class': 'formlabel-left'} }) }}
+							{{ form_label(form.totalllicencies, 'Total llic. Gestor:', { 'attr': {'class': 'formlabel-left'} }) }}
 							{{ form_widget(form.totalllicencies, { 'attr': {'class': 'formfield-right'} }) }}
 					</div>
 		        	<div id="formclub-totalkits" class="formfield-row">
@@ -189,6 +193,10 @@
 		        	<div id="formclub-totalpagaments" class="formfield-row">
 							{{ form_label(form.totalpagaments, 'Total pagaments:', { 'attr': {'class': 'formlabel-left'} }) }}
 							{{ form_widget(form.totalpagaments, { 'attr': {'class': 'formfield-right'} }) }}
+					</div>
+					<div id="formclub-dummy" class="formfield-row">
+						<div class="formlabel-left" >&nbsp;</div>
+						<div class="formfield-right">&nbsp;</div>
 					</div>
 					<div id="formclub-dummy" class="formfield-row">
 						<div class="formlabel-left" >&nbsp;</div>

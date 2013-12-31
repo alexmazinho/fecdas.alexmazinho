@@ -394,7 +394,7 @@ class CronController extends BaseController {
 
 			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['import'], 2, ',', '.') . "€</td>"; // Import llicències web
 			$filaClub .= "<td class='".$classImport."'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències gestor
-			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['deutegestor'], 2, ',', '.') . "€</td>"; // Saldo web
+			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['saldogestor'], 2, ',', '.') . "€</td>"; // Saldo web
 			
 			//echo $this->getCurrentDate()->format('Y-m-d') . " > " . $datainiciRevisarSaldos->format('Y-m-d') . "</br>";   
 			if ($this->getCurrentDate() >= $datainiciRevisarSaldos and $club_iter->controlCredit()) {
@@ -403,10 +403,10 @@ class CronController extends BaseController {
 					$club_iter->setLimitnotificacio(null);
 					$incidencies .= ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit() . "<br/>";
 				} else {
-					if ($dadesClub['deutegestor'] > $club_iter->getLimitcredit()) {
+					if ($dadesClub['saldogestor'] > $club_iter->getLimitcredit()) {
 						// Comprovar si ja s'ha enviat la notificació
 						if ($club_iter->getLimitnotificacio() == null) {
-							$incidencies .= ">> (Notificació) Superat el límit de dèbit, s'envia la notifiació al club per correu<br/>";
+							$incidencies .= ">> (Notificació) Superat el límit de dèbit, s'envia la notificació al club per correu<br/>";
 							// Enviar notificació mail
 							$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
 							if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
@@ -417,7 +417,7 @@ class CronController extends BaseController {
 							$body .= "<p>Us fem saber que l'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
 							Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";
 								
-							$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+							//$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 							
 							$club_iter->setLimitnotificacio($this->getCurrentDate());
 						} else {
@@ -527,7 +527,7 @@ class CronController extends BaseController {
 			$body .= "<div style='display: table-row;border-top:1px solid #eeeeee;'><div style='display: table-cell;height: 20px;'></div>";
 			$body .= "<div style='display: table-cell;'></div></div>";
 			$body .= "<div style='display: table-row;'><div style='display: table-cell; padding-right: 10px'>Saldo total amb la Federació:</div>";
-			$body .= "<div style='display: table-cell;text-align:right'>" . number_format((-1)*$club_iter->getDeutegestor(), 2, ',', '.') . " €</div></div>";
+			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getSaldogestor(), 2, ',', '.') . " €</div></div>";
 			$body .= "</div>";
 				
 				

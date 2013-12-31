@@ -420,7 +420,8 @@ class SecurityController extends BaseController
    		$options = array('codiclub' => $club->getCodi(),
    				'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
-   		$form->get('saldoclub')->setData($club->getDeutegestor() * (-1));
+   		$form->get('saldoclub')->setData($club->getSaldoweb());
+   		$form->get('totalllicenciesweb')->setData($club->getTotalLlicenciesWeb());
    		if ($this->isCurrentAdmin() == true) {
    			$form->get('codishow')->setData($club->getCodi());
    		}

@@ -879,6 +879,7 @@ class EntityClub {
     	$nllicencies = 0;
     	$nimport = 0;
     	$nimportweb = 0;
+    	$nimportsincro = 0;
     	$dades['err_facturadata'] = array();
     	$dades['err_facturanum'] = array();
     	$dades['err_sincro'] = array();
@@ -887,17 +888,17 @@ class EntityClub {
     	foreach($this->partes as $c => $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			/* Només mirar sincronitzats */
-    			if ($parte_iter->getIdparteAccess() != null) {
-	    			$npartes++;
-	    			$nllicencies +=  $parte_iter->getNumLlicencies();
-	    			$nimport += $parte_iter->getPreuTotalIVA();
-	    			if ($parte_iter->isPagat() && 
-	    				$parte_iter->getEstatpagament() == "TPV OK" &&
-	    				$parte_iter->getImportPagament() != null) {
-	    				$nimportweb += $parte_iter->getImportPagament();
-	    				$npartespagatsweb++;
-	    			}
-    			}    			
+    			$auxImportParte = $parte_iter->getPreuTotalIVA();
+    			$npartes++;
+    			$nimport += $auxImportParte;
+    			$nllicencies +=  $parte_iter->getNumLlicencies();
+    			if ($parte_iter->isPagat() &&
+    			$parte_iter->getEstatpagament() == "TPV OK" &&
+    			$parte_iter->getImportPagament() != null) {
+    				$nimportweb += $parte_iter->getImportPagament();
+    				$npartespagatsweb++;
+    			}
+    			if ($parte_iter->getIdparteAccess() != null) $nimportsincro += $auxImportParte;    			
     			if ($errors){ 
     				// Varis, validacions imports i dades pagaments
     				// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
@@ -947,18 +948,46 @@ class EntityClub {
     	$dades['pagats'] = $npartespagatsweb;
     	$dades['llicencies'] = $nllicencies;
     	$dades['import'] = $nimport;
+    	$dades['importsincro'] = $nimportsincro;
     	$dades['importweb'] = $nimportweb;
-    	$dades['deutegestor'] = $this->getDeutegestor();
+    	$dades['saldo'] = $this->totalpagaments + $this->ajustsubvencions - $this->romanent - $nimport - $this->totalkits - $this->totalaltres;
+    	$dades['saldogestor'] = $this->getSaldogestor();
+    	
     	return $dades;
     }
     
     /**
-     * Retorna el deute del club
+     * Retorna el saldo del club amb les dades del gestor
      *
      * @return decimal
      */
-    public function getDeutegestor() {
-    	return round($this->romanent + $this->totalllicencies + $this->totalkits + $this->totalaltres - $this->totalpagaments - $this->ajustsubvencions, 2);
+    public function getSaldogestor() {
+    	return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->totalllicencies - $this->totalkits - $this->totalaltres, 2);
+    }
+
+    /**
+     * Retorna l'import de les llicències del web de l'any actual
+     *
+     * @return decimal
+     */
+    public function getTotalLlicenciesWeb() {
+    	$nimport = 0;
+    	foreach($this->partes as $c => $parte_iter) {
+    		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
+    			$nimport += $parte_iter->getPreuTotalIVA();
+    		}
+    	}
+    	
+    	return round($nimport, 2);
+    }
+    
+    /**
+     * Retorna el saldo del club amb les dades actualitzades del web (llicencies) i del gestor
+     *
+     * @return decimal
+     */
+    public function getSaldoweb() {
+    	return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->getTotalLlicenciesWeb() - $this->totalkits - $this->totalaltres, 2);
     }
     
     /**

@@ -42,7 +42,7 @@
 		   		<div id="header-clubspagatweb" class="col-listheader">Web<br/>(Pagat)<span class="listheader-order"></span></div>
 		   		<div id="header-clubsestat" class="col-listheader">Estat<span class="listheader-order"></span></div>
 		   		<div id="header-clubslimit" class="col-listheader">Límit de crèdit<span class="listheader-order"></span></div>
-		   		<div id="header-clubsgessaldos" class="col-listheader">Deute Gestor<span class="listheader-order"></span></div>
+		   		<div id="header-clubsgessaldos" class="col-listheader">Saldo<span class="listheader-order"></span></div>
 			   	<div id="header-clubsactions" class="col-listheader">&nbsp;</div>
 		   	</div>
 		</div>
@@ -66,10 +66,10 @@
 		   			</div>
 		   			<div class="data-detall-cell club-limit" data-limit="{{ club.limitcredit|number_format(2, '.') }}">{{ club.limitcredit|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell club-gessaldos">
-		   				{{ dades['deutegestor']|number_format(2, ',') }} €
+		   				{{ dades['saldo']|number_format(2, ',') }} €
 			   			<div class="detall-saldos">
 							<h3>Detall saldos del Gestor</h3>
-							<p>Total: <span>{{ dades['deutegestor']|number_format(2, ',') }} €</span></p>
+							<p>Total: <span>{{ dades['saldogestor']|number_format(2, ',') }} €</span></p>
 				   			<p>Romanent: <span>{{ club.romanent|number_format(2, ',') }} €</span></p>
 				   			<p>Factures Llicències:&nbsp;&nbsp;<span>{{ club.totalllicencies|number_format(2, ',') }} €</span></p>
 				   			<p>Factures kits: <span>{{ club.totalkits|number_format(2, ',') }} €</span></p>

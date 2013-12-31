@@ -71,7 +71,13 @@ class FormClub extends AbstractType {
 					'read_only'  => true,
 					'grouping' => true,
 			));
-				
+
+			$builder->add('totalllicenciesweb', 'money', array(
+					'read_only'  => true,
+					'grouping' => true,
+					'property_path' => false,
+			));
+			
 			$builder->add('totalkits', 'money', array(
 					'read_only'  => true,
 					'grouping' => true,

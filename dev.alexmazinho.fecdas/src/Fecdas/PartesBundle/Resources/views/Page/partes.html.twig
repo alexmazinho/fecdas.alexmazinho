@@ -12,17 +12,17 @@
 	<header>
         <h1>Llistes de comunicacions</h1>
     </header>
-    {% if app.session.hasFlash('error-notice') %}
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}
-    
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+        
     <div id="partes-main">
 	    <div id="list-forms">
 	    	<form action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
 	      		<div id="formpartes-clubs" class="form-left">
-					{# form_label(form.clubs, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
+					{# form_label(form.clubs, 'Data Alta', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 					{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div> 
 				<div id="formpartes-submit" class="form-right">	
@@ -66,10 +66,11 @@
 			</ol>
 		</div>
 	   	{% else %}
-	        	<div class="sms-notice">No hi ha llistats d'assegurats per aquest club</div>
+	    <div class="sms-notice">No hi ha llistats d'assegurats per aquest club</div>
 	    {% endif %}
-	    </div>	
+	</div>
     <div class="sms-footer">Per esborrar alguna llista cal posar-se en contacte amb la Federació</div>
+    <div id="historial-llicencies" class="finestra-overlay"></div>
 {% endblock %}
 
 {% block javascripts %}

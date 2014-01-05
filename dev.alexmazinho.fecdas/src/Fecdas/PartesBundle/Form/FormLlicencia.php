@@ -2,13 +2,12 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Fecdas\PartesBundle\Entity\EntityLlicencia;
-
 use Fecdas\PartesBundle\Entity\EntityPersona;
-
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\Event\DataEvent;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 
 class FormLlicencia extends AbstractType {
@@ -20,7 +19,7 @@ class FormLlicencia extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('id', 'hidden');
 		
@@ -39,7 +38,7 @@ class FormLlicencia extends AbstractType {
 		'empty_value' => '',
 		'required'  => false,
 		'read_only' => !$this->options['edit'],
-		//'property_path' => false,
+		//'mapped' => false,
 		));
 
 		$llistacategoria = 'llistaText';
@@ -69,7 +68,7 @@ class FormLlicencia extends AbstractType {
 		$builder->add('datacaducitatshow', 'date', array(
 			'widget' => 'single_text', 
 			'format' => 'dd/MM/yyyy',
-			'property_path'  => false,
+			'mapped'  => false,
 			'read_only' => true,
 			));
 		
@@ -153,11 +152,9 @@ class FormLlicencia extends AbstractType {
 			));
 	}
 	
-	public function getDefaultOptions(array $options)
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
 	{
-		return array(
-				'data_class' => 'Fecdas\PartesBundle\Entity\EntityLlicencia',
-		);
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityLlicencia'));
 	}
 	
 	public function getName()

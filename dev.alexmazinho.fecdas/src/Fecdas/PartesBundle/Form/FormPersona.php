@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormPersona extends AbstractType {
 
@@ -13,7 +14,7 @@ class FormPersona extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('id', 'hidden');
 		
@@ -82,13 +83,11 @@ class FormPersona extends AbstractType {
 		
 	}
 	
-	public function getDefaultOptions(array $options)
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
 	{
-		return array(
-				'data_class' => 'Fecdas\PartesBundle\Entity\EntityPersona',
-		);
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityPersona'));
 	}
-	
+		
 	public function getName()
 	{
 		return 'persona';

@@ -13,15 +13,15 @@
         <h1>Consulta de llicències amb el DNI</h1>
     </header>
 
-    {% if app.session.hasFlash('error-notice') %}
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}
-	<div class="formdni-main">
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+    <div class="formdni-main">
 		<form id="form-consultadni" action="{{ path('FecdasPartesBundle_busseig') }}" method="post" {{ form_enctype(form) }}  class="appform">
 	    	<div id="formdni-dni">
-				{{ form_label(form.dni, 'Indica el dni', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_label(form.dni, 'Indica el dni', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
 			</div> 
 			<div id="formdni-dni-consultadni" class="parte-submit">	

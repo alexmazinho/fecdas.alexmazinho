@@ -661,4 +661,23 @@ class EntityPersona {
     	
     	return null;
     }
+    
+    /**
+     * Missatges llista assegurats
+     *
+     * @return string
+     */
+    public function getInfoAssegurats($admin = false) {
+    	$txtClub = "";
+    	if ($admin) $txtClub = "(".$this->club->getNom().") ";  
+    	
+    	if ($this->getLlicenciaVigent() != null and $this->getLlicenciaVigent()->getParte() != null)
+    		return  $txtClub . $this->getLlicenciaVigent()->getCategoria()->getDescripcio() . " fins al " . $this->getLlicenciaVigent()->getParte()->getDatacaducitat()->format('d/m/Y');
+    		
+    	
+    	if ($this->getLastLlicencia() != null and $this->getLastLlicencia()->getParte() != null)  
+    		return $txtClub . "Darrera llicència finalitzada en data " . $this->getLastLlicencia()->getParte()->getDatacaducitat()->format('d/m/Y');
+    	
+    	return $txtClub . "Persona sense historial de llicències";
+    }
 }

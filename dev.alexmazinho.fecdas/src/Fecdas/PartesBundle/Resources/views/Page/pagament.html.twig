@@ -14,12 +14,12 @@
         <h1>Pagament de llicències</h1>
     </header>
 
-    {% if app.session.hasFlash('error-notice') %}
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}
-    
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+        
     <div id="fact-header">
     	<input id="parte_id" type="hidden" value="{{ parte.id }}" name="parte[id]">
 	   	<div id="fact-dadesclub">

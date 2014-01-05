@@ -18,16 +18,6 @@ use Fecdas\PartesBundle\Entity\EntityClub;
 class SecurityController extends BaseController
 {
 	
-	public function getLoginFormAction()
-	{
-		// Només genera form pel template layout.html.twig
-		$userlogin = new EntityUser();
-		$form = $this->createForm(new FormLogin(), $userlogin);
-		
-		return $this->render('FecdasPartesBundle:Security:loginform.html.twig', array(
-				'form' => $form->createView() ));
-	}
-	
     public function loginAction()
     {
     	if ($this->get('session')->has('username')){
@@ -40,18 +30,18 @@ class SecurityController extends BaseController
     	$request = $this->getRequest();
     	
     	if ($request->getMethod() == 'POST') {
-    		$form->bindRequest($request);
+    		$form->bind($request);
     		if ($form->isValid()) {
-    			$em = $this->getDoctrine()->getEntityManager();
+    			$em = $this->getDoctrine()->getManager();
     			$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
     			$user = $repository->findOneByUser($form->getData()->getUser());
     			if (!$user || $user->getDatabaixa() != null || $user->getClub()->getActivat() == false) {
-    				$this->get('session')->setFlash('sms-notice', 'Usuari incorrecte!');
+    				$this->get('session')->getFlashBag()->add('sms-notice', 'Usuari incorrecte!');
     				/* Manteniment  */
-    				//$this->get('session')->setFlash('sms-notice', 'Aplicació en manteniment, disculpeu les molèsties!');
+    				//$this->get('session')->getFlashBag()->add('sms-notice', 'Aplicació en manteniment, disculpeu les molèsties!');
     			} else {
     				if ($user->getPwd() != sha1($form->getData()->getPwd())) {
-    					$this->get('session')->setFlash('sms-notice', 'Paraula clau incorrecta!');
+    					$this->get('session')->getFlashBag()->add('sms-notice', 'Paraula clau incorrecta!');
     					
     					$this->logEntry($form->getData()->getUser(), 'LOGIN KO',
     							$this->getRequest()->server->get('REMOTE_ADDR'),
@@ -59,7 +49,7 @@ class SecurityController extends BaseController
     						
     				} else {
 	    				/* Manteniment */
-    					/*$this->get('session')->setFlash('sms-notice', 'Lloc web en manteniment, espereu una estona si us plau');
+    					/*$this->get('session')->getFlashBag()->add('sms-notice', 'Lloc web en manteniment, espereu una estona si us plau');
     					return $this->render('FecdasPartesBundle:Security:login.html.twig',
     							array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));*/
     					/* Fi Manteniment */
@@ -75,10 +65,10 @@ class SecurityController extends BaseController
     					$enquestapendent = $this->getActiveEnquesta();
     					if ($enquestapendent != null) {
     						$this->get('session')->set('enquestapendent', $enquestapendent->getId());
-    						$this->get('session')->setFlash('sms-notice', 'Hi ha una enquesta activada pendent de contestar');
+    						$this->get('session')->getFlashBag()->add('sms-notice', 'Hi ha una enquesta activada pendent de contestar');
     					}
     					
-    					$em = $this->getDoctrine()->getEntityManager();
+    					$em = $this->getDoctrine()->getManager();
     					if ($user->getRecoverytoken() != null) {
     						// Esborrar token de recuperació de password, si entra amb login normal
     						$user->setRecoverytoken(null);
@@ -110,7 +100,7 @@ class SecurityController extends BaseController
     	}
     
     	return $this->render('FecdasPartesBundle:Security:login.html.twig', 
-						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+						array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
     
     public function logoutAction()
@@ -121,7 +111,7 @@ class SecurityController extends BaseController
     	
     	$this->get('session')->clear();
     	
-    	$this->get('session')->setFlash('sms-notice', 'Sessió finalitzada!');
+    	$this->get('session')->getFlashBag()->add('sms-notice', 'Sessió finalitzada!');
     	
     	return $this->render('FecdasPartesBundle:Security:logout.html.twig',
 						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
@@ -131,7 +121,7 @@ class SecurityController extends BaseController
     {
     	$request = $this->getRequest();
     
-    	$request->getSession()->clearFlashes();
+    	$request->getSession()->getFlashBag()->clear();
     	
     	$username = '';
     	if ($this->isAuthenticated() == true) { 
@@ -151,13 +141,13 @@ class SecurityController extends BaseController
     		$user = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityUser')->find($username);
     		 
     		if ($user == null || $username == '' || $token = '' || $token != $user->getRecoverytoken()) {
-   				$this->get('session')->setFlash('sms-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
+   				$this->get('session')->getFlashBag()->add('sms-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
     			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
     		}
     		
     		if ($user->getRecoveryexpiration() == null 
     				||  $this->getCurrentDate('now') > $user->getRecoveryexpiration()) {
-    			$this->get('session')->setFlash('sms-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
+    			$this->get('session')->getFlashBag()->add('sms-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
     			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
     		}
     	}
@@ -168,12 +158,12 @@ class SecurityController extends BaseController
     	if ($request->getMethod() == 'POST') {
     		$userdata = $request->request->get('user');
   			
-    		if ($userdata['pwd']['first'] != $userdata['pwd']['second']) $this->get('session')->setFlash('error-notice', "No coincideixen les claus!"); 
+    		if ($userdata['pwd']['first'] != $userdata['pwd']['second']) $this->get('session')->getFlashBag()->add('error-notice', "No coincideixen les claus!"); 
     		else {
-	    		$form->bindRequest($request);
+	    		$form->bind($request);
 	    		
 	    		if ($form->isValid()) {
-	    			$em = $this->getDoctrine()->getEntityManager();
+	    			$em = $this->getDoctrine()->getManager();
 	    			
 	    			$user->setPwd(sha1($user->getPwd())); 
 	    			$user->setRecoverytoken(null);
@@ -191,9 +181,9 @@ class SecurityController extends BaseController
 	    					$this->get('session')->get('remote_addr'),
 	    					$this->getRequest()->server->get('HTTP_USER_AGENT'));
 	    			
-	    			$this->get('session')->setFlash('error-notice', "Paraula clau actualitzada correctament!");
+	    			$this->get('session')->getFlashBag()->add('error-notice', "Paraula clau actualitzada correctament!");
 	    		} else {
-	    			$this->get('session')->setFlash('error-notice', "Error, contacti amb l'administrador");
+	    			$this->get('session')->getFlashBag()->add('error-notice', "Error, contacti amb l'administrador");
 	    		}
     		}
     	}
@@ -218,24 +208,24 @@ class SecurityController extends BaseController
     	$request = $this->getRequest();
     	 
     	if ($request->getMethod() == 'POST') {
-    		$form->bindRequest($request);
+    		$form->bind($request);
     		if ($form->isValid()) {
     			
     			$userEmail = $form->get('user')->getData();
     			//$userEmail = $form->getData()->getUser();
     			
-    			$em = $this->getDoctrine()->getEntityManager();
+    			$em = $this->getDoctrine()->getManager();
     			$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
     			$user = $repository->findOneByUser($userEmail);
     			
     			if (!$user) {
-    				$this->get('session')->setFlash('sms-notice', 'Aquest usuari no existeix a la base de dades');
+    				$this->get('session')->getFlashBag()->add('sms-notice', 'Aquest usuari no existeix a la base de dades');
     			} else {
     				$token = base64_encode(openssl_random_pseudo_bytes(30));
     				$expiration = $this->getCurrentDate('now');
     				$expiration->add(new \DateInterval('PT4H'));
     				
-    				$em = $this->getDoctrine()->getEntityManager();
+    				$em = $this->getDoctrine()->getManager();
     				// Save token information encrypted
     				$user->setRecoverytoken(sha1($token));
     				$user->setRecoveryexpiration($expiration);
@@ -260,7 +250,7 @@ class SecurityController extends BaseController
     						$this->getRequest()->server->get('HTTP_USER_AGENT'));
     				
     				$this->get('session')->clear();
-    				$this->get('session')->setFlash('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
+    				$this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
     				
     				return $this->render('FecdasPartesBundle:Security:logout.html.twig',
     						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
@@ -277,7 +267,7 @@ class SecurityController extends BaseController
     	/*
     	*
     	*/
-    	$this->get('session')->clearFlashes();
+    	$this->get('session')->getFlashBag()->clear();
     	$request = $this->getRequest();
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
@@ -303,7 +293,7 @@ class SecurityController extends BaseController
    					'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
    			$form = $this->createForm(new FormClub($options), $club);
    
-   			$form->bindRequest($request);
+   			$form->bind($request);
 
    			if ($form->isValid()) {
    				$valida = true;
@@ -311,7 +301,7 @@ class SecurityController extends BaseController
    				if  ($club->getCodi() == "") $strACtionLog = "CLUB NEW ";
    				else $strACtionLog = "CLUB UPD ";
 
-   				$em = $this->getDoctrine()->getEntityManager();
+   				$em = $this->getDoctrine()->getManager();
    					
    				/* Validacions dades obligatories*/
    				if ($codiclub == "" || $club->getNom() == "" ||
@@ -326,7 +316,7 @@ class SecurityController extends BaseController
    					if  (($club->getCodi() == "") ||
    						($club->getCodi() != ""  && $checkuser->getClub()->getCodi() != $club->getCodi())) {
    						$strErrorLog = 'Aquest mail ja existeix per un altre club, ' . $club->getMail();
-   						$this->get('session')->setFlash('error-notice', $strErrorLog);
+   						$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
    						$valida = false;
    					}
    				}
@@ -337,7 +327,7 @@ class SecurityController extends BaseController
 			   					->find($codiclub);
    					if ($checkclub != null) {
     					$strErrorLog = 'Aquest codi de club ja existeix';
-    					$this->get('session')->setFlash('error-notice', $strErrorLog);
+    					$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
     					$valida = false;
     				}
     			}
@@ -360,10 +350,10 @@ class SecurityController extends BaseController
 
     					$em->persist($userclub);
     					
-    					$this->get('session')->setFlash('error-notice', 'Club creat correctament. Nou usuari ' .
+    					$this->get('session')->getFlashBag()->add('error-notice', 'Club creat correctament. Nou usuari ' .
     										$userclub->getUser() . ' , amb clau ' . $randomPassword);
     				} else {
-    					$this->get('session')->setFlash('error-notice', 'Dades del club desades correctament');
+    					$this->get('session')->getFlashBag()->add('error-notice', 'Dades del club desades correctament');
     				}
     
     				$em->flush();
@@ -373,7 +363,7 @@ class SecurityController extends BaseController
    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
    							'club : ' . $club->getCodi());
    				} else {
-   					$this->get('session')->setFlash('error-notice', $strErrorLog);
+   					$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
    					$this->logEntry($this->get('session')->get('username'), $strACtionLog. 'KO',
    							$this->get('session')->get('remote_addr'),
    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
@@ -382,7 +372,7 @@ class SecurityController extends BaseController
    			} else {
    				// get a ConstraintViolationList
    				//print_r($this->getErrorMessages($form));
-   				$this->get('session')->setFlash('error-notice', "error validant les dades".implode(",",$this->getErrorMessages($form)));
+   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades".implode(",",$this->getErrorMessages($form)));
    			}
    		} else {
    			if ($this->isCurrentAdmin() != true) {
@@ -436,7 +426,7 @@ class SecurityController extends BaseController
     
     public function usuariclubAction() {
     	$request = $this->getRequest();
-    	//$this->get('session')->clearFlashes();
+    	//$this->get('session')->getFlashBag()->clear();
     
     	if ($request->isXmlHttpRequest()) {
     		if ($request->getMethod() == 'POST') {
@@ -465,12 +455,12 @@ class SecurityController extends BaseController
     				$userclub->setForceupdate($forceupdate);
     				$club->addEntityUser($userclub);
     				
-   					$em = $this->getDoctrine()->getEntityManager();
+   					$em = $this->getDoctrine()->getManager();
    					$em->persist($userclub);
    				
    					$em->flush();
    				
-   					$this->get('session')->setFlash('error-notice', 'Nou usuari ' .
+   					$this->get('session')->getFlashBag()->add('error-notice', 'Nou usuari ' .
    							$userclub->getUser() . ', amb clau: ' . $randomPassword);
     						
    					$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW OK',
@@ -479,7 +469,7 @@ class SecurityController extends BaseController
    							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     			} else {
     					// Existeix -> error
-    				$this->get('session')->setFlash('error-notice', 'Aquest usuari ja existeix');
+    				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest usuari ja existeix');
     				$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW KO',
     						$this->get('session')->get('remote_addr'),
     						$this->getRequest()->server->get('HTTP_USER_AGENT'),
@@ -511,13 +501,13 @@ class SecurityController extends BaseController
     					if ($action == 'resetpwd') {
     						$randomPassword = $this->generateRandomPassword();
     						$userclub->setPwd(sha1($randomPassword));
-    						$this->get('session')->setFlash('error-notice', 'Clau de l\'usuari ' .
+    						$this->get('session')->getFlashBag()->add('error-notice', 'Clau de l\'usuari ' .
     								$userclub->getUser() . ', canviada: ' . $randomPassword);
     					}
     					
     					$club = $userclub->getClub();
 
-    					$em = $this->getDoctrine()->getEntityManager();
+    					$em = $this->getDoctrine()->getManager();
     					$em->flush();
     					
     					$this->logEntry($this->get('session')->get('username'), 'USER '. strtoupper($action) . ' OK',
@@ -526,7 +516,7 @@ class SecurityController extends BaseController
     							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     				} else {
     					// Error
-    					$this->get('session')->setFlash('error-notice', 'Error. Posa\'t en contacte amb l\'administrador');
+    					$this->get('session')->getFlashBag()->add('error-notice', 'Error. Posa\'t en contacte amb l\'administrador');
     					$club = $this->getCurrentClub();
     				}
     				

@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormParte extends AbstractType {
 
@@ -13,7 +14,7 @@ class FormParte extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('id', 'hidden');
 
@@ -23,13 +24,13 @@ class FormParte extends AbstractType {
 		
 		if (!$this->options['nova'])
 			$builder->add('dataalta', 'datetime',
-					array('date_widget' => 'single_text','time_widget' => 'single_text', 'date_format' => 'dd/MM/yyyy', 'read_only' => true));
+					array('date_widget' => 'single_text','time_widget' => 'single_text', 'date_format' => 'dd/MM/yyyy', 'disabled' => true));
 		else 
 			$builder->add('dataalta', 'datetime',
 					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy', 'years' => range($current_year, $end_year)));
 		
 		$builder->add('any', 'text', array(
-				'property_path'  => false,
+				'mapped'  => false,
 				'read_only' => true,
 		));
 
@@ -92,6 +93,11 @@ class FormParte extends AbstractType {
 		$builder->add('datapagament', 'date',
 				array('widget' => 'single_text', 'format' => 'dd/MM/yyyy', 'years' => range(1990, 2020), 'read_only' => true));
 		
+	}
+	
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
+	{
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityParte'));
 	}
 	
 	public function getName()

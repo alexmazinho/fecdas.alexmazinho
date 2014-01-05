@@ -442,6 +442,46 @@
 		});
 	};
 	
+	showHistorialLlicencies = function() {
+	    //Carrega i mostra historial per un assegurat
+		$('.llicencia-historial')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+
+	        var current = $(this).parents(".data-detall");
+	        
+	        if (current.hasClass('data-detall-historic')) {
+	        	current.removeClass('data-detall-historic');
+		        if ($.browser.msie) current.children('.assegurat-historial').hide(); 
+		    	else current.children('.assegurat-historial').slideUp('slow');
+
+	        } else {
+	        	current.children('.assegurat-historial').remove();
+		        var url = $(this).attr("href");
+		        $.get(url, function(data, textStatus) {
+		        	
+		        	current.addClass('data-detall-historic');
+		        	current.append(data);
+			        if ($.browser.msie) current.children('.assegurat-historial').show(); 
+			    	else current.children('.assegurat-historial').slideDown('slow');
+
+			        //if close button is clicked
+				    $('.assegurat-historial .close').click(function (e) {
+				        //Cancel the link behavior
+				        e.preventDefault();
+				        current.removeClass('data-detall-historic');
+				        if ($.browser.msie) current.children('.assegurat-historial').hide(); 
+				    	else current.children('.assegurat-historial').slideUp('slow');
+				    }); 
+	        	});
+	        };
+	    });
+		
+		  
+	};
+	
 	showPersonClickLlicencia = function(id) {
 	    //select all the a tag with name equal to modal
 		$('#formllicencia-openmodal')
@@ -830,7 +870,7 @@
 			$.post(url, params,
 			function(data, textStatus) {
 		    	$('#progressbar').hide();  // Rellotge
-				
+		    	
 		    	if ($.browser.msie) $('#formparte-llicencia').show(); 
 		    	else $('#formparte-llicencia').slideDown('fast');
 				$("#llista-llicencies").html(data);

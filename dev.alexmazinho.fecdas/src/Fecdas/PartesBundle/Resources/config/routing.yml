@@ -96,12 +96,17 @@ FecdasPartesBundle_ajaxclubsnoms:
     requirements:
         _method:  GET
 
-
 FecdasPartesBundle_assegurats:
     pattern:  /assegurats
     defaults: { _controller: "FecdasPartesBundle:Page:assegurats" }
     requirements:
         _method:  GET|POST
+
+FecdasPartesBundle_historialLlicencies: 
+    pattern:  /historialLlicencies
+    defaults: { _controller: "FecdasPartesBundle:Page:historialLlicencies" }
+    requirements:
+        _method:  GET
 
 FecdasPartesBundle_busseig:
     pattern:  /consultadni

@@ -8,13 +8,13 @@
         <h1>Gestió FECDAS</h1>
     </header>
 
-    {% if app.session.hasFlash('sms-notice') %}
+    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('sms-notice') }}
-        {{ app.session.clearflashes }}
-    </div>
-	{% endif %}
-    
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+	{# app.session.clearflashes #}
+   
     <p><a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió</a></p>
     
 {% endblock %}

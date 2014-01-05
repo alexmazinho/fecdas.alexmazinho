@@ -14,17 +14,17 @@
     </header>
 
 	<div class="formcsv-main">
-		{% if app.session.hasFlash('error-notice') %}
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
 	    <div class="sms-notice">
-	        {{ app.session.flash('error-notice') }}
-	    </div>
-		{% endif %}
+			{{ flashMessage }}
+  		</div>	
+	{% endfor %}
 		<form id="formcsv-import" action="{{ path('FecdasPartesBundle_importcsv') }}" method="post" {{ form_enctype(form) }}  class="appform">
 			{{ form_widget(form.codi) }}
 			<div class="form-row clearfix">
 				{%  if admin == true %}
 				<div id="formcsv-club" class="form-left">
-					{{ form_label(form.club, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_label(form.club, 'Club', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.club, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div>
 				<a id="formcsv-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
@@ -34,7 +34,7 @@
 					{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div>
 				<div id="formcsv-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
-					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 					<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 				</div>
@@ -42,7 +42,7 @@
 			<div class="form-row clearfix">
 				<div id="formcsv-file" class="prettyFile">
 					<label class="formlabel-outside required">Fitxer de llicències (CSV)</label>
-					{# form_label(form.importfile, 'Fitxer de llicències', { 'attr': {'class': 'formlabel-inside'} }) #}
+					{# form_label(form.importfile, 'Fitxer de llicències', { 'label_attr': {'class': 'formlabel-inside'} }) #}
 					{{ form_widget(form.importfile, { 'attr': {'class': 'forminput-inside'} }) }}
 					<div class="input-append formfield-outside">
 	       				<input class="input-large" type="text">

@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormUser extends AbstractType {
 
@@ -13,7 +14,7 @@ class FormUser extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('user', 'email',array(
     	    'read_only'  => true,
@@ -31,14 +32,12 @@ class FormUser extends AbstractType {
 		));
 		
 		$builder->add('recoverytoken', 'hidden');
-		$builder->add('usertoken', 'hidden', array('property_path' => false));
+		$builder->add('usertoken', 'hidden', array('mapped' => false));
 	}
 	
-	public function getDefaultOptions(array $options)
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
 	{
-		return array(
-				'data_class' => 'Fecdas\PartesBundle\Entity\EntityUser',
-		);
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityUser'));
 	}
 	
 	public function getName()

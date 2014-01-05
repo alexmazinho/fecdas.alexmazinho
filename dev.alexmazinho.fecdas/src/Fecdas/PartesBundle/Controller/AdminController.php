@@ -37,7 +37,7 @@ class AdminController extends BaseController {
 		/*if ($this->get('session')->get('username') != 'alexmazinho@gmail.com')
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));*/
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		$states = explode(";", self::CLUBS_STATES);
 		
@@ -160,7 +160,7 @@ class AdminController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$parteid = $request->query->get('id');
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($request->query->get('id'));
@@ -174,6 +174,7 @@ class AdminController extends BaseController {
 			if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
 			$parte->setPendent(false);
 			//$parte->setImportpagament($parte->getPreuTotalIVA());
+			if ($parte->getIdparteAccess() == null) $parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
 			$parte->setDatamodificacio($this->getCurrentDate());
 			
 			$em->flush();
@@ -198,7 +199,7 @@ class AdminController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 	
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 
 		$parteid = $request->query->get("id");
 		
@@ -208,18 +209,21 @@ class AdminController extends BaseController {
 			$parte->setDatamodificacio($this->getCurrentDate());
 			
 			foreach ($parte->getLlicencies() as $llicencia_iter) {
-				if ($llicencia_iter->getDatabaixa() == null) $llicencia_iter->setDatamodificacio($this->getCurrentDate());
+				if ($llicencia_iter->getDatabaixa() == null) {
+					$llicencia_iter->setDatamodificacio($this->getCurrentDate());
+					$llicencia_iter->getPersona()->setValidat(false);
+				}
 			}
 			
 			$em->flush();
 
-			$this->get('session')->setFlash('error-notice', 'Llista preparada per tornar a sincronitzar');
+			$this->get('session')->getFlashBag()->add('error-notice', 'Llista preparada per tornar a sincronitzar');
 			
 			$this->logEntry($this->get('session')->get('username'), 'SINCRO ACCESS',
 					$this->get('session')->get('remote_addr'),
 					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
 		} else {
-			$this->get('session')->setFlash('error-notice', 'Error en el procés de sincronització');
+			$this->get('session')->getFlashBag()->add('error-notice', 'Error en el procés de sincronització');
 			
 			$this->logEntry($this->get('session')->get('username'), 'SINCRO ACCESS ERROR',
 					$this->get('session')->get('remote_addr'),
@@ -247,7 +251,7 @@ class AdminController extends BaseController {
 			return new Response("ko");
 		}
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		switch ($estat) {
 			case 'DIFE':  // Pagament diferit
@@ -301,7 +305,7 @@ class AdminController extends BaseController {
 		/*if ($this->get('session')->get('username') != 'alexmazinho@gmail.com')
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));*/
 	
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		$states = explode(";", self::CLUBS_STATES);
 		$currentEstat = self::CLUBS_DEFAULT_STATE;

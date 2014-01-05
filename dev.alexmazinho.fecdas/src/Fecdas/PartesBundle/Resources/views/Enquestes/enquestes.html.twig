@@ -22,11 +22,12 @@
 	<header>
         <h1>Enquestes i resultats</h1>
     </header>
-    {% if app.session.hasFlash('error-notice') %}
-    <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}
+    
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+        <div class="sms-notice">
+  			{{ flashMessage }}
+  		</div>	
+ 	{% endfor %}
    
     <br/>
     <div id="enquesta-stats" >

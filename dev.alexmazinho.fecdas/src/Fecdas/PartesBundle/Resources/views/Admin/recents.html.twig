@@ -14,17 +14,17 @@
         <h1>Comunicacions recents</h1>
     </header>
 
-    {% if app.session.hasFlash('error-notice') %}
-    <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+        <div class="sms-notice">
+  			{{ flashMessage }}
+  		</div>	
+	{% endfor %}
     
     <div id="list-forms">
     	<form id="formrecents" action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
     		{{ form_widget(form.codi)}}
       		<div id="formrecents-club" class="form-left">
-				{{ form_label(form.clubs, 'Cerca club', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_label(form.clubs, 'Cerca club', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside '} }) }}
 			</div> 
       		<div id="formrecents-estat" class="form-left">
@@ -34,11 +34,11 @@
 				{{ form_widget(form.pagament, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div> 
       		<div id="formrecents-baixa" class="form-left">
-      			{{ form_label(form.baixa, 'Veure baixes', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+      			{{ form_label(form.baixa, 'Veure baixes', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.baixa, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div> 
       		<div id="formrecents-sincro" class="form-left">
-      			{{ form_label(form.sincro, 'No sincronitzats', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+      			{{ form_label(form.sincro, 'No sincronitzats', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.sincro, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div> 
 			<div id="formrecents-submit" class="form-right">	

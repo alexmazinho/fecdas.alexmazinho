@@ -12,14 +12,14 @@
     <header>
         <h1>Entrada d'usuaris</h1>
     </header>
-	
-    {% if app.session.hasFlash('sms-notice') %}
+
+    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('sms-notice') }}
-    </div>
-	{% endif %}
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
     
-   	<div class="login"> {% render "FecdasPartesBundle:Security:getLoginForm" %} 
+   	<div class="login"> {% include "FecdasPartesBundle:Security:loginform.html.twig" %} 
    	<a href="{{ path('FecdasPartesBundle_pwdrecovery') }}">Password perdut?</a>
    	</div>
     

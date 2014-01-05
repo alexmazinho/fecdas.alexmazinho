@@ -14,29 +14,28 @@
         <h1>Racó de l'usuari. Actualització de clau</h1>
     </header>
 
-    {% if app.session.hasFlash('error-notice') %}
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}
-
-	
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+    
 	<div class="formuser-main">
 		<form id="form-formuser" action="{{ path('FecdasPartesBundle_user') }}" method="post" {{ form_enctype(form) }}  class="appform">
 	    	 <div id="formuser-user">
-				{{ form_label(form.user, 'Usuari', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_label(form.user, 'Usuari', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
 			 </div> 
 	    	 <div id="formuser-pwd">
-				{{ form_label(form.pwd.first, 'Nova paraula clau', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_label(form.pwd.first, 'Nova paraula clau', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.pwd.first, { 'attr': {'class': 'forminput-inside'} }) }}
 			 </div> 
 	    	 <div id="formuser-pwdrepeat">
-				{{ form_label(form.pwd.second, 'Repeteix la paraula clau', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_label(form.pwd.second, 'Repeteix la paraula clau', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.pwd.second, { 'attr': {'class': 'forminput-inside'} }) }}
 			 </div> 
 			 <div id="formuser-forceupdate">
-			 	{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+			 	{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			 </div>
 			 <div id="formuser-rest">

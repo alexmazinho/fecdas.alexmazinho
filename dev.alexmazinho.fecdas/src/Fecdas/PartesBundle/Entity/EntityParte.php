@@ -831,12 +831,18 @@ class EntityParte {
     }
 
     public function allowRenovar() {
-    	if ($this->pendent == true) return false; // Pendents no s'han de sincronitzar
+    	
+    	if ($this->pendent == true) return false; // Pendents no s'han de renovar
     	// Només renoven alguns tipus de parte
     	if ($this->tipus->getId() == 1 || $this->tipus->getId() == 2 ||
     			$this->tipus->getId() == 4 || $this->tipus->getId() == 7 ||
     			$this->tipus->getId() == 10) {
-    		if ($this->getAny() == date("Y") || $this->getAny() == date("Y") -1) return true;
+
+    		/* Si falta menys d'un més per caducar o ja han caducat */
+    		$current = new \DateTime();
+    		$interval = $current->diff($this->getDataCaducitat("allowRenovar"));
+    		
+    		if (($this->getAny() == date("Y") || $this->getAny() == date("Y") -1) and $interval->format('%m') <= 0) return true; // Menys d'un mes
     		else return false;
     	}
     	return false;

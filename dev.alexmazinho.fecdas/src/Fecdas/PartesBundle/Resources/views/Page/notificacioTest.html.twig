@@ -17,42 +17,42 @@
         <h1>Test Notificacions TPV</h1>
     </header>
 	
-    {% if app.session.hasFlash('sms-notice') %}
+    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('sms-notice') }}
-    </div>
-	{% endif %}
-    
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+        
    	<form id="testform" action="{{ path('FecdasPartesBundle_notificacio') }}" method="post" {{ form_enctype(form) }} class="appform">
    	{{ form_errors(form) }}
 
    	<div id="urltest">
    	<div>
-		{{ form_label(form.accio, 'Acció', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.accio, 'Acció', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.accio, { 'id': 'accio', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
-		{{ form_label(form.Ds_Response, 'Codi resposta', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_Response, 'Codi resposta', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_Response, { 'id': 'Ds_Response', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
 	<div>
-		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (ipdparte&entorn&usuari)', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (ipdparte&entorn&usuari)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_MerchantData, { 'id': 'Ds_MerchantData', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
-		{{ form_label(form.Ds_Date, 'Data', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_Date, 'Data', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_Date, { 'id': 'Ds_Date', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
-		{{ form_label(form.Ds_Hour, 'Hora', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_Hour, 'Hora', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_Hour, { 'id': 'Ds_Hour', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
-		{{ form_label(form.Ds_Order, 'Ordre (12 dig)', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_Order, 'Ordre (12 dig)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_Order, { 'id': 'Ds_Order', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
-		{{ form_label(form.Ds_PayMethod, 'Mètode (Pot estar buit)', { 'attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_PayMethod, 'Mètode (Pot estar buit)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_PayMethod, { 'id': 'Ds_PayMethod', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
 	

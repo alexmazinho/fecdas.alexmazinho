@@ -19,9 +19,9 @@ class EnquestesController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	
-		$this->get('session')->clearFlashes();
+		$this->get('session')->getFlashBag()->clear();
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		$this->logEntry($this->get('session')->get('username'), 'VIEW ENQUESTES',
 				$this->get('session')->get('remote_addr'),
@@ -55,7 +55,7 @@ class EnquestesController extends BaseController {
 		if ($request->query->has('id')) {
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($request->query->get('id'));
 			
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 			
 			$enquesta->setDatafinal($this->getCurrentDate('now'));
 			
@@ -81,7 +81,7 @@ class EnquestesController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";
 		$strQuery .= " ORDER BY p.id";
@@ -107,7 +107,7 @@ class EnquestesController extends BaseController {
 
 			$form = $this->createForm(new FormEnquesta(), $enquesta);
 			
-			$form->bindRequest($request);
+			$form->bind($request);
 			
 			$actiontext = (is_null($enquesta->getId()))?'NEW ENQUESTA OK':'UPD ENQUESTA OK';
 
@@ -183,13 +183,13 @@ class EnquestesController extends BaseController {
 				$this->logEntry($this->get('session')->get('username'), (is_null($enquesta->getId()))?'NEW ENQUESTA KO':'UPD ENQUESTA KO',
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId() . "-". $error);
-				$this->get('session')->setFlash('error-notice', $error );
+				$this->get('session')->getFlashBag()->add('error-notice', $error );
 				
 			} else {
 				$this->logEntry($this->get('session')->get('username'), $actiontext,
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId());
-				$this->get('session')->setFlash('error-notice', "Enquesta actualitzada correctament" );
+				$this->get('session')->getFlashBag()->add('error-notice', "Enquesta actualitzada correctament" );
 			}
 		} else {
 			// Get
@@ -244,7 +244,7 @@ class EnquestesController extends BaseController {
 			$formenquesta = $request->request->get('form');
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($formenquesta['id']);
 
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 
 			// Comprovar si s'ha començat l'enquesta
 			$realitzacio = $enquesta->getRealitzada($this->get('session')->get('username'));
@@ -422,7 +422,7 @@ class EnquestesController extends BaseController {
 
 		if ($this->isCurrentAdmin() != true) return new Response("La sessió ha expirat");
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		/* Obtenir totes les preguntes */
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";
@@ -472,7 +472,7 @@ class EnquestesController extends BaseController {
 		
 		if ($this->isCurrentAdmin() != true) return new Response("La sessió ha expirat");
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		/* Obtenir totes les preguntes */
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";

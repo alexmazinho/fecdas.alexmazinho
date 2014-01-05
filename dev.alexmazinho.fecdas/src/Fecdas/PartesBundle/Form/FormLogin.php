@@ -2,14 +2,20 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormLogin extends AbstractType {
 
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('user', 'email');
 		$builder->add('pwd', 'password');
+	}
+	
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
+	{
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityUser'));
 	}
 	
 	public function getName()

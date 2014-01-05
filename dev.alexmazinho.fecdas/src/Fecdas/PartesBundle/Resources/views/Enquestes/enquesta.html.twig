@@ -24,7 +24,7 @@
 		</div>
 		<div class="form-row clearfix">
 			<div id="formenquesta-desc" class="form-left">
-				{{ form_label(form.descripcio, 'Descripció', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_label(form.descripcio, 'Descripció', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.descripcio, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formenquesta-dates" class="form-left">
@@ -42,10 +42,12 @@
 			</div>
         </div>
 		<div id="formenquesta-rest">	{{ form_rest(form) }}</div>
-		
-		 {% if app.session.hasFlash('error-notice') %}
-    		<div class="sms-notice">  {{ app.session.flash('error-notice') }}	</div>
-    	{% endif %}	
+
+        {% for flashMessage in app.session.flashbag.get('error-notice') %}
+        <div class="sms-notice">
+  			{{ flashMessage }}
+  		</div>	
+		{% endfor %}		
     </form>
 
     <div id="progressbar" style="display:none"><img src="/images/icon_progress.gif"></div>

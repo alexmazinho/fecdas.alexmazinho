@@ -26,16 +26,16 @@
 		<div class="form-row">
 			<div id="formparte-any" class="form-left">
 				<label class="formlabel-outside required">Any</label>
-				{# form_label(form.dataalta, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
+				{# form_label(form.dataalta, 'Data Alta', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.any, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formparte-club" class="form-left">
-				{{ form_label(form.club, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_label(form.club, 'Club', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.club, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formparte-datapagament" class="form-left" {% if parte.datapagament is null %} style="display: none" {% endif %}>
 				<label class="formlabel-outside required">Data Pagament</label>
-				{# form_label(form.datapagament, 'Data Facturació', { 'attr': {'class': 'formlabel-outside'} }) #}
+				{# form_label(form.datapagament, 'Data Facturació', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			{% if admin == true and parte.datapagament is null and parte.id is not null %}
@@ -49,11 +49,11 @@
 		<div class="form-row clearfix">
 			<div id="formparte-dataalta" class="form-left">
 				<label class="formlabel-outside required">Validesa des de</label>
-				{# form_label(form.dataalta, 'Data Alta', { 'attr': {'class': 'formlabel-outside'} }) #}
+				{# form_label(form.dataalta, 'Data Alta', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formparte-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
-				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 				<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 			</div>
@@ -69,7 +69,7 @@
 				</div>
 			{% endif %}	
 			<div id="buttons-top" class="form-right" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-				{% if not parte.pagat and parte.pendentSincronitzar %}
+				{% if not parte.pagat and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div class="button-top">	
 					<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 

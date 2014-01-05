@@ -8,11 +8,11 @@
         <h1>Renovació de llicència</h1>
     </header>
 
-    {% if app.session.hasFlash('error-notice') %}
-    <div class="sms-notice">
-        	{{ app.session.flash('error-notice') }}
-    </div>
-	{% endif %}		
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+	    <div class="sms-notice">
+  			{{ flashMessage }}
+  		</div>	 
+	{% endfor %}    
     
 	<form id="formrenovar" action="{{ path('FecdasPartesBundle_renovarllicencia') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="table-header">	
@@ -25,15 +25,15 @@
 	
 			<div class="form-row clearfix">
 				<div id="formllicencia-persona" class="form-left">
-					{{ form_label(form.personashow, 'Nom i cognoms', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_label(form.personashow, 'Nom i cognoms', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.personashow, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div>
 				<div id="formllicencia-categoria" class="form-left">
-					{{ form_label(form.categoria, 'Tipus', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_label(form.categoria, 'Tipus', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.categoria, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_categoria_select' }) }}
 				</div> 
 				<div id="formllicencia-datacaducitat" class="form-left data-field">
-					{{ form_label(form.datacaducitatshow, 'Data de caducitat', { 'attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_label(form.datacaducitatshow, 'Data de caducitat', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.datacaducitatshow, { 'attr': {'class': 'formfield-outside'} }) }}
 					{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 				</div>
@@ -41,7 +41,7 @@
 		 
 			<div class="form-row clearfix">
 				<div class="llicencia-check check-correu" class="form-left">
-					{{ form_label(form.enviarllicencia, 'Rebre llicència per correu?', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+					{{ form_label(form.enviarllicencia, 'Rebre llicència per correu?', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 					{{ form_widget(form.enviarllicencia, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 			</div>
@@ -54,55 +54,55 @@
 			</div>
 			<div class="form-row clearfix" {% if (parte.asseguranca == true) %} style="display:none" {% endif %}>
 				<div class="llicencia-check">
-				{{ form_label(form.apnea, 'Apnea', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.apnea, 'Apnea', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.apnea, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.escafandrisme, 'Escafandrisme', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.escafandrisme, 'Escafandrisme', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.escafandrisme, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.fotosubapnea, 'Foto Sub Apnea', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.fotosubapnea, 'Foto Sub Apnea', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.fotosubapnea, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.fotocine, 'Fotografia Sub.', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.fotocine, 'Fotografia Sub.', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.fotocine, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.hockey, 'Hockei Sub', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.hockey, 'Hockei Sub', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.hockey, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.natacio, 'Natació amb Aletes', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.natacio, 'Natació amb Aletes', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.natacio, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.biologia, 'Biologia i Medi', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.biologia, 'Biologia i Medi', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.biologia, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.orientacio, 'Orientació', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.orientacio, 'Orientació', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.orientacio, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.pesca, 'Pesca Submarina', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.pesca, 'Pesca Submarina', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.pesca, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.videosub, 'Video Subaquàtic', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.videosub, 'Video Subaquàtic', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.videosub, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.rugbi, 'Rugbi Subaquàtic', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.rugbi, 'Rugbi Subaquàtic', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.rugbi, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.besportiu, 'Busseig Esportiu', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.besportiu, 'Busseig Esportiu', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.besportiu, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 				<div class="llicencia-check">
-				{{ form_label(form.bampolles, 'Busseig Ampolles', { 'attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.bampolles, 'Busseig Ampolles', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.bampolles, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 			</div>

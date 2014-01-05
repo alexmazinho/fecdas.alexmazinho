@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormContact extends AbstractType {
 
@@ -13,7 +14,7 @@ class FormContact extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('name', 'text');
 		$builder->add('email', 'email');
@@ -22,6 +23,11 @@ class FormContact extends AbstractType {
 		else $builder->add('subject', 'text');
 		$builder->add('body', 'textarea');
 		
+	}
+	
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
+	{
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityContact'));
 	}
 	
 	public function getName()

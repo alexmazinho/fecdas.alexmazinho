@@ -19,11 +19,31 @@ class BaseController extends Controller {
 	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
 	const CLUB_SENSE_TRAMITACIO = 'NOTR';
 	const CLUB_PAGAMENT_DIFERIT = 'DIFE';
+	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
-	const INICI_REVISAR_CLUBS_DAY = '09';
-	const INICI_REVISAR_CLUBS_MONTH = '12';
+	const INICI_REVISAR_CLUBS_DAY = '01';
+	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
+	
+	protected function getCommonRenderArrayOptions() {
+		if ($this->isCurrentAdmin()) {
+			$formbuilder = $this->createFormBuilder();
+			$formbuilder->add('role', 'genemu_jqueryselect2_entity', array('class' => 'FecdasPartesBundle:EntityClub',
+					'property' => 'nom',
+					'label' => 'El teu rol actual és: ',
+					'required'  => true ));
+			$options['roleform'] = $formbuilder->getForm()->createView();
+		}
+		$options['admin'] = $this->isCurrentAdmin();
+		$options['authenticated'] = $this->isAuthenticated();
+		$options['busseig'] = $this->isCurrentBusseig();
+		$options['enquestausuari'] = $this->get('session')->has('enquestapendent');
+		
+		return $options;
+		/*array('roleform' => $formbuilder->getForm()->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
+				'busseig' => $this->isCurrentBusseig(), 'enquestausuari' => $this->get('session')->has('enquestapendent')))*/
+	}
 	
 	protected function getCurrentDate($time = null) {
 		//function to fake date, testing purpouse
@@ -42,7 +62,7 @@ class BaseController extends Controller {
 	protected function isCurrentAdmin() {
 		if ($this->isAuthenticated() != true) return false;
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
 		$user = $repository->findOneByUser($this->get('session')->get('username'));
 		if (!$user || $user->getRole() != 'admin')
@@ -53,7 +73,7 @@ class BaseController extends Controller {
 	protected function getCurrentClub() {
 		if ($this->isAuthenticated() != true) return null;
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
 		$user = $repository->findOneByUser($this->get('session')->get('username'));
 		if ($user) return $user->getClub();
@@ -99,7 +119,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function consultaPartesClub($club) {
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		// Consultar no només les vigents sinó totes
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
@@ -170,7 +190,7 @@ class BaseController extends Controller {
 	protected function validaPersonaTeLlicenciaVigent(EntityLlicencia $llicencia, EntityPersona $persona) {
 		// Comprovar que no hi ha altres llicències vigents per a la persona
 		// Que solapin amb la llicència
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		// Consulta actives i futures de la persona
 		// Pot ser que es coli alguna llicència un dia any actual anterior data d'avui
@@ -256,7 +276,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function getProvincies() {
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$query = $em->createQuery("SELECT distinct m.provincia FROM Fecdas\PartesBundle\Entity\EntityMunicipi m
 				ORDER BY m.provincia");
 		$result = $query->getResult();
@@ -266,7 +286,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function getComarques() {
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$query = $em->createQuery("SELECT distinct m.comarca FROM Fecdas\PartesBundle\Entity\EntityMunicipi m
 				ORDER BY m.comarca");
 		$result = $query->getResult();
@@ -276,7 +296,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function getNacions() {
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$query = $em->createQuery("SELECT n FROM Fecdas\PartesBundle\Entity\EntityNacio n
 				ORDER BY n.codi");
 		$result = $query->getResult();
@@ -286,7 +306,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function getClubsSelect() {
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		$query = $em->createQuery("SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c
 				ORDER BY c.nom");
@@ -303,7 +323,7 @@ class BaseController extends Controller {
 		// Cerques només per a >= 3 lletres
 		$search = array();
 		if (strlen($value) >= 3) {
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 			$query = $em
 			->createQuery(
 					"SELECT DISTINCT m.municipi, m.cp, m.provincia, m.comarca
@@ -334,7 +354,7 @@ class BaseController extends Controller {
 		// Cerques només per a >= 3 lletres
 		$search = array();
 		if (strlen($value) >= 3) {
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 			$query = $em
 			->createQuery(
 					"SELECT DISTINCT c.codi, c.nom
@@ -406,7 +426,7 @@ class BaseController extends Controller {
 		/* Obté enquesta activa pendent de realitzar de l'usuari registrat */
 		if ($this->isAuthenticated() != true) return null;
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
 		$strQuery .= " WHERE e.datainici <= :avui ";
@@ -458,13 +478,13 @@ class BaseController extends Controller {
 	
 	
 	protected function logEntry($user, $accio, $remoteaddr = null, $useragent = null, $extrainfo = null) {
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$logentry = new EntityUserLog($user, $accio, $remoteaddr, $useragent, $extrainfo);
 		$em->persist($logentry);
 		try {
 			$em->flush();
 		} catch (\Exception $e) {
-			error_log ("Error saving app log to mysql", 0);
+			error_log ("APP FECDAS > Error saving app log to mysql: ".$e->getMessage(), 0);
 		}
 	}
 	

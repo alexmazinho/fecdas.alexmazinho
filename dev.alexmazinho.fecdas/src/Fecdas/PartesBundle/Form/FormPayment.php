@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormPayment extends AbstractType {
 
@@ -13,7 +14,7 @@ class FormPayment extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('preu', 'hidden');
 		$builder->add('numordre', 'hidden');
@@ -30,6 +31,11 @@ class FormPayment extends AbstractType {
 		$builder->add('dades', 'hidden');
 		$builder->add('signatura', 'hidden');
 	}
+	
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
+	{
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityPayment'));
+	}	
 	
 	public function getName()
 	{

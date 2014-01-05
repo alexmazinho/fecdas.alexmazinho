@@ -27,7 +27,7 @@ class CronController extends BaseController {
 		$strQuery .= " AND p.id <= :maxid ";
 		$strQuery .= " AND p.web = 1 ORDER BY p.id ";
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$query = $em->createQuery($strQuery)->setParameter('maxid', $maxid);
 		$partesweb = $query->getResult();
@@ -101,7 +101,7 @@ class CronController extends BaseController {
 		$subject = '';
 		$body = '';
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		// 30 dies
 		$aux = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
@@ -165,7 +165,7 @@ class CronController extends BaseController {
 		$persona = $llicencia->getPersona();
 		if (!($llicencia === $persona->getLastLlicencia())) return false;
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		// Comprovar que no hi ha llicències d'altres clubs posteriors. Si canvi de club no s'envia mail 
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
 		$strQuery .= " WHERE p.dni = :dni ";
@@ -197,7 +197,7 @@ class CronController extends BaseController {
 		/* Entra una id de llicència i se li renova la llicència vigent o la darrera llicència des de data d'avui */
 		/* p.e. fecdas.dev/renovarllicencia?id=5897 */
 		
-		$this->get('session')->clearFlashes();
+		$this->get('session')->getFlashBag()->clear();
 		
 		$request = $this->getRequest();
 		
@@ -292,14 +292,17 @@ class CronController extends BaseController {
 			}
 		
 			if ($request->getMethod() == 'POST') {
-				$form->bindRequest($request);
+				$form->bind($request);
 			
 				if ($form->isValid() && $request->request->has('llicencia_renovar')) {
-					$em = $this->getDoctrine()->getEntityManager();
+					$em = $this->getDoctrine()->getManager();
 			
 					// Marquem com renovat
 					$parte->setRenovat(true);
 			
+					// Marcar pendent per a clubs pagament immediat
+					if ($parte->getClub()->pendentPagament()) $parte->setPendent(true);
+					
 					$em->persist($cloneLlicencia);
 					$em->persist($parte);
 					$em->flush();
@@ -308,7 +311,7 @@ class CronController extends BaseController {
 							$this->get('session')->get('remote_addr'),
 							$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
 			
-					$this->get('session')->setFlash('error-notice',	'Llicència enviada correctament');
+					$this->get('session')->getFlashBag()->add('error-notice',	'Llicència enviada correctament');
 			
 					return $this->redirect($this->generateUrl('FecdasPartesBundle_parte', array('id' => $parte->getId(), 'action' => 'view', 'source' => 'renovacio')));
 			
@@ -321,7 +324,7 @@ class CronController extends BaseController {
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
 			}			
 		} catch (\Exception $e) {
-			$this->get('session')->setFlash('error-notice',$e->getMessage());
+			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 			
 			$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA ERROR',
 					$this->get('session')->get('remote_addr'),
@@ -357,7 +360,7 @@ class CronController extends BaseController {
 		
 		$sortida .= "<h1>Informe diari de clubs en data " . $this->getCurrentDate()->format('d/m/Y') .  "</h1>";
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$states = explode(";", self::CLUBS_STATES);
 		
@@ -492,7 +495,7 @@ class CronController extends BaseController {
 		
 		$request = $this->getRequest();
 	
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		$states = explode(";", self::CLUBS_STATES);
 	
@@ -562,7 +565,7 @@ class CronController extends BaseController {
 
 		$current = $this->getCurrentDate();
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		/* Update preu partes web */
 		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro
@@ -579,38 +582,50 @@ class CronController extends BaseController {
 
 			// Revisar incidències. Parte sincronitzat  o pagat 
 			if ($this->incidenciesPendents($parte_iter) == false) { 
-				if ($diesPendent == self::DIES_PENDENT_AVIS) {
-					// Enviar mail falten 2 dies
-					$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-					if ($parte_iter->getClub()->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+				if ($diesPendent <= self::DIES_PENDENT_NOTIFICA) {
+					// Enviar mail notificació parte nou pendent
+					$subject = ":: Notificació. Parte pendent ::";
+					$tomails = $this->getFacturacioMails();
+					$body = "<p>Parte pendent de pagament del club ".$parte_iter->getClub()->getNom();
+					$body .= " en data del " . $parte_iter->getDataentrada()->format('d-m-Y') . "</p>";
 					
-					$bccmails = $this->getLlicenciesMails();
-					$tomails = array($parte_iter->getClub()->getMail());
-					$body = "<p>Benvolgut club ".$parte_iter->getClub()->getNom()."</p>";
-					$body .= "<p>Us fem saber que la tramitació de llicències/assegurances 
-							feta en la data del " . $parte_iter->getDataentrada()->format('d-m-Y') . " s'anul·larà en 48 hores 
-							tret que se'n faci efectiu el pagament</p>";
-					
-					$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-					$sortida .= " Parte pendent >> Notificació per mail falten 2 dies ". $parte_iter->getClub()->getNom();
+					$this->buildAndSendMail($subject, $tomails, $body);
+					$sortida .= " Parte pendent >> Notificació Federació ". $parte_iter->getClub()->getNom();
 					$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
 				} else {
-					if ($diesPendent > self::DIES_PENDENT_MAX) {
-						// Esborrar
-						$parte_iter->setDatamodificacio($current);
-						$parte_iter->setDatabaixa($current);
-						foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
-							$llicencia_iter->setDatamodificacio($current);
-							$llicencia_iter->setDatabaixa($current);
-						}
-						$em->flush();
+					if ($diesPendent == self::DIES_PENDENT_AVIS) {
+						// Enviar mail falten 2 dies
+						$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
+						if ($parte_iter->getClub()->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
 						
-						$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();
+						$bccmails = $this->getFacturacioMails();
+						$tomails = array($parte_iter->getClub()->getMail());
+						$body = "<p>Benvolgut club ".$parte_iter->getClub()->getNom()."</p>";
+						$body .= "<p>Us fem saber que la tramitació de llicències/assegurances 
+								feta en la data del " . $parte_iter->getDataentrada()->format('d-m-Y') . " s'anul·larà en 48 hores a partir de l'enviament d'aquest correu 
+								tret que se'n faci efectiu el pagament</p>";
+						
+						$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+						$sortida .= " Parte pendent >> Notificació per mail falten 2 dies ". $parte_iter->getClub()->getNom();
 						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
 					} else {
-						// Esperar
-						$sortida .= " Parte pendent >> ". $parte_iter->getClub()->getNom();
-						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+						if ($diesPendent > self::DIES_PENDENT_MAX) {
+							// Esborrar
+							$parte_iter->setDatamodificacio($current);
+							$parte_iter->setDatabaixa($current);
+							foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
+								$llicencia_iter->setDatamodificacio($current);
+								$llicencia_iter->setDatabaixa($current);
+							}
+							$em->flush();
+							
+							$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();
+							$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+						} else {
+							// Esperar
+							$sortida .= " Parte pendent >> ". $parte_iter->getClub()->getNom();
+							$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+						}
 					}
 				}
 			}
@@ -656,7 +671,7 @@ class CronController extends BaseController {
 		$sortida = "";
 		$request = $this->getRequest();
 	
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		/* Update preu partes web */
 		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro

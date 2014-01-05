@@ -4,12 +4,21 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
+    {% if roleform is defined %}
+    {{ form_stylesheet(roleform) }}
+    {% endif %}
 {% endblock %}
 
  {% block javascriptshead %}
     {{ parent() }}
+    <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>
     <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
     <script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
+    {% if roleform is defined %}
+    {{ form_javascript(roleform) }}
+    {% endif %}
 {% endblock %}
 
 {% block fecdas_logo %}
@@ -77,6 +86,10 @@
 				</ul></li>
 			{% endif %}
 		</ul>
+		{% if roleform is defined %}
+		{{ form_label(roleform.role) }}
+		{{ form_widget(roleform.role) }}
+		{% endif %}
 	</nav>
 {% endblock %}
 
@@ -102,6 +115,8 @@
 		showEnquestaClick();
 
 		mainMenuClick();
+
+		$("select").select2();
 	});
 	
 	$('#block-useractions')

@@ -3,15 +3,15 @@
 	<h1>Dades personals</h1>
 	<div class="form-row clearfix">
 		<div id="formpersona-nom" class="form-left">
-			{{ form_label(formpersona.nom, 'Nom', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.nom, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div> 
 		<div id="formpersona-cognoms" class="form-left">
-			{{ form_label(formpersona.cognoms, 'Cognoms', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div> 
 		<div id="formpersona-dni" class="form-left">
-			{{ form_label(formpersona.dni, 'DNI', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.dni, { 'attr': {'class': 'forminput-inside'} }) }}
 			<img width="21px" id="help-dni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 			<div id="formpersona-estranger">
@@ -22,26 +22,26 @@
 	</div>
 	<div class="form-row clearfix">
 		<div id="formpersona-datanaixement" class="form-left">
-			{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 			{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'forminput-outside'} }) }}
 		</div>
 		<div id="formpersona-sexe" class="form-left">
-			{{ form_label(formpersona.sexe, 'Sexe', { 'attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_label(formpersona.sexe, 'Sexe', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 			{{ form_widget(formpersona.sexe, { 'attr': {'class': 'forminput-outside'} }) }}
 		</div>
 		{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
 	</div> 
 	<div class="form-row clearfix">
 		<div id="formpersona-tlf1" class="form-left">
-			{{ form_label(formpersona.telefon1, 'Telf1', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div>
 		<div id="formpersona-tlf2" class="form-left">
-			{{ form_label(formpersona.telefon2, 'Telf2', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div>
 		<div id="formpersona-mail" class="form-left">
-			{{ form_label(formpersona.mail, 'Adreça electrònica', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.mail, 'Adreça electrònica', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.mail, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div>
 	</div> 
@@ -59,7 +59,7 @@
 			{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcp' }) }}
 		</div>
 		<div id="formpersona-addradreca" class="form-left">
-			{{ form_label(formpersona.addradreca, 'Adreça', { 'attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_label(formpersona.addradreca, 'Adreça', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 			{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'forminput-inside'} }) }}
 		</div>
 	</div> 

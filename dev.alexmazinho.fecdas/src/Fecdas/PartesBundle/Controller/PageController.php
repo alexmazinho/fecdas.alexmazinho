@@ -31,9 +31,7 @@ class PageController extends BaseController {
 	const DAY_TRAMITAR_ANY_SEG = 10;
 	
 	public function indexAction() {
-		return $this->render('FecdasPartesBundle:Page:index.html.twig',
-				array('admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(), 'enquestausuari' => $this->get('session')->has('enquestapendent')));
+		return $this->render('FecdasPartesBundle:Page:index.html.twig', $this->getCommonRenderArrayOptions()); 
 	}
 
 	public function contactAction() {
@@ -54,7 +52,7 @@ class PageController extends BaseController {
 		}
 
 		if ($request->getMethod() == 'POST') {
-			$form->bindRequest($request);
+			$form->bind($request);
 
 			if ($form->isValid()) {
 				$message = \Swift_Message::newInstance()
@@ -66,7 +64,7 @@ class PageController extends BaseController {
 
 				$this->get('mailer')->send($message);
 				$this->get('session')
-					->setFlash('sms-notice','Petició enviada correctament. Gràcies!');
+					->getFlashBag()->add('sms-notice','Petició enviada correctament. Gràcies!');
 
 				// Redirect - This is important to prevent users re-posting
 				// 	the form if they refresh the page
@@ -83,18 +81,18 @@ class PageController extends BaseController {
 	public function importcsvAction() {
 		$request = $this->getRequest();
 		
-		$request->getSession()->clearFlashes();
+		$request->getSession()->getFlashBag()->clear();
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		
 		if (!$this->getCurrentClub()->potTramitar()) {
-			$this->get('session')->setFlash('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
 			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
 			return $response;
 		}
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		/* Form importcsv */
 		
@@ -154,7 +152,7 @@ class PageController extends BaseController {
 		
 		if ($request->getMethod() == 'POST') {
 			
-			$form->bindRequest($request);
+			$form->bind($request);
 			
 			if ($form->isValid()) {
 				$file = $form->get('importfile')->getData();
@@ -185,7 +183,7 @@ class PageController extends BaseController {
 					
 					$this->importFileCSVData($temppath, $parte);					
 					
-					$this->get('session')->setFlash('error-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
+					$this->get('session')->getFlashBag()->add('error-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
 					
 					$tempname = $this->getCurrentDate()->format('Ymd')."_".$codiclub."_".$file->getFileName();
 					
@@ -211,11 +209,11 @@ class PageController extends BaseController {
 							$this->get('session')->get('remote_addr'),
 							$this->getRequest()->server->get('HTTP_USER_AGENT'), $e->getMessage());
 							
-					$this->get('session')->setFlash('error-notice',$e->getMessage());
+					$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 				}					
 			} else {
 				// Fitxer massa gran normalment
-				$this->get('session')->setFlash('error-notice',"Error important ek fitxer");
+				$this->get('session')->getFlashBag()->add('error-notice',"Error important ek fitxer");
 			}
 
 		} else {
@@ -256,18 +254,18 @@ class PageController extends BaseController {
 			$parte->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
 			$parte->setDataalta($dataalta);
 				
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 			
 			$this->importFileCSVData($temppath, $parte, true);
 			
 			$em->flush();
 			
-			$this->get('session')->setFlash('error-notice',"Llicències enviades correctament");
+			$this->get('session')->getFlashBag()->add('error-notice',"Llicències enviades correctament");
 			
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
 			
 		} catch (\Exception $e) {
-			$this->get('session')->setFlash('error-notice',$e->getMessage());
+			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 		}
 		
 		/* No hauria de passar mai, el fitxer està validat */
@@ -287,8 +285,11 @@ class PageController extends BaseController {
 		$reader->readLayoutFromFirstRow();
 		//$reader->setLayout(array('first_name', 'last_name'));
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 
+		// Marcar pendent per a clubs pagament immediat
+		if ($parte->getClub()->pendentPagament()) $parte->setPendent(true);
+		
 		if ($persist == true) $em->persist($parte);
 		
 		$fila = 0;
@@ -433,7 +434,7 @@ class PageController extends BaseController {
 			if ($request->query->has('club')) {  // Esborra't des de Llistes Partes
 				$currentClub = $request->query->get('club');
 			} else {
-				$request->getSession()->clearFlashes();
+				$request->getSession()->getFlashBag()->clear();
 			}
 		}
 
@@ -449,7 +450,7 @@ class PageController extends BaseController {
 		
 		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
 			// A partir 10/12 poden fer llicències any següent
-			$request->getSession()->setFlash('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
+			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
 		}
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
@@ -465,7 +466,7 @@ class PageController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 	
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 	
 		if ($this->isCurrentAdmin()) $currentClub = "";
 		else $currentClub = $this->getCurrentClub()->getCodi();
@@ -505,7 +506,7 @@ class PageController extends BaseController {
 				'attr' => (array('onchange' => 'this.form.submit()'))));
 		$form = $formBuilder->getForm(); 
 
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
 		$strQuery .= " WHERE p.databaixa IS NULL ";
@@ -573,6 +574,57 @@ class PageController extends BaseController {
 		return $formBuilder;  
 	}
 	
+	public function historialLlicenciesAction() {
+		$request = $this->getRequest();
+		
+		if ($this->isAuthenticated() != true) return new Response("");
+
+		if (!$request->query->has('id')) return new Response("");
+		
+		$em = $this->getDoctrine()->getManager();
+				
+		$asseguratId = $request->query->get('id');
+			
+		$persona = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityPersona')->find($asseguratId);
+			
+		if (!$persona) return new Response("");
+			
+		if ($this->isCurrentAdmin()) {
+			/* !!!!!!!!!!!! Administradors historia de tots els clubs per DNI !!!!!!!!!!!!!!!!!!!! */
+			$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
+			$strQuery .= " WHERE p.dni = :dni ";
+			$strQuery .= " AND p.databaixa IS NULL ";
+				
+			$query = $em->createQuery($strQuery)->setParameter('dni', $persona->getDni()); 
+			$persones = $query->getResult();
+
+			$llicencies = array();
+			foreach ($persones as $c => $persona_iter) {
+				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate());
+			}
+			
+			/* Ordenades de última a primera 
+			 * SELECT e.dni, COUNT(DISTINCT p.club) FROM m_partes p 
+			 * INNER JOIN m_llicencies l ON p.id = l.parte 
+			 * INNER JOIN m_persones e ON l.persona = e.id 
+			 * GROUP BY e.dni HAVING COUNT(DISTINCT p.club) > 1
+			 * */
+			usort($llicencies, function($a, $b) {
+				if ($a === $b) {
+					return 0;
+				}
+				return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
+			});
+			
+		} else {
+			$llicencies = $persona->getLlicenciesSortedByDate();			
+		}
+
+		return $this->render('FecdasPartesBundle:Page:assegurathistorial.html.twig',
+				array('llicencies' => $llicencies));
+		
+	}
+	
 	public function busseigAction() {
 		$request = $this->getRequest();
 
@@ -590,7 +642,7 @@ class PageController extends BaseController {
 			$smsko = 'No hi ha cap llicència vigent per al DNI : ' . $dni;
 			$smsok = 'El DNI : ' . $dni . ', té una llicència vigent fins ';
 			
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 			
 			$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
 			$strQuery .= " WHERE p.dni = :dni ";
@@ -638,11 +690,11 @@ class PageController extends BaseController {
 				}
 			}
 
-			if ($trobada == true) $this->get('session')->setFlash('error-notice', $smsok);
-			else $this->get('session')->setFlash('error-notice', $smsko);
+			if ($trobada == true) $this->get('session')->getFlashBag()->add('error-notice', $smsok);
+			else $this->get('session')->getFlashBag()->add('error-notice', $smsko);
 				
 		} else {
-			$request->getSession()->clearFlashes();
+			$request->getSession()->getFlashBag()->clear();
 		}
 
 		$form = $this->createFormBuilder()->add('dni', 'text')->getForm();
@@ -654,7 +706,7 @@ class PageController extends BaseController {
 	}
 
 	public function renovarAction() {
-		$this->get('session')->clearFlashes();
+		$this->get('session')->getFlashBag()->clear();
 		$request = $this->getRequest();
 		if ($this->isAuthenticated() != true) {
 			// keep url. Redirect after login
@@ -664,14 +716,14 @@ class PageController extends BaseController {
 		}
 		
 		if (!$this->getCurrentClub()->potTramitar()) {
-			$this->get('session')->setFlash('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
 			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
 			return $response;
 		}
 		
 		/* Desactivar funcionalitat temporal */
 		/*
-		$this->get('session')->setFlash('error-notice',	'Aquesta funcionalitat encara no està disponible');
+		$this->get('session')->getFlashBag()->add('error-notice',	'Aquesta funcionalitat encara no està disponible');
 		$response = $this->forward('FecdasPartesBundle:Page:partes', array(), array('club' => $this->getCurrentClub()->getCodi()));
 		return $response;
 		*/
@@ -731,10 +783,10 @@ class PageController extends BaseController {
 
 		$avisos = "";
 		if ($request->getMethod() == 'POST') {
-			$form->bindRequest($request);
+			$form->bind($request);
 	
 			if ($form->isValid() && $request->request->has('parte_renew')) {
-				$em = $this->getDoctrine()->getEntityManager();
+				$em = $this->getDoctrine()->getManager();
 				
 				$p = $request->request->get('parte_renew');
 				$i = 0; 
@@ -751,6 +803,9 @@ class PageController extends BaseController {
 				// Marquem com renovat
 				$partearenovar->setRenovat(true);
 				
+				// Marcar pendent per a clubs pagament immediat
+				if ($parte->getClub()->pendentPagament()) $parte->setPendent(true);
+				
 				$em->persist($parte);
 				$em->flush();
 
@@ -758,12 +813,12 @@ class PageController extends BaseController {
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
 				
-				$this->get('session')->setFlash('error-notice',	'Llista de llicències enviada correctament');
+				$this->get('session')->getFlashBag()->add('error-notice',	'Llista de llicències enviada correctament');
 						
 				return $this->redirect($this->generateUrl('FecdasPartesBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
 				
 			} else {
-				$this->get('session')->setFlash('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador');
+				$this->get('session')->getFlashBag()->add('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador');
 			}
 		} else {
 			/*
@@ -810,13 +865,13 @@ class PageController extends BaseController {
 
 		$request = $this->getRequest();
 
-		if ($request->query->has('source') == false) $this->get('session')->clearFlashes(); // No ve de renovació
+		if ($request->query->has('source') == false) $this->get('session')->getFlashBag()->clear(); // No ve de renovació
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 
 		if (!$this->getCurrentClub()->potTramitar()) {
-			$this->get('session')->setFlash('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
 			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
 			return $response;
 		}
@@ -885,12 +940,13 @@ class PageController extends BaseController {
 	}
 
 	private function updateParte(Request $request) {
+		
 		/* Des de llicència XMLRequest, update llicència i potser nou parte*/
 		$requestParams = $request->request->all();
 		$p = $requestParams['parte'];
-		$this->get('session')->clearFlashes();
+		$this->get('session')->getFlashBag()->clear();
 
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		if ($p['id'] != "") {
 			$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($p['id']);
@@ -911,14 +967,14 @@ class PageController extends BaseController {
 			// No admin. No hauria de passar mai
 			$valida = true;
 			if (!$this->isCurrentAdmin()) {
-				$this->get('session')->setFlash('error-notice',
+				$this->get('session')->getFlashBag()->add('sms-notice',
 						'Només pot esborrar l\'administrador');
 				$em->refresh($llicencia);
 				$valida = false;
 			}
 			// Comprovació Pagat. No hauria de passar mai			
 			if ($parte->getDatapagament() != null) {
-				$this->get('session')->setFlash('error-notice',
+				$this->get('session')->getFlashBag()->add('sms-notice',
 						'No es poden esborrar llicències que ja estan pagades');
 				$em->refresh($llicencia);
 				$valida = false;
@@ -973,8 +1029,8 @@ class PageController extends BaseController {
 			$form = $this->createForm(new FormParte($options), $parte);
 			$formLlicencia = $this->createForm(new FormLlicencia($options),$llicencia);
 			
-			$form->bindRequest($request);
-			$formLlicencia->bindRequest($request);
+			$form->bind($request);
+			$formLlicencia->bind($request);
 			
 			if ($formLlicencia->isValid() and $form->isValid()) {
 				$parte->setDatamodificacio($this->getCurrentDate());
@@ -994,13 +1050,13 @@ class PageController extends BaseController {
 				$valida = true;
 				if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) {
 					// NO llicències amb data passada. Excepte administradors
-					$this->get('session')->setFlash('error-notice',
+					$this->get('session')->getFlashBag()->add('sms-notice',
 							'No es poden donar d\'alta ni actualitzar llicències amb data passada');
 					$valida = false;
 				}				
 				if ($valida == true) {
 					if ($this->validaLlicenciaInfantil($llicencia) == false) {
-						$this->get('session')->setFlash('error-notice',
+						$this->get('session')->getFlashBag()->add('sms-notice',
 								'L\'edat de la persona no correspon amb el tipus de llicència');
 						$valida = false;
 					}
@@ -1008,7 +1064,7 @@ class PageController extends BaseController {
 
 				if ($valida == true) {
 					if ($this->validaPersonaRepetida($parte, $llicencia) == false) {
-						$this->get('session')->setFlash('error-notice',
+						$this->get('session')->getFlashBag()->add('sms-notice',
 								'Aquesta persona ja té una llicència en aquesta llista');
 						$valida = false;
 					}
@@ -1019,7 +1075,7 @@ class PageController extends BaseController {
 					// Per la pròpia persona
 					$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
 					if ($parteoverlap != null) {
-						$this->get('session')->setFlash('error-notice',
+						$this->get('session')->getFlashBag()->add('sms-notice',
 								'Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
 								$parteoverlap->getDataalta()->format('d/m/Y'));
 						$valida = false;
@@ -1031,7 +1087,7 @@ class PageController extends BaseController {
 					$this->getCurrentDate() >= $datainiciRevisarSaldos and $parte->getClub()->controlCredit() == true) {
 					// Comprovació de saldos clubs DIFE
 					if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
-						$this->get('session')->setFlash('error-notice',	'l\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
+						$this->get('session')->getFlashBag()->add('sms-notice',	'l\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
 						Per poder fer noves gestions, cal que contacteu amb la FECDAS');
 						$valida = false;
 					}
@@ -1050,7 +1106,7 @@ class PageController extends BaseController {
 					
 					$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 					
-					$this->get('session')->setFlash('error-notice', 'Llicència enviada correctament');
+					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament');
 										
 					$em->flush(); 
 				} else {
@@ -1078,7 +1134,11 @@ class PageController extends BaseController {
 				$extrainfo = '';
 				if ($parte->getId() != null) $extrainfo .= 'parte:' . $parte->getId();
 				if ($llicencia->getId() != null) $extrainfo .= ' llicencia: ' . $llicencia->getId();
-				if ($this->get('session')->getFlash('error-notice') != null) $extrainfo .= ' ' . $this->get('session')->getFlash('error-notice');
+				if ($this->get('session')->getFlashBag()->has('sms-notice') != null) {
+					foreach ($this->get('session')->getFlashBag()->peek('sms-notice') as $message) {
+						$extrainfo .= ' ' . $message;
+					}
+				}
 				$this->logEntry($this->get('session')->get('username'), $logaction,
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), $extrainfo);
@@ -1086,7 +1146,7 @@ class PageController extends BaseController {
 			} else {
 				// get a ConstraintViolationList
 				$errorstr = "";
-				$errors = $this->get('validator')->validate($parte);
+				/*$errors = $this->get('validator')->validate($parte);
 				foreach ($errors as $error)
 					$errorstr = $errorstr . " campp: "
 					. $error->getPropertyPath() . "("
@@ -1102,12 +1162,13 @@ class PageController extends BaseController {
 				foreach ($errors as $error)
 					$errorstr = $errorstr . " campl: "
 						. $error->getPropertyPath() . "("
-						. $error->getMessage() . ") \n";
+						. $error->getMessage() . ") \n";*/
 				
-				$this->get('session')->setFlash('error-notice', "error validant les dades".$errorstr); 
+				$this->get('session')->getFlashBag()->add('sms-notice', "error validant les dades".$errorstr); 
 				
 			}
 		}
+		
 		$pdf = $this->showPDF($parte);
 
 		return $this->render('FecdasPartesBundle:Page:partellistallicencies.html.twig',
@@ -1141,7 +1202,7 @@ class PageController extends BaseController {
 					return $response;
 				}
 			} else {
-				$this->get('session')->clearFlashes();
+				$this->get('session')->getFlashBag()->clear();
 				$requestParams = $request->query->all();
 			}
 			if (isset($requestParams['codiclub'])) $codiclub = $requestParams['codiclub'];
@@ -1190,7 +1251,7 @@ class PageController extends BaseController {
 			// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
 			$datainici_reduida = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-09-01")));
 			if (($tipusid == 5 or $tipusid == 6) and ($dataalta_parte < $datainici_reduida)) { // reduïdes
-				$this->get('session')->setFlash('error-notice',	'Les llicències reduïdes només a partir de 1 de setembre');
+				$this->get('session')->getFlashBag()->add('error-notice',	'Les llicències reduïdes només a partir de 1 de setembre');
 			}
 			
 			return $this->render('FecdasPartesBundle:Page:partellicencia.html.twig',
@@ -1234,7 +1295,7 @@ class PageController extends BaseController {
 
 			$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
-			$formpersona->bindRequest($request);
+			$formpersona->bind($request);
 			
 			if ($formpersona->isValid()) {
 				if ($persona->getNom() == "" or $persona->getCognoms() == "") {
@@ -1250,7 +1311,7 @@ class PageController extends BaseController {
 					return new Response("dnierror");
 				}
 				
-				$em = $this->getDoctrine()->getEntityManager();
+				$em = $this->getDoctrine()->getManager();
 
 				$persona->setDatamodificacio($this->getCurrentDate());
 				
@@ -1279,7 +1340,7 @@ class PageController extends BaseController {
 
 					if ($persona->getId() != null)	{
 						$logaction = "PERSONA UPD OK";
-						$this->get('session')->setFlash('error-notice',	"Dades modificades correctament");
+						$this->get('session')->getFlashBag()->add('error-notice',	"Dades modificades correctament");
 					}
 					else {
 						// Canviar format Nom i COGNOMS
@@ -1288,7 +1349,7 @@ class PageController extends BaseController {
 						// Specials chars ñ, à, etc... 
 						$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
 						$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
-						$this->get('session')->setFlash('error-notice', "Dades personals afegides correctament");
+						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
 					}
 						
 					$em->persist($persona);
@@ -1308,7 +1369,7 @@ class PageController extends BaseController {
 
 					if ($llicenciesPersona != null) { 
 						$logaction = "PERSONA DEL KO";
-						$this->get('session')->setFlash('error-notice',	"Aquesta persona té llicències i no es pot esborrar");
+						$this->get('session')->getFlashBag()->add('error-notice',	"Aquesta persona té llicències i no es pot esborrar");
 						$request->request->set('currentperson', $persona->getId());
 					} else {
 						$logaction = "PERSONA DEL OK";
@@ -1317,7 +1378,7 @@ class PageController extends BaseController {
 						$em->persist($persona); // Per delete seria remove
 						$em->flush();
 						$request->request->set('currentperson', 0);
-						$this->get('session')->setFlash('error-notice', "Dades personals esborrades correctament");
+						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals esborrades correctament");
 					}
 					
 					$this->logEntry($this->get('session')->get('username'), $logaction,
@@ -1456,6 +1517,9 @@ class PageController extends BaseController {
 		$useragent = $this->getRequest()->server->get('HTTP_USER_AGENT');
 	
 		if ($tpvresponse['parteId'] > 0) {
+			// Ok. A vegades Asíncrona no arriba POST
+			$updOK = $this->actualitzarPagament($tpvresponse['parteId'], $tpvresponse['Ds_Order']);
+			
 			$this->logEntry($tpvresponse['username'], 'TPV NOTIFICA OK', $remoteaddr, $useragent, $tpvresponse['logEntry']);
 	
 			return $this->render('FecdasPartesBundle:Page:notificacio.html.twig',
@@ -1541,7 +1605,7 @@ class PageController extends BaseController {
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
 	
 		if ($parte != null) {
-			$em = $this->getDoctrine()->getEntityManager();
+			$em = $this->getDoctrine()->getManager();
 			// Actualitzar data pagament
 			/*
 				$numfactura = $this->getMaxNumFactura();
@@ -1562,7 +1626,7 @@ class PageController extends BaseController {
 	private function sendMailPagamentPendent ($parteId, $ordre) {
 		// $mails = $this->getFacturacioMails(); Ja no s'envien a Remei 
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
 	
 		if ($parte != null) {
@@ -1706,7 +1770,7 @@ class PageController extends BaseController {
 
 		$currentmonthday = sprintf("%02d", $month) . "-" . sprintf("%02d", $day);
 
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
 		/* Llista tipus parte administrador en funció del club seleccionat. Llista d'un club segons club de l'usuari */
 		$club = null;

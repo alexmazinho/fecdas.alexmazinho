@@ -1,8 +1,8 @@
-{% if app.session.hasFlash('error-notice') %}
+{% for flashMessage in app.session.flashbag.get('sms-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('error-notice') }}
-    </div>
-{% endif %}
+		{{ flashMessage }}
+  	</div>	
+{% endfor %}
 
 {% if parte.numLlicencies > 0 %}
 <div class="table-header">

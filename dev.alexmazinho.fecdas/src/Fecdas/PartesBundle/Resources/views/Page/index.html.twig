@@ -17,11 +17,11 @@
 {% block body %}
 	<header>
         <h1>Benvinguts!</h1>
-        {% if app.session.hasFlash('sms-notice') %}
-    	<div class="sms-notice">
-        	{{ app.session.flash('sms-notice') }}
-    	</div>	
-		{% endif %}
+        {% for flashMessage in app.session.flashbag.get('sms-notice') %}
+        <div class="sms-notice">
+  			{{ flashMessage }}
+  		</div>	
+		{% endfor %}
         <p>Esteu a la pàgina d'entrada del sistema de tramitació de llicències federatives de la Federació Catalana d'Activitats Subaquàtiques (<a href="http://www.fecdas.cat" target="_blank">FECDAS</a>).</p>
         <p>Un cop hi hagueu entrat, aquest servei també us pot ser útil per tenir un accès ràpid a la llista de persones a què el vostre club ha tramitat la llicència,
          per esbrinar si una persona té una llicència federativa vigent i per posar-vos en contacte amb la FECDAS a través del correu electrònic.</p>

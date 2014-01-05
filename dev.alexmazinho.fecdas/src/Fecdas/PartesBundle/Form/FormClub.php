@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormClub extends AbstractType {
 
@@ -13,17 +14,17 @@ class FormClub extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		
 		if ($this->options['admin'] == true) {
 			$builder->add('clubs', 'choice', array('choices' => $this->options['clubs'],
 				'data' => $this->options['codiclub'],
-				'property_path' => false,
+				'mapped' => false,
 			));
 			
 			$builder->add('codishow', 'text', array(
-				'property_path'  => false,
+				'mapped'  => false,
 			));
 			
 			$tipuscluboptions = array('class' => 'FecdasPartesBundle:EntityClubType', 'property' => 'tipus',
@@ -75,7 +76,7 @@ class FormClub extends AbstractType {
 			$builder->add('totalllicenciesweb', 'money', array(
 					'read_only'  => true,
 					'grouping' => true,
-					'property_path' => false,
+					'mapped' => false,
 			));
 			
 			$builder->add('totalkits', 'money', array(
@@ -95,7 +96,7 @@ class FormClub extends AbstractType {
 			$builder->add('saldoclub', 'money', array(
 					'read_only'  => true,
 					'grouping' => true,
-					'property_path' => false,
+					'mapped' => false,
 			));
 		}
 
@@ -177,7 +178,7 @@ class FormClub extends AbstractType {
 		/* Camps nou usuari */
 		$builder->add('user', 'email', array(
 				'required' => false,
-				'property_path' => false,
+				'mapped' => false,
 		));
 		
 		$builder->add('pwd', 'repeated', array(
@@ -185,27 +186,32 @@ class FormClub extends AbstractType {
     			'required' => false,
     			'first_name'  => 'first',
     			'second_name' => 'second',
-				'property_path' => false,
+				'mapped' => false,
 				'options' => array('always_empty' => true, 'required' => false),
 		));
 		
 		$builder->add('randompwd', 'text', array(
 				'required' => false,
-				'property_path' => false,
+				'mapped' => false,
 		));
 		
 		
 		$builder->add('forceupdate', 'checkbox', array(
     	    	'required'  => false,
-				'property_path' => false,
+				'mapped' => false,
 				'data' => true,
 		));
 		
 		$builder->add('role', 'choice', array(
 				'choices' => array('user'=> 'user'),
 				'data' => 'user',
-				'property_path' => false,
+				'mapped' => false,
 		));
+	}
+	
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
+	{
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\EntityClub'));
 	}
 	
 	public function getName()

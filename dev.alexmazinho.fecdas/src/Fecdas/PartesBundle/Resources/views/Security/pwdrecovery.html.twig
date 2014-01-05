@@ -12,19 +12,19 @@
     <header>
         <h1>Recuperació de la paraula clau</h1>
     </header>
-	
-    {% if app.session.hasFlash('sms-notice') %}
+
+    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
     <div class="sms-notice">
-        {{ app.session.flash('sms-notice') }}
-    </div>
-	{% endif %}
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
     
    	<div class="login"> 
    		<form action="{{ path('FecdasPartesBundle_pwdrecovery') }}" method="post" {{ form_enctype(form) }} class="appform">
    			<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
 
 	   		<div id="formlogin-user">
-				{{ form_label(form.user, 'Usuari', { 'attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_label(form.user, 'Usuari', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
 			</div>
 	

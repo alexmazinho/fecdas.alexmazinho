@@ -417,7 +417,7 @@ class PDFController extends BaseController {
 				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
 
 		
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
 		$strQuery .= " WHERE p.club = :club ";

@@ -2,7 +2,8 @@
 namespace Fecdas\PartesBundle\Form\Enquestes;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FormEnquesta extends AbstractType {
 
@@ -13,7 +14,7 @@ class FormEnquesta extends AbstractType {
 		$this->options = $options;
 	}
 	
-	public function buildForm(FormBuilder $builder, array $options)
+	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('id', 'hidden');
 		
@@ -28,11 +29,9 @@ class FormEnquesta extends AbstractType {
 				array('format' => 'dd/MM/yyyy', 'years' => range($current_year, $current_year+1), 'required'  => false));
 	}
 	
-	public function getDefaultOptions(array $options)
+	public function setDefaultOptions(OptionsResolverInterface $resolver)
 	{
-		return array(
-				'data_class' => 'Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta',
-		);
+		$resolver->setDefaults(array('data_class' => 'Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta'));
 	}
 	
 	public function getName()

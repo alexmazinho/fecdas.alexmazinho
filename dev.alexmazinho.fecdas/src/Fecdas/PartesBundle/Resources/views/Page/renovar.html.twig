@@ -19,11 +19,11 @@
 				{{ form_widget(form.any, { 'id': 'parte_any', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formparte-club" class="form-left">
-				{{ form_label(form.club, 'Club', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_label(form.club, 'Club', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.club, { 'id': 'parte_renovar_club', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formparte-tipus" class="form-left">
-				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'id': 'parte_renovar_tipus', 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div class="form-right">
@@ -32,12 +32,12 @@
 					 id="formrenovar-button-renovar" class="forminput-inside" value="Renovar" name="formrenovar-button-renovar"/>
 			</div>	
         </div>
-		{% if app.session.hasFlash('error-notice') %}
-    	<div class="sms-notice">
-        	{{ app.session.flash('error-notice') }}
-    	</div>
-		{% endif %}		
-        
+	    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+	    <div class="sms-notice">
+			{{ flashMessage }}
+	  	</div>	
+		{% endfor %}
+                
 	{% if form.llicencies|length > 0 and form.llicencies|length == parte.numLlicencies %}
 		<div class="table-header" class="clearfix">
 			<div id="summary-header">

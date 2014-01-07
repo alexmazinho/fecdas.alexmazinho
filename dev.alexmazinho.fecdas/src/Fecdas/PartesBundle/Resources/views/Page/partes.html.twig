@@ -21,10 +21,6 @@
     <div id="partes-main">
 	    <div id="list-forms">
 	    	<form action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
-	      		<div id="formpartes-clubs" class="form-left">
-					{# form_label(form.clubs, 'Data Alta', { 'label_attr': {'class': 'formlabel-outside'} }) #}
-					{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
-				</div> 
 				<div id="formpartes-submit" class="form-right">	
 					<input type="submit" class="forminput-inside" value="Nou comunicat" name="formpartes-button-new"/>
 				</div> 
@@ -48,19 +44,25 @@
 		   	<ol id="list-data">
 			{% for parte in partes %}
 		   		<li class="data-detall {% if parte.isPassat %} data-detall-fosc {% endif %}" {% if parte.numLlicencies == 0 %} style="display:none" {% endif %} >
-			   		<div class="data-detall-cell parte-id">{{ parte.id }}</div>
-		   			<div class="data-detall-cell parte-any">{{ parte.any }}</div>
-		   			<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
-		   			<div class="data-detall-cell parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
-		   			<div class="data-detall-cell parte-total">{{ parte.numLlicencies }}</div>
-		   			<div class="data-detall-cell parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
-		   			<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat }}</div>
+		   			<div class="parte-id">{{ parte.id }}</div>
+			   		<div class="data-detall-cell parte-any">{{ parte.any }}</div>
+			   		<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
+			   		<div class="data-detall-cell parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
+			   		<div class="data-detall-cell parte-total">
+			   		<a class="llista-llicencies" href="{{ path('FecdasPartesBundle_llicenciesParte', { 'id': parte.id }) }}" title="Llicències">{{ parte.numLlicencies }}
+			   		<img src="{{ asset('images/icon-historial.png') }}" alt="Llicències" title="Llicències" width="23px"></a>
+			   		</div>
+			   		<div class="data-detall-cell parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
+			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}
 		   				<a class="parte-action-renew" href="{{ path('FecdasPartesBundle_renovar', { 'id': parte.id }) }}"><img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar" title="Renovar" width="23px"></a>
 		   				{% endif %}
 		   				<a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Editar Veure" title="Editar Veure" width="23px"></a>
 		   			</div>
+		   			
+		   		
+		   			
 		   		</li>
 		   		{% endfor %}
 			</ol>
@@ -83,6 +85,8 @@ $(document).ready(function(){
 	setMenuActive("menu-partes");
 	
 	removeParteLink();
+
+	showLlicenciesParte();
 
 	sortLlista("col-listheader", "list-data");
 

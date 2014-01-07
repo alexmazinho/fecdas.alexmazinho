@@ -156,7 +156,7 @@ form.appform label { color: #1240A0 }
 
 .formlabel-inside {
 	float: left; /*color: #AAAAAA;*/ position: absolute; margin-left: 10px;
-	text-align: left; min-width: 50px; vertical-align: top; padding-top: 5px; 
+	text-align: left; min-width: 50px; vertical-align: top; padding-top: 5px; z-index: 100;
 }
 
 html>body .formlabel-inside { padding-top: 8px; }
@@ -759,23 +759,98 @@ select#parte_renovar_tipus { width: 240px; }
 /********************************************* Llista de partes ****************************************************/
 
 #header-parteid { display:none}
-#header-parteany {	width: 5%; }
-#header-partedata {	width: 10%; }
-#header-partetipusdesc { width: 26%; }
-#header-partetotal {	width: 10%;}
-#header-parteimport {	width: 10%; text-align:right;}
-#header-parteestat {	width: 21%; text-align: left; }
-#header-parteactions { width: 8%; }
+#header-parteany {	width: 4%; }
+#header-partedata {	width: 8%; }
+#header-partetipusdesc { width: 17%; }
+#header-partetotal {	width: 7%;}
+#header-parteimport {	width: 8%; text-align:right;}
+#header-parteestat {	width: 18%; text-align: left; }
+#header-parteactions { width: 6%; }
 
 .parte-id {	display:none}
-.parte-any { width: 5%;  }
-.parte-data { width: 10%; }
-.parte-tipusdesc { width: 26%; }
-.parte-total { width: 10%; }
-.parte-import {	width: 10%; text-align:right;}
-.parte-estat { width: 21%; text-align:left;}
-.parte-actions { width: 8%; text-align:right; margin-top: -14px; padding-right: 10px }
+.parte-any { width: 4%;  }
+.parte-data { width: 8%; }
+.parte-tipusdesc { width: 17%; }
+.parte-total { width: 7%; }
+.parte-import {	width: 8%; text-align:right;}
+.parte-estat { width: 18%; text-align:left;}
+.parte-actions { width: 6%; text-align:right; margin-top: -14px; padding-right: 10px }
 
+
+
+/*
+#data-detall  a  { color: #555555; }
+
+.llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
+ 	-webkit-transition: all 1s ease-in-out;
+  -moz-transition: all 1s ease-in-out;
+  -ms-transition: all 1s ease-in-out;
+  -o-transition: all 1s ease-in-out;
+  transition: all 1s ease-in-out;
+ 
+}
+.llicencia-historial:hover { color: #2281CF; background: url(../images/icon-historial.png) no-repeat right center; }
+
+.llicencia-historial img {
+	position:absolute;
+ 	right:0;
+ 	opacity:0;
+}
+
+.llicencia-historial img:hover {
+	opacity:1;
+}*/
+
+
+.data-detall-llicencies { display:inline }
+
+#partes-main .data-detall { display: inline; }  
+#partes-main .data-detall:hover  { /*color: #2281CF; opacity:0.8 */}
+
+/*.parte-dades { width: 90%; padding: 0; }
+
+.data-detall-cell-item { padding: 6px; display: inline }*/
+
+.llista-llicencies { position: relative; display: inline-block; width: 100%;/*width: 90%; padding: 0;*/ }
+
+.llista-llicencies img { position: absolute; right:0; bottom:0; /*width: 90%; padding: 0;*/ }
+
+.data-detall-cell-item { display: table-cell; padding: 6px; }
+
+
+
+.parte-llicencies { 
+	display:none; 
+	position: relative;
+	width: auto; 
+	margin: auto;  
+	border: 1px solid #81C6FF;
+    box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2), 10px 0 10px -5px rgba(0, 0, 0, 0.2); 
+    line-height: 24px;
+    padding: 5px 20px;
+    margin: 5px 15%;
+}
+
+.parte-llicencies .close {
+    cursor: pointer;
+    height: 35px;
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    width: 35px;
+}
+
+.parte-llicencies-titol { color: #2281CF; font-weight: bold; font-size: 1.1em }
+.parte-llicencia-row { 
+	display:block;
+	border-top: 1px solid #EDF1F5;
+}
+
+.parte-llicencia-row-camp { display:inline;  }
+.parte-llicencia-row-vigencia {   }
+.parte-llicencia-row-categoria {  }
+.parte-llicencia-row-club {  }
+.parte-llicencia-row-desc {  }
 
 /********************************************* Llista de partes Fi ****************************************************/
 
@@ -842,7 +917,7 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 #formclub-clubs  { width: 35%; }
-#formclub-codishow { width: 9%; }
+#formclub-codi { width: 9%; }
 #formclub-tipus  { width: 14%; }
 #formclub-activat { width: 14%; }
 #formclub input[type="checkbox"]  { width: auto; }
@@ -1582,6 +1657,10 @@ table.jqplot-table-legend {
 	
 }
 
+#formrecents-club {
+	width: 25%;
+}
+
 #formrecents-baixa,#formrecents-sincro  {
 	margin-top: 7px;
 }
@@ -1706,8 +1785,8 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 /*****************************************************************************************************************/
 
-#block-useractions {
-	z-index: 1; display:none; margin: 26px 16px 0 2px;
+#menu-user {
+	z-index: 1; display:none; margin: 24px 16px 0 2px;
   	/*max-width: 250px;
   	min-width: 165px; 
   	padding: 7px; font-family: arial; */
@@ -1719,7 +1798,31 @@ li.parte-pendent-sincro .parterecents-actions {
     width: auto;
 }
 
-#block-useractions div {
+#menu-user .menu-user-club-info {
+    /*padding: 0px 10px;*/
+    padding: 6px 10px 10px;
+    margin-left: 1px;
+	float:left;
+	color: #1240A0;
+    font-size: 16px;
+    font-weight: bold;
+    font-style: normal;
+    
+}
+
+#menu-user .menu-user-club-info .select2-container {
+	margin:auto;
+    padding: 0;
+}
+#menu-user .menu-user-club-info .select2-container a {
+	width: 200px;
+	color: #1240A0;
+	font-size: 12px;
+	height: 20px;
+    line-height: 20px;
+}
+
+#menu-user .menu-user-action {
 	/*-webkit-border-radius: 0 0 10px 10px;
    	-moz-border-radius: 0 0 10px 10px;*/
     border-radius: 0 0 10px 10px;
@@ -1730,17 +1833,15 @@ li.parte-pendent-sincro .parterecents-actions {
 	float:left;
 }
 
-#block-useractions .featured {
+#menu-user .menu-user-action:hover {
+    padding-top: 10px;
+}
+
+#menu-user .featured {
 	/*color: #FADA13;*/
 	color: #F0F2CA;
 	text-decoration: blink;
 }
-
-
-#block-useractions div:hover {
-    padding-top: 10px;
-}
-
 
 #browsernotsupported {
 	margin: 70px 190px 90px;

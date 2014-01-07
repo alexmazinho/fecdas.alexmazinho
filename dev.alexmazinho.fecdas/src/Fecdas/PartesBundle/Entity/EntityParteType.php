@@ -5,7 +5,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(readOnly=true)
- * @ORM\Table(name="m_tipusparte")
+ * @ORM\Table(name="m_tipusparte") 
  * 
  * @author alex
  *
@@ -47,6 +47,12 @@ class EntityParteType {
 	 * @ORM\Column(type="decimal", precision=4, scale=2)
 	 */
 	protected $iva;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $actiu;
+	
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityCategoria", mappedBy="tipusparte")
@@ -199,6 +205,26 @@ class EntityParteType {
     public function getFinal()
     {
     	return $this->final;
+    }
+    
+    /**
+     * Set actiu
+     *
+     * @param boolean $actiu
+     */
+    public function setActiu($actiu)
+    {
+    	$this->actiu = $actiu;
+    }
+    
+    /**
+     * Get actiu
+     *
+     * @return boolean
+     */
+    public function getActiu()
+    {
+    	return $this->actiu;
     }
     
     /**

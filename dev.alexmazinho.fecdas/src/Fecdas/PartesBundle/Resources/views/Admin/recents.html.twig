@@ -22,10 +22,9 @@
     
     <div id="list-forms">
     	<form id="formrecents" action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
-    		{{ form_widget(form.codi)}}
       		<div id="formrecents-club" class="form-left">
-				{{ form_label(form.clubs, 'Cerca club', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside '} }) }}
+				{{ form_label(form.clubs, 'Filtre per club... ', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside ', 'style': 'width:100%'} }) }}
 			</div> 
       		<div id="formrecents-estat" class="form-left">
 				{{ form_widget(form.estat, { 'attr': {'class': 'forminput-outside '} }) }}
@@ -45,7 +44,6 @@
 				<input type="submit" class="forminput-inside" value="Consulta" name="formrecents-button-search"/>
 			</div> 
 	   	</form>
-	   	<a id="formrecents-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
     </div>
     <!--  <div id="list-header" class="clearfix"> -->
     <br/>
@@ -121,8 +119,8 @@ $(document).ready(function(){
 
 	confirmarPartePagat();
 	
-	autocompletersNomsClub("formrecents-autocompleters", "form_clubs", "form_codi");
-
+	selectRecentsClub();
+	
 	sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

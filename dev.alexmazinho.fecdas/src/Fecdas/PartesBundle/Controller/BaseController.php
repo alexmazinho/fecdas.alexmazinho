@@ -9,10 +9,10 @@ use Fecdas\PartesBundle\Entity\EntityPersona;
 use Fecdas\PartesBundle\Entity\EntityUserLog;
 
 class BaseController extends Controller {
-	const MAIL_ADMINTEST = "alexmazinho@gmail.com";  /* Canviar. Crear nou mail  */
-	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";
+	const MAIL_ADMINTEST = "alexmazinho@gmail.com";  /* Canviar. Crear nou mail, ha d'estar a la taula d'usuaris  */
+	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";  
 	const MAIL_FACTURACIO = "remei@fecdas.cat";
-	const MAIL_LLICENCIES = "secretari@fecdas.cat";
+	const MAIL_LLICENCIES = "secretaria@fecdas.cat";
 	const MAIL_CONTACTE = "info@fecdas.cat";
 	const CLUBS_DEFAULT_STATE = 1;
 	const RECENTS_CLUBS_DEFAULT_STATE = 0;
@@ -26,23 +26,27 @@ class BaseController extends Controller {
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
 	
-	protected function getCommonRenderArrayOptions() {
+	protected function getCommonRenderArrayOptions($more = array()) { 
 		if ($this->isCurrentAdmin()) {
-			$formbuilder = $this->createFormBuilder();
-			$formbuilder->add('role', 'genemu_jqueryselect2_entity', array('class' => 'FecdasPartesBundle:EntityClub',
+			$roleSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
 					'property' => 'nom',
 					'label' => 'El teu rol actual és: ',
-					'required'  => true ));
+					'required'  => true );
+			
+			$roleSelectOptions['data'] = $this->getCurrentClub();
+			$formbuilder = $this->createFormBuilder();
+			$formbuilder->add('role', 'genemu_jqueryselect2_entity', $roleSelectOptions);
 			$options['roleform'] = $formbuilder->getForm()->createView();
+		} else {
+			$userclub = $this->getCurrentClub();
+			if ($userclub) $options['userclub'] = $userclub->getNom(); 	
 		}
 		$options['admin'] = $this->isCurrentAdmin();
 		$options['authenticated'] = $this->isAuthenticated();
 		$options['busseig'] = $this->isCurrentBusseig();
 		$options['enquestausuari'] = $this->get('session')->has('enquestapendent');
 		
-		return $options;
-		/*array('roleform' => $formbuilder->getForm()->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-				'busseig' => $this->isCurrentBusseig(), 'enquestausuari' => $this->get('session')->has('enquestapendent')))*/
+		return  array_merge($more, $options);
 	}
 	
 	protected function getCurrentDate($time = null) {
@@ -74,8 +78,11 @@ class BaseController extends Controller {
 		if ($this->isAuthenticated() != true) return null;
 		
 		$em = $this->getDoctrine()->getManager();
-		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
-		$user = $repository->findOneByUser($this->get('session')->get('username'));
+		
+		if ($this->isCurrentAdmin() and $this->get('session')->has('roleclub')) {
+			return 	$em->getRepository('FecdasPartesBundle:EntityClub')->find($this->get('session')->get('roleclub'));		
+		}
+		$user = $em->getRepository('FecdasPartesBundle:EntityUser')->findOneByUser($this->get('session')->get('username'));
 		if ($user) return $user->getClub();
 		return null;
 	}
@@ -453,31 +460,17 @@ class BaseController extends Controller {
 		return __DIR__.'/../../../../tmp';
 	}
 	
-	protected function getErrorMessages(\Symfony\Component\Form\Form $form) {
-		$errors = array();
-		foreach ($form->getErrors() as $key => $error) {
-			$template = $error->getMessageTemplate();
-			$parameters = $error->getMessageParameters();
-	
-			foreach($parameters as $var => $value){
-				$template = str_replace($var, $value, $template);
-			}
-	
-			$errors[$key] = $template;
-		}
-		if ($form->hasChildren()) {
-			foreach ($form->getChildren() as $child) {
-				if (!$child->isValid()) {
-					$errors[$child->getName()] = $this->getErrorMessages($child);
-				}
-			}
-		}
-	
-		return $errors;
+	protected function logEntryAuth($accio = null, $extrainfo = null) {
+		$this->logEntry($this->get('session')->get('username'), $accio, $this->get('session')->get('remote_addr'), 
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $extrainfo);
 	}
 	
-	
-	protected function logEntry($user, $accio, $remoteaddr = null, $useragent = null, $extrainfo = null) {
+	protected function logEntry($user = null, $accio = null, $remoteaddr = null, $useragent = null, $extrainfo = null) {
+		if (!$user) {
+			if ($this->get('session')->has('username')) $user = $this->get('session')->get('username');
+			else $user = self::MAIL_ADMINTEST;
+		}
+		
 		$em = $this->getDoctrine()->getManager();
 		$logentry = new EntityUserLog($user, $accio, $remoteaddr, $useragent, $extrainfo);
 		$em->persist($logentry);

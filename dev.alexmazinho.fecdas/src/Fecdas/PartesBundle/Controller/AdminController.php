@@ -27,6 +27,18 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 class AdminController extends BaseController {
+	
+	public function changeroleAction() {
+		if (!$this->isCurrentAdmin()) return new Response(""); 
+			
+		$request = $this->getRequest();
+
+		// Canviar Club Administrador	
+		if ($request->query->has('roleclub')) $this->get('session')->set('roleclub', $request->query->get('roleclub'));
+		
+		return new Response("");
+	}
+	
 	public function recentsAction() {
 		$request = $this->getRequest();
 	
@@ -44,7 +56,7 @@ class AdminController extends BaseController {
 		$currentBaixa = 0;
 		$currentSincro = 0;
 		$currentPagament = "100";
-		$currentClub = "";
+		$currentClub = null;
 		
 		$defaultEstat = self::RECENTS_CLUBS_DEFAULT_STATE; // Tots
 		if ($this->get('session')->has('username') and
@@ -61,7 +73,9 @@ class AdminController extends BaseController {
 			if ($request->request->has('form')) { 
 				$formdata = $request->request->get('form');
 				
-				if (isset($formdata['codi'])) $currentClub = $formdata['codi'];
+				if (isset($formdata['clubs'])) {
+					$currentClub = $em->getRepository('FecdasPartesBundle:EntityClub')->find($formdata['clubs']);
+				}
 				if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
 				if (isset($formdata['pagament'])) $currentPagament = $formdata['pagament'];
 				if (isset($formdata['baixa'])) $currentBaixa = 1;
@@ -70,7 +84,7 @@ class AdminController extends BaseController {
 				$this->logEntry($this->get('session')->get('username'), 'ADMIN PARTES SEARCH',
 						$this->get('session')->get('remote_addr'),
 						$this->getRequest()->server->get('HTTP_USER_AGENT'), 
-						"club: " . $currentClub . " filtre estat: " . $states[$currentEstat] . 
+						"club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] . 
 						" pagament: " . $currentPagament . " baixa: " . $currentBaixa .
 						$currentSincro . " sync: " . $currentSincro );
 			}
@@ -80,14 +94,21 @@ class AdminController extends BaseController {
 					$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		}
 		
-		$formBuilder = $this->createFormBuilder()->add('clubs', 'search', array('required' => false));
+		$formBuilder = $this->createFormBuilder();
+		
+		$clubsSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
+				'property' => 'nom',
+				'label' => 'Filtre per club: ',
+				'required'  => false );
+			
+		if ($currentClub != null) $clubsSelectOptions['data'] = $currentClub;
+		
+		$formBuilder->add('clubs', 'genemu_jqueryselect2_entity', $clubsSelectOptions);
 		
 		$formBuilder->add('estat', 'choice', array(
 				'choices'   => $states,
 				'preferred_choices' => array($defaultEstat),  // Estat per defecte sempre 
 		));
-		
-		$formBuilder->add('codi', 'hidden');
 		
 		$formBuilder->add('pagament', 'choice', array(
     				'choices'   => array('100' => 'Darrers 100', 't' => 'Tots', 'n' => 'No pagats', 'p' => 'Pagats'), 
@@ -111,11 +132,8 @@ class AdminController extends BaseController {
 		else $strQuery .= " AND p.databaixa IS NOT NULL ";
 		
 		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
-
-		if ($currentClub != "") {
-			$clubcercar = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub);
-			$strQuery .= " AND p.club = '" .$clubcercar  . "' "	;
-		}
+		
+		if ($currentClub != null) $strQuery .= " AND p.club = '" .$currentClub->getCodi() . "' "	;
 		
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
@@ -140,18 +158,12 @@ class AdminController extends BaseController {
 		/* Mantenir estat darrera consulta */
 		if ($currentBaixa == 1) $form->get('baixa')->setData(true);
 		if ($currentSincro == 1) $form->get('sincro')->setData(true);
-		if ($currentClub != '') {
-			$form->get('clubs')->setData($clubcercar->getNom());
-			$form->get('codi')->setData($clubcercar->getCodi());
-		}
 		$form->get('pagament')->setData($currentPagament);
 		$form->get('estat')->setData($currentEstat);  
 		
-		return $this->render('FecdasPartesBundle:Admin:recents.html.twig',
-				array('form' => $form->createView(), 'partes' => $partesrecents,
-						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+		return $this->render('FecdasPartesBundle:Admin:recents.html.twig', 
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'partes' => $partesrecents)));
+						
 	}
 	
 	public function confirmapagamentAction() {
@@ -336,7 +348,8 @@ class AdminController extends BaseController {
 	
 			// Crear índex taula partes per data entrada
 			$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c JOIN c.estat e ";
-			if ($currentEstat != 0) $strQuery .= " WHERE e.descripcio = :filtreestat ";
+			$strQuery .= " WHERE c.activat = true ";
+			if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
 			$strQuery .= " ORDER BY c.nom";
 			$query = $em->createQuery($strQuery);
 			if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
@@ -344,11 +357,8 @@ class AdminController extends BaseController {
 			
 			$form->get('estat')->setData($currentEstat);  // Mantenir estat darrera consulta
 	
-			return $this->render('FecdasPartesBundle:Admin:clubs.html.twig',
-					array('form' => $form->createView(), 'clubs' => $clubs,
-							'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-							'busseig' => $this->isCurrentBusseig(),
-							'enquestausuari' => $this->get('session')->has('enquestapendent')));
+			return $this->render('FecdasPartesBundle:Admin:clubs.html.twig',  
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs)));
 	}
 	
 	public function ajaxclubsnomsAction(Request $request) {

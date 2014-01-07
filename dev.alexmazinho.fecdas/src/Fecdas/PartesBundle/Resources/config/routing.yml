@@ -60,6 +60,18 @@ FecdasPartesBundle_partes:
     requirements:
         _method:  GET|POST
 
+FecdasPartesBundle_llicenciesParte: 
+    pattern:  /llicenciesParte
+    defaults: { _controller: "FecdasPartesBundle:Page:llicenciesParte" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_changerole:
+    pattern:  /changerole
+    defaults: { _controller: "FecdasPartesBundle:Admin:changerole" }
+    requirements:
+        _method:  GET
+
 FecdasPartesBundle_recents:
     pattern:  /recents
     defaults: { _controller: "FecdasPartesBundle:Admin:recents" }

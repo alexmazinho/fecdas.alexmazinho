@@ -72,10 +72,7 @@ class PageController extends BaseController {
 			}
 		}
 
-		return $this->render('FecdasPartesBundle:Page:contact.html.twig',
-				array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig(), 
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+		return $this->render('FecdasPartesBundle:Page:contact.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 
 	public function importcsvAction() {
@@ -200,10 +197,9 @@ class PageController extends BaseController {
 							'club' => $parte->getClub()->getCodi(), 'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
 					
-					// Redirect to confirm page					
+					// Redirect to confirm page		
 					return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
-							array('parte' => $parte, 'urlconfirm' => $urlconfirm, 'admin' => $this->isCurrentAdmin(),
-									'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
 				} catch (\Exception $e) {
 					$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV ERROR',
 							$this->get('session')->get('remote_addr'),
@@ -223,8 +219,7 @@ class PageController extends BaseController {
 		}
 
 		return $this->render('FecdasPartesBundle:Page:importcsv.html.twig',
-				array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 	
 	public function confirmcsvAction() {
@@ -274,9 +269,8 @@ class PageController extends BaseController {
 				'club' => $parte->getClub()->getCodi(), 'tempfile' => $temppath
 		));
 		
-		return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
-				array('parte' => $parte, 'urlconfirm' => $urlconfirm, 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+		return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig', 
+				$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
 	}
 	
 	private function importFileCSVData ($file, $parte, $persist = false) {
@@ -426,10 +420,6 @@ class PageController extends BaseController {
 				if (isset($parte['club'])) $currentClub = $parte['club'];
 			}
 			
-			if ($request->request->has('form')) { // Reload select clubs de Partes
-				$formdata = $request->request->get('form');  
-				if (isset($formdata['clubs'])) $currentClub = $formdata['clubs'];
-			}
 		} else {
 			if ($request->query->has('club')) {  // Esborra't des de Llistes Partes
 				$currentClub = $request->query->get('club');
@@ -442,8 +432,6 @@ class PageController extends BaseController {
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
 		
-		$form = $this->createClubsForm($currentClub)->getForm(); 
-
 		$partesclub = $this->consultaPartesClub($currentClub);
 		
 		$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub);
@@ -454,12 +442,31 @@ class PageController extends BaseController {
 		}
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
-				array('form' => $form->createView(), 'partes' => $partesclub,  'club' => $club,
-						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $this->createFormBuilder()->getForm()->createView(), 'partes' => $partesclub,  'club' => $club)));
 	}
 
+	public function llicenciesParteAction() {
+		$request = $this->getRequest();
+	
+		if ($this->isAuthenticated() != true) return new Response("");
+	
+		if (!$request->query->has('id')) return new Response("");
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$parteId = $request->query->get('id');
+			
+		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
+			
+		if (!$parte) return new Response("");
+			
+		$llicencies = $parte->getLlicenciesSortedByName();
+	
+		return $this->render('FecdasPartesBundle:Page:partesllicencies.html.twig', array('llicencies' => $llicencies));
+	}
+	
+	
+	
 	public function asseguratsAction() {
 		$request = $this->getRequest();
 	
@@ -549,10 +556,7 @@ class PageController extends BaseController {
 		$persones = $query->getResult();
 	
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
-				array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent, 'club' => $currentClub,
-						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent, 'club' => $currentClub)));
 	}
 	
 	private function createClubsForm($currentClub, $required = true) {
@@ -620,8 +624,7 @@ class PageController extends BaseController {
 			$llicencies = $persona->getLlicenciesSortedByDate();			
 		}
 
-		return $this->render('FecdasPartesBundle:Page:assegurathistorial.html.twig',
-				array('llicencies' => $llicencies));
+		return $this->render('FecdasPartesBundle:Page:assegurathistorial.html.twig', array('llicencies' => $llicencies));
 		
 	}
 	
@@ -699,10 +702,8 @@ class PageController extends BaseController {
 
 		$form = $this->createFormBuilder()->add('dni', 'text')->getForm();
 
-		return $this->render('FecdasPartesBundle:Page:consultadni.html.twig',
-				array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+		return $this->render('FecdasPartesBundle:Page:consultadni.html.twig', 
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 
 	public function renovarAction() {
@@ -856,9 +857,7 @@ class PageController extends BaseController {
 		}
 			
 		return $this->render('FecdasPartesBundle:Page:renovar.html.twig',
-				array('form' => $form->createView(), 'parte' => $parte, 'avisos' => $avisos, 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'avisos' => $avisos)));
 	}
 
 	public function parteAction() {
@@ -933,10 +932,7 @@ class PageController extends BaseController {
 		$form->get('any')->setData($parte->getAny());
 		
 		return $this->render('FecdasPartesBundle:Page:parte.html.twig',
-				array('form' => $form->createView(), 'parte' => $parte, 'pdf' => $pdf, 'edit' => $edit, 'admin' =>$this->isCurrentAdmin(),
-						'tipusparte' => $parte->getTipus()->getId(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'pdf' => $pdf, 'edit' => $edit)));
 	}
 
 	private function updateParte(Request $request) {
@@ -1471,11 +1467,8 @@ class PageController extends BaseController {
 		$formpayment = $this->createForm(new FormPayment(), $payment);
 
 		return $this->render('FecdasPartesBundle:Page:pagament.html.twig',
-				array('formpayment' => $formpayment->createView(), 'payment' => $payment,
-						'parte' => $parte, 'detall' => $detallfactura, 'admin' => $this->isCurrentAdmin(),
-						'totals' => $totalfactura, 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(), 'payment' => $payment,
+						'parte' => $parte, 'detall' => $detallfactura)));
 	}
 	
 	public function notificacioTestAction() {
@@ -1502,10 +1495,7 @@ class PageController extends BaseController {
 		$form->get('Ds_PayMethod')->setData('');
 		
 		return $this->render('FecdasPartesBundle:Page:notificacioTest.html.twig',
-				array('form' => $form->createView(), 
-						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 	
 	public function notificacioOkAction() {

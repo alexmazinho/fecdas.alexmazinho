@@ -3,8 +3,8 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
     {% if roleform is defined %}
     {{ form_stylesheet(roleform) }}
     {% endif %}
@@ -39,13 +39,22 @@
   	{% else %}
     	{{ app.session.get('username') }} <a href="{{ path('FecdasPartesBundle_logout') }}"><img src="{{ asset('images/icon_signout.png') }}"></a>
 
-    	<div id="block-useractions">
-			<div><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
-			<div><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
-			{% if enquestausuari is defined and enquestausuari == true %}
-			<div><a class="featured enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari') }}">Enquesta</a></div>
+    	<div id="menu-user">
+			<div class="menu-user-club-info">
+			{% if roleform is defined %}
+			{{ form_label(roleform.role) }}
+			{{ form_widget(roleform.role) }}
 			{% endif %}
-			<div><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
+			{% if userclub is defined %}
+			{{ userclub }}
+			{% endif %}
+			</div>
+			<div class="menu-user-action"><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
+			<div class="menu-user-action"><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
+			{% if enquestausuari is defined and enquestausuari == true %}
+			<div class="menu-user-action"><a class="featured enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari') }}">Enquesta</a></div>
+			{% endif %}
+			<div class="menu-user-action"><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
 		</div>
    	{% endif %}
 	
@@ -86,10 +95,6 @@
 				</ul></li>
 			{% endif %}
 		</ul>
-		{% if roleform is defined %}
-		{{ form_label(roleform.role) }}
-		{{ form_widget(roleform.role) }}
-		{% endif %}
 	</nav>
 {% endblock %}
 
@@ -116,10 +121,10 @@
 
 		mainMenuClick();
 
-		$("select").select2();
+		changeRoleClub("{{ path('FecdasPartesBundle_changerole') }}");
 	});
 	
-	$('#block-useractions')
+	$('#menu-user')
 	  .css('opacity', 0)
 	  .slideDown('slow')
 	  .animate(

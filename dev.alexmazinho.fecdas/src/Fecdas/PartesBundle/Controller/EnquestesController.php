@@ -41,9 +41,7 @@ class EnquestesController extends BaseController {
 		$poblacio = $query->getSingleScalarResult();
 		
 		return $this->render('FecdasPartesBundle:Enquestes:enquestes.html.twig',
-				array('enquestes' => $enquestes, 'poblacio' => $poblacio, 
-						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig()));
+				$this->getCommonRenderArrayOptions(array('enquestes' => $enquestes, 'poblacio' => $poblacio)));
 	}
 	
 	public function tancarenquestaAction() {
@@ -228,9 +226,7 @@ class EnquestesController extends BaseController {
 		}
 		
 		return $this->render('FecdasPartesBundle:Enquestes:enquesta.html.twig',
-				array('form' => $form->createView(), 'preguntessi' => $preguntestotes, 'preguntesno' => $preguntesno,
-						'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig()));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'preguntessi' => $preguntestotes, 'preguntesno' => $preguntesno)));
 	}
 	
 	public function enquestausuariAction() {
@@ -312,9 +308,7 @@ class EnquestesController extends BaseController {
 		$form = $this->createEnquestaForm($enquesta);
 		
 		return $this->render('FecdasPartesBundle:Enquestes:enquestausuari.html.twig',
-				array('form' => $form->createView(), 'enquesta' => $enquesta, 'action' => $action,
-						'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-						'busseig' => $this->isCurrentBusseig(), 'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'enquesta' => $enquesta, 'action' => $action)));
 	}
 	
 	private function createEnquestaForm($enquesta) {
@@ -409,8 +403,7 @@ class EnquestesController extends BaseController {
 		
 		
 		return $this->render('FecdasPartesBundle:Enquestes:estadistiques.html.twig',
-			array('tab' => $tab,  'pselected' => $preguntaid, 'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-					'busseig' => $this->isCurrentBusseig()));
+				$this->getCommonRenderArrayOptions(array('tab' => $tab,  'pselected' => $preguntaid)));
 	}
 	
 	public function estadistiquesTab1Action() {

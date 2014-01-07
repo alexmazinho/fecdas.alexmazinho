@@ -38,7 +38,7 @@ class CronController extends BaseController {
 			
 			if ($parte->getImportpagament() != null) {
 				if ($parte->getImportparte() != $parte->getImportpagament()) {
-					$this->logEntry(self::MAIL_ADMIN, 'UPD PREU ERROR',
+					$this->logEntry(self::MAIL_ADMINTEST, 'UPD PREU ERROR',
 							$this->getRequest()->server->get('REMOTE_ADDR'),
 							$this->getRequest()->server->get('HTTP_USER_AGENT'),
 							$parte->getId() . " . calculat: " . $parte->getImportparte() . "  pagament: " .$parte->getImportpagament());
@@ -333,9 +333,7 @@ class CronController extends BaseController {
 		}
 			
 		return $this->render('FecdasPartesBundle:Cron:renovarllicencia.html.twig',
-				array('form' => $form->createView(), 'parte' => $parte, 'admin' => $this->isCurrentAdmin(),
-						'authenticated' => $this->isAuthenticated(), 'busseig' => $this->isCurrentBusseig(),
-						'enquestausuari' => $this->get('session')->has('enquestapendent')));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte)));
 	}
 	
 	public function checkclubsAction() {
@@ -472,7 +470,7 @@ class CronController extends BaseController {
 		$body = $sortida;
 		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 		
-		$this->logEntry(self::MAIL_ADMIN, 'CRON CLUBS',
+		$this->logEntry(self::MAIL_ADMINTEST, 'CRON CLUBS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		
@@ -544,7 +542,7 @@ class CronController extends BaseController {
 	
 	
 	
-		$this->logEntry(self::MAIL_ADMIN, 'INFORME TRIM CLUBS',
+		$this->logEntry(self::MAIL_ADMINTEST, 'INFORME TRIM CLUBS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 	
@@ -631,7 +629,7 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMIN, 'CRON PENDENTS',
+		$this->logEntry(self::MAIL_ADMINTEST, 'CRON PENDENTS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		
@@ -736,7 +734,7 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMIN, 'CRON PARTES DIA',
+		$this->logEntry(self::MAIL_ADMINTEST, 'CRON PARTES DIA',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 	

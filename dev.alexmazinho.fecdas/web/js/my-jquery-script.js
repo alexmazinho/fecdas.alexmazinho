@@ -362,6 +362,19 @@
 	    }
 	};
 	
+	changeRoleClub = function(url)  {
+		$("#menu-user select").select2({
+			minimumInputLength: 2
+		});
+		$("#menu-user select").change(function(e) {
+			var params = { 	roleclub:e.val };
+			$.get(url,	params,
+			function(data) {
+				window.location = window.location.pathname; 
+			}); // Canvi de rol
+		});
+	}
+	
 	/*****************************************************************************************************************/
 	
 	
@@ -967,6 +980,46 @@
 	};
 	
 	
+	showLlicenciesParte = function() {
+	    //Carrega i mostra historial per un assegurat
+		$('.llista-llicencies')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+
+	        var current = $(this).parents(".data-detall");
+	        
+	        if (current.hasClass('data-detall-llicencies')) {
+	        	current.removeClass('data-detall-llicencies');
+		        if ($.browser.msie) current.children('.parte-llicencies').hide(); 
+		    	else current.children('.parte-llicencies').slideUp('slow');
+
+	        } else {
+	        	current.children('.parte-llicencies').remove();
+		        var url = $(this).attr("href");
+		        $.get(url, function(data, textStatus) {
+		        	
+		        	current.addClass('data-detall-llicencies');
+		        	current.append(data);
+			        if ($.browser.msie) current.children('.parte-llicencies').show(); 
+			    	else current.children('.parte-llicencies').slideDown('slow');
+
+			        //if close button is clicked
+				    $('.parte-llicencies .close').click(function (e) {
+				        //Cancel the link behavior
+				        e.preventDefault();
+				        current.removeClass('data-detall-llicencies');
+				        if ($.browser.msie) current.children('.parte-llicencies').hide(); 
+				    	else current.children('.parte-llicencies').slideUp('slow');
+				    }); 
+	        	});
+	        };
+	    });
+		
+		  
+	};
+	
 	removeParteLink = function () {
 		$(".parte-action-remove").each(function() {
 			var source = $(this);
@@ -1135,7 +1188,21 @@
 	
 	/*************************************************** Clubs *******************************************************/	
 	
+	selectRecentsClub = function() {
+		$("select#form_clubs").select2({
+			minimumInputLength: 2,
+			allowClear: true
+		});
+		
+		// Remove label on Select
+		$("select#form_clubs").change(function(e) {
+			if (e.val == "") $("#formrecents-club label").show();
+			else $("#formrecents-club label").hide();
+		});
+	};
+	
 	autocompletersNomsClub = function(routeid, clubid, codiid) {
+		/* Funció obsoleta */
 		var route = $("#"+routeid).attr("href");
 		var $configs = {
 			source: function(request, response) {
@@ -1186,7 +1253,7 @@
 			//Cancel the link behavior
 	        e.preventDefault();
 	        
-	        if ($("#club_codishow").val() == "") {
+	        if ($("#club_codi").val() == "") {
 	        	alert("cal indicar el codi del club");
 				return false;
 	        }

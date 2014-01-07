@@ -264,77 +264,70 @@ class SecurityController extends BaseController
     
     
     public function clubAction() {
-    	/*
-    	*
-    	*/
     	$this->get('session')->getFlashBag()->clear();
     	$request = $this->getRequest();
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
     
-    	/* Només canvi de club administradors. Per defecte club de l'usuari */
-    	$club = null;
-    	$action = "";
-    	$clubcodi = "";
+    	/* De moment administradors */
+    	if ($this->isCurrentAdmin() != true)
+    		return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+    	
+    	$club  = $this->getCurrentClub();
+    	$nouclub = false;
     
    		if ($request->getMethod() == 'POST') {
    			/* Alta o modificació de clubs */
-   			if ($request->request->has('club')) {
-   				$formdata = $request->request->get('club');
-   				$codiclub = $formdata['codi'];
-   				$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub);
-   			}
-   			if ($club == null) {
+   			$formdata = $request->request->get('club');
+   			if (isset($formdata['nouclub'])) {
+   				$nouclub = true;
    				$club = new EntityClub();
-   				$codiclub = $formdata['codishow'];
+   			} else {
+				// Codi del club read_only
+   				$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($formdata['codi']);
    			}
-   
-   			$options = array('codiclub' => $club->getCodi(),
-   					'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
+
+   			$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
    			$form = $this->createForm(new FormClub($options), $club);
    
-   			$form->bind($request);
-
+   			$form->handleRequest($request);
+   			
    			if ($form->isValid()) {
    				$valida = true;
    				$strErrorLog = "";
-   				if  ($club->getCodi() == "") $strACtionLog = "CLUB NEW ";
-   				else $strACtionLog = "CLUB UPD ";
-
+   				$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
+   				
    				$em = $this->getDoctrine()->getManager();
-   					
+
    				/* Validacions dades obligatories*/
-   				if ($codiclub == "" || $club->getNom() == "" ||
+   				if ($club->getCodi() == "" || $club->getNom() == "" ||
    						$club->getCif() == "" || $club->getMail() == "") {
-   					$strErrorLog = "Dades insuficients";
+   					$strErrorLog = "Dades insuficients, cal indicar: codi, nom, cif i mail";
    					$valida = false;
+   				}
+
+   				if ($valida == true && $nouclub) {
+   					// Nou club
+   					$checkclub = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($club->getCodi());
+   					if ($checkclub != null) {
+   						$strErrorLog = 'Aquest codi de club ja existeix';
+   						$valida = false;
+   					}
    				}
    					
    				/* Validacions mail no existeix en altres clubs */
    				$checkuser = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityUser')->find($club->getMail());
    				if ($valida == true && $checkuser != null) {
-   					if  (($club->getCodi() == "") ||
-   						($club->getCodi() != ""  && $checkuser->getClub()->getCodi() != $club->getCodi())) {
+   					if  ($nouclub ||
+   						(!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())) {
    						$strErrorLog = 'Aquest mail ja existeix per un altre club, ' . $club->getMail();
-   						$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
    						$valida = false;
    					}
    				}
    					
-   				if ($valida == true && $club->getCodi() == "") {
-   					// Nou club
-   					$checkclub = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')
-			   					->find($codiclub);
-   					if ($checkclub != null) {
-    					$strErrorLog = 'Aquest codi de club ja existeix';
-    					$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
-    					$valida = false;
-    				}
-    			}
     			if ($valida == true) {
-    				if ($club->getCodi() == "") {
+    				if ($nouclub) {
     					// Nou club
-    					$club->setCodi($codiclub);
     					$club->setEstat($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClubEstat')->find(self::CLUB_PAGAMENT_DIFERIT));
     					$em->persist($club);
     				
@@ -352,76 +345,57 @@ class SecurityController extends BaseController
     					
     					$this->get('session')->getFlashBag()->add('error-notice', 'Club creat correctament. Nou usuari ' .
     										$userclub->getUser() . ' , amb clau ' . $randomPassword);
+    					$nouclub = false;
     				} else {
-    					$this->get('session')->getFlashBag()->add('error-notice', 'Dades del club desades correctament');
+    					$this->get('session')->getFlashBag()->add('error-notice', 'Dades del club desades correctament ');
     				}
     
     				$em->flush();
     						
-   					$this->logEntry($this->get('session')->get('username'), $strACtionLog . 'OK',
-   							$this->get('session')->get('remote_addr'),
-   							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-   							'club : ' . $club->getCodi());
+   					$this->logEntryAuth($strACtionLog . 'OK', 'club : ' . $club->getCodi());
    				} else {
    					$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
-   					$this->logEntry($this->get('session')->get('username'), $strACtionLog. 'KO',
-   							$this->get('session')->get('remote_addr'),
-   							$this->getRequest()->server->get('HTTP_USER_AGENT'),
-   							'club : ' . $club->getCodi() . ' - ' . $strErrorLog);
+   					$this->logEntryAuth($strACtionLog. 'KO', 'club : ' . $club->getCodi() . ' - ' . $strErrorLog);
    				}
    			} else {
    				// get a ConstraintViolationList
-   				//print_r($this->getErrorMessages($form));
-   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades".implode(",",$this->getErrorMessages($form)));
+   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades". $form->getErrorsAsString());
+   				
+   				$club  = $this->getCurrentClub();
+   				$form = $this->createForm(new FormClub($options), $club);
+   				
+   				return $this->render('FecdasPartesBundle:Security:club.html.twig',
+   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
    			}
    		} else {
    			if ($this->isCurrentAdmin() != true) {
-   				$club  = $this->getCurrentClub();
-   				 
-   				$this->logEntry($this->get('session')->get('username'), 'CLUB VIEW OK',
-   						$this->get('session')->get('remote_addr'),
-   						$this->getRequest()->server->get('HTTP_USER_AGENT'),
-   						'club : ' . $club->getCodi());
+   				$this->logEntryAuth('CLUB VIEW OK',	'club : ' . $club->getCodi());
    			} else {
-   				if ($request->query->has('action')) $action = $request->query->get('action');
-    			if ($action == "nouclub") {
+   				if ($request->query->has('action') and $request->query->get('action') == "nouclub") {
     				$club = new EntityClub();
-    					
-    				$this->logEntry($this->get('session')->get('username'), 'CLUB NEW VIEW',
-    						$this->get('session')->get('remote_addr'),
-    						$this->getRequest()->server->get('HTTP_USER_AGENT'),
-    						'club : ' . $club->getCodi());
+    				$nouclub = true;
+    				$this->logEntryAuth('CLUB NEW VIEW', 'club : ' . $club->getCodi());
     			} else {
     				if ($request->query->has('codiclub')) {
+    					// Edit club, external GET 
     					$codiclub = $request->query->get('codiclub');
     					$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub);
-    				} else {
-    					$club  = $this->getCurrentClub();
     				}
+    				
+    				if (!$club) $club  = $this->getCurrentClub();
     					
-    				$this->logEntry($this->get('session')->get('username'), 'CLUB UPD VIEW',
-   						$this->get('session')->get('remote_addr'),
-   						$this->getRequest()->server->get('HTTP_USER_AGENT'),
-   						'club : ' . $club->getCodi());
+    				$this->logEntryAuth('CLUB UPD VIEW', 'club : ' . $club->getCodi());
     			}
    			}
    		}
 
-   		$options = array('codiclub' => $club->getCodi(),
-   				'clubs' => $this->getClubsSelect(), 'admin' => $this->isCurrentAdmin());
+   		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
    		$form->get('saldoclub')->setData($club->getSaldoweb());
    		$form->get('totalllicenciesweb')->setData($club->getTotalLlicenciesWeb());
-   		if ($this->isCurrentAdmin() == true) {
-   			$form->get('codishow')->setData($club->getCodi());
-   		}
 
-    	return $this->render('FecdasPartesBundle:Security:club.html.twig',
-    			array('form' => $form->createView(), 'club' => $club, 
-    					'admin' => $this->isCurrentAdmin(),
-    					'authenticated' => $this->isAuthenticated(), 
-    					'busseig' => $this->isCurrentBusseig(),
-    					'enquestausuari' => $this->get('session')->has('enquestapendent')));
+    	return $this->render('FecdasPartesBundle:Security:club.html.twig', 
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
     }
     
     public function usuariclubAction() {

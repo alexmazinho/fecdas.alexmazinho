@@ -119,7 +119,7 @@ class EntityClub {
 	protected $partes;	// Owning side of the relationship
 	
 	/**
-	 * @ORM\ManyToMany(targetEntity="EntityParteType")
+	 * @ORM\ManyToMany(targetEntity="EntityParteType", cascade={"remove", "persist"})
 	 * @ORM\JoinTable(name="m_clubs_tipusparte",
 	 *      joinColumns={@ORM\JoinColumn(name="club", referencedColumnName="codi")},
 	 *      inverseJoinColumns={@ORM\JoinColumn(name="tipus", referencedColumnName="id")}
@@ -655,6 +655,16 @@ class EntityClub {
     public function addTipusparte(\Fecdas\PartesBundle\Entity\EntityParteType $tipusparte)
     {
     	$this->tipusparte->add($tipusparte);
+    }
+    
+    /**
+     * Remove tipusparte
+     *
+     * @param Fecdas\PartesBundle\Entity\EntityParteType $tipusparte
+     */
+    public function removeTipusparte(\Fecdas\PartesBundle\Entity\EntityParteType $tipusparte)
+    {
+    	$this->tipusparte->removeElement($tipusparte);
     }
     
     

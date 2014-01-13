@@ -1,14 +1,12 @@
 <div class="parte-llicencies">
 	<a class="close" href="#"><img style="cursor: pointer;" src="/images/close.png"></a>
-	<div class="parte-llicencies-titol">Historial de llicències</div>
+	<div class="parte-llicencies-titol">Llicències fins a {{ parte.datacaducitat|date('d/m/Y') }}</div>
 {% for llicencia in llicencies %}
 	<div class="parte-llicencia-row">
-		<div class="parte-llicencia-row-camp assegurat-llicencia-vigencia">
-		{{ llicencia.parte.dataalta|date('d/m/Y') }} - {{ llicencia.parte.datacaducitat|date('d/m/Y') }}
-		</div>
-		<div class="parte-llicencia-row-camp parte-llicencia-row-categoria">{{ llicencia.categoria.categoria }}</div>
-		<div class="parte-llicencia-row-camp parte-llicencia-row-club">({{ llicencia.parte.club.nom }})</div>
-		<div class="parte-llicencia-row-camp parte-llicencia-row-desc">{{ llicencia.categoria.descripcio }}</div>
+		<div class="parte-llicencia-row-camp parte-llicencia-row-categoria">{{ llicencia.categoria.categoria }}.</div>
+		<div class="parte-llicencia-row-camp parte-llicencia-row-dni">{{ llicencia.persona.dni }} - </div>
+		<div class="parte-llicencia-row-camp parte-llicencia-row-nom">{{ llicencia.persona.nom }} {{ llicencia.persona.cognoms }}</div>
+		<div class="parte-llicencia-row-camp parte-llicencia-row-desc">(Activitats: {{ llicencia.activitats }})</div>
 	</div>
 
 {% else %}

@@ -141,9 +141,7 @@
 
 	};
 	
-	
 	formFocus = function() {
-		
 		$(".forminput-inside")
 		.bind("focus.labelFx", function(){
 			$(this).parent().find("label").hide();
@@ -152,6 +150,7 @@
 			$(this).parent().find("label")[!this.value ? "show" : "hide"]();
 		})
 		.trigger("blur.labelFx");
+		
 	};
 	
 	actionsModalOverlay = function() {
@@ -221,14 +220,33 @@
 	        	ordericon.addClass("ui-icon ui-icon-triangle-1-s");
 	        }
 	        
-	        var index = $(this).index();  // Elements dins <ul><ol> començant per 1
+	        var index = $(this).index();  // Indexs elements dins <ul><ol> començant per 1
 	        
 	        var items = $('#'+llistaid+' li').get();
 			
 			items.sort(function(a,b){
-				var keyA = $(a).children().eq(index).html();
-				var keyB = $(b).children().eq(index).html();
-
+				var keyA = 0;
+				var keyB = 0;
+				var elechild;
+				
+				var eleA = $(a).children().eq(index);
+				var eleB = $(b).children().eq(index);
+				
+				if (eleA.children('a').length > 0) {
+					elechild = eleA.children('a').first().clone();
+					$(elechild).find('img').remove();
+					keyA = $(elechild).html();
+				} else {
+					keyA = eleA.html();
+				}
+				if (eleB.children('a').length > 0) {
+					elechild = eleB.children('a').first().clone();
+					$(elechild).find('img').remove();
+					keyB = $(elechild).html();
+				} else {
+					keyB = eleB.html();
+				}
+				
 				if ( !isNaN( parseInt( keyA.replace(/,/g, '') ) ) ) {
 					keyA =  parseInt( keyA.replace(/,/g, '') );
 				}
@@ -268,6 +286,41 @@
 	    return false;
 	};
 	
+	loadCalendar = function(elem) {
+		$.datepicker.setDefaults( $.datepicker.regional[ "ca" ] );
+		
+		elem.datepicker({
+			 showOn: "button",
+			 buttonImage: "../images/calendar.gif",
+			 buttonImageOnly: true,
+			 changeMonth: true,
+			 changeYear: true
+		});
+
+	};
+	
+	jQuery.fn.extend({
+		slideRightShow: function() {
+		    return this.each(function() {
+		        $(this).show('slide', {direction: 'right'}, 1000);
+		    });
+		},
+		slideLeftHide: function() {
+		    return this.each(function() {
+		    	$(this).hide('slide', {direction: 'left'}, 1000);
+		    });
+		},
+		slideRightHide: function() {
+		    return this.each(function() {
+		    $(this).hide('slide', {direction: 'right'}, 1000);
+		    });
+		},
+		slideLeftShow: function() {
+		    return this.each(function() {
+		    	$(this).show('slide', {direction: 'left'}, 1000);
+			});
+		}
+	});
 	/*****************************************************************************************************************/
 	
 	/*************************************************** Menu ********************************************************/
@@ -363,10 +416,10 @@
 	};
 	
 	changeRoleClub = function(url)  {
-		$("#menu-user select").select2({
+		$("#menu-user select#form_role").select2({
 			minimumInputLength: 2
 		});
-		$("#menu-user select").change(function(e) {
+		$("#menu-user select#form_role").change(function(e) {
 			var params = { 	roleclub:e.val };
 			$.get(url,	params,
 			function(data) {
@@ -979,7 +1032,6 @@
 		});
 	};
 	
-	
 	showLlicenciesParte = function() {
 	    //Carrega i mostra historial per un assegurat
 		$('.llista-llicencies')
@@ -1412,6 +1464,163 @@
 	};
 	/*****************************************************************************************************************/
 	
+	/*************************************************** Duplicats *******************************************************/	
+	
+	actionsFormDuplicats = function(url) {
+		initFormDuplicats(true);
+		
+		$("select#form_persona").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: "Seleccionar federat",
+		});
+		
+		$("select#form_persona").change(function(e) {
+			initFormDuplicats(true);
+			if (e.val != "") {
+				/* Persona escollida. Carregar dades: dni, nom, cognoms */
+				if ($.browser.msie) $('select#form_carnets').show(); 
+			    else $('select#form_carnets').slideLeftShow('slow');
+			}
+		});
+		
+		$("select#form_carnets").change(function(e) {
+			initFormDuplicats(false);
+			if ($(this).val() != "") {
+				//alert(url + " " + $("select#form_persona").val());
+				var params = { 	carnet:$("select#form_carnets").val() };
+				$.get(url,	params,
+				function(data) {
+					if (data == "") {
+						/* Sense dades llicència federativa */
+						if ($.browser.msie) $('select#form_titols').hide(); 
+					    else $('select#form_titols').slideLeftHide('slow');
+						$("#formduplicats-titols").html("");
+					} else {
+						$("#formduplicats-titols").replaceWith( data );
+						if ($.browser.msie) $('select#form_titols').show(); 
+					    else $('select#form_titols').slideLeftShow('slow');
+					}
+				}); 
+								
+				var paramspersona = { 	persona:$("select#form_persona").val() };
+				$.get(url,	paramspersona,
+				function(data) {
+					$("#formduplicats-dades").replaceWith( data );
+					
+					if ($.browser.msie) $('#formduplicats-dades').show(); 
+				    else $('#formduplicats-dades').slideDown('slow');
+				}); 
+			}
+		});
+	};
+
+	initFormDuplicats = function(tot) {
+		if (tot) {
+			if ($.browser.msie) $('select#form_carnets').hide(); 
+		    else $('select#form_carnets').slideLeftHide('slow');
+		}
+		
+		if ($.browser.msie) $('select#form_titols').hide(); 
+	    else $('select#form_titols').slideLeftHide('slow');
+		
+		if ($.browser.msie) $('#formduplicats-dades').hide(); 
+	    else $('#formduplicats-dades').slideUp('slow');
+
+	};
+
+	
+	hoverPortada = function(hoverobject) {
+		
+		hoverobject.mouseenter( function(){
+			$(this).addClass("border-highlight-blue");
+		});
+	
+		hoverobject.mouseleave( function(){
+			$(this).removeClass("border-highlight-blue");
+		});
+	};
+	
+	
+	$.fn.imagePreview = function(params){
+		$(this).change(function(evt){
+
+			if(typeof FileReader == "undefined") return true; // File reader not available.
+
+			var fileInput = $(this);
+			var files = evt.target.files; // FileList object
+			var total = 0;
+
+			$(params.selector).find(".image-uploaded").remove();  // Removes previous preview 
+
+			// Loop through the FileList and render image files as thumbnails.
+			for (var i = 0, f; f = files[i]; i++) {
+
+				// Only process image files.
+				if (!f.type.match('image.*')) {
+					continue;
+				}
+				var reader = new FileReader();
+				
+				// Closure to capture the file information.
+				reader.onload = (function(theFile) {
+					return function(e) {
+						// Render thumbnail.
+						var imgHTML = '<img  height="200" title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
+
+						if( typeof params.selector != 'undefined' ){
+							if (params.multiple == true) {
+								$novaimatge = $('<div class="image-preview image-uploaded">' + imgHTML +'</div>');
+								$(params.selector).append($novaimatge);
+								
+								/* Les imatges que encara no han pujat al servidor no es poden posar a la portada */
+								$novaimatge.find("img").draggable({	
+									 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
+									 revert: "valid", // when not dropped, the item will revert back to its initial position
+									 containment: ".drag-container",  // Contenidor
+									 helper: function( event ) {
+										 return $( "<div class='ui-widget-header'>Esta imagen aún no se ha subido al servidor</div>" );
+									 },
+									 opacity: 0.7,
+									 cursor: "move"
+								});
+								
+								
+							} else {
+								$(params.selector).html('<div class="image-portada">' + imgHTML +'</div>');
+								hoverPortada($(".image-portada"));
+							}
+						}else{
+							fileInput.before(imgHTML);
+						}
+					};
+				})(f);
+
+				// Read in the image file as a data URL.
+				reader.readAsDataURL(f);
+			}
+		});
+	};
+	
+	/*$.fn.fadeSlideRight = function(speed,fn) {
+	    return $(this).animate({
+	        'opacity' : 1,
+	        'width' : '750px'
+	    },speed || 400, function() {
+	        $.isFunction(fn) && fn.call(this);
+	    });
+	};
+
+	$.fn.fadeSlideLeft = function(speed,fn) {
+	    return $(this).animate({
+	        'opacity' : 0,
+	        'width' : '0px'
+	    },speed || 400,function() {
+	        $.isFunction(fn) && fn.call(this);
+	    });
+	};*/
+	
+	/*****************************************************************************************************************/
 	
 	/*****************************************************************************************************************/
 	

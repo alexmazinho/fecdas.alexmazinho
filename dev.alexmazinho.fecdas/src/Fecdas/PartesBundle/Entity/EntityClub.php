@@ -117,6 +117,12 @@ class EntityClub {
 	 * @ORM\OneToMany(targetEntity="EntityParte", mappedBy="club")
 	 */
 	protected $partes;	// Owning side of the relationship
+
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityDuplicat", mappedBy="club")
+	 */
+	protected $duplicats;	// Owning side of the relationship
+	
 	
 	/**
 	 * @ORM\ManyToMany(targetEntity="EntityParteType", cascade={"remove", "persist"})
@@ -191,6 +197,7 @@ class EntityClub {
 		$this->ajustsubvencions = 0;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->partes = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->duplicats = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
@@ -636,6 +643,23 @@ class EntityClub {
     	}
     }
     
+    /**
+     * Get duplicats
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getDuplicats()
+    {
+    	return $this->duplicats;
+    }
+    
+    public function setDuplicats(\Doctrine\Common\Collections\ArrayCollection $duplicats)
+    {
+    	$this->duplicats = $duplicats;
+    	foreach ($duplicats as $duplicat) {
+    		$duplicat->setClub($this);
+    	}
+    }
     
     /**
      * Get tipusparte
@@ -921,11 +945,9 @@ class EntityClub {
     				}
     				
     				if (($parte_iter->getDatapagament() != null ||
-    					$parte_iter->getEstatpagament() != null ||
-    					$parte_iter->getDadespagament() != null) && 
+    					$parte_iter->getEstatpagament() != null) && 
     					($parte_iter->getDatapagament() == null || 
-    					$parte_iter->getEstatpagament() == null || 
-    					$parte_iter->getDadespagament() == null)) {
+    					$parte_iter->getEstatpagament() == null)) {
     					$dades['err_imports'][] = "(falten dades pagament) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				}
     				

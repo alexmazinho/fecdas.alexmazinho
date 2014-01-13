@@ -409,30 +409,33 @@ class PageController extends BaseController {
 
 		$currentClub = $this->getCurrentClub()->getCodi();
 
+		$desde = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
+		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('formpartes-button-new')) { // Nou parte
+				return $this->redirect($this->generateUrl('FecdasPartesBundle_parte'));
 				$response = $this->forward('FecdasPartesBundle:Page:parte');
 				return $response;
+			}
+
+			if ($request->request->has('form')) {
+				$formdata = $request->request->get('form');
+				$desde = \DateTime::createFromFormat('d/m/Y', $formdata['desde']);
 			}
 			
 			if ($request->request->has('parte')) { // Esborra't des de Parte
 				$parte = $request->request->get('parte');  
 				if (isset($parte['club'])) $currentClub = $parte['club'];
 			}
-			
 		} else {
-			if ($request->query->has('club')) {  // Esborra't des de Llistes Partes
-				$currentClub = $request->query->get('club');
-			} else {
-				$request->getSession()->getFlashBag()->clear();
-			}
+			$request->getSession()->getFlashBag()->clear();
 		}
 
 		$this->logEntry($this->get('session')->get('username'), 'VIEW PARTES',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
 		
-		$partesclub = $this->consultaPartesClub($currentClub);
+		$partesclub = $this->consultaPartesClub($currentClub, $desde);
 		
 		$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub);
 		
@@ -441,8 +444,35 @@ class PageController extends BaseController {
 			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
 		}
 		
+		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
+				'read_only' => true,
+				'data' => $desde->format('d/m/Y'),
+				'attr' => (array('onchange' => 'this.form.submit()'))
+		));
+		
+		/* Recollir estadístiques */
+		$stat['total'] = count($partesclub); 
+		$stat['ltotal'] = 0;
+		$stat['itotal'] = 0;
+		$stat['vigents'] = $stat['total'];
+		$stat['lvigents'] = 0;
+		foreach($partesclub as $c => $parte_iter) {
+			$nlic = $parte_iter->getNumLlicencies();
+			$impo = $parte_iter->getPreuTotalIVA(); 
+			if ($nlic == 0) {  
+				$stat['total']--;
+				$stat['vigents']--;
+			} else {
+				$stat['ltotal'] +=  $nlic;
+				$stat['itotal'] += $impo;
+				if (!$parte_iter->isVigent()) $stat['lvigents'] +=  $nlic;
+				else $stat['vigents']--; 
+			} 
+		}
+		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $this->createFormBuilder()->getForm()->createView(), 'partes' => $partesclub,  'club' => $club)));
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+						'partes' => $partesclub,  'club' => $club, 'desde' => $desde, 'stat' => $stat)));
 	}
 
 	public function llicenciesParteAction() {
@@ -462,7 +492,7 @@ class PageController extends BaseController {
 			
 		$llicencies = $parte->getLlicenciesSortedByName();
 	
-		return $this->render('FecdasPartesBundle:Page:partesllicencies.html.twig', array('llicencies' => $llicencies));
+		return $this->render('FecdasPartesBundle:Page:partesllicencies.html.twig', array('parte' => $parte, 'llicencies' => $llicencies));
 	}
 	
 	
@@ -1428,7 +1458,129 @@ class PageController extends BaseController {
 
 		return new Response("Error personaAction ");
 	}
+	
+	public function anularpeticioAction() {
+		$request = $this->getRequest();
+		/* Posar a admin*/
+	}
 
+	public function duplicatsAction() {
+		$request = $this->getRequest();
+	
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$currentClub = $this->getCurrentClub()->getCodi();
+		$persona = null;
+		
+		if ($request->getMethod() == 'POST') {
+			$formdata = $request->request->get('form');
+			
+			// Criteris de cerca
+			/* 
+			if ($request->request->has('form')) { // Reload select clubs de Partes
+				$formdata = $request->request->get('form');
+				if (isset($formdata['clubs'])) $currentClub = $formdata['clubs'];
+				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
+				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
+				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
+				if (isset($formdata['vigent'])) $currentVigent = true;
+				else $currentVigent = false;
+		
+				$this->logEntry($this->get('session')->get('username'), 'NEW DUPLICAT',
+						$this->get('session')->get('remote_addr'),
+						$this->getRequest()->server->get('HTTP_USER_AGENT'),
+						"club: " . $currentClub . " dni: " . $currentDNI . " nom/cog: " . $currentNom . ", " . $currentCognoms );
+		
+			}*/
+			
+			/* Si tot ok, reenvia pàgina per evitar F5 */
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+		} else { 
+			$this->logEntry($this->get('session')->get('username'), 'VIEW DUPLICATS',
+					$this->get('session')->get('remote_addr'),
+					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		}
+		
+		$formBuilder = $this->createFormBuilder();
+		
+		$personesSelectOptions = array('class' => 'FecdasPartesBundle:EntityPersona',
+				'property' => 'llistaText',
+				'multiple' => false,
+				'required'  => false, 
+				'query_builder' => function($repository)  use ($currentClub) {
+					return $repository->createQueryBuilder('p')
+					->where('p.club = :codiclub')
+					->setParameter('codiclub', $currentClub)
+					->orderby('p.cognoms');
+				},
+		);
+		$formBuilder->add('persona', 'entity', $personesSelectOptions);
+		$formBuilder->add('carnets', 'entity', array('class' => 'FecdasPartesBundle:EntityCarnet',
+				'property' => 'tipus',
+				'multiple' => false,
+				'required'  => false,
+				'preferred_choices' => array(), 
+				'empty_value' => ' ... selecciona el carnet ',
+		));
+		$form = $formBuilder->getForm();
+		
+		$strQuery = "SELECT d FROM Fecdas\PartesBundle\Entity\EntityDuplicat d ";
+		/* Administradors totes les peticions, clubs només les seves*/
+		if (!$this->isCurrentAdmin()) {
+			$strQuery .= " WHERE d.club = :club ORDER BY d.datapeticio";  
+			$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
+		} else {
+			$strQuery .= " ORDER BY d.datapeticio";
+			$query = $em->createQuery($strQuery);
+		}
+		
+		$duplicats = $query->getResult();
+		
+		return $this->render('FecdasPartesBundle:Page:duplicats.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats)));
+	}
+	
+	public function duplicatsformAction() {
+		// retorna els camps del formulari de duplicats de la petició   	
+		$request = $this->getRequest();
+		
+		if ($this->isAuthenticated() != true || 
+			(!$request->query->has('persona') and
+			!$request->query->has('carnet'))) return new Response("");
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$formBuilder = $this->createFormBuilder();
+		
+		if ($request->query->has('carnet')) {
+			if ($request->query->get('carnet') == "1") return new Response(""); // Llicències federatives
+			
+			$this->logEntryAuth('LOAD DUPLICATS TITOLS', $request->query->get('carnet'));
+			$carnet = $em->getRepository('FecdasPartesBundle:EntityCarnet')->find($request->query->get('carnet'));
+			$formBuilder->add('titols', 'entity', array('class' => 'FecdasPartesBundle:EntityTitol',
+					'property' => 'llistaText',
+					'multiple' => false,
+					'required'  => false,
+					'empty_value' => ' ... escull un títol ',
+			));
+		} else {
+			$this->logEntryAuth('LOAD DUPLICATS PERSONA', $request->query->get('persona'));
+			$persona = $em->getRepository('FecdasPartesBundle:EntityPersona')->find($request->query->get('persona'));
+			$formBuilder->add('dni', 'text', array('data' => $persona->getDni(), 'disabled' => true));
+			$formBuilder->add('nom', 'text', array('data' => $persona->getNom()));
+			$formBuilder->add('cognoms', 'text', array('data' => $persona->getCognoms()));
+			$formBuilder->add('foto', 'file', array('mapped' => false, 'required' => false, 'attr' => array('accept' => 'image/*')));
+		}
+		$form = $formBuilder->getForm();
+		
+		return $this->render('FecdasPartesBundle:Page:duplicatsform.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
+	} 
+	
+	
 	public function pagamentAction() {
 		$request = $this->getRequest();
 
@@ -1585,6 +1737,15 @@ class PageController extends BaseController {
 			$this->writeErrorPagament("************** Error NO POST **************", $tpvresponse);
 			
 			$this->logEntry($tpvresponse['username'], 'TPV NO POST', $remoteaddr, $useragent, $tpvresponse['logEntry']);
+			
+			$subject = ":: Incidència configuració TPV ::";
+			$bccmails = array();
+			$tomails = array(self::MAIL_ADMINTEST);
+			
+			$body = "<h1>TPV NO POST</h1>";
+			$body .= "<h2>URL de notificación ha de ser: http://www.fecdasgestio.cat/notificacio</h2>";
+			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			
 		}
 			
 		return new Response("");

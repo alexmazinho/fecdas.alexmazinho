@@ -50,8 +50,8 @@ class EntityPayment {
 		 * Con notificación ON-LINE: HTTP + Email Comercio 
 		 * Asíncrona: Enviament al client i comerç del resultat alhora
 		 * Parámetros en las URLs : Si
-		 * URL_OK: http://www.fecdasgestio.cat/notificacio  (Botó continuar)
-		 * URL_KO: http://www.fecdasgestio.cat/notificacio  (Botó cancel o tancar finestra)
+		 * URL_OK: http://www.fecdasgestio.cat/notificacioOK  (Botó continuar)
+		 * URL_KO: http://www.fecdasgestio.cat/notificacioKO  (Botó cancel o tancar finestra)
 		 */
 		
 		$total=$preu;
@@ -92,10 +92,10 @@ class EntityPayment {
 
 		if ($this->environment == 'dev') {
 			$this->url = 'https://sis-t.sermepa.es:25443/sis/realizarPago'; // Test
-			$this->urlmerchant = 'http://www.fecdasgestio.cat/app_dev.php/notificacio';
+			$this->urlmerchant = 'http://entorntest.fecdasgestio.cat/notificacio';
 		} else {
 			$this->url = 'https://sis.sermepa.es/sis/realizarPago'; // Real
-			$this->urlmerchant = 'http://www.fecdasgestio.cat/app.php/notificacio';
+			$this->urlmerchant = 'http://www.fecdasgestio.cat/notificacio';
 		}
 		$this->paymethods = 'TR';
 		$this->lang = '3';

@@ -942,7 +942,9 @@ class EntityParte {
     	
     	if ($this->databaixa != null) return "Llista anulada";
     	
-    	if ($this->isVigent() == false) return "Aquesta llista no està vigent";
+    	if ($this->isPassat() == true) return "Validesa de les llicències finalitzada";
+    	
+    	if ($this->isVigent() == false) return "Aquesta llista encara no està vigent";
     	
     	if ($this->pendent) return "Pendent confirmació pagament";
     	
@@ -950,7 +952,7 @@ class EntityParte {
     		$textInfo .= "Fra. ". $this->numfactura;
     		$textInfo .= " - ". $this->datafacturacio->format("d/m/Y");
     	} else {
-    		if ($this->getAny() >= 2013) $textInfo .= "Factura pendent";
+    		if ($this->getAny() >= 2013) $textInfo .= "Llicències vigents (Factura pendent)";
     	}
     	
     	if ($this->datapagament != null and $this->estatpagament == "TPV OK") $textInfo .=  ". Pagament on-line";

@@ -54,18 +54,6 @@ FecdasPartesBundle_usuariclub:
     requirements:
         _method:  GET|POST
 
-FecdasPartesBundle_partes:
-    pattern:  /partes
-    defaults: { _controller: "FecdasPartesBundle:Page:partes" }
-    requirements:
-        _method:  GET|POST
-
-FecdasPartesBundle_llicenciesParte: 
-    pattern:  /llicenciesParte
-    defaults: { _controller: "FecdasPartesBundle:Page:llicenciesParte" }
-    requirements:
-        _method:  GET
-
 FecdasPartesBundle_changerole:
     pattern:  /changerole
     defaults: { _controller: "FecdasPartesBundle:Admin:changerole" }
@@ -113,6 +101,18 @@ FecdasPartesBundle_assegurats:
     defaults: { _controller: "FecdasPartesBundle:Page:assegurats" }
     requirements:
         _method:  GET|POST
+
+FecdasPartesBundle_partes:
+    pattern:  /partes
+    defaults: { _controller: "FecdasPartesBundle:Page:partes" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_llicenciesParte: 
+    pattern:  /llicenciesParte
+    defaults: { _controller: "FecdasPartesBundle:Page:llicenciesParte" }
+    requirements:
+        _method:  GET
 
 FecdasPartesBundle_historialLlicencies: 
     pattern:  /historialLlicencies
@@ -204,6 +204,26 @@ FecdasPartesBundle_gettipuspartes:
     defaults: { _controller: "FecdasPartesBundle:Page:gettipuspartes" }
     requirements:
         _method:  GET
+
+FecdasPartesBundle_duplicats:
+    pattern:  /duplicats
+    defaults: { _controller: "FecdasPartesBundle:Page:duplicats" }
+    requirements:
+        _method:  GET|POST
+
+FecdasPartesBundle_duplicatsform:
+    pattern:  /duplicatsform
+    defaults: { _controller: "FecdasPartesBundle:Page:duplicatsform" }
+    requirements:
+        _method:  GET
+
+
+FecdasPartesBundle_anularpeticio:
+    pattern:  /anularpeticio
+    defaults: { _controller: "FecdasPartesBundle:Page:anularpeticio" }
+    requirements:
+        _method:  GET
+
 
 FecdasPartesBundle_licensetopdf:
     pattern:  /license

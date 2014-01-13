@@ -125,7 +125,7 @@ class BaseController extends Controller {
 				'codiclub' => '', 'tipusparte' => 1, 'llistatipus' => array(), 'any' => Date('Y'));
 	}
 	
-	protected function consultaPartesClub($club) {
+	protected function consultaPartesClub($club, $desde) {
 		$em = $this->getDoctrine()->getManager();
 	
 		// Consultar no només les vigents sinó totes
@@ -135,12 +135,11 @@ class BaseController extends Controller {
 		$strQuery .= " AND p.dataalta >= :ininormal";
 		$strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC";
 	
-		$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
-		$inianual = $inianual->format('Y-m-d H:i:s');
+		$desde = $desde->format('Y-m-d H:i:s');
 	
 		$query = $em->createQuery($strQuery)
 		->setParameter('club', $club)
-		->setParameter('ininormal', $inianual);
+		->setParameter('ininormal', $desde);
 			
 		return $query->getResult();
 	}

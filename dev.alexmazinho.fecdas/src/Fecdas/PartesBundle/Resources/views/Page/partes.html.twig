@@ -3,6 +3,7 @@
 
 {% block javascriptshead %}
  	{{ parent() }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
     {{ form_javascript(form) }}
 {% endblock %}
 
@@ -21,12 +22,25 @@
     <div id="partes-main">
 	    <div id="list-forms">
 	    	<form action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
-				<div id="formpartes-submit" class="form-right">	
-					<input type="submit" class="forminput-inside" value="Nou comunicat" name="formpartes-button-new"/>
+	    		<div id="formpartes-desde" class="form-col column-left">
+	    			{{ form_label(form.desde, 'Dades des de', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_widget(form.desde, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div> 
+				<div id="formpartes-club" class="form-col column-center titol-club-nom">{{ club.nom }}</div>
+				<div id="formpartes-submit" class="form-col column-right">	
+					<div class="formlabel-outside">&nbsp;</div>
+					<input id="form_nouparte" type="submit" class="forminput-inside" value="Nou comunicat" name="formpartes-button-new"/>
 				</div> 
 		   	</form>
 	    </div>
-	    <div class="sms-header-info clearfix">{{ club.infoLlistat }}</div> 
+	    <div class="sms-header-info clearfix">{{ club.infoLlistat }}</div>
+	    <div class="table-header">
+			<div id="summary-header">
+				<div id="partes-totals" class="col-listheader">Total: {{ stat['total'] }} llistes ({{ stat['ltotal'] }} llicències)<br/> 
+				<span>Vigents: {{ stat['vigents'] }} llistes ({{ stat['lvigents'] }} llicències)</span></div>
+				<div id="partes-import" class="col-listheader">Valor: {{ stat['itotal']|number_format(2, ',', '.') }}€</div>
+			</div>
+		</div>
 	    <div class="table-header">	
 		   	<div id="list-header">
 		   		<div id="header-parteid" class="col-listheader">id</div>
@@ -48,7 +62,7 @@
 			   		<div class="data-detall-cell parte-any">{{ parte.any }}</div>
 			   		<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
 			   		<div class="data-detall-cell parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
-			   		<div class="data-detall-cell parte-total">
+			   		<div class="data-detall-cell parte-total"> 
 			   		<a class="llista-llicencies" href="{{ path('FecdasPartesBundle_llicenciesParte', { 'id': parte.id }) }}" title="Llicències">{{ parte.numLlicencies }}
 			   		<img src="{{ asset('images/icon-historial.png') }}" alt="Llicències" title="Llicències" width="23px"></a>
 			   		</div>
@@ -60,9 +74,6 @@
 		   				{% endif %}
 		   				<a class="parte-action-view" href="{{ path('FecdasPartesBundle_parte', { 'id': parte.id, 'action':'view' }) }}"><img src="{{ asset('images/icon-view.png') }}" alt="Editar Veure" title="Editar Veure" width="23px"></a>
 		   			</div>
-		   			
-		   		
-		   			
 		   		</li>
 		   		{% endfor %}
 			</ol>
@@ -87,6 +98,8 @@ $(document).ready(function(){
 	removeParteLink();
 
 	showLlicenciesParte();
+
+	loadCalendar($( "#form_desde" ));
 
 	sortLlista("col-listheader", "list-data");
 

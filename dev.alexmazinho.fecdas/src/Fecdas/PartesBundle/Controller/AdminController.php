@@ -99,6 +99,7 @@ class AdminController extends BaseController {
 		$clubsSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
 				'property' => 'nom',
 				'label' => 'Filtre per club: ',
+				'attr' => (array('onchange' => 'this.form.submit()')),
 				'required'  => false );
 			
 		if ($currentClub != null) $clubsSelectOptions['data'] = $currentClub;
@@ -108,17 +109,21 @@ class AdminController extends BaseController {
 		$formBuilder->add('estat', 'choice', array(
 				'choices'   => $states,
 				'preferred_choices' => array($defaultEstat),  // Estat per defecte sempre 
+				'attr' => (array('onchange' => 'this.form.submit()'))
 		));
 		
 		$formBuilder->add('pagament', 'choice', array(
     				'choices'   => array('100' => 'Darrers 100', 't' => 'Tots', 'n' => 'No pagats', 'p' => 'Pagats'), 
 					'preferred_choices' => array('100'),  // Estat per defecte sempre 
+					'attr' => (array('onchange' => 'this.form.submit()'))
 				));
 		$formBuilder->add('baixa', 'checkbox', array(
     				'required'  => false,
+					'attr' => (array('onchange' => 'this.form.submit()'))
 				));
 		$formBuilder->add('sincro', 'checkbox', array(
     				'required'  => false,
+					'attr' => (array('onchange' => 'this.form.submit()'))
 				));
 		$form = $formBuilder->getForm();
 		

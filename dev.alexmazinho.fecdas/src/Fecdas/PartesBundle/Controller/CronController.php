@@ -208,6 +208,13 @@ class CronController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		}
 
+		if (!$this->getCurrentClub()->potTramitar()) {
+			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$response = $this->redirect($this->generateUrl('FecdasPartesBundle_assegurats'));
+			return $response;
+		}
+		
+		
 		$llicenciaid = 0;
 		
 		$currentClub = $this->getCurrentClub()->getCodi();

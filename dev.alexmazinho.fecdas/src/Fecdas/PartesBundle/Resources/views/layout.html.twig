@@ -5,6 +5,7 @@
     {{ parent() }}
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/responsive.css') }}" type="text/css" rel="stylesheet" />
     {% if roleform is defined %}
     {{ form_stylesheet(roleform) }}
     {% endif %}
@@ -55,6 +56,39 @@
 			<div class="menu-user-action"><a class="featured enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari') }}">Enquesta</a></div>
 			{% endif %}
 			<div class="menu-user-action"><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
+			
+	    	<select id="mobile-menu-principal">
+				<option value="">Seleccionar una pàgina</option>
+				<option value="{{ path('FecdasPartesBundle_homepage') }}">Pàgina principal</option>
+				{% if authenticated == false  %}
+				<option value="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió</option>
+				<option value="{{ path('FecdasPartesBundle_contact') }}">Contacte</option>
+				{% else %}
+				{% if admin == true  %}
+				<option value="">Administració</option>
+				<option value="{{ path('FecdasPartesBundle_club') }}"> - Clubs i usuaris</option>
+				<option value="{{ path('FecdasPartesBundle_recents') }}"> - Llistes recents</option>
+				<option value="{{ path('FecdasPartesBundle_clubs') }}"> - Saldos clubs</option>
+				<option value="{{ path('FecdasPartesBundle_enquestes') }}"> - Enquestes</option>
+				{% endif %}
+				<option value="">Tramitació</option>
+				<option value="{{ path('FecdasPartesBundle_partes') }}"> - Llicències</option>
+				<option value="{{ path('FecdasPartesBundle_importcsv') }}"> - Importació de llicències</option>
+				<option value="{{ path('FecdasPartesBundle_duplicats') }}"> - Duplicats</option>
+				<option value="">Consulta</option>
+				<option value="{{ path('FecdasPartesBundle_assegurats') }}"> - Assegurats</option>
+				{% if busseig == true  %}
+				<option value="{{ path('FecdasPartesBundle_busseig') }}"> - Llicències amb el DNI</option>
+				{% endif %}
+				<option value="">Racó d'usuari</option>
+				<option value="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</option>
+				{% if enquestausuari is defined and enquestausuari == true %}
+				<option value="{{ path('FecdasPartesBundle_enquestausuari') }}">Enquesta</option>
+				{% endif %}
+				<option value="{{ path('FecdasPartesBundle_contact') }}">Contacte</option>
+				<option value="http://www.fecdas.cat/faqs.php">FAQ</option>
+				{% endif %}
+			</select>
 		</div>
    	{% endif %}
 	
@@ -85,6 +119,7 @@
 				<ul class="submenu">
 					<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències</a></li>
 					<li id="menu-import"><a href="{{ path('FecdasPartesBundle_importcsv') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Importació de llicències</a></li>
+					<li id="menu-duplicats"><a href="{{ path('FecdasPartesBundle_duplicats') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Duplicats</a></li>
 				</ul></li>				
 				<li id="menu-cons"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Consulta</a>
 				<ul class="submenu">	
@@ -122,8 +157,12 @@
 		mainMenuClick();
 
 		changeRoleClub("{{ path('FecdasPartesBundle_changerole') }}");
+
+		$("#mobile-menu-principal").change(function() {
+	    	document.location = $(this).val();
+		});
 	});
-	
+
 	$('#menu-user')
 	  .css('opacity', 0)
 	  .slideDown('slow')

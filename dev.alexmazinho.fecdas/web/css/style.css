@@ -121,14 +121,19 @@ select {
     border: 1px solid #AAA;
     margin: 0 2px 0 2px;
   	overflow: hidden;
-  	padding-top: 4px;
-  	padding-bottom: 3px;
+  	padding-top: 3px;
+  	padding-bottom: 1px;
   	padding-right: 3px;
   	text-overflow: ellipsis;
   	white-space: nowrap;
   	min-height: 20px;
   	/*text-align: center;*/
 }
+
+select option {
+    padding: 2px 5px;
+}
+
 
 /* Disabled Elements */
 select[disabled="true"],
@@ -139,7 +144,6 @@ input[disabled="disabled"]
 	/*background-color: #f0ebe2;*/
     color: #777777; 
 }
-
 
 #dialeg p {
 	padding-bottom: 10px;
@@ -297,7 +301,7 @@ html[xmlns] .clearfix {
 
 .data-detall-fosc {
 	/*background-color: #F9F9F9;*/
-    color: #BBBBBB;
+    color: #999999;
 }
 
 .table-scroll, .table-noscroll {
@@ -324,7 +328,7 @@ html[xmlns] .clearfix {
     margin-top: 10px;
     padding-bottom: 12px;*/
 	display: block;
-	padding: 10px 0; 
+	/*padding: 10px 0;*/ 
 }
 
 .formassegurats-submit {
@@ -755,69 +759,59 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 
-
 /********************************************* Llista de partes ****************************************************/
 
+#ui-datepicker-div { font-size: 0.9em; }
+
+#form_desde { width: 100px; text-align: center;  margin: 0 5px 0 0; }
+#formpartes-club {  }
+
+#partes-main .form-col { display:inline-block }
+#partes-main .column-left { width: 25% }
+#partes-main .column-center { width: 50%; text-align: center; }
+#partes-main .titol-club-nom { color: #1240A0; font-size: 24px; border-bottom: 1px dashed #1240A0; }
+#partes-main .column-right { width: 22%; text-align: right; float: right;}
+
+.formpartes-info {
+    border: 1px solid #81C6FF;
+    box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2), 10px 0 10px -5px rgba(0, 0, 0, 0.2);
+    display: none;
+    line-height: 24px;
+    margin: 5px 15%;
+    padding: 5px 20px;
+    position: relative;
+    width: auto;
+}
+
+#partes-totals { text-align: left; width: 80%;}
+#partes-totals span { font-style: italic; }
+#partes-import { font-size: 16px; text-align: right; width: 20%; }
+
 #header-parteid { display:none}
-#header-parteany {	width: 4%; }
-#header-partedata {	width: 8%; }
-#header-partetipusdesc { width: 17%; }
-#header-partetotal {	width: 7%;}
+#header-parteany {	width: 6%; }
+#header-partedata {	width: 6%; }
+#header-partetipusdesc { width: 24%; }
+#header-partetotal {	width: 8%;}
 #header-parteimport {	width: 8%; text-align:right;}
-#header-parteestat {	width: 18%; text-align: left; }
-#header-parteactions { width: 6%; }
+#header-parteestat {	width: 22%; text-align: left; }
+#header-parteactions { width: 10%; padding-right: 10px; }
 
 .parte-id {	display:none}
-.parte-any { width: 4%;  }
-.parte-data { width: 8%; }
-.parte-tipusdesc { width: 17%; }
-.parte-total { width: 7%; }
+.parte-any { width: 6%;  }
+.parte-data { width: 6%; }
+.parte-tipusdesc { width: 24%; }
+.parte-total { width: 8%; }
 .parte-import {	width: 8%; text-align:right;}
-.parte-estat { width: 18%; text-align:left;}
-.parte-actions { width: 6%; text-align:right; margin-top: -14px; padding-right: 10px }
+.parte-estat { width: 23%; text-align:left;}
+.parte-actions { width: 10%; text-align:right; margin-top: -14px; padding-right: 10px }
 
 
-
-/*
-#data-detall  a  { color: #555555; }
-
-.llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
- 	-webkit-transition: all 1s ease-in-out;
-  -moz-transition: all 1s ease-in-out;
-  -ms-transition: all 1s ease-in-out;
-  -o-transition: all 1s ease-in-out;
-  transition: all 1s ease-in-out;
- 
-}
-.llicencia-historial:hover { color: #2281CF; background: url(../images/icon-historial.png) no-repeat right center; }
-
-.llicencia-historial img {
-	position:absolute;
- 	right:0;
- 	opacity:0;
-}
-
-.llicencia-historial img:hover {
-	opacity:1;
-}*/
-
-
-.data-detall-llicencies { display:inline }
-
+#partes-main #list-header { display: inherit; }
+#partes-main #list-data { display: inherit; }
 #partes-main .data-detall { display: inline; }  
 #partes-main .data-detall:hover  { /*color: #2281CF; opacity:0.8 */}
 
-/*.parte-dades { width: 90%; padding: 0; }
-
-.data-detall-cell-item { padding: 6px; display: inline }*/
-
-.llista-llicencies { position: relative; display: inline-block; width: 100%;/*width: 90%; padding: 0;*/ }
-
-.llista-llicencies img { position: absolute; right:0; bottom:0; /*width: 90%; padding: 0;*/ }
-
-.data-detall-cell-item { display: table-cell; padding: 6px; }
-
-
+.llista-llicencies img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
 
 .parte-llicencies { 
 	display:none; 
@@ -847,9 +841,9 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 .parte-llicencia-row-camp { display:inline;  }
-.parte-llicencia-row-vigencia {   }
 .parte-llicencia-row-categoria {  }
-.parte-llicencia-row-club {  }
+.parte-llicencia-row-dni {  }
+.parte-llicencia-row-nom {  }
 .parte-llicencia-row-desc {  }
 
 /********************************************* Llista de partes Fi ****************************************************/
@@ -1153,6 +1147,7 @@ select#parte_persona_addrnacionalitat {
 
 #fact-detall #list-header, #summary-header {
 	height: 40px;
+	border-width: 1px 0;
 }
 
 
@@ -1378,9 +1373,50 @@ p.info-bold {
 	padding-bottom: 10px;
 }
 
+#mobile-menu-principal {
+	display:none;
+}
 
 /*****************************************************************************************************************/
 
+/************************************************* Duplicats ******************************************************/
+
+#formduplicats #formduplicats-persona { width: 200px; }
+
+#formduplicats #formduplicats-dades,
+#formduplicats select#form_titols,
+#formduplicats select#form_carnets
+ { display: none }
+
+#formduplicats .form-left { display: inline-block; vertical-align: middle; float: none; }
+
+
+#formduplicats #form_foto { display: none }
+
+.image-portada img {
+	cursor: pointer;
+}
+.box-center-txt {
+	width: 131px;
+	height: 100px;
+	vertical-align: middle;
+	text-align: center; 
+	display: table-cell; 
+	border: 1px solid #dddddd;
+	cursor: pointer;
+}
+.galeria-upload {
+	position: relative;
+	float:left;
+}
+.border-highlight-blue {
+	/*outline: 1px solid #7fcff6;*/
+	-webkit-box-shadow: 0px 0px 2px 2px #7fcff6; /* Android 2.3+, iOS 4.0.2-4.2, Safari 3-4 */
+    box-shadow: 0px 0px 2px 2px #7fcff6; /* Chrome 6+, Firefox 4+, IE 9+, iOS 5+, Opera 10.50+ */
+}
+
+
+/*****************************************************************************************************************/
 
 /************************************************* Form User ******************************************************/
 
@@ -1783,6 +1819,7 @@ li.parte-pendent-sincro .parterecents-actions {
 .ui-button .ui-button-text {
     font-size: 0.8em;
 }
+
 /*****************************************************************************************************************/
 
 #menu-user {

@@ -37,9 +37,15 @@ class EntityCarnet {
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $foto;
+	
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityTitol", mappedBy="carnet")
+	 */
+	protected $titols;
 
 	public function __construct() {
 		$this->foto = true;
+		$this->titols = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
 	public function __toString() {
@@ -114,5 +120,36 @@ class EntityCarnet {
 	 */
 	public function setFoto($foto) {
 		$this->foto = $foto;
+	}
+	
+	/**
+	 * Get titols
+	 *
+	 * @return Doctrine\Common\Collections\Collection
+	 */
+	public function getTitols()
+	{
+		return $this->titols;
+	}
+
+	/**
+	 * Add titol
+	 *
+	 * @param Fecdas\PartesBundle\Entity\EntityLlicencia $titols
+	 */
+	public function addEntityTitol(\Fecdas\PartesBundle\Entity\EntityTitol $titol)
+	{
+		$this->titols->add($titol);
+	}
+	
+	/**
+	 * Get informació carnet en llistes desplegables
+	 *
+	 * @return string
+	 */
+	public function getLlistaText()
+	{
+		$str = "(" . number_format($this->getPreu(), 2, ',', '') . " €)";
+		return $this->getTipus() . $str; 
 	}
 }

@@ -99,8 +99,7 @@ class PDFController extends BaseController {
 				$pdf->setX($x_ini);
 
 				// Get factura detall
-				$detallfactura = $this->getDetallFactura($parte);
-				
+				$detallfactura = $parte->getDetallFactura();
 				// Get factura totals
 				$totalfactura = $this->getTotalsFactura($detallfactura);
 				
@@ -217,183 +216,215 @@ class PDFController extends BaseController {
 	}
 				
 	public function albaratopdfAction() {
-		/* Printar albarà */
+		/* Albarà parte */
+		$request = $this ->getRequest();
+		
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		
+		if ($request->query->has('id')) {
+			$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($request->query->get('id'));
+		
+			if ($parte != null) {
+				$pagat = ($parte->getDatapagament() != null); // Parte pagat?
+				$detall = $parte->getDetallFactura(); // Get detall
+				$totals = $this->getTotalsFactura($detall); // Get totals
+				
+				$response = $this->albaratopdf(self::PREFIX_ALBARA_LLICENCIES.$parte->getId(), $parte->getDataentrada(), 'Albarà Llista llicències ' . date("Y"),  
+											$parte->getClub(), $parte->getTipus()->getIva(), $detall, $totals, $pagat);
+				
+				$this->logEntryAuth('PRINT ALBARA PARTE', $parte->getId());
+				
+				return $response;
+			}
+		}
+		/* Error */
+		$this->logEntryAuth('PRINT ALBARA PARTE KO', $parte->getId());
+		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir l\'albarà, poseu-vos en contacte amb la Federació' );
+		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+	}
 	
+	public function albarapeticioAction() {
+		/* Albarà parte */
 		$request = $this ->getRequest();
 	
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+	
 		if ($request->query->has('id')) {
-			$parte = $this->getDoctrine()
-			->getRepository('FecdasPartesBundle:EntityParte')
-			->find($request->query->get('id'));
-				
-			if ($parte == null)
-				return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
-				
-			if ($parte) {
-				$this->logEntry($this->get('session')->get('username'), 'PRINT ALBARA',
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+			$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityDuplicat')->find($request->query->get('id'));
 	
-				// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-				$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+			if ($duplicat != null) {
+				$pagat = ($duplicat->getPagament() != null); // Petició duplicat pagada?
+				$detall = $duplicat->getDetallFactura(); // Get detall
+				$totals = $this->getTotalsFactura($detall); // Get totals
+	
+				$response = $this->albaratopdf(self::PREFIX_ALBARA_DUPLICATS.str_pad($duplicat->getId(),5,'0',STR_PAD_LEFT), $duplicat->getDatapeticio(), 'Albarà petició de duplicat',
+						$duplicat->getClub(), 0, $detall, $totals, $pagat);
+	
+				$this->logEntryAuth('PRINT ALBARA DUPLI', $duplicat->getId());
+	
+				return $response;
+			}
+		}
+		/* Error */
+		$this->logEntryAuth('PRINT ALBARA DUPLI KO', $duplicat->getId());
+		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir l\'albarà, poseu-vos en contacte amb la Federació' );
+		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+	}
+	
+	private function albaratopdf($numAlbara, $dataAlbara, $titol, $club, $iva, $detall, $totals, $pagat) { 
+		/* Printar albarà */
+		 
+		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 					
-				$pdf->init($params = array('author' => 'FECDAS', 'title' => 'Albarà Llista llicències ' . date("Y")));
+		$pdf->init($params = array('author' => 'FECDAS', 'title' => $titol)); 
 					
-				$pdf->AddPage();
+		$pdf->AddPage();
 	
-				// set color for background
-				$pdf->SetFillColor(255, 255, 255); //Blanc
-				// set color for text
-				$pdf->SetTextColor(0, 0, 0); // Negre
+		// set color for background
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		// set color for text
+		$pdf->SetTextColor(0, 0, 0); // Negre
 	
-				$y_ini = $pdf->getY();
-				$x_ini = $pdf->getX();
+		$y_ini = $pdf->getY();
+		$x_ini = $pdf->getX();
 	
-				$y = $y_ini;
-				$x = $x_ini;
+		$y = $y_ini;
+		$x = $x_ini;
 	
-				$pdf->SetFont('dejavusans', '', 16, '', true);
-				$text = '<b>ALBARÀ ##'. $parte->getId() .'##</b>';
-				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
-				$pdf->Ln(5);
+		$pdf->SetFont('dejavusans', '', 16, '', true);
+		$text = '<b>ALBARÀ #'. $numAlbara .'#</b>';
+		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
+		$pdf->Ln(5);
 	
-				$pdf->SetFont('dejavusans', '', 10, '', true);
+		$pdf->SetFont('dejavusans', '', 10, '', true);
 	
-				$club = $parte->getClub(); 
-				$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-				$tbl .= '<tr><td width="250"><b>' . $club->getNom() . '</b></td></tr>';
-				$tbl .= '<tr><td>' . $club->getCif() . '</td></tr>';
-				$tbl .= '<tr><td>' . $club->getAddradreca() . '</td></tr>';
-				$tbl .= '<tr><td>' . $club->getAddrcp() . " - " . $club->getAddrpob() . '</td></tr>';
-				$tbl .= '<tr><td>' . $club->getAddrprovincia() . '</td></tr>';
-				$tbl .= '<tr><td>Telf: ' . $club->getTelefon()  . '</td></tr>';
-				$tbl .= '</table>';
+		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
+		$tbl .= '<tr><td width="250"><b>' . $club->getNom() . '</b></td></tr>';
+		$tbl .= '<tr><td>' . $club->getCif() . '</td></tr>';
+		$tbl .= '<tr><td>' . $club->getAddradreca() . '</td></tr>';
+		$tbl .= '<tr><td>' . $club->getAddrcp() . " - " . $club->getAddrpob() . '</td></tr>';
+		$tbl .= '<tr><td>' . $club->getAddrprovincia() . '</td></tr>';
+		$tbl .= '<tr><td>Telf: ' . $club->getTelefon()  . '</td></tr>';
+		$tbl .= '</table>';
 	
-				$pdf->writeHTML($tbl, false, false, false, false, '');
+		$pdf->writeHTML($tbl, false, false, false, false, '');
 	
-				$y = $pdf->getY();
-				$pdf->setY($y_ini);
-				$pdf->setX($pdf->getPageWidth() - 80);
+		$y = $pdf->getY();
+		$pdf->setY($y_ini);
+		$pdf->setX($pdf->getPageWidth() - 82);
 	
-				$pdf->SetFont('dejavusans', '', 8, '', true);
-				$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-				$tbl .= '<tr><td width="250" align="right"><b>FEDERACIÓ CATALANA <br/>D\'ACTIVITATS SUBAQUÀTIQUES</b></td></tr>';
-				$tbl .= '<tr><td align="right">Moll de la Vela 1 (Zona Forum)<br/>';
-				$tbl .= '08930 Sant Adrià de Besòs<br/>';
-				$tbl .= 'Tel: 93 356 05 43  Fax: 93 356 30 73<br/>';
-				$tbl .= 'http://www.fecdas.cat<br/>';
-				$tbl .= 'E-mail: info@fecdas.cat<br/>';
-				$tbl .= 'NIF: Q5855006B</td></tr>';
-				$tbl .= '</table>';
-				$pdf->writeHTML($tbl, false, false, false, false, '');
-	
-				$pdf->SetFont('dejavusans', '', 10, '', true);
-				$pdf->setY($y);
-				$pdf->setX($pdf->getPageWidth() - 70);
+		$pdf->SetFont('dejavusans', '', 8, '', true);
+		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
+		$tbl .= '<tr><td width="250" align="right"><b>FEDERACIÓ CATALANA <br/>D\'ACTIVITATS SUBAQUÀTIQUES</b></td></tr>';
+		$tbl .= '<tr><td align="right">Moll de la Vela 1 (Zona Forum)<br/>';
+		$tbl .= '08930 Sant Adrià de Besòs<br/>';
+		$tbl .= 'Tel: 93 356 05 43  Fax: 93 356 30 73<br/>';
+		$tbl .= 'http://www.fecdas.cat<br/>';
+		$tbl .= 'E-mail: info@fecdas.cat<br/>';
+		$tbl .= 'NIF: Q5855006B</td></tr>';
+		$tbl .= '</table>';
+		$pdf->writeHTML($tbl, false, false, false, false, '');
+
+		$pdf->SetFont('dejavusans', '', 10, '', true);
+		$pdf->setY($y - 13); 
+		$pdf->setX($pdf->getPageWidth() - 79);
 					
-				$club = $parte->getClub();
-				$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-				$tbl .= '<tr><td align="right" style="color:#555555;">Número d\'albarà:</td><td align="left"><b>' . $parte->getId()  . '</b></td></tr>';
-				$tbl .= '<tr><td align="right" style="color:#555555;">Data de la comanda:</td><td align="left"><b>' . $parte->getDataentrada()->format('d/m/Y') . '</b></td></tr>';				
-				$tbl .= '</table>';
+		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
+		$tbl .= '<tr><td width="150" align="right" style="color:#555555;">Número d\'albarà:</td><td width="90" align="right"><b>' . $numAlbara  . '</b></td></tr>';
+		$tbl .= '<tr><td align="right" style="color:#555555;">Data de la comanda:</td><td align="right"><b>' . $dataAlbara->format('d/m/Y') . '</b></td></tr>';				
+		$tbl .= '</table>';
 	
-				$pdf->writeHTML($tbl, false, false, false, false, '');
+		$pdf->writeHTML($tbl, false, false, false, false, '');
 	
-				$pdf->Ln(5);
-				$pdf->setX($x_ini);
+		$pdf->Ln(5);
+		$pdf->setX($x_ini);
 	
-				// Get factura detall
-				$detallfactura = $this->getDetallFactura($parte);
+		$pdf->SetFont('dejavusans', '', 8, '', true);
 	
-				// Get factura totals
-				$totalfactura = $this->getTotalsFactura($detallfactura);
-	
-				$pdf->SetFont('dejavusans', '', 8, '', true);
-	
-				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
+		$tbl = '<table border="1" cellpadding="5" cellspacing="0">
 				<tr style="background-color:#CCCCCC;">
-				<td width="80" align="center">REFERÈNCIA</td>
-				<td width="280" align="left">CONCEPTE</td>
+				<td width="75" align="center">REFERÈNCIA</td>
+				<td width="270" align="left">CONCEPTE</td>
 				<td width="50" align="center">QUANT.</td>
 				<td width="50" align="center">PREU</td>
 				<td width="70" align="center">IMPORT</td>
-				<td width="60" align="center">I.V.A<br/>(' . number_format($parte->getTipus()->getIva(), 2, ',', '.') . '%)</td>
+				<td width="55" align="center">I.V.A<br/>(' . number_format($iva, 2, ',', '.') . '%)</td>
 				<td width="80" align="right">TOTAL</td>
 				</tr>';
 	
-				$tblref = "";
-				$tblconc = "";
-				$tblquant = "";
-				$tblpreu = "";
-				$tblimp = "";
-				$tbliva = "";
-				$tbltotal = "";
+		$tblref = "";
+		$tblconc = "";
+		$tblquant = "";
+		$tblpreu = "";
+		$tblimp = "";
+		$tbliva = "";
+		$tbltotal = "";
 	
-				foreach ($detallfactura as $c => $lineafactura) {
-					$tblref .= $lineafactura['codi'] . '<br/><br/>';
-					$tblconc .= $lineafactura['desc'] . '<br/><br/>';
-					$tblquant .= $lineafactura['quant'] . '<br/><br/>';
-					$tblpreu .= number_format($lineafactura['preuunitat'], 2, ',', '.') .  '€<br/><br/>';
-					$tblimp .=  number_format($lineafactura['preusiva'], 2, ',', '.') .  '€<br/><br/>';
-					$tbliva .=  number_format($lineafactura['iva'], 2, ',', '.') .  '€<br/><br/>';
-					$tbltotal .= number_format($lineafactura['totaldetall'], 2, ',', '.') .  '€<br/><br/>';
-				}
-	
-				$tbl .= '<tr>';
-				$tbl .= '<td align="center">' . $tblref;
-				$tbl .= '<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></td>';
-				$tbl .= '<td align="left">' . $tblconc .  '</td>';
-				$tbl .= '<td align="center">' . $tblquant .  '</td>';
-				$tbl .= '<td align="right">' . $tblpreu . '</td>';
-				$tbl .= '<td align="right">' . $tblimp . '</td>';
-				$tbl .= '<td align="right">' . $tbliva . '</td>';
-				$tbl .= '<td align="right">' . $tbltotal . '</td>';
-				$tbl .= '</tr>';
-	
-				$tbl .= '<tr>';
-				$tbl .= '<td colspan="4" style="background-color:#EEEEEE;">&nbsp;</td>';
-				$tbl .= '<td align="center">IMPORT<br/>' . number_format($totalfactura['totalparcial'], 2, ',', '.') . ' €</td>';
-				$tbl .= '<td align="center">I.V.A<br/>' . number_format($totalfactura['iva'], 2, ',', '.') . ' €</td>';
-				$tbl .= '<td align="center">TOTAL<br/>' . number_format($totalfactura['total'], 2, ',', '.') .  ' €</td>';
-				$tbl .= '</tr>';
-				$tbl .= '<tr border="0">';
-				$tbl .= '<td colspan="6" style="background-color:#EEEEEE;">&nbsp;</td>';
-				$tbl .= '<td align="center">A PAGAR<br/><b>' . number_format($totalfactura['total'], 2, ',', '.') .  ' €</b></td>';
-				$tbl .= '</tr>';
-	
-				$tbl .= '</table>';
-	
-				$pdf->writeHTML($tbl, true, false, false, false, '');
-	
-				if (!$parte->hasIva()) {
-					// set color for text
-					$pdf->SetTextColor(50, 50, 50); // Gris
-					$pdf->SetFont('dejavusans', '', 8, '', true);
-					$text = '<p>Exempt d\'I.V.A. segons la llei 49/2002</p>';
-					$pdf->writeHTML($text, true, false, false, false, '');
-					//$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
-				}
-				$pdf->Ln(5);
-	
-				$pdf->SetTextColor(100, 100, 100); // Gris
-				$pdf->SetFont('dejavusans', '', 16, '', true);
-	
-				if ($parte->getDatapagament() != null) {
-					$text = '<b>ALBARÀ PAGAT PENDENT DE FACTURA</b>';
-					$pdf->writeHTML($text, true, false, false, false, '');
-				}
-	
-				// reset pointer to the last page
-				$pdf->lastPage();
-					
-				// Close and output PDF document
-				$response = new Response($pdf->Output("albara_" . $parte->getId() . "_" . $parte->getClub()->getCodi() . ".pdf", "D"));
-				$response->headers->set('Content-Type', 'application/pdf');
-				return $response;
-			}
-				
+		foreach ($detall as $c => $lineafactura) {
+			$tblref .= $lineafactura['codi'] . '<br/><br/>';
+			$tblconc .= $lineafactura['desc'] . '<br/><br/>';
+			$tblquant .= $lineafactura['quant'] . '<br/><br/>';
+			$tblpreu .= number_format($lineafactura['preuunitat'], 2, ',', '.') .  '€<br/><br/>';
+			$tblimp .=  number_format($lineafactura['preusiva'], 2, ',', '.') .  '€<br/><br/>';
+			$tbliva .=  number_format($lineafactura['iva'], 2, ',', '.') .  '€<br/><br/>';
+			$tbltotal .= number_format($lineafactura['totaldetall'], 2, ',', '.') .  '€<br/><br/>';
 		}
-		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+	
+		$tbl .= '<tr>';
+		$tbl .= '<td align="center">' . $tblref;
+		$tbl .= '<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></td>';
+		$tbl .= '<td align="left">' . $tblconc .  '</td>';
+		$tbl .= '<td align="center">' . $tblquant .  '</td>';
+		$tbl .= '<td align="right">' . $tblpreu . '</td>';
+		$tbl .= '<td align="right">' . $tblimp . '</td>';
+		$tbl .= '<td align="right">' . $tbliva . '</td>';
+		$tbl .= '<td align="right">' . $tbltotal . '</td>';
+		$tbl .= '</tr>';
+		
+		$tbl .= '<tr>';
+		$tbl .= '<td colspan="4" style="background-color:#EEEEEE;">&nbsp;</td>';
+		$tbl .= '<td align="center">IMPORT<br/>' . number_format($totals['totalparcial'], 2, ',', '.') . ' €</td>';
+		$tbl .= '<td align="center">I.V.A<br/>' . number_format($totals['iva'], 2, ',', '.') . ' €</td>';
+		$tbl .= '<td align="center">TOTAL<br/>' . number_format($totals['total'], 2, ',', '.') .  ' €</td>';
+		$tbl .= '</tr>';
+		$tbl .= '<tr border="0">';
+		$tbl .= '<td colspan="6" style="background-color:#EEEEEE;">&nbsp;</td>';
+		$tbl .= '<td align="center">A PAGAR<br/><b>' . number_format($totals['total'], 2, ',', '.') .  ' €</b></td>';
+		$tbl .= '</tr>';
+	
+		$tbl .= '</table>';
+	
+		$pdf->writeHTML($tbl, true, false, false, false, '');
+	
+		if ($iva == 0) {
+			// set color for text
+			$pdf->SetTextColor(50, 50, 50); // Gris
+			$pdf->SetFont('dejavusans', '', 8, '', true);
+			$text = '<p>Exempt d\'I.V.A. segons la llei 49/2002</p>';
+			$pdf->writeHTML($text, true, false, false, false, '');
+			//$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
+		}
+		$pdf->Ln(5);
+	
+		$pdf->SetTextColor(100, 100, 100); // Gris
+		$pdf->SetFont('dejavusans', '', 16, '', true);
+	
+		if ($pagat == true) {
+			$text = '<b>-- ALBARÀ PAGAT --</b>';
+			$pdf->writeHTML($text, true, false, false, false, '');
+		}
+	
+		// reset pointer to the last page
+		$pdf->lastPage();
+					
+		// Close and output PDF document
+		$response = new Response($pdf->Output("albara_" . $numAlbara . "_" . $club->getCodi() . ".pdf", "D"));
+		$response->headers->set('Content-Type', 'application/pdf');
+		return $response;
+		
 	}
 	
 	public function  asseguratstopdfAction() {

@@ -42,13 +42,22 @@ class EntityPagament {
 	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $comentari;
-
+	
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $dataentrada;
+	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $dataanulacio;
 
-	public function __construct() {
+	public function __construct($currentDate) {
+	}
+	
+	public function __construct($currentDate) {
+		$this->setDataentrada($currentDate);
 	}
 
 	public function __toString() {
@@ -139,6 +148,20 @@ class EntityPagament {
 		$this->comentari = $comentari;
 	}
 
+	/**
+	 * @return datetime
+	 */
+	public function getDataentrada() {
+		return $this->dataentrada;
+	}
+	
+	/**
+	 * @param datetime $dataentrada
+	 */
+	public function setDataentrada($dataentrada) {
+		$this->dataentrada = $dataentrada;
+	}
+	
 	/**
 	 * @return datetime
 	 */

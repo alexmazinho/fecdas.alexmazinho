@@ -14,6 +14,7 @@ use Fecdas\PartesBundle\Form\FormPayment;
 use Fecdas\PartesBundle\Form\FormParte;
 use Fecdas\PartesBundle\Form\FormPersona;
 use Fecdas\PartesBundle\Form\FormLlicencia;
+use Fecdas\PartesBundle\Form\FormDuplicat;
 use Fecdas\PartesBundle\Form\FormParteRenew;
 use Fecdas\PartesBundle\Entity\EntityParteType;
 use Fecdas\PartesBundle\Entity\EntityContact;
@@ -23,6 +24,9 @@ use Fecdas\PartesBundle\Entity\EntityLlicencia;
 use Fecdas\PartesBundle\Entity\EntityPayment;
 use Fecdas\PartesBundle\Entity\EntityUser;
 use Fecdas\PartesBundle\Entity\EntityClub;
+use Fecdas\PartesBundle\Entity\EntityDuplicat;
+use Fecdas\PartesBundle\Entity\EntityCarnet;
+use Fecdas\PartesBundle\Entity\EntityImatge; 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
@@ -209,7 +213,7 @@ class PageController extends BaseController {
 				}					
 			} else {
 				// Fitxer massa gran normalment
-				$this->get('session')->getFlashBag()->add('error-notice',"Error important ek fitxer");
+				$this->get('session')->getFlashBag()->add('error-notice',"Error important el fitxer".$form->getErrorsAsString());
 			}
 
 		} else {
@@ -495,8 +499,6 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:partesllicencies.html.twig', array('parte' => $parte, 'llicencies' => $llicencies));
 	}
 	
-	
-	
 	public function asseguratsAction() {
 		$request = $this->getRequest();
 	
@@ -505,8 +507,7 @@ class PageController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		if ($this->isCurrentAdmin()) $currentClub = "";
-		else $currentClub = $this->getCurrentClub()->getCodi();
+		$currentClub = $this->getCurrentClub()->getCodi();
 		$currentDNI = "";
 		$currentNom = "";
 		$currentCognoms = "";
@@ -849,7 +850,7 @@ class PageController extends BaseController {
 				return $this->redirect($this->generateUrl('FecdasPartesBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
 				
 			} else {
-				$this->get('session')->getFlashBag()->add('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador');
+				$this->get('session')->getFlashBag()->add('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador'.$form->getErrorsAsString());
 			}
 		} else {
 			/*
@@ -1190,7 +1191,7 @@ class PageController extends BaseController {
 						. $error->getPropertyPath() . "("
 						. $error->getMessage() . ") \n";*/
 				
-				$this->get('session')->getFlashBag()->add('sms-notice', "error validant les dades".$errorstr); 
+				$this->get('session')->getFlashBag()->add('sms-notice', "error validant les dades".$form->getErrorsAsString()."-".$formLlicencia->getErrorsAsString()); 
 				
 			}
 		}
@@ -1459,11 +1460,6 @@ class PageController extends BaseController {
 		return new Response("Error personaAction ");
 	}
 	
-	public function anularpeticioAction() {
-		$request = $this->getRequest();
-		/* Posar a admin*/
-	}
-
 	public function duplicatsAction() {
 		$request = $this->getRequest();
 	
@@ -1471,76 +1467,140 @@ class PageController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		
 		$em = $this->getDoctrine()->getManager();
+		 
+		// Limit registres consulta
+		$limitSelect = self::REGISTRES_PETICIONS;
+		if ($request->query->has('limit')) $limitSelect += $request->query->get('limit');
 		
 		$currentClub = $this->getCurrentClub()->getCodi();
-		$persona = null;
+		$duplicat = new EntityDuplicat();
+		$form = $this->createForm(new FormDuplicat(array('club' => $currentClub)), $duplicat);
 		
 		if ($request->getMethod() == 'POST') {
-			$formdata = $request->request->get('form');
-			
-			// Criteris de cerca
-			/* 
-			if ($request->request->has('form')) { // Reload select clubs de Partes
-				$formdata = $request->request->get('form');
-				if (isset($formdata['clubs'])) $currentClub = $formdata['clubs'];
-				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
-				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
-				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
-				if (isset($formdata['vigent'])) $currentVigent = true;
-				else $currentVigent = false;
-		
-				$this->logEntry($this->get('session')->get('username'), 'NEW DUPLICAT',
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'),
-						"club: " . $currentClub . " dni: " . $currentDNI . " nom/cog: " . $currentNom . ", " . $currentCognoms );
-		
-			}*/
-			
+			$data = $request->request->all();
+			$form->submit($request); 
+			if ($form->isValid()) {
+				try {
+					$duplicat->setClub($this->getCurrentClub());
+					$duplicat->setDatapeticio($this->getCurrentDate());
+					
+					// Carnets llicències sense títol, la resta amb títol corresponent 
+					if ($duplicat->getTitol() == null and $duplicat->getCarnet()->getId() != 1) throw new \Exception('Cal indicar un títol');  
+					if ($duplicat->getTitol() != null and $duplicat->getCarnet()->getId() == 1) throw new \Exception('Dades del títol incorrectes'); 
+
+					$em->persist($duplicat);
+					
+					// Comprovar canvis en el nom / cognoms
+					$nom = "";
+					if ($form->has('nom')) $nom = $form->get('nom')->getData();
+					$cognoms = "";
+					if ($form->has('cognoms')) $cognoms = $form->get('cognoms')->getData();
+					
+					$observacionsMail = "";
+					if ($duplicat->getPersona()->getNom() != $nom or 
+						$duplicat->getPersona()->getCognoms() != $cognoms) {
+						$observacionsMail = "<p>Ha canviat el nom, abans " . 
+											$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() ."</p>";
+						$duplicat->getPersona()->setNom($nom);
+						$duplicat->getPersona()->setCognoms($cognoms);
+						$duplicat->getPersona()->setDatamodificacio($this->getCurrentDate());
+						$duplicat->getPersona()->setValidat(false); 
+					}
+					
+					if ($form->has('fotoupld'))  {
+						$file = $form->get('fotoupld')->getData();
+						
+						if ($file == null) throw new \Exception('Cal carregar una foto per demanar el duplicat');
+	
+						if (!($file instanceof UploadedFile) or !is_object($file))  throw new \Exception('1.No s\'ha pogut carregar la foto');
+							
+						if (!$file->isValid()) throw new \Exception('2.No s\'ha pogut carregar la foto ('.$file->isValid().')'); // Codi d'error
+						
+						// Ha de ser jpg mida max 35k i jpg
+						if ($file->getSize() > 35840 ) throw new \Exception('La mida màxima de la foto és 35k');
+						if ($file->guessExtension() != "jpg" and $file->guessExtension() != "jpeg") throw new \Exception('Només imatges \'jpg\', \'jpeg\''); 
+						
+						$foto = new EntityImatge($file);
+						$foto->setTitol("Foto carnet federat " . $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms());
+						$em->persist($foto);
+						$duplicat->setFoto($foto);
+						$uploadReturn = $foto->upload($duplicat->getPersona()->getDni());
+							
+						if ($uploadReturn != true) {
+							$em->detach($foto); // Allibera foto del EntityManager
+							throw new \Exception('3.No s\'ha pogut carregar la foto');
+						}
+					} else {
+						// Form sense foto
+						if ($duplicat->getCarnet()->getFoto() == true) throw new \Exception('Cal carregar una foto per demanar el duplicat');
+					}
+				
+					$em->flush();
+					
+					// Enviar notificació mail
+					$subject = ":: Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " ::";
+					$tomails = $this->getLlicenciesMails();
+					$body = "<h3>Petició de duplicat del club ". $duplicat->getClub()->getNom()."</h3>";
+					$body .= "<p>". $duplicat->getTextCarnet() ."</p>";
+					$body .= "<p>". $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms();
+					$body .= " (" . $duplicat->getPersona()->getDni() .")</p>";
+					if ($observacionsMail != "") $body .= "<p><em>(". $observacionsMail .")</em></p>";
+					if ($duplicat->getObservacions() != null) $body .= "<p>Observacions</p><p>". $duplicat->getObservacions() ."</p>";
+
+					if (isset($foto) and $foto != null) $this->buildAndSendMail($subject, $tomails, $body, null, $foto->getAbsolutePath()); 
+					else $this->buildAndSendMail($subject, $tomails, $body);
+					
+					$this->logEntryAuth('OK DUPLICAT', 'club ' . $currentClub . ' persona ' . $duplicat->getPersona()->getId());
+					
+					$this->get('session')->getFlashBag()->add('error-notice',"Petició enviada correctament");
+					
+				} catch (\Exception $e) {
+					$em->detach($duplicat);
+					$em->refresh($duplicat->getPersona());
+					
+					$this->logEntryAuth('ERROR DUPLICAT', 'club ' . $currentClub . ' ' .$e->getMessage());
+						
+					$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
+				}
+			} else {
+				// Ampliació error validació
+				/*$errors = "";
+				foreach ($form->getErrors() as $key => $error) {
+					$errors .= $error->getMessage() . " ******* ";
+				}
+				foreach ($form->all() as $child) {
+					if (!$child->isValid()) {
+						$errors .=  "(" . $child->getName() . ")". $this->getErrorMessages($child);
+					}
+				}*/
+				$this->logEntryAuth('INVALID DUPLICAT', 'club ' . $currentClub . ' ' .$form->getErrorsAsString());
+				
+				$this->get('session')->getFlashBag()->add('error-notice',"Dades incorrectes .".$form->getErrorsAsString());
+			}
+
 			/* Si tot ok, reenvia pàgina per evitar F5 */
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
 		} else { 
-			$this->logEntry($this->get('session')->get('username'), 'VIEW DUPLICATS',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+			$this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub); 
 		}
 		
-		$formBuilder = $this->createFormBuilder();
-		
-		$personesSelectOptions = array('class' => 'FecdasPartesBundle:EntityPersona',
-				'property' => 'llistaText',
-				'multiple' => false,
-				'required'  => false, 
-				'query_builder' => function($repository)  use ($currentClub) {
-					return $repository->createQueryBuilder('p')
-					->where('p.club = :codiclub')
-					->setParameter('codiclub', $currentClub)
-					->orderby('p.cognoms');
-				},
-		);
-		$formBuilder->add('persona', 'entity', $personesSelectOptions);
-		$formBuilder->add('carnets', 'entity', array('class' => 'FecdasPartesBundle:EntityCarnet',
-				'property' => 'tipus',
-				'multiple' => false,
-				'required'  => false,
-				'preferred_choices' => array(), 
-				'empty_value' => ' ... selecciona el carnet ',
-		));
-		$form = $formBuilder->getForm();
 		
 		$strQuery = "SELECT d FROM Fecdas\PartesBundle\Entity\EntityDuplicat d ";
 		/* Administradors totes les peticions, clubs només les seves*/
 		if (!$this->isCurrentAdmin()) {
 			$strQuery .= " WHERE d.club = :club ORDER BY d.datapeticio";  
-			$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
+			$query = $em->createQuery($strQuery)
+				->setParameter('club', $currentClub)
+				->setMaxResults($limitSelect);
 		} else {
 			$strQuery .= " ORDER BY d.datapeticio";
-			$query = $em->createQuery($strQuery);
+			$query = $em->createQuery($strQuery)->setMaxResults($limitSelect);
 		}
 		
 		$duplicats = $query->getResult();
 		
 		return $this->render('FecdasPartesBundle:Page:duplicats.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats, 'limit' => $limitSelect)));
 	}
 	
 	public function duplicatsformAction() {
@@ -1548,36 +1608,25 @@ class PageController extends BaseController {
 		$request = $this->getRequest();
 		
 		if ($this->isAuthenticated() != true || 
-			(!$request->query->has('persona') and
-			!$request->query->has('carnet'))) return new Response("");
+			!$request->query->has('carnet') ||
+			!$request->query->has('persona')) return new Response("");
 		
 		$em = $this->getDoctrine()->getManager();
 		
-		$formBuilder = $this->createFormBuilder();
+		$duplicat = new EntityDuplicat();
+		$carnet = $em->getRepository('FecdasPartesBundle:EntityCarnet')->find($request->query->get('carnet'));
+		$persona = $em->getRepository('FecdasPartesBundle:EntityPersona')->find($request->query->get('persona'));
+		$duplicat->setCarnet($carnet);
+		$duplicat->setPersona($persona);
+		$fotocarnet = false;
 		
-		if ($request->query->has('carnet')) {
-			if ($request->query->get('carnet') == "1") return new Response(""); // Llicències federatives
+		if ($carnet != null and $carnet->getFoto() == true) $fotocarnet = true;
 			
-			$this->logEntryAuth('LOAD DUPLICATS TITOLS', $request->query->get('carnet'));
-			$carnet = $em->getRepository('FecdasPartesBundle:EntityCarnet')->find($request->query->get('carnet'));
-			$formBuilder->add('titols', 'entity', array('class' => 'FecdasPartesBundle:EntityTitol',
-					'property' => 'llistaText',
-					'multiple' => false,
-					'required'  => false,
-					'empty_value' => ' ... escull un títol ',
-			));
-		} else {
-			$this->logEntryAuth('LOAD DUPLICATS PERSONA', $request->query->get('persona'));
-			$persona = $em->getRepository('FecdasPartesBundle:EntityPersona')->find($request->query->get('persona'));
-			$formBuilder->add('dni', 'text', array('data' => $persona->getDni(), 'disabled' => true));
-			$formBuilder->add('nom', 'text', array('data' => $persona->getNom()));
-			$formBuilder->add('cognoms', 'text', array('data' => $persona->getCognoms()));
-			$formBuilder->add('foto', 'file', array('mapped' => false, 'required' => false, 'attr' => array('accept' => 'image/*')));
-		}
-		$form = $formBuilder->getForm();
+		$form = $this->createForm(new FormDuplicat(array('persona' => $persona, 'carnet' => $carnet, 'foto' => $fotocarnet)), $duplicat);   // Només select titols
+
+		$this->logEntryAuth('LOAD DUPLICAT', $request->query->get('persona'));
 		
-		return $this->render('FecdasPartesBundle:Page:duplicatsform.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
+		return $this->render('FecdasPartesBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView()))); 
 	} 
 	
 	
@@ -1603,8 +1652,7 @@ class PageController extends BaseController {
 				return $this->redirect($this->generateUrl('FecdasPartesBundle_partes'));
 
 			// Get factura detall
-			$detallfactura = $this->getDetallFactura($parte);
-
+			$detallfactura = $parte->getDetallFactura();
 			// Get factura totals
 			$totalfactura = $this->getTotalsFactura($detallfactura);
 		} else {

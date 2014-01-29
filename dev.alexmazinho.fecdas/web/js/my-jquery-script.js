@@ -199,6 +199,8 @@
 	    $('.'+listheaderid)
 	    .off('click')
 	    .click(function(e) {
+	    	if ($(this).hasClass('listheader-noorder')) return true; // Comportament normal. Permet posar links a la capçalera per exemple	 
+	    	
 			//Cancel the link behavior
 	        e.preventDefault();
 
@@ -297,6 +299,18 @@
 			 changeYear: true
 		});
 
+	};
+	
+	dialegError = function(titol, strError, dwidth, dheight) {
+		$("#dialeg").html("<div class='dialeg-jerror'><img width='40' src='/images/icon-remove.png'><span class='jerror-sms'>"+strError+"</span></div>");
+		
+		$("#dialeg").dialog({
+	    	modal: true,
+	    	resizable: false,
+	    	width: dwidth,
+	    	height: dheight,
+	    	title: titol
+    	});
 	};
 	
 	jQuery.fn.extend({
@@ -1469,76 +1483,92 @@
 	actionsFormDuplicats = function(url) {
 		initFormDuplicats(true);
 		
-		$("select#form_persona").select2({
+		$("select#duplicat_persona").select2({
 			minimumInputLength: 2,
 			allowClear: true,
 			placeholder: "Seleccionar federat",
 		});
 		
-		$("select#form_persona").change(function(e) {
+		$("select#duplicat_persona").change(function(e) {
 			initFormDuplicats(true);
 			if (e.val != "") {
 				/* Persona escollida. Carregar dades: dni, nom, cognoms */
-				if ($.browser.msie) $('select#form_carnets').show(); 
-			    else $('select#form_carnets').slideLeftShow('slow');
+				if ($.browser.msie) $('select#duplicat_carnet').show(); 
+			    else $('select#duplicat_carnet').slideLeftShow('slow');
 			}
 		});
 		
-		$("select#form_carnets").change(function(e) {
+		$("select#duplicat_carnet").change(function(e) {
 			initFormDuplicats(false);
 			if ($(this).val() != "") {
-				//alert(url + " " + $("select#form_persona").val());
-				var params = { 	carnet:$("select#form_carnets").val() };
+				var params = { 	persona:$("select#duplicat_persona").val(), carnet:$("select#duplicat_carnet").val() };
 				$.get(url,	params,
 				function(data) {
-					if (data == "") {
-						/* Sense dades llicència federativa */
-						if ($.browser.msie) $('select#form_titols').hide(); 
-					    else $('select#form_titols').slideLeftHide('slow');
-						$("#formduplicats-titols").html("");
-					} else {
-						$("#formduplicats-titols").replaceWith( data );
-						if ($.browser.msie) $('select#form_titols').show(); 
-					    else $('select#form_titols').slideLeftShow('slow');
-					}
-				}); 
-								
-				var paramspersona = { 	persona:$("select#form_persona").val() };
-				$.get(url,	paramspersona,
-				function(data) {
+					$("#formduplicats-titols").remove();
+					
 					$("#formduplicats-dades").replaceWith( data );
+
+					var titols = $("#formduplicats-titols").detach(); // Colocar titols als camps superiors
+					$("#formduplicats .form-row").first().append(titols);
+					
+					if ($.browser.msie) $('select#duplicat_titol').show(); 
+				    else $('select#duplicat_titol').slideLeftShow('slow');
 					
 					if ($.browser.msie) $('#formduplicats-dades').show(); 
 				    else $('#formduplicats-dades').slideDown('slow');
+					
+					imageUploadForm($("#duplicat_fotoupld"), 104);
+					
+					
+					$('#duplicat_submit').click(function(e) {
+						e.preventDefault();
+						
+						// Validacions
+						if ($('select#duplicat_titol').length > 0 && $('select#duplicat_titol').val() == "") {
+							dialegError("Error", "Cal escollir un títol", 300, 100);
+							return false;
+						}
+						if ($('input#duplicat_fotoupld').length > 0 && $('#formduplicats-foto .file-input-thumb').length == 0) {
+							dialegError("Error", "Cal carregar una foto", 300, 100);
+							return false;
+						}
+						if ($('input#duplicat_nom').val().trim() == "") {
+							dialegError("Error", "Cal indicar el nom", 270, 100);
+							return false;
+						}
+						if ($('input#duplicat_cognoms').val().trim() == "") {
+							dialegError("Error", "Cal indicar els cognoms", 300, 100);
+							return false;
+						}
+						$('#formduplicats').submit();
+					});	
 				}); 
 			}
 		});
 	};
 
+	
 	initFormDuplicats = function(tot) {
 		if (tot) {
-			if ($.browser.msie) $('select#form_carnets').hide(); 
-		    else $('select#form_carnets').slideLeftHide('slow');
+			if ($.browser.msie) $('select#duplicat_carnet').hide(); 
+		    else $('select#duplicat_carnet').slideLeftHide('slow');
 		}
 		
-		if ($.browser.msie) $('select#form_titols').hide(); 
-	    else $('select#form_titols').slideLeftHide('slow');
+		if ($.browser.msie) $('select#duplicat_titol').hide(); 
+	    else $('select#duplicat_titol').slideLeftHide('slow');
 		
 		if ($.browser.msie) $('#formduplicats-dades').hide(); 
 	    else $('#formduplicats-dades').slideUp('slow');
-
 	};
 
-	
-	hoverPortada = function(hoverobject) {
+	imageUploadForm = function(formel, imgwidth) {
+		$(".galeria-upload").click(function(e) {
+		    e.preventDefault();
+		    // Make as the real input was clicked
+		    formel.click();
+	    });
 		
-		hoverobject.mouseenter( function(){
-			$(this).addClass("border-highlight-blue");
-		});
-	
-		hoverobject.mouseleave( function(){
-			$(this).removeClass("border-highlight-blue");
-		});
+		formel.imagePreview({ selector : '.galeria-upload', multiple: false, textover: 'Canviar imatge', width: imgwidth });
 	};
 	
 	
@@ -1566,14 +1596,15 @@
 				reader.onload = (function(theFile) {
 					return function(e) {
 						// Render thumbnail.
-						var imgHTML = '<img  height="200" title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
+						var imgHTML = '<img width="'+params.width+'" title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
 
 						if( typeof params.selector != 'undefined' ){
 							if (params.multiple == true) {
-								$novaimatge = $('<div class="image-preview image-uploaded">' + imgHTML +'</div>');
+								/*
+								$novaimatge = $('<div class="image-preview image-upload">' + imgHTML +'</div>');
 								$(params.selector).append($novaimatge);
 								
-								/* Les imatges que encara no han pujat al servidor no es poden posar a la portada */
+								// Les imatges que encara no han pujat al servidor no es poden posar a la portada 
 								$novaimatge.find("img").draggable({	
 									 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
 									 revert: "valid", // when not dropped, the item will revert back to its initial position
@@ -1583,12 +1614,13 @@
 									 },
 									 opacity: 0.7,
 									 cursor: "move"
-								});
+								});*/
 								
 								
 							} else {
-								$(params.selector).html('<div class="image-portada">' + imgHTML +'</div>');
-								hoverPortada($(".image-portada"));
+								//$(params.selector).replaceWith( data );
+								$(params.selector).html('<div class="image-upload image-uploaded">' + imgHTML +'</div>');
+								hoverPortada($(".image-uploaded"));
 							}
 						}else{
 							fileInput.before(imgHTML);
@@ -1602,23 +1634,16 @@
 		});
 	};
 	
-	/*$.fn.fadeSlideRight = function(speed,fn) {
-	    return $(this).animate({
-	        'opacity' : 1,
-	        'width' : '750px'
-	    },speed || 400, function() {
-	        $.isFunction(fn) && fn.call(this);
-	    });
+	hoverPortada = function(hoverobject) {
+		
+		hoverobject.mouseenter( function(){
+			$(this).addClass("border-highlight-blue");
+		});
+	
+		hoverobject.mouseleave( function(){
+			$(this).removeClass("border-highlight-blue");
+		});
 	};
-
-	$.fn.fadeSlideLeft = function(speed,fn) {
-	    return $(this).animate({
-	        'opacity' : 0,
-	        'width' : '0px'
-	    },speed || 400,function() {
-	        $.isFunction(fn) && fn.call(this);
-	    });
-	};*/
 	
 	/*****************************************************************************************************************/
 	

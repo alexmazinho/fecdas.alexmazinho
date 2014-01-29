@@ -19,7 +19,7 @@ class EntityTitol {
 	protected $id;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityCarnet")
+	 * @ORM\ManyToOne(targetEntity="EntityCarnet", inversedBy="titols")
 	 * @ORM\JoinColumn(name="carnet", referencedColumnName="id")
 	 */
 	protected $carnet; // FK taula m_titols

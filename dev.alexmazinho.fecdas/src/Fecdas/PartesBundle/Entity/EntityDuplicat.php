@@ -48,6 +48,11 @@ class EntityDuplicat {
 	protected $datapeticio;
 
 	/**
+	 * @ORM\Column(type="text", nullable=true)
+	 */
+	protected $observacions;
+	
+	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $dataimpressio;
@@ -165,6 +170,20 @@ class EntityDuplicat {
 	}
 
 	/**
+	 * @return text
+	 */
+	public function getObservacions() {
+		return $this->observacions;
+	}
+
+	/**
+	 * @param text $observacions
+	 */
+	public function setObservacions($observacions) {
+		$this->observacions = $observacions;
+	}
+	
+	/**
 	 * @return datetime
 	 */
 	public function getDataimpressio() {
@@ -221,35 +240,55 @@ class EntityDuplicat {
 	}
 
 	/**
-	 * Set imatge
+	 * Set foto
 	 *
 	 * @param Fecdas\PartesBundle\Entity\EntityImatge $imatge
 	 * @return EntityImatge
 	 */
-	public function setImatge(\Fecdas\PartesBundle\Entity\EntityImatge $imatge = null)
+	public function setFoto(\Fecdas\PartesBundle\Entity\EntityImatge $foto = null)
 	{
-		$this->imatge = $imatge;
+		$this->foto = $foto;
 	}
 	
 	/**
-	 * Get imatge
+	 * Get foto
 	 *
 	 * @return Fecdas\PartesBundle\Entity\EntityImatge
 	 */
-	public function getImatge()
+	public function getFoto()
 	{
-		return $this->imatge;
+		return $this->foto;
 	}
 	
 	
 	/**
-	 * @return integer
+	 * Array amb el detall de la factura de la petició de duplicat
+	 *
+	 * @return string
 	 */
-	public function getTextCarnet() {
-		$strCarnet = "";
-		if ($this->titol == null) $strCarnet = $this->carnet;
-		else $strCarnet = $this->carnet . " - " . $this->titol;
-		$strCarnet .= " (" . number_format($this->carnet->getPreu(), 2, ',', '') . " €)";
+	public function getDetallFactura() {
+		$detallfactura = array();
+		$iva = 0;
+		$codi = $this->getCarnet()->getCodisortida();
+		$preu = $this->getCarnet()->getPreu();
+		$detallfactura[$codi]['codi'] = $codi;
+		$detallfactura[$codi]['desc'] = $this->getTextCarnet(false).". <b>".$this->getPersona()->getCognomsNom()."</b>";
+		$detallfactura[$codi]['quant'] = 1;
+		$detallfactura[$codi]['preuunitat'] = $preu;
+		$detallfactura[$codi]['preusiva'] = $preu;
+		$detallfactura[$codi]['iva'] = $preu*$iva/100;
+		$detallfactura[$codi]['totaldetall'] = $detallfactura[$codi]['preusiva'] + $detallfactura[$codi]['iva'];
+		
+		return $detallfactura;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getTextCarnet($preu = true) {
+		$strCarnet = $this->carnet->getTipus();
+		if ($this->titol != null) $strCarnet .= ". " . $this->getTitol()->getTitol();
+		if ($preu == true) $strCarnet .= " (" . number_format($this->carnet->getPreu(), 2, ',', '') . " €)";
 		
 		return $strCarnet;
 	}
@@ -263,12 +302,14 @@ class EntityDuplicat {
 		// Missatge que es mostra a la llista de duplicats
 		$textInfo = "";
 		 
-		if ($this->databaixa != null) return "Petició anulada";
+		if ($this->databaixa != null) return "Petició anul·lada " . $this->databaixa->format("d/m/Y");
 		 
 		if ($this->pagament != null) return "Petició pagada";
 		
 		if ($this->factura != null) return "Petició facturada";
 	
+		if ($this->observacions != null) return $this->observacions;
+		
 		return $textInfo;
 	}
 	

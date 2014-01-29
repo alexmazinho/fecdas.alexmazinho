@@ -4,7 +4,7 @@ namespace Fecdas\PartesBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
-use Fecdas\PartesBundle\Util\Funcions;
+use Fecdas\PartesBundle\Classes\Funcions;
 
 /**
  * @ORM\Entity
@@ -130,7 +130,7 @@ class EntityImatge {
 	{
 		// get rid of the __DIR__ so it doesn't screw up
 		// when displaying uploaded doc/image in the view.
-		return '/images/uploads';
+		return '/uploads';
 	}
 	
     /**

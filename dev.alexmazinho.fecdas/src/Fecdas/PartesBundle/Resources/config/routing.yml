@@ -90,6 +90,25 @@ FecdasPartesBundle_sincroaccess:
     requirements:
         _method:  GET
 
+FecdasPartesBundle_anularpeticio:
+    pattern:  /anularpeticio
+    defaults: { _controller: "FecdasPartesBundle:Admin:anularpeticio" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_imprespeticio:
+    pattern:  /imprespeticio
+    defaults: { _controller: "FecdasPartesBundle:Admin:imprespeticio" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_pagamentpeticioconfirm:
+    pattern:  /pagamentpeticioconfirm
+    defaults: { _controller: "FecdasPartesBundle:Admin:pagamentpeticioconfirm" }
+    requirements:
+        _method:  GET
+        
+        
 FecdasPartesBundle_ajaxclubsnoms:
     pattern:  /ajaxclubsnoms
     defaults: { _controller: "FecdasPartesBundle:Admin:ajaxclubsnoms" }
@@ -216,14 +235,12 @@ FecdasPartesBundle_duplicatsform:
     defaults: { _controller: "FecdasPartesBundle:Page:duplicatsform" }
     requirements:
         _method:  GET
-
-
-FecdasPartesBundle_anularpeticio:
-    pattern:  /anularpeticio
-    defaults: { _controller: "FecdasPartesBundle:Page:anularpeticio" }
+        
+FecdasPartesBundle_pagamentpeticio:
+    pattern:  /pagamentpeticio
+    defaults: { _controller: "FecdasPartesBundle:Page:pagamentpeticio" }
     requirements:
         _method:  GET
-
 
 FecdasPartesBundle_licensetopdf:
     pattern:  /license
@@ -255,6 +272,17 @@ FecdasPartesBundle_albaratopdf:
     requirements:
         _method:  GET
 
+FecdasPartesBundle_albarapeticio:
+    pattern:  /albarapeticio
+    defaults: { _controller: "FecdasPartesBundle:PDF:albarapeticio" }
+    requirements:
+        _method:  GET
+
+FecdasPartesBundle_facturapeticio:
+    pattern:  /facturapeticio
+    defaults: { _controller: "FecdasPartesBundle:PDF:facturapeticio" }
+    requirements:
+        _method:  GET
 
 FecdasPartesBundle_checkrenovacio:
     pattern:  /checkrenovacio

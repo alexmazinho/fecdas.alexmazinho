@@ -7,6 +7,7 @@ use Fecdas\PartesBundle\Entity\EntityParte;
 use Fecdas\PartesBundle\Entity\EntityLlicencia;
 use Fecdas\PartesBundle\Entity\EntityPersona;
 use Fecdas\PartesBundle\Entity\EntityUserLog;
+use Fecdas\PartesBundle\Entity\EntityPagament;
 
 class BaseController extends Controller {
 	const MAIL_ADMINTEST = "alexmazinho@gmail.com";  /* Canviar. Crear nou mail, ha d'estar a la taula d'usuaris  */
@@ -25,7 +26,10 @@ class BaseController extends Controller {
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
-	
+	const REGISTRES_PETICIONS = 50; // Nombre registre consulta duplicats
+	const PREFIX_ALBARA_LLICENCIES = 'L';
+	const PREFIX_ALBARA_DUPLICATS = 'D';
+		
 	protected function getCommonRenderArrayOptions($more = array()) { 
 		if ($this->isCurrentAdmin()) {
 			$roleSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
@@ -96,12 +100,16 @@ class BaseController extends Controller {
 	}
 	
 	protected function getFacturacioMails() {
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
+		
 		$mails = array(self::MAIL_FACTURACIO);
 		return $mails;
 	}
 
 	protected function getLlicenciesMails() {
-		$mails = array(self::MAIL_LLICENCIES, self::MAIL_ADMIN);
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
+		
+		$mails = array(self::MAIL_LLICENCIES);
 		return $mails;
 	}
 	
@@ -239,38 +247,6 @@ class BaseController extends Controller {
 		return null;
 	}
 	
-	
-	protected function getDetallFactura(EntityParte $parte) {
-		$detallfactura = array();
-		//$iva = $parte->getTipus()->getIVA() + 100;
-		$iva = $parte->getTipus()->getIVA();
-		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
-			if ($llicencia_iter->getDatabaixa() == null) {
-				$codi = $llicencia_iter->getCategoria()->getCodisortida();
-				
-				$preu = $llicencia_iter->getCategoria()->getPreuAny($parte->getAny());
-				
-				if (isset($detallfactura[$codi])) {
-					$detallfactura[$codi]['quant'] += 1;
-					$detallfactura[$codi]['preusiva'] += $preu;
-					$detallfactura[$codi]['iva'] += $preu*$iva/100;
-					$detallfactura[$codi]['totaldetall'] = $detallfactura[$codi]['preusiva'] + $detallfactura[$codi]['iva'];
-				} else {
-					$detallfactura[$codi] = array(
-							'codi' => $codi,
-							'desc' => $llicencia_iter->getCategoria()->getDescripcio(),
-							'quant' => 1,
-							'preuunitat' => $preu,
-							'preusiva' => $preu,
-							'iva' => $preu*$iva/100,
-							'totaldetall' => $preu + $preu*$iva/100);
-				}
-			}
-		}
-		ksort($detallfactura); // Ordenada per codi
-		return $detallfactura;
-	} 
-	
 	protected function getTotalsFactura($detallfactura) {
 		$totalfactura = array('totalparcial' => 0, 'iva' => 0, 'total' => 0);
 		foreach ($detallfactura as $c => $lineafactura) {
@@ -279,6 +255,37 @@ class BaseController extends Controller {
 			$totalfactura['total'] += $lineafactura['totaldetall'];
 		}
 		return $totalfactura;
+	}
+	
+	protected function crearPagament($data, $import, $estat, $dades, $comentari) {
+		$em = $this->getDoctrine()->getManager();
+		
+		if (trim($dades) == '') $dades = null;
+		if (trim($comentari) == '') $dades = null;
+		$pagament = new EntityPagament($this->getCurrentDate());
+		$pagament->setDatapagament($data);
+		$pagament->setEstat($estat);
+		$pagament->setImport($import);
+		$pagament->setDades($dades);
+		$pagament->setComentari($comentari);
+		
+		$em->persist($pagament);
+		
+		return $pagament;
+	}
+
+	protected function crearFactura($data, $num, $import, $concepte) {
+		$em = $this->getDoctrine()->getManager();
+		
+		$factura = new EntityFactura($this->getCurrentDate());
+		$factura->setDatafactura($data);
+		$factura->setNum($num);
+		$factura->setImport($import);
+		$factura->setConcepte($concepte);
+		
+		$em->persist($factura);
+		
+		return $factura;
 	}
 	
 	protected function getProvincies() {
@@ -485,7 +492,7 @@ class BaseController extends Controller {
 	}
 	
 	
-	protected function buildAndSendMail($subject, $tomails, $body, $bccmails = array()) {
+	protected function buildAndSendMail($subject, $tomails, $body, $bccmails = array(), $attachmentPath = null) {
 		$bccmails[] = self::MAIL_ADMINTEST;
 		if ($this->get('kernel')->getEnvironment() != 'prod') {
 			$tomails = array(self::MAIL_ADMINTEST);  // Entorns de test
@@ -498,9 +505,11 @@ class BaseController extends Controller {
 		->setFrom($from)
 		->setBcc($bccmails)
 		->setTo($tomails);
-			
-		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo-mail.png'));
 
+		if ($attachmentPath != null) $message->attach(\Swift_Attachment::fromPath($attachmentPath));
+		
+		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo-mail.png'));
+		
 		$footer = "<p>Atentament<br/>";
 		$footer .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
 		
@@ -515,8 +524,6 @@ class BaseController extends Controller {
 		
 		
 		$body = "<html style='font-family: Helvetica,Arial,sans-serif;'><head></head><body>".$body.$footer."</body></html>";
-		
-		echo $body; 
 		
 		$message->setBody($body, 'text/html');
 		

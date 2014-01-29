@@ -1,30 +1,39 @@
-{% if form.titols is defined %}
+{% if form.titol is defined %} 
 <div id="formduplicats-titols" class="form-left">
-	{{ form_widget(form.titols, { 'attr': {'class': 'formfield-outside'} }) }}
+	{{ form_widget(form.titol, { 'attr': {'class': 'formfield-outside'} }) }}
 </div>
-{% else %}
+{% endif %}
 <div id="formduplicats-dades" class="form-row clearfix">
-	<div id="formduplicats-dni" class="form-left">
-		{{ form_label(form.dni, 'DNI/NIE', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.dni, { 'attr': {'class': 'forminput-outside'} }) }}
-	</div> 
-   	<div id="formduplicats-nom" class="form-left">
-		{{ form_label(form.nom, 'Nom', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.nom, { 'attr': {'class': 'forminput-outside'} }) }}
-	</div> 
-    <div id="formduplicats-cognoms" class="form-left">
-		{{ form_label(form.cognoms, 'Cognoms', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.cognoms, { 'attr': {'class': 'forminput-outside'} }) }}
-	</div> 
-	<div id="formduplicats-foto" class="form-left">
-		{{ form_label(form.foto, 'Foto', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.foto) }}
+	<div class="colform colleft">
+		<div id="formduplicats-dni" class="formfield-row">
+			{{ form_label(form.dni, 'DNI/NIE:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+			{{ form_widget(form.dni, { 'attr': {'class': 'formfield-right'} }) }}
+		</div> 
+	   	<div id="formduplicats-nom" class="formfield-row">
+			{{ form_label(form.nom, 'Nom:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+			{{ form_widget(form.nom, { 'attr': {'class': 'formfield-right'} }) }}
+		</div> 
+	    <div id="formduplicats-cognoms" class="formfield-row">
+			{{ form_label(form.cognoms, 'Cognoms:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+			{{ form_widget(form.cognoms, { 'attr': {'class': 'formfield-right'} }) }}
+		</div>
+	</div>
+	{% if form.fotoupld is defined %} 
+	{{ form_widget(form.fotoupld) }}  
+	<div id="formduplicats-foto" class="colform colmiddle">
+		{# form_label(form.foto, 'Foto', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 		<div class="galeria-upload">
 			<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
 		</div>
 	</div> 
-	<div id="formduplicats-submit" class="form-right">	
-		<input type="submit" class="forminput-inside" value="Envia" name="formduplicats-button-envia"/>
+	{% endif %}
+	<div class="colform colright">
+		<div id="formduplicats-observacions" class="">
+			{{ form_label(form.observacions, 'Observacions:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+			{{ form_widget(form.observacions, { 'attr': {'class': 'formfield-right'} }) }}
+		</div>
+	</div>
+	<div id="formduplicats-submit" class="">
+		<input id="duplicat_submit" type="submit" class="forminput-inside" value="Enviar" name="formduplicats-button-envia"/>
 	</div>
 </div>
-{% endif %}

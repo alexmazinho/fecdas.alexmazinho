@@ -149,6 +149,9 @@ input[disabled="disabled"]
 	padding-bottom: 10px;
 }
 
+#dialeg .dialeg-jerror { height:100%; width: 100%;  font-size: 18px; }
+#dialeg .dialeg-jerror img { vertical-align:middle; }
+#dialeg .dialeg-jerror .jerror-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px;   }
 
 form.appform { font-size: 14px; }
 form.appform div { 
@@ -174,6 +177,16 @@ html>body .formlabel-inside { padding-top: 8px; }
 
 div.formfield-outside {
 	/* float: left; */ 
+}
+
+#main-col .formlabel-left {
+	display: table-cell;
+	padding: 10px 10px 10px 0;
+}
+
+#main-col .formfield-right {
+	display: table-cell;
+	width: auto;
 }
 
 .clearfix:after {
@@ -941,7 +954,11 @@ select#club_tipusparte {
 #formclub-dades-tab4 input,
 #formclub-dades-tab4 select { display: inline; }
 
-#formclub-dades-tab4 label { padding-top: 10px; }
+#formclub-dades-tab4 .formfield-right {
+	width: 70px;
+	text-align: right;
+}
+
 
 #formclub-dades-tab4 .colleft { width: 40%; vertical-align: top; display: inline-block; padding-right: 10px;}
 #formclub-dades-tab4 .colmiddle { width: 27%; font-size: 0.9em; vertical-align: top; display: inline-block; padding-right: 10px;}
@@ -953,16 +970,6 @@ select#club_tipusparte {
 	display: table-row;
 }
 
-#formclub-dades-tab4 .formlabel-left {
-	display: table-cell;
-	padding: 10px 10px 10px 0;
-}
-
-#formclub-dades-tab4 .formfield-right {
-	display: table-cell;
-	width: 70px;
-	text-align: right;
-}
 #formclub-dades-tab4 #formclub-dummy .formfield-right,
 #formclub-dades-tab4 #formclub-dummy .formfield-left {
 	width:auto;
@@ -1381,39 +1388,82 @@ p.info-bold {
 
 /************************************************* Duplicats ******************************************************/
 
-#formduplicats #formduplicats-persona { width: 200px; }
+#formduplicats .form-left { display: inline-block; vertical-align: middle; float: none; padding: 0 0 10px; }
+
+#formduplicats #formduplicats-persones { width: 250px; }
+#formduplicats #formduplicats-observacions {  }
+#formduplicats #formduplicats-submit  { display: block; margin: 10px 0 0; }
+
+#formduplicats .colform { display: inline-block; padding-right: 10px; vertical-align: top; }
+/*#formduplicats .colright { display: block; float: none; padding: 0 0 10px; }
+#formclub-dades-tab4 .colright { width: 27%; font-size: 0.9em; vertical-align: top; display: inline-block; }
+#formclub-dades-tab4 .colright input { min-height: inherit; font-size: 0.9em; }*/
+
+
 
 #formduplicats #formduplicats-dades,
-#formduplicats select#form_titols,
-#formduplicats select#form_carnets
+#formduplicats select#duplicat_titol,
+#formduplicats select#duplicat_carnet
  { display: none }
 
-#formduplicats .form-left { display: inline-block; vertical-align: middle; float: none; }
 
 
-#formduplicats #form_foto { display: none }
+#formduplicats #duplicat_dni { width: 120px; }
+#formduplicats #duplicat_nom, #formduplicats #duplicat_cognoms { width: 300px; }
+#formduplicats #duplicat_titol { width: 380px; }
+#formduplicats #duplicat_observacions {  width: 380px; max-width: 380px; height: 60px; max-height: 60px; }
+#formduplicats #duplicat_submit { width: 100px; }
+#formduplicats #duplicat_fotoupld { display: none }
 
-.image-portada img {
+.galeria-upload {
+	position: relative;
 	cursor: pointer;
 }
-.box-center-txt {
-	width: 131px;
-	height: 100px;
+.image-upload {
+	width: 81px;  /* 26mm */
+	height: 100px;  /* 32mm */
 	vertical-align: middle;
 	text-align: center; 
 	display: table-cell; 
 	border: 1px solid #dddddd;
-	cursor: pointer;
+	padding: 2px;
 }
-.galeria-upload {
-	position: relative;
-	float:left;
+
+.image-uploaded {
+	border: 1px solid #96C4EA;
 }
+
 .border-highlight-blue {
-	/*outline: 1px solid #7fcff6;*/
 	-webkit-box-shadow: 0px 0px 2px 2px #7fcff6; /* Android 2.3+, iOS 4.0.2-4.2, Safari 3-4 */
     box-shadow: 0px 0px 2px 2px #7fcff6; /* Chrome 6+, Firefox 4+, IE 9+, iOS 5+, Opera 10.50+ */
 }
+
+#header-duplicatid { display: none }
+#header-duplicatpeticio { width: 8%; }
+#header-duplicatdni { width: 8%; }
+#header-duplicatnom { width: 20%; text-align: left; }
+#header-duplicatcarnet { width: 20%; text-align: left; }
+#header-duplicatfoto { width: 5%; }
+#header-duplicatimpressio { width: 8%; }
+#header-duplicatextra { width: 20%; text-align: left; }
+#header-duplicatactions { width: 20%; text-align: right; position: relative }
+#header-duplicatactions a:hover { color:#2281CF; text-decoration: none; }
+#header-duplicatactions a,
+#header-duplicatactions a:active,
+#header-duplicatactions a:visited
+ { position: absolute; right: 20px;font-size: 0.9em; font-style: italic; font-weight: normal; text-decoration: underline; }
+
+.duplicat-id { display: none }
+.duplicat-peticio { width: 8%; }
+.duplicat-dni { width: 8%; }
+.duplicat-nom { width: 20%; text-align: left; }
+.duplicat-carnet { width: 20%; text-align: left; }
+.duplicat-foto { width: 5%; }
+.duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
+.duplicat-foto img:hover { border-color: #7fcff6 }
+.duplicat-impressio { width: 8%; }
+.duplicat-extra { width: 20%; text-align: left; }
+.duplicat-actions { width: 20%; text-align: right; }
 
 
 /*****************************************************************************************************************/

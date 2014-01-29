@@ -9,17 +9,17 @@
 		// Click des de Partes
 		$('#formparte-button-pagat').click(function(e) {
 			e.preventDefault();
-			confirmarParteRecentPagat($(this).attr("href"));
+			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
 		});
 		
 		// Click des de Recents
 		$('.parterecents-action-pagament').click(function(e) {
 			e.preventDefault();
-			confirmarParteRecentPagat($(this).attr("href"));
+			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
 		});
 	};
 	
-	confirmarParteRecentPagat = function(url) {
+	confirmarPagament = function(url, titol) {
 		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true,
@@ -41,7 +41,7 @@
 	            	$(this).dialog("close");
 	            }
 	        },
-	        title: "Confirmació pagament del parte",
+	        title: titol,
 	        height: 450,
 	        width: 350,
 	        zIndex:	350
@@ -128,6 +128,50 @@
 		    
 		    $("#dialeg").dialog("open");
 		});
+	};
+	
+	varisAdminPeticioDuplicat = function() {
+		// Click des de Partes
+		$('a.duplicat-dades').click(function(e) {
+			e.preventDefault();
+			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+		});
+		
+		$('a.duplicat-impres').click(function(e) {
+			e.preventDefault();
+			adminConfirm($(this).attr("href"), "Petició impresa", "<p>La petició es marcarà com impresa i s'enviarà un correu al club, vols continuar?</p>", 350, 170);
+		});
+		
+		$('a.duplicat-esborrar').click(function(e) {
+			e.preventDefault();
+			adminConfirm($(this).attr("href"), "Anul·lar petició", "<p>Segur que vols anul·lar aquesta petició?</p>", 350, 150);
+		});
+
+	};
+	
+	adminConfirm  = function(url, titol, text, dwidth, dheight) {
+		$("#dialeg").dialog({
+			autoOpen: false,
+		    modal: true,
+          	buttons : {
+            	"Confirmar" : function() {
+            		$(this).dialog("close");
+            		window.location = url;
+    	        },
+	            "Cancel·lar" : function() {
+	    			//Cancel submit behavior
+	            	$(this).dialog("close");
+	            }
+	        },
+	        title: titol,
+	        height: dheight,
+	        width: dwidth,
+	        zIndex:	350
+	    });
+		
+	    $("#dialeg").html(text);
+		    
+	    $("#dialeg").dialog("open");
 	};
 	
 })(jQuery);

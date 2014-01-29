@@ -180,7 +180,7 @@ class AdminController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		$parteid = $request->query->get('id');
-		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($request->query->get('id'));
+		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
 		
 		if ($parte != null) {
 			// Actualitzar data pagament
@@ -198,14 +198,14 @@ class AdminController extends BaseController {
 			
 			$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT OK',
 					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
 
 			return new Response("ok");
 		}
 		
 		$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT KO',
 				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
 
 		return new Response("ko");
 	}
@@ -316,7 +316,7 @@ class AdminController extends BaseController {
 		$request = $this->getRequest();
 	
 		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	
 		// Només jo
 		/*if ($this->get('session')->get('username') != 'alexmazinho@gmail.com')
@@ -364,6 +364,117 @@ class AdminController extends BaseController {
 	
 			return $this->render('FecdasPartesBundle:Admin:clubs.html.twig',  
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs)));
+	}
+	
+	public function anularpeticioAction() {
+		/* Anular petició duplicat */
+		$request = $this->getRequest();
+		
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$duplicatid = $request->query->get("id");
+		
+		$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityDuplicat')->find($duplicatid);
+		
+		if ($duplicat != null) {
+			$duplicat->setDatabaixa($this->getCurrentDate());
+				
+			$em->flush();
+		
+			$this->get('session')->getFlashBag()->add('error-notice', 'Petició de duplicat anulada correctament');
+			
+			$this->logEntryAuth('ANULA DUPLI OK', 'duplicat ' . $duplicatid);
+		} else {
+			$this->get('session')->getFlashBag()->add('error-notice', 'Error anulant la petició');
+
+			$this->logEntryAuth('ANULA DUPLI ERROR', 'duplicat ' . $duplicatid);
+		}
+		
+		return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+	}
+	
+	public function imprespeticioAction() {
+		/* Marca petició duplicat com impressa i enviar un correu */
+		$request = $this->getRequest();
+	
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$duplicatid = $request->query->get("id");
+	
+		$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityDuplicat')->find($duplicatid);
+	
+		if ($duplicat != null) {
+			$duplicat->setDataimpressio($this->getCurrentDate());
+	
+			$em->flush();
+	
+			// Enviar notificació mail
+			if ($duplicat->getClub()->getMail() != null) {
+				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();
+				$tomails = array($duplicat->getClub()->getMail());
+				$bccmails = $this->getLlicenciesMails();
+			} else {
+				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " CLUB SENSE CORREU!! ";
+				$tomails = $this->getLlicenciesMails();
+				$bccmails = array();
+			}
+			
+			$body = "<p>Benvolgut club ".$duplicat->getClub()->getNom()."</p>";
+			$body .= "<p>Us fem saber que la petició de duplicat per ";
+			$body .= "<strong>".$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() . "</strong> (<i>".$duplicat->getTextCarnet()."</i>),";
+			$body .= " ha estat impresa i es pot passar a recollir per la Federació.</p>";
+			
+			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			
+			$this->get('session')->getFlashBag()->add('error-notice', 'S\'ha enviat un mail al club');
+				
+			$this->logEntryAuth('PRINT DUPLI OK', 'duplicat ' . $duplicatid);
+		} else {
+			$this->get('session')->getFlashBag()->add('error-notice', 'Error indicant impressió de la petició');
+	
+			$this->logEntryAuth('PRINT DUPLI ERROR', 'duplicat ' . $duplicatid);
+		}
+	
+		return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+	}
+	
+	public function pagamentpeticioconfirmAction() {
+		$request = $this->getRequest();
+	
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$duplicatid = $request->query->get('id');
+		$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($duplicatid);
+	
+		if ($duplicat != null) {
+			// Crear pagament
+			$data = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
+			$estat = $request->query->get('estatpagat');
+			$dades = $request->query->get('dadespagat');
+			$comentari = $request->query->get('comentaripagat');
+			$import = $duplicat->getCarnet()->getPreu();
+			$pagament = $this->crearPagament($data, $import, $estat, $dades, $comentari);
+			// Actualitzar pagament
+			$duplicat->setPagament($pagament);
+				
+			$em->flush();
+			
+			$this->logEntryAuth('CONF. PAGAMENT DUPLI', 'duplicat ' . $duplicatid);
+			
+			return new Response("ok");
+		}
+		$this->logEntryAuth('CONF. PAGAMENT DUPLI KO', 'duplicat ' . $duplicatid);
+	
+		return new Response("ko");
 	}
 	
 	public function ajaxclubsnomsAction(Request $request) {

@@ -932,6 +932,43 @@ class EntityParte {
     }
     
     /**
+     * Array amb el detall de la factura del parte
+     *
+     * @return string
+     */
+    public function getDetallFactura() {
+    	$detallfactura = array();
+    	//$iva = $parte->getTipus()->getIVA() + 100;
+    	$iva = $this->getTipus()->getIVA();
+    	foreach ($this->getLlicencies() as $c => $llicencia_iter) {
+    		if ($llicencia_iter->getDatabaixa() == null) {
+    			$codi = $llicencia_iter->getCategoria()->getCodisortida();
+    
+    			$preu = $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
+    
+    			if (isset($detallfactura[$codi])) {
+    				$detallfactura[$codi]['quant'] += 1;
+    				$detallfactura[$codi]['preusiva'] += $preu;
+    				$detallfactura[$codi]['iva'] += $preu*$iva/100;
+    				$detallfactura[$codi]['totaldetall'] = $detallfactura[$codi]['preusiva'] + $detallfactura[$codi]['iva'];
+    			} else {
+    				$detallfactura[$codi] = array(
+    						'codi' => $codi,
+    						'desc' => $llicencia_iter->getCategoria()->getDescripcio(),
+    						'quant' => 1,
+    						'preuunitat' => $preu,
+    						'preusiva' => $preu,
+    						'iva' => $preu*$iva/100,
+    						'totaldetall' => $preu + $preu*$iva/100);
+    			}
+    		}
+    	}
+    	ksort($detallfactura); // Ordenada per codi
+    	return $detallfactura;
+    }
+    
+    
+    /**
      * Missatge llista de partes
      *
      * @return string

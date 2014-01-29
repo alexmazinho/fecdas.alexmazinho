@@ -39,11 +39,17 @@ class EntityFactura {
 	protected $concepte;
 
 	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $dataentrada;
+	
+	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $dataanulacio;
 
-	public function __construct() {
+	public function __construct($currentDate) {
+		$this->setDataentrada($currentDate);
 	}
 
 	public function __toString() {
@@ -120,6 +126,20 @@ class EntityFactura {
 		$this->concepte = $concepte;
 	}
 
+	/**
+	 * @return datetime
+	 */
+	public function getDataentrada() {
+		return $this->dataentrada;
+	}
+	
+	/**
+	 * @param datetime $dataentrada
+	 */
+	public function setDataentrada($dataentrada) {
+		$this->dataentrada = $dataentrada;
+	}
+	
 	/**
 	 * @return datetime
 	 */

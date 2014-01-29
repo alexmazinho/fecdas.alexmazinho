@@ -1,5 +1,5 @@
 <?php
-namespace Fecdas\PartesBundle\Util;
+namespace Fecdas\PartesBundle\Classes;
 
 class Funcions {
     

@@ -52,7 +52,8 @@
 		   	<ol id="list-data">
 			{% for duplicat in duplicats %}
 				{% if admin == true or (admin != true and duplicat.databaixa is not null) %}
-			   		<li class="data-detall {% if duplicat.databaixa is not null %} data-detall-fosc {% endif %}">
+					{% if duplicat.databaixa is null %}
+					<li class="data-detall">
 				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
@@ -80,21 +81,37 @@
 								<a class="duplicat-albara" href="{{ path('FecdasPartesBundle_albarapeticio', { 'id': duplicat.id}) }}">
 										<img src="{{ asset('images/icon-print.png') }}" alt="Albarà" title="Albarà" width="23px"></a>
 							{% endif %}
+							<a class="duplicat-pagament" href="{{ path('FecdasPartesBundle_pagamentpeticio', { 'id': duplicat.id}) }}">
+								<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament On-line" title="Pagament On-line" width="23px"></a>
 				   			{% if admin == true %}
-					   			<a class="duplicat-dades" href="{{ path('FecdasPartesBundle_pagamentpeticioconfirm', { 'id': duplicat.id }) }}">
+				   				{% if duplicat.factura is not null  %}
+								{% 	 set nf = duplicat.factura.num %}
+								{% else %}
+								{% 	 set nf = '' %}
+								{% endif %}
+				   			
+					   			<a class="duplicat-dades" href="{{ path('FecdasPartesBundle_dadespagamentfactura', { 'id': duplicat.id }) }}" data="{{ nf }}">
 		   							<img src="{{ asset('images/icon-euro.png') }}" alt="Afegir dades facturació i/o pagament" title="Afegir dades facturació i/o pagament" width="23px"></a>
-				   			{% else %}
-								<a class="duplicat-pagament" href="{{ path('FecdasPartesBundle_pagamentpeticio', { 'id': duplicat.id}) }}">
-									<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament On-line" title="Pagament On-line" width="23px"></a>
-							{% endif %}
-				   			{% if admin == true %}
-			   					{% if duplicat.databaixa is null %}
-			   					<a class="duplicat-esborrar" href="{{ path('FecdasPartesBundle_anularpeticio', { 'id': duplicat.id }) }}">
-			   							<img src="{{ asset('images/icon-remove.png') }}" alt="Anul·lar petició" title="Anul·lar petició" width="23px"></a>
-			   					{% endif %}
-			   				{% endif %}
+		   						<a class="duplicat-esborrar" href="{{ path('FecdasPartesBundle_anularpeticio', { 'id': duplicat.id }) }}">
+			   						<img src="{{ asset('images/icon-remove.png') }}" alt="Anul·lar petició" title="Anul·lar petició" width="23px"></a>
+				   			{% endif %}
 			   			</div>
 			   		</li>
+					{% else %}
+			   		<li class="data-detall data-detall-fosc">
+				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>
+				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
+				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
+				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}</div>
+				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
+				   		<div class="data-detall-cell duplicat-foto">{% if duplicat.foto is not null %}
+				   		<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>{% endif %}
+				   		</div>
+				   		<div class="data-detall-cell duplicat-impressio"></div>
+				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
+				   		<div class="data-detall-cell duplicat-actions"></div>
+			   		</li>
+			   		{% endif %}
 			   	{% endif %}
 			{% endfor %}
 			</ol>

@@ -134,7 +134,8 @@
 		// Click des de Partes
 		$('a.duplicat-dades').click(function(e) {
 			e.preventDefault();
-			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+			var varFactura = $(this).attr('data'); 
+			dadesPagamentFactura($(this).attr("href"), "Afegir dades de pagament i/o facturació", varFactura);
 		});
 		
 		$('a.duplicat-impres').click(function(e) {
@@ -148,6 +149,98 @@
 		});
 
 	};
+	
+	dadesPagamentFactura = function(url, titol, fact) {
+		$("#dialeg").dialog({
+			autoOpen: false,
+		    modal: true,
+          	buttons : {
+            	"Confirmar" : function() {
+            		alert($( "#numfactura" ).val());
+            		
+            		if ($( "#numfactura" ).val() != '' && isNaN($( "#numfactura" ).val() ))  {
+            			$("#numfactura").val("");
+            			$("#dialeg #anyfactura").parent().append("<span class='error'>Incorrecte</span>");
+            			
+            		} else {
+            		
+    	        	$(this).dialog("close");
+    	        	
+    	    		var params = {  datafactura: $( "#fdatepicker" ).val(),
+    	    						numfactura: $( "#numfactura" ).val(),
+    	    						datapagat: $( "#pdatepicker" ).val(), 
+    	    						estatpagat: $( "#pagatestat" ).val(),
+    	    						dadespagat: $( "#pagatdades" ).val(),
+    	    						comentaripagat: $( "#pagatcomentari" ).val() };
+    	    		$.get(url, params,
+    	    		function(data, textStatus) {
+    	    			location.reload();
+    	    		});
+            		}
+    	        },
+	            "Cancel·lar" : function() {
+	    			//Cancel submit behavior
+	            	$(this).dialog("close");
+	            }
+	        },
+	        title: titol,
+	        height: 600,
+	        width: 350,
+	        minWidth: 350,
+	        zIndex:	350
+	    });
+		
+		var curYear = (new Date()).getFullYear();
+		$("#dialeg").html("<p class='dialeg-titol'>Dades de la factura (opcional)</p>");
+		//$("#dialeg").append("<p>Activar? <input type='checkbox' id='chkfactura' value='0'/></p>");
+	    $("#dialeg").append("<p>Data <input type='text' id='fdatepicker' disabled='disabled'/></p>");
+	    $("#dialeg").append("<p>Número <input type='text' id='numfactura' value='"+fact+"'/>"+
+	    					" / <input type='text' id='anyfactura' disabled='disabled' value='"+curYear+"'/></p>");
+	    $("#dialeg").append("<p class='dialeg-titol'>Dades del pagament (opcional)</p>");
+	    $("#dialeg").append("<p>Data <input type='text' id='pdatepicker' disabled='disabled'/></p>");
+	    $("#dialeg").append("<p>Raó del pagament <select type='text' id='pagatestat' required='required'>" +
+	    					"<option selected='selected' value=''>--</option>" +			
+	    					"<option value='TRANS WEB'>Transferència rebuda</option>" +
+	    					"<option value='METALLIC WEB'>Pagament en metàlic</option>" +
+	    					"<option value='TPV CORRECCIO'>Correcció errada TPV</option></select></p>");
+	    $("#dialeg").append("<p>Número de comanda TPV o rebut <br/><input type='text' id='pagatdades' required='required'/></p>");
+	    $("#dialeg").append("<p>Comentari<br/><textarea id='pagatcomentari' required='required'/></p>");
+	    
+	    $( "#fdatepicker" ).datepicker({
+            showOn: "button",
+            buttonImage: "/images/icon-calendar.gif",
+            buttonImageOnly: true,
+            dateFormat: 'dd/mm/yy'
+        });
+	    $( "#pdatepicker" ).datepicker({
+            showOn: "button",
+            buttonImage: "/images/icon-calendar.gif",
+            buttonImageOnly: true,
+            dateFormat: 'dd/mm/yy'
+        });
+	    
+	    
+	    $( "#fdatepicker" ).datepicker( "setDate", new Date() );
+	    $( "#pdatepicker" ).datepicker( "setDate", new Date() );
+		
+	    
+	    // Checkboxes activació dades 
+	    /*
+	    $("#chkfactura").click(function(){
+			var checked = $(this).is(':checked');
+			if (checked) {
+				$('#numfactura').removeAttr('disabled'); 	
+				$('#anyfactura').removeAttr('disabled');
+			} else {
+				$('#numfactura').attr('disabled', 'disabled'); 	
+				$('#anyfactura').attr('disabled', 'disabled');
+			}
+		});*/
+	    
+	    
+	    $("#dialeg").dialog("open");
+	};
+	
 	
 	adminConfirm  = function(url, titol, text, dwidth, dheight) {
 		$("#dialeg").dialog({

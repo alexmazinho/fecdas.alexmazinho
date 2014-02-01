@@ -223,11 +223,15 @@ class AdminController extends BaseController {
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
 		
 		if ($parte != null) {
-			$parte->setDatamodificacio($this->getCurrentDate());
+			$interval = \DateInterval::createfromdatestring('+15 minute');
+			$current = $this->getCurrentDate();
+			$current->add($interval);
+			
+			$parte->setDatamodificacio($current);
 			
 			foreach ($parte->getLlicencies() as $llicencia_iter) {
 				if ($llicencia_iter->getDatabaixa() == null) {
-					$llicencia_iter->setDatamodificacio($this->getCurrentDate());
+					$llicencia_iter->setDatamodificacio($current);
 					$llicencia_iter->getPersona()->setValidat(false);
 				}
 			}
@@ -236,15 +240,11 @@ class AdminController extends BaseController {
 
 			$this->get('session')->getFlashBag()->add('error-notice', 'Llista preparada per tornar a sincronitzar');
 			
-			$this->logEntry($this->get('session')->get('username'), 'SINCRO ACCESS',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
+			$this->logEntryAuth('SINCRO ACCESS', $parteid);
 		} else {
 			$this->get('session')->getFlashBag()->add('error-notice', 'Error en el procés de sincronització');
 			
-			$this->logEntry($this->get('session')->get('username'), 'SINCRO ACCESS ERROR',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
+			$this->logEntryAuth('SINCRO ACCESS ERROR', $parteid);
 		}
 		
 		$response = $this->forward('FecdasPartesBundle:Admin:recents');
@@ -444,7 +444,7 @@ class AdminController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
 	}
 	
-	public function pagamentpeticioconfirmAction() {
+	public function dadespagamentfacturaAction() {
 		$request = $this->getRequest();
 	
 		if ($this->isCurrentAdmin() != true)
@@ -453,26 +453,36 @@ class AdminController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 	
 		$duplicatid = $request->query->get('id');
-		$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($duplicatid);
+		$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityDuplicat')->find($duplicatid);
 	
 		if ($duplicat != null) {
-			// Crear pagament
-			$data = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
-			$estat = $request->query->get('estatpagat');
-			$dades = $request->query->get('dadespagat');
-			$comentari = $request->query->get('comentaripagat');
 			$import = $duplicat->getCarnet()->getPreu();
-			$pagament = $this->crearPagament($data, $import, $estat, $dades, $comentari);
-			// Actualitzar pagament
-			$duplicat->setPagament($pagament);
+			if ( $request->query->has('numfactura') and $request->query->get('numfactura') != "") {
+			// Crear factura
+				$numfactura = $request->query->get('numfactura');
+				$datafactura = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
+				$concepte = $duplicat->getTextCarnet(false)." ".$duplicat->getPersona()->getCognomsNom();
+				$factura = $this->crearFactura($datafactura, $numfactura, $import, $concepte);
+				$duplicat->setFactura($factura);
+			} 
+			if ( $request->query->has('estatpagat') and $request->query->get('estatpagat') != "") {
+				// Crear pagament
+				$datapagament = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
+				$estat = $request->query->get('estatpagat');
+				$dades = $request->query->get('dadespagat');
+				$comentari = $request->query->get('comentaripagat');
+				$pagament = $this->crearPagament($datapagament, $import, $estat, $dades, $comentari);
+				// Actualitzar pagament
+				$duplicat->setPagament($pagament);
+			}
 				
 			$em->flush();
 			
-			$this->logEntryAuth('CONF. PAGAMENT DUPLI', 'duplicat ' . $duplicatid);
+			$this->logEntryAuth('DADES DUPLI', 'duplicat ' . $duplicatid);
 			
 			return new Response("ok");
 		}
-		$this->logEntryAuth('CONF. PAGAMENT DUPLI KO', 'duplicat ' . $duplicatid);
+		$this->logEntryAuth('DADES DUPLI KO', 'duplicat ' . $duplicatid);
 	
 		return new Response("ko");
 	}

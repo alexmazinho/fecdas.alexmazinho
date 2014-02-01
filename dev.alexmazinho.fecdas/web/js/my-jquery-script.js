@@ -1012,14 +1012,15 @@
 		    modal: true
 	    });
 		
-		$('#formparte-button-payment').click(function(e) {
+		$('#formparte-payment').click(function(e) {
 			e.preventDefault();
+			var url = $(this).attr("href");
 			$("#dialeg").dialog({
 	          	buttons : {
 	            	"Continuar" : function() {
 	    	        	$(this).dialog("close");
 	    	        	
-	    	        	$('#formparte').submit();
+	    	        	window.location = url;
 	    	        },
 		            "Sortir" : function() {
 		    			//Cancel submit behavior
@@ -1032,7 +1033,7 @@
 		        zIndex:	350
 		    });
 		
-		    $("#dialeg").html("<p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, " +
+		    $("#dialeg").html("<div class='sms-pagament'><p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, " +
 		    		"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p>" +
 		    		"<p>2100 0900 95 0211628657</p>" +
 		    		"<p>I rebrà al seu club les llicències i la factura.</p>" +
@@ -1040,7 +1041,7 @@
 		    		"<ul><li>Amb targeta de crèdit o dèbit</li>" +
 		    		"<li>Amb un compte de \'La Caixa\'</li>" +
 		    		"<li>Mitjançant transferència des d'una altra entitat</li></ul>" +
-		    		"<p>Gràcies</p>");
+		    		"<p>Gràcies</p></div>");
 		    
 		    $("#dialeg").dialog("open");
 		});

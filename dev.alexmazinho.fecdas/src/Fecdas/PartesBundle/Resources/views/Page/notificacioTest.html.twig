@@ -36,7 +36,7 @@
 		{{ form_widget(form.Ds_Response, { 'id': 'Ds_Response', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
 	<div>
-		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (ipdparte&entorn&usuari)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (itemId&source&entorn)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_MerchantData, { 'id': 'Ds_MerchantData', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
@@ -87,7 +87,7 @@
 			params.push( {'name':'Ds_Hour','value': $('#Ds_Hour').val() } );
 			params.push( {'name':'Ds_Order','value': $('#Ds_Order').val() } );
 			params.push( {'name':'Ds_PayMethod','value': $('#Ds_PayMethod').val() } );
-			
+
 			if ($('#accio').val() == "/notificacio") {
 				$.post(url, params,
 				function(data, textStatus) {
@@ -95,16 +95,60 @@
 					location.reload();
 				}).fail(function() { alert("Error post"); });
 			} else {
+				var str = jQuery.param( params );
+				
+				var myWindow = window.open(url+'?'+str,'tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
+
+				/*myWindow.onload = function() { 
+					alert("5");
+					$(this).contents().find("#close-notificacio a").click(function(e) {
+						e.preventDefault();
+						alert("82");
+					});
+					$("#close-notificacio a").click(function(e) {
+						e.preventDefault();
+						url = $(this).attr("href");
+						alert("1");
+						window.opener.location.href=url;
+						alert("2");
+						window.close();
+						e.preventDefault();
+						alert("52");
+					});
+				};
+				
+
+				$(myWindow).ready(function() {
+					alert("1");
+					$("#close-notificacio a").click(function(e) {
+						e.preventDefault();
+						url = $(this).attr("href");
+						alert("1");
+						window.opener.location.href=url;
+						alert("2");
+						window.close();
+						alert("32");
+					});
+				});
+				$(myWindow).unload(function() {
+					url = $("#close-notificacio a").attr("href");
+					window.opener.location.href=url;
+					window.close();
+				});*/
+				/*
 				$.get(url, params,
 				function(data, textStatus) {
-					alert("fi get"  + data);
+			    	myWindow.document.write(data);
+						
 					location.reload();
-				}).fail(function() { alert("Error get"); });
+				}).fail(function() { alert("Error get"); });*/
 			}
 				
 			return false;
 
 		});
+
+		
 	});
 </script>
 {% endblock %}

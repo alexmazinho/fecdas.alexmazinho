@@ -149,6 +149,14 @@ input[disabled="disabled"]
 	padding-bottom: 10px;
 }
 
+#dialeg .sms-pagament {
+	line-height: 1.2em;
+}
+#dialeg .sms-pagament ul {
+	list-style: disc inside none;
+	padding: 0 0 10px;
+}
+
 #dialeg .dialeg-jerror { height:100%; width: 100%;  font-size: 18px; }
 #dialeg .dialeg-jerror img { vertical-align:middle; }
 #dialeg .dialeg-jerror .jerror-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px;   }
@@ -1194,7 +1202,6 @@ select#parte_persona_addrnacionalitat {
 	text-align: right;
 }
 
-#header-factdetallid { display:none}
 #header-factdetallcodi {	width: 10%; }
 #header-factdetalldesc {	width: 36%; text-align: left; }
 #header-factdetallquantitat {	width: 10%; }
@@ -1203,7 +1210,6 @@ select#parte_persona_addrnacionalitat {
 #header-factdetalliva {	width: 10%; text-align: right; line-height: 14px;}
 #header-factdetallpreutotal {	width: 10%; text-align: right; }
 
-.factdetall-id {	display:none}
 .factdetall-codi {	width: 10%; }
 .factdetall-desc {	width: 36%; text-align: left; }
 .factdetall-quantitat {	width: 10%;  }
@@ -1252,12 +1258,16 @@ select#parte_persona_addrnacionalitat {
 }
 
 #notificacio {
-	position:absolute;
-	width:400px;
-	/*height:50px;
-	left: 10%;*/
+	left: 5%;
+	position: absolute;
+    top: 50%;
+    width: 90%;
+	/*position:absolute;
+	width:100%;
+	height:auto;
+	left: 10%;
 	top:50%; 
-	/*margin-top:-5em;
+	margin-top:-5em;
 	margin-left: 5em;*/
 }
 
@@ -1464,6 +1474,36 @@ p.info-bold {
 .duplicat-impressio { width: 8%; }
 .duplicat-extra { width: 20%; text-align: left; }
 .duplicat-actions { width: 20%; text-align: right; }
+
+
+#dialeg .dialeg-titol {
+	border-bottom: 1px solid #000000;
+	font-style: italic;
+	color: #1240A0;
+	margin-bottom: 10px;
+    padding: 0 0 4px;
+}
+#dialeg .error {
+	font-style: italic;
+	color: red;
+	padding-left:5px;
+}
+
+
+#dialeg #fdatepicker,
+#dialeg #pdatepicker { 
+	width: 100px;
+	text-align: center;
+	text-indent: 0px;
+}
+
+#dialeg #anyfactura,
+#dialeg #numfactura { 
+	width: 60px;
+	text-align: center;
+	text-indent: 0px;
+}
+
 
 
 /*****************************************************************************************************************/

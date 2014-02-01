@@ -73,15 +73,15 @@ class EntityFactura {
 	/**
 	 * @return datetime
 	 */
-	public function getDatafacturacio() {
-		return $this->datafacturacio;
+	public function getDatafactura() {
+		return $this->datafactura;
 	}
 
 	/**
-	 * @param datetime $datafacturacio
+	 * @param datetime $datafactura
 	 */
-	public function setDatafacturacio($datafacturacio) {
-		$this->datafacturacio = $datafacturacio;
+	public function setDatafactura($datafactura) {
+		$this->datafactura = $datafactura;
 	}
 
 	/**
@@ -154,4 +154,13 @@ class EntityFactura {
 		$this->dataanulacio = $dataanulacio;
 	}
 
+	/**
+	 * Factura format amb any  XXXXX/20XX
+	 *  
+	 * @return string
+	 */
+	public function getNumFactura() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datafactura->format("Y");
+	}
+	
 }

@@ -71,13 +71,14 @@
 			<div id="buttons-top" class="form-right" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
 				{% if not parte.pagat and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
-	        	<div class="button-top">	
-					<input type="image" src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px" 
-					 id="formparte-button-payment" class="forminput-inside" value="Pagar" name="formparte-button-payment"/>
+	        	<div id="parte-pagament" class="button-top">	
+	        		<a id="formparte-payment" href="{{ path('FecdasPartesBundle_pagament', { 'id': parte.id}) }}">
+						<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px"></a>
 				</div>
 				{% endif %}	
-				<div id="parte-to-pdf" class="button-top"><a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
-				<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
+				<div id="parte-to-pdf" class="button-top">
+					<a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
+						<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
 					<!-- només factures amb número factura del web -->
 				{% if parte.numfactura is not null %} 
 					<div id="factura-to-pdf" class="button-top">

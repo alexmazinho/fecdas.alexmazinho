@@ -102,12 +102,11 @@ FecdasPartesBundle_imprespeticio:
     requirements:
         _method:  GET
 
-FecdasPartesBundle_pagamentpeticioconfirm:
-    pattern:  /pagamentpeticioconfirm
-    defaults: { _controller: "FecdasPartesBundle:Admin:pagamentpeticioconfirm" }
+FecdasPartesBundle_dadespagamentfactura:
+    pattern:  /dadespagamentfactura
+    defaults: { _controller: "FecdasPartesBundle:Admin:dadespagamentfactura" }
     requirements:
         _method:  GET
-        
         
 FecdasPartesBundle_ajaxclubsnoms:
     pattern:  /ajaxclubsnoms
@@ -161,7 +160,7 @@ FecdasPartesBundle_pagament:
     pattern:  /pagament
     defaults: { _controller: "FecdasPartesBundle:Page:pagament" }
     requirements:
-        _method:  GET|POST
+        _method:  GET
 
 FecdasPartesBundle_importcsv:
     pattern:  /importcsv

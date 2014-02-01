@@ -54,9 +54,6 @@ class EntityPagament {
 	protected $dataanulacio;
 
 	public function __construct($currentDate) {
-	}
-	
-	public function __construct($currentDate) {
 		$this->setDataentrada($currentDate);
 	}
 

@@ -979,9 +979,9 @@ class EntityClub {
     	$dades['partes'] = $npartes;
     	$dades['pagats'] = $npartespagatsweb;
     	$dades['llicencies'] = $nllicencies;
-    	$dades['import'] = $nimport;
-    	$dades['importsincro'] = $nimportsincro;
-    	$dades['importweb'] = $nimportweb;
+    	$dades['import'] = $nimport;  // Total suma preu partes any en curs
+    	$dades['importsincro'] = $nimportsincro; // Total suma preu partes sincronitzats any en curs
+    	$dades['importweb'] = $nimportweb; // Total suma preu partes pagats per web any en curs
     	$dades['saldo'] = $this->totalpagaments + $this->ajustsubvencions - $this->romanent - $nimport - $this->totalkits - $this->totalaltres;
     	$dades['saldogestor'] = $this->getSaldogestor();
     	

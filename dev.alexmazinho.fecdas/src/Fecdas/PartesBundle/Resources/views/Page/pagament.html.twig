@@ -1,7 +1,7 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
 {% extends 'FecdasPartesBundle::layout.html.twig' %}
 
-{% block title %}Aplicació gestió FECDAS. Pagament de llicències dels Clubs{% endblock %}
+{% block title %}Aplicació gestió FECDAS. {{ titol }} {% endblock %}
 
 {% form_theme formpayment _self %}
 
@@ -11,7 +11,7 @@
 
 {% block body %}
 	<header>
-        <h1>Pagament de llicències</h1>
+        <h1>{{ titol }}</h1>
     </header>
 
     {% for flashMessage in app.session.flashbag.get('error-notice') %}
@@ -21,46 +21,39 @@
 	{% endfor %}
         
     <div id="fact-header">
-    	<input id="parte_id" type="hidden" value="{{ parte.id }}" name="parte[id]">
 	   	<div id="fact-dadesclub">
     		<ol class="fact-summary-table table-noscroll">
 	   			<li class="data-detall">
 	   				<div class="data-detall-cell fact-titol">Club</div>
-	   				<div id="fact-club" class="data-detall-cell">{{ parte.club.nom }}</div>
+	   				<div id="fact-club" class="data-detall-cell">{{ club.nom }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
 	   		   		<div class="data-detall-cell fact-titol">Adreça</div>
-	   		   		<div id="fact-adreca" class="data-detall-cell">{{ parte.club.addradreca }}</div>
+	   		   		<div id="fact-adreca" class="data-detall-cell">{{ club.addradreca }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
 	   		   		<div class="data-detall-cell fact-titol">Població</div>
-	   		   		<div id="fact-pobcp" class="data-detall-cell">{{ parte.club.addrpob }} ({{ parte.club.addrcp}}) </div>
+	   		   		<div id="fact-pobcp" class="data-detall-cell">{{ club.addrpob }} ({{ club.addrcp}}) </div>
 	   		   	</li>
 	   		   	<li class="data-detall">
 	   		   		<div class="data-detall-cell fact-titol">Província</div>
-	   		   		<div id="fact-prov" class="data-detall-cell">{{ parte.club.addrprovincia }}</div>
+	   		   		<div id="fact-prov" class="data-detall-cell">{{ club.addrprovincia }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
 	   		   		<div class="data-detall-cell fact-titol">Telèfon</div>
-	   		   		<div id="fact-telefon" class="data-detall-cell">{{ parte.club.telefon }}</div>
+	   		   		<div id="fact-telefon" class="data-detall-cell">{{ club.telefon }}</div>
 		   		</li>
 			</ol>
 	   	</div>	   		
 	   	<div id="fact-dadesfactura">
     		<ol class="fact-summary-table table-noscroll">
-    			<!-- El num factura va fora, el procés és en el retorn del TPV -->
-    			<!-- 
-	   			<li class="data-detall">
-	   				<div class="fact-titol">Número (Prov)</div>
-	   		   		<div id="fact-num">{# parte.numfactura #}</div>
-	   		   	</li> -->
 	   			<li class="data-detall">
 	   		   		<div class="data-detall-cell fact-titol">Data</div>
 	   		   		<div id="fact-data" class="data-detall-cell">{{ "now"|date("m/d/Y") }}</div>
 	   		   	</li>
 	   		   	<li class="data-detall">
 	   		   		<div class="data-detall-cell fact-titol">CIF</div>
-	   		   		<div id="fact-cif" class="data-detall-cell">{{ parte.club.cif }}</div>
+	   		   		<div id="fact-cif" class="data-detall-cell">{{ club.cif }}</div>
 	   		   	</li>
 	   		</ol>
 	   		
@@ -88,13 +81,12 @@
    
     <div class="table-header">
     	<div id="list-header" >
-   			<div id="header-factdetallid" class="col-listheader">id</div>
    			<div id="header-factdetallcodi" class="col-listheader">Codi</div>
 		   	<div id="header-factdetalldesc" class="col-listheader">Descripció</div>
 		   	<div id="header-factdetallquantitat" class="col-listheader">Quantitat</div>
 		   	<div id="header-factdetallpreuunitat" class="col-listheader">Preu<br/>Unitat</div>
 		   	<div id="header-factdetallpreusiva" class="col-listheader">Preu<br/>Total</div>
-		   	<div id="header-factdetalliva" class="col-listheader">I.V.A.<br/>({{ parte.tipus.iva }}%)</div>
+		   	<div id="header-factdetalliva" class="col-listheader">I.V.A.<br/>({{ iva }}%)</div>
 		   	<div id="header-factdetallpreutotal" class="col-listheader">Total</div>
    		</div>
    	</div>
@@ -103,13 +95,12 @@
 	   		<ol id="list-data">
 			{% for lineadetall in detall %}
 		   		<li class="data-detall">
-			   		<div class="data-detall-cell factdetall-id">{# llicencia.id #}</div>
 			   		<div class="data-detall-cell factdetall-codi">{{ lineadetall.codi }}</div>
 			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.desc }}</div>
 			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.quant }}</div>
 			   		<div class="data-detall-cell factdetall-preuunitat">{{ lineadetall.preuunitat|number_format(2, '.', ',') }} €</div>
 			   		<div class="data-detall-cell factdetall-preusiva">{{ lineadetall.preusiva|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ lineadetall.iva|number_format(2, '.', ',') }}</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ lineadetall.iva|number_format(2, '.', ',') }} €</div>
 			   		<div class="data-detall-cell factdetall-preutotal">{{ lineadetall.totaldetall|number_format(2, '.', ',') }} €</div>
 		   		</li>
 	   		{% endfor %}
@@ -117,19 +108,16 @@
 	   		<ol id="list-data">
 	   			<li id="factdetall-totals" class="data-detall">
 	   				<div class="data-detall-cell factdetall-tab"></div>
-			   		<div class="data-detall-cell factdetall-totalparcial">{{ totals.totalparcial|number_format(2, '.', ',') }}</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ totals.iva|number_format(2, '.', ',') }}</div>
+			   		<div class="data-detall-cell factdetall-totalparcial">{{ totals.totalparcial|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ totals.iva|number_format(2, '.', ',') }} €</div>
 			   		<div class="data-detall-cell factdetall-total">{{ totals.total|number_format(2, '.', ',') }} €</div>
 			   	</li>	
 			</ol>
 		</div>
-		{%  if (parte.hasIVA == false) %}
-		<div class="sms-footer">Factura exempta d'I.V.A. segons la llei 49/2002</div>
+		{%  if (iva == 0) %}
+		<div class="sms-footer">Exempt d'I.V.A. segons la llei 49/2002</div>
 		{% endif %}
-  	 	{% else %}
-      	<div class="sms-notice">No hi ha llicències en aquesta llista</div>
-  		{% endif %}
-    
+  	 {% endif %}
 
 {% endblock %}
 
@@ -139,24 +127,17 @@
 
 <script type="text/javascript">
 
-function tpv() { 
-	vent=
-	document.forms[0].submit();
-	return false;
-}
-
 $(document).ready(function() {
 	setMenuActive("menu-partes");
 	
     $('#formpayment').submit(function() {
     	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
         this.target = 'tpv';
+        location.reload(); // Refresca pàgina i ordre TPV
     });
 });
 
 
 </script>
-
-
 {% endblock %}
 

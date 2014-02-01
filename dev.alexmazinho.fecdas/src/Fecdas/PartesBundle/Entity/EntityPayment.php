@@ -42,7 +42,7 @@ class EntityPayment {
 	
 	protected $environment;
 	
-	public function __construct($preu, $desc, $titular, $dades) {
+	public function __construct($id, $environment, $preu, $desc, $titular, $src) {
 		/**
 		 * Configuració sermepa
 		 * host: http://www.fecdasgestio.cat
@@ -53,19 +53,14 @@ class EntityPayment {
 		 * URL_OK: http://www.fecdasgestio.cat/notificacioOK  (Botó continuar)
 		 * URL_KO: http://www.fecdasgestio.cat/notificacioKO  (Botó cancel o tancar finestra)
 		 */
-		
 		$total=$preu;
 		$this->preu = round($total,2);
 		$this->preu = number_format($this->preu, 2, '.', '');
 		$this->preu = preg_replace('/\./', '', $this->preu);
 
-		//$this->numordre = date('ymdHis');
-
-		$dades_array = explode(";", $dades);
-		$parteId = $dades_array[0];
-		$this->environment = $dades_array[1];
+		$this->environment = $environment;
 		
-		if ($parteId < 1000) $parteId = sprintf("%04d", $parteId);
+		if ($id < 1000) $id = sprintf("%04d", $id);
 		
 		/* Substituir tot allò que no siguin lletres  " " "-" "'" "(" ")"
 		 * Format numordre 9999AAAAAAAA
@@ -80,7 +75,7 @@ class EntityPayment {
 
 		// Això genera num d'ordres duplicats. Afegir segons
 		//$str = $parteId . $strtitular;
-		$str = $parteId . date('s') . $strtitular;
+		$str = $id . date('s') . $strtitular;
 		
 		$this->numordre = sprintf("%'x-12s", $str);
 		$this->numordre = substr($this->numordre, 0, 11);
@@ -102,7 +97,7 @@ class EntityPayment {
 		$this->desc = $desc;
 		$this->titular = $titular;
 		$this->fecdas =  "FECDAS";//"Federació Catalana d'Activitats Subaquàtiques";
-		$this->dades = $dades;  //Ds_Merchant_MerchantData, retorn notificació on-line
+		$this->dades = $id.";".$src.";".$this->environment;  //Ds_Merchant_MerchantData, retorn notificació on-line
 		
 	}
 

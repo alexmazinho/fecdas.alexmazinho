@@ -1,57 +1,59 @@
-{% extends 'FecdasPartesBundle::layout.html.twig' %}
-
-{% block title %}Aplicació gestió FECDAS. Notificació Pagament{% endblock %}
-
-{% block fecdas_login %} {% endblock %}
-{% block sidebar %}{% endblock %}
-
-{% block body %}
-    <div id="notificacio">
-	<div class="sms-notice">
-		{% if result == 'ok' %}
-			Pagament realitzat correctament 
-		{% else  %}
-			{% if result == 'pend' %}
-				Pagament pendent de comprovar per part de la federació
-			{% else  %}
-				S'ha produit un error durant el pagament 
-			{% endif %} 
-		{% endif %} 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html>
+    <head>
+	    <link href="{{ asset('css/layout.css') }}" type="text/css" rel="stylesheet" />
+	    <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+	</head>
+    <body>
+    	<section id="wrapper">
+			<header id="header">
+				<div class="logo">
+					<a target="_blank" href="http://www.fecdas.cat">
+						<img src="/images/fecdaslogo.png">
+					</a>
+				</div>
+			</header>
+			<section id="main" class="clearfix">
+		    	<div id="notificacio">
+					<div class="sms-notice">
+						{% if result == 'OK' %}
+							Pagament realitzat correctament 
+						{% else  %}
+							{% if result == 'PEND' %}
+								Pagament pendent de comprovar per part de la Federació
+							{% else  %}
+								S'ha produit un error durant el pagament 
+							{% endif %} 
+						{% endif %} 
+						
+					</div>
+					<div id="close-notificacio">
+						<a href="{{ url }}">Torna</a>
+					</div>
+			    </div>
+			</section>
+		</section>
+		<script type="text/javascript">
 		
-	</div>
-	<div id="close-notificacio">
-		{% if result == 'ok' or result == 'pend' %}
-		<a href="{{ path('FecdasPartesBundle_parte', { 'id': parteId }) }}">Torna</a>
-		{% else  %}
-		<a href="{{ path('FecdasPartesBundle_partes') }}">Torna</a>
-		{% endif %}
-	</div>
-    </div>
-{% endblock %}
-
-{% block footer %}{% endblock %}
-
-{% block javascripts %}
-<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>
-
-<script type="text/javascript">
-
-$(document).ready(function(){
-	
-	$("#close-notificacio").click(function() {
-		window.opener.location.href='partes';
-		window.close();
-	});
-
-	$(window).unload(function() {
-		window.opener.location.href='partes';
-		window.close();
-	});
-	
-});
-</script>
-
-
-{% endblock %}
-
-
+		$(document).ready(function(){
+			alert("2");
+			$("#close-notificacio a").click(function(e) {
+/*				e.preventDefault();
+				url = $(this).attr("href");
+				alert("1");
+				window.opener.location.href=url;
+				alert("2");
+				window.close();*/
+				alert("3");
+			});
+		
+			$(window).unload(function() {
+				url = $("#close-notificacio a").attr("href");
+				window.opener.location.href=url;
+				window.close();
+			});
+			
+		});
+		</script>
+	</body>
+</html>

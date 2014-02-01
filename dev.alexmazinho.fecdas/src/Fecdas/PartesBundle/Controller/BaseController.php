@@ -8,6 +8,7 @@ use Fecdas\PartesBundle\Entity\EntityLlicencia;
 use Fecdas\PartesBundle\Entity\EntityPersona;
 use Fecdas\PartesBundle\Entity\EntityUserLog;
 use Fecdas\PartesBundle\Entity\EntityPagament;
+use Fecdas\PartesBundle\Entity\EntityFactura;
 
 class BaseController extends Controller {
 	const MAIL_ADMINTEST = "alexmazinho@gmail.com";  /* Canviar. Crear nou mail, ha d'estar a la taula d'usuaris  */
@@ -29,6 +30,8 @@ class BaseController extends Controller {
 	const REGISTRES_PETICIONS = 50; // Nombre registre consulta duplicats
 	const PREFIX_ALBARA_LLICENCIES = 'L';
 	const PREFIX_ALBARA_DUPLICATS = 'D';
+	const PAGAMENT_LLICENCIES = 'llicencies';
+	const PAGAMENT_DUPLICAT = 'duplicat';
 		
 	protected function getCommonRenderArrayOptions($more = array()) { 
 		if ($this->isCurrentAdmin()) {
@@ -102,7 +105,7 @@ class BaseController extends Controller {
 	protected function getFacturacioMails() {
 		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
 		
-		$mails = array(self::MAIL_FACTURACIO);
+		$mails = array(self::MAIL_FACTURACIO, self::MAIL_LLICENCIES);
 		return $mails;
 	}
 
@@ -257,11 +260,11 @@ class BaseController extends Controller {
 		return $totalfactura;
 	}
 	
-	protected function crearPagament($data, $import, $estat, $dades, $comentari) {
+	protected function crearPagament($data, $import, $estat, $dades, $comentari = '') {
 		$em = $this->getDoctrine()->getManager();
 		
 		if (trim($dades) == '') $dades = null;
-		if (trim($comentari) == '') $dades = null;
+		if (trim($comentari) == '') $comentari = null;
 		$pagament = new EntityPagament($this->getCurrentDate());
 		$pagament->setDatapagament($data);
 		$pagament->setEstat($estat);

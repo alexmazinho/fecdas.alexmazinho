@@ -63,12 +63,14 @@ class EntityDuplicat {
 	protected $databaixa;
 
 	/**
-	 * @ORM\Column(type="integer", nullable=true)
+	 * @ORM\OneToOne(targetEntity="EntityPagament")
+	 * @ORM\JoinColumn(name="pagament", referencedColumnName="id")
 	 */
 	protected $pagament;
 
 	/**
-	 * @ORM\Column(type="integer", nullable=true)
+	 * @ORM\OneToOne(targetEntity="EntityFactura")
+	 * @ORM\JoinColumn(name="factura", referencedColumnName="id")
 	 */
 	protected $factura;
 
@@ -212,30 +214,36 @@ class EntityDuplicat {
 	}
 
 	/**
-	 * @return integer
+	 * Get pagament
+	 * 
+	 * @return Fecdas\PartesBundle\Entity\EntityPagament
 	 */
 	public function getPagament() {
 		return $this->pagament;
 	}
 
 	/**
-	 * @param integer $pagament
+	 * @param Fecdas\PartesBundle\Entity\EntityPagament $pagament
+	 * @return EntityPagament
 	 */
-	public function setPagament($pagament) {
+	public function setPagament(\Fecdas\PartesBundle\Entity\EntityPagament $pagament) {
 		$this->pagament = $pagament;
 	}
 
 	/**
-	 * @return integer
+	 * Get factura
+	 * 
+	 * @return Fecdas\PartesBundle\Entity\EntityFactura
 	 */
 	public function getFactura() {
 		return $this->factura;
 	}
 
 	/**
-	 * @param integer $factura
+	 * @param Fecdas\PartesBundle\Entity\EntityFactura $factura
+	 * @return EntityFactura
 	 */
-	public function setFactura($factura) {
+	public function setFactura(\Fecdas\PartesBundle\Entity\EntityFactura $factura = null) {
 		$this->factura = $factura;
 	}
 
@@ -303,12 +311,13 @@ class EntityDuplicat {
 		$textInfo = "";
 		 
 		if ($this->databaixa != null) return "Petició anul·lada " . $this->databaixa->format("d/m/Y");
-		 
-		if ($this->pagament != null) return "Petició pagada";
+
 		
-		if ($this->factura != null) return "Petició facturada";
+		if ($this->pagament != null) $textInfo .= "Petició pagada.";
+		
+		if ($this->factura != null) $textInfo .= "Factura " . $this->getFactura()->getNumFactura(). " - " .$this->factura->getDatafactura()->format("d/m/Y")."." ;
 	
-		if ($this->observacions != null) return $this->observacions;
+		if ($this->observacions != null) $textInfo .= $this->observacions;
 		
 		return $textInfo;
 	}

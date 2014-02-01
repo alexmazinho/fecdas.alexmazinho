@@ -344,7 +344,7 @@ class CronController extends BaseController {
 	}
 	
 	public function checkclubsAction() {
-		/* Revisar difeències saldos gestors
+		/* Revisar diferències saldos gestors
 		 * Detectar si un club de pagament diferit supera el límit 
 		 * Detectar clubs amb partes sense factura */
 		/* Planificar cron diari
@@ -638,7 +638,7 @@ class CronController extends BaseController {
 	
 		$this->logEntry(self::MAIL_ADMINTEST, 'CRON PENDENTS',
 				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+				$this->getRequest()->server->get('HTTP_USER_AGENT'), $this->get('kernel')->getEnvironment());
 		
 		return new Response($sortida);
 	}

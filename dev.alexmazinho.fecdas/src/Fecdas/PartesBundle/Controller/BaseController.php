@@ -250,6 +250,47 @@ class BaseController extends Controller {
 		return null;
 	}
 	
+	protected function consultaAssegurats($tots, $dni, $nom, $cognoms) {
+		$em = $this->getDoctrine()->getManager();
+	
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
+		$strQuery .= " WHERE p.databaixa IS NULL ";
+	
+		if ($tots == false) $strQuery .= " AND p.club = :club ";
+		if ($dni != "") $strQuery .= " AND p.dni LIKE :dni ";
+		if ($nom != "") $strQuery .= " AND p.nom LIKE :nom ";
+		if ($cognoms != "") $strQuery .= " AND p.cognoms LIKE :cognoms ";
+	
+		$strQuery .= " ORDER BY p.cognoms, p.nom";
+	
+		$query = $em->createQuery($strQuery);
+			
+		if ($tots == true and $dni == "" and $nom == "" and $cognoms == "") {
+			// Sense club (admins). Si no s'indica filtre dades personals mostr 0 resultats
+			$query = $em->createQuery($strQuery)->setMaxResults(0);
+		} else {
+			// Algun filtre
+			$query = $em->createQuery($strQuery);
+			if ($tots == false) {
+				$query->setParameter('club', $this->getCurrentClub()->getCodi());
+			}
+			if ($dni != "") {
+				$query->setParameter('dni', "%" . $dni . "%");
+				//$form->get('dni')->setData($currentDNI);
+			}
+			if ($nom != "") {
+				$query->setParameter('nom', "%" . $nom . "%");
+				//$form->get('nom')->setData($currentNom);
+			}
+			if ($cognoms != "") {
+				$query->setParameter('cognoms', "%" . $cognoms . "%");
+				//$form->get('cognoms')->setData($currentCognoms);
+			}
+		}
+	
+		return $query->getResult();
+	}
+	
 	protected function getTotalsFactura($detallfactura) {
 		$totalfactura = array('totalparcial' => 0, 'iva' => 0, 'total' => 0);
 		foreach ($detallfactura as $c => $lineafactura) {

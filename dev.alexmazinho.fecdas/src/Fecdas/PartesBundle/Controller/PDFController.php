@@ -468,33 +468,24 @@ class PDFController extends BaseController {
 		/* Llistat d'assegurats vigents */
 		$request = $this ->getRequest();
 		
-		$club = null;
-		if ($request->query->has('club')) {
-			$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')
-				->find($request->query->get('club'));
-		} else {
-			$club = $this->getCurrentClub();			
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
+		
+		$club = $this->getCurrentClub();
+		$currentDNI = "";
+		if ($request->query->has('dni')) $currentDNI = $request->query->get('dni');
+		$currentNom = "";
+		if ($request->query->has('nom')) $currentNom = $request->query->get('nom');
+		$currentCognoms = "";
+		if ($request->query->has('cognoms')) $currentCognoms = $request->query->get('cognoms');
+		$currentVigent = true;
+		if ($request->query->has('vigents')) $currentVigent = ($request->query->get('vigents')==1);
+		$currentTots = false;
+		if ($this->isCurrentAdmin()) { // Admins poden cerca tots els clubs
+			if ($request->query->has('tots')) $currentTots = ($request->query->get('tots')==1);
 		}
 		
-		if ($club == null) return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage')); 
-
-		$currentClub = $club->getCodi();
-		
-		$this->logEntry($this->get('session')->get('username'), 'PRINT ASSEGURATS',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
-
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-		$strQuery .= " WHERE p.club = :club ";
-		$strQuery .= " AND p.databaixa IS NULL ";
-		$strQuery .= " ORDER BY p.cognoms, p.nom";
-		
-		$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
-		
-		$persones = $query->getResult();
+		$this->logEntryAuth('PRINT ASSEGURATS', "club: ". $club->getCodi()." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
 		
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -516,13 +507,38 @@ class PDFController extends BaseController {
 		$x = $x_ini;
 		
 		$pdf->SetFont('dejavusans', '', 12, '', true);
-		$text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
+		// Titol segons filtre
+		if ($currentVigent == true) $text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
+		else $text = '<b>Històric d\'assegurats</b>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
 
-		$y += 15;
+		if ($currentDNI != "" or $currentNom != "" or $currentCognoms != "") {
+			// Afegir dades del filtre
+			$y += 10;
+			$pdf->SetFont('dejavusans', 'I', 10, '', true);
+			$pdf->writeHTMLCell(0, 0, $x, $y, 'Opcions de filtre', 'B', 1, 1, true, '', true);
+			$pdf->SetFont('dejavusans', '', 9, '', true);
+			if ($currentDNI != "") {
+				$y += 7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, 'DNI\'s que contenen "'.$currentDNI.'"', '', 1, 1, true, '', true);
+			}
+			if ($currentNom != "") {
+				$y += 7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, 'Noms que contenen "'.$currentNom.'"', '', 1, 1, true, '', true);
+			}
+			if ($currentCognoms != "") {
+				$y += 7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, 'Cognoms que contenen "'.$currentCognoms.'"', '', 1, 1, true, '', true);
+			}
+			$y += 2;
+			$pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
+			
+		} else {
+			$y += 15;
+		}
 		
 		$pdf->SetFont('dejavusans', '', 9, '', true);
-		
+
 		$tbl = '<table border="0.5" cellpadding="7" cellspacing="0">
 				  <tr style="background-color:#DDDDDD;font-weight: bold;font-size: medium;">
 				  <td width="35">&nbsp;</td>
@@ -533,18 +549,28 @@ class PDFController extends BaseController {
 				 </tr>';
 		
 		$total = 0;
+
+		$persones = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms);
 		
 		foreach ($persones as $c => $persona) {
-			$llicencia = $persona->getLlicenciaVigent(); 
-			if ($llicencia != null) {
-				$total++; 
+			$llicencia = $persona->getLlicenciaVigent();
+			if ($currentVigent != true or ($currentVigent == true and $llicencia != null)) {
+				if ($llicencia == null) $llicencia = $persona->getLastLlicencia(); 
+	
+				$total++;
 				$tbl .= '<tr nobr="true" style="font-size: small;"><td align="center">' . $total . '</td>';
 				$tbl .= '<td align="left">' . $persona->getCognoms() . ', ' . $persona->getNom() . '</td>';
 				$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
-				$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
-				$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
-						. ' - ' . $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction  "))->format('d/m/Y') .  '</td></tr>';
-			}
+				if ($llicencia != null) {
+					
+					$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
+					$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
+					. ' - ' . $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y') .  '</td>';
+				} else {
+					$tbl .= '<td align="left" colspan="2">Sense historial de llicències</td>';
+				}
+				$tbl .= '</tr>';
+			} 
 		}
 		
 		$tbl .= '</table>';
@@ -552,7 +578,7 @@ class PDFController extends BaseController {
 		$pdf->Ln(10);
 		
 		$pdf->writeHTML($tbl, false, false, false, false, '');
-		
+
 		$pdf->setPage(1); // Move to first page
 		
 		$pdf->setY($y_ini);
@@ -564,9 +590,18 @@ class PDFController extends BaseController {
 		
 		// reset pointer to the last page
 		$pdf->lastPage();
-			
+
+		
+		if ($request->query->has('print') and $request->query->get('print') == true) {
+			// force print dialog
+			$js = 'print(true);';
+			// set javascript
+			$pdf->IncludeJS($js);
+			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "I")); // inline
+		} else {
 		// Close and output PDF document
-		$response = new Response($pdf->Output("assegurats_" . $currentClub . "_" . date("Ymd") . ".pdf", "D"));
+			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // save as...
+		}
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
 		

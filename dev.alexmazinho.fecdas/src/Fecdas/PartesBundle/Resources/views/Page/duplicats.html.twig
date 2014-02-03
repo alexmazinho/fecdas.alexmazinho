@@ -57,7 +57,8 @@
 				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
-				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}</div>
+				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
+				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</div>
 				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
 				   		<div class="data-detall-cell duplicat-foto">{% if duplicat.foto is not null %}
 				   		<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>{% endif %}
@@ -102,7 +103,8 @@
 				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
-				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}</div>
+				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
+				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</div>
 				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
 				   		<div class="data-detall-cell duplicat-foto">{% if duplicat.foto is not null %}
 				   		<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>{% endif %}

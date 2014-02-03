@@ -15,16 +15,22 @@
 
    	<form action="{{ path('FecdasPartesBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
    		<div class="form-row clearfix">
-			<div id="formassegurats-clubs" class="form-left">
-				{{ form_widget(form.clubs, { 'attr': {'class': 'formfield-outside'} }) }}
+   			<div id="formassegurats-tots" class="form-left">
+				{{ form_label(form.tots, '(Administradors) Qualsevol club', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.tots, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
 			<div id="formassegurats-vigent" class="form-left">
 				{{ form_label(form.vigent, 'Només mostrar llista amb llicència vigent', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
-			<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', { 'club': club }) }}">
+			<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', 
+									{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms }) }}">
 				<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
-				title="Descarregar les llistes" width="25px"></a></div> 
+				title="Descarregar les llistes" width="30px"></a></div> 
+			<div class="button-top"><a class="print-link" target="_blank" href="{{ path('FecdasPartesBundle_asseguratstopdf', 
+									{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms, 'print': true }) }}">
+				<img src="{{ asset('images/icon-print.png') }}" alt="Descarregar les llistes" 
+				title="Descarregar les llistes" width="30px"></a></div> 
 		</div>
    		<div class="form-row clearfix">
 			<div id="formassegurats-dni" class="form-left">
@@ -50,7 +56,6 @@
 		{{ flashMessage }}
   	</div>	
 	{% endfor %}
-    
 	<div id="llista-assegurats">
 		<div class="table-header">	
 		   	<div id="list-header">
@@ -58,24 +63,25 @@
 		   		<div id="header-asseguratdni" class="col-listheader">DNI<span class="listheader-order"></span></div>
 		   		<div id="header-asseguratnom" class="col-listheader">Nom<span class="listheader-order"></span></div>
 		   		<div id="header-asseguratcognoms" class="col-listheader">Cognoms<span class="listheader-order"></span></div>
-		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Vigència de la llicència</div>
-		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">&nbsp;</div>
+		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicències</div>
+		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">Total: {{ persones|length}}</div>
 		   	</div>
 	   	</div>
 		{% if persones|length > 0 %}
 		<div class="table-scroll">
 		   	<ol id="list-data">
 			{% for persona in persones %}
-				{% if vigents != true or (vigents == true and persona.llicenciaVigent is not null)  %}
 			   		<li class="data-detall">
 				   		<div class="data-detall-cell assegurat-id">{{ persona.id }}</div>
 				   		<div class="data-detall-cell assegurat-dni">{{ persona.dni }}</div>
 				   		<div class="data-detall-cell assegurat-nom">{{ persona.nom }}</div>
 				   		<div class="data-detall-cell assegurat-cognoms">{{ persona.cognoms }}</div>
 				   		<div class="data-detall-cell assegurat-tipusdesc">
-				   			<a class="action-cell llicencia-historial" href="{{ path('FecdasPartesBundle_historialLlicencies', { 'id': persona.id }) }}" title="Historial llicències">
-							{% if admin == true %}{{ persona.getInfoAssegurats(true) }}{% else %}{{ persona.getInfoAssegurats }}{% endif %}
-				   			<img src="{{ asset('images/icon-historial.png') }}" alt="Historial llicències" title="Historial llicències" width="23px"></a></div>
+				   			<a class="llicencia-historial" href="{{ path('FecdasPartesBundle_historialLlicencies', { 'id': persona.id }) }}" title="Historial llicències">
+				   			<img src="{{ asset('images/icon-historial.png') }}" alt="Historial llicències" title="Historial llicències" width="23px">
+				   			<span>{{ persona.getInfoAssegurats(admin) }}</span>
+			   				</a>
+						</div>
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
 							<div class="data-detall-cell assegurat-actions">
 							{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
@@ -92,6 +98,7 @@
 			   					<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
 			   				</div>
 			   			{% else %}
+			   			
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
 				   				<div class="data-detall-cell assegurat-actions">
 			   					<a class="llicencia-renovar" href="{{ path('FecdasPartesBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}">
@@ -102,12 +109,13 @@
 			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
 			   					</div>
 			   				{% else %}
-			   					<div class="data-detall-cell assegurat-actions"><a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
-			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a></div>
+			   					<div class="data-detall-cell assegurat-actions">
+			   					<a class="assegurats-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
+			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
+			   					</div>
 			   				{% endif %}	
 				   		{% endif %}		
 			   		</li>
-		   		{% endif %}	
 			{% endfor %}
 			</ol>
 		</div>
@@ -142,7 +150,7 @@ $(document).ready(function(){
 	showPersonClickAssegurats();
 
 	showHistorialLlicencies();
-	
+
 	sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

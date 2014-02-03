@@ -3,7 +3,8 @@
 
 {% block javascriptshead %}
  	{{ parent() }}
-   	 {{ form_javascript(form) }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+   	{{ form_javascript(form) }}
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Importar llicències CSV{% endblock %}
@@ -20,15 +21,7 @@
   		</div>	
 	{% endfor %}
 		<form id="formcsv-import" action="{{ path('FecdasPartesBundle_importcsv') }}" method="post" {{ form_enctype(form) }}  class="appform">
-			{{ form_widget(form.codi) }}
 			<div class="form-row clearfix">
-				{%  if admin == true %}
-				<div id="formcsv-club" class="form-left">
-					{{ form_label(form.club, 'Club', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.club, { 'attr': {'class': 'formfield-outside'} }) }}
-				</div>
-				<a id="formcsv-autocompleters" href="{{ path('FecdasPartesBundle_ajaxclubsnoms') }}" style="display:none"></a>
-				{% endif %}
 				<div id="formcsv-dataalta" class="form-left">
 					<label class="formlabel-outside required">Validesa des de</label>
 					{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
@@ -82,9 +75,20 @@
 $(document).ready(function(){
 	setMenuActive("menu-import");
 
-	if ($("#parte_tipus option").length == 1) {
+	loadCalendar($( "#form_dataalta" ));
+
+	var curYear = new Date().getFullYear();
+	
+	$( "#form_dataalta" ).datepicker( "option", "minDate" , new Date(curYear, 0, 1) );
+	$( "#form_dataalta" ).datepicker( "option", "maxDate" , "+1y" ); // 1 any
+	
+	prepareFileInput();
+	
+    reloadTipusParte();
+	
+	if ($("#form_tipus option").length == 1) {
 		/* Només si hi ha disponible més d'una llicència */
-			$("#help-tipusparte").hide();
+		$("#help-tipusparte").hide();
 	} else {
 		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
 				<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
@@ -98,12 +102,6 @@ $(document).ready(function(){
 				No habilitada per competició ni per fer cursos federats.</p>\
 				<p align="left"><b>D</b>: Assegurança per un dia.</p>');
 	};	
-
-	autocompletersNomsClub("formcsv-autocompleters", "form_club", "form_codi");
-	
-	prepareFileInput();
-
-    reloadTipusParte();
 	
 });
 

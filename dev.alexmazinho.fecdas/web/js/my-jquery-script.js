@@ -1083,8 +1083,6 @@
 	        	});
 	        };
 	    });
-		
-		  
 	};
 	
 	removeParteLink = function () {
@@ -1648,7 +1646,7 @@
 	
 	/*****************************************************************************************************************/
 	
-	/*****************************************************************************************************************/
+	/********************************************* import CSV ********************************************************/
 	
 	prepareFileInput = function () {
 		$("#form_importfile").change(function() {
@@ -1673,32 +1671,12 @@
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
 		$('#form_tipus').val('');
 		
-		/* Canvi Club */
-		$('#form_club').change(function() {
-			// Update select tipus parte	
-			var url = $('#formcsv-tipus').data('ajax-route');
-			var params = { 	club:$("#form_codi").val(), day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
-			$.get(url,	params,
-			function(data) {
-				$('select#form_tipus').html(data); 
-			});
-		});
-			
 		/* Canvi Data */
-		$('#form_dataalta_date_day').change(function() {
+		$('#form_dataalta').change(function() {
 	    	// Update select tipus parte	
 			var url = $('#formcsv-tipus').data('ajax-route');
-			var params = { 	club:$("#form_codi").val(), day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
-			$.get(url,	params,
-			function(data) {
-				$('select#form_tipus').html(data); 
-			});
-		});
-
-		$('#form_dataalta_date_month').change(function() {
-	    	// Update select tipus parte	
-			var url = $('#formcsv-tipus').data('ajax-route');
-			var params = { 	club:$("#form_codi").val(), day: $("#form_dataalta_date_day").val(), month: $("#form_dataalta_date_month").val() }
+			var currentDate = $( "#form_dataalta" ).datepicker( "getDate" );
+			var params = { 	day: currentDate.getDate(), month: currentDate.getMonth()+1 }
 			$.get(url,	params,
 			function(data) {
 				$('select#form_tipus').html(data); 

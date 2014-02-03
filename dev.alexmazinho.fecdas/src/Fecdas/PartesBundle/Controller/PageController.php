@@ -96,40 +96,38 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		/* Form importcsv */
-		
-		$currentDate = $this->getCurrentDate('now');
-		$currentYear = $currentDate->format('Y');
-		$endYear = $currentDate->format('Y');
-		$currentMonth = $currentDate->format('m');
-		$currentDay = $currentDate->format('d');
+		$currentClub = $this->getCurrentClub();
+		$dataalta = $this->getCurrentDate('now');
+		$currentMonth = $dataalta->format('m');
+		$currentDay = $dataalta->format('d');
 
-		if ($currentMonth == 12 and $currentDay >= 10) $endYear++; // A partir 10/12 poden fer llicències any següent
-		
 		// Data modificada, refer llista tipus
 		$tipusparte = null;
-		if ($request->getMethod() == 'POST' and $request->request->has('form')) {
+		if ($request->getMethod() == 'POST') {
 				$formdata = $request->request->get('form');
 				if (isset($formdata['dataalta'])) {
-					$currentDay = $formdata['dataalta']['date']['day'];
-					$currentMonth = $formdata['dataalta']['date']['month'];
+					$dataalta = \DateTime::createFromFormat('d/m/Y', $formdata['dataalta']);
+					$currentMonth = $dataalta->format('m');
+					$currentDay = $dataalta->format('d');
 				}
 				if (isset($formdata['tipus'])) {
 					$tipusparte = $em->getRepository('FecdasPartesBundle:EntityParteType')->find($formdata['tipus']);
 				}
+		} else {
+			$dataalta->add(new \DateInterval('PT1200S')); // Add 20 minutes
 		}
 		
-		$llistatipus = $this->getLlistaTipusParte($this->getCurrentClub()->getCodi(), $currentDay, $currentMonth);
-		
-		$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
+		$llistatipus = $this->getLlistaTipusParte($currentDay, $currentMonth);
 		
 		$atributs = array('accept' => '.csv');
-
-		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs));
+		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
 		
-		$formbuilder->add('dataalta', 'datetime',
-					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy',
-							'years' => range($currentYear, $endYear)));
+		$formbuilder->add('dataalta', 'text', array(
+				'read_only' => true,
+				'data' => $dataalta->format('d/m/Y')
+		));
 		
+		$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
 		$formbuilder->add('tipus', 'entity', 
 					array('class' => 'FecdasPartesBundle:EntityParteType',
 						'query_builder' => function($repository) use ($llistatipus) {
@@ -139,42 +137,35 @@ class PageController extends BaseController {
 						}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1
 					));
 		
-		/* Admins poden escollir club */
-		$formbuilder->add('codi', 'hidden');
-		if ($this->isCurrentAdmin() == true) {
-			$formbuilder->add('club', 'search');
-		}
-		
 		$form = $formbuilder->getForm();
 		
-		$currentDate->add(new \DateInterval('PT1200S')); // Add 20 minutes
-		$form->get('dataalta')->setData($currentDate);
-		$form->get('codi')->setData($this->getCurrentClub()->getCodi());
-		
 		if ($request->getMethod() == 'POST') {
-			
 			$form->bind($request);
 			
 			if ($form->isValid()) {
 				$file = $form->get('importfile')->getData();
 				try {
+					if ($file == null) throw new \Exception('Cal escollir un fitxer');
+					
 					if (!$file->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $file->getMaxFilesize());
+
+					if ($dataalta->format('y') > $this->getCurrentDate()->format('y')) {
+						// Només a partir 10/12 poden fer llicències any següent
+						if ($currentMonth < 12 or ($currentMonth == 12 and $currentDay < 10)) 
+								throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');					
+					}
 					
 					$parte = new EntityParte($this->getCurrentDate());
-
-					$tipusdesc = $form->get('tipus')->getData();
-					$tipusparte = $em->getRepository('FecdasPartesBundle:EntityParteType')->findOneBy(array('descripcio' => $tipusdesc));
+					
+					$tipusparte = $form->get('tipus')->getData();
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
 					
-					$parte->setDataalta($form->get('dataalta')->getData());
+					$parte->setDataalta($dataalta);
 
 					if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) 
 							throw new \Exception('No es poden donar d\'alta llicències amb data passada');						
 					
-					$codiclub = $form->get('codi')->getData();
-					if ($codiclub == null or $codiclub == "") throw new \Exception('No s\'ha definit el club');
-					
-					$parte->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
+					$parte->setClub($currentClub);
 					$parte->setTipus($tipusparte);
 					
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
@@ -186,14 +177,12 @@ class PageController extends BaseController {
 					
 					$this->get('session')->getFlashBag()->add('error-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
 					
-					$tempname = $this->getCurrentDate()->format('Ymd')."_".$codiclub."_".$file->getFileName();
+					$tempname = $this->getCurrentDate()->format('Ymd')."_".$currentClub->getCodi()."_".$file->getFileName();
 					
 					/* Copy file for future confirmation */
 					$file->move($this->getTempUploadDir(), $tempname);
 					
-					$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV OK',
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'), $file->getFileName());
+					$this->logEntryAuth('IMPORT CSV OK', $file->getFileName());
 					
 					/* Generate URL to send CSV confirmation */
 					$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
@@ -205,21 +194,19 @@ class PageController extends BaseController {
 					return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
 				} catch (\Exception $e) {
-					$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV ERROR',
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'), $e->getMessage());
-							
+					$this->logEntryAuth('IMPORT CSV KO', $e->getMessage());
+					
 					$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 				}					
 			} else {
 				// Fitxer massa gran normalment
+				$this->logEntryAuth('IMPORT CSV ERROR', $e->getMessage());
+				
 				$this->get('session')->getFlashBag()->add('error-notice',"Error important el fitxer".$form->getErrorsAsString());
 			}
 
 		} else {
-			$this->logEntry($this->get('session')->get('username'), 'IMPORT CSV VIEW',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+			$this->logEntryAuth('IMPORT CSV VIEW');
 		}
 
 		return $this->render('FecdasPartesBundle:Page:importcsv.html.twig',
@@ -237,9 +224,7 @@ class PageController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 		
 		/* Registre abans de tractar fitxer per evitar flush en cas d'error */
-		$this->logEntry($this->get('session')->get('username'), 'CONFIRM CSV',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $request->query->get('tempfile'));
+		$this->logEntryAuth('CONFIRM CSV', $request->query->get('tempfile'));
 		
 		$tipusparte = $request->query->get('tipus');
 		$codiclub = $request->query->get('club');
@@ -432,12 +417,10 @@ class PageController extends BaseController {
 				if (isset($parte['club'])) $currentClub = $parte['club'];
 			}
 		} else {
-			$request->getSession()->getFlashBag()->clear();
+			//$request->getSession()->getFlashBag()->clear();
 		}
 
-		$this->logEntry($this->get('session')->get('username'), 'VIEW PARTES',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $currentClub);
+		$this->logEntryAuth('VIEW PARTES', $currentClub);
 		
 		$partesclub = $this->consultaPartesClub($currentClub, $desde);
 		
@@ -512,101 +495,54 @@ class PageController extends BaseController {
 		$currentNom = "";
 		$currentCognoms = "";
 		$currentVigent = true;
+		$currentTots = false;
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
 			if ($request->request->has('form')) { // Reload select clubs de Partes
 				$formdata = $request->request->get('form');
-				if (isset($formdata['clubs'])) $currentClub = $formdata['clubs'];
 				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
 				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
 				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
 				if (isset($formdata['vigent'])) $currentVigent = true;
 				else $currentVigent = false;
-								
-				$this->logEntry($this->get('session')->get('username'), 'VIEW PERSONES SEARCH',
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'),
-						"club: " . $currentClub . " dni: " . $currentDNI . " nom/cog: " . $currentNom . ", " . $currentCognoms );
-				
+				if ($this->isCurrentAdmin()) { // Admins poden cerca tots els clubs
+					if (isset($formdata['tots'])) $currentTots = true;
+				}
+
+				$this->logEntryAuth('VIEW PERSONES SEARCH', "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
 			}
 		} else {
-			$this->logEntry($this->get('session')->get('username'), 'VIEW PERSONES',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+			$this->logEntryAuth('VIEW PERSONES', "club: " . $currentClub);
 		}
 	
-		$formBuilder = $this->createClubsForm($currentClub, false); 
-		$formBuilder->add('dni', 'search', array('required'  => false,));
-		$formBuilder->add('nom', 'search', array('required'  => false,));
-		$formBuilder->add('cognoms', 'search', array('required'  => false,));
+		$formBuilder = $this->createFormBuilder()->add('dni', 'search', array('required'  => false, 'data' => $currentDNI)); 
+		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
+		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
 		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent,
 				'attr' => (array('onchange' => 'this.form.submit()'))));
+		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots,
+				'attr' => (array('onchange' => 'this.form.submit()'))));
 		$form = $formBuilder->getForm(); 
-
-		$em = $this->getDoctrine()->getManager();
+	
+		$persones = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms);
 		
-		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-		$strQuery .= " WHERE p.databaixa IS NULL ";
-		
-		if ($currentClub != "") $strQuery .= " AND p.club = :club ";
-		if ($currentDNI != "") $strQuery .= " AND p.dni LIKE :dni ";
-		if ($currentNom != "") $strQuery .= " AND p.nom LIKE :nom ";
-		if ($currentCognoms != "") $strQuery .= " AND p.cognoms LIKE :cognoms ";
-
-		$strQuery .= " ORDER BY p.cognoms, p.nom";
-		
-		//$query = $em->createQuery($strQuery)->setParameter('club', $currentClub);
-		$query = $em->createQuery($strQuery);
-		
-		
-		if ($currentClub == "" and $currentDNI == "" and $currentNom == "" and $currentCognoms == "") {
-			// Sense club. Si no s'indica filtre dades personals mostr 0 resultats
-			$query = $em->createQuery($strQuery)->setMaxResults(0);				
-		} else {
-			// Algun filtre
-			$query = $em->createQuery($strQuery);
-			if ($currentClub != "") {
-				$query->setParameter('club', $currentClub);
-				$form->get('clubs')->setData($currentClub);
+		if ($currentVigent == true) {
+			// Només vigents
+			$personesVigents = array();
+			foreach ($persones as $c => $persona_iter) {
+				if ($persona_iter->getLlicenciaVigent() != null) {
+					$personesVigents[] = $persona_iter; 
+				}
 			}
-			if ($currentDNI != "") {
-				$query->setParameter('dni', "%" . $currentDNI . "%");
-				$form->get('dni')->setData($currentDNI);
-			}
-			if ($currentNom != "") {
-				$query->setParameter('nom', "%" . $currentNom . "%");
-				$form->get('nom')->setData($currentNom);
-			}
-			if ($currentCognoms != "") {
-				$query->setParameter('cognoms', "%" . $currentCognoms . "%");
-				$form->get('cognoms')->setData($currentCognoms);
-			}
+			$persones = $personesVigents;
 		}
 		
-		$persones = $query->getResult();
-	
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 'vigents' => $currentVigent, 'club' => $currentClub)));
-	}
-	
-	private function createClubsForm($currentClub, $required = true) {
-		$clubsvalues = $this->getClubsSelect();
-		
-		if ($this->isCurrentAdmin()) {
-			$formBuilder = $this->createFormBuilder()
-			->add('clubs', 'choice', array('choices' => $clubsvalues,
-					'data' => $currentClub,
-					'required'  => $required,
-					'attr' => (array('onchange' => 'this.form.submit()'))));
-		} else {
-			$formBuilder = $this->createFormBuilder()
-			->add('clubs', 'choice', array('choices' => $clubsvalues,
-					'data' => $currentClub,
-					'attr' => (array('disabled' => 'true'))));
-		}
-		
-		return $formBuilder;  
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
+						'vigents' => $currentVigent, 'tots' => $currentTots, 'dni' => $currentDNI,
+						'nom' => $currentNom, 'cognoms' => $currentCognoms
+				)));
 	}
 	
 	public function historialLlicenciesAction() {
@@ -946,7 +882,7 @@ class PageController extends BaseController {
 			// El tipus de parte es necessari per saber els checks de llicència que cal ocultar
 			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find(1));
 
-			$options['llistatipus'] = $this->getLlistaTipusParte($currentClub->getCodi(), $parte->getDataalta()->format('d'), $parte->getDataalta()->format('m'));
+			$options['llistatipus'] = $this->getLlistaTipusParte($parte->getDataalta()->format('d'), $parte->getDataalta()->format('m'));
 		}
 		
 		$pdf = $this->showPDF($parte);
@@ -1924,11 +1860,10 @@ class PageController extends BaseController {
 	}
 
 	public function gettipuspartesAction(Request $request) {
-		$club = $request->get('club');
 		$day = $request->get('day');
 		$month = $request->get('month');
 		
-		$llistatipus = $this->getLlistaTipusParte($club, $day, $month);
+		$llistatipus = $this->getLlistaTipusParte($day, $month);
 		
 		$tipuspermesos = "";
 		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus
@@ -1944,7 +1879,7 @@ class PageController extends BaseController {
 		return $response;
 	}  
 
-	private function getLlistaTipusParte($codiclub, $day, $month) {
+	private function getLlistaTipusParte($day, $month) {
 		$llistatipus = array();
 
 		$currentmonthday = sprintf("%02d", $month) . "-" . sprintf("%02d", $day);
@@ -1952,15 +1887,7 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
 		/* Llista tipus parte administrador en funció del club seleccionat. Llista d'un club segons club de l'usuari */
-		$club = null;
-		if ($this->isCurrentAdmin()) {
-			$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub);
-		}
-		else {
-			$user = $repository->findOneByUser($this->get('session')->get('username'));
-			if ($user != null) $club = $user->getClub();
-		}
-		
+		$club = $this->getCurrentClub();
 		if ($club == null) return $llistatipus;  // Sense info del club!!?
 		
 		$tipuspartes = $club->getTipusparte();

@@ -380,21 +380,23 @@ html[xmlns] .clearfix {
 }
 
 #header-asseguratid { display:none}
-#header-asseguratdni {	width: 11%;  }
-#header-asseguratnom {	width: 12%; text-align: left;}
-#header-asseguratcognoms {	width: 18%;text-align: left;}
-#header-assegurattipusdesc { width: 35%;text-align: left;}
-#header-asseguratactions { width: 14%; }
+#header-asseguratdni {	width: 13%;  }
+#header-asseguratnom {	width: 15%; text-align: left;}
+#header-asseguratcognoms {	width: 20%;text-align: left;}
+#header-assegurattipusdesc { width: 33%;text-align: left;}
+#header-asseguratactions { width: auto; font-size: 16px; text-align: right; }
 
 .assegurat-id {	display:none}
-.assegurat-dni { width: 11%;  }
-.assegurat-nom { width: 12%; text-align: left; }
-.assegurat-cognoms { width: 18%; text-align:left;}
-.assegurat-tipusdesc { width: 35%; text-align:left;}
-.assegurat-actions { width: 14%; text-align:right; }
+.assegurat-dni { width: 13%;  }
+.assegurat-nom { width: 15%; text-align: left; }
+.assegurat-cognoms { width: 20%; text-align:left;}
+.assegurat-tipusdesc { width: 33%; text-align:left;}
+.assegurat-actions { width: auto; text-align:right; }
 
 #llista-assegurats a  { color: #555555; }
 #llista-assegurats a:hover  { color: #2281CF; }
+
+/*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
  	-webkit-transition: all 1s ease-in-out;
   -moz-transition: all 1s ease-in-out;
@@ -413,9 +415,11 @@ html[xmlns] .clearfix {
 
 .llicencia-historial img:hover {
 	opacity:1;
-}
+}*/
 
-#llista-assegurats .data-detall { display:inline } /* Permet afegir historial*/
+#llista-assegurats .data-detall { /*display:inline*/ display: inline-block;  width: 100%; } /* Permet afegir historial*/
+
+.llicencia-historial img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
 
 .assegurat-historial { 
 	display:none; 
@@ -1251,7 +1255,9 @@ select#parte_persona_addrnacionalitat {
 
 .formdni-main, .formuser-main { margin-top: 50px; margin-left: 30px; }
 
-#formdni-dni { float:left; margin-right: 10px;}
+#formdni-dni {  display: inline-block; margin-right: 10px;}
+#formdni-dni-consultadni { display: inline-block; position: relative; width: 120px; }
+#help-querydni { cursor: pointer; position: absolute; right: 0; }
 
 #formdni-dni .forminput-inside {
 	width: 220px;
@@ -1303,15 +1309,8 @@ select#parte_persona_addrnacionalitat {
 	margin-left: 0;
 }
 
-div#form_dataalta_date {
-    float: left;
-    width: auto;
-}
-
-div#form_dataalta_time {
-    float: left;
-    width: auto;
-}
+#form_dataalta { width: 100px; text-align: center;  margin: 0 5px 0 0; }
+#formcsv-tipus label { margin-bottom: 3px; }
 
 .info-bloc {
 	color: #555555;
@@ -1451,12 +1450,12 @@ p.info-bold {
 #header-duplicatid { display: none }
 #header-duplicatpeticio { width: 8%; }
 #header-duplicatdni { width: 8%; }
-#header-duplicatnom { width: 20%; text-align: left; }
+#header-duplicatnom { width: 23%; text-align: left; }
 #header-duplicatcarnet { width: 20%; text-align: left; }
 #header-duplicatfoto { width: 5%; }
 #header-duplicatimpressio { width: 8%; }
 #header-duplicatextra { width: 20%; text-align: left; }
-#header-duplicatactions { width: 20%; text-align: right; position: relative }
+#header-duplicatactions { width: auto; text-align: right; position: relative }
 #header-duplicatactions a:hover { color:#2281CF; text-decoration: none; }
 #header-duplicatactions a,
 #header-duplicatactions a:active,
@@ -1466,14 +1465,15 @@ p.info-bold {
 .duplicat-id { display: none }
 .duplicat-peticio { width: 8%; }
 .duplicat-dni { width: 8%; }
-.duplicat-nom { width: 20%; text-align: left; }
+.duplicat-nom { width: 23%; text-align: left; }
+.duplicat-nom span { font-style: italic; font-size: 0.8em; }
 .duplicat-carnet { width: 20%; text-align: left; }
 .duplicat-foto { width: 5%; }
 .duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
 .duplicat-foto img:hover { border-color: #7fcff6 }
 .duplicat-impressio { width: 8%; }
 .duplicat-extra { width: 20%; text-align: left; }
-.duplicat-actions { width: 20%; text-align: right; }
+.duplicat-actions { width: auto; text-align: right; }
 
 
 #dialeg .dialeg-titol {

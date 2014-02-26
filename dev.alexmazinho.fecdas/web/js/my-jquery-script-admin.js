@@ -4,6 +4,18 @@
 
 (function($){
 	
+	changeRoleClub = function(url)  {
+		$("#menu-user select#form_role").select2({
+			minimumInputLength: 2
+		});
+		$("#menu-user select#form_role").change(function(e) {
+			var params = { 	roleclub:e.val };
+			$.get(url,	params,
+			function(data) {
+				window.location = window.location.pathname; 
+			}); // Canvi de rol
+		});
+	}
 	
 	confirmarPartePagat = function() {
 		// Click des de Partes
@@ -69,11 +81,6 @@
 	
 	
 	clubCanviEstat = function() {
-		$("#dialeg").dialog({
-			autoOpen: false,
-		    modal: true
-	    });
-		
 		$('.clubs-action-upd').click(function(e) {
 			e.preventDefault();
 			

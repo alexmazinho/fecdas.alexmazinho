@@ -301,9 +301,25 @@
 
 	};
 	
-	dialegError = function(titol, strError, dwidth, dheight) {
-		$("#dialeg").html("<div class='dialeg-jerror'><img width='40' src='/images/icon-remove.png'><span class='jerror-sms'>"+strError+"</span></div>");
+	loadTimeCalendar = function(elem, min, max) {
+		//$.datepicker.setDefaults( $.datepicker.regional[ 'ca' ] );
+		$.timepicker.setDefaults($.timepicker.regional['ca']);
 		
+		elem.datetimepicker({
+			 showOn: "button",
+			 buttonImage: "../images/calendar.gif",
+			 buttonImageOnly: true,
+			 changeMonth: true,
+			 changeYear: true,
+			 minDate: min,
+			 maxDate: max,
+			 controlType: 'select',
+			 timeFormat: 'HH:mm'
+		});
+
+	};
+	
+	dialegError = function(titol, strError, dwidth, dheight) {
 		$("#dialeg").dialog({
 	    	modal: true,
 	    	resizable: false,
@@ -311,6 +327,8 @@
 	    	height: dheight,
 	    	title: titol
     	});
+		
+		$("#dialeg").html("<div class='dialeg-jerror'><img width='40' src='/images/icon-remove.png'><span class='jerror-sms'>"+strError+"</span></div>");
 	};
 	
 	jQuery.fn.extend({
@@ -429,54 +447,31 @@
 	    }
 	};
 	
-	changeRoleClub = function(url)  {
-		$("#menu-user select#form_role").select2({
-			minimumInputLength: 2
-		});
-		$("#menu-user select#form_role").change(function(e) {
-			var params = { 	roleclub:e.val };
-			$.get(url,	params,
-			function(data) {
-				window.location = window.location.pathname; 
-			}); // Canvi de rol
-		});
-	}
-	
 	/*****************************************************************************************************************/
 	
 	
 	reloadParte = function() {
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
-		$('#parte_tipus').val('');
+		//$('#parte_tipus').val('');
 		
 		/* canvi de tipus */
 		$('#parte_tipus').change(function() {
-	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
+			if ($('#parte_tipus').val() == "") {
+		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
+		    	else $('#formparte-llicencia').slideUp('fast');
+			} else {
+				loadLlicencia();				
+			}
 	    });
-
-		/* Canvi Club */
-		$('#parte_club').change(function() {
-	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
-	    	
-	    	// Update select tipus parte	
-			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { 	club:$("#parte_club").val(), day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
-			$.get(url,	params,
-			function(data) {
-				$('select#parte_tipus').html(data); 
-			});
-		});
 		
-		/* Canvi Data */
+		/* Canvi Data ===>>> Ja no existeixen dates */
 		$('#parte_dataalta_date_day').change(function() {
 	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	    	else $('#formparte-llicencia').slideUp('fast');
 
 	    	// Update select tipus parte	
 			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { 	club:$("#parte_club").val(), day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
+			var params = { day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
 			$.get(url,	params,
 			function(data) {
 				$('select#parte_tipus').html(data); 
@@ -489,7 +484,7 @@
 	    	
 	    	// Update select tipus parte	
 			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { 	club:$("#parte_club").val(), day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
+			var params = { 	day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
 			$.get(url,	params,
 			function(data) {
 				$('select#parte_tipus').html(data); 
@@ -502,24 +497,6 @@
 	    	else $('#formparte-llicencia').slideUp('fast');
 		});
 
-	};
-	
-	selectpersona = function() {
-		var oldvalue;
-		$('#parte_llicencies_persona_select').focus(function() {
-			oldvalue = $(this).val();
-		});
-			
-		$('#parte_llicencies_persona_select').change(function() {
-			var persona = $(this).val();
-
-			// Si selecció persona, canvia text
-			if (persona == "") $('#formllicencia-openmodal').html('nou assegurat <img src=\"/images/icon_add.png\">');
-			else $('#formllicencia-openmodal').html('modifica assegurat <img src=\"/images/icon_add.png\">');
-
-			showPersonClickLlicencia($("#parte_llicencies_persona_select").val());
-			
-		});
 	};
 	
 	showHistorialLlicencies = function() {
@@ -562,7 +539,7 @@
 		  
 	};
 	
-	showPersonClickLlicencia = function(id) {
+	showPersonClickLlicencia = function() {
 	    //select all the a tag with name equal to modal
 		$('#formllicencia-openmodal')
 	    .off('click')
@@ -570,6 +547,9 @@
 			//Cancel the link behavior
 	        e.preventDefault();
 	        var url = $(this).attr("href");
+	        
+	        var id = $("#parte_llicencies_persona_select").val();
+	        if (id == "") id = 0;
 	        showPersonModal(id, url, true);
 	    });
 	};
@@ -648,11 +628,6 @@
 	};
 	
 	actionsPersonaForm = function(llicencia) {
-		$("#dialeg").dialog({
-			autoOpen: false,
-		    modal: true
-	    });
-		
 		$('#formpersona-button-remove').click(function (e) {
 	        //Cancel the link behavior
 	        e.preventDefault();
@@ -790,32 +765,21 @@
 		});
 	};
 	
+	
 	loadLlicencia = function(n) {
 		if ($('#parte_tipus').val() == null || $('#parte_tipus').val() == '') {
-			alert('Cal indicar un tipus de llista');
+			dialegError("Error", "Cal indicar un tipus de llista", 350, 100);
 			return;
 		}
 		
 		var url = $("#formllicencia").attr("action");
         var tipusparte = $("#parte_tipus").val();
-        var codiclub = $("#parte_club").val();
-        
-        if ($("#parte_dataalta_date_day").length ) {
-        	// Existeix "parte_dataalta_date_day"
-        	var alta_data = $("#parte_dataalta_date_day").val();
-        	alta_data += "/" + $("#parte_dataalta_date_month").val();
-        	alta_data += "/" + $("#parte_dataalta_date_year").val();
-        	alta_data += " " + $("#parte_dataalta_time_hour").val();
-        	alta_data += ":" + $("#parte_dataalta_time_minute").val();
-        	alta_data += ":00";
-        } else {
-        	var alta_data = $("#parte_dataalta_date").val() + " " + $("#parte_dataalta_time").val();
-        }
+        var alta_data = $("#parte_dataalta").val();
 
     	if ($.browser.msie) $('#formparte-llicencia').hide(); 
     	else $('#formparte-llicencia').slideUp('fast');
         $('#progressbar').show();  // Rellotge
-        $.get(url, {source_ajax: 'edit-llicencia', codiclub: codiclub, tipusparte: tipusparte, dataalta: alta_data, llicenciaId: n},
+        $.get(url, {source_ajax: 'edit-llicencia', tipusparte: tipusparte, dataalta: alta_data, llicenciaId: n},
      	function(data, textStatus) {
         	loadLlicenciaData(data);
 		});
@@ -833,11 +797,22 @@
     	if ($.browser.msie) $('#formparte-llicencia').show(); 
     	else $('#formparte-llicencia').slideDown('fast');
     	
-    	
     	// Reload DOM events. Add handlers again
-    	selectpersona();
-    	showPersonClickLlicencia($("#parte_llicencies_persona_select").val());
+    	$("select#parte_llicencies_persona_select").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: "Cercar federat",
+		});
+    	
+    	$("select#parte_llicencies_persona_select").change(function(e) {
+			if (e.val == "") $('#formllicencia-openmodal').html('nou assegurat <img src=\"/images/icon_add.png\">');
+			else $('#formllicencia-openmodal').html('modifica assegurat <img src=\"/images/icon_add.png\">');
+		});
+    	
+    	showPersonClickLlicencia();
+
     	addLlicenciaClick();
+    	
     	selectAllChecks();
     	
 	    $("#formparte-llicencia .close").click(function (e) {
@@ -928,8 +903,6 @@
 			//Cancel the link behavior
 	        e.preventDefault();
 	        
-	        //$("#formllicencia").submit();
-	        
 	        var url = $("#formllicencia").attr("action");
 			if ($("#parte_llicencies_persona_select").val() == "") {
 				alert("cal seleccionar una persona de la llista d'assegurats");
@@ -949,69 +922,25 @@
 			
 			$.post(url, params,
 			function(data, textStatus) {
-		    	$('#progressbar').hide();  // Rellotge
+				$('#progressbar').hide();  // Rellotge
 		    	
-		    	if ($.browser.msie) $('#formparte-llicencia').show(); 
-		    	else $('#formparte-llicencia').slideDown('fast');
-				$("#llista-llicencies").html(data);
-	        	removeLlicenciaClick();
-	        	showResumParteDetall();
-	        	sortLlista("col-listheader", "list-data");
-		    	
-	        	// Parte nou creat, deixa només el tipus de parte seleccionat
-	        	$("#parte_tipus option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-	        	
-	        	// Parte nou creat, deixa només el club seleccionat
-	        	$("#parte_club option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-
-	        	// Parte nou creta, desactiva data
-	        	$("#parte_dataalta_date_day option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-	        	$("#parte_dataalta_date_month option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-	        	$("#parte_dataalta_date_year option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-	        	$("#parte_dataalta_time_hour option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-	        	$("#parte_dataalta_time_minute option:not(:selected)").each(function(i, item){
-	        		$(item).remove();
-	        	});
-	        	
-	        	if ($("#parte_id").val() == "")	{  // Set form parte_id
-	        		
-	        		
-	        		var hrefpartetopdf = $("#parte-to-pdf a").attr("href");
-	        		var hreffacturatopdf = $("#factura-to-pdf a").attr("href");
-	        		
-	        		$("#parte_id").val($("#header-parteid").html());
-	        		if ($("#parte_id").val() != "") {
-	        			hrefpartetopdf += "?id=" + $("#parte_id").val();
-	        			hreffacturatopdf += "?id=" + $("#parte_id").val();
-	        			
-	        			$("#buttons-top").show();
-	        			$("#parte-to-pdf a").attr("href", hrefpartetopdf);
-	        			$("#factura-to-pdf a").attr("href", hreffacturatopdf);
-	        		}
+		    	$("#llista-llicencies").html(data);
+				
+	        	if ($("#parte_id").val() == "" && $("#header-parteid").length)	{  
+	        		/* Creació del parte si no hi ha error. reload*/
+	        		window.location = window.location.pathname + '?id=' + $("#header-parteid").html(); 
 	        	};
+		    	
+				removeLlicenciaClick();
+	        	
+				showResumParteDetall();
+	        	
+				sortLlista("col-listheader", "list-data");
 			});
-	        
 	    });
 	};
 
 	partePagamentButton = function() {
-		$("#dialeg").dialog({
-			autoOpen: false,
-		    modal: true
-	    });
-		
 		$('#formparte-payment').click(function(e) {
 			e.preventDefault();
 			var url = $(this).attr("href");
@@ -1117,36 +1046,6 @@
 			});
 		});
 		
-	};
-
-	removeParteButton = function() {
-		$("#dialeg").dialog({
-			autoOpen: false,
-		    modal: true
-	    });
-		
-		$('#formparte-button-delete').click(function(e) {
-			e.preventDefault();
-			$("#dialeg").dialog({
-	          	buttons : {
-	            	"Confirmar" : function() {
-		              //window.location = targetUrl;
-	    	        	$(this).dialog("close");
-	    	        	$('#formparte').submit();
-	    	        },
-		            "Cancel·lar" : function() {
-		    			//Cancel submit behavior
-		            	$(this).dialog("close");
-		            }
-		        },
-		        title: "Confirmació per esborrar",
-		        height: 180,
-		        zIndex:	2999
-		    });
-		
-		    $("#dialeg").html("Segur que vols esborrar <br/>aquesta llista?");
-		    $("#dialeg").dialog("open");
-		});
 	};
 
 	selectAllChecks = function() {

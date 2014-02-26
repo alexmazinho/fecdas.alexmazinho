@@ -78,10 +78,10 @@ $(document).ready(function(){
 	loadCalendar($( "#form_dataalta" ));
 
 	var curYear = new Date().getFullYear();
-	
-	$( "#form_dataalta" ).datepicker( "option", "minDate" , new Date(curYear, 0, 1) );
-	$( "#form_dataalta" ).datepicker( "option", "maxDate" , "+1y" ); // 1 any
-	
+
+	$( "#form_dataalta" ).datepicker( "option", "minDate" , new Date({{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }}) );
+	$( "#form_dataalta" ).datepicker( "option", "maxDate" , new Date({{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }}) );
+
 	prepareFileInput();
 	
     reloadTipusParte();

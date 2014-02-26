@@ -54,7 +54,7 @@ class AdminController extends BaseController {
 		$states = explode(";", self::CLUBS_STATES);
 		
 		$currentBaixa = 0;
-		$currentSincro = 0;
+		$currentSincro = 1;
 		$currentPagament = "100";
 		$currentClub = null;
 		
@@ -65,8 +65,6 @@ class AdminController extends BaseController {
 			$currentPagament = "n";
 		}
 		$currentEstat = $defaultEstat;
-		
-		
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
@@ -79,19 +77,15 @@ class AdminController extends BaseController {
 				if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
 				if (isset($formdata['pagament'])) $currentPagament = $formdata['pagament'];
 				if (isset($formdata['baixa'])) $currentBaixa = 1;
-				if (isset($formdata['sincro'])) $currentSincro = 1;
+				if (!isset($formdata['sincro'])) $currentSincro = 0;
 
-				$this->logEntry($this->get('session')->get('username'), 'ADMIN PARTES SEARCH',
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), 
-						"club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] . 
+				$this->logEntryAuth('ADMIN PARTES SEARCH', "club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] . 
 						" pagament: " . $currentPagament . " baixa: " . $currentBaixa .
 						$currentSincro . " sync: " . $currentSincro );
+				
 			}
 		} else {
-			$this->logEntry($this->get('session')->get('username'), 'ADMIN PARTES',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+			$this->logEntryAuth('ADMIN PARTES');
 		}
 		
 		$formBuilder = $this->createFormBuilder();
@@ -190,22 +184,20 @@ class AdminController extends BaseController {
 			if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
 			if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
 			$parte->setPendent(false);
-			//$parte->setImportpagament($parte->getPreuTotalIVA());
-			if ($parte->getIdparteAccess() == null) $parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
-			$parte->setDatamodificacio($this->getCurrentDate());
+			if ($parte->getIdparteAccess() == null) {
+				$parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
+				$parte->setDatamodificacio($this->getCurrentDate()); // Només activa sincro si té preu indicat. La resta no sincronitzen el pagament s'envia per Gestor 
+			}
+			
 			
 			$em->flush();
-			
-			$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT OK',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
 
+			$this->logEntryAuth('CONFIRMAR PAGAMENT OK', $parteid);
+				
 			return new Response("ok");
 		}
 		
-		$this->logEntry($this->get('session')->get('username'), 'CONFIRMAR PAGAMENT KO',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $parteid);
+		$this->logEntryAuth('CONFIRMAR PAGAMENT KO', $parteid);
 
 		return new Response("ko");
 	}
@@ -262,9 +254,7 @@ class AdminController extends BaseController {
 		if ($limitcredit == "") $limitcredit = null;
 		
 		if ($club == null) {
-			$this->logEntry($this->get('session')->get('username'), 'CLUB STATE ERROR',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $request->query->get('codiclub'));
+			$this->logEntryAuth('CLUB STATE ERROR', $request->query->get('codiclub'));
 			return new Response("ko");
 		}
 		
@@ -305,9 +295,7 @@ class AdminController extends BaseController {
 		$club->setLimitcredit($limitcredit);
 		$em->flush();
 		
-		$this->logEntry($this->get('session')->get('username'), 'CLUB STATE OK',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $club->getNom()." ".$estatAnterior->getCodi()." -> ".$estat->getCodi());
+		$this->logEntryAuth('CLUB STATE OK', $club->getNom()." ".$estatAnterior->getCodi()." -> ".$estat->getCodi());
 		
 		return new Response("ok");
 	}
@@ -333,37 +321,32 @@ class AdminController extends BaseController {
 			$formdata = $request->request->get('form');
 	
 			if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
-	
-				$this->logEntry($this->get('session')->get('username'), 'SALDO CLUBS FILTER',
-							$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), "Filtre estat: " . $states[$currentEstat] );
+				$this->logEntryAuth('SALDO CLUBS FILTER', "Filtre estat: " . $states[$currentEstat]);
 			}
 		} else {
-			$this->logEntry($this->get('session')->get('username'), 'SALDO CLUBS',
-			$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'));
-			}
+			$this->logEntryAuth('SALDO CLUBS');
+		}
 			
-			$formBuilder = $this->createFormBuilder()->add('estat', 'choice', array(
-					'choices'   => $states,
-					'preferred_choices' => array(self::CLUBS_DEFAULT_STATE),  // Estat per defecte sempre
-					'attr' => (array('onchange' => 'this.form.submit()'))
-			));
-			$form = $formBuilder->getForm();
+		$formBuilder = $this->createFormBuilder()->add('estat', 'choice', array(
+				'choices'   => $states,
+				'preferred_choices' => array(self::CLUBS_DEFAULT_STATE),  // Estat per defecte sempre
+				'attr' => (array('onchange' => 'this.form.submit()'))
+		));
+		$form = $formBuilder->getForm();
 	
-			// Crear índex taula partes per data entrada
-			$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c JOIN c.estat e ";
-			$strQuery .= " WHERE c.activat = true ";
-			if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
-			$strQuery .= " ORDER BY c.nom";
-			$query = $em->createQuery($strQuery);
-			if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
-			$clubs = $query->getResult();
-			
-			$form->get('estat')->setData($currentEstat);  // Mantenir estat darrera consulta
-	
-			return $this->render('FecdasPartesBundle:Admin:clubs.html.twig',  
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs)));
+		// Crear índex taula partes per data entrada
+		$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c JOIN c.estat e ";
+		$strQuery .= " WHERE c.activat = true ";
+		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
+		$strQuery .= " ORDER BY c.nom";
+		$query = $em->createQuery($strQuery);
+		if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
+		$clubs = $query->getResult();
+		
+		$form->get('estat')->setData($currentEstat);  // Mantenir estat darrera consulta
+
+		return $this->render('FecdasPartesBundle:Admin:clubs.html.twig',  
+			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs)));
 	}
 	
 	public function anularpeticioAction() {

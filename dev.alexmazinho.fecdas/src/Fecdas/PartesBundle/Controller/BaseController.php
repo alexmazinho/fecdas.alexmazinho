@@ -11,7 +11,7 @@ use Fecdas\PartesBundle\Entity\EntityPagament;
 use Fecdas\PartesBundle\Entity\EntityFactura;
 
 class BaseController extends Controller {
-	const MAIL_ADMINTEST = "alexmazinho@gmail.com";  /* Canviar. Crear nou mail, ha d'estar a la taula d'usuaris  */
+	const MAIL_ADMINTEST = "test@entorntest.fecdasgestio.cat";  /* Canviar. Crear nou mail, ha d'estar a la taula d'usuaris  */
 	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";  
 	const MAIL_FACTURACIO = "remei@fecdas.cat";
 	const MAIL_LLICENCIES = "secretaria@fecdas.cat";
@@ -24,6 +24,8 @@ class BaseController extends Controller {
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
+	const INICI_TRAMITACIO_ANUAL_DIA = 10; // a partir de 10/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 10/12 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -558,13 +560,14 @@ class BaseController extends Controller {
 		$footer .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
 		
 		$footer .= "<div style='float:left;padding-right:20px'><img src=".$logosrc." alt='FECDAS' /></div>";
-		$footer .= "<div style='float:left;'>";
-		$footer .= "<small>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES<br/>";
-		$footer .= "08930  SANT ADRIÀ DE BESÒS<br/>";
-		$footer .= "Tel. 93-356 05 43<br/>";
-		$footer .= "Fax: 93-356 30 73<br/>";
-		$footer .= "E-mail: ".self::MAIL_CONTACTE."<br/>";
-		$footer .= "</small></div>"; 
+		$footer .= "<div style='float:left;text-align:right'>";
+		$footer .= "<small><b>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES</b></small><br/>";
+		$footer .= "<span style='font-size: 10px;'>Moll de la Vela, 1 (Zona Fòrum)<br/>";
+		$footer .= "08930  Sant Adrià de Besòs<br/>";
+		$footer .= "Tel. 93 356 05 43<br/>";
+		$footer .= "Fax: 93 356 30 73<br/>";
+		$footer .= "Adreça electrònica: ".self::MAIL_CONTACTE."<br/>";
+		$footer .= "</span></div>"; 
 		
 		
 		$body = "<html style='font-family: Helvetica,Arial,sans-serif;'><head></head><body>".$body.$footer."</body></html>";

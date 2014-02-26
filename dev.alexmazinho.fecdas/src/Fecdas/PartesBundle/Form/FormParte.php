@@ -21,74 +21,45 @@ class FormParte extends AbstractType {
 		$current_year = date("Y");
 		$end_year = date("Y");
 		if (date("m") == 12 and date("d") >= 10) $end_year++; // A partir 10/12 poden fer llicències any següent 
+
+		$builder->add('dataalta', 'datetime', array(
+				'read_only' => true,
+				'widget' => 'single_text',
+				'input' => 'datetime',
+				'empty_value' => false,
+				'format' => 'dd/MM/yyyy HH:mm',
+		));
 		
-		if (!$this->options['nova'])
-			$builder->add('dataalta', 'datetime',
-					array('date_widget' => 'single_text','time_widget' => 'single_text', 'date_format' => 'dd/MM/yyyy', 'disabled' => true));
-		else 
-			$builder->add('dataalta', 'datetime',
-					array('date_widget' => 'choice','time_widget' => 'choice', 'date_format' => 'dd/MM/yyyy', 'years' => range($current_year, $end_year)));
+		
 		
 		$builder->add('any', 'text', array(
 				'mapped'  => false,
 				'read_only' => true,
 		));
 
-		$codiclub = $this->options['codiclub'];
-		if ($this->options['nova'] and $this->options['admin'] and $this->options['edit']) {
-			$cluboptions = array('class' => 'FecdasPartesBundle:EntityClub', 'property' => 'llistaText', 'multiple' => false,
-					'query_builder' => function($repository) {
-					return $repository->createQueryBuilder('c')->orderby('c.nom');
-					},
-			);
-			$builder->add('club', 'entity', $cluboptions);
-		} else {
-			$cluboptions = array('class' => 'FecdasPartesBundle:EntityClub', 'property' => 'llistaText', 'multiple' => false,
-					'query_builder' => function($repository) use ($codiclub) {
-					return $repository->createQueryBuilder('c')->orderby('c.nom')
-					->where('c.codi = :codiclub')
-					->setParameter('codiclub', $codiclub);
-					},
-			);
-			$builder->add('club', 'entity', $cluboptions);
-		}
-		
 		$tipusparte = $this->options['tipusparte'];
 		$llistatipus = $this->options['llistatipus'];
 		if ($this->options['nova'] and $this->options['edit']) {
 			// Mostra només la llista dels permesos
-			if (count($llistatipus) > 0) {
-				/* Si la llista només té una llicència, required = true*/
-				
-				$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 
-						'query_builder' => function($repository) use ($llistatipus) {
-						return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
-						->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
-						->setParameter('llistatipus', $llistatipus);
-				}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1,  
-				);
-			} else {
-				// Per evitar errors de llista buida $llistatipus
-				$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 'property' => 'descripcio',);
-				
-				$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 'property' => 'descripcio',
-						'query_builder' => function($repository) {
-							return $repository->createQueryBuilder('t')
-							->where('t.id = -1');
-						},
-				);
-			}
+			$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 
+					'query_builder' => function($repository) use ($llistatipus) {
+					return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
+					->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
+					->setParameter('llistatipus', $llistatipus);
+			}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1, 'empty_value' => 'Selecciona una...',
+			);
+			$builder->add('tipus', 'entity', $tipusparteoptions);
 		} else {
-			$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 'property' => 'descripcio',
+			$tipusparteoptions = array('class' => 'FecdasPartesBundle:EntityParteType', 
 					'query_builder' => function($repository) use ($tipusparte) {
 					return $repository->createQueryBuilder('t')->orderBy('t.id', 'ASC')
 					->where('t.id = :tipusparte')
 					->setParameter('tipusparte', $tipusparte); 
-					},
+					}, 'property' => 'descripcio', 'read_only' => true,
 			);
+			$builder->add('tipus', 'entity', $tipusparteoptions);
+			//$builder->add('tipus', 'text', array('mapped'  => false, 'data' => $llistatipus[0], 'read_only' => true,));
 		}
-		
-		$builder->add('tipus', 'entity', $tipusparteoptions);
 		
 		$builder->add('datapagament', 'date',
 				array('widget' => 'single_text', 'format' => 'dd/MM/yyyy', 'years' => range(1990, 2020), 'read_only' => true));

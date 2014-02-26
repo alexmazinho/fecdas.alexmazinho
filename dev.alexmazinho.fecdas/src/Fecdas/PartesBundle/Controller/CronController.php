@@ -356,11 +356,13 @@ class CronController extends BaseController {
 		$sortida .= "table, th, td { border: 1px solid black; }";
 		$sortida .= "th { padding: 5px; background-color: #E7F2FB; color: #2281CF; font-weight: bold; }";
 		$sortida .= "td { padding: 5px; color: #555555 }";
+		$sortida .= ".comment { font-style:italic; }";
 		$sortida .= ".codi { display:none }";
-		$sortida .= ".club { width:17% }";
-		$sortida .= ".importclub { width:9%; text-align: right }";
+		$sortida .= ".club { width:10%; font-weight: bold; }";
+		$sortida .= ".importclub { width:5%; text-align: right }";
+		$sortida .= ".saldo { font-weight: bold; }";
 		$sortida .= ".importerror { background-color: red }";
-		$sortida .= ".incidencies { width:55% }";
+		$sortida .= ".incidencies { width:50% }";
 		$sortida .= "</style>";
 		
 		$sortida .= "<h1>Informe diari de clubs en data " . $this->getCurrentDate()->format('d/m/Y') .  "</h1>";
@@ -376,10 +378,19 @@ class CronController extends BaseController {
 		$sortida .= "<h2>Nombre de clubs: " . count($clubs) . "</h2>";
 		$nclubsincidencias = 0;
 		$sortida .= "<h2>Clubs amb incidència: -updinci- </h2>";
-		
+		$sortida .= "<p class='comment'>*Romanent: Deute del club acumulat en anys anteriors. Valors negatius indiquen saldo favorable al club</p>";
+
 		$sortida .= "<table>";
-		$sortida .= "<tr><th class='codi'>Codi</th><th class='club'>Club</th><th class='importclub'>Import llics. web</th>";
-		$sortida .= "<th class='importclub'>Import llics. gestor</th><th class='importclub'>Saldo</th>";
+		$sortida .= "<tr><th class='codi'>Codi</th><th class='club'>Club</th>";
+		$sortida .= "<th class='importclub'>Romanent* ant. ".date('Y')."</th>";
+		$sortida .= "<th class='importclub'>Llicències<br/>GESTOR</th>";
+		$sortida .= "<th class='importclub'>Kits<br/>GESTOR</th>";
+		$sortida .= "<th class='importclub'>Altres<br/>GESTOR</th>";
+		$sortida .= "<th class='importclub'>Pagaments<br/>GESTOR</th>";
+		$sortida .= "<th class='importclub'>Subven.<br/>GESTOR</th>";
+		$sortida .= "<th class='importclub saldo'>Saldo<br/>GESTOR</th>";
+		$sortida .= "<th class='importclub'>Llicències<br/>WEB</th>";
+		$sortida .= "<th class='importclub'>Diferència<br/>Llicències</th>";
 		$sortida .= "<th class='incidencies'>Incidències</th></tr>";
 		
 		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
@@ -391,6 +402,15 @@ class CronController extends BaseController {
 
 			$dadesClub = $club_iter->getDadesCurrent(true);
 			
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getRomanent(), 2, ',', '.') . "€</td>"; // Romanent gestor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències gestor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalkits(), 2, ',', '.') . "€</td>"; // Import Kits gestor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalaltres(), 2, ',', '.') . "€</td>"; // Import altres gestor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalpagaments(), 2, ',', '.') . "€</td>"; // Import pagaments gestor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getAjustsubvencions(), 2, ',', '.') . "€</td>"; // Import ajust per subvencions gestor
+			$filaClub .= "<td class='importclub'>" . number_format($dadesClub['saldogestor'], 2, ',', '.') . "€</td>"; // Saldo gestor
+			$filaClub .= "<td class='importclub'>" . number_format($dadesClub['import'], 2, ',', '.') . "€</td>"; // Import llicències web
+			
 			$difLlicencies = $dadesClub['import'] - $club_iter->getTotalllicencies();
 
 			$classImport = "importclub";
@@ -399,10 +419,9 @@ class CronController extends BaseController {
 				$incidencies .= ">> (Incidència) Diferència totals llicències web i gestor " .number_format($difLlicencies, 2, ',', ' ') .  "<br/>";
 				$classImport .= " importerror";
 			}
-
-			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['import'], 2, ',', '.') . "€</td>"; // Import llicències web
-			$filaClub .= "<td class='".$classImport."'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències gestor
-			$filaClub .= "<td class='".$classImport."'>" . number_format($dadesClub['saldogestor'], 2, ',', '.') . "€</td>"; // Saldo web
+			
+			$filaClub .= "<td class='".$classImport."'>" . number_format($difLlicencies, 2, ',', '.') . "€</td>"; // Diferència llicències web - gestor
+			
 			
 			//echo $this->getCurrentDate()->format('Y-m-d') . " > " . $datainiciRevisarSaldos->format('Y-m-d') . "</br>";   
 			if ($this->getCurrentDate() >= $datainiciRevisarSaldos and $club_iter->controlCredit()) {

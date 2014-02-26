@@ -23,14 +23,16 @@
 				{{ form_label(form.vigent, 'Només mostrar llista amb llicència vigent', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
-			<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', 
-									{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms }) }}">
-				<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
-				title="Descarregar les llistes" width="30px"></a></div> 
-			<div class="button-top"><a class="print-link" target="_blank" href="{{ path('FecdasPartesBundle_asseguratstopdf', 
-									{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms, 'print': true }) }}">
-				<img src="{{ asset('images/icon-print.png') }}" alt="Descarregar les llistes" 
-				title="Descarregar les llistes" width="30px"></a></div> 
+			<div id="buttons-top" class="form-right">
+				<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', 
+										{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms }) }}">
+					<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
+					title="Descarregar les llistes" width="40px"></a></div> 
+				<div class="button-top"><a class="print-link" target="_blank" href="{{ path('FecdasPartesBundle_asseguratstopdf', 
+										{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms, 'print': true }) }}">
+					<img src="{{ asset('images/icon-print.png') }}" alt="Descarregar les llistes" 
+					title="Descarregar les llistes" width="40px"></a></div>
+			</div> 
 		</div>
    		<div class="form-row clearfix">
 			<div id="formassegurats-dni" class="form-left">

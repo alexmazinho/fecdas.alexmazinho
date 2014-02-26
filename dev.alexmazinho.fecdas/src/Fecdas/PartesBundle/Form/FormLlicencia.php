@@ -24,7 +24,7 @@ class FormLlicencia extends AbstractType {
 		$builder->add('id', 'hidden');
 		
 		$codiclub = $this->options['codiclub'];
-		 
+
 		$builder->add('persona', 'entity', array(
 				'class' => 'FecdasPartesBundle:EntityPersona',
 				'query_builder' => function($repository) use ($codiclub) {

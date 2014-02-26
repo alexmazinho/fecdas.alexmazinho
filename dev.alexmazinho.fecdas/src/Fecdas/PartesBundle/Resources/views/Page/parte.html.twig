@@ -4,6 +4,8 @@
 {% block javascriptshead %}
  	{{ parent() }}
    	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+   	<script src="{{ asset('js/jquery-ui-timepicker-addon.js') }}" type="text/javascript"></script>
+   	<script src="{{ asset('js/jquery-ui-timepicker-ca.js') }}" type="text/javascript"></script>
    	 {{ form_javascript(form) }}
 {% endblock %}
 
@@ -23,33 +25,13 @@
 			{{ form_widget(form.id) }}
 		</div>
 		<div class="sms-header-info">{{ parte.infoParte }}</div> 
-		<div class="form-row">
+		<div class="form-row clearfix">
 			<div id="formparte-any" class="form-left">
 				<label class="formlabel-outside required">Any</label>
-				{# form_label(form.dataalta, 'Data Alta', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.any, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
-			<div id="formparte-club" class="form-left">
-				{{ form_label(form.club, 'Club', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.club, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formparte-datapagament" class="form-left" {% if parte.datapagament is null %} style="display: none" {% endif %}>
-				<label class="formlabel-outside required">Data Pagament</label>
-				{# form_label(form.datapagament, 'Data Facturació', { 'label_attr': {'class': 'formlabel-outside'} }) #}
-				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			{% if admin == true and parte.datapagament is null and parte.id is not null %}
-			<div id="formparte-submit" class="form-left textaccio">
-				<label class="formlabel-outside required" for="formparte-button-pagat">&nbsp;</label>
-				<a id="formparte-button-pagat" class="form-left" href="{{ path('FecdasPartesBundle_confirmapagament', { 'id': parte.id }) }}">Pagament Rebut</a>
-			</div>
-			{% endif %}
-			
-		</div>
-		<div class="form-row clearfix">
 			<div id="formparte-dataalta" class="form-left">
 				<label class="formlabel-outside required">Validesa des de</label>
-				{# form_label(form.dataalta, 'Data Alta', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 				{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div>
 			<div id="formparte-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
@@ -57,42 +39,46 @@
 				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 				<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 			</div>
-        </div>
-         
-        <div class="form-row clearfix">
-        	{% if (admin == true and parte.datapagament is null) or parte.allowedit == true %}
-				<div id="formparte-novallicencia" class="textaccio form-left">
-					<a id="displayText" href="javascript:void(0);" onclick="loadLlicencia.call(this, 0)" >
-					Nova llicència
-					<img src="{{ asset('images/icon_dropdown.png') }}">
-					</a>
+			<div id="formparte-novallicencia" class="textaccio form-left">
+				<a onclick="loadLlicencia.call(this, 0)" href="javascript:void(0);" id="displayText">Afegir llicència<img src="/images/icon_dropdown.png"></a>
+			</div>
+			<div id="formparte-datapagament" class="form-left" {% if parte.datapagament is null %} style="display: none" {% endif %}>
+				<label class="formlabel-outside required">Data Pagament</label>
+				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside'} }) }}
+			</div>
+			{% if admin == true and parte.datapagament is null %}
+				{% if parte.id is not null %}
+				<div id="formparte-pagamentconfirm" class="form-left textaccio">
+					<a id="formparte-button-pagat" class="form-left" href="{{ path('FecdasPartesBundle_confirmapagament', { 'id': parte.id }) }}">Pagament Rebut</a>
 				</div>
-			{% endif %}	
+				{% endif %}
+			{% endif %}
 			<div id="buttons-top" class="form-right" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
 				{% if not parte.pagat and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
 	        		<a id="formparte-payment" href="{{ path('FecdasPartesBundle_pagament', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="30px"></a>
+						<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="40px"></a>
 				</div>
 				{% endif %}	
 				<div id="parte-to-pdf" class="button-top">
 					<a href="{{ path('FecdasPartesBundle_partetopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="30px"></a></div>
+						<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="40px"></a></div>
 					<!-- només factures amb número factura del web -->
 				{% if parte.numfactura is not null %} 
 					<div id="factura-to-pdf" class="button-top">
 						<a href="{{ path('FecdasPartesBundle_facturatopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="30px"></a>
+						<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="40px"></a>
 					</div>
 				{% else %}
 					<div id="albara-to-pdf" class="button-top">
 						<a href="{{ path('FecdasPartesBundle_albaratopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-albara.jpg') }}" alt="Albarà" title="Albarà" width="25px"></a>
+						<img src="{{ asset('images/icon-albara.jpg') }}" alt="Albarà" title="Albarà" width="35px"></a>
 					</div>
 				{% endif %}
 			</div>	
 		</div>
+         
 		<div id="formparte-rest">	{{ form_rest(form) }}</div>
 		
 		<div id="error" class="sms-notice" style="display:none"> </div>
@@ -123,12 +109,19 @@
 
 $(document).ready(function(){
 	setMenuActive("menu-partes");
+
+	{% if (parte.id is null) %}
+		loadTimeCalendar($( "#parte_dataalta" ),	
+				new Date({{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }}), 
+				new Date({{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }}) ); 
+
+	{% endif %} 
+
+	{% if parte.allowedit == true %}
+		reloadParte();
+	{% endif %} 
 	
-	reloadParte();
-
 	removeLlicenciaClick();
-
-	/*removeParteButton();*/
 
 	confirmarPartePagat();
 	

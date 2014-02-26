@@ -63,7 +63,7 @@ class TcpdfBridge extends \TCPDF{
     	// Page number
     	$footer = '<a href="http://www.fecdas.cat">FECDAS</a> - FEDERACIÓ CATALANA D\'ACTIVITATS SUBAQUÀTIQUES - NIF: Q5855006B<br/>';
     	$footer .= 'Moll de la Vela 1 (Zona Forum) - 08930 Sant Adrià de Besòs<br/>';
-    	$footer .= 'Tel: 93 356 05 43  Fax: 93 356 30 73 E-mail: info@fecdas.cat';
+    	$footer .= 'Tel: 93 356 05 43  Fax: 93 356 30 73 Adreça electrònica: info@fecdas.cat';
     	
     	$this->writeHTMLCell('', '', '', '', $footer, 0, 0, 0, true, 'C', true);
     	if ($this->pagenum == true) $this->Cell(0, 10, 'Pàgina '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');

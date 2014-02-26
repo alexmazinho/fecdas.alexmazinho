@@ -121,8 +121,8 @@ select {
     border: 1px solid #AAA;
     margin: 0 2px 0 2px;
   	overflow: hidden;
-  	padding-top: 3px;
-  	padding-bottom: 1px;
+  	/*padding-top: 3px;*/
+  	/*padding-bottom: 1px;*/
   	padding-right: 3px;
   	text-overflow: ellipsis;
   	white-space: nowrap;
@@ -159,7 +159,7 @@ input[disabled="disabled"]
 
 #dialeg .dialeg-jerror { height:100%; width: 100%;  font-size: 18px; }
 #dialeg .dialeg-jerror img { vertical-align:middle; }
-#dialeg .dialeg-jerror .jerror-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px;   }
+#dialeg .dialeg-jerror .jerror-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px; color: #333333;  }
 
 form.appform { font-size: 14px; }
 form.appform div { 
@@ -538,26 +538,29 @@ html>body .textaccio img {
 }
 
 #buttons-top {
-	position:absolute;
-	top:13px;
-	right:10px;	
+	/*position:absolute;*/
+	display: inline-block;
+	float:right;
+	/*top:13px;
+	right:10px;*/	
 	
 }
 
 .button-top {
-	float: right;
+	/*float: right;*/
+	display: inline;
 	padding-left: 5px;
 }
+
+
 
 #formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
 	float:left;
 	padding-left: 5px;
 }
 
-#formparte-novallicencia {
-	margin-top: 15px;
-	margin-bottom: 15px;
-	width: 25%;
+#formparte #buttons-top {
+	padding-top: 20px;
 }
 
 #edicio-llicencies,
@@ -606,19 +609,6 @@ html>body .textaccio img {
     min-height: 170px;
     position: relative;
     margin-bottom: 10px;
-}
-
-.parte-llicencia {
-	/*height: 300px;*/
-}
-
-.parte-llicencia .textaccio {
-	width: 22%;
-	min-width: 200px;
-}
-
-* html .parte-llicencia .textaccio { /*min-width: 200px;  min-width IE hack */
-   height: expression( this.scrollWidth < 201 ? "200px" : "auto" ); /* sets min-height for IE */
 }
 
 #formparte-llicencia .form-row {
@@ -675,29 +665,39 @@ html>body .textaccio img {
 	width: auto !important;
 }
 
-
-div#parte_dataalta_date {
-	float:left;
-	width: auto;
+#formparte .form-left {
+    display: inline-block;
+    float: none;
 }
 
-div#parte_dataalta_time {
-	float:left;
-	width: auto;
-}
+#parte_dataalta { width: 130px; margin: 0 5px 0 0; }
 
+#parte_datapagament, 
+#llicencia_datacaducitatshow, 
+#parte_renew_dataalta_date { width: 100px; text-align: center;  margin: 0 5px 0 0; }
 
-select#parte_llicencies_persona_select { width: 280px; /*min-width: 200px;*/ }
+#s2id_parte_llicencies_persona_select { width: 280px; /*min-width: 200px;*/ }
 
-input#parte_datapagament,
-input#parte_dataalta_date,
-input#parte_renew_dataalta_date,
 input#datepicker,
 .data-field input { 
 	width: 100px;
 	text-align: center;
 	text-indent: 0px;
 }
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
+.ui-timepicker-rtl dl dt{ float: right; clear: right; }
+.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }
+
 
 input#parte_dataalta_time,
 input#parte_renew_dataalta_time
@@ -719,8 +719,6 @@ input#parte_numrelacioshow {
 	text-align: right;
 	padding-right: 2px;
 }*/
-
-select#parte_club { width: 330px; /*min-width: 330px;*/ }
 
 select#parte_tipus { width: 250px; /*min-width: 250px;*/ }
 

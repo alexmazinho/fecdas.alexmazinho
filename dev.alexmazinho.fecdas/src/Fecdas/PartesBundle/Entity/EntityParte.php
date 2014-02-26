@@ -133,6 +133,9 @@ class EntityParte {
 		$this->id = null;
 		$this->numrelacio = null;
 		$this->datapagament = null;
+		$this->estatpagament = null;
+		$this->dadespagament = null;
+		$this->comentari = null;
 		$this->datafacturacio = null;
 		$this->numfactura = null;
 		$this->importpagament = null;
@@ -842,7 +845,7 @@ class EntityParte {
     		$current = new \DateTime();
     		$interval = $current->diff($this->getDataCaducitat("allowRenovar"));
     		
-    		if (($this->getAny() == date("Y") || $this->getAny() == date("Y") -1) and $interval->format('%m') <= 0) return true; // Menys d'un mes
+    		if ($this->getAny() == (date("Y")-1) and $interval->format('%r%m') <= 1) return true; // Menys d'un mes
     		else return false;
     	}
     	return false;

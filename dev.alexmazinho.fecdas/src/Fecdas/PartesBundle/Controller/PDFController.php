@@ -120,9 +120,7 @@ class PDFController extends BaseController {
 		$tbl .= '<tr><td width="250" align="right"><b>FEDERACIÓ CATALANA <br/>D\'ACTIVITATS SUBAQUÀTIQUES</b></td></tr>';
 		$tbl .= '<tr><td align="right">Moll de la Vela 1 (Zona Forum)<br/>';
 		$tbl .= '08930 Sant Adrià de Besòs<br/>';
-		$tbl .= 'Tel: 93 356 05 43  Fax: 93 356 30 73<br/>';
-		$tbl .= 'http://www.fecdas.cat<br/>';
-		$tbl .= 'E-mail: info@fecdas.cat<br/>';
+		$tbl .= 'Tel: 93 356 05 43 Fax: 93 356 30 73<br/>';
 		$tbl .= 'NIF: Q5855006B</td></tr>';
 		$tbl .= '</table>';
 		$pdf->writeHTML($tbl, false, false, false, false, '');
@@ -359,8 +357,6 @@ class PDFController extends BaseController {
 		$tbl .= '<tr><td align="right">Moll de la Vela 1 (Zona Forum)<br/>';
 		$tbl .= '08930 Sant Adrià de Besòs<br/>';
 		$tbl .= 'Tel: 93 356 05 43  Fax: 93 356 30 73<br/>';
-		$tbl .= 'http://www.fecdas.cat<br/>';
-		$tbl .= 'E-mail: info@fecdas.cat<br/>';
 		$tbl .= 'NIF: Q5855006B</td></tr>';
 		$tbl .= '</table>';
 		$pdf->writeHTML($tbl, false, false, false, false, '');
@@ -902,6 +898,33 @@ class PDFController extends BaseController {
 				$x += 41;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				
+				
+				/* Tipus de llicència
+				 * Taula TipoParte LL_L1 + LL_L1 + LL_L3 */
+				$titolsPlastic = array();
+				$anyLlicencia = $datacaduca->format('Y');
+				$titolsPlastic[1] = "LLICÈNCIA FEDERATIVA\nTIPUS A (HABILITADA)\n".$anyLlicencia;
+				$titolsPlastic[2] = "ASSEGURANÇA\nTIPUS B\n".$anyLlicencia;
+				$titolsPlastic[4] = "LLICÈNCIA FEDERATIVA\nTIPUS C (HABILITADA)\n".($anyLlicencia-1)."-".$anyLlicencia;	
+				$titolsPlastic[5] = "LLICÈNCIA FEDERATIVA\nTIPUS A (HABILITADA)\n".$anyLlicencia;
+				$titolsPlastic[6] = "LLICÈNCIA FEDERATIVA\nTIPUS B\n".$anyLlicencia;
+				$titolsPlastic[7] = "LLICÈNCIA FEDERATIVA\nTIPUS E (HABILITADA)\n(365 dies)";	
+				$titolsPlastic[8] = "LLICÈNCIA FEDERATIVA\nTIPUS F (ASSEGURANÇA)\n(365 dies)";
+				$titolsPlastic[9] = "LLICÈNCIA FEDERATIVA\nTIPUS G (ASSEGURANÇA)\nCURS ESCOLAR";
+				$titolsPlastic[10] = "ASSEGURANÇA\nTIPUS B\n(365 dies)";
+				$titolsPlastic[11] = "ASSEGURANÇA\nUN DIA";
+				$titolsPlastic[12] = "LLICÈNCIA FEDERATIVA\nTIPUS G 2n (ASSEGURANÇA)\n".($anyLlicencia-1)."-".$anyLlicencia;
+
+				if (isset($titolsPlastic[$llicencia->getParte()->getTipus()->getId()])) {
+					$pdf->SetFont('helvetica', 'B', 9.5, '', true);
+					$pdf->SetTextColor(230, 230, 230); // Gris
+					$y = $y_ini + 24;
+					$x = $x_ini + 62;
+
+					$pdf->SetY($y);
+					$pdf->SetX($x);
+					$pdf->MultiCell($height,$width,$titolsPlastic[$llicencia->getParte()->getTipus()->getId()],0,'C',1);
+				}
 				
 				// reset pointer to the last page
 				$pdf->lastPage();

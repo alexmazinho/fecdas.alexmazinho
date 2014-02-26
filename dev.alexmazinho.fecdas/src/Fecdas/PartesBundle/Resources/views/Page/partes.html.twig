@@ -38,7 +38,7 @@
 			<div id="summary-header">
 				<div id="partes-totals" class="col-listheader">Total: {{ stat['total'] }} llistes ({{ stat['ltotal'] }} llicències)<br/> 
 				<span>Vigents: {{ stat['vigents'] }} llistes ({{ stat['lvigents'] }} llicències)</span></div>
-				<div id="partes-import" class="col-listheader">Valor: {{ stat['itotal']|number_format(2, ',', '.') }}€</div>
+				<div id="partes-import" class="col-listheader">Saldo del club<br>{{ stat['deute']|number_format(2, ',', '.') }}€</div>
 			</div>
 		</div>
 	    <div class="table-header">	

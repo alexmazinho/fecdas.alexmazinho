@@ -187,7 +187,7 @@ class PageController extends BaseController {
 					/* Generate URL to send CSV confirmation */
 					$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
 							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
-							'club' => $parte->getClub()->getCodi(), 'tempfile' => $this->getTempUploadDir()."/".$tempname
+							'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
 					
 					// Redirect to confirm page		
@@ -210,7 +210,7 @@ class PageController extends BaseController {
 		}
 
 		return $this->render('FecdasPartesBundle:Page:importcsv.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'datesparte' => $this->datesAltaParte())));
 	}
 	
 	public function confirmcsvAction() {
@@ -226,8 +226,9 @@ class PageController extends BaseController {
 		/* Registre abans de tractar fitxer per evitar flush en cas d'error */
 		$this->logEntryAuth('CONFIRM CSV', $request->query->get('tempfile'));
 		
+		$currentClub = $this->getCurrentClub();
+		
 		$tipusparte = $request->query->get('tipus');
-		$codiclub = $request->query->get('club');
 		$dataalta = $datanaixement = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
 		$temppath = $request->query->get('tempfile');
 		
@@ -235,7 +236,7 @@ class PageController extends BaseController {
 			$parte = new EntityParte($this->getCurrentDate());
 			$parte->setDatamodificacio($this->getCurrentDate());
 			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipusparte));
-			$parte->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
+			$parte->setClub($currentClub);
 			$parte->setDataalta($dataalta);
 				
 			$em = $this->getDoctrine()->getManager();
@@ -396,7 +397,7 @@ class PageController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 
-		$currentClub = $this->getCurrentClub()->getCodi();
+		$club = $this->getCurrentClub();
 
 		$desde = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
 		
@@ -411,20 +412,13 @@ class PageController extends BaseController {
 				$formdata = $request->request->get('form');
 				$desde = \DateTime::createFromFormat('d/m/Y', $formdata['desde']);
 			}
-			
-			if ($request->request->has('parte')) { // Esborra't des de Parte
-				$parte = $request->request->get('parte');  
-				if (isset($parte['club'])) $currentClub = $parte['club'];
-			}
 		} else {
 			//$request->getSession()->getFlashBag()->clear();
 		}
 
-		$this->logEntryAuth('VIEW PARTES', $currentClub);
+		$this->logEntryAuth('VIEW PARTES', $club->getCodi());
 		
-		$partesclub = $this->consultaPartesClub($currentClub, $desde);
-		
-		$club = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($currentClub);
+		$partesclub = $this->consultaPartesClub($club->getCodi(), $desde);
 		
 		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
 			// A partir 10/12 poden fer llicències any següent
@@ -438,11 +432,13 @@ class PageController extends BaseController {
 		));
 		
 		/* Recollir estadístiques */
+		$stat['deute'] = $club->getSaldoweb() * -1;
 		$stat['total'] = count($partesclub); 
 		$stat['ltotal'] = 0;
 		$stat['itotal'] = 0;
 		$stat['vigents'] = $stat['total'];
 		$stat['lvigents'] = 0;
+
 		foreach($partesclub as $c => $parte_iter) {
 			$nlic = $parte_iter->getNumLlicencies();
 			$impo = $parte_iter->getPreuTotalIVA(); 
@@ -605,10 +601,6 @@ class PageController extends BaseController {
 			$formdata = $request->request->get('form');
 			$dni = $formdata['dni'];
 
-			$this->logEntry($this->get('session')->get('username'), 'CHECK DNI',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $dni);
-			
 			$smsko = 'No hi ha cap llicència vigent per al DNI : ' . $dni;
 			$smsok = 'El DNI : ' . $dni . ', té una llicència vigent fins ';
 			
@@ -660,6 +652,8 @@ class PageController extends BaseController {
 				}
 			}
 
+			$this->logEntryAuth('CONSULTA DNI', $dni . " " . ($trobada == true)?"ok":"ko");
+			
 			if ($trobada == true) $this->get('session')->getFlashBag()->add('error-notice', $smsok);
 			else $this->get('session')->getFlashBag()->add('error-notice', $smsko);
 				
@@ -777,9 +771,7 @@ class PageController extends BaseController {
 				$em->persist($parte);
 				$em->flush();
 
-				$this->logEntry($this->get('session')->get('username'), 'RENOVAR OK',
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+				$this->logEntryAuth('RENOVAR OK', $parte->getId());
 				
 				$this->get('session')->getFlashBag()->add('error-notice',	'Llista de llicències enviada correctament');
 						
@@ -817,10 +809,7 @@ class PageController extends BaseController {
 				}
 			}
 			
-			$this->logEntry($this->get('session')->get('username'), 'RENOVAR VIEW',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId() . "-" .$avisos);
-				
+			$this->logEntryAuth('RENOVAR VIEW', $parte->getId() . "-" .$avisos);
 		}
 			
 		return $this->render('FecdasPartesBundle:Page:renovar.html.twig',
@@ -845,19 +834,15 @@ class PageController extends BaseController {
 		$options = $this->getFormOptions();
 		$parteid = 0;
 		$action = "";
-				
+		$currentClub = $this->getCurrentClub();
+		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('parte')) { 
 				$response = $this->forward('FecdasPartesBundle:Page:pagament');  // Pagament continuar
 				return $response;
 			}
-			if ($request->request->has('form')) { // Nou parte des de Partes
-				$formdata = $request->request->get('form');  
-				if (isset($formdata['clubs'])) {
-					$currentClub = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')
-						->find($formdata['clubs']);
-				}
-			}
+			// Nou parte des de Partes
+			// ...
 		} else {
 			if ($request->query->has('id') and $request->query->get('id') != "")
 				$parteid = $request->query->get('id');
@@ -868,40 +853,57 @@ class PageController extends BaseController {
 		if ($parteid > 0) {
 			// 	Update or delete
 			$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
+			$options['tipusparte'] = $parte->getTipus()->getId();
+			$this->logEntryAuth('PARTE VIEW', $parteid);
 		} else {
 			$parte = new EntityParte($this->getCurrentDate());
 			$options['nova'] = true;
-			$data_alta = $this->getCurrentDate('now');
+			$data_alta = $this->getCurrentDate();
 			$data_alta->add(new \DateInterval('PT1200S')); // Add 20 minutes
 			$parte->setDataalta($data_alta);
-			if (!isset($currentClub)) $currentClub = $this->getCurrentClub();
 			$parte->setClub($currentClub);
 			
 			if ($currentClub->pendentPagament()) $parte->setPendent(true);
 			
-			// El tipus de parte es necessari per saber els checks de llicència que cal ocultar
-			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find(1));
-
 			$options['llistatipus'] = $this->getLlistaTipusParte($parte->getDataalta()->format('d'), $parte->getDataalta()->format('m'));
+			
+			$this->logEntryAuth('PARTE NEW', $parteid); 
 		}
 		
-		$pdf = $this->showPDF($parte);
-		$edit = $this->allowEdit($parte);
-
-		if ($edit == true) $options['edit'] = true;  
+		$options['edit'] = $parte->isAllowEdit();  
 		if ($this->isCurrentAdmin()) $options['admin'] = true; 
 
-		$options['codiclub'] = $parte->getClub()->getCodi();
-		$options['tipusparte'] = $parte->getTipus()->getId();
-		
 		$form = $this->createForm(new FormParte($options), $parte);
 		
 		$form->get('any')->setData($parte->getAny());
 		
 		return $this->render('FecdasPartesBundle:Page:parte.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'pdf' => $pdf, 'edit' => $edit)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 
+						'parte' => $parte, 'datesparte' => $this->datesAltaParte())));
 	}
 
+	private function datesAltaParte(){
+		// Dates mínima i màxima del selector en l'alta de partes (nou parte, import csv...)
+		$datesparte = array();
+		
+		$current_year = date("Y");
+		$end_year = date("Y");
+		if (date("m") == 12 and date("d") >= 10) $end_year++; // A partir 10/12 poden fer llicències any següent
+		
+		$current = $this->getCurrentDate();
+		$datemin = $current; 
+		if ($this->isCurrentAdmin()) $datemin = \DateTime::createFromFormat('Y-m-d H:i:s', $datemin->format('Y') . '-01-01 00:00:00'); 
+		
+		$datesparte['min'] = array('any' => $datemin->format('Y'), 'mes' => $datemin->format('m'), 'dia' => $datemin->format('d'));
+
+		$datemax = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y') . '-12-31 23:59:00');
+		if ($current->format('m') == self::INICI_TRAMITACIO_ANUAL_MES and $current->format('d') >= self::INICI_TRAMITACIO_ANUAL_DIA) $datemax->add(new \DateInterval('P2M')); // Add 2 mesos
+		
+		$datesparte['max'] = array('any' => $datemax->format('Y'), 'mes' => $datemax->format('m'), 'dia' => $datemax->format('d'));
+		
+		return $datesparte;
+	}
+	
 	private function updateParte(Request $request) {
 		
 		/* Des de llicència XMLRequest, update llicència i potser nou parte*/
@@ -916,6 +918,9 @@ class PageController extends BaseController {
 			$partedataalta = $parte->getDataalta();  // El posterior bind no carrega data pq està disabled al form
 		} else {
 			$parte = new EntityParte($this->getCurrentDate());
+			$partedataalta = \DateTime::createFromFormat('d/m/Y H:i', $p['dataalta']);
+			$parte->setDataalta($partedataalta);
+			$parte->setClub($this->getCurrentClub());
 			$em->persist($parte);
 		}
 		
@@ -954,9 +959,7 @@ class PageController extends BaseController {
 				$logaction = 'LLICENCIA DEL KO';
 			}
 			$extrainfo = 'parte:' . $parte->getId() . ' llicencia: ' . $llicencia->getId();
-			$this->logEntry($this->get('session')->get('username'), $logaction,
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $extrainfo);
+			$this->logEntryAuth($logaction, $extrainfo);
 		} else {
 			$l = $requestParams['llicencia'];
 			
@@ -975,19 +978,13 @@ class PageController extends BaseController {
 			
 			$options = $this->getFormOptions();
 			
-			$options['codiclub'] = $p['club'];
+			$options['codiclub'] = $parte->getClub()->getCodi();
 			$options['tipusparte'] = $p['tipus'];
-			
 			array_push($options['llistatipus'], $p['tipus']);
 			$options['edit'] = true;
-			
 			$options['admin'] = true;
 			$options['nova'] = true;
-			if ($p['id'] != "") {
-				$options['any'] = $parte->getAny(); 
-			} else {
-				$options['any'] = $p['dataalta']['date']['year']; // Mostrar preu segons any parte
-			}
+			$options['any'] = $parte->getAny();
 			
 			$form = $this->createForm(new FormParte($options), $parte);
 			$formLlicencia = $this->createForm(new FormLlicencia($options),$llicencia);
@@ -999,10 +996,7 @@ class PageController extends BaseController {
 				$parte->setDatamodificacio($this->getCurrentDate());
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				
-				if ($parte->getId() != null) $parte->setDataalta($partedataalta); // Restore dataalta	
-				else {
-					if ($parte->getClub()->pendentPagament() == true) $parte->setPendent(true);  // Nous partes pendents
-				}	
+				if ($parte->getClub()->pendentPagament() == true) $parte->setPendent(true);  // Nous partes pendents
 
 				/* Comprovació datacaducitat */
 				if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
@@ -1069,7 +1063,7 @@ class PageController extends BaseController {
 					
 					$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 					
-					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament');
+					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 										
 					$em->flush(); 
 				} else {
@@ -1102,40 +1096,14 @@ class PageController extends BaseController {
 						$extrainfo .= ' ' . $message;
 					}
 				}
-				$this->logEntry($this->get('session')->get('username'), $logaction,
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $extrainfo);
-				
+				$this->logEntryAuth($logaction, $extrainfo);
 			} else {
-				// get a ConstraintViolationList
-				$errorstr = "";
-				/*$errors = $this->get('validator')->validate($parte);
-				foreach ($errors as $error)
-					$errorstr = $errorstr . " campp: "
-					. $error->getPropertyPath() . "("
-					. $error->getMessage() . ") \n";
-
-				$errors = $this->get('validator')->validate($llicencia);
-				foreach ($errors as $error)
-					$errorstr = $errorstr . " campl: "
-					. $error->getPropertyPath() . "("
-					. $error->getMessage() . ") \n";
-				
-				$errors = $this->get('validator')->validate($form);
-				foreach ($errors as $error)
-					$errorstr = $errorstr . " campl: "
-						. $error->getPropertyPath() . "("
-						. $error->getMessage() . ") \n";*/
-				
 				$this->get('session')->getFlashBag()->add('sms-notice', "error validant les dades".$form->getErrorsAsString()."-".$formLlicencia->getErrorsAsString()); 
-				
 			}
 		}
 		
-		$pdf = $this->showPDF($parte);
-
 		return $this->render('FecdasPartesBundle:Page:partellistallicencies.html.twig',
-				array('parte' => $parte, 'pdf' => $pdf, 'admin' =>$this->isCurrentAdmin()));
+				array('parte' => $parte, 'admin' =>$this->isCurrentAdmin()));
 	}
 
 	private function validaDataLlicencia(\DateTime $dataalta) {
@@ -1150,10 +1118,6 @@ class PageController extends BaseController {
 			$options = $this->getFormOptions();
 
 			$llicenciaId = 0;
-			$dataalta_parte = $this->getCurrentDate('today');
-			$tipusid = 1; // Tipus de parte
-			$codiclub = "";
-			$parte = null;
 			$currentPerson = 0;
 			if ($request->getMethod() == 'POST') {
 				if ($request->request->get('personaAction') != "") {
@@ -1168,43 +1132,36 @@ class PageController extends BaseController {
 				$this->get('session')->getFlashBag()->clear();
 				$requestParams = $request->query->all();
 			}
-			if (isset($requestParams['codiclub'])) $codiclub = $requestParams['codiclub'];
-			if (isset($requestParams['tipusparte'])) $tipusid = $requestParams['tipusparte'];
-			if (isset($requestParams['dataalta'])) 	{
-				//$dataalta_parte = \DateTime::createFromFormat('d/m/Y H:i:s', $requestParams['dataalta']);
-				$dataalta_parte = \DateTime::createFromFormat('j/n/Y h:i:s', $requestParams['dataalta']); /* Sense 0's davant */
-			} else {
-				error_log("sense data alta >> desde pantalla dades personals",0);
-			}
-			if (isset($requestParams['llicenciaId']) and $requestParams['llicenciaId'] > 0)
-				$llicenciaId = $requestParams['llicenciaId'];
-			if (isset($requestParams['currentperson']))
-				$currentPerson = $requestParams['currentperson'];
+
+			if (!isset($requestParams['tipusparte']) ||
+				!isset($requestParams['dataalta'])) return new Response("<div class='sms-notice'>Error. Contacti amb la Federació</div>");
+			
+			$tipusid = $requestParams['tipusparte'];
+			$dataalta_parte = \DateTime::createFromFormat('d/m/Y H:i', $requestParams['dataalta']);
+
+			if (isset($requestParams['llicenciaId']) and $requestParams['llicenciaId'] > 0) $llicenciaId = $requestParams['llicenciaId'];
+			if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
+			
 			if ($llicenciaId > 0) {
 				$llicencia = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityLlicencia')->find($llicenciaId);
 				$parte = $llicencia->getParte();
-				$codiclub = $parte->getClub()->getCodi();
 				$tipusid = $parte->getTipus()->getId();
-				$pdf = $this->showPDF($parte);
-				$edit = $this->allowEdit($parte);
 			} else {
 				$parte = new EntityParte($this->getCurrentDate());
 				$parte->setDataalta($dataalta_parte);
 				$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipusid));
-
+				
 				// Noves llicències, permeten edició no pdf
 				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
-				
-				$edit = true;
-				$pdf = false;
+
+				$parte->addEntityLlicencia($llicencia);
+
 			}
 			// Person submitted
-			if ($currentPerson > 0)
-				$llicencia->setPersona($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityPersona')
-						->find($currentPerson));
-			$options['codiclub'] = $codiclub;
+			if ($currentPerson > 0) $llicencia->setPersona($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityPersona')->find($currentPerson));
+			$options['codiclub'] = $this->getCurrentClub()->getCodi();
 			$options['tipusparte'] = $tipusid;
-			if ($edit == true) $options['edit'] = true;
+			$options['edit'] = $parte->isAllowEdit();
 			$options['any'] = $parte->getAny(); // Mostrar preu segons any parte
 			
 			$formllicencia = $this->createForm(new FormLlicencia($options), $llicencia);
@@ -1219,7 +1176,6 @@ class PageController extends BaseController {
 			
 			return $this->render('FecdasPartesBundle:Page:partellicencia.html.twig',
 					array('llicencia' => $formllicencia->createView(),
-							'pdf' => $pdf, 'edit' => $edit,
 							'asseguranca' => $parte->isAsseguranca(),
 							'llicenciadades' => $llicencia));
 		}
@@ -1262,15 +1218,11 @@ class PageController extends BaseController {
 			
 			if ($formpersona->isValid()) {
 				if ($persona->getNom() == "" or $persona->getCognoms() == "") {
-					$this->logEntry($this->get('session')->get('username'), 'PERSONA NEW NOM KO',
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'));
+					$this->logEntryAuth('PERSONA NEW NOM KO');
 					return new Response("nomerror");
 				}
 				if ($persona->getDni() == "") {
-					$this->logEntry($this->get('session')->get('username'), 'PERSONA NEW DNI KO',
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'));
+					$this->logEntryAuth('PERSONA NEW DNI KO');
 					return new Response("dnierror");
 				}
 				
@@ -1293,9 +1245,7 @@ class PageController extends BaseController {
 						$personaexisteix = $query->getResult();
 						
 						if (count($personaexisteix) > 0) {
-							$this->logEntry($this->get('session')->get('username'), 'PERSONA NEW DUPLI KO',
-									$this->get('session')->get('remote_addr'),
-									$this->getRequest()->server->get('HTTP_USER_AGENT'), $persona->getDni());
+							$this->logEntryAuth('PERSONA NEW DUPLI KO', $persona->getDni());
 							return new Response("dnicluberror");
 						}
 					}
@@ -1320,9 +1270,7 @@ class PageController extends BaseController {
 					$em->flush();
 					
 					// Després de flush, noves entitats tenen id
-					$this->logEntry($this->get('session')->get('username'), $logaction,
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'), $persona->getId());
+					$this->logEntryAuth($logaction, $persona->getId());
 					
 					$request->request->set('currentperson', $persona->getId());
 				} else { // Esborrar
@@ -1344,9 +1292,7 @@ class PageController extends BaseController {
 						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals esborrades correctament");
 					}
 					
-					$this->logEntry($this->get('session')->get('username'), $logaction,
-							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'),$persona->getId());
+					$this->logEntryAuth($logaction, $persona->getId());
 				}
 				$request->request->set('personaAction', 'personaAction');
 			} else {
@@ -1823,12 +1769,6 @@ class PageController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 	
-	
-
-	private function showPDF(EntityParte $parte) {
-		return true;
-	}
-
 	private function allowEdit(EntityParte $parte) {
 		return (boolean) ($parte->getDatapagament() == null); // Allow edition
 	}

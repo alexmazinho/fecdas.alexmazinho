@@ -13,6 +13,15 @@
 			{{ form_widget(llicencia.persona, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_persona_select' }) }}
 			{# form_errors(llicencia.persona) #}
 		</div>
+		{% if llicenciadades.parte.allowEdit == true %} 
+		<div class="textaccio form-left">
+			<label class="formlabel-outside">&nbsp;</label>
+			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
+			{% if llicenciadades.persona is not null %}	modifica assegurat 
+			{% else %} nou assegurat {% endif %}
+			<img src="{{ asset('images/icon_add.png') }}"></a>
+		</div>
+		{% endif %} 
 		<div id="formllicencia-categoria" class="form-left">
 			{{ form_label(llicencia.categoria, 'Tipus', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 			{{ form_widget(llicencia.categoria, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_categoria_select' }) }}
@@ -24,14 +33,6 @@
 		</div> 
 	</div>
 	<div class="form-row clearfix">
-		{% if edit == true %} 
-		<div class="textaccio form-left">
-			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
-			{% if llicenciadades.persona is not null %}	modifica assegurat 
-			{% else %} nou assegurat {% endif %}
-			<img src="{{ asset('images/icon_add.png') }}"></a>
-		</div>
-		{% endif %} 
 		<div class="llicencia-check check-correu" class="form-left">
 			{{ form_label(llicencia.enviarllicencia, 'Rebre llicència per correu?', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 			{{ form_widget(llicencia.enviarllicencia, { 'attr': {'class': 'formcheckbox-right'} }) }}
@@ -39,7 +40,7 @@
 	</div>
 	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
 	<div class="form-row clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
-		{% if edit == true %}
+		{% if llicenciadades.parte.allowEdit == true %}
 		<div class="llicencia-check seleccionar-tot">
 	 		<label class="formlabel-lefttocheckbox"  for="llicencia_seleccionat-tot">Seleccionar tot</label>
 			<input id="llicencia_seleccionat-tot" class="formcheckbox-right" type="checkbox" name="seleccionar-tot">
@@ -100,7 +101,7 @@
 		{{ form_widget(llicencia.bampolles, { 'attr': {'class': 'formcheckbox-right'} }) }}
 		</div>
 	</div>
-	{% if edit == true %}
+	{% if llicenciadades.parte.allowEdit == true %}
 	<div class="form-row clearfix">
 		<div class="textaccio form-left">
 			<a id="formllicencia-add" href="javascript:void(0);" name="add-llicencia">

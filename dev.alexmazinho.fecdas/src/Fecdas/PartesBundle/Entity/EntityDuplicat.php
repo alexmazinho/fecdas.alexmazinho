@@ -311,7 +311,6 @@ class EntityDuplicat {
 		$textInfo = "";
 		 
 		if ($this->databaixa != null) return "Petició anul·lada " . $this->databaixa->format("d/m/Y");
-
 		
 		if ($this->pagament != null) $textInfo .= "Petició pagada.";
 		

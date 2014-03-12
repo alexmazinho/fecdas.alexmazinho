@@ -76,7 +76,6 @@ class PageController extends BaseController {
 				return $this->redirect($this->generateUrl('FecdasPartesBundle_contact'));
 			}
 		}
-
 		return $this->render('FecdasPartesBundle:Page:contact.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 
@@ -1395,25 +1394,6 @@ class PageController extends BaseController {
 					$cognoms = "";
 					if ($form->has('cognoms')) $cognoms = $form->get('cognoms')->getData();
 					
-					$imgStrBase64 = "";
-					if ($form->has('imgBase64')) $imgStrBase64 = $form->get('imgBase64')->getData();
-					else $imgStrBase64 = "noooooooooooo";
-					
-					$imageBase64 = __DIR__.'/../../../../web/uploads/imgBase64.jpeg';
-					//file_put_contents($imageBase64, base64_decode($imgStrBase64));
-					
-					
-					$observacionsMail = "";
-					if ($duplicat->getPersona()->getNom() != $nom or 
-						$duplicat->getPersona()->getCognoms() != $cognoms) {
-						$observacionsMail = "<p>Ha canviat el nom, abans " . 
-						$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() ."</p>";
-						$duplicat->getPersona()->setNom($nom);
-						$duplicat->getPersona()->setCognoms($cognoms);
-						$duplicat->getPersona()->setDatamodificacio($this->getCurrentDate());
-						$duplicat->getPersona()->setValidat(false); 
-					}
-					
 					if ($form->has('fotoupld'))  {
 						$file = $form->get('fotoupld')->getData();
 						
@@ -1423,92 +1403,30 @@ class PageController extends BaseController {
 							
 						if (!$file->isValid()) throw new \Exception('2.No s\'ha pogut carregar la foto ('.$file->isValid().')'); // Codi d'error
 						
-						/*
-						*   sudo apt-get install php-pear
-						*   apt-get install php5-dev
-						*   pear channel-update pear.php.net  ¿?
-						*   pear upgrade PEAR					¿?
-	  					*	sudo apt-get install imagemagick libmagickwand-dev
-						*	sudo pecl install imagick
+						$uploaded = $this->uploadAndScale($file, $duplicat->getPersona()->getDni(), 300, 200);
 						
-						configuration option "php_ini" is not set to php.ini location
-						You should add "extension=imagick.so" to php.ini
-						
-						sudo apt-get install php5-imagick
-						sudo service apache2 restart
-						*
-						*/
-						//$temppath = $file->getPath()."/".$file->getFileName();
-						error_log(" 1-->". $file->getSize() . "bytes " .$file->getFileName() ,0);
-
-						//http://jan.ucc.nau.edu/lrm22/pixels2bytes/calculator.htm
-						
-						/* Format jpeg mida inferior a 35k */
-						$thumb = new \Imagick($file->getPathname());
-						//$thumb->readImage($file->getPathname());
-						$thumb->setImageFormat("jpeg");
-						$thumb->setImageCompressionQuality(99);
-						$thumb->setImageResolution(72,72);
-						//$thumb->resampleImage(72,72,\Imagick::FILTER_UNDEFINED,1);
-						
-						// Inicialment escalar a una mida raonable 
-						error_log(" 2-->". $thumb->getImageLength() . "bytes " .$thumb->getImageWidth() . "x" . $thumb->getImageHeight(),0);
-						if($thumb->getImageWidth() > 600 || $thumb->getImageHeight() > 450) {
-							if($thumb->getImageWidth() > 600) $thumb->scaleImage(600,0);
-							else $thumb->scaleImage(0,450);
-							//$thumb->resizeImage(100,80,\Imagick::FILTER_LANCZOS,1);
-							error_log(" 2a-->". $thumb->getImageLength() . "bytes " .$thumb->getImageWidth() . "x" . $thumb->getImageHeight(),0);
-						}
-						
-						$i = 0;
-						while ($thumb->getImageLength() > 35840 and $i < 10 ) {
-							$width = $image->getImageWidth();
-							$width = $width*0.8; // 80%
-							$thumb->scaleImage($width,0);
-							$i++; 
-							error_log(" 3-->". $thumb->getImageLength() . "bytes " .$thumb->getImageWidth() . "x" . $thumb->getImageHeight(),0);
-						}
-							
-						$nameAjustat = substr($duplicat->getPersona()->getDni(), 0, 33);
-						$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat) . ".jpg";
-						$strPath = __DIR__.'/../../../../web/uploads/'.$nameAjustat;
-						$uploadReturn = $thumb->writeImage($strPath);
-						error_log(" -->". $strPath,0);
-						$thumb->clear();
-						$thumb->destroy();
-							
-						
-						
-						
-						
-						// Ha de ser jpg mida max 35k i jpg
-						//if ($file->getSize() > 35840) {
-							//throw new \Exception('La mida màxima de la foto és 35k');
-						//}
-						
-						
-						//if ($file->guessExtension() != "jpg" and $file->guessExtension() != "jpeg") throw new \Exception('Només imatges \'jpg\', \'jpeg\''); 
-						
-						//$foto = new EntityImatge($file);
-						$foto = new EntityImatge($strPath);
-						$foto->setPath($nameAjustat);
+						$foto = new EntityImatge($uploaded['path']);
+						$foto->setPath($uploaded['name']);
 						$foto->setTitol("Foto carnet federat " . $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms());
 						$em->persist($foto);
 						$duplicat->setFoto($foto);
-						//$uploadReturn = $foto->upload($duplicat->getPersona()->getDni());
-							
-						
-						
-						
-						if ($uploadReturn != true) {
-							$em->detach($foto); // Allibera foto del EntityManager
-							throw new \Exception('3.No s\'ha pogut carregar la foto');
-						}
 					} else { 
 						// Form sense foto
 						if ($duplicat->getCarnet()->getFoto() == true) throw new \Exception('Cal carregar una foto per demanar el duplicat');
 					}
 				
+					// Canvis en el nom i cognoms de la persona
+					$observacionsMail = "";
+					if ($duplicat->getPersona()->getNom() != $nom or
+					$duplicat->getPersona()->getCognoms() != $cognoms) {
+						$observacionsMail = "<p>Ha canviat el nom, abans " .
+								$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() ."</p>";
+						$duplicat->getPersona()->setNom($nom);
+						$duplicat->getPersona()->setCognoms($cognoms);
+						$duplicat->getPersona()->setDatamodificacio($this->getCurrentDate());
+						$duplicat->getPersona()->setValidat(false);
+					}
+						
 					$em->flush();
 					
 					// Enviar notificació mail
@@ -1529,10 +1447,7 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->add('error-notice',"Petició enviada correctament");
 					
 				} catch (\Exception $e) {
-					if ($observacionsMail != "") $em->refresh($duplicat->getPersona());
 					$em->detach($duplicat);
-					
-					
 					
 					$this->logEntryAuth('ERROR DUPLICAT', 'club ' . $currentClub . ' ' .$e->getMessage());
 						
@@ -1555,7 +1470,7 @@ class PageController extends BaseController {
 			}
 
 			/* reenvia pàgina per evitar F5 */
-			//return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
 		} else { 
 			$this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub); 
 		}
@@ -1635,7 +1550,10 @@ class PageController extends BaseController {
 				return $this->render('FecdasPartesBundle:Page:pagament.html.twig',
 						$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(),
 								'titol' => 'Pagament petició de duplicat', 'payment' => $payment, 'club' => $club,
-								'iva' => 0, 'detall' => $detallfactura, 'totals' => $totalfactura)));
+								'iva' => 0, 'detall' => $detallfactura, 'totals' => $totalfactura,
+								'backurl' => $this->generateUrl('FecdasPartesBundle_duplicats'), 'backtext' => 'Duplicats',
+								'menuactive' => 'menu-duplicats'
+						)));
 			}
 		}
 	
@@ -1675,7 +1593,10 @@ class PageController extends BaseController {
 				return $this->render('FecdasPartesBundle:Page:pagament.html.twig',
 						$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(),
 								'titol' => 'Pagament de llicències', 'payment' => $payment, 'club' => $parte->getClub(),
-								'iva' => $parte->getTipus()->getIva(), 'detall' => $detallfactura, 'totals' => $totalfactura)));
+								'iva' => $parte->getTipus()->getIva(), 'detall' => $detallfactura, 'totals' => $totalfactura,
+								'backurl' => $this->generateUrl('FecdasPartesBundle_parte', array('id' => $parteid )), 
+								'backtext' => 'Llista de llicències', 'menuactive' => 'menu-partes'
+						)));
 			}
 		}
 		

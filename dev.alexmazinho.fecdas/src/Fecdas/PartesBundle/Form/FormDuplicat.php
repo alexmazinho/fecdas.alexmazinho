@@ -48,7 +48,6 @@ class FormDuplicat extends AbstractType {
 		$builder->add('nom', 'text', array('mapped' => false, 'required' => true));
 		$builder->add('cognoms', 'text', array('mapped' => false, 'required' => true));
 		$builder->add('observacions', 'textarea', array('required' => false));
-		$builder->add('imgBase64', 'textarea', array('mapped' => false, 'required' => false));
 		
 		$builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
 			// Abans del submit (del bind de les dades de la request¿? al form). Permet afegir els canvis introduit a PRE_SET_DATA modificar el form. Ajax per exemple			

@@ -315,6 +315,7 @@ class EnquestesController extends BaseController {
 			if ($request->request->get('submitaction') == "final") {
 				$respSerial = "(fin) " . $respSerial;
 				$realitzacio->setDatafinal($this->getCurrentDate());
+				$this->get('session')->remove('enquestapendent');
 			}
 			else $realitzacio->setDatafinal(null);
 				
@@ -325,15 +326,24 @@ class EnquestesController extends BaseController {
 			return new Response("Enquesta desada correctament!");
 		} else {
 			//Get
-			$id = $this->get('session')->get('enquestapendent');
+			$id = 0;
 			if ($request->query->has('id')) {
 				$id = $request->query->get('id'); // Demana administrador per revisar
 				$action = "preview";
+			} else {
+				if ($this->get('session')->has('enquestapendent')) $id = $this->get('session')->get('enquestapendent'); 
+				else {
+					if ($this->get('session')->has('enquesta')) $id = $this->get('session')->get('enquesta');
+				}
+				
 			}
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($id);
 
+			if ($enquesta == null) {
+				$this->logEntryAuth('ERROR ENQUESTA USUARI', $id);
+				return new Response("error");
+			}
 			$this->logEntryAuth('VIEW ENQUESTA USUARI', $id);
-				
 		}
 		
 		$form = $this->createEnquestaForm($enquesta);

@@ -51,7 +51,7 @@
 		<div class="table-scroll">
 		   	<ol id="list-data">
 			{% for duplicat in duplicats %}
-				{% if admin == true or (admin != true and duplicat.databaixa is not null) %}
+				{% if admin == true or (admin != true and duplicat.databaixa is null) %}
 					{% if duplicat.databaixa is null %}
 					<li class="data-detall">
 				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>

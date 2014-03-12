@@ -196,9 +196,7 @@ class SecurityController extends BaseController
     	$form->get('forceupdate')->setData(false);
     	
     	return $this->render('FecdasPartesBundle:Security:user.html.twig',
-    			array('form' => $form->createView(),'admin' => $this->isCurrentAdmin(), 'authenticated' => $this->isAuthenticated(),
-    					'busseig' => $this->isCurrentBusseig(),
-    					'enquestausuari' => $this->get('session')->has('enquestapendent')));
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView())) );
     }
     
     

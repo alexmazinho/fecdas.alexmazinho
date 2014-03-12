@@ -11,7 +11,7 @@
 
 {% block body %}
 	<header>
-        <h1>{{ titol }}</h1>
+        <h1><a href="{{ backurl }}">{{ backtext }}</a> > {{ titol }}</h1>
     </header>
 
     {% for flashMessage in app.session.flashbag.get('error-notice') %}
@@ -96,7 +96,7 @@
 			{% for lineadetall in detall %}
 		   		<li class="data-detall">
 			   		<div class="data-detall-cell factdetall-codi">{{ lineadetall.codi }}</div>
-			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.desc }}</div>
+			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.desc|raw }}</div>
 			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.quant }}</div>
 			   		<div class="data-detall-cell factdetall-preuunitat">{{ lineadetall.preuunitat|number_format(2, '.', ',') }} €</div>
 			   		<div class="data-detall-cell factdetall-preusiva">{{ lineadetall.preusiva|number_format(2, '.', ',') }} €</div>
@@ -128,7 +128,7 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-	setMenuActive("menu-partes");
+	setMenuActive("{{ menuactive }}");
 	
     $('#formpayment').submit(function() {
     	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');

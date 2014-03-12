@@ -3,6 +3,8 @@ namespace Fecdas\PartesBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
+use Fecdas\PartesBundle\Classes\Funcions;
+
 use Fecdas\PartesBundle\Entity\EntityParte;
 use Fecdas\PartesBundle\Entity\EntityLlicencia;
 use Fecdas\PartesBundle\Entity\EntityPersona;
@@ -11,7 +13,8 @@ use Fecdas\PartesBundle\Entity\EntityPagament;
 use Fecdas\PartesBundle\Entity\EntityFactura;
 
 class BaseController extends Controller {
-	const MAIL_ADMINTEST = "test@entorntest.fecdasgestio.cat";  /* Canviar. Crear nou mail, ha d'estar a la taula d'usuaris  */
+	const MAIL_ADMINLOG = "logerror@fecdasgestio.cat";  /* Ha d'estar a la taula d'usuaris. CAT000 */
+	const MAIL_ADMINTEST = "test@fecdasgestio.cat";  /* Canviar. Crear nou mail  */
 	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";  
 	const MAIL_FACTURACIO = "remei@fecdas.cat";
 	const MAIL_LLICENCIES = "secretaria@fecdas.cat";
@@ -34,7 +37,8 @@ class BaseController extends Controller {
 	const PREFIX_ALBARA_DUPLICATS = 'D';
 	const PAGAMENT_LLICENCIES = 'llicencies';
 	const PAGAMENT_DUPLICAT = 'duplicat';
-		
+	const UPLOADS_RELPATH = '/../../../../web/uploads/';  // Path is __DIR__.self::UPLOADS_RELPATH
+	
 	protected function getCommonRenderArrayOptions($more = array()) { 
 		if ($this->isCurrentAdmin()) {
 			$roleSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
@@ -519,7 +523,7 @@ class BaseController extends Controller {
 	protected function logEntry($user = null, $accio = null, $remoteaddr = null, $useragent = null, $extrainfo = null) {
 		if (!$user) {
 			if ($this->get('session')->has('username')) $user = $this->get('session')->get('username');
-			else $user = self::MAIL_ADMINTEST;
+			else $user = self::MAIL_ADMINLOG;
 		}
 		
 		$em = $this->getDoctrine()->getManager();
@@ -576,4 +580,60 @@ class BaseController extends Controller {
 		$this->get('mailer')->send($message); 
 	}
 	
+	protected function uploadAndScale($file, $name, $maxwidth, $maxheight) {
+		/*
+		 *   Imagick
+		*   sudo apt-get install php-pear
+		*   apt-get install php5-dev
+		*   pear channel-update pear.php.net  ¿?
+		*   pear upgrade PEAR					¿?
+		*	 sudo apt-get install imagemagick libmagickwand-dev
+		*	 sudo pecl install imagick
+	
+		configuration option "php_ini" is not set to php.ini location
+		You should add "extension=imagick.so" to php.ini
+	
+		*   sudo apt-get install php5-imagick
+		*	 sudo service apache2 restart
+		*
+		*/
+	
+		//http://jan.ucc.nau.edu/lrm22/pixels2bytes/calculator.htm
+	
+		/* Format jpeg mida inferior a 35k */
+	
+		$thumb = new \Imagick($file->getPathname());
+		//$thumb->readImage($file->getPathname());
+		$thumb->setImageFormat("jpeg");
+		$thumb->setImageCompressionQuality(85);
+		$thumb->setImageResolution(72,72);
+		//$thumb->resampleImage(72,72,\Imagick::FILTER_UNDEFINED,1);
+	
+		// Inicialment escalar a una mida raonable
+		if($thumb->getImageWidth() > $maxwidth || $thumb->getImageHeight() > $maxheight) {
+			if($thumb->getImageWidth() > $maxwidth) $thumb->scaleImage($maxwidth, 0);
+			else $thumb->scaleImage(0, $maxheight);
+		}
+	
+		$i = 0;
+		/*while ($thumb->getImageLength() > 35840 and $i < 10 ) {  /// getImageLength no funciona
+		 $width = $image->getImageWidth();
+		$width = $width*0.8; // 80%
+		$thumb->scaleImage($width,0);
+		$i++;
+		}*/
+			
+		$nameAjustat = substr($name, 0, 33);
+		$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat) . ".jpg";
+		$strPath = __DIR__.self::UPLOADS_RELPATH.$nameAjustat;
+		$uploadReturn = $thumb->writeImage($strPath);
+		$thumb->clear();
+		$thumb->destroy();
+	
+		if ($uploadReturn != true) {
+			throw new \Exception('3.No s\'ha pogut carregar la foto');
+		}
+	
+		return array('name' => $nameAjustat, 'path' => $strPath);
+	}
 }

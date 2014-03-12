@@ -16,6 +16,7 @@
 			}
 	 	});
 		$( '#sortableno' ).sortable({
+			items: 'li:not(.pregunta-excluded)',
 			connectWith: '.connectedSortable',
 			receive: function( event, ui ) {
 				$('.pregunta-excluded').hide(); 
@@ -30,7 +31,7 @@
 		$( '#sortablesi, #sortableno' ).disableSelection();
 	};
 	
-	submitEnquestes = function() {
+	submitEnquestes = function(urlOk) {
 		$('#formenquesta').submit( function(){
 			var url = $("#formenquesta").attr("action");
 			var params = $('#formenquesta').serializeArray();
@@ -39,10 +40,12 @@
 			
 			url = url + '?' + preguntes;
 			
-			$.post(url, params,
-			function(data, textStatus) {
-				location.reload();
-			});	
+			$.post(url, params)
+			.done( function(data, textStatus) { window.location = urlOk; })	
+			.fail( function(data, textStatus, errorThrown) {
+				window.location = window.location.pathname; 
+		        //alert(data.responseText);
+		    });
 			return false;
 		});
 	};
@@ -55,51 +58,58 @@
 	        //Cancel the link behavior
 	        e.preventDefault();
 
-	        // Show mask before overlay
-	        //Get the screen height and width
-			var maskHeight = $(document).height();
-	        var maskWidth = $(window).width();
-	        //Set height and width to mask to fill up the whole screen
-	        $('.mask').css({'width':maskWidth,'height':maskHeight});
-	        //transition effect    
-	        $('.mask').fadeTo("slow",0.6); 
-	        
 			var url = $(this).attr("href");
 
 			$.get(url, function(data) {
 				if (data == "error") location.reload();
 				else {
-					$("#enquesta").html(data);
-					// Prepare modal
-					actionsModalOverlay();
+					$("#dialeg").html(data);
 					
-					$('.form-button-save').click(function (e) {
-				        //Guargar
-				        e.preventDefault();
-				        submitEnquesta();
-					});
-
-					$('.form-button-submit').click(function (e) {
-				        //Guardar i tancar
-				        e.preventDefault();
-				        submitEnquesta();
-				        $('#enquesta').hide();
-				        $('.mask').hide();
-						$("#enquesta").html("");
-					});
-
-					// 	Show Div
-					showModalDiv('#enquesta');
+					var ewidth = $(window).width()*0.8;
+					if (ewidth > 800) ewidth = 800;
+					var eheight = $(document).height()*0.8;
+					
+					var etitle = 'Enquesta';
+					if ($('#enquesta-preview').length) etitle = 'Enquesta (Previsualització)'; 
+					
+					$("#dialeg").dialog({
+						buttons : {
+			            	"Desar i continuar després" : function() {
+			            		$(this).dialog("destroy");
+			            		if (!$('#enquesta-preview').length) submitEnquesta('desar');
+			            		else alert("Mode previsualització, les dades no es desaran");
+			        		},
+			            	"Finalitzar" : function() {
+			            		$(this).dialog("destroy");
+			            		if (!$('#enquesta-preview').length) submitEnquesta('final');
+			            		else alert("Mode previsualització, les dades no es desaran");
+			        		},
+			            	"Cancel·lar" : function() {
+			              		$(this).dialog("destroy");
+			            	}
+			          	},
+			          	show: 1000,
+				    	modal: true,
+				    	resizable: true,
+				    	width: ewidth,
+				    	height: eheight,
+				    	minWidth: 400,
+				    	title: etitle
+			    	});
+					
 				}
 			});
 	    });
 	};
 	
-	submitEnquesta = function() {
+	submitEnquesta = function(action) {
 		var url = $('#formenquesta').attr("action");
 		var params = $('#formenquesta').serializeArray();
+		params.push( {'name':'submitaction','value': action} );
 		$.post(url, params, function(data) {
-			alert(data);
+			//alert(data);
+			//$( ".selector" ).dialog( "destroy" );
+			dialegInfo("Enquesta desada", data, 350, 100);
 		});
 	};
 	
@@ -146,9 +156,6 @@
 			else $('#enquesta-stats').slideDown('slow');
 
 			$.get(url, function(data) {
-				
-				//alert(data);
-				
 				
 				$("#enquesta-plots").html(data);
 				
@@ -362,7 +369,7 @@ $('#imgChart1').append(imgElem);
                 },
                 yaxis: {
                 	min: 0,
-                	max: 150,
+                	max: 200,
                 	numberTicks: 11,
                 	tickOptions: {
                 		showMark : true,

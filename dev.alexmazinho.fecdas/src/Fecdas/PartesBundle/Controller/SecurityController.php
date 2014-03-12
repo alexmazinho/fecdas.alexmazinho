@@ -62,10 +62,16 @@ class SecurityController extends BaseController
     					$this->get('session')->set('remote_addr', $remote_addr);
 
     					/* Comprovar enquestes pendents */
-    					$enquestapendent = $this->getActiveEnquesta();
-    					if ($enquestapendent != null) {
-    						$this->get('session')->set('enquestapendent', $enquestapendent->getId());
-    						$this->get('session')->getFlashBag()->add('sms-notice', 'Hi ha una enquesta activada pendent de contestar');
+    					$enquestaactiva = $this->getActiveEnquesta();
+    					if ($enquestaactiva != null) {
+    						$realitzada = $enquestaactiva->getRealitzada($this->get('session')->get('username'));
+    						
+    						$this->get('session')->set('enquesta', $enquestaactiva->getId());
+    						
+    						if ($realitzada == null || $realitzada->getDatafinal() == null) {
+    							$this->get('session')->set('enquestapendent', $enquestaactiva->getId());
+    							//$this->get('session')->getFlashBag()->add('sms-notice', 'Hi ha una enquesta activada pendent de contestar');
+    						}
     					}
     					
     					$em = $this->getDoctrine()->getManager();

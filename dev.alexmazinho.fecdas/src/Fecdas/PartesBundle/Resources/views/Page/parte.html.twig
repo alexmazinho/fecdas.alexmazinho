@@ -32,28 +32,32 @@
 			</div>
 			<div id="formparte-dataalta" class="form-left">
 				<label class="formlabel-outside required">Validesa des de</label>
-				{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
+				{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside formtime-calendar'} }) }}
 			</div>
 			<div id="formparte-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
 				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 				<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 			</div>
-			<div id="formparte-novallicencia" class="textaccio form-left">
-				<a onclick="loadLlicencia.call(this, 0)" href="javascript:void(0);" id="displayText">Afegir llicència<img src="/images/icon_dropdown.png"></a>
-			</div>
+			<div id="formparte-novallicencia" class="form-left">
+				<div class="textaccio">
+					<a  onclick="loadLlicencia.call(this, 0)" href="javascript:void(0);" id="displayText">Afegir llicència<img src="/images/icon_dropdown.png"></a></div>
+				</div>
 			<div id="formparte-datapagament" class="form-left" {% if parte.datapagament is null %} style="display: none" {% endif %}>
 				<label class="formlabel-outside required">Data Pagament</label>
-				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside'} }) }}
+				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
 			</div>
 			{% if admin == true and parte.datapagament is null %}
 				{% if parte.id is not null %}
-				<div id="formparte-pagamentconfirm" class="form-left textaccio">
-					<a id="formparte-button-pagat" class="form-left" href="{{ path('FecdasPartesBundle_confirmapagament', { 'id': parte.id }) }}">Pagament Rebut</a>
+				<div id="formparte-pagamentconfirm" class="form-left">
+					<div class="textaccio">
+						<a id="formparte-button-pagat" href="{{ path('FecdasPartesBundle_confirmapagament', { 'id': parte.id }) }}">
+						Pagament Rebut<img src="/images/icon-euro.png"></a>
+					</div>
 				</div>
 				{% endif %}
 			{% endif %}
-			<div id="buttons-top" class="form-right" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
+			<div class="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
 				{% if not parte.pagat and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
@@ -113,12 +117,15 @@ $(document).ready(function(){
 	{% if (parte.id is null) %}
 		loadTimeCalendar($( "#parte_dataalta" ),	
 				new Date({{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }}), 
-				new Date({{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }}) ); 
+				new Date({{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }}),
+				function (selectedDateTime) {
+					reloadParteData(selectedDateTime);
+				}); 
 
 	{% endif %} 
 
 	{% if parte.allowedit == true %}
-		reloadParte();
+		reloadParteTipus();
 	{% endif %} 
 	
 	removeLlicenciaClick();

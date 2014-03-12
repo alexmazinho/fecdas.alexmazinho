@@ -10,15 +10,9 @@
 }
 
 @media only screen and (max-width: 767px) {
-}
-
-@media only screen and (min-width: 480px) and (max-width: 767px) {
-}
-
-@media only screen and (max-width: 479px) {
 	#left-menu { display: none }
 	#main-col {border: none }
-	#main-col #slider { display: none }
+	#main-col #slider {  display: none }
 	
 	#menu-user {
 	    float: none;
@@ -29,39 +23,47 @@
 	
 	#menu-user .menu-user-club-info {
 	    float: none;
-	    margin: 0;
+	    margin: auto;
+	    width: 90%;
 	}
 
 	#menu-user .menu-user-club-info .select2-container a { width: auto; }
 
 	#menu-user .menu-user-action { display: none }
 	#menu-user label,
-	#menu-user .select2-container { display: block; margin: auto; }
+	#menu-user .select2-container { display: inline-block; margin: auto; width: 200px;}
 	#mobile-menu-principal { display: block; margin: auto; }
 	
 	
 	#main-col, #no-js {
-    max-width: inherit;
-    min-width: inherit;
-    width: auto;
+    	max-width: inherit;
+    	min-width: inherit;
+    	width: 100%;
+    	min-height: inherit;
+    	padding: 0;
 	}
 
 	#wrapper {
 	    margin: auto;
-	    min-width: inherit;
+	    min-width: 420px;
 	    position: relative;
-	    width: 460px;
+	    width: auto;
 	}
 	
 	#header {
-	    height: 160px;
+	    height: 180px;
 	    padding: 10px;
 	    position: relative;
 	    background-image:none;
 	    background-color: #67A2CF;
 	}
 	
+	#header.header-nologin {
+		 height: 60px;
+	}
+	
 	#header .login {
+		padding-top: 10px;
 	    display: block;
 		margin: auto;
 	    max-width: inherit;
@@ -75,13 +77,35 @@
 	    padding-left: 70px;
 	    width: auto;
 	}
+	
 	.logo img {
 	    width: 60px;
 	}
 	
-	
-	
 	#main-col header {
 	    width: auto;
 	}
+}
+
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+}
+
+@media only screen and (max-width: 479px) {
+	#main {
+	    width: 400px;
+	}
+	
+	#header .title i {
+		display:none;
+	}
+
+	#menu-user .select2-container { width: 200px;}
+	
+	#formllicencia-persona #s2id_parte_llicencies_persona_select {
+		width: 200px;
+	}
+	
+	#partes-main .form-col { display:block; width:95%; float:none;  }
+	#partes-main .column-right { position: absolute; top: 60px; }
+	
 }

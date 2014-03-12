@@ -155,7 +155,7 @@ html>body #wrapper {
 	float:left;
 	min-width: 130px; 
 	width: 10%;
-	padding: 80px 10px 10px 0px; /* 60 px Height of the footer */
+	padding: 80px 20px 10px 0px; /* 60 px Height of the footer */
 }
 
 /*html>body #left-menu { 
@@ -251,9 +251,7 @@ a img {border: none; }
     background: none repeat-x scroll 0 0 #FFFFFF;
 }
 
-#left-menu a:visited {
-	
-}
+#left-menu a:visited { }
 
 #left-menu a:active,
 #left-menu a:hover { 
@@ -318,6 +316,17 @@ html>body #left-menu a:hover {
     { line-height: 1.2em; font-size: 32px; margin-bottom: 10px; margin-top: 5px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }
 #main-col header { line-height: 1.5em; margin-bottom: 20px;  width:770px }
 #main-col header p { text-align: justify; }
+#main-col header a {
+	font-size: 0.9em;
+	text-decoration: none;
+	color:#1240A0;
+}
+#main-col header a:visited { }
+#main-col header a:active,
+#main-col header a:hover { 
+	color: #2281CF;
+	text-decoration: underline;
+}
 
 #main-col .login {
 	margin-top:70px; 
@@ -352,7 +361,7 @@ html>body #left-menu a:hover {
 
 #footer .powered { width: 15%; padding: 15px; display: inline-block; float: left; text-align: left;  font-size: smaller;}
 
-#footer .fecdas-footer { float: left; width: 60%; padding: 10px; }
+#footer .fecdas-footer { float: left; width: 50%; padding: 10px; }
 
 #footer .created-by { float: right; text-align:left; padding: 10px;  font-size: smaller; }
 

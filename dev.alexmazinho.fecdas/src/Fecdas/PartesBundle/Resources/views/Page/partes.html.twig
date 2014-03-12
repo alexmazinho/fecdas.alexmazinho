@@ -24,7 +24,7 @@
 	    	<form action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
 	    		<div id="formpartes-desde" class="form-col column-left">
 	    			{{ form_label(form.desde, 'Dades des de', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.desde, { 'attr': {'class': 'formfield-outside'} }) }}
+					{{ form_widget(form.desde, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
 				</div> 
 				<div id="formpartes-club" class="form-col column-center titol-club-nom">{{ club.nom }}</div>
 				<div id="formpartes-submit" class="form-col column-right">	
@@ -38,7 +38,7 @@
 			<div id="summary-header">
 				<div id="partes-totals" class="col-listheader">Total: {{ stat['total'] }} llistes ({{ stat['ltotal'] }} llicències)<br/> 
 				<span>Vigents: {{ stat['vigents'] }} llistes ({{ stat['lvigents'] }} llicències)</span></div>
-				<div id="partes-import" class="col-listheader">Saldo del club<br>{{ stat['deute']|number_format(2, ',', '.') }}€</div>
+				<div id="partes-import" class="col-listheader">Saldo del club<br>{{ stat['saldo']|number_format(2, ',', '.') }}€</div>
 			</div>
 		</div>
 	    <div class="table-header">	

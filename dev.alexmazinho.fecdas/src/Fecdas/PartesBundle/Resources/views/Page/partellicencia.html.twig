@@ -14,12 +14,11 @@
 			{# form_errors(llicencia.persona) #}
 		</div>
 		{% if llicenciadades.parte.allowEdit == true %} 
-		<div class="textaccio form-left">
-			<label class="formlabel-outside">&nbsp;</label>
-			<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
-			{% if llicenciadades.persona is not null %}	modifica assegurat 
-			{% else %} nou assegurat {% endif %}
-			<img src="{{ asset('images/icon_add.png') }}"></a>
+		<div class="form-left">
+			<div class="textaccio">
+				<a id="formllicencia-openmodal" href="{{ path('FecdasPartesBundle_persona') }}" name="modal">
+				{% if llicenciadades.persona is not null %}	modifica assegurat 
+				{% else %} nou assegurat {% endif %}<img src="{{ asset('images/icon_add.png') }}"></a></div>
 		</div>
 		{% endif %} 
 		<div id="formllicencia-categoria" class="form-left">
@@ -28,7 +27,7 @@
 		</div> 
 		<div id="formllicencia-datacaducitat" class="form-left data-field">
 			{{ form_label(llicencia.datacaducitatshow, 'Data de caducitat', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-			{{ form_widget(llicencia.datacaducitatshow, { 'attr': {'class': 'formfield-outside'} }) }}
+			{{ form_widget(llicencia.datacaducitatshow, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
 			{{ form_widget(llicencia.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 		</div> 
 	</div>
@@ -103,10 +102,9 @@
 	</div>
 	{% if llicenciadades.parte.allowEdit == true %}
 	<div class="form-row clearfix">
-		<div class="textaccio form-left">
-			<a id="formllicencia-add" href="javascript:void(0);" name="add-llicencia">
-			confirmar llicència
-			<img src="{{ asset('images/icon_down16.png') }}"></a>
+		<div class="form-left">
+			<div class="textaccio"><a id="formllicencia-add" href="javascript:void(0);" name="add-llicencia">
+			confirmar llicència<img src="{{ asset('images/icon_down16.png') }}"></a></div>
 		</div>
 	</div>
 	{% endif %}

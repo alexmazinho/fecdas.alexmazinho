@@ -4,26 +4,39 @@
 background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; }
 
 
-.textaccio a {
+.textaccio {
 	/*background: #EEEEEE;*/
 	background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;
     -webkit-border-radius: 3px;
     border-radius: 3px 3px 3px 3px;
     /*color: #005A8C;*/
-    padding: 7px 7px 5px 5px;
+    padding: 3px 5px 5px;
     border: 1px solid #AAAAAA;
     text-transform: uppercase;
-    font-size:11px;
+    font-size: 0.9em;
     /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);*/
     -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    width: auto;
 }
 
-.textaccio a:hover {
+.textaccio:hover {
 	background: #DDDDDD;
     border-color: #555555;
     text-decoration: none;
+}
+
+.textaccio img {
+	position: relative;
+	top: 3px;
+	margin-left: 0px;	
+	width: 17px;
+}
+
+html>body .textaccio img {
+	margin-left: 4px;	
 }
 
 
@@ -109,7 +122,7 @@ input[type="email"] { max-width: 500px; }
 input[type="submit"]  { line-height: 24px; min-height: 24px; }
 
 textarea  { 
-	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; text-indent: 5px; resize: both;
+	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; padding: 5px; resize: both;
 	border: 1px solid #AAA; background: #EEEEEE; /*color: #555555;*/ color: #1240A0;}
 
 select {
@@ -157,15 +170,11 @@ input[disabled="disabled"]
 	padding: 0 0 10px;
 }
 
-#dialeg .dialeg-jerror { height:100%; width: 100%;  font-size: 18px; }
-#dialeg .dialeg-jerror img { vertical-align:middle; }
-#dialeg .dialeg-jerror .jerror-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px; color: #333333;  }
+#dialeg .dialeg-jerror, #dialeg .dialeg-jinfo { height:100%; width: 100%;  font-size: 18px; }
+#dialeg .dialeg-jerror img, #dialeg .dialeg-jinfo img { vertical-align:middle; }
+#dialeg .dialeg-jerror .jerror-sms, #dialeg .dialeg-jinfo .jinfo-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px; color: #333333;  }
 
 form.appform { font-size: 14px; }
-form.appform div { 
-	/*clear: left;*/ 
-	/*margin-bottom: 10px;*/  
-}
 
 form.appform label { color: #1240A0 }
 
@@ -186,6 +195,32 @@ html>body .formlabel-inside { padding-top: 8px; }
 div.formfield-outside {
 	/* float: left; */ 
 }
+
+.formdate-calendar { width: 100px; text-align: center; margin: 0 5px 0 0; }
+
+.formtime-calendar { width: 130px; text-align: center; margin: 0 5px 0 0; }
+
+input#datepicker,
+.data-field input { 
+	width: 100px;
+	text-align: center;
+	text-indent: 0px;
+}
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
+.ui-timepicker-rtl dl dt{ float: right; clear: right; }
+.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }
+
+
 
 #main-col .formlabel-left {
 	display: table-cell;
@@ -468,34 +503,6 @@ input#form_dni {
 	width: 124px;
 }
 
-html>body .textaccio a {
-    padding: 5px;
-    font-size:small;
-}
-
-.textaccio img {
-	position: relative;
-	top: 3px;
-	margin-left: 0px;	
-}
-
-html>body .textaccio img {
-	margin-left: 4px;	
-}
-
-/*
-#afegirllicencia {
-  	bottom: 10px;
-    position: absolute;
-    right: 10px;
-    width: 11%;
-}
-
-#afegirllicencia a {
-	padding-top: 50px !important;
-	padding-left: 2px !important;
-}*/
-
 
 #progressbar {
 	margin-left: auto;
@@ -512,42 +519,38 @@ html>body .textaccio img {
 .form-row {
 	width:100%;
 	margin-bottom: 10px;
-}
-
-.form-row div {
-	/*float:left;
-	margin-right: 10px;
-	margin-bottom: 3px !important;*/
+	position: relative;
 }
 
 .form-left {
-    float:left;
-    margin-right: 10px;
+	display: inline-block;
+    float: none;
+    /*vertical-align: bottom;*/ 
+    padding: 0 10px 10px 0;
+    vertical-align: bottom;
 }
 
 .form-right {
+	display: inline-block;
     float:right;
-    /*margin-right: 10px;*/
+    padding: 0 0 10px;
 }
 
 .form-row-bottom {
 	position:absolute;
-    bottom: 1.4em;
+    bottom: 10px;
     left: 1.4em;
-	width: 20%;
 }
 
-#buttons-top {
-	/*position:absolute;*/
-	display: inline-block;
-	float:right;
-	/*top:13px;
-	right:10px;*/	
-	
+.buttons-top {
+	bottom: 0;
+    /*float: right;*/
+    position: absolute;
+    right: 0;
+    padding: 0 0 10px;
 }
 
 .button-top {
-	/*float: right;*/
 	display: inline;
 	padding-left: 5px;
 }
@@ -559,19 +562,6 @@ html>body .textaccio img {
 	padding-left: 5px;
 }
 
-#formparte #buttons-top {
-	padding-top: 20px;
-}
-
-#edicio-llicencies,
-#formparte  {
-	min-width: 600px;
-}
-
-* html #edicio-llicencies,
-* html #formparte { /*max-width: 600px;  main-width IE hack */
-   width: expression( this.scrollWidth < 601 ? "600px" : "auto" ); /* sets min-width for IE */
-}
 
 #header-parteid { display:none}
 #header-llicenciapersona {	width: 25%; text-align: left;}
@@ -665,60 +655,13 @@ html>body .textaccio img {
 	width: auto !important;
 }
 
-#formparte .form-left {
-    display: inline-block;
-    float: none;
-}
-
-#parte_dataalta { width: 130px; margin: 0 5px 0 0; }
-
-#parte_datapagament, 
-#llicencia_datacaducitatshow, 
-#parte_renew_dataalta_date { width: 100px; text-align: center;  margin: 0 5px 0 0; }
-
 #s2id_parte_llicencies_persona_select { width: 280px; /*min-width: 200px;*/ }
-
-input#datepicker,
-.data-field input { 
-	width: 100px;
-	text-align: center;
-	text-indent: 0px;
-}
-
-/* css for timepicker */
-.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
-.ui-timepicker-div dl { text-align: left; }
-.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
-.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
-.ui-timepicker-div td { font-size: 90%; }
-.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
-
-.ui-timepicker-rtl{ direction: rtl; }
-.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
-.ui-timepicker-rtl dl dt{ float: right; clear: right; }
-.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }
-
-
-input#parte_dataalta_time,
-input#parte_renew_dataalta_time
-{ 
-	width: 80px;
-	text-align: center;
-	text-indent: 0px;
-	margin-left: 5px;
-}
 
 input#parte_any {
 	width: 50px;
 	text-align: center;
 	text-indent: 0px;
 }
-/*
-input#parte_numrelacioshow {
-	width: 50px;
-	text-align: right;
-	padding-right: 2px;
-}*/
 
 select#parte_tipus { width: 250px; /*min-width: 250px;*/ }
 
@@ -727,9 +670,7 @@ select#parte_renovar_club { width: 295px; }
 select#parte_renovar_tipus { width: 240px; }
 
 
-/*#formparte-dataalta label,*/
 #formparte-any label,
-/*#formparte-numrelacio label,*/
 #formparte-datapagamentcheck label,
 #formparte-datapagament label{
 	text-align: center;
@@ -786,10 +727,9 @@ select#parte_renovar_tipus { width: 240px; }
 
 #ui-datepicker-div { font-size: 0.9em; }
 
-#form_desde { width: 100px; text-align: center;  margin: 0 5px 0 0; }
 #formpartes-club {  }
 
-#partes-main .form-col { display:inline-block }
+#partes-main .form-col { display:inline-block; padding-bottom: 10px }
 #partes-main .column-left { width: 25% }
 #partes-main .column-center { width: 50%; text-align: center; }
 #partes-main .titol-club-nom { color: #1240A0; font-size: 24px; border-bottom: 1px dashed #1240A0; }
@@ -883,30 +823,13 @@ select#parte_renovar_tipus { width: 240px; }
 
 #tabs-club {
 	width: 100%;
-	height: 300px;
 	background: none repeat scroll 0 0 transparent;
-	padding: 0px;
+	padding: 0 0 50px;
 	margin-bottom: 10px;
-}
-
-#formclub {
-	min-width: 750px;	
-}
-
-* html #formclub { /*max-height: 120px;  max-height IE hack */
-   height: expression( this.scrollHeight > 749 ? "750px" : "auto" ); /* sets max-height for IE */
 }
 
 .formclub-tab {
 	padding: 10px 15px;
-}
-
-.formclub-tab .form-row {
-	margin-bottom: 0;
-}
-
-#llista-usuarisclub {
-	min-width: 750px;	
 }
 
 #llista-usuarisclub #list-data {
@@ -921,17 +844,6 @@ select#parte_renovar_tipus { width: 240px; }
 	margin: 28px 0 0 0;
 }
 
-#formclub-nouclub a, #formclub-copiar a {
-	float: right;
-}
-
-#formclub-nouclub {
-	width: 20%;
-}
-
-#formclub-copiar {
-	width: 12%;
-}
 
 #formclub-clubs  { width: 35%; }
 #formclub-codi { width: 9%; }
@@ -1283,31 +1195,17 @@ select#parte_persona_addrnacionalitat {
 
 #formcsv-main { margin-left: 30px; }
 
-.prettyFile input { display: none; }
+#formcsv-button input { width: 120px }
 
-.input-append {
-	width: 440px;
-}
+.prettyFile input { display: none; }
 
 .input-append input { display: inline-block; vertica-align: middle; }
  
 .input-append .input-large {
-    padding: 4px;
-    width: 300px;
+    padding: 1px;
+    width: 250px;
 }
 
-.input-append .textaccio {
-	display: inline-block;
-		
-}
-
-.input-append .textaccio img {
-	margin-right: 5px;
-	top: 5px;
-	margin-left: 0;
-}
-
-#form_dataalta { width: 100px; text-align: center;  margin: 0 5px 0 0; }
 #formcsv-tipus label { margin-bottom: 3px; }
 
 .info-bloc {
@@ -1389,13 +1287,14 @@ p.info-bold {
 
 #mobile-menu-principal {
 	display:none;
+	width: 300px;
 }
 
 /*****************************************************************************************************************/
 
 /************************************************* Duplicats ******************************************************/
 
-#formduplicats .form-left { display: inline-block; vertical-align: middle; float: none; padding: 0 0 10px; }
+#formduplicats .form-left { vertical-align: middle; padding: 0 0 10px; }
 
 #formduplicats #formduplicats-persones { width: 250px; }
 #formduplicats #formduplicats-observacions {  }
@@ -1530,29 +1429,33 @@ p.info-bold {
 	position: relative;
 }
 
+#enquestes-llista .buttons-top {
+	padding: 0;
+}
+
 #header-enquestaid { display:none; }
-#header-enquestadesc { width: 25%;text-align:left;}
+#header-enquestadesc { display:none; }
 #header-enquestainici {	width: 10%;}
-#header-enquestafinal {	width: 10%;}
-#header-enquestaenviaments {width: 40%;}
-#header-enquestaactions { width: 10%; }
+#header-enquestafinal {	width: 15%;}
+#header-enquestaenviaments {width: 50%;}
+#header-enquestaactions { width: 15%; }
 
 .enquesta-id { display:none; }
-.enquesta-desc { width: 25%; text-align:left; line-height: 12px; }
+.enquesta-desc { display:none; }
 .enquesta-inici { width: 10%; }
-.enquesta-final { width: 10%; }
-.enquesta-enviaments-total { width: 10%; }
+.enquesta-final { width: 15%; }
+.enquesta-enviaments-total { width: 15%; }
 .enquesta-enviaments-percent { display:none; }
-.enquesta-enviaments-bar { display: table-cell; width: 20%; }
+.enquesta-enviaments-bar { display: table-cell; width: 25%; }
 .enquesta-enviaments-label { width: 10%; }
-.enquesta-actions { width: 10%; text-align:right; margin-top: -14px; }
+.enquesta-actions { width: 15%; text-align:right; margin-top: -14px; }
 
 .enquesta-enviaments-progressbar { width: 100%; height: 1em; }
 
 #enquesta_descripcio {
-	width: 350px;
-	max-width: 500px;	
-	height: 100px;
+	width: 600px;
+	max-width: 900px;	
+	height: 135px;
 }
 
 #seleccio-preguntes {
@@ -1571,15 +1474,15 @@ p.info-bold {
 	float:right;
 }
 
-.pregunta-id {
+/*.pregunta-id {
 	text-align: left;
 	width: 10%;
-}
-
+}*/
+/*
 .pregunta-enunciat {
 	text-align: left;
 	width: 85%;
-}
+}*/
 
 .pregunta-excluded {
 	text-align: center;
@@ -1589,11 +1492,12 @@ p.info-bold {
 
 .bloc-preguntes li { 
 	padding: 8px; 
-	width: 94%; 
+	/*width: 94%;*/ 
 	/*background:url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;*/
     cursor:move;
     border-radius: 4px 4px 4px 4px;
-    margin-left: 0.4em;
+    /*margin-left: 0.4em;*/
+    margin: 2px;
 }
 
 
@@ -1604,14 +1508,28 @@ p.info-bold {
 }
 
 #formenquesta-preguntes {
-  	/*width:90%;*/
-  	height:450px;
-  	overflow-x: hidden;
-    overflow-y: auto;
     border: 1px solid #EEEEEE;
     border-radius: 10px;
     box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.17);
     padding: 10px;
+    position: relative; 
+}
+
+#formenquesta-preguntes table {
+    position: absolute;
+    right: 0;
+    top: -30px;
+    font-size: 0.65em;
+	margin:0;
+}
+
+#formenquesta-preguntes table td {
+	padding: 1px;
+}
+
+
+#formenquesta-preguntes .jqplot-table-legend {
+	
 }
 
 #sortablesi,
@@ -1623,17 +1541,6 @@ p.info-bold {
 	padding: 0;
 }
 
-.enquesta-row {
-    margin-bottom: 10px;
-    margin-top: 10px;
-    width: 100%;
-}
-
-.enquesta-row .formenquesta-button {
-	float:left;
-	padding: 3px;
-}
-
 .enquesta-descripcio {
 	width: 100%;
 	color: #555555;
@@ -1642,31 +1549,51 @@ p.info-bold {
     margin-top: 10px;
     text-align: justify;
     border-bottom: 1px solid #EEEEEE;
-    margin-bottom: 10px;
+    margin-bottom: 40px;
+}
+
+.enquesta-row {
+	padding: 15px 0; 
+    width: 100%;
+    color: #555555;
 }
 
 .enquesta-enunciat {
-	float: left;
-	width: 75%;
-	line-height: 20px;
+	display: inline-block;
+	width: 70%;
 }
 
 .enquesta-resposta {
+	display: inline-block;
 	float: right;
-	width: 20%;
+	min-width: 180px;
 	text-align: center;
 }
 
-#formenquesta-preguntes table {
-    position: absolute;
-    right: 0;
-    top: 50px;
+.enquesta-resposta input[type="radio"]:checked {
+	outline: 1px solid #01cc01;
+	border: 4px solid #01cc01;
+	border-radius: 10px;
 }
 
-textarea.enquesta-resposta {
-	float: none;
-	max-width: 100%;
-    width: 99%;
+.enquesta-resposta label {
+	padding: 0 2px;
+    position: relative;
+    right: 14px;
+    top: -18px;
+}
+
+
+.enquesta-enunciat-textarea {
+	display: block;
+	padding: 0 0 10px;
+}
+
+.enquesta-resposta-textarea {
+	display: block;
+	max-width: inherit;
+	float: right;
+	width: 95%;
 }
 
 #enquesta-stats {
@@ -1686,15 +1613,6 @@ textarea.enquesta-resposta {
     width: 95%;
 }
 
-#enquesta-stats-accions {
-	position: relative;
-	top: -10px;
-}
-
-#enquesta-stats-accions div {
-	display: inline-block;
-}
-
 .resultat-pregunta-data, 
 .resultats-hidden {
 	display:none;
@@ -1706,10 +1624,11 @@ textarea.enquesta-resposta {
 
 .resultat-pregunta-text {
 	min-height: 130px;
+	padding: 10px;
 }
 
 .resultat-pregunta-text ul {
-	list-style: disc outside none;
+	list-style: disc inside none;
 }
 
 #tabs-enquestes {
@@ -1744,9 +1663,6 @@ textarea.enquesta-resposta {
 #preguntes-selectable .ui-selecting { background: #FECA40; }
 #preguntes-selectable .ui-selected { background: #F39814; color: white; }
 
-#formenquesta-preguntes .jqplot-table-legend {
-	font-size: 0.65em;
-}
 
 table.jqplot-table-legend {
 	max-width: 250px;	

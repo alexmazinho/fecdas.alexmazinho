@@ -22,11 +22,19 @@ class FormEnquesta extends AbstractType {
 		
 		$current_year = date("Y", strtotime('now'));
 		
-		$builder->add('datainici', 'genemu_jquerydate',
-				array('format' => 'dd/MM/yyyy', 'years' => range($current_year, $current_year+1)));
+		$builder->add('datainici', 'datetime', array(
+				'read_only' => true,
+				'widget' => 'single_text',
+				'input' => 'datetime',
+				'format' => 'dd/MM/yyyy',
+		));
 
-		$builder->add('datafinal', 'genemu_jquerydate',
-				array('format' => 'dd/MM/yyyy', 'years' => range($current_year, $current_year+1), 'required'  => false));
+		$builder->add('datafinal', 'datetime', array(
+				'read_only' => true,
+				'widget' => 'single_text',
+				'input' => 'datetime',
+				'format' => 'dd/MM/yyyy',
+		));
 	}
 	
 	public function setDefaultOptions(OptionsResolverInterface $resolver)

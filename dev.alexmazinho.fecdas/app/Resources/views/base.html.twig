@@ -46,7 +46,7 @@
     </head>
     <body>
 		<section id="wrapper">
-            <header id="header">
+            <header id="header"  {% if authenticated == false  %} class="header-nologin" {% endif %}>
                 <div class="logo">{% block fecdas_logo %}{% endblock %}</div>
                 <div class="title">{% block fecdas_title %}{% endblock %}</div>
                 <div class="login">{% block fecdas_login %} {% endblock %}</div>

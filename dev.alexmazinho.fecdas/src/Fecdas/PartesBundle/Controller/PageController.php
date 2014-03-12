@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Fecdas\PartesBundle\Classes\CSV_Reader;
+use Fecdas\PartesBundle\Classes\Funcions;
 
 use Fecdas\PartesBundle\Form\FormContact;
 use Fecdas\PartesBundle\Form\FormPayment;
@@ -161,12 +162,11 @@ class PageController extends BaseController {
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
 					
 					$parte->setDataalta($dataalta);
-
-					if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) 
-							throw new \Exception('No es poden donar d\'alta llicències amb data passada');						
-					
 					$parte->setClub($currentClub);
 					$parte->setTipus($tipusparte);
+
+					$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
+					if ($errData != "") throw new \Exception($errData);
 					
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
 						or $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
@@ -432,7 +432,7 @@ class PageController extends BaseController {
 		));
 		
 		/* Recollir estadístiques */
-		$stat['deute'] = $club->getSaldoweb() * -1;
+		$stat['saldo'] = $club->getSaldoweb();
 		$stat['total'] = count($partesclub); 
 		$stat['ltotal'] = 0;
 		$stat['itotal'] = 0;
@@ -950,9 +950,11 @@ class PageController extends BaseController {
 			if ($valida == true) {
 				// Persistència
 				$parte->setDatamodificacio($this->getCurrentDate());
-				
 				$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
-				
+
+				// Baixa partes sense llicències
+				if ($parte->getNumLlicencies() == 0) $parte->setDatabaixa($this->getCurrentDate());
+			
 				$em->flush();
 				$logaction = 'LLICENCIA DEL OK';
 			} else {
@@ -1005,10 +1007,11 @@ class PageController extends BaseController {
 				}
 				
 				$valida = true;
-				if (!$this->isCurrentAdmin() and $this->validaDataLlicencia($parte->getDataalta()) == false) {
+				$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
+				if ($errData != "") {
 					// NO llicències amb data passada. Excepte administradors
-					$this->get('session')->getFlashBag()->add('sms-notice',
-							'No es poden donar d\'alta ni actualitzar llicències amb data passada');
+					// Data alta molt aprop de la caducitat.
+					$this->get('session')->getFlashBag()->add('sms-notice', $errData);
 					$valida = false;
 				}				
 				if ($valida == true) {
@@ -1105,11 +1108,21 @@ class PageController extends BaseController {
 		return $this->render('FecdasPartesBundle:Page:partellistallicencies.html.twig',
 				array('parte' => $parte, 'admin' =>$this->isCurrentAdmin()));
 	}
-
-	private function validaDataLlicencia(\DateTime $dataalta) {
+ 
+	private function validaDataLlicencia(\DateTime $dataalta, $tipus) {
 		$avui = $this->getCurrentDate('now');
-		if ($dataalta < $avui) return false;
-		return true;
+		if (!$this->isCurrentAdmin() and $dataalta < $avui) return 'No es poden donar d\'alta ni actualitzar llicències amb data passada';
+		
+		if ($tipus->getEs365() == true and $tipus->getFinal() != null) {
+			// Llicències anuals per curs. Si dataalta + 2 mesos > datafinal del tipus vol dir que la intenten donar d'alta quasi quan caduca per error
+			$dataClone = clone $dataalta;
+			$dataClone->add(new \DateInterval('P2M')); // Add 2 Months
+			if ($dataalta->format('m-d') <= $tipus->getFinal() and $dataClone->format('m-d') > $tipus->getFinal()) {
+				return 'L\'inici de les llicències està molt proper a la caducitat';
+			}
+		}
+		
+		return ''; 
 	} 
 	
 	public function llicenciaAction() {
@@ -1168,6 +1181,10 @@ class PageController extends BaseController {
 			if ($formllicencia->has('datacaducitatshow') == true)
 				$formllicencia->get('datacaducitatshow')->setData($formllicencia->get('datacaducitat')->getData());
 
+
+			
+			
+			
 			// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
 			$datainici_reduida = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-09-01")));
 			if (($tipusid == 5 or $tipusid == 6) and ($dataalta_parte < $datainici_reduida)) { // reduïdes
@@ -1378,11 +1395,19 @@ class PageController extends BaseController {
 					$cognoms = "";
 					if ($form->has('cognoms')) $cognoms = $form->get('cognoms')->getData();
 					
+					$imgStrBase64 = "";
+					if ($form->has('imgBase64')) $imgStrBase64 = $form->get('imgBase64')->getData();
+					else $imgStrBase64 = "noooooooooooo";
+					
+					$imageBase64 = __DIR__.'/../../../../web/uploads/imgBase64.jpeg';
+					//file_put_contents($imageBase64, base64_decode($imgStrBase64));
+					
+					
 					$observacionsMail = "";
 					if ($duplicat->getPersona()->getNom() != $nom or 
 						$duplicat->getPersona()->getCognoms() != $cognoms) {
 						$observacionsMail = "<p>Ha canviat el nom, abans " . 
-											$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() ."</p>";
+						$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() ."</p>";
 						$duplicat->getPersona()->setNom($nom);
 						$duplicat->getPersona()->setCognoms($cognoms);
 						$duplicat->getPersona()->setDatamodificacio($this->getCurrentDate());
@@ -1398,21 +1423,88 @@ class PageController extends BaseController {
 							
 						if (!$file->isValid()) throw new \Exception('2.No s\'ha pogut carregar la foto ('.$file->isValid().')'); // Codi d'error
 						
-						// Ha de ser jpg mida max 35k i jpg
-						if ($file->getSize() > 35840 ) throw new \Exception('La mida màxima de la foto és 35k');
-						if ($file->guessExtension() != "jpg" and $file->guessExtension() != "jpeg") throw new \Exception('Només imatges \'jpg\', \'jpeg\''); 
+						/*
+						*   sudo apt-get install php-pear
+						*   apt-get install php5-dev
+						*   pear channel-update pear.php.net  ¿?
+						*   pear upgrade PEAR					¿?
+	  					*	sudo apt-get install imagemagick libmagickwand-dev
+						*	sudo pecl install imagick
 						
-						$foto = new EntityImatge($file);
+						configuration option "php_ini" is not set to php.ini location
+						You should add "extension=imagick.so" to php.ini
+						
+						sudo apt-get install php5-imagick
+						sudo service apache2 restart
+						*
+						*/
+						//$temppath = $file->getPath()."/".$file->getFileName();
+						error_log(" 1-->". $file->getSize() . "bytes " .$file->getFileName() ,0);
+
+						//http://jan.ucc.nau.edu/lrm22/pixels2bytes/calculator.htm
+						
+						/* Format jpeg mida inferior a 35k */
+						$thumb = new \Imagick($file->getPathname());
+						//$thumb->readImage($file->getPathname());
+						$thumb->setImageFormat("jpeg");
+						$thumb->setImageCompressionQuality(99);
+						$thumb->setImageResolution(72,72);
+						//$thumb->resampleImage(72,72,\Imagick::FILTER_UNDEFINED,1);
+						
+						// Inicialment escalar a una mida raonable 
+						error_log(" 2-->". $thumb->getImageLength() . "bytes " .$thumb->getImageWidth() . "x" . $thumb->getImageHeight(),0);
+						if($thumb->getImageWidth() > 600 || $thumb->getImageHeight() > 450) {
+							if($thumb->getImageWidth() > 600) $thumb->scaleImage(600,0);
+							else $thumb->scaleImage(0,450);
+							//$thumb->resizeImage(100,80,\Imagick::FILTER_LANCZOS,1);
+							error_log(" 2a-->". $thumb->getImageLength() . "bytes " .$thumb->getImageWidth() . "x" . $thumb->getImageHeight(),0);
+						}
+						
+						$i = 0;
+						while ($thumb->getImageLength() > 35840 and $i < 10 ) {
+							$width = $image->getImageWidth();
+							$width = $width*0.8; // 80%
+							$thumb->scaleImage($width,0);
+							$i++; 
+							error_log(" 3-->". $thumb->getImageLength() . "bytes " .$thumb->getImageWidth() . "x" . $thumb->getImageHeight(),0);
+						}
+							
+						$nameAjustat = substr($duplicat->getPersona()->getDni(), 0, 33);
+						$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat) . ".jpg";
+						$strPath = __DIR__.'/../../../../web/uploads/'.$nameAjustat;
+						$uploadReturn = $thumb->writeImage($strPath);
+						error_log(" -->". $strPath,0);
+						$thumb->clear();
+						$thumb->destroy();
+							
+						
+						
+						
+						
+						// Ha de ser jpg mida max 35k i jpg
+						//if ($file->getSize() > 35840) {
+							//throw new \Exception('La mida màxima de la foto és 35k');
+						//}
+						
+						
+						//if ($file->guessExtension() != "jpg" and $file->guessExtension() != "jpeg") throw new \Exception('Només imatges \'jpg\', \'jpeg\''); 
+						
+						//$foto = new EntityImatge($file);
+						$foto = new EntityImatge($strPath);
+						$foto->setPath($nameAjustat);
 						$foto->setTitol("Foto carnet federat " . $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms());
 						$em->persist($foto);
 						$duplicat->setFoto($foto);
-						$uploadReturn = $foto->upload($duplicat->getPersona()->getDni());
+						//$uploadReturn = $foto->upload($duplicat->getPersona()->getDni());
 							
+						
+						
+						
 						if ($uploadReturn != true) {
 							$em->detach($foto); // Allibera foto del EntityManager
 							throw new \Exception('3.No s\'ha pogut carregar la foto');
 						}
-					} else {
+					} else { 
 						// Form sense foto
 						if ($duplicat->getCarnet()->getFoto() == true) throw new \Exception('Cal carregar una foto per demanar el duplicat');
 					}
@@ -1437,8 +1529,10 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->add('error-notice',"Petició enviada correctament");
 					
 				} catch (\Exception $e) {
+					if ($observacionsMail != "") $em->refresh($duplicat->getPersona());
 					$em->detach($duplicat);
-					$em->refresh($duplicat->getPersona());
+					
+					
 					
 					$this->logEntryAuth('ERROR DUPLICAT', 'club ' . $currentClub . ' ' .$e->getMessage());
 						
@@ -1460,8 +1554,8 @@ class PageController extends BaseController {
 				$this->get('session')->getFlashBag()->add('error-notice',"Dades incorrectes .".$form->getErrorsAsString());
 			}
 
-			/* Si tot ok, reenvia pàgina per evitar F5 */
-			return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+			/* reenvia pàgina per evitar F5 */
+			//return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
 		} else { 
 			$this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub); 
 		}

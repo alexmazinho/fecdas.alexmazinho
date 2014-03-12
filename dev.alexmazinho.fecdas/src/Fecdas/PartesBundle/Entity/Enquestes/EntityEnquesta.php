@@ -201,6 +201,11 @@ class EntityEnquesta {
         return $this->preguntes;
     }
 
+    
+    public function clearPreguntes() {
+    	$this->preguntes = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
     public function getPreguntesSortedByOrdre()
     {
     	$arr = $this->preguntes->toArray();
@@ -211,6 +216,11 @@ class EntityEnquesta {
     		return ($a->getOrdre() < $b->getOrdre())? -1:1;;
     	});
     	return $arr;
+    }
+    
+    public function estaTancada() {
+    	if ($this->datafinal != null and $this->datafinal <= new \DateTime()) return true; 
+    	return false;
     }
     
     
@@ -240,7 +250,6 @@ class EntityEnquesta {
     public function getRealitzada($username) {
     	foreach ($this->realitzacions as $c => $realitzacio) {
     		if ($realitzacio->getUsuari() != null and
-    			$realitzacio->getDatafinal() == null and
     			$realitzacio->getUsuari()->getUser() == $username) return $realitzacio;
     	}
     	return null;
@@ -269,6 +278,7 @@ class EntityEnquesta {
 					switch ($pregunta->getTipus()) {
 						case "RANG":
 							$index_array = $resposta->getRespostarang()-1;
+							if ($index_array < 0) $index_array = 0; // Possibles errors
 							$array_rang[$index_array][0] = $array_rang[$index_array][0] + 1; 
 							break;
 						case "BOOL":
@@ -334,14 +344,14 @@ class EntityEnquesta {
      *
      */
     public function getTotalPreguntaRang(\Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta $pregunta) {
-    	$dadespregunta = array(0,0,0,0,0); /* [0] - gens,  [1] - poc, .... [4] - molt */ 
+    	$dadespregunta = array(0,0,0,0,0); /* [1] - gens,  [2] - poc, .... [5] - molt */ 
     	if ($pregunta->getTipus() != "RANG") return $dadespregunta;
     	
     	foreach ($this->realitzacions as $c => $realitzacio) {
     		$resposta = $realitzacio->getResposta($pregunta);
     		if ($resposta != null) {
-    			$index_array = $resposta->getRespostarang()-1;
-    			$dadespregunta[$index_array] = $dadespregunta[$index_array]+1;
+    			$index_array = $resposta->getRespostarang();
+    			if ($index_array >= 1 and $index_array <= 5) $dadespregunta[$index_array-1] = $dadespregunta[$index_array-1]+1;
     		}
     	}
     	 

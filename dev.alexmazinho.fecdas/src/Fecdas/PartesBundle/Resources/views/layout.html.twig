@@ -39,22 +39,20 @@
     	<a href="{{ path('FecdasPartesBundle_login') }}">Iniciar sessió<img src="{{ asset('images/icon_login.png') }}"></a>
   	{% else %}
     	{{ app.session.get('username') }} <a href="{{ path('FecdasPartesBundle_logout') }}"><img src="{{ asset('images/icon_signout.png') }}"></a>
-
+	{% endif %}
     	<div id="menu-user">
 			<div class="menu-user-club-info">
 			{% if roleform is defined %}
 			{{ form_label(roleform.role) }}
 			{{ form_widget(roleform.role) }}
 			{% endif %}
-			{% if userclub is defined %}
-			{{ userclub }}
-			{% endif %}
+			{% if userclub is defined %}{{ userclub }}{% endif %}
 			</div>
-			<div class="menu-user-action"><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
-			<div class="menu-user-action"><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
-			{% if enquestausuari is defined and enquestausuari == true %}
+			{% if enquestausuaripendent is defined and enquestausuaripendent == true %}
 			<div class="menu-user-action"><a class="featured enquesta-action-open" href="{{ path('FecdasPartesBundle_enquestausuari') }}">Enquesta</a></div>
 			{% endif %}
+			<div class="menu-user-action"><a href="{{ path('FecdasPartesBundle_contact') }}">Contacte</a></div>
+			<div class="menu-user-action"><a href="{{ path('FecdasPartesBundle_user') }}">Racó d'usuari</a></div>
 			<div class="menu-user-action"><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
 			
 	    	<select id="mobile-menu-principal">
@@ -90,7 +88,7 @@
 				{% endif %}
 			</select>
 		</div>
-   	{% endif %}
+   	
 	
 {% endblock %}
 

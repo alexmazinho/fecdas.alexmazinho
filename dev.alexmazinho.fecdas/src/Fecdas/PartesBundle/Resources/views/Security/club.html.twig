@@ -31,8 +31,10 @@
 					{{ form_widget(form.activat, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 			</div>
-			<div id="formclub-nouclub" class="textaccio form-right">
-				<a id="formclub-nou" href="javascript:void(0);">Nou club<img src="{{ asset('images/icon_add.png') }}"></a>
+			<div id="formclub-nouclub" class="form-right">
+				<div class="textaccio">
+					<a id="formclub-nou" href="javascript:void(0);">Nou club<img src="{{ asset('images/icon_add.png') }}"></a>
+				</div>
 			</div>
 		</div>
 		{% endif %}
@@ -58,18 +60,6 @@
 						{{ form_label(form.cif, 'CIF*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.cif, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-				</div>
-				<div class="form-row clearfix">
-					<div id="formclub-mail"  class="form-left">
-						{{ form_label(form.mail, 'Mail*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-web"  class="form-left">
-						{{ form_label(form.web, 'Web', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-		        </div>
-				<div class="form-row clearfix">
 					<div id="formclub-telefon"  class="form-left">
 						{{ form_label(form.telefon, 'Telèfon', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.telefon, { 'attr': {'class': 'formfield-outside'} }) }}
@@ -82,9 +72,19 @@
 						{{ form_label(form.mobil, 'Mòbil', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.mobil, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
+					<div id="formclub-mail"  class="form-left">
+						{{ form_label(form.mail, 'Mail*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
+					<div id="formclub-web"  class="form-left">
+						{{ form_label(form.web, 'Web', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
+					</div>
 				</div>
-		        <div class="form-row-bottom textaccio clearfix">
-					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+		        <div class="form-row form-row-bottom clearfix">
+		        	<div class="textaccio">
+		        		<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+		        	</div>
 				</div>
 	        </div>
 	        <div id="formclub-dades-tab2" class="formclub-tab">
@@ -105,8 +105,10 @@
 						{{ form_label(form.addradreca, 'Adreça', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
-					<div id="formclub-copiar" class="textaccio form-right">
-						<a id="formclub-copiaradreca" href="javascript:void(0);">Copiar<img src="{{ asset('images/icon_down16.png') }}"></a>
+					<div id="formclub-copiar" class="form-right">
+						<div class="textaccio">
+							<a id="formclub-copiaradreca" href="javascript:void(0);">Copiar<img src="{{ asset('images/icon_down16.png') }}"></a>
+						</div>
 					</div>
 		        </div>
 	        	<div class="form-row clearfix">
@@ -127,9 +129,9 @@
 						{{ form_widget(form.addradrecacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
 					</div>
 		        </div>
-		        <div class="form-row-bottom clearfix">
+		        <div class="form-row form-row-bottom clearfix">
 	       			<div class="textaccio">
-					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+						<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
 					</div>
 				</div>
 	        </div>
@@ -139,9 +141,9 @@
 						{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.tipusparte, { 'attr': {'class': 'formfield-outside'} }) }}
 				</div>
-	        	<div class="form-row-bottom clearfix">
+	        	<div class="form-row form-row-bottom clearfix">
 	       			<div class="textaccio">
-					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+						<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
 					</div>
 				</div>
 	        </div>
@@ -208,9 +210,9 @@
 							{{ form_widget(form.saldoclub, { 'attr': {'class': 'formfield-right'} }) }}
 					</div>
 				</div>
-				<div class="form-row-bottom clearfix">
+				<div class="form-row form-row-bottom clearfix">
 	       			<div class="textaccio">
-					<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+						<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
 					</div>
 				</div>
 	        </div>
@@ -227,20 +229,18 @@
 					</div>
 				</div>
 				<div class="form-row clearfix">
-					<div id="formuserclub-passwords">
-						<div id="formuserclub-pwd" class="form-left">
-							{{ form_label(form.pwd.first, 'Nova paraula clau*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-							{{ form_widget(form.pwd.first, { 'attr': {'class': 'formfield-outside'}}) }}
-						</div> 
-						<div id="formuserclub-pwdrepeat" class="form-left">
-							{{ form_label(form.pwd.second, 'Repeteix la paraula clau*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-							{{ form_widget(form.pwd.second, { 'attr': {'class': 'formfield-outside'}}) }}
-						</div> 
-						<div id="formuserclub-randompwd" style="display:none">
-							{{ form_label(form.randompwd, 'Paraula clau generada*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-							{{ form_widget(form.randompwd, { 'attr': {'class': 'formfield-outside'}}) }}
-						</div> 
-					</div>
+					<div id="formuserclub-pwd" class="form-left">
+						{{ form_label(form.pwd.first, 'Nova paraula clau*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.pwd.first, { 'attr': {'class': 'formfield-outside'}}) }}
+					</div> 
+					<div id="formuserclub-pwdrepeat" class="form-left">
+						{{ form_label(form.pwd.second, 'Repeteix la paraula clau*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.pwd.second, { 'attr': {'class': 'formfield-outside'}}) }}
+					</div> 
+					<div id="formuserclub-randompwd" class="form-left" style="display:none">
+						{{ form_label(form.randompwd, 'Paraula clau generada*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+						{{ form_widget(form.randompwd, { 'attr': {'class': 'formfield-outside'}}) }}
+					</div> 
 					<div id="formuserclub-random"  class="form-left">
 						<label class="formlabel-outside required">Auto</label>
 						<a id="formuserclub-random" href="#">
@@ -251,9 +251,9 @@
 						{{ form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) }}
 					</div>
 				</div>
-				<div class="form-row-bottom clearfix">
+				<div class="form-row form-row-bottom clearfix">
 	       			<div class="textaccio">
-					<a id="formuserclub-add" href="javascript:void(0);" name="add-userclub">Confirmar usuari<img src="{{ asset('images/icon_down16.png') }}"></a>
+						<a id="formuserclub-add" href="javascript:void(0);" name="add-userclub">Confirmar usuari<img src="{{ asset('images/icon_down16.png') }}"></a>
 					</div>
 				</div>
 	        </div>

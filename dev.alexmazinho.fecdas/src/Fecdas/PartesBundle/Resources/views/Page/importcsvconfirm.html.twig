@@ -14,8 +14,10 @@
 
 	<div id="formcsv-main">
 		<div class="form-row clearfix">
-			<div class="textaccio form-right">
-				<a id="confirm-csv" href="{{ urlconfirm }}">Confirmar llicències<img width="16" src="{{ asset('images/icon-save.png') }}" ></a> 
+			<div class="form-right">
+				<div class="textaccio">
+					<a id="confirm-csv" href="{{ urlconfirm }}">Confirmar llicències<img width="16" src="{{ asset('images/icon-save.png') }}" ></a>
+				</div> 
 			</div>
 		</div>
 	    {% for flashMessage in app.session.flashbag.get('error-notice') %}

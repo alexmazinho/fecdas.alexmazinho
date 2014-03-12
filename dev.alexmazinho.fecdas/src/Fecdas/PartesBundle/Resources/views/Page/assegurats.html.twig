@@ -14,16 +14,16 @@
     </header>
 
    	<form action="{{ path('FecdasPartesBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
-   		<div class="form-row clearfix">
+   		<div class="form-row">
    			<div id="formassegurats-tots" class="form-left">
-				{{ form_label(form.tots, '(Administradors) Qualsevol club', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.tots, '(Admins.) Qualsevol club', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.tots, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
 			<div id="formassegurats-vigent" class="form-left">
-				{{ form_label(form.vigent, 'Només mostrar llista amb llicència vigent', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_label(form.vigent, 'Només mostrar les llicències vigents', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
-			<div id="buttons-top" class="form-right">
+			<div class="buttons-top">
 				<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', 
 										{ 'vigents': vigents, 'tots': tots, 'dni': dni, 'nom': nom, 'cognoms': cognoms }) }}">
 					<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 

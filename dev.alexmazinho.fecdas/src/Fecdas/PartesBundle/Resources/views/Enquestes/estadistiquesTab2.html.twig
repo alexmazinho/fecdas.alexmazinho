@@ -6,17 +6,21 @@
 	
 	<div class="clearfix">
 		<div class="bloc-preguntes">
-			<div id="list-header" class="clearfix">
-				<div class="col-listheader">Seleccionar pregunta ...</div> 
+			<div class="table-header">
+				<div id="list-header" class="clearfix">
+					<div class="col-listheader">Seleccionar pregunta ...</div> 
+				</div>
 			</div>
+			<div class="table-scroll">
 			<ul id="preguntes-selectable" class="list-preguntes-select list-variableheight">
 			{% for pregunta in preguntes %}
 				<li id="pregunta_{{ pregunta.id }}" class="list-variableheight-detall clearfix {% if pselected == pregunta.id %} ui-selected {%  endif %} ">
-	  				<div class="pregunta-id">{{ pregunta.id }}</div>
-	  				<div class="pregunta-enunciat">{{ pregunta.enunciat }}</div>
+	  				<span class="pregunta-id">{{ pregunta.id }}</span>
+	  				<span class="pregunta-enunciat">{{ pregunta.enunciat }}</span>
   				</li>
 		   	{% endfor %}
 			</ul>
+			</div>
 		</div>
 		<div id="resultats-plot-evolucio"></div>
     </div>
@@ -25,7 +29,7 @@
 
 $(document).ready(function(){
 	createPlotEvolucio(); 
-
+	
 	$( "#preguntes-selectable" ).selectable({
 		selected: function( event, ui ) {
 			var preguntaid = $(ui.selected).find(".pregunta-id").html();

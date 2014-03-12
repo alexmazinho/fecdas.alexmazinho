@@ -53,7 +53,8 @@ class BaseController extends Controller {
 		$options['admin'] = $this->isCurrentAdmin();
 		$options['authenticated'] = $this->isAuthenticated();
 		$options['busseig'] = $this->isCurrentBusseig();
-		$options['enquestausuari'] = $this->get('session')->has('enquestapendent');
+		$options['enquestausuari'] = $this->get('session')->has('enquesta');
+		$options['enquestausuaripendent'] = $this->get('session')->has('enquestapendent');
 		
 		return  array_merge($more, $options);
 	}
@@ -496,13 +497,11 @@ class BaseController extends Controller {
 		$avui = $avui->format('Y-m-d H:i:s');
 		
 		$query = $em->createQuery($strQuery)
-		->setParameter('avui', $avui);
+			->setParameter('avui', $avui)
+			->setMaxResults(1);
 			
 		$enquestes = $query->getResult();
-		foreach ($enquestes as $c => $enquesta) {
-			$realitzada = $enquesta->getRealitzada($this->get('session')->get('username'));
-			if ($realitzada == null) return $enquesta;
-		}
+		foreach ($enquestes as $c => $enquesta) return $enquesta; // Només una
 		return null;
 	}
 	

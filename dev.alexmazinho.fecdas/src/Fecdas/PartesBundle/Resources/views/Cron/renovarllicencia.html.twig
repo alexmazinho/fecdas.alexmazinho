@@ -34,7 +34,7 @@
 				</div> 
 				<div id="formllicencia-datacaducitat" class="form-left data-field">
 					{{ form_label(form.datacaducitatshow, 'Data de caducitat', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.datacaducitatshow, { 'attr': {'class': 'formfield-outside'} }) }}
+					{{ form_widget(form.datacaducitatshow, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
 					{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 				</div>
 	    	</div>
@@ -107,8 +107,8 @@
 				</div>
 			</div>
 			<div class="form-row clearfix">
-				<div class="textaccio form-left">
-					<a id="formllicencia-renovar" href="javascript:void(0);" name="renovar-llicencia">Renovar llicència</a>
+				<div class="form-left">
+					<div class="textaccio"><a id="formllicencia-renovar" href="javascript:void(0);" name="renovar-llicencia">Renovar llicència</a></div>
 				</div>
 			</div>
 	

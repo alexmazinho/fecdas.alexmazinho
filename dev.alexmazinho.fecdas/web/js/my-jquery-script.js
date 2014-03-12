@@ -159,21 +159,21 @@
 	        //Cancel the link behavior
 	        e.preventDefault();
 	        $('.mask, .finestra-overlay').hide();
-	        $('finestra-overlay').html('');
+	        $('.finestra-overlay').html('');
 	    });    
 	     
 	    //if mask is clicked
 	    $('.mask').click(function () {
 	        $(this).hide();
 	        $('.finestra-overlay').hide();
-	        $('finestra-overlay').html('');
+	        $('.finestra-overlay').html('');
 	    });       
 		
 		$('.form-button-cancel').click(function (e) {
 	        //Cancel the link behavior
 	        e.preventDefault();
 	        $('.mask, .finestra-overlay').hide();
-	        $('finestra-overlay').html('');
+	        $('.finestra-overlay').html('');
 	    });   
 		
 		$('.modalform').submit( function(){
@@ -301,7 +301,7 @@
 
 	};
 	
-	loadTimeCalendar = function(elem, min, max) {
+	loadTimeCalendar = function(elem, min, max, fonSelect) {
 		//$.datepicker.setDefaults( $.datepicker.regional[ 'ca' ] );
 		$.timepicker.setDefaults($.timepicker.regional['ca']);
 		
@@ -314,7 +314,8 @@
 			 minDate: min,
 			 maxDate: max,
 			 controlType: 'select',
-			 timeFormat: 'HH:mm'
+			 timeFormat: 'HH:mm',
+			 onSelect: fonSelect 
 		});
 
 	};
@@ -330,6 +331,19 @@
 		
 		$("#dialeg").html("<div class='dialeg-jerror'><img width='40' src='/images/icon-remove.png'><span class='jerror-sms'>"+strError+"</span></div>");
 	};
+	
+	dialegInfo = function(titol, strInfo, dwidth, dheight) {
+		$("#dialeg").dialog({
+	    	modal: true,
+	    	resizable: false,
+	    	width: dwidth,
+	    	height: dheight,
+	    	title: titol
+    	});
+		
+		$("#dialeg").html("<div class='dialeg-jinfo'><img width='40' src='/images/icon-ok.png'><span class='jinfo-sms'>"+strInfo+"</span></div>");
+	};
+
 	
 	jQuery.fn.extend({
 		slideRightShow: function() {
@@ -449,8 +463,26 @@
 	
 	/*****************************************************************************************************************/
 	
+	reloadParteData = function(selectedDateTime) {
+		/* Canvi Data */
+		if ($.browser.msie) $('#formparte-llicencia').hide(); 
+    	else $('#formparte-llicencia').slideUp('fast');
+
+    	var dataParte = $('#parte_dataalta').datetimepicker('getDate');
+
+    	
+    	// Update select tipus parte	
+		var url = $('#formparte-tipus').data('ajax-route');
+		var params = { day: dataParte.getDate(), month: (dataParte.getMonth()+1) };
+		$.get(url,	params,
+		function(data) {
+			$('select#parte_tipus').html(data); 
+			$('#parte_any').val(dataParte.getFullYear());
+		});
+	}
 	
-	reloadParte = function() {
+	
+	reloadParteTipus = function() {
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
 		//$('#parte_tipus').val('');
 		
@@ -463,40 +495,6 @@
 				loadLlicencia();				
 			}
 	    });
-		
-		/* Canvi Data ===>>> Ja no existeixen dates */
-		$('#parte_dataalta_date_day').change(function() {
-	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
-
-	    	// Update select tipus parte	
-			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
-			$.get(url,	params,
-			function(data) {
-				$('select#parte_tipus').html(data); 
-			});
-		});
-
-		$('#parte_dataalta_date_month').change(function() {
-	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
-	    	
-	    	// Update select tipus parte	
-			var url = $('#formparte-tipus').data('ajax-route');
-			var params = { 	day: $("#parte_dataalta_date_day").val(), month: $("#parte_dataalta_date_month").val() }
-			$.get(url,	params,
-			function(data) {
-				$('select#parte_tipus').html(data); 
-			});
-		});
-
-		$('#parte_dataalta_date_year').change(function() {
-			$('#parte_any').val($('#parte_dataalta_date_year').val());
-	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
-		});
-
 	};
 	
 	showHistorialLlicencies = function() {
@@ -928,7 +926,24 @@
 				
 	        	if ($("#parte_id").val() == "" && $("#header-parteid").length)	{  
 	        		/* Creació del parte si no hi ha error. reload*/
-	        		window.location = window.location.pathname + '?id=' + $("#header-parteid").html(); 
+					$("#parte_id").val($("#header-parteid").html());
+	        		
+	        		// Parte nou creat, deixa només el tipus de parte seleccionat
+					$("#parte_tipus option:not(:selected)").each(function(i, item){
+						$(item).remove();
+					});
+
+					// Parte nou creta, desactiva data
+					
+					var hrefpartetopdf = $("#parte-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
+					var hreffacturatopdf = $("#factura-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
+
+					$("#parte-to-pdf a").attr("href", hrefpartetopdf);
+					$("#factura-to-pdf a").attr("href", hreffacturatopdf);
+
+					$("#buttons-top").show();
+
+					//window.location = window.location.pathname + '?id=' + $("#header-parteid").html(); 
 	        	};
 		    	
 				removeLlicenciaClick();
@@ -1421,6 +1436,8 @@
 					$('#duplicat_submit').click(function(e) {
 						e.preventDefault();
 						
+						
+						
 						// Validacions
 						if ($('select#duplicat_titol').length > 0 && $('select#duplicat_titol').val() == "") {
 							dialegError("Error", "Cal escollir un títol", 300, 100);
@@ -1472,7 +1489,6 @@
 	
 	$.fn.imagePreview = function(params){
 		$(this).change(function(evt){
-
 			if(typeof FileReader == "undefined") return true; // File reader not available.
 
 			var fileInput = $(this);

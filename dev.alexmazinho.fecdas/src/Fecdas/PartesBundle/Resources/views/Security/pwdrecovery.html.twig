@@ -9,17 +9,17 @@
 {% endblock %}
 
 {% block body %}
-    <header>
-        <h1>Recuperació de la paraula clau</h1>
-    </header>
-
-    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
-    
-   	<div class="login"> 
+	<div class="login">
+	    <header>
+	        <h1>Recuperació de la paraula clau</h1>
+	    </header>
+	
+	    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
+	    <div class="sms-notice">
+			{{ flashMessage }}
+	  	</div>	
+		{% endfor %}
+   	 
    		<form action="{{ path('FecdasPartesBundle_pwdrecovery') }}" method="post" {{ form_enctype(form) }} class="appform">
    			<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
 

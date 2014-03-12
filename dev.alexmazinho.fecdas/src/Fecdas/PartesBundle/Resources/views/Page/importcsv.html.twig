@@ -24,29 +24,27 @@
 			<div class="form-row clearfix">
 				<div id="formcsv-dataalta" class="form-left">
 					<label class="formlabel-outside required">Validesa des de</label>
-					{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside'} }) }}
+					{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
 				</div>
 				<div id="formcsv-tipus" class="form-left" data-ajax-route="{{ path('FecdasPartesBundle_gettipuspartes') }}">
 					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
 					<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
 				</div>
-			</div>
-			<div class="form-row clearfix">
-				<div id="formcsv-file" class="prettyFile">
+				<div id="formcsv-file" class="form-left prettyFile">
 					<label class="formlabel-outside required">Fitxer de llicències (CSV)</label>
 					{# form_label(form.importfile, 'Fitxer de llicències', { 'label_attr': {'class': 'formlabel-inside'} }) #}
 					{{ form_widget(form.importfile, { 'attr': {'class': 'forminput-inside'} }) }}
 					<div class="input-append formfield-outside">
 	       				<input class="input-large" type="text">
 	       				<div class="textaccio">
-							<a id="browse-file" href="javascript:void(0);"><img width="20" src="{{ asset('images/icon-browse.gif') }}" >navegar</a>
+							<a id="browse-file" href="javascript:void(0);">navegar<img width="20" src="{{ asset('images/icon-browse.gif') }}" ></a>
 						</div>
 	    			</div>
-				</div> 
-			</div>
-			<div id="formcsv-button" class="parte-submit">	
-				<input type="submit" id="formcsv-button-submit" class="forminput-inside" value="Importar" name="formcsv-button-submit"/>
+				</div>
+				<div id="formcsv-button" class="form-left parte-submit">	
+					<input type="submit" id="formcsv-button-submit" class="forminput-inside" value="Importar" name="formcsv-button-submit"/>
+				</div>
 			</div>
 			
 			 {{ form_rest(form) }}

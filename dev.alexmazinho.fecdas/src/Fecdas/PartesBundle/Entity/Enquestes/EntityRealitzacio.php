@@ -180,6 +180,17 @@ class EntityRealitzacio {
     }
 
     /**
+     * Remove resposta
+     *
+     * @param Fecdas\PartesBundle\Entity\Enquestes\EntityResposta $resposta
+     */
+    public function removeEntityResposta(\Fecdas\PartesBundle\Entity\Enquestes\EntityResposta $resposta)
+    {
+    	$this->respostes->removeElement($resposta);
+    }
+    
+    
+    /**
      * Get resposta per una pregunta concreta o null
      *  
      */

@@ -19,13 +19,11 @@ class EnquestesController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	
-		$this->get('session')->getFlashBag()->clear();
+		//$this->get('session')->getFlashBag()->clear();
 		
 		$em = $this->getDoctrine()->getManager();
 	
-		$this->logEntry($this->get('session')->get('username'), 'VIEW ENQUESTES',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		$this->logEntryAuth('VIEW ENQUESTES');
 	
 		// Get all enquestes
 		$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
@@ -34,8 +32,10 @@ class EnquestesController extends BaseController {
 			
 		$enquestes = $query->getResult();
 	
-		// Get all users
-		$strQuery = "SELECT COUNT(u.user) FROM Fecdas\PartesBundle\Entity\EntityUser u";
+		$strQuery = "SELECT COUNT(u.user) FROM Fecdas\PartesBundle\Entity\EntityUser u JOIN u.club c ";
+		$strQuery .= " WHERE u.databaixa IS NULL ";
+		$strQuery .= " AND u.role = 'user' ";
+		$strQuery .= " AND c.activat = TRUE ";
 		$query = $em->createQuery($strQuery);
 		
 		$poblacio = $query->getSingleScalarResult();
@@ -53,19 +53,25 @@ class EnquestesController extends BaseController {
 		if ($request->query->has('id')) {
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($request->query->get('id'));
 			
-			$em = $this->getDoctrine()->getManager();
-			
-			$enquesta->setDatafinal($this->getCurrentDate('now'));
-			
-			$em->flush();
-			
-			$this->logEntry($this->get('session')->get('username'), 'TANCAR ENQUESTA',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), "enquesta " . $enquesta->getId());
+			if ($enquesta == null or $enquesta->estaTancada()) {
+				$this->get('session')->getFlashBag()->add('error-notice', "La enquesta ja està tancada" );
+				
+				$this->logEntryAuth('TANCAR ENQUESTA ERROR', "enquesta tancada " . $request->query->get('id'));
+			} else { 
+				$em = $this->getDoctrine()->getManager();
+				
+				$enquesta->setDatafinal($this->getCurrentDate('now'));
+
+				$em->flush();
+				
+				$this->logEntryAuth('TANCAR ENQUESTA', "enquesta " . $enquesta->getId());
+				
+				$this->get('session')->getFlashBag()->add('error-notice', "La enquesta tancada correctament a data d'avui" );
+			}
 		} else {
-			$this->logEntry($this->get('session')->get('username'), 'TANCAR ENQUESTA ERROR',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), "enquesta " . $enquesta->getId());
+			$this->get('session')->getFlashBag()->add('error-notice', "La enquesta ja està tancada" );
+			
+			$this->logEntryAuth('TANCAR ENQUESTA ERROR', "enquesta " . $enquesta->getId());
 		}
 		
 		$response = $this->forward('FecdasPartesBundle:Enquestes:enquestes');
@@ -91,8 +97,6 @@ class EnquestesController extends BaseController {
 		
 		$enquesta = null;
 		if ($request->getMethod() == 'POST') {
-			//print_r($request->request);
-			//return new Response();
 			$error = "";
 			if ($request->request->has('enquesta')) {
 				$paramenquesta = $request->request->get('enquesta');
@@ -102,11 +106,11 @@ class EnquestesController extends BaseController {
 					$enquesta = new EntityEnquesta($this->getCurrentDate('now'));
 				}
 			}
-
+			
 			$form = $this->createForm(new FormEnquesta(), $enquesta);
 			
 			$form->bind($request);
-			
+
 			$actiontext = (is_null($enquesta->getId()))?'NEW ENQUESTA OK':'UPD ENQUESTA OK';
 
 			
@@ -119,7 +123,6 @@ class EnquestesController extends BaseController {
 			
 			$datainici = $enquesta->getDatainici()->format('Y-m-d');
 			$datafinal = ""	;
-			
 			
 			if ($enquesta->getDatafinal() != null) {
 				$datafinal = $enquesta->getDatafinal()->format('Y-m-d');
@@ -145,19 +148,26 @@ class EnquestesController extends BaseController {
 				}
 			}
 			
+			if ($error == "" and $enquesta->getId() != null and count($enquesta->getRealitzacions()) > 0) 
+				$error = "No es pot modificar la enquesta, els usuaris ja han començat a respondre"; 
+			
 			if ($form->isValid() && $error == "") {
 				if ($enquesta->getId() == null) $em->persist($enquesta);
+				
 				// Esborrar totes les preguntes i tornar-les a afegir
 				if ($request->request->has('preguntes')) {
 					parse_str($request->request->get('preguntes'));  // Parse array $pregunta
 					// Esborrar primer totes les preguntes  array clear() no funciona
+					
 					foreach ($enquesta->getPreguntes() as $c => $preguntacheck) {
 						//$enquesta->removeEntityEnquestaPregunta($preguntacheck);
-						$em->remove($preguntacheck);
+						$em->remove($preguntacheck);  // e_enquestes_preguntes USER necessita delete 
 					}
+					$enquesta->clearPreguntes();
 					
 					foreach ($preguntestotes as $c => $preguntacheck) {
 						$pos = array_search($preguntacheck->getId(), $pregunta);
+						$pos++;  // Ordenades comencen per 1
 						
 						if (!($pos === false)) { // Compte false avalua 0, no fer servir ==
 							$enquestapregunta = new EntityEnquestaPregunta($enquesta, $preguntacheck, $pos);
@@ -178,16 +188,17 @@ class EnquestesController extends BaseController {
 			
 			if ($error != "") {
 				$em->detach($enquesta);
-				$this->logEntry($this->get('session')->get('username'), (is_null($enquesta->getId()))?'NEW ENQUESTA KO':'UPD ENQUESTA KO',
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId() . "-". $error);
+				$this->logEntryAuth((is_null($enquesta->getId()))?'NEW ENQUESTA KO':'UPD ENQUESTA KO', $enquesta->getId() . "-". $error);
+				
 				$this->get('session')->getFlashBag()->add('error-notice', $error );
 				
+				return new Response("error", Response::HTTP_INTERNAL_SERVER_ERROR);
 			} else {
-				$this->logEntry($this->get('session')->get('username'), $actiontext,
-						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId());
+				$this->logEntryAuth((is_null($enquesta->getId()))?'NEW ENQUESTA OK':'UPD ENQUESTA OK', $enquesta->getId() . "-". $error);
+				
 				$this->get('session')->getFlashBag()->add('error-notice', "Enquesta actualitzada correctament" );
+				
+				return new Response("ok");
 			}
 		} else {
 			// Get
@@ -196,6 +207,7 @@ class EnquestesController extends BaseController {
 
 				if (count($enquesta->getRealitzacions()) > 0) {
 					// No es pot modificar l'enquesta, s'ha començat a contestar 
+					$this->get('session')->getFlashBag()->add('error-notice', "No es pot modificar la enquesta, els usuaris ja han començat a respondre");
 					$response = $this->forward('FecdasPartesBundle:Enquestes:enquestes');
 					return $response;
 				} 
@@ -216,13 +228,20 @@ class EnquestesController extends BaseController {
 				
 			} else {
 				$enquesta = new EntityEnquesta($this->getCurrentDate('now'));
+				$enquesta->setDatainici($this->getCurrentDate('now'));
+				$enquesta->setDatafinal($this->getCurrentDate('now')->add(new \DateInterval('P1M')));
+				
+				$desc = "Hola !\n";
+				$desc .= "Un cop el sistema de gestió de federatives en línia ha superat el seu primer any de vida";
+				$desc .= ", us demanem que dediqueu uns moments a respondre un qüestionari de qualitat que permeti millorar el servei que se us ofereix.\n";
+				$desc .= "Gràcies per la vostra col·laboració !";
+				
+				$enquesta->setDescripcio($desc);
 			}
 			
 			$form = $this->createForm(new FormEnquesta(), $enquesta);
 			
-			$this->logEntry($this->get('session')->get('username'), 'VIEW ENQUESTA',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId());
+			$this->logEntryAuth('VIEW ENQUESTA', $enquesta->getId());
 		}
 		
 		return $this->render('FecdasPartesBundle:Enquestes:enquesta.html.twig',
@@ -238,6 +257,7 @@ class EnquestesController extends BaseController {
 		$action = "";
 		if ($request->getMethod() == 'POST') {
 			$formenquesta = $request->request->get('form');
+			
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($formenquesta['id']);
 
 			$em = $this->getDoctrine()->getManager();
@@ -256,19 +276,25 @@ class EnquestesController extends BaseController {
 			unset($formenquesta['id']);
 			
 			$a_keys = array_keys($formenquesta);
+			$respSerial = $enquesta->getId() . "-" . $this->get('session')->get('username') . ":";
 			foreach($a_keys as $preguntakey) {
 				$dades_array = explode("_", $preguntakey);
 				$preguntaId = $dades_array[1];
+				
 				$respostaValor =  $formenquesta[$preguntakey];
 				
+				$respSerial .= $preguntaId . "_" . $respostaValor . ", ";
+				
 				$pregunta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityPregunta')->find($preguntaId);
+				
 				// Preparem resposta
 				$resposta = $realitzacio->getResposta($pregunta);
+				
 				if ($resposta == null) {
 					$resposta = new EntityResposta($realitzacio, $pregunta);
 					$em->persist($resposta);  // Sempre nova. Si existeix anterior s'esborra
 					$realitzacio->addEntityResposta($resposta);
-				}
+				} 
 				
 				switch ($pregunta->getTipus()) {
 					case "RANG":
@@ -279,17 +305,23 @@ class EnquestesController extends BaseController {
 						else $resposta->setRespostabool(false);
 						break;
 					case "OPEN":
-						$resposta->setRespostatxt($respostaValor);
+						if (trim($respostaValor) != "") $resposta->setRespostatxt($respostaValor);
+						else $resposta->setRespostatxt(null);
+						//else $realitzacio->removeEntityResposta($resposta); // No cal, sense permisos
 						break;
 				}
 			}
-
+			$realitzacio->setDatadarreraccess($this->getCurrentDate());
+			if ($request->request->get('submitaction') == "final") {
+				$respSerial = "(fin) " . $respSerial;
+				$realitzacio->setDatafinal($this->getCurrentDate());
+			}
+			else $realitzacio->setDatafinal(null);
+				
 			$em->flush();
 			
-			$this->logEntry($this->get('session')->get('username'), 'SAVE ENQUESTA USUARI',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId());
-			
+			$this->logEntryAuth('SAVE ENQUESTA USUARI', $respSerial);
+				
 			return new Response("Enquesta desada correctament!");
 		} else {
 			//Get
@@ -299,10 +331,9 @@ class EnquestesController extends BaseController {
 				$action = "preview";
 			}
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($id);
-			
-			$this->logEntry($this->get('session')->get('username'), 'VIEW ENQUESTA USUARI',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId());
+
+			$this->logEntryAuth('VIEW ENQUESTA USUARI', $id);
+				
 		}
 		
 		$form = $this->createEnquestaForm($enquesta);
@@ -313,7 +344,7 @@ class EnquestesController extends BaseController {
 	
 	private function createEnquestaForm($enquesta) {
 		$formBuilder = $this->createFormBuilder();
-		$formBuilder->add('id', 'hidden',array('data' => $enquesta->getId()));
+		$formBuilder->add('id', 'hidden', array('data' => $enquesta->getId()));
 		
 		$realitzacio = $enquesta->getRealitzada($this->get('session')->get('username'));
 		$resposta = null;
@@ -334,8 +365,11 @@ class EnquestesController extends BaseController {
 							'required'  => false,
 							'multiple'  => false,
 							'expanded'  => true,
+							'empty_value' => false,
 							'data' 		=> $dades,
 							'label' => $epregunta->getOrdre().". ".$pregunta->getEnunciat(),
+							'label_attr'   =>  array( 'class'   => 'enquesta-enunciat'),
+							'attr'   =>  array(	'class'   => 'enquesta-resposta')
 					));
 					break;
 				case "BOOL":
@@ -348,13 +382,21 @@ class EnquestesController extends BaseController {
 							'required'  => false,
 							'multiple'  => false,
 							'expanded'  => true,
+							'empty_value' => false,
 							'data' 		=> $dades,
 							'label' => $epregunta->getOrdre().". ".$pregunta->getEnunciat(),
+							'label_attr'   =>  array( 'class'   => 'enquesta-enunciat'),
+							'attr'   =>  array(	'class'   => 'enquesta-resposta')
 					));
 					break;
 				case "OPEN":
 					if ($resposta != null) $dades =   $resposta->getRespostatxt();
-					$formBuilder->add($fieldname, 'textarea', array('label' => $epregunta->getOrdre().". ".$pregunta->getEnunciat(),'required'  => false, 'data' 		=> $dades,));
+					$formBuilder->add($fieldname, 'textarea', array(
+							'label' => $epregunta->getOrdre().". ".$pregunta->getEnunciat(),
+							'required'  => false, 'data' 		=> $dades,
+							'label_attr'   =>  array( 'class'   => 'enquesta-enunciat-textarea'),
+							'attr'   =>  array(	'class'   => 'enquesta-resposta-textarea')
+					));
 					break;
 			}
 			
@@ -372,17 +414,17 @@ class EnquestesController extends BaseController {
 			
 			$enquesta = $this->getDoctrine()->getRepository('FecdasPartesBundle:Enquestes\EntityEnquesta')->find($id);
 			
+			if ($enquesta == null) return new Response("No s'ha trobat dades per a l'enquesta");
+			
 			$respostes = $enquesta->getResultats();
-			
-			$this->logEntry($this->get('session')->get('username'), 'VIEW RESULTATS ENQUESTA',
-					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $enquesta->getId());
-			
+
+			$this->logEntryAuth('VIEW RESULTATS ENQUESTA', $id);
+				
 			return $this->render('FecdasPartesBundle:Enquestes:enquestaresultats.html.twig',
 					array('respostes' => $respostes));
 		}
 		
-		return new Response("No data");
+		return new Response("No s'ha trobat dades");
 	}
 
 	public function estadistiquesAction() {
@@ -391,9 +433,8 @@ class EnquestesController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 		
-		$this->logEntry($this->get('session')->get('username'), 'VIEW ESTADISTIQUES ENQUESTES',
-				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+		
+		$this->logEntryAuth('VIEW ESTATS. ENQUESTES');
 		
 		/* Tab / pregunta per mostrar */
 		$tab = 0;
@@ -467,6 +508,8 @@ class EnquestesController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 		
+		
+		
 		/* Obtenir totes les preguntes */
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\Enquestes\EntityPregunta p";
 		$strQuery .= " WHERE p.tipus <> 'OPEN' ORDER BY p.id";
@@ -479,7 +522,7 @@ class EnquestesController extends BaseController {
 		$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\Enquestes\EntityEnquesta e";
 		$strQuery .= " ORDER BY e.datainici";
 		$query = $em->createQuery($strQuery);
-			
+		
 		$enquestes = $query->getResult();		
 		
 		/* Pregunta per mostrar resultats */
@@ -504,18 +547,21 @@ class EnquestesController extends BaseController {
 			if (count($enquesta->getRealitzacions()) > 0) {
 				if ($pregunta->getTipus() == "RANG") {
 					/* Totals per resposta de cada pregunta */
+					/*error_log($enquesta->getId() . " - " . $pregunta->getId(), 0);*/
 					$totals = $enquesta->getTotalPreguntaRang($pregunta);
 					$totalRespostes = $totals[0]+$totals[1]+$totals[2]+$totals[3]+$totals[4];
-					$dadespreguntagens[] = ($totalRespostes == 0)?0:$totals[0]/$totalRespostes*100;
-					$dadespreguntapoc[] = ($totalRespostes == 0)?0:$totals[1]/$totalRespostes*100;
-					$dadespreguntasuficient[] = ($totalRespostes == 0)?0:$totals[2]/$totalRespostes*100;
-					$dadespreguntabastant[] = ($totalRespostes == 0)?0:$totals[3]/$totalRespostes*100;
-					$dadespreguntamolt[] = ($totalRespostes == 0)?0:$totals[4]/$totalRespostes*100;
-					/*$dadespreguntagens[] = $totals[0];
+					/*error_log($enquesta->getId() . " - " . $pregunta->getId() . " fi : " . $totalRespostes 
+							. "(" . $totals[0]." ".$totals[1]." ".$totals[2]." ".$totals[3]." ".$totals[4] .")" , 0);*/
+					/*$dadespreguntagens[] = ($totalRespostes == 0)?0:($totals[0]/$totalRespostes)*100;
+					$dadespreguntapoc[] = ($totalRespostes == 0)?0:($totals[1]/$totalRespostes)*100;
+					$dadespreguntasuficient[] = ($totalRespostes == 0)?0:($totals[2]/$totalRespostes)*100;
+					$dadespreguntabastant[] = ($totalRespostes == 0)?0:($totals[3]/$totalRespostes)*100;
+					$dadespreguntamolt[] = ($totalRespostes == 0)?0:($totals[4]/$totalRespostes)*100;*/
+					$dadespreguntagens[] = $totals[0];
 					$dadespreguntapoc[] = $totals[1];
 					$dadespreguntasuficient[] = $totals[2];
 					$dadespreguntabastant[] = $totals[3];
-					$dadespreguntamolt[] = $totals[4];*/
+					$dadespreguntamolt[] = $totals[4];
 				}
 				if ($pregunta->getTipus() == "BOOL") {
 					/* Totals per resposta de cada pregunta */
@@ -527,7 +573,6 @@ class EnquestesController extends BaseController {
 				$mesures[] = $enquesta->getDatainici()->format('d-m-Y');
 			}
 		}
-		
 		if ($pregunta->getTipus() == "RANG") {
 			$valors = array(array("label" => "gens"), array("label" => "poc"), array("label" => "suficient"),
 					array("label" => "bastant"), array("label" => "molt"));  /* Cada serie */

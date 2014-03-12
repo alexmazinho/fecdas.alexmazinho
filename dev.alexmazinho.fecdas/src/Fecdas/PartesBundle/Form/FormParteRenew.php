@@ -1,6 +1,10 @@
 <?php
 namespace Fecdas\PartesBundle\Form;
 
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+
 class FormParteRenew extends FormParte {
 
 	public function buildForm(FormBuilderInterface $builder, array $options)

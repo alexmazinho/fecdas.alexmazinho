@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block body %}
+    <div class="login"> 
     <header>
         <h1>Entrada d'usuaris</h1>
     </header>
@@ -19,7 +20,7 @@
   	</div>	
 	{% endfor %}
     
-   	<div class="login"> {% include "FecdasPartesBundle:Security:loginform.html.twig" %} 
+   	{% include "FecdasPartesBundle:Security:loginform.html.twig" %} 
    	<a href="{{ path('FecdasPartesBundle_pwdrecovery') }}">Password perdut?</a>
    	</div>
     

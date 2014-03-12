@@ -1,35 +1,19 @@
 <form id="formenquesta" action="{{ path('FecdasPartesBundle_enquestausuari') }}" method="post" {{ form_enctype(form) }}  class="modalform">
-	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
-	<h1>Enquesta</h1>
+	{% if action == "preview" %}<div id="enquesta-preview"></div>{% endif %}
 	<div class="enquesta-descripcio">{{ enquesta.descripcio|nl2br }}</div>
 	<div id="formenquesta-preguntes">
-	<table class="jqplot-table-legend"><tbody><tr><td><td>1-gens</td><td><td>2-poc</td><td><td>3-suficient</td><td><td>4-bastant</td><td><td>5-molt</td></tr></tbody></table>
-	{% for camp in form %}
-		{% if "hidden" in camp.vars.types %}
-			{{ form_widget(camp) }}
-		{% else %}
-    	<div class="enquesta-row clearfix">
-        	{{ form_label(camp, null, { 'label_attr': {'class': 'enquesta-enunciat'} }) }}
-        	{{ form_widget(camp, { 'attr': {'class': 'enquesta-resposta'} }) }}
-    	</div>
-    	{% endif %}
-	{% endfor %}
+		<table class="jqplot-table-legend"><tbody><tr><td><td>1-gens</td><td><td>2-poc</td><td><td>3-suficient</td><td><td>4-bastant</td><td><td>5-molt</td></tr></tbody></table>
+		{% for camp in form %}
+			{% if camp != form.id and camp != form._token %}
+	    	<div class="enquesta-row clearfix">
+	        	{{ form_label(camp, null) }}
+	        	{{ form_widget(camp) }}
+	    	</div>
+			{% endif %}
+		{% endfor %}
 		<div id="formenquesta-rest">{{ form_rest(form) }}</div>
 	</div>
 	
-	<div class="enquesta-row clearfix">
-		<div id="formenquesta-cancel" class="formenquesta-button">	
-			<input type="submit" class="form-button-cancel forminput-inside" value="Cancel·lar" name="formenquesta-button-cancel" />
-		</div>
-		<div id="formenquesta-save" class="formenquesta-button">	
-			<input type="submit" class="form-button-save forminput-inside" value="Desar" name="formenquesta-button-save" 
-			{% if action == "preview" %} disabled="disabled" {% endif %} />
-		</div>
-		<div id="formenquesta-submit" class="formenquesta-button">	
-			<input type="submit" class="form-button-submit forminput-inside" value="Desar i tancar" name="formenquesta-button-submit"
-			{% if action == "preview" %} disabled="disabled" {% endif %} />
-		</div>
-	</div>	
 	<div id="error-enquesta"></div>
 </form>
 

@@ -497,6 +497,22 @@
 	    });
 	};
 	
+	paginationAssegurats  = function() {
+	    //Carrega i mostra historial per un assegurat
+		$('.navigation .pagination a')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
+	        var url = $(this).url();
+
+	        $('#form_page').val(url.param('page'));
+	        
+	        $('#form_assegurats').submit();
+	    });
+	};
+	
 	showHistorialLlicencies = function() {
 	    //Carrega i mostra historial per un assegurat
 		$('.llicencia-historial')

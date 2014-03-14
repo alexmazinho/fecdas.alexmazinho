@@ -108,4 +108,8 @@
 	#partes-main .form-col { display:block; width:95%; float:none;  }
 	#partes-main .column-right { position: absolute; top: 60px; }
 	
+	.col-responsive {  display: table-cell; }
+	.col-noresponsive { display: none;}
+	
+	.assegurat-tipusdesc { width: 45%; }
 }

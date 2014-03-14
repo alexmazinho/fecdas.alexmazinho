@@ -546,7 +546,8 @@ class PDFController extends BaseController {
 		
 		$total = 0;
 
-		$persones = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms);
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent);
+		$persones = $query->getResult();
 		
 		foreach ($persones as $c => $persona) {
 			$llicencia = $persona->getLlicenciaVigent();

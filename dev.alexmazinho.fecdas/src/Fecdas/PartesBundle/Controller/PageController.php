@@ -491,11 +491,14 @@ class PageController extends BaseController {
 		$currentCognoms = "";
 		$currentVigent = true;
 		$currentTots = false;
+		$page = 1; 
+		
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
 			if ($request->request->has('form')) { // Reload select clubs de Partes
 				$formdata = $request->request->get('form');
+				$page = $formdata['page'];
 				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
 				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
 				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
@@ -518,11 +521,24 @@ class PageController extends BaseController {
 				'attr' => (array('onchange' => 'this.form.submit()'))));
 		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots,
 				'attr' => (array('onchange' => 'this.form.submit()'))));
+		$formBuilder->add('page', 'hidden', array('data' => $page));
 		$form = $formBuilder->getForm(); 
 	
-		$persones = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms);
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent);
 		
-		if ($currentVigent == true) {
+		$paginator  = $this->get('knp_paginator');
+		$persones = $paginator->paginate(
+				$query,
+				$page,
+				10/*limit per page*/
+		);
+		
+		
+		//$persones = $query->getResult();
+		
+		
+		
+		/*if ($currentVigent == true) {
 			// Només vigents
 			$personesVigents = array();
 			foreach ($persones as $c => $persona_iter) {
@@ -531,7 +547,7 @@ class PageController extends BaseController {
 				}
 			}
 			$persones = $personesVigents;
-		}
+		}*/
 		
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 

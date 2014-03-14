@@ -136,7 +136,7 @@ select {
   	overflow: hidden;
   	/*padding-top: 3px;*/
   	/*padding-bottom: 1px;*/
-  	padding-right: 3px;
+  	padding: 0 3px;
   	text-overflow: ellipsis;
   	white-space: nowrap;
   	min-height: 20px;
@@ -414,7 +414,10 @@ html[xmlns] .clearfix {
 	}
 }
 
+.col-responsive {  display: none; }
+
 #header-asseguratid { display:none}
+#header-asseguratcompacte { width: 40%; }
 #header-asseguratdni {	width: 13%;  }
 #header-asseguratnom {	width: 15%; text-align: left;}
 #header-asseguratcognoms {	width: 20%;text-align: left;}
@@ -422,6 +425,7 @@ html[xmlns] .clearfix {
 #header-asseguratactions { width: auto; font-size: 16px; text-align: right; }
 
 .assegurat-id {	display:none}
+.assegurat-compacte { width: 40%; }
 .assegurat-dni { width: 13%;  }
 .assegurat-nom { width: 15%; text-align: left; }
 .assegurat-cognoms { width: 20%; text-align:left;}
@@ -815,6 +819,11 @@ select#parte_renovar_tipus { width: 240px; }
 
 #llicencia_renovar_personashow {
     width: 280px;
+}
+
+#formrenovar {
+	max-width: 690px;
+	width: auto;
 }
 
 /******************************************** Renovació llicència Fi *************************************************/

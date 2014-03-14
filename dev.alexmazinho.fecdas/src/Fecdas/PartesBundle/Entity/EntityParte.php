@@ -884,6 +884,8 @@ class EntityParte {
      * @return boolean
      */
     public function isVigent() {
+    	if ($this->pendent == true) return false;
+    	
     	$currentdate = new \DateTime();
     	if ($this->tipus->getId() == 11) {
     		if ($this->dataalta->format("Y-m-d") == $currentdate->format("Y-m-d")) return true;

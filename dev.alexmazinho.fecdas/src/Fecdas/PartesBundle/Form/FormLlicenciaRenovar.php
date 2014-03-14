@@ -1,6 +1,8 @@
 <?php
 namespace Fecdas\PartesBundle\Form;
 
+use Symfony\Component\Form\FormBuilderInterface;
+
 class FormLlicenciaRenovar extends FormLlicencia {
 
 	public function buildForm(FormBuilderInterface $builder, array $options)

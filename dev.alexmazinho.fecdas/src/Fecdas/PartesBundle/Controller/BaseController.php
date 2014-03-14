@@ -257,18 +257,37 @@ class BaseController extends Controller {
 		return null;
 	}
 	
-	protected function consultaAssegurats($tots, $dni, $nom, $cognoms) {
+	protected function consultaAssegurats($tots, $dni, $nom, $cognoms, $vigent = true) {
 		$em = $this->getDoctrine()->getManager();
 	
-		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityPersona p ";
-		$strQuery .= " WHERE p.databaixa IS NULL ";
+		if ($vigent == true) {
+			//$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e ";
+			//$strQuery .= "INNER JOIN Fecdas\PartesBundle\Entity\EntityLlicencia l.persona l ";
+			
+			$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e";
+			$strQuery .= " JOIN e.llicencies l JOIN l.parte p ";
+			$strQuery .= "WHERE e.databaixa IS NULL AND e.databaixa IS NULL AND p.databaixa IS NULL ";
+			$strQuery .= " AND p.pendent = 0 ";
+			$strQuery .= "AND p.dataalta <= CURRENT_DATE() ";
+			$strQuery .= "AND l.datacaducitat >= CURRENT_DATE() ";
+			
+			
+			//GROUP BY e.dni HAVING COUNT(DISTINCT p.club) > 1
+			
+		} else { 
+			$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e ";
+			$strQuery .= " WHERE e.databaixa IS NULL ";
+		}
 	
-		if ($tots == false) $strQuery .= " AND p.club = :club ";
-		if ($dni != "") $strQuery .= " AND p.dni LIKE :dni ";
-		if ($nom != "") $strQuery .= " AND p.nom LIKE :nom ";
-		if ($cognoms != "") $strQuery .= " AND p.cognoms LIKE :cognoms ";
+		
+		if ($tots == false) $strQuery .= " AND e.club = :club ";
+		if ($dni != "") $strQuery .= " AND e.dni LIKE :dni ";
+		if ($nom != "") $strQuery .= " AND e.nom LIKE :nom ";
+		if ($cognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
 	
-		$strQuery .= " ORDER BY p.cognoms, p.nom";
+		if ($vigent == true) $strQuery .= " GROUP BY e";
+		$strQuery .= " ORDER BY e.cognoms, e.nom";
+		
 	
 		$query = $em->createQuery($strQuery);
 			

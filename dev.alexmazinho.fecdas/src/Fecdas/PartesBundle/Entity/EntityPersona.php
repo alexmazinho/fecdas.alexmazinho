@@ -632,9 +632,7 @@ class EntityPersona {
      */
     public function getLlicenciaVigent() {
     	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->getDatabaixa() == null and $llicencia->getParte() != null and $llicencia->getParte()->isVigent()) {
-    			return $llicencia;
-    		}
+    		if ($llicencia->isVigent() == true) return $llicencia;
     	} 
     	return null;
     }
@@ -642,7 +640,11 @@ class EntityPersona {
     public function getLlicenciesSortedByDate()
     {
     	/* Ordenades de última a primera */
-    	$arr = $this->llicencies->toArray();
+    	$arr = array();
+    	foreach ($this->llicencies as $llicencia) {
+    		if ($llicencia->isValida()) $arr[] = $llicencia;
+    	}
+
     	usort($arr, function($a, $b) {
     		if ($a === $b) {
     			return 0;
@@ -655,9 +657,7 @@ class EntityPersona {
     public function getLastLlicencia() {
     	$llicenciesOrdenades = $this->getLlicenciesSortedByDate();
     	
-    	foreach ($llicenciesOrdenades as $llicencia) {
-    		if ($llicencia->getDatabaixa() == null) return $llicencia;
-    	}
+    	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
     	
     	return null;
     }

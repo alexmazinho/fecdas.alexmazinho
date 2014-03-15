@@ -1007,6 +1007,22 @@
 		});
 	};
 	
+	paginationPartes  = function() {
+	    //Carrega i mostra historial per un assegurat
+		$('.navigation .pagination a')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
+	        var url = $(this).url();
+
+	        $('#form_page').val(url.param('page'));
+	        
+	        $('#form_partes').submit();
+	    });
+	};
+	
 	showLlicenciesParte = function() {
 	    //Carrega i mostra historial per un assegurat
 		$('.llista-llicencies')

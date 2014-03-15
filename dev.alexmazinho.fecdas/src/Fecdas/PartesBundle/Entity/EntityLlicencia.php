@@ -773,4 +773,20 @@ class EntityLlicencia {
     	return $activitats;
     }
     
+    /**
+     * Get llicencia vàlida
+     */
+    public function isValida()
+    {
+    	return ($this->getDatabaixa() == null and $this->getParte() != null and $this->getParte()->getPendent() == false);
+    }
+
+    /**
+     * Get llicencia vigent
+     */
+    public function isVigent()
+    {
+    	return ($this->isValida() == true and $this->getParte()->isVigent() == true);
+    }
+    
 }

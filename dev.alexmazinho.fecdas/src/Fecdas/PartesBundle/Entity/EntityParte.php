@@ -634,7 +634,11 @@ class EntityParte {
     
     public function getLlicenciesSortedByName()
     {
-    	$arr = $this->llicencies->toArray();
+    	$arr = array();
+    	foreach ($this->llicencies as $llicencia) {
+    		if ($llicencia->getDatabaixa() == null) $arr[] = $llicencia;
+    	}
+    	
     	usort($arr, function($a, $b) {
     		if ($a === $b) {
     			return 0;

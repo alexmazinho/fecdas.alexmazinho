@@ -397,8 +397,9 @@ class PageController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 
 		$club = $this->getCurrentClub();
-
+		
 		$desde = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
+		$page = 1;
 		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('formpartes-button-new')) { // Nou parte
@@ -410,6 +411,7 @@ class PageController extends BaseController {
 			if ($request->request->has('form')) {
 				$formdata = $request->request->get('form');
 				$desde = \DateTime::createFromFormat('d/m/Y', $formdata['desde']);
+				$page = $formdata['page'];
 			}
 		} else {
 			//$request->getSession()->getFlashBag()->clear();
@@ -417,7 +419,20 @@ class PageController extends BaseController {
 
 		$this->logEntryAuth('VIEW PARTES', $club->getCodi());
 		
-		$partesclub = $this->consultaPartesClub($club->getCodi(), $desde);
+		$strOrderBY = $request->query->get('sort', '');
+		if ($strOrderBY != "") $strOrderBY .= ' ' . $request->query->get('direction', '');
+		
+		$query = $this->consultaPartesClub($club->getCodi(), $desde, $strOrderBY);
+		$paginator  = $this->get('knp_paginator');
+		
+		$partesclub = $paginator->paginate(
+				$query,
+				$page,
+				10/*limit per page*/
+		);
+
+		//echo count($partesclub) . " " . get_class($partesclub[0]) . " " . $partesclub[0]->getNumLlicencies();
+		//return new Response();
 		
 		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
 			// A partir 10/12 poden fer llicències any següent
@@ -429,6 +444,7 @@ class PageController extends BaseController {
 				'data' => $desde->format('d/m/Y'),
 				'attr' => (array('onchange' => 'this.form.submit()'))
 		));
+		$formBuilder->add('page', 'hidden', array('data' => $page));
 		
 		/* Recollir estadístiques */
 		$stat['saldo'] = $club->getSaldoweb();
@@ -450,11 +466,12 @@ class PageController extends BaseController {
 				if (!$parte_iter->isVigent()) $stat['lvigents'] +=  $nlic;
 				else $stat['vigents']--; 
 			} 
-		}
+		} 
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
-						'partes' => $partesclub,  'club' => $club, 'desde' => $desde, 'stat' => $stat)));
+						'partes' => $partesclub,  'club' => $club, 'desde' => $desde, 'stat' => $stat, 
+						'sort' => $request->query->get('direction', ''))));
 	}
 
 	public function llicenciesParteAction() {
@@ -524,35 +541,25 @@ class PageController extends BaseController {
 		$formBuilder->add('page', 'hidden', array('data' => $page));
 		$form = $formBuilder->getForm(); 
 	
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent);
+		$strOrderBY = $request->query->get('sort', '');
+		if ($strOrderBY != "") $strOrderBY .= ' ' . $request->query->get('direction', '');
+		
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $strOrderBY);  
 		
 		$paginator  = $this->get('knp_paginator');
+		
+				
 		$persones = $paginator->paginate(
 				$query,
 				$page,
 				10/*limit per page*/
 		);
 		
-		
-		//$persones = $query->getResult();
-		
-		
-		
-		/*if ($currentVigent == true) {
-			// Només vigents
-			$personesVigents = array();
-			foreach ($persones as $c => $persona_iter) {
-				if ($persona_iter->getLlicenciaVigent() != null) {
-					$personesVigents[] = $persona_iter; 
-				}
-			}
-			$persones = $personesVigents;
-		}*/
-		
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
+						'pdfparams' => array( 
 						'vigents' => $currentVigent, 'tots' => $currentTots, 'dni' => $currentDNI,
-						'nom' => $currentNom, 'cognoms' => $currentCognoms
+						'nom' => $currentNom, 'cognoms' => $currentCognoms), 'sort' => $request->query->get('direction', '')
 				)));
 	}
 	

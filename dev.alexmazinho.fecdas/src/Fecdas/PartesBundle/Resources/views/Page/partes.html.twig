@@ -4,6 +4,7 @@
 {% block javascriptshead %}
  	{{ parent() }}
  	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+ 	<script src="{{ asset('js/utils/purl.js') }}" type="text/javascript"></script>
     {{ form_javascript(form) }}
 {% endblock %}
 
@@ -21,7 +22,8 @@
         
     <div id="partes-main">
 	    <div id="list-forms">
-	    	<form action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	    	<form id="form_partes" action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	    		{{ form_widget(form.page) }}
 	    		<div id="formpartes-desde" class="form-col column-left">
 	    			{{ form_label(form.desde, 'Dades des de', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.desde, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
@@ -36,7 +38,7 @@
 	    <div class="sms-header-info clearfix">{{ club.infoLlistat }}</div>
 	    <div class="table-header">
 			<div id="summary-header">
-				<div id="partes-totals" class="col-listheader">Total: {{ stat['total'] }} llistes ({{ stat['ltotal'] }} llicències)<br/> 
+				<div id="partes-totals" class="col-listheader">Total: {{ partes.getTotalItemCount }} llistes ({{ stat['ltotal'] }} llicències)<br/> 
 				<span>Vigents: {{ stat['vigents'] }} llistes ({{ stat['lvigents'] }} llicències)</span></div>
 				<div id="partes-import" class="col-listheader">Saldo del club<br>{{ stat['saldo']|number_format(2, ',', '.') }}€</div>
 			</div>
@@ -44,20 +46,23 @@
 	    <div class="table-header">	
 		   	<div id="list-header">
 		   		<div id="header-parteid" class="col-listheader">id</div>
-		   		<div id="header-parteany" class="col-listheader">Any<span class="listheader-order"></span></div>
-		   		<div id="header-partedata" class="col-listheader">Data alta<span class="listheader-order"></span></div>
-		   		<div id="header-partetipusdesc" class="col-listheader">Tipus<span class="listheader-order"></span></div>
-		   		<div id="header-partetotal" class="col-listheader">Llicències<span class="listheader-order"></span></div>
-		   		<div id="header-parteimport" class="col-listheader">Preu<span class="listheader-order"></span></div>
-		   		<div id="header-parteestat" class="col-listheader">Informació<span class="listheader-order"></span></div>
-		   		<div id="header-parteactions" class="col-listheader"> &nbsp;</div>
+		   		<div id="header-parteany" class="col-listheader">Any<span class="listheader-icon"></span></div>
+		   		<div id="header-partedata" class="col-listheader">{{ knp_pagination_sortable(partes, 'Data alta', 'p.dataalta') }}
+		   			<span class="listheader-icon {% if sort == '' %} listheader-icon-asc {% endif %}{% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sort }} {% endif %}"></span></div>
+		   		<div id="header-partetipusdesc" class="col-listheader">{{ knp_pagination_sortable(partes, 'Tipus', 't.id') }}
+		   			<span class="listheader-icon {% if partes.isSorted('t.id') %} listheader-icon-{{ sort }} {% endif %}"></span></div>
+		   		<div id="header-partetotal" class="col-listheader">{{ knp_pagination_sortable(partes, 'Llicències', 'numllicencies', {'direction': 'desc'}) }}
+		   			<span class="listheader-icon {% if partes.isSorted('numllicencies') %} listheader-icon-{{ sort }} {% endif %}"></span></div>
+		   		<div id="header-parteimport" class="col-listheader collistheader-noorder">Preu</div>
+		   		<div id="header-parteestat" class="col-listheader collistheader-noorder">Informació</div>
+		   		<div id="header-parteactions" class="col-listheader collistheader-noorder"> &nbsp;</div>
 		   	</div>
 	   	</div>
 		{% if partes|length > 0 %}
 		<div class="table-scroll">
 		   	<ol id="list-data">
 			{% for parte in partes %}
-		   		<li class="data-detall {% if parte.isPassat %} data-detall-fosc {% endif %}" {% if parte.numLlicencies == 0 %} style="display:none" {% endif %} >
+		   		<li class="data-detall {% if parte.isPassat %} data-detall-fosc {% endif %}">
 		   			<div class="parte-id">{{ parte.id }}</div>
 			   		<div class="data-detall-cell parte-any">{{ parte.any }}</div>
 			   		<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
@@ -78,6 +83,7 @@
 		   		{% endfor %}
 			</ol>
 		</div>
+		<div class="navigation">Pàgines: {{ knp_pagination_render(partes) }}</div>
 	   	{% else %}
 	    <div class="sms-notice">No hi ha llistats d'assegurats per aquest club</div>
 	    {% endif %}
@@ -97,11 +103,13 @@ $(document).ready(function(){
 	
 	removeParteLink();
 
+	paginationPartes();
+	
 	showLlicenciesParte();
 
 	loadCalendar($( "#form_desde" ));
 
-	sortLlista("col-listheader", "list-data");
+	//sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');
 	if (tableScroll.hasOverflowY()) {

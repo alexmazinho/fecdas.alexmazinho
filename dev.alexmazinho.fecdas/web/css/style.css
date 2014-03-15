@@ -313,7 +313,34 @@ html[xmlns] .clearfix {
     cursor: pointer;
 }
 
+#main-col .col-listheader a {
+    color: #2281CF;
+}
+
 /* Columnes sense opció a ordenar */
+.listheader-icon {
+	display: none;
+    position: absolute;
+    background-image: url("redmond/images/ui-icons_469bdd_256x240.png");
+    height: 16px;
+    width: 16px;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    text-indent: -99999px;
+}
+
+.listheader-icon-asc {
+	background-position: -64px -16px;
+	display: inline-block;
+}
+
+.listheader-icon-desc {
+	background-position: 0px -16px;
+	display: inline-block;
+}
+
+.collistheader-noorder { cursor: default; }
+
 .listheader-noorder {
 	cursor: default;
 }
@@ -377,6 +404,48 @@ html[xmlns] .clearfix {
    height: expression( this.scrollHeight > 399 ? "400px" : "auto" ); /* sets max-height for IE */
 }
 
+
+.navigation {
+	color: #005A8C;
+	display: inline-block;
+	width: 100%;
+	text-align: right;	
+}
+
+.navigation .pagination {
+	padding: 3px 0;
+	display: inline;
+}
+
+.navigation .pagination span {
+    background: none repeat-x scroll 0 0 #F0F9FF;
+    border: 1px solid #82CFFA;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+    display: inline-block;
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+    width: 15px;
+    border-radius: 2px;
+}
+
+.navigation .pagination span:hover {
+	background-color: #F0F9FF;
+    border-radius: 50%;
+}
+
+.navigation .pagination span.current {
+	background-color: #DDDDDD;
+    border-radius: 50%;
+}
+
+.navigation .pagination span a {
+	 display: inline-block;	
+	 width: 100%;
+	 height: 100%;
+}
+
+
 /***************** Fi llistes ******************/
 
 #list-forms {
@@ -414,8 +483,6 @@ html[xmlns] .clearfix {
 	}
 }
 
-.col-responsive {  display: none; }
-
 #header-asseguratid { display:none}
 #header-asseguratcompacte { width: 40%; }
 #header-asseguratdni {	width: 13%;  }
@@ -431,9 +498,6 @@ html[xmlns] .clearfix {
 .assegurat-cognoms { width: 20%; text-align:left;}
 .assegurat-tipusdesc { width: 33%; text-align:left;}
 .assegurat-actions { width: auto; text-align:right; }
-
-#llista-assegurats a  { color: #555555; }
-#llista-assegurats a:hover  { color: #2281CF; }
 
 /*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
@@ -457,6 +521,10 @@ html[xmlns] .clearfix {
 }*/
 
 #llista-assegurats .data-detall { /*display:inline*/ display: inline-block;  width: 100%; } /* Permet afegir historial*/
+
+#llista-assegurats .llicencia-historial  { color: #555555; }
+
+#llista-assegurats .llicencia-historial:hover  { color: #2281CF; }
 
 .llicencia-historial img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
 
@@ -738,6 +806,15 @@ select#parte_renovar_tipus { width: 240px; }
 #partes-main .column-center { width: 50%; text-align: center; }
 #partes-main .titol-club-nom { color: #1240A0; font-size: 24px; border-bottom: 1px dashed #1240A0; }
 #partes-main .column-right { width: 22%; text-align: right; float: right;}
+
+
+#partes-main .table-scroll {
+	max-height: 300px;
+}
+
+* html #partes-main .table-scroll { /*max-height: 300px;  max-height IE hack */
+   height: expression( this.scrollHeight > 299 ? "300px" : "auto" ); /* sets max-height for IE */
+}
 
 .formpartes-info {
     border: 1px solid #81C6FF;
@@ -1782,6 +1859,8 @@ li.parte-pendent-sincro .parterecents-actions {
 	font-size: 0.9em;
 }
 
+
+
 #header-clubscodi { display:none; }
 #header-clubsnom { width: 15%; text-align:left;}
 #header-clubspartes {	width: 6%; }
@@ -1898,6 +1977,7 @@ li.parte-pendent-sincro .parterecents-actions {
 	color: #444444;
 }
 
+.col-responsive {  display: none; }
 
 /* Z-index of #mask must lower than #boxes .window */
 .mask {

@@ -721,20 +721,18 @@ class PDFController extends BaseController {
 				//foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
 				$llicenciesSorted = $parte->getLlicenciesSortedByName();
 				foreach ($llicenciesSorted as $c => $llicencia_iter) {
-					if ($llicencia_iter->getDatabaixa() == null) {
-						$persona = $llicencia_iter->getPersona();
-						$tbl .= '<tr nobr="true">';
-						$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
-						$tbl .= '<td align="left">' . $persona->getCognoms() .  '</td>';
-						$tbl .= '<td align="left">' . $persona->getNom() .  '</td>';
-						$tbl .= '<td align="center">' . $persona->getDatanaixement()->format("d/m/y") .  '</td>';
-						$tbl .= '<td align="left">' . $persona->getAddradreca() .  '</td>';
-						$tbl .= '<td align="center">' . $persona->getAddrcp() .  '</td>';
-						$tbl .= '<td align="left">' . $persona->getAddrpob() .  '</td>';
-						$tbl .= '<td align="center">' . $llicencia_iter->getCategoria()->getSimbol() .  '</td>';
-						$tbl .= '<td align="center" style="font-size: small;">' . $llicencia_iter->getActivitats() . '</td>';
-						$tbl .= '</tr>';
-					}
+					$persona = $llicencia_iter->getPersona();
+					$tbl .= '<tr nobr="true">';
+					$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
+					$tbl .= '<td align="left">' . $persona->getCognoms() .  '</td>';
+					$tbl .= '<td align="left">' . $persona->getNom() .  '</td>';
+					$tbl .= '<td align="center">' . $persona->getDatanaixement()->format("d/m/y") .  '</td>';
+					$tbl .= '<td align="left">' . $persona->getAddradreca() .  '</td>';
+					$tbl .= '<td align="center">' . $persona->getAddrcp() .  '</td>';
+					$tbl .= '<td align="left">' . $persona->getAddrpob() .  '</td>';
+					$tbl .= '<td align="center">' . $llicencia_iter->getCategoria()->getSimbol() .  '</td>';
+					$tbl .= '<td align="center" style="font-size: small;">' . $llicencia_iter->getActivitats() . '</td>';
+					$tbl .= '</tr>';
 				}
 				$tbl .= '</table>';
 				

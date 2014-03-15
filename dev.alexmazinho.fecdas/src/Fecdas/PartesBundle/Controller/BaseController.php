@@ -143,25 +143,6 @@ class BaseController extends Controller {
 				'codiclub' => '', 'tipusparte' => 1, 'llistatipus' => array(), 'any' => Date('Y'));
 	}
 	
-	protected function consultaPartesClub($club, $desde) {
-		$em = $this->getDoctrine()->getManager();
-	
-		// Consultar no només les vigents sinó totes
-		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
-		$strQuery .= "WHERE p.club = :club ";
-		$strQuery .= " AND p.databaixa IS NULL ";
-		$strQuery .= " AND p.dataalta >= :ininormal";
-		$strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC";
-	
-		$desde = $desde->format('Y-m-d H:i:s');
-	
-		$query = $em->createQuery($strQuery)
-		->setParameter('club', $club)
-		->setParameter('ininormal', $desde);
-			
-		return $query->getResult();
-	}
-	
 	protected function getSQLIniciAnual() {
 		/* Normal 31/12  	dataalta >= 01/01/current year */
 		$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") . "-01-01 00:00:00");
@@ -257,23 +238,41 @@ class BaseController extends Controller {
 		return null;
 	}
 	
-	protected function consultaAssegurats($tots, $dni, $nom, $cognoms, $vigent = true) {
+	protected function consultaPartesClub($club, $desde, $strOrderBY = "") {
+		$em = $this->getDoctrine()->getManager();
+	
+		// Consultar no només les vigents sinó totes
+		$strQuery = "SELECT p, COUNT(l.id) AS HIDDEN numllicencies FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t ";
+		$strQuery .= "WHERE p.club = :club ";
+		$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
+		$strQuery .= " AND p.dataalta >= :ininormal";
+		$strQuery .= " GROUP BY p ";
+		//echo $strOrderBY;
+		
+		//$strQuery .= " ORDER BY numllicencies";
+		/*if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;
+		else $strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC ";*/ 
+		
+		
+		$desde = $desde->format('Y-m-d H:i:s');
+	
+		$query = $em->createQuery($strQuery)
+			->setParameter('club', $club)
+			->setParameter('ininormal', $desde);
+			
+		return $query;
+	}
+	
+	protected function consultaAssegurats($tots, $dni, $nom, $cognoms, $vigent = true, $strOrderBY = "") { 
 		$em = $this->getDoctrine()->getManager();
 	
 		if ($vigent == true) {
-			//$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e ";
-			//$strQuery .= "INNER JOIN Fecdas\PartesBundle\Entity\EntityLlicencia l.persona l ";
-			
 			$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e";
 			$strQuery .= " JOIN e.llicencies l JOIN l.parte p ";
-			$strQuery .= "WHERE e.databaixa IS NULL AND e.databaixa IS NULL AND p.databaixa IS NULL ";
+			$strQuery .= "WHERE e.databaixa IS NULL AND l.databaixa IS NULL AND p.databaixa IS NULL ";
 			$strQuery .= " AND p.pendent = 0 ";
 			$strQuery .= "AND p.dataalta <= CURRENT_DATE() ";
 			$strQuery .= "AND l.datacaducitat >= CURRENT_DATE() ";
-			
-			
-			//GROUP BY e.dni HAVING COUNT(DISTINCT p.club) > 1
-			
 		} else { 
 			$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e ";
 			$strQuery .= " WHERE e.databaixa IS NULL ";
@@ -284,9 +283,9 @@ class BaseController extends Controller {
 		if ($dni != "") $strQuery .= " AND e.dni LIKE :dni ";
 		if ($nom != "") $strQuery .= " AND e.nom LIKE :nom ";
 		if ($cognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
-	
-		if ($vigent == true) $strQuery .= " GROUP BY e";
-		$strQuery .= " ORDER BY e.cognoms, e.nom";
+		//if ($vigent == true) $strQuery .= " GROUP BY e";
+		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;
+		else $strQuery .= " ORDER BY e.cognoms, e.nom";  
 		
 	
 		$query = $em->createQuery($strQuery);
@@ -297,24 +296,13 @@ class BaseController extends Controller {
 		} else {
 			// Algun filtre
 			$query = $em->createQuery($strQuery);
-			if ($tots == false) {
-				$query->setParameter('club', $this->getCurrentClub()->getCodi());
-			}
-			if ($dni != "") {
-				$query->setParameter('dni', "%" . $dni . "%");
-				//$form->get('dni')->setData($currentDNI);
-			}
-			if ($nom != "") {
-				$query->setParameter('nom', "%" . $nom . "%");
-				//$form->get('nom')->setData($currentNom);
-			}
-			if ($cognoms != "") {
-				$query->setParameter('cognoms', "%" . $cognoms . "%");
-				//$form->get('cognoms')->setData($currentCognoms);
-			}
+			if ($tots == false) $query->setParameter('club', $this->getCurrentClub()->getCodi());
+			if ($dni != "") $query->setParameter('dni', "%" . $dni . "%");
+			if ($nom != "") $query->setParameter('nom', "%" . $nom . "%");
+			if ($cognoms != "") $query->setParameter('cognoms', "%" . $cognoms . "%");
 		}
 	
-		return $query->getResult();
+		return $query;
 	}
 	
 	protected function getTotalsFactura($detallfactura) {

@@ -10,7 +10,7 @@
 		<div id="header-totals" class="col-listheader">Resum - 
 		Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
 	  	fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-	   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} (iva inc.)</div>
+	   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} (iva inc.)</div>
 	</div>
 </div>
 <div class="table-noscroll">
@@ -84,7 +84,6 @@
 		{% for llicencia in parte.llicenciessortedbyname %}
 			{# if llicencia.id != "" #}
 			{% if llicencia.persona.nom is defined %}
-				{% if llicencia.databaixa is null %}
 				<li class="data-detall">
 	  				<div class="data-detall-cell llicencia-id">{{ llicencia.id }}</div>
 					<div class="data-detall-cell llicencia-persona">{{ llicencia.persona.cognomsNom }}</div>
@@ -104,7 +103,6 @@
 					{% endif %}
 					</div>
 	  			</li>
-	  			{% endif %}
 	   		{% endif %}
 	   	{% endfor %}
 	</ol>

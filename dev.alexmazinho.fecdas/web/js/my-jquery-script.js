@@ -367,6 +367,27 @@
 			});
 		}
 	});
+	
+	/* Mètode obsolet */
+	llistaPaginationAndSort  = function(formElement) {
+	    // Paginació en llista o ordenació de columna
+		$('.navigation .pagination a, #list-header .col-listheader-sortable a')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
+	        var url = $(this).url();
+
+	        $('#form_page').val(url.param('page'));
+	        $('#form_sort').val(url.param('sort'));
+	        $('#form_direction').val(url.param('direction'));
+	        
+	        formElement.submit();
+	    });
+	};
+	
+
 	/*****************************************************************************************************************/
 	
 	/*************************************************** Menu ********************************************************/
@@ -497,21 +518,6 @@
 	    });
 	};
 	
-	paginationAssegurats  = function() {
-	    //Carrega i mostra historial per un assegurat
-		$('.navigation .pagination a')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        
-	        var url = $(this).url();
-
-	        $('#form_page').val(url.param('page'));
-	        
-	        $('#form_assegurats').submit();
-	    });
-	};
 	
 	showHistorialLlicencies = function() {
 	    //Carrega i mostra historial per un assegurat
@@ -1005,22 +1011,6 @@
 		    
 		    $("#dialeg").dialog("open");
 		});
-	};
-	
-	paginationPartes  = function() {
-	    //Carrega i mostra historial per un assegurat
-		$('.navigation .pagination a')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        
-	        var url = $(this).url();
-
-	        $('#form_page').val(url.param('page'));
-	        
-	        $('#form_partes').submit();
-	    });
 	};
 	
 	showLlicenciesParte = function() {

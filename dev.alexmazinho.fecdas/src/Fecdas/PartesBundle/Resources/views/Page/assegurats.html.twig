@@ -25,16 +25,18 @@
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
 			<div class="buttons-top">
-				<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', pdfparams) }}">
+				<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', persones.params) }}">
 					<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
 					title="Descarregar les llistes" width="40px"></a></div> 
-				<div class="button-top"><a class="print-link" target="_blank" href="{{ path('FecdasPartesBundle_asseguratstopdf', pdfparams|merge({ 'print': 1 })) }}">
+				<div class="button-top"><a class="print-link" target="_blank" href="{{ path('FecdasPartesBundle_asseguratstopdf', persones.params|merge({ 'print': 1 })) }}">
 					<img src="{{ asset('images/icon-print.png') }}" alt="Descarregar les llistes" 
 					title="Descarregar les llistes" width="40px"></a></div>
 			</div> 
 		</div>
    		<div class="form-row clearfix">
    			{{ form_widget(form.page) }}
+   			{{ form_widget(form.sort) }}
+   			{{ form_widget(form.direction) }}
 			<div id="formassegurats-dni" class="form-left">
 				{{ form_label(form.dni, 'DNI/NIE', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
@@ -63,14 +65,14 @@
 		   	<div id="list-header">
 		   		<div id="header-asseguratid" class="col-listheader">id</div>
 		   		<div id="header-asseguratcompacte" class="col-listheader col-responsive">Assegurat<span class="listheader-order"></span></div>
-		   		<div id="header-asseguratdni" class="col-listheader col-noresponsive">{{ knp_pagination_sortable(persones, 'DNI', 'e.dni') }}
-		   				<span class="listheader-icon {% if persones.isSorted('e.dni') %} listheader-icon-{{ sort }} {% endif %}"></span></div>
-		   		<div id="header-asseguratnom" class="col-listheader col-noresponsive">{{ knp_pagination_sortable(persones, 'Nom', 'e.nom') }}
-		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sort }} {% endif %}"></span></div>
-		   		<div id="header-asseguratcognoms" class="col-listheader col-noresponsive">{{ knp_pagination_sortable(persones, 'Cognoms', 'e.cognoms', {'direction': 'desc'}) }}
-		   				<span class="listheader-icon {% if sort == '' %} listheader-icon-asc {% endif %}{% if persones.isSorted('e.cognoms') %} listheader-icon-{{ sort }} {% endif %}"></span></div>
+		   		<div id="header-asseguratdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'DNI', 'e.dni') }}
+		   				<span class="listheader-icon {% if persones.isSorted('e.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-asseguratnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nom', 'e.nom') }}
+		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-asseguratcognoms" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Cognoms', 'e.cognoms', {'direction': 'desc'}) }}
+		   				<span class="listheader-icon {% if sortparams['direction'] == '' %} listheader-icon-asc {% endif %}{% if sortparams['sort'] == 'e.cognoms' %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicències</div>
-		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">Total: {{ persones.getTotalItemCount }}</div>
+		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 	   	</div>
 		{% if persones|length > 0 %}
@@ -128,7 +130,7 @@
 			{% endfor %}
 			</ol>
 		</div>
-		<div class="navigation">Pàgines: {{ knp_pagination_render(persones) }}</div>
+		{% if persones.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(persones, null, sortparams) }}</div>{% endif %}		
 	   	{% else %}
 	   		
 	        <div class="sms-notice">Cerca sense resultats</div>
@@ -157,13 +159,12 @@ $(document).ready(function(){
 	helpBubbles("#form_cognoms", '<p>Indica tot o part dels <b>COGNOMS</b> a cercar</p>\
 	<p>La cerca no distingeix majúscules o minúscules</p>');
 
-	paginationAssegurats();
-	
 	showPersonClickAssegurats();
 
 	showHistorialLlicencies();
 
 	//sortLlista("col-listheader", "list-data");
+	//llistaPaginationAndSort($('#form_assegurats'));
 
 	var tableScroll = $('.table-scroll');
 	if (tableScroll.hasOverflowY()) {

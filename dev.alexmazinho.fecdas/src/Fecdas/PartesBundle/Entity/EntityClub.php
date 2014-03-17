@@ -1023,6 +1023,33 @@ class EntityClub {
     }
     
     /**
+     * Dades del club des de certa data
+     *
+     * @return array
+     */
+    public function getDadesDesde($desde)
+    {
+	    /* Recollir estadístiques */
+	    $stat['ltotal'] = 0;	// Llicències total
+	    $stat['vigents'] = 0;	// Partes vigents
+	    $stat['lvigents'] = 0;	// llicències vigents
+	    
+	    foreach($this->partes as $c => $parte_iter) {
+	    	if ($parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and $parte_iter->getDatabaixa() == null) {
+		    	$nlic = $parte_iter->getNumLlicencies();
+		    	if ($nlic > 0) {
+		    		$stat['ltotal'] +=  $nlic;
+		    		if ($parte_iter->isVigent()) {
+		    			$stat['lvigents'] +=  $nlic;
+		    			$stat['vigents']++;
+		    		}
+		    	}
+	    	}
+	    }
+	    return $stat;
+    }
+    
+    /**
      * Missatge llista de partes
      *
      * @return string

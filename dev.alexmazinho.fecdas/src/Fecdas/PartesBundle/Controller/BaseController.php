@@ -32,7 +32,6 @@ class BaseController extends Controller {
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
-	const REGISTRES_PETICIONS = 50; // Nombre registre consulta duplicats
 	const PREFIX_ALBARA_LLICENCIES = 'L';
 	const PREFIX_ALBARA_DUPLICATS = 'D';
 	const PAGAMENT_LLICENCIES = 'llicencies';
@@ -238,32 +237,26 @@ class BaseController extends Controller {
 		return null;
 	}
 	
-	protected function consultaPartesClub($club, $desde, $strOrderBY = "") {
+	protected function consultaPartesClub($club, $desde, $strOrderBY = '') {
 		$em = $this->getDoctrine()->getManager();
 	
 		// Consultar no només les vigents sinó totes
-		$strQuery = "SELECT p, COUNT(l.id) AS HIDDEN numllicencies FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t ";
+		$strQuery = "SELECT p, COUNT(l.id) AS HIDDEN numllicencies FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.llicencies l ";
 		$strQuery .= "WHERE p.club = :club ";
 		$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
 		$strQuery .= " AND p.dataalta >= :ininormal";
 		$strQuery .= " GROUP BY p ";
-		//echo $strOrderBY;
+
+		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  // Només per PDF el paginator ho fa sol mentre el mètode de crida sigui POST
 		
-		//$strQuery .= " ORDER BY numllicencies";
-		/*if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;
-		else $strQuery .= " ORDER BY p.dataalta DESC, p.numrelacio DESC ";*/ 
-		
-		
-		$desde = $desde->format('Y-m-d H:i:s');
-	
 		$query = $em->createQuery($strQuery)
 			->setParameter('club', $club)
-			->setParameter('ininormal', $desde);
+			->setParameter('ininormal', $desde->format('Y-m-d'));
 			
 		return $query;
 	}
 	
-	protected function consultaAssegurats($tots, $dni, $nom, $cognoms, $vigent = true, $strOrderBY = "") { 
+	protected function consultaAssegurats($tots, $dni, $nom, $cognoms, $vigent = true, $strOrderBY = '') { 
 		$em = $this->getDoctrine()->getManager();
 	
 		if ($vigent == true) {
@@ -277,30 +270,23 @@ class BaseController extends Controller {
 			$strQuery = "SELECT e FROM Fecdas\PartesBundle\Entity\EntityPersona e ";
 			$strQuery .= " WHERE e.databaixa IS NULL ";
 		}
-	
 		
 		if ($tots == false) $strQuery .= " AND e.club = :club ";
 		if ($dni != "") $strQuery .= " AND e.dni LIKE :dni ";
 		if ($nom != "") $strQuery .= " AND e.nom LIKE :nom ";
 		if ($cognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
-		//if ($vigent == true) $strQuery .= " GROUP BY e";
-		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;
-		else $strQuery .= " ORDER BY e.cognoms, e.nom";  
+
+		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  // Només per PDF el paginator ho fa sol mentre el mètode de crida sigui POST
 		
-	
 		$query = $em->createQuery($strQuery);
 			
-		if ($tots == true and $dni == "" and $nom == "" and $cognoms == "") {
-			// Sense club (admins). Si no s'indica filtre dades personals mostr 0 resultats
-			$query = $em->createQuery($strQuery)->setMaxResults(0);
-		} else {
-			// Algun filtre
-			$query = $em->createQuery($strQuery);
-			if ($tots == false) $query->setParameter('club', $this->getCurrentClub()->getCodi());
-			if ($dni != "") $query->setParameter('dni', "%" . $dni . "%");
-			if ($nom != "") $query->setParameter('nom', "%" . $nom . "%");
-			if ($cognoms != "") $query->setParameter('cognoms', "%" . $cognoms . "%");
-		}
+		// Algun filtre
+		$query = $em->createQuery($strQuery);
+		if ($tots == false) $query->setParameter('club', $this->getCurrentClub()->getCodi());
+		if ($dni != "") $query->setParameter('dni', "%" . $dni . "%");
+		if ($nom != "") $query->setParameter('nom', "%" . $nom . "%");
+		if ($cognoms != "") $query->setParameter('cognoms', "%" . $cognoms . "%");
+		
 	
 		return $query;
 	}

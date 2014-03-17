@@ -70,11 +70,11 @@
 				<option value="{{ path('FecdasPartesBundle_enquestes') }}"> - Enquestes</option>
 				{% endif %}
 				<option value="">Tramitació</option>
-				<option value="{{ path('FecdasPartesBundle_partes') }}"> - Llicències</option>
+				<option value="{{ path('FecdasPartesBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"> - Llicències</option>
 				<option value="{{ path('FecdasPartesBundle_importcsv') }}"> - Importació de llicències</option>
-				<option value="{{ path('FecdasPartesBundle_duplicats') }}"> - Duplicats</option>
+				<option value="{{ path('FecdasPartesBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"> - Duplicats</option>
 				<option value="">Consulta</option>
-				<option value="{{ path('FecdasPartesBundle_assegurats') }}"> - Assegurats</option>
+				<option value="{{ path('FecdasPartesBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"> - Assegurats</option>
 				{% if busseig == true  %}
 				<option value="{{ path('FecdasPartesBundle_busseig') }}"> - Llicències amb el DNI</option>
 				{% endif %}
@@ -115,13 +115,13 @@
 				{% endif %}
 				<li id="menu-tram"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Tramitació</a>
 				<ul class="submenu">
-					<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències</a></li>
+					<li id="menu-partes"><a href="{{ path('FecdasPartesBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències</a></li>
 					<li id="menu-import"><a href="{{ path('FecdasPartesBundle_importcsv') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Importació de llicències</a></li>
-					<li id="menu-duplicats"><a href="{{ path('FecdasPartesBundle_duplicats') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Duplicats</a></li>
+					<li id="menu-duplicats"><a href="{{ path('FecdasPartesBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Duplicats</a></li>
 				</ul></li>				
 				<li id="menu-cons"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Consulta</a>
 				<ul class="submenu">	
-					<li id="menu-assegurats"><a href="{{ path('FecdasPartesBundle_assegurats') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Assegurats</a></li>
+					<li id="menu-assegurats"><a href="{{ path('FecdasPartesBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Assegurats</a></li>
 					{% if busseig == true  %}
 					<li id="menu-busseig"><a href="{{ path('FecdasPartesBundle_busseig') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències amb el DNI</a></li>
 					{% endif %}

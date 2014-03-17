@@ -468,18 +468,16 @@ class PDFController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
 		
 		$club = $this->getCurrentClub();
-		$currentDNI = "";
-		if ($request->query->has('dni')) $currentDNI = $request->query->get('dni');
-		$currentNom = "";
-		if ($request->query->has('nom')) $currentNom = $request->query->get('nom');
-		$currentCognoms = "";
-		if ($request->query->has('cognoms')) $currentCognoms = $request->query->get('cognoms');
-		$currentVigent = true;
-		if ($request->query->has('vigents')) $currentVigent = ($request->query->get('vigents')==1);
+		
+		$currentDNI = $request->query->get('dni', '');
+		$currentNom = $request->query->get('nom', '');
+		$currentCognoms = $request->query->get('cognoms', '');
+		
+		if ($this->get('request')->query->has('vigent') && $this->get('request')->query->get('vigent') == 1) $currentVigent = true;
+		else $currentVigent = false;
+		
 		$currentTots = false;
-		if ($this->isCurrentAdmin()) { // Admins poden cerca tots els clubs
-			if ($request->query->has('tots')) $currentTots = ($request->query->get('tots')==1);
-		}
+		if ($this->isCurrentAdmin() && $this->get('request')->query->has('tots') && $this->get('request')->query->get('tots') == 1) $currentTots = true;
 		
 		$this->logEntryAuth('PRINT ASSEGURATS', "club: ". $club->getCodi()." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
 		
@@ -546,28 +544,27 @@ class PDFController extends BaseController {
 		
 		$total = 0;
 
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent);
+		$strOrderBY = $this->get('request')->query->get('sort', 'e.cognoms, e.nom'); // e.cognoms, e.nom per defecte
+		 
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $strOrderBY); 
 		$persones = $query->getResult();
 		
 		foreach ($persones as $c => $persona) {
 			$llicencia = $persona->getLlicenciaVigent();
-			if ($currentVigent != true or ($currentVigent == true and $llicencia != null)) {
-				if ($llicencia == null) $llicencia = $persona->getLastLlicencia(); 
-	
-				$total++;
-				$tbl .= '<tr nobr="true" style="font-size: small;"><td align="center">' . $total . '</td>';
-				$tbl .= '<td align="left">' . $persona->getCognoms() . ', ' . $persona->getNom() . '</td>';
-				$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
-				if ($llicencia != null) {
-					
-					$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
-					$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
-					. ' - ' . $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y') .  '</td>';
-				} else {
-					$tbl .= '<td align="left" colspan="2">Sense historial de llicències</td>';
-				}
-				$tbl .= '</tr>';
-			} 
+			
+
+			$total++;
+			$tbl .= '<tr nobr="true" style="font-size: small;"><td align="center">' . $total . '</td>';
+			$tbl .= '<td align="left">' . $persona->getCognoms() . ', ' . $persona->getNom() . '</td>';
+			$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
+			if ($llicencia != null && $llicencia->getParte() != null) {
+				$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
+				$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
+				. ' - ' . $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y') .  '</td>';
+			} else {
+				$tbl .= '<td align="left" colspan="2">'.$persona->getInfoAssegurats($this->isCurrentAdmin()).'</td>';
+			}
+			$tbl .= '</tr>';
 		}
 		
 		$tbl .= '</table>';

@@ -398,8 +398,11 @@ class PageController extends BaseController {
 
 		$club = $this->getCurrentClub();
 		
-		$desde = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") - 1 . "-01-01 00:00:00");
-		$page = 1;
+		$desdeDefault = "01/01/".(date("Y") - 1); 
+		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault)); 
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'p.dataalta');
+		$direction = $request->query->get('direction', 'desc');
 		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('formpartes-button-new')) { // Nou parte
@@ -411,18 +414,27 @@ class PageController extends BaseController {
 			if ($request->request->has('form')) {
 				$formdata = $request->request->get('form');
 				$desde = \DateTime::createFromFormat('d/m/Y', $formdata['desde']);
-				$page = $formdata['page'];
+				$page = 1; // Submit sempre comença per 1
+				$sort = $formdata['sort'];
+				$direction = $formdata['direction'];
 			}
+			
+			$this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$formdata['desde']);
 		} else {
+			$this->logEntryAuth('VIEW PARTES', $club->getCodi());
 			//$request->getSession()->getFlashBag()->clear();
 		}
 
-		$this->logEntryAuth('VIEW PARTES', $club->getCodi());
+		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
+				'read_only' => true,
+				'data' => $desde->format('d/m/Y'),
+				'attr' => (array('onchange' => 'this.form.submit()'))
+		));
+		$formBuilder->add('page', 'hidden', array('data' => $page));
+		$formBuilder->add('sort', 'hidden', array('data' => $sort));
+		$formBuilder->add('direction', 'hidden', array('data' => $direction));
 		
-		$strOrderBY = $request->query->get('sort', '');
-		if ($strOrderBY != "") $strOrderBY .= ' ' . $request->query->get('direction', '');
-		
-		$query = $this->consultaPartesClub($club->getCodi(), $desde, $strOrderBY);
+		$query = $this->consultaPartesClub($club->getCodi(), $desde, $sort);
 		$paginator  = $this->get('knp_paginator');
 		
 		$partesclub = $paginator->paginate(
@@ -430,48 +442,23 @@ class PageController extends BaseController {
 				$page,
 				10/*limit per page*/
 		);
-
-		//echo count($partesclub) . " " . get_class($partesclub[0]) . " " . $partesclub[0]->getNumLlicencies();
-		//return new Response();
+		$partesclub->setParam('desde',$desde->format('d/m/Y'));
+		
 		
 		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
 			// A partir 10/12 poden fer llicències any següent
 			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
 		}
 		
-		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
-				'read_only' => true,
-				'data' => $desde->format('d/m/Y'),
-				'attr' => (array('onchange' => 'this.form.submit()'))
-		));
-		$formBuilder->add('page', 'hidden', array('data' => $page));
-		
 		/* Recollir estadístiques */
+		$stat = $club->getDadesDesde($desde);
 		$stat['saldo'] = $club->getSaldoweb();
-		$stat['total'] = count($partesclub); 
-		$stat['ltotal'] = 0;
-		$stat['itotal'] = 0;
-		$stat['vigents'] = $stat['total'];
-		$stat['lvigents'] = 0;
-
-		foreach($partesclub as $c => $parte_iter) {
-			$nlic = $parte_iter->getNumLlicencies();
-			$impo = $parte_iter->getPreuTotalIVA(); 
-			if ($nlic == 0) {  
-				$stat['total']--;
-				$stat['vigents']--;
-			} else {
-				$stat['ltotal'] +=  $nlic;
-				$stat['itotal'] += $impo;
-				if (!$parte_iter->isVigent()) $stat['lvigents'] +=  $nlic;
-				else $stat['vigents']--; 
-			} 
-		} 
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'partes' => $partesclub,  'club' => $club, 'desde' => $desde, 'stat' => $stat, 
-						'sort' => $request->query->get('direction', ''))));
+						'sortparams' => array('sort' => $sort,'direction' => $direction))
+						));
 	}
 
 	public function llicenciesParteAction() {
@@ -503,27 +490,37 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 	
 		$currentClub = $this->getCurrentClub()->getCodi();
-		$currentDNI = "";
-		$currentNom = "";
-		$currentCognoms = "";
-		$currentVigent = true;
+		
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'e.cognoms, e.nom');
+		$direction = $request->query->get('direction', 'desc');
+		$currentDNI = $request->query->get('dni', '');
+		$currentNom = $request->query->get('nom', '');
+		$currentCognoms = $request->query->get('cognoms', '');
+		
+		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
+		else $currentVigent = false;   
+		
 		$currentTots = false;
-		$page = 1; 
+		if ($this->isCurrentAdmin() && $request->query->has('tots') && $request->query->get('tots') == 1) $currentTots = true;
 		
 		
+		$currentTots = $this->isCurrentAdmin() && $request->query->get('tots', false);// Admins poden cerca tots els clubs
+				
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
 			if ($request->request->has('form')) { // Reload select clubs de Partes
 				$formdata = $request->request->get('form');
-				$page = $formdata['page'];
+				$page = 1; // Submit sempre comença per 1
+				$sort = $formdata['sort'];
+				$direction = $formdata['direction'];
 				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
 				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
 				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
 				if (isset($formdata['vigent'])) $currentVigent = true;
 				else $currentVigent = false;
-				if ($this->isCurrentAdmin()) { // Admins poden cerca tots els clubs
-					if (isset($formdata['tots'])) $currentTots = true;
-				}
+				$currentTots = false;
+				if ($this->isCurrentAdmin() && isset($formdata['tots'])) $currentTots = true;  // Admins poden cerca tots els clubs
 
 				$this->logEntryAuth('VIEW PERSONES SEARCH', "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
 			}
@@ -539,28 +536,28 @@ class PageController extends BaseController {
 		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots,
 				'attr' => (array('onchange' => 'this.form.submit()'))));
 		$formBuilder->add('page', 'hidden', array('data' => $page));
+		$formBuilder->add('sort', 'hidden', array('data' => $sort));
+		$formBuilder->add('direction', 'hidden', array('data' => $direction));
 		$form = $formBuilder->getForm(); 
 	
-		$strOrderBY = $request->query->get('sort', '');
-		if ($strOrderBY != "") $strOrderBY .= ' ' . $request->query->get('direction', '');
-		
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $strOrderBY);  
-		
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $sort);
 		$paginator  = $this->get('knp_paginator');
-		
-				
 		$persones = $paginator->paginate(
 				$query,
 				$page,
-				10/*limit per page*/
-		);
+				10 /*limit per page*/
+		); 
+		/* Paràmetres URL sort i pagination */
+		if ($currentDNI != '') $persones->setParam('dni',$currentDNI);
+		if ($currentNom != '') $persones->setParam('nom',$currentNom);
+		if ($currentCognoms != '') $persones->setParam('cognoms',$currentCognoms);
+		if ($currentVigent == true) $persones->setParam('vigent',true);
+		if ($currentTots == true) $persones->setParam('tots',true);
 		
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
-						'pdfparams' => array( 
-						'vigents' => $currentVigent, 'tots' => $currentTots, 'dni' => $currentDNI,
-						'nom' => $currentNom, 'cognoms' => $currentCognoms), 'sort' => $request->query->get('direction', '')
-				)));
+						'sortparams' => array('sort' => $sort,'direction' => $direction)) 
+						));
 	}
 	
 	public function historialLlicenciesAction() {
@@ -1389,9 +1386,9 @@ class PageController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 		 
-		// Limit registres consulta
-		$limitSelect = self::REGISTRES_PETICIONS;
-		if ($request->query->has('limit')) $limitSelect += $request->query->get('limit');
+		$page = $this->get('request')->query->get('page', 1);
+		$sort = $this->get('request')->query->get('sort', 'd.datapeticio');
+		$direction = $this->get('request')->query->get('direction', 'desc');
 		
 		$currentClub = $this->getCurrentClub()->getCodi();
 		$duplicat = new EntityDuplicat();
@@ -1498,23 +1495,33 @@ class PageController extends BaseController {
 			$this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub); 
 		}
 		
+		$form->get('page')->setData($page);
+		$form->get('sort')->setData($sort);
+		$form->get('direction')->setData($direction);
 		
-		$strQuery = "SELECT d FROM Fecdas\PartesBundle\Entity\EntityDuplicat d ";
+		
+		$strQuery = "SELECT d, p, c FROM Fecdas\PartesBundle\Entity\EntityDuplicat d JOIN d.persona p JOIN d.carnet c";
 		/* Administradors totes les peticions, clubs només les seves*/
 		if (!$this->isCurrentAdmin()) {
 			$strQuery .= " WHERE d.club = :club ORDER BY d.datapeticio";  
 			$query = $em->createQuery($strQuery)
-				->setParameter('club', $currentClub)
-				->setMaxResults($limitSelect);
+				->setParameter('club', $currentClub);
 		} else {
 			$strQuery .= " ORDER BY d.datapeticio";
-			$query = $em->createQuery($strQuery)->setMaxResults($limitSelect);
+			$query = $em->createQuery($strQuery);
 		}
 		
-		$duplicats = $query->getResult();
+		$paginator  = $this->get('knp_paginator');
+		$duplicats = $paginator->paginate(
+				$query,
+				$page,
+				10 /*limit per page*/
+		);
 		
 		return $this->render('FecdasPartesBundle:Page:duplicats.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats, 'limit' => $limitSelect)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats,
+						'sortparams' => array('sort' => $sort,'direction' => $direction))
+						));
 	}
 	
 	public function duplicatsformAction() {

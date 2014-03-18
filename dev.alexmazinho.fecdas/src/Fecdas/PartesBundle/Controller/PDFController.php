@@ -263,7 +263,7 @@ class PDFController extends BaseController {
 				$detall = $parte->getDetallFactura(); // Get detall
 				$totals = $this->getTotalsFactura($detall); // Get totals
 				
-				$response = $this->albaratopdf(self::PREFIX_ALBARA_LLICENCIES.$parte->getId(), $parte->getDataentrada(), 'Albarà Llista llicències ' . date("Y"),  
+				$response = $this->albaratopdf($parte->getNumAlbara(), $parte->getDataentrada(), 'Albarà Llista llicències ' . date("Y"),  
 											$parte->getClub(), $parte->getTipus()->getIva(), $detall, $totals, $pagat);
 				
 				$this->logEntryAuth('PRINT ALBARA PARTE', $reqId);
@@ -294,7 +294,7 @@ class PDFController extends BaseController {
 				$detall = $duplicat->getDetallFactura(); // Get detall
 				$totals = $this->getTotalsFactura($detall); // Get totals
 	
-				$response = $this->albaratopdf(self::PREFIX_ALBARA_DUPLICATS.str_pad($duplicat->getId(),5,'0',STR_PAD_LEFT), $duplicat->getDatapeticio(), 'Albarà petició de duplicat',
+				$response = $this->albaratopdf($duplicat->getNumAlbara(), $duplicat->getDatapeticio(), 'Albarà petició de duplicat',
 						$duplicat->getClub(), 0, $detall, $totals, $pagat);
 	
 				$this->logEntryAuth('PRINT ALBARA DUPLI', $reqId);

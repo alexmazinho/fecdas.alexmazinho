@@ -38,7 +38,8 @@
 	<div id="llista-duplicats">
 		<div class="table-header">	
 		   	<div id="list-header">
-		   		<div id="header-duplicatid" class="col-listheader">id</div>
+		   		<div id="header-duplicatid" class="col-listheader">{{ knp_pagination_sortable(duplicats, 'Albarà', 'd.id') }}
+		   			<span class="listheader-icon {% if duplicats.isSorted('d.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-duplicatpeticio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Petició', 'd.datapeticio') }}
 		   			<span class="listheader-icon {% if duplicats.isSorted('d.datapeticio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-duplicatdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'DNI', 'p.dni') }}
@@ -60,7 +61,7 @@
 				{% if admin == true or (admin != true and duplicat.databaixa is null) %}
 					{% if duplicat.databaixa is null %}
 					<li class="data-detall">
-				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>
+				   		<div class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
 				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
@@ -72,7 +73,7 @@
 				   		<div class="data-detall-cell duplicat-impressio">
 				   		{% if duplicat.dataimpressio is null %}
 				   			{% if admin == true %}
-					   			<a class="duplicat-impres" href="{{ path('FecdasPartesBundle_imprespeticio', { 'id': duplicat.id }) }}">
+					   			<a class="duplicat-impres" href="{{ path('FecdasPartesBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}">
 			   							<img src="{{ asset('images/icon-ok.png') }}" alt="Duplicat imprès" title="Duplicat imprès" width="23px"></a>
 			   				{% endif %}
 			   			{% else %}
@@ -99,14 +100,14 @@
 				   			
 					   			<a class="duplicat-dades" href="{{ path('FecdasPartesBundle_dadespagamentfactura', { 'id': duplicat.id }) }}" data="{{ nf }}">
 		   							<img src="{{ asset('images/icon-euro.png') }}" alt="Afegir dades facturació i/o pagament" title="Afegir dades facturació i/o pagament" width="23px"></a>
-		   						<a class="duplicat-esborrar" href="{{ path('FecdasPartesBundle_anularpeticio', { 'id': duplicat.id }) }}">
+		   						<a class="duplicat-esborrar" href="{{ path('FecdasPartesBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}">
 			   						<img src="{{ asset('images/icon-remove.png') }}" alt="Anul·lar petició" title="Anul·lar petició" width="23px"></a>
 				   			{% endif %}
 			   			</div>
 			   		</li>
 					{% else %}
 			   		<li class="data-detall data-detall-fosc">
-				   		<div class="data-detall-cell duplicat-id">{{ duplicat.id }}</div>
+				   		<div class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
 				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}

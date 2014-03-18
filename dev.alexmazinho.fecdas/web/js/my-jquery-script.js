@@ -946,9 +946,9 @@
 		    	
 		    	$("#llista-llicencies").html(data);
 				
-	        	if ($("#parte_id").val() == "" && $("#header-parteid").length)	{  
+	        	if ($("#parte_id").val() == "" && $("#header-llicenciaparteid").length)	{  
 	        		/* Creació del parte si no hi ha error. reload*/
-					$("#parte_id").val($("#header-parteid").html());
+					$("#parte_id").val($("#header-llicenciaparteid").html());
 	        		
 	        		// Parte nou creat, deixa només el tipus de parte seleccionat
 					$("#parte_tipus option:not(:selected)").each(function(i, item){
@@ -966,7 +966,7 @@
 
 					$(".buttons-top").show();
 
-					//window.location = window.location.pathname + '?id=' + $("#header-parteid").html(); 
+					//window.location = window.location.pathname + '?id=' + $("#header-llicenciaparteid").html(); 
 	        	};
 		    	
 				removeLlicenciaClick();

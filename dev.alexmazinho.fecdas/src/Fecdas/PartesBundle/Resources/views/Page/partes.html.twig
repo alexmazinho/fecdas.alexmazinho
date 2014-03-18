@@ -47,10 +47,11 @@
 		</div>
 	    <div class="table-header">	
 		   	<div id="list-header">
-		   		<div id="header-parteid" class="col-listheader">id</div>
+		   		<div id="header-parteid" class="col-listheader">{{ knp_pagination_sortable(partes, 'Albarà', 'p.id') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parteany" class="col-listheader">Any<span class="listheader-icon"></span></div>
 		   		<div id="header-partedata" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Data alta', 'p.dataalta') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% else %} kkkk {% endif %}"></span></div>
+		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-partetipusdesc" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Tipus', 't.id') }}
 		   			<span class="listheader-icon {% if partes.isSorted('t.id')  %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-partetotal" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Llicències', 'numllicencies', {'direction': 'desc'}) }}
@@ -65,7 +66,7 @@
 		   	<ol id="list-data">
 			{% for parte in partes %}
 		   		<li class="data-detall {% if parte.isPassat %} data-detall-fosc {% endif %}">
-		   			<div class="parte-id">{{ parte.id }}</div>
+		   			<div class="data-detall-cell parte-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parte-any">{{ parte.any }}</div>
 			   		<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
 			   		<div class="data-detall-cell parte-tipusdesc">{{ parte.tipus.descripcio }}</div>

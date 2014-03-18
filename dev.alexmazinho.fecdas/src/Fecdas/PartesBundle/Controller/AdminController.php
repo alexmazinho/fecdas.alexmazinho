@@ -420,7 +420,8 @@ class AdminController extends BaseController {
 			$this->logEntryAuth('ANULA DUPLI ERROR', 'duplicat ' . $duplicatid);
 		}
 		
-		return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+		return $this->forward('FecdasPartesBundle:Page:duplicats');
+		//return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
 	}
 	
 	public function imprespeticioAction() {

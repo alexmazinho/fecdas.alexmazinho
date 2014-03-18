@@ -32,8 +32,6 @@ class BaseController extends Controller {
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
-	const PREFIX_ALBARA_LLICENCIES = 'L';
-	const PREFIX_ALBARA_DUPLICATS = 'D';
 	const PAGAMENT_LLICENCIES = 'llicencies';
 	const PAGAMENT_DUPLICAT = 'duplicat';
 	const UPLOADS_RELPATH = '/../../../../web/uploads/';  // Path is __DIR__.self::UPLOADS_RELPATH

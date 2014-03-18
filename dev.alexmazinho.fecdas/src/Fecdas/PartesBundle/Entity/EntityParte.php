@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  */
 class EntityParte {
+	const PREFIX_ALBARA_LLICENCIES = 'L';
 	
 	/**
 	 * @ORM\Id
@@ -1039,4 +1040,13 @@ class EntityParte {
     	return false;
     }
     
+    /**
+     * Get num albarà PREFIX + id
+     *
+     * @return integer
+     */
+    public function getNumAlbara()
+    {
+    	return self::PREFIX_ALBARA_LLICENCIES.str_pad($this->getId(),6,'0',STR_PAD_LEFT);
+    }
 }

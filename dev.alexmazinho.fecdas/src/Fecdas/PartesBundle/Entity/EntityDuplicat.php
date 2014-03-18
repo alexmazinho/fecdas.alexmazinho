@@ -10,7 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
  *
  */
 class EntityDuplicat {
-
+	const PREFIX_ALBARA_DUPLICATS = 'D';
+	
 	/**
 	 * @ORM\Id
 	 * @ORM\Column(type="integer")
@@ -321,4 +322,13 @@ class EntityDuplicat {
 		return $textInfo;
 	}
 	
+	/**
+	 * Get num albarà PREFIX + id
+	 *
+	 * @return integer
+	 */
+	public function getNumAlbara()
+	{
+		return self::PREFIX_ALBARA_DUPLICATS.str_pad($this->getId(),6,'0',STR_PAD_LEFT);
+	}
 }

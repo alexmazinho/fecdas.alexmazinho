@@ -77,7 +77,7 @@
 		   		{% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}
 				{% if parte.pendent == true  %} parte-pendent {% endif %}
 		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
-			   		<div class="data-detall-cell parterecents-id">{{ parte.id }}</div>
+			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
 			   		<div class="data-detall-cell parterecents-rel">{{ parte.numrelacio }}</div>
 		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>

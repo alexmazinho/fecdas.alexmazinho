@@ -956,14 +956,15 @@
 					});
 
 					// Parte nou creta, desactiva data
+					$("#formparte-dataalta img").hide();
 					
 					var hrefpartetopdf = $("#parte-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
-					var hreffacturatopdf = $("#factura-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
+					var hrefalbaratopdf = $("#albara-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
 
 					$("#parte-to-pdf a").attr("href", hrefpartetopdf);
-					$("#factura-to-pdf a").attr("href", hreffacturatopdf);
+					$("#albara-to-pdf a").attr("href", hrefalbaratopdf);
 
-					$("#buttons-top").show();
+					$(".buttons-top").show();
 
 					//window.location = window.location.pathname + '?id=' + $("#header-parteid").html(); 
 	        	};

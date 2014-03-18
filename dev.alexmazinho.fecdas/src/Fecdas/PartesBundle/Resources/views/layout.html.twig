@@ -65,8 +65,8 @@
 				{% if admin == true  %}
 				<option value="">Administració</option>
 				<option value="{{ path('FecdasPartesBundle_club') }}"> - Clubs i usuaris</option>
-				<option value="{{ path('FecdasPartesBundle_recents') }}"> - Llistes recents</option>
-				<option value="{{ path('FecdasPartesBundle_clubs') }}"> - Saldos clubs</option>
+				<option value="{{ path('FecdasPartesBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}"> - Llistes recents</option>
+				<option value="{{ path('FecdasPartesBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}"> - Saldos clubs</option>
 				<option value="{{ path('FecdasPartesBundle_enquestes') }}"> - Enquestes</option>
 				{% endif %}
 				<option value="">Tramitació</option>
@@ -105,9 +105,9 @@
 				<ul class="submenu">
 					<li id="menu-admclubs"><a href="{{ path('FecdasPartesBundle_club') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Clubs i usuaris</a></li>
-					<li id="menu-admllistes"><a href="{{ path('FecdasPartesBundle_recents') }}">
+					<li id="menu-admllistes"><a href="{{ path('FecdasPartesBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
-					<li id="menu-admsaldos"><a href="{{ path('FecdasPartesBundle_clubs') }}">
+					<li id="menu-admsaldos"><a href="{{ path('FecdasPartesBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos clubs</a></li>
 					<li id="menu-admenquestes"><a href="{{ path('FecdasPartesBundle_enquestes') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>

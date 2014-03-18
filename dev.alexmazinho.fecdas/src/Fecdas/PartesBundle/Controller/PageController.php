@@ -444,7 +444,6 @@ class PageController extends BaseController {
 		);
 		$partesclub->setParam('desde',$desde->format('d/m/Y'));
 		
-		
 		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
 			// A partir 10/12 poden fer llicències any següent
 			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
@@ -498,14 +497,15 @@ class PageController extends BaseController {
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		
-		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
-		else $currentVigent = false;   
+		$currentVigent = true;
+		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
+		    
 		
-		$currentTots = false;
+		$currentTots = false; // Admins poden cerca tots els clubs
 		if ($this->isCurrentAdmin() && $request->query->has('tots') && $request->query->get('tots') == 1) $currentTots = true;
 		
 		
-		$currentTots = $this->isCurrentAdmin() && $request->query->get('tots', false);// Admins poden cerca tots els clubs
+		$currentTots = $this->isCurrentAdmin() && $request->query->get('tots', false);
 				
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
@@ -551,7 +551,7 @@ class PageController extends BaseController {
 		if ($currentDNI != '') $persones->setParam('dni',$currentDNI);
 		if ($currentNom != '') $persones->setParam('nom',$currentNom);
 		if ($currentCognoms != '') $persones->setParam('cognoms',$currentCognoms);
-		if ($currentVigent == true) $persones->setParam('vigent',true);
+		if ($currentVigent == false) $persones->setParam('vigent',false);
 		if ($currentTots == true) $persones->setParam('tots',true);
 		
 		return $this->render('FecdasPartesBundle:Page:assegurats.html.twig',
@@ -1065,11 +1065,12 @@ class PageController extends BaseController {
 				if ($valida == true and 
 					$this->getCurrentDate() >= $datainiciRevisarSaldos and $parte->getClub()->controlCredit() == true) {
 					// Comprovació de saldos clubs DIFE
-					if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
+/***************  SALDOS ENCARA NO ************************************************************************************************************************/					
+					/*if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
 						$this->get('session')->getFlashBag()->add('sms-notice',	'l\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
 						Per poder fer noves gestions, cal que contacteu amb la FECDAS');
 						$valida = false;
-					}
+					}*/
 				}
 				
 				// Persistència or rollback

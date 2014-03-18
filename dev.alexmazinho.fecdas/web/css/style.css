@@ -260,7 +260,7 @@ html[xmlns] .clearfix {
 	/*border-collapse: collapse;*/
 	width:100%;
 	border: none;
-	padding: 10px 0;
+	padding: 0 0 10px;
 }
 
 #list-header,
@@ -297,6 +297,11 @@ html[xmlns] .clearfix {
     /*width: 100%;*/
 }
 
+#list-header .total-rowcount,
+#summary-header .total-rowcount {
+	font-size: 16px;
+    text-align: right;
+}
 
 .col-listheader {
 	display: table-cell;
@@ -389,7 +394,7 @@ html[xmlns] .clearfix {
 
 .table-scroll, .table-noscroll {
 	display: inline-block;
-	max-height: 400px;
+	max-height: 410px;
     overflow-x: hidden;
     overflow-y: auto;
     border: 1px solid #81C6FF;
@@ -401,7 +406,7 @@ html[xmlns] .clearfix {
 }
 
 * html .table-scroll { /*max-height: 400px;  max-height IE hack */
-   height: expression( this.scrollHeight > 399 ? "400px" : "auto" ); /* sets max-height for IE */
+   height: expression( this.scrollHeight > 409 ? "410px" : "auto" ); /* sets max-height for IE */
 }
 
 
@@ -415,6 +420,7 @@ html[xmlns] .clearfix {
 .navigation .pagination {
 	padding: 3px 0;
 	display: inline;
+	font-size: 0.75em;
 }
 
 .navigation .pagination span {
@@ -590,7 +596,7 @@ input#form_dni {
 
 .form-row {
 	width:100%;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	position: relative;
 }
 
@@ -667,10 +673,10 @@ input#form_dni {
 	border: 1px solid #81C6FF;
 	/*background: none repeat scroll 0 0 #FFFFFF;*/
     border-radius: 5px 5px 5px 5px;
-    padding: 10px 10px 15px;
-    min-height: 170px;
+    padding: 10px 10px 5px;
+    /*min-height: 170px;*/
     position: relative;
-    margin-bottom: 10px;
+    /*margin-bottom: 10px;*/
 }
 
 #formparte-llicencia .form-row {
@@ -828,8 +834,9 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 #partes-totals { text-align: left; width: 80%;}
-#partes-totals span { font-style: italic; }
-#partes-import { font-size: 16px; text-align: right; width: 20%; }
+#partes-totals span,
+#partes-import span { font-style: italic; }
+#partes-import { width: 20%; }
 
 #header-parteid { display:none}
 #header-parteany {	width: 6%; }
@@ -1803,28 +1810,30 @@ li.parte-pendent-sincro .parterecents-actions {
 	background-color: #ffffff;
 }
 
-#header-parterecentsid { display:none; }
+#header-parterecentsid { width: 4%; }
+#header-parterecentsentrada {	width: 7%; }
 #header-parterecentsrel { width: 4%; text-align:right;}
 #header-parterecentsdata {	width: 7%; }
-#header-parterecentsclub {	width: 14%; text-align:left;}
-#header-parterecentstipus {	width: 11%;}
+#header-parterecentsclub {	width: 10%; text-align:left;}
+#header-parterecentstipus {	width: 8%;}
 #header-parterecentspreu {	width: 7%; text-align:right;}
 #header-parterecentspagat {	width: 7%; }
 #header-parterecentdadespagat {	width: 15%;  }
 
-#header-parterecentsfactura { width: 20%; text-align: left;}
+#header-parterecentsfactura { width: 16%; text-align: left;}
 #header-parterecentsactions { width: 10%;}
 
-.parterecents-id { display:none; }
+.parterecents-id { width: 4%; }
+.parterecents-entrada { width: 7%;  }
 .parterecents-rel { width: 4%; text-align:right;}
 .parterecents-data { width: 7%;  }
-.parterecents-club { width: 14%; text-align:left; font-size: 0.9em;}
-.parterecents-tipus { width: 12%; }
+.parterecents-club { width: 10%; text-align:left; font-size: 0.9em;}
+.parterecents-tipus { width: 9%; }
 .parterecents-preu { width: 7%; text-align:right;}
 .parterecents-pagat { width: 7%; }
 .parterecents-dadespagat { width: 15%; }
 
-.parterecents-factura {	width: 21%; text-align:left;}
+.parterecents-factura {	width: 17%; text-align:left;}
 .parterecents-actions { width: 10%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/

@@ -20,8 +20,8 @@ class BaseController extends Controller {
 	const MAIL_LLICENCIES = "secretaria@fecdas.cat";
 	const MAIL_CONTACTE = "info@fecdas.cat";
 	const CLUBS_DEFAULT_STATE = 1;
-	const RECENTS_CLUBS_DEFAULT_STATE = 0;
-	const CLUBS_STATES = 'Tots;Pagament diferit;Pagament immediat;Sense tramitació';
+	const TOTS_CLUBS_DEFAULT_STATE = 0;
+	const CLUBS_STATES = 'Tots els clubs;Pagament diferit;Pagament immediat;Sense tramitació';
 	const CLUB_SENSE_TRAMITACIO = 'NOTR';
 	const CLUB_PAGAMENT_DIFERIT = 'DIFE';
 	const DIES_PENDENT_NOTIFICA = 1;
@@ -241,7 +241,7 @@ class BaseController extends Controller {
 		$em = $this->getDoctrine()->getManager();
 	
 		// Consultar no només les vigents sinó totes
-		$strQuery = "SELECT p, COUNT(l.id) AS HIDDEN numllicencies FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.llicencies l ";
+		$strQuery = "SELECT p, COUNT(l.id) AS HIDDEN numllicencies FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t ";
 		$strQuery .= "WHERE p.club = :club ";
 		$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
 		$strQuery .= " AND p.dataalta >= :ininormal";

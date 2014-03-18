@@ -42,7 +42,7 @@
 			<div id="summary-header">
 				<div id="partes-totals" class="col-listheader">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }} llistes ({{ stat['ltotal']|number_format(0, ',', '.') }} llicències)<br/> 
 				<span>Vigents: {{ stat['vigents']|number_format(0, ',', '.') }} llistes ({{ stat['lvigents']|number_format(0, ',', '.') }} llicències)</span></div>
-				<div id="partes-import" class="col-listheader">Saldo del club<br>{{ stat['saldo']|number_format(2, ',', '.') }}€</div>
+				<div id="partes-import" class="col-listheader total-rowcount">Saldo del club<br><span>(Pendent)</span>{# stat['saldo']|number_format(2, ',', '.') € #}</div>
 			</div>
 		</div>
 	    <div class="table-header">	

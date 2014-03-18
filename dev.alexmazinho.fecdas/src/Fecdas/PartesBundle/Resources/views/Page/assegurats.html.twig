@@ -72,7 +72,7 @@
 		   		<div id="header-asseguratcognoms" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Cognoms', 'e.cognoms', {'direction': 'desc'}) }}
 		   				<span class="listheader-icon {% if sortparams['direction'] == '' %} listheader-icon-asc {% endif %}{% if sortparams['sort'] == 'e.cognoms' %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicències</div>
-		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 	   	</div>
 		{% if persones|length > 0 %}

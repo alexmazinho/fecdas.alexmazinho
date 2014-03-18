@@ -52,36 +52,45 @@ class AdminController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 	
 		$states = explode(";", self::CLUBS_STATES);
+		$defaultEstat = self::TOTS_CLUBS_DEFAULT_STATE; // Tots normal
+		if ($this->get('session')->get('username', '') == self::MAIL_FACTURACIO)  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
 		
-		$currentBaixa = 0;
-		$currentSincro = 1;
-		$currentPagament = "100";
-		$currentClub = null;
+		// Cerca
+		$currentBaixa = false; // Inclou Baixes
+		if ($request->query->has('baixa') && $request->query->get('baixa') == 1) $currentBaixa = true;
+		$currentNoSincro = true;// No sincro
+		if ($request->query->has('nosincro') && $request->query->get('nosincro') == 0) $currentNoSincro = false;
+		$currentNoPagat = true;// No pagats
+		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 0) $currentNoPagat = false;
 		
-		$defaultEstat = self::RECENTS_CLUBS_DEFAULT_STATE; // Tots
-		if ($this->get('session')->has('username') and
-		$this->get('session')->get('username') == self::MAIL_FACTURACIO) { 
-			$defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits
-			$currentPagament = "n";
-		}
-		$currentEstat = $defaultEstat;
+		$currentClub = $request->query->get('clubs', null);
+		if ($this->get('session')->has('estat')) $currentEstat = $this->get('session')->get('estat');
+		else $currentEstat = $defaultEstat;
+
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'p.dataentrada');
+		$direction = $request->query->get('direction', 'asc');
 		
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca 
 			if ($request->request->has('form')) { 
 				$formdata = $request->request->get('form');
 				
-				if (isset($formdata['clubs'])) {
-					$currentClub = $em->getRepository('FecdasPartesBundle:EntityClub')->find($formdata['clubs']);
-				}
+				$page = 1; // Submit sempre comença per 1
+				$sort = $formdata['sort'];
+				$direction = $formdata['direction'];
+				
+				if (isset($formdata['clubs'])) $currentClub = $em->getRepository('FecdasPartesBundle:EntityClub')->find($formdata['clubs']);
 				if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
-				if (isset($formdata['pagament'])) $currentPagament = $formdata['pagament'];
-				if (isset($formdata['baixa'])) $currentBaixa = 1;
-				if (!isset($formdata['sincro'])) $currentSincro = 0;
+				if (isset($formdata['nopagat'])) $currentNoPagat = true; // Tots
+				else $currentNoPagat = false;
+				if (isset($formdata['baixa'])) $currentBaixa = true;
+				else $currentBaixa = false;
+				if (isset($formdata['nosincro'])) $currentNoSincro = true;
+				else $currentNoSincro = false;
 
 				$this->logEntryAuth('ADMIN PARTES SEARCH', "club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] . 
-						" pagament: " . $currentPagament . " baixa: " . $currentBaixa .
-						$currentSincro . " sync: " . $currentSincro );
+						" pagament: " . $currentNoPagat . " baixa: " . $currentBaixa . $currentNoSincro . " sync: " . $currentNoSincro );
 				
 			}
 		} else {
@@ -89,6 +98,10 @@ class AdminController extends BaseController {
 		}
 		
 		$formBuilder = $this->createFormBuilder();
+		
+		$formBuilder->add('page', 'hidden', array('data' => $page));
+		$formBuilder->add('sort', 'hidden', array('data' => $sort));
+		$formBuilder->add('direction', 'hidden', array('data' => $direction));
 		
 		$clubsSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
 				'property' => 'nom',
@@ -103,20 +116,23 @@ class AdminController extends BaseController {
 		$formBuilder->add('estat', 'choice', array(
 				'choices'   => $states,
 				'preferred_choices' => array($defaultEstat),  // Estat per defecte sempre 
+				'data' => $currentEstat,
 				'attr' => (array('onchange' => 'this.form.submit()'))
 		));
 		
-		$formBuilder->add('pagament', 'choice', array(
-    				'choices'   => array('100' => 'Darrers 100', 't' => 'Tots', 'n' => 'No pagats', 'p' => 'Pagats'), 
-					'preferred_choices' => array('100'),  // Estat per defecte sempre 
+		$formBuilder->add('nopagat', 'checkbox', array(
+					'required'  => false,
+					'data' => $currentNoPagat,
 					'attr' => (array('onchange' => 'this.form.submit()'))
 				));
 		$formBuilder->add('baixa', 'checkbox', array(
     				'required'  => false,
+					'data' => $currentBaixa,
 					'attr' => (array('onchange' => 'this.form.submit()'))
 				));
-		$formBuilder->add('sincro', 'checkbox', array(
+		$formBuilder->add('nosincro', 'checkbox', array(
     				'required'  => false,
+					'data' => $currentNoSincro,
 					'attr' => (array('onchange' => 'this.form.submit()'))
 				));
 		$form = $formBuilder->getForm();
@@ -126,42 +142,44 @@ class AdminController extends BaseController {
 		$strQuery .= "WHERE ";
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
-		
-		if ($currentBaixa == 0) $strQuery .= " AND p.databaixa IS NULL ";
-		else $strQuery .= " AND p.databaixa IS NOT NULL ";
-		
-		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
-		
+
 		if ($currentClub != null) $strQuery .= " AND p.club = '" .$currentClub->getCodi() . "' "	;
-		
+		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
+				
+		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
+		if ($currentNoPagat == true) $strQuery .= " AND p.datapagament IS NULL ";
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
-		if ($currentSincro != 0) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
-		//if ($currentPagament != "t" && $currentPagament != "100") {
-			if ($currentPagament == "n") $strQuery .= " AND p.datapagament IS NULL ";
-			if ($currentPagament == "p") $strQuery .= " AND p.datapagament IS NOT NULL ";
-		//}
-		$strQuery .= " ORDER BY p.id DESC"; 
+		if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
+
+		$strQuery .= " ORDER BY ".$sort; 
 
 		$query = $em->createQuery($strQuery)
 			->setParameter('ininormal', $this->getSQLIniciAnual())
 			->setParameter('ini365', $this->getSQLInici365());
 		
-		if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
+		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$currentEstat]);
 		
-		if ($currentPagament == "100") $query->setMaxResults(100);
-		
-		
-		$partesrecents = $query->getResult();
+		$paginator  = $this->get('knp_paginator');
+		$partesrecents = $paginator->paginate(
+				$query,
+				$page,
+				10 /*limit per page*/
+		);
 	
-		/* Mantenir estat darrera consulta */
-		if ($currentBaixa == 1) $form->get('baixa')->setData(true);
-		if ($currentSincro == 1) $form->get('sincro')->setData(true);
-		$form->get('pagament')->setData($currentPagament);
-		$form->get('estat')->setData($currentEstat);  
+		/* Paràmetres URL sort i pagination */
+		if ($currentClub != '') $partesrecents->setParam('clubs',$currentDNI);
+		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $partesrecents->setParam('estat',$currentEstat);
+		if ($currentBaixa == true) $partesrecents->setParam('baixa',true);
+		if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
+		if ($currentNoPagat == false) $partesrecents->setParam('nopagat',false);
+		
+		  
 		
 		return $this->render('FecdasPartesBundle:Admin:recents.html.twig', 
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'partes' => $partesrecents)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'partes' => $partesrecents,
+						'sortparams' => array('sort' => $sort,'direction' => $direction)
+				)));
 						
 	}
 	
@@ -210,6 +228,7 @@ class AdminController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 
+		
 		$parteid = $request->query->get("id");
 		
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteid);
@@ -230,7 +249,7 @@ class AdminController extends BaseController {
 			
 			$em->flush();
 
-			$this->get('session')->getFlashBag()->add('error-notice', 'Llista preparada per tornar a sincronitzar');
+			$this->get('session')->getFlashBag()->add('error-notice', 'Llista '.$parteid.' preparada per tornar a sincronitzar');
 			
 			$this->logEntryAuth('SINCRO ACCESS', $parteid);
 		} else {
@@ -315,14 +334,24 @@ class AdminController extends BaseController {
 		$states = explode(";", self::CLUBS_STATES);
 		$currentEstat = self::CLUBS_DEFAULT_STATE;
 		
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'c.nom');
+		$direction = $request->query->get('direction', 'asc');
+		
+		//echo "0------------->".$direction." - ". $request->query->has('direction')."</br>";
+		
 		if ($request->getMethod() == 'POST') {
 		// Criteris de cerca
-			if ($request->request->has('form')) {
+			//echo "1------------->".$direction." - ". $request->query->has('direction')."</br>";
+			
 			$formdata = $request->request->get('form');
-	
+			$page = 1; // Submit sempre comença per 1
+			$sort = 'c.nom';
+			$direction = 'asc';
+			
 			if (isset($formdata['estat'])) $currentEstat = $formdata['estat'];
-				$this->logEntryAuth('SALDO CLUBS FILTER', "Filtre estat: " . $states[$currentEstat]);
-			}
+			$this->logEntryAuth('SALDO CLUBS FILTER', "Filtre estat: " . $states[$currentEstat]);
+			
 		} else {
 			$this->logEntryAuth('SALDO CLUBS');
 		}
@@ -332,21 +361,36 @@ class AdminController extends BaseController {
 				'preferred_choices' => array(self::CLUBS_DEFAULT_STATE),  // Estat per defecte sempre
 				'attr' => (array('onchange' => 'this.form.submit()'))
 		));
+		$formBuilder->add('page', 'hidden', array('data' => $page));
+		$formBuilder->add('sort', 'hidden', array('data' => $sort));
+		$formBuilder->add('direction', 'hidden', array('data' => $direction));
+		
+		//echo "2------------->".$direction." - ". $request->query->has('direction')."</br>";
+		
 		$form = $formBuilder->getForm();
 	
 		// Crear índex taula partes per data entrada
 		$strQuery = "SELECT c FROM Fecdas\PartesBundle\Entity\EntityClub c JOIN c.estat e ";
-		$strQuery .= " WHERE c.activat = true ";
+		$strQuery .= " WHERE c.activat = true AND c.codi <> 'CAT000' ";
 		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
-		$strQuery .= " ORDER BY c.nom";
+		$strQuery .= " ORDER BY ". $sort;
 		$query = $em->createQuery($strQuery);
 		if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
-		$clubs = $query->getResult();
+		
+		$paginator  = $this->get('knp_paginator');
+		$clubs = $paginator->paginate(
+				$query,
+				$page,
+				10 /*limit per page*/
+		);
+		$clubs->setParam('direction', $direction);
 		
 		$form->get('estat')->setData($currentEstat);  // Mantenir estat darrera consulta
 
 		return $this->render('FecdasPartesBundle:Admin:clubs.html.twig',  
-			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs)));
+			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs,
+					'sortparams' => array('sort' => $sort,'direction' => $direction)
+			))); 
 	}
 	
 	public function anularpeticioAction() {

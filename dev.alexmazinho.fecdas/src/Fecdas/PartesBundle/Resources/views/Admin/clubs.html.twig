@@ -22,6 +22,9 @@
     
     <div id="list-forms">
     	<form id="formclubs" action="{{ path('FecdasPartesBundle_clubs') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    		{{ form_widget(form.page) }}
+   			{{ form_widget(form.sort) }}
+   			{{ form_widget(form.direction) }}
     		<div id="formclubs-estat" class="form-left">
 				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div> 
@@ -34,23 +37,23 @@
     	<div class="table-header">	
 	   		<div id="list-header">
 		   		<div id="header-clubscodi" class="col-listheader">codi</div>
-		   		<div id="header-clubsnom" class="col-listheader">Club<span class="listheader-order"></span></div>
-		   		<div id="header-clubspartes" class="col-listheader">Llistes {{"now"|date('Y')}}<span class="listheader-order"></span></div>
-		   		<div id="header-clubspagats" class="col-listheader">Pagades per web<span class="listheader-order"></span></div>
-		   		<div id="header-clubsllicencies" class="col-listheader">Llic. {{"now"|date('Y')}}<span class="listheader-order"></span></div>
-		   		<div id="header-clubsimport" class="col-listheader">Import<br/>Llic. web<span class="listheader-order"></span></div>
-		   		<div id="header-clubspagatweb" class="col-listheader">Web<br/>(Pagat)<span class="listheader-order"></span></div>
-		   		<div id="header-clubsestat" class="col-listheader">Estat<span class="listheader-order"></span></div>
-		   		<div id="header-clubslimit" class="col-listheader">Límit de crèdit<span class="listheader-order"></span></div>
-		   		<div id="header-clubsgessaldos" class="col-listheader">Saldo<span class="listheader-order"></span></div>
-			   	<div id="header-clubsactions" class="col-listheader">&nbsp;</div>
+		   		<div id="header-clubsnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(clubs, 'Club', 'c.nom') }}
+		   			<span class="listheader-icon {% if clubs.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-clubspartes" class="col-listheader listheader-noorder">Llistes {{"now"|date('Y')}}<span class="listheader-order"></span></div>
+		   		<div id="header-clubspagats" class="col-listheader listheader-noorder">Pagades per web<span class="listheader-order"></span></div>
+		   		<div id="header-clubsllicencies" class="col-listheader listheader-noorder">Llic. {{"now"|date('Y')}}<span class="listheader-order"></span></div>
+		   		<div id="header-clubsimport" class="col-listheader listheader-noorder">Import<br/>Llic. web<span class="listheader-order"></span></div>
+		   		<div id="header-clubspagatweb" class="col-listheader listheader-noorder">Web<br/>(Pagat)<span class="listheader-order"></span></div>
+		   		<div id="header-clubsestat" class="col-listheader listheader-noorder">Estat<span class="listheader-order"></span></div>
+		   		<div id="header-clubslimit" class="col-listheader listheader-noorder">Límit de crèdit<span class="listheader-order"></span></div>
+		   		<div id="header-clubsgessaldos" class="col-listheader listheader-noorder">Saldo<span class="listheader-order"></span></div>
+			   	<div id="header-clubsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ clubs.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 		</div>
 		{% if clubs|length > 0 %}
 		<div class="table-scroll">
 		   	<ol id="list-data">
 			{% for club in clubs %}
-				{% if club.codi != "CAT000" %}
 				{% set dades = club.DadesCurrent %}
 		   		<li class="data-detall">
 			   		<div class="data-detall-cell club-codi">{{ club.codi }}</div>
@@ -89,10 +92,10 @@
 		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure dades del club" title="Veure dades del club" width="23px"></a>
 					</div>
 		   		</li>
-		   		{% endif %}
 		   	{% endfor %}
 			</ol>
 		</div>
+		{% if clubs.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(clubs, null, sortparams) }}</div>{% endif %}
    	{% else %}
         	<div class="sms-notice">No hi cap club en aquest estat</div>
     {% endif %}
@@ -113,7 +116,7 @@ $(document).ready(function(){
 	
 	$("#menu-adm").click();
 
-	sortLlista("col-listheader", "list-data");
+	//sortLlista("col-listheader", "list-data");
 
 	helpBubblesLlista(".club-gessaldos", ".detall-saldos"); 
 	

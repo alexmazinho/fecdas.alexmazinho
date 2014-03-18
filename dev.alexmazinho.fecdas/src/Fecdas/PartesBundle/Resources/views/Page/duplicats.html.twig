@@ -50,7 +50,7 @@
 		   		<div id="header-duplicatfoto" class="col-listheader listheader-noorder">Foto<span class="listheader-order"></span></div>
 		   		<div id="header-duplicatimpressio" class="col-listheader listheader-noorder">Impresa<span class="listheader-order"></span></div>
 		   		<div id="header-duplicatextra" class="col-listheader listheader-noorder">Observacions<span class="listheader-order"></span></div>
-		   		<div id="header-duplicatactions" class="col-listheader listheader-noorder">Total: {{ duplicats.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   		<div id="header-duplicatactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ duplicats.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 	   	</div>
 		{% if duplicats|length > 0 %}

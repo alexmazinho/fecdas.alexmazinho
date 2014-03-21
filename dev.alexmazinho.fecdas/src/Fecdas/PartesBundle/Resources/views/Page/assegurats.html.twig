@@ -16,10 +16,12 @@
 
    	<form id="form_assegurats" action="{{ path('FecdasPartesBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
    		<div class="form-row">
+   			{% if admin == true %} 
    			<div id="formassegurats-tots" class="form-left">
 				{{ form_label(form.tots, '(Admins.) Qualsevol club', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.tots, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
+			{% endif %}		
 			<div id="formassegurats-vigent" class="form-left">
 				{{ form_label(form.vigent, 'Només mostrar les llicències vigents', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
@@ -34,9 +36,6 @@
 			</div> 
 		</div>
    		<div class="form-row clearfix">
-   			{{ form_widget(form.page) }}
-   			{{ form_widget(form.sort) }}
-   			{{ form_widget(form.direction) }}
 			<div id="formassegurats-dni" class="form-left">
 				{{ form_label(form.dni, 'DNI/NIE', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
@@ -163,6 +162,25 @@ $(document).ready(function(){
 
 	showHistorialLlicencies();
 
+	$('#form_assegurats').submit(function () {
+		// Recarrega consulta afegint la dades del formulari
+		asseguratsReload("{{ path('FecdasPartesBundle_assegurats', sortparams)|raw }}");
+		return false;
+	});
+
+	$('#form_tots').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		asseguratsReload("{{ path('FecdasPartesBundle_assegurats', sortparams)|raw }}");
+		
+	});
+
+	$('#form_vigent').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		asseguratsReload("{{ path('FecdasPartesBundle_assegurats', sortparams)|raw }}");
+		
+	});
+	
+	
 	//sortLlista("col-listheader", "list-data");
 	//llistaPaginationAndSort($('#form_assegurats'));
 

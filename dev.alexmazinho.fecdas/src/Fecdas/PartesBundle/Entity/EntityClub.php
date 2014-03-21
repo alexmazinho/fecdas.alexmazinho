@@ -957,6 +957,12 @@ class EntityClub {
 	    				if ($parte_iter->getImportpagament() != null && $parte_iter->getImportpagament() != $parte_iter->getImportparte()) 
 	    					$dades['err_imports'][] = "(imports no coincidents) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				}
+    				
+    				if ($parte_iter->getImportparte() != null && $parte_iter->getImportparte() != $auxImportParte)
+    					$dades['err_imports'][] = "(imports enviat al gestor incorrecte) " . $parte_iter->getId()
+    					. " - Web " .$auxImportParte . " >> Gestor ".$parte_iter->getImportparte();
+    				
+    				
     				// Només si tenen més d'una setmana
     				$weekAgo = new \DateTime(date("Y-m-d", strtotime("-1 week")));
     				if ($parte_iter->getDataentrada() < $weekAgo) {

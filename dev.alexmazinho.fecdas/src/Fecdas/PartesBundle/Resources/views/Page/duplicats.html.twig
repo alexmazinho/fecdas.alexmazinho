@@ -15,9 +15,6 @@
     </header>
 
    	<form id="formduplicats" action="{{ path('FecdasPartesBundle_duplicats') }}" method="post"  enctype="multipart/form-data" class="appform">
-   		{{ form_widget(form.page) }}
-   		{{ form_widget(form.sort) }}
-   		{{ form_widget(form.direction) }}
    		<div class="form-row clearfix">
    			<div id="formduplicats-persones" class="form-left">
 				{{ form_widget(form.persona, { 'attr': {'class': 'forminput-inside ', 'style': 'width:100%'} }) }}
@@ -67,8 +64,13 @@
 				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
 				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</div>
 				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
-				   		<div class="data-detall-cell duplicat-foto">{% if duplicat.foto is not null %}
-				   		<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>{% endif %}
+				   		<div class="data-detall-cell duplicat-foto">
+				   		{% if duplicat.carnet.foto == true %}
+				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
+				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
+				   			{% else %}
+				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
+				   		{% endif %}
 				   		</div>
 				   		<div class="data-detall-cell duplicat-impressio">
 				   		{% if duplicat.dataimpressio is null %}
@@ -89,8 +91,10 @@
 								<a class="duplicat-albara" href="{{ path('FecdasPartesBundle_albarapeticio', { 'id': duplicat.id}) }}">
 										<img src="{{ asset('images/icon-print.png') }}" alt="Albarà" title="Albarà" width="23px"></a>
 							{% endif %}
+							{% if duplicat.pagament is null %} 
 							<a class="duplicat-pagament" href="{{ path('FecdasPartesBundle_pagamentpeticio', { 'id': duplicat.id}) }}">
 								<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament On-line" title="Pagament On-line" width="23px"></a>
+							{% endif %}	
 				   			{% if admin == true %}
 				   				{% if duplicat.factura is not null  %}
 								{% 	 set nf = duplicat.factura.num %}
@@ -113,8 +117,13 @@
 				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
 				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</div>
 				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
-				   		<div class="data-detall-cell duplicat-foto">{% if duplicat.foto is not null %}
-				   		<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>{% endif %}
+				   		<div class="data-detall-cell duplicat-foto">
+				   		{% if duplicat.carnet.foto == true %}
+				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
+				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
+				   			{% else %}
+				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
+				   		{% endif %}
 				   		</div>
 				   		<div class="data-detall-cell duplicat-impressio"></div>
 				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
@@ -143,8 +152,6 @@ $(document).ready(function(){
 	setMenuActive("menu-duplicats");
 
 	actionsFormDuplicats("{{ path('FecdasPartesBundle_duplicatsform') }}");
-
-	loadCalendar($( "#duplicat_desde" ));
 
 	varisAdminPeticioDuplicat();
 	

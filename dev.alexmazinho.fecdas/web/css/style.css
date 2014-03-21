@@ -491,19 +491,19 @@ html[xmlns] .clearfix {
 
 #header-asseguratid { display:none}
 #header-asseguratcompacte { width: 40%; }
-#header-asseguratdni {	width: 13%;  }
-#header-asseguratnom {	width: 15%; text-align: left;}
-#header-asseguratcognoms {	width: 20%;text-align: left;}
-#header-assegurattipusdesc { width: 33%;text-align: left;}
-#header-asseguratactions { width: auto; font-size: 16px; text-align: right; }
+#header-asseguratdni {	width: 12%;  }
+#header-asseguratnom {	width: 13%; text-align: left;}
+#header-asseguratcognoms {	width: 16%;text-align: left;}
+#header-assegurattipusdesc { width: 25%;text-align: left; }
+#header-asseguratactions { width: 10%;text-align: right; }
 
 .assegurat-id {	display:none}
 .assegurat-compacte { width: 40%; }
-.assegurat-dni { width: 13%;  }
-.assegurat-nom { width: 15%; text-align: left; }
-.assegurat-cognoms { width: 20%; text-align:left;}
-.assegurat-tipusdesc { width: 33%; text-align:left;}
-.assegurat-actions { width: auto; text-align:right; }
+.assegurat-dni { width: 12%;  }
+.assegurat-nom { width: 13%; text-align: left; }
+.assegurat-cognoms { width: 16%; text-align:left;}
+.assegurat-tipusdesc { width: 25%; text-align:left; }
+.assegurat-actions { width: 10%; text-align: right;   }
 
 /*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
@@ -526,7 +526,9 @@ html[xmlns] .clearfix {
 	opacity:1;
 }*/
 
-#llista-assegurats .data-detall { /*display:inline*/ display: inline-block;  width: 100%; } /* Permet afegir historial*/
+#llista-assegurats .data-detall-cell { /*padding: 1%;*/ }  /* Total 10 %*/
+#llista-assegurats #list-header  { position: relative;  }
+#llista-assegurats .data-detall { /*display:inline*/ display: inline-block;  width: 100%; position: relative;  } /* Permet afegir historial*/
 
 #llista-assegurats .llicencia-historial  { color: #555555; }
 
@@ -1440,7 +1442,7 @@ p.info-bold {
 #header-duplicatid { width: 8%; }
 #header-duplicatpeticio { width: 8%; }
 #header-duplicatdni { width: 8%; }
-#header-duplicatnom { width: 23%; text-align: left; }
+#header-duplicatnom { width: 20%; text-align: left; }
 #header-duplicatcarnet { width: 16%; text-align: left; }
 #header-duplicatfoto { width: 5%; }
 #header-duplicatimpressio { width: 8%; }
@@ -1455,12 +1457,13 @@ p.info-bold {
 .duplicat-id { width: 8%; }
 .duplicat-peticio { width: 8%; }
 .duplicat-dni { width: 8%; }
-.duplicat-nom { width: 23%; text-align: left; }
+.duplicat-nom { width: 20%; text-align: left; }
 .duplicat-nom span { font-style: italic; font-size: 0.8em; }
 .duplicat-carnet { width: 16%; text-align: left; }
 .duplicat-foto { width: 5%; }
 .duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
 .duplicat-foto img:hover { border-color: #7fcff6 }
+.duplicat-foto span.noimage-available { text-align: center; }
 .duplicat-impressio { width: 8%; }
 .duplicat-extra { width: 16%; text-align: left; }
 .duplicat-actions { width: auto; text-align: right; }

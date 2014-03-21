@@ -1,3 +1,9 @@
+	{% for flashMessage in app.session.flashbag.get('error-notice') %}
+	    <div class="sms-notice">
+			{{ flashMessage }}
+  		</div>	
+	{% endfor %}
+
 {% if club.usuaris|length > 0 %}
 	<div class="table-header">	
 		<div id="list-header">

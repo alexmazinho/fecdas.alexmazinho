@@ -28,7 +28,7 @@ class FormUser extends AbstractType {
 		));
 		
 		$builder->add('forceupdate', 'checkbox', array(
-    	    'required'  => false,
+    	    'required'  => false
 		));
 		
 		$builder->add('recoverytoken', 'hidden');

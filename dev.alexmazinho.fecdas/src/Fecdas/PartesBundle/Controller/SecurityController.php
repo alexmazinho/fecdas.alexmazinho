@@ -193,7 +193,6 @@ class SecurityController extends BaseController
 	    		}
     		}
     	}
-    	$form->get('forceupdate')->setData(false);
     	
     	return $this->render('FecdasPartesBundle:Security:user.html.twig',
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView())) );

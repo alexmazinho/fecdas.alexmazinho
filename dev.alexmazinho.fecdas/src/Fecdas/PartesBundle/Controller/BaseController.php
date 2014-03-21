@@ -4,6 +4,7 @@ namespace Fecdas\PartesBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Fecdas\PartesBundle\Classes\Funcions;
+use Fecdas\PartesBundle\Classes\CSV_Reader;
 
 use Fecdas\PartesBundle\Entity\EntityParte;
 use Fecdas\PartesBundle\Entity\EntityLlicencia;
@@ -17,11 +18,11 @@ class BaseController extends Controller {
 	const MAIL_ADMINTEST = "test@fecdasgestio.cat";  /* Canviar. Crear nou mail  */
 	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";  
 	const MAIL_FACTURACIO = "remei@fecdas.cat";
-	const MAIL_LLICENCIES = "secretaria@fecdas.cat";
+	const MAIL_LLICENCIES = "secretari@fecdas.cat";
 	const MAIL_CONTACTE = "info@fecdas.cat";
 	const CLUBS_DEFAULT_STATE = 1;
 	const TOTS_CLUBS_DEFAULT_STATE = 0;
-	const CLUBS_STATES = 'Tots els clubs;Pagament diferit;Pagament immediat;Sense tramitació';
+	const CLUBS_STATES = 'Tots els tipus;Pagament diferit;Pagament immediat;Sense tramitació';
 	const CLUB_SENSE_TRAMITACIO = 'NOTR';
 	const CLUB_PAGAMENT_DIFERIT = 'DIFE';
 	const DIES_PENDENT_NOTIFICA = 1;

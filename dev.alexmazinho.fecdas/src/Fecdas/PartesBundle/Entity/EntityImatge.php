@@ -50,6 +50,7 @@ class EntityImatge {
 	}
 
 	public function getWidth() {
+		if (!file_exists($this->getAbsolutePath())) return 0;
 		try {
 			$image_info = getimagesize($this->getAbsolutePath());
 		} catch (\Exception $e) {
@@ -59,6 +60,7 @@ class EntityImatge {
 	}
 	
 	public function getHeight() {
+		if (!file_exists($this->getAbsolutePath())) return 0;
 		try {
 			$image_info = getimagesize($this->getAbsolutePath());
 		} catch (\Exception $e) {

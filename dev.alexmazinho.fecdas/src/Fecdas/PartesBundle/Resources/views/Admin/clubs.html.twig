@@ -22,9 +22,6 @@
     
     <div id="list-forms">
     	<form id="formclubs" action="{{ path('FecdasPartesBundle_clubs') }}" method="post" {{ form_enctype(form) }}  class="appform">
-    		{{ form_widget(form.page) }}
-   			{{ form_widget(form.sort) }}
-   			{{ form_widget(form.direction) }}
     		<div id="formclubs-estat" class="form-left">
 				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
 			</div> 
@@ -116,6 +113,17 @@ $(document).ready(function(){
 	
 	$("#menu-adm").click();
 
+	$('#form_estat').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		clubsSaldosReload("{{ path('FecdasPartesBundle_clubs', sortparams)|raw }}");
+		
+	});
+	
+	$('#formclubs').submit(function () {
+		// Recarrega consulta afegint la dades del formulari
+		clubsSaldosReload("{{ path('FecdasPartesBundle_clubs', sortparams)|raw }}");
+		return false;
+	});
 	//sortLlista("col-listheader", "list-data");
 
 	helpBubblesLlista(".club-gessaldos", ".detall-saldos"); 

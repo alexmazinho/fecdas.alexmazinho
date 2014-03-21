@@ -22,9 +22,6 @@
     
     <div id="list-forms">
     	<form id="formrecents" action="{{ path('FecdasPartesBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
-    		{{ form_widget(form.page) }}
-   			{{ form_widget(form.sort) }}
-   			{{ form_widget(form.direction) }}
       		<div id="formrecents-club" class="form-left">
 				{{ form_label(form.clubs, 'Filtre per club... ', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside ', 'style': 'width:100%'} }) }}
@@ -129,6 +126,27 @@ $(document).ready(function(){
 	confirmarPartePagat();
 	
 	selectRecentsClub();
+
+	$('#form_clubs').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasPartesBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_estat').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasPartesBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_baixa').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasPartesBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_nopagat').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasPartesBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_nosincro').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasPartesBundle_recents', sortparams)|raw }}");
+	});
 	
 	//sortLlista("col-listheader", "list-data");
 

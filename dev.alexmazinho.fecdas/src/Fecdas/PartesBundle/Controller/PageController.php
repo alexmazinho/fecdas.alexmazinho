@@ -405,34 +405,18 @@ class PageController extends BaseController {
 		$direction = $request->query->get('direction', 'desc');
 		
 		if ($request->getMethod() == 'POST') {
-			if ($request->request->has('formpartes-button-new')) { // Nou parte
-				return $this->redirect($this->generateUrl('FecdasPartesBundle_parte'));
-				$response = $this->forward('FecdasPartesBundle:Page:parte');
-				return $response;
-			}
-
-			if ($request->request->has('form')) {
-				$formdata = $request->request->get('form');
-				$desde = \DateTime::createFromFormat('d/m/Y', $formdata['desde']);
-				$page = 1; // Submit sempre comença per 1
-				$sort = $formdata['sort'];
-				$direction = $formdata['direction'];
-			}
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_parte'));
 			
 			$this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$formdata['desde']);
 		} else {
 			$this->logEntryAuth('VIEW PARTES', $club->getCodi());
-			//$request->getSession()->getFlashBag()->clear();
 		}
 
+		
 		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
 				'read_only' => true,
 				'data' => $desde->format('d/m/Y'),
-				'attr' => (array('onchange' => 'this.form.submit()'))
 		));
-		$formBuilder->add('page', 'hidden', array('data' => $page));
-		$formBuilder->add('sort', 'hidden', array('data' => $sort));
-		$formBuilder->add('direction', 'hidden', array('data' => $direction));
 		
 		$query = $this->consultaPartesClub($club->getCodi(), $desde, $sort);
 		$paginator  = $this->get('knp_paginator');
@@ -455,7 +439,7 @@ class PageController extends BaseController {
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
-						'partes' => $partesclub,  'club' => $club, 'desde' => $desde, 'stat' => $stat, 
+						'partes' => $partesclub,  'club' => $club, 'stat' => $stat, 
 						'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
@@ -500,30 +484,15 @@ class PageController extends BaseController {
 		$currentVigent = true;
 		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
 		    
-		
 		$currentTots = false; // Admins poden cerca tots els clubs
 		if ($this->isCurrentAdmin() && $request->query->has('tots') && $request->query->get('tots') == 1) $currentTots = true;
-		
 		
 		$currentTots = $this->isCurrentAdmin() && $request->query->get('tots', false);
 				
 		if ($request->getMethod() == 'POST') {
-			// Criteris de cerca 
-			if ($request->request->has('form')) { // Reload select clubs de Partes
-				$formdata = $request->request->get('form');
-				$page = 1; // Submit sempre comença per 1
-				$sort = $formdata['sort'];
-				$direction = $formdata['direction'];
-				if (isset($formdata['dni'])) $currentDNI = $formdata['dni'];
-				if (isset($formdata['nom'])) $currentNom = $formdata['nom'];
-				if (isset($formdata['cognoms'])) $currentCognoms = $formdata['cognoms'];
-				if (isset($formdata['vigent'])) $currentVigent = true;
-				else $currentVigent = false;
-				$currentTots = false;
-				if ($this->isCurrentAdmin() && isset($formdata['tots'])) $currentTots = true;  // Admins poden cerca tots els clubs
-
-				$this->logEntryAuth('VIEW PERSONES SEARCH', "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
-			}
+			// Criteris de cerca.Desactivat JQuery 
+			$this->logEntryAuth('VIEW PERSONES POST', "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
+			
 		} else {
 			$this->logEntryAuth('VIEW PERSONES', "club: " . $currentClub);
 		}
@@ -531,13 +500,8 @@ class PageController extends BaseController {
 		$formBuilder = $this->createFormBuilder()->add('dni', 'search', array('required'  => false, 'data' => $currentDNI)); 
 		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
 		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
-		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent,
-				'attr' => (array('onchange' => 'this.form.submit()'))));
-		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots,
-				'attr' => (array('onchange' => 'this.form.submit()'))));
-		$formBuilder->add('page', 'hidden', array('data' => $page));
-		$formBuilder->add('sort', 'hidden', array('data' => $sort));
-		$formBuilder->add('direction', 'hidden', array('data' => $direction));
+		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
+		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots) );
 		$form = $formBuilder->getForm(); 
 	
 		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $sort);
@@ -748,8 +712,6 @@ class PageController extends BaseController {
 		
 		$parte->cloneLlicencies($this->getCurrentDate());
 	
-		$parte->setImportparte($parte->getPreuTotalIVA());  // Actualitza preu si escau
-		
 		$options = $this->getFormOptions();
 		$options['nova'] = false;  // No permet selecció data
 		$options['admin'] = false; // No permet selecció club
@@ -786,6 +748,8 @@ class PageController extends BaseController {
 				
 				// Marcar pendent per a clubs pagament immediat
 				if ($parte->getClub()->pendentPagament()) $parte->setPendent(true);
+				
+				$parte->setImportparte($parte->getPreuTotalIVA());  // Actualitza preu si escau després de treure llicències
 				
 				$em->persist($parte);
 				$em->flush();
@@ -1152,6 +1116,7 @@ class PageController extends BaseController {
 
 			$llicenciaId = 0;
 			$currentPerson = 0;
+			
 			if ($request->getMethod() == 'POST') {
 				if ($request->request->get('personaAction') != "") {
 					// source: FormPersona
@@ -1231,28 +1196,24 @@ class PageController extends BaseController {
 		$options['nacions'] = $this->getNacions();
 		
 		if ($request->getMethod() == 'POST') {
-			
-			$p = $request->request->get('persona');
-
-			$codiclub = "";
-
-			if ($request->request->has('codiclub'))
-				$codiclub = $request->request->get('codiclub');
+			$p = $request->request->get('persona', null);
+			if ($p == null) return new Response("dnierror");
 
 			if ($p['id'] != "") {
 				$persona = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityPersona')->find($p['id']);
-				if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms 
+				if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
+				
 			} else {
 				$persona = new EntityPersona($this->getCurrentDate());
 				// Assignar club
-				$persona->setClub($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClub')->find($codiclub));
+				$persona->setClub($this->getCurrentClub());
 				$options['edit'] = true;
 			}
 
 			$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
 			$formpersona->bind($request);
-			
+		
 			if ($formpersona->isValid()) {
 				if ($persona->getNom() == "" or $persona->getCognoms() == "") {
 					$this->logEntryAuth('PERSONA NEW NOM KO');
@@ -1264,9 +1225,8 @@ class PageController extends BaseController {
 				}
 				
 				$em = $this->getDoctrine()->getManager();
-
 				$persona->setDatamodificacio($this->getCurrentDate());
-				
+
 				if ($request->request->get('action') == "save") {
 					/* Check persona amb dni no repetida al mateix club */
 					if ($persona->getId() == null) {
@@ -1301,14 +1261,11 @@ class PageController extends BaseController {
 						$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
 						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
 					}
-						
 					$em->persist($persona);
-					
 					$em->flush();
-					
 					// Després de flush, noves entitats tenen id
 					$this->logEntryAuth($logaction, $persona->getId());
-					
+		
 					$request->request->set('currentperson', $persona->getId());
 				} else { // Esborrar
 					// Check si persona té alguna llicència associada
@@ -1351,25 +1308,21 @@ class PageController extends BaseController {
 				return new Response();
 			}
 		}
+		
 		if ($request->isXmlHttpRequest()) {
-			
 			// Reload form persona
 			$persona = new EntityPersona($this->getCurrentDate());
-			
-			if ($request->query->has('persona')) {
-				if ($request->query->get('persona') != "") { // Select diferent person
-					$persona = $this->getDoctrine()
-							->getRepository('FecdasPartesBundle:EntityPersona')
-							->find($request->query->get('persona'));
-					if ($this->isCurrentAdmin()) $options['edit'] = true;
-				} else {
-					$options['edit'] = true;
-					$persona->setDatanaixement(	new \DateTime(date("Y-m-d", strtotime(date("Y-m-d") . " -40 year"))));
-					$persona->setSexe("H");
-					$persona->setAddrnacionalitat("ESP");
-				}
+			$options['edit'] = true;
+			$persona->setDatanaixement(	new \DateTime(date("Y-m-d", strtotime(date("Y-m-d") . " -40 year"))));
+			$persona->setSexe("H");
+			$persona->setAddrnacionalitat("ESP");
+				
+			if ($request->query->get('persona', 0) != 0) { // Select diferent person
+				$persona = $this->getDoctrine()
+						->getRepository('FecdasPartesBundle:EntityPersona')
+						->find($request->query->get('persona'));
+				if (!$this->isCurrentAdmin()) $options['edit'] = false;
 			}
-			
 			$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
 			return $this->render('FecdasPartesBundle:Page:persona.html.twig',
@@ -1387,9 +1340,9 @@ class PageController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 		 
-		$page = $this->get('request')->query->get('page', 1);
-		$sort = $this->get('request')->query->get('sort', 'd.datapeticio');
-		$direction = $this->get('request')->query->get('direction', 'desc');
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'd.datapeticio');
+		$direction = $request->query->get('direction', 'desc');
 		
 		$currentClub = $this->getCurrentClub()->getCodi();
 		$duplicat = new EntityDuplicat();
@@ -1491,15 +1444,10 @@ class PageController extends BaseController {
 			}
 
 			/* reenvia pàgina per evitar F5 */
-			return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats'));
+			return $this->redirect($this->generateUrl('FecdasPartesBundle_duplicats', array('sort' => $sort,'direction' => $direction)));
 		} else { 
 			$this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub); 
 		}
-		
-		$form->get('page')->setData($page);
-		$form->get('sort')->setData($sort);
-		$form->get('direction')->setData($direction);
-		
 		
 		$strQuery = "SELECT d, p, c FROM Fecdas\PartesBundle\Entity\EntityDuplicat d JOIN d.persona p JOIN d.carnet c";
 		/* Administradors totes les peticions, clubs només les seves*/

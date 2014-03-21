@@ -38,7 +38,7 @@ class CronController extends BaseController {
 			
 			if ($parte->getImportpagament() != null) {
 				if ($parte->getImportparte() != $parte->getImportpagament()) {
-					$this->logEntry(self::MAIL_ADMINTEST, 'UPD PREU ERROR',
+					$this->logEntry(self::MAIL_ADMINLOG, 'UPD PREU ERROR',
 							$this->getRequest()->server->get('REMOTE_ADDR'),
 							$this->getRequest()->server->get('HTTP_USER_AGENT'),
 							$parte->getId() . " . calculat: " . $parte->getImportparte() . "  pagament: " .$parte->getImportpagament());
@@ -496,7 +496,7 @@ class CronController extends BaseController {
 		$body = $sortida;
 		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 		
-		$this->logEntry(self::MAIL_ADMINTEST, 'CRON CLUBS',
+		$this->logEntry(self::MAIL_ADMINLOG, 'CRON CLUBS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 		
@@ -511,6 +511,8 @@ class CronController extends BaseController {
 		 * wget -O - -q http://fecdas.dev/app_dev.php/informesaldos >> informesaldos.txt*/
 
 		$sortida = "";
+		
+		return new Response(""); // Desactivat de moment
 		
 		// Comprovar les dates de l'enviament 
 		$datesinforme = explode(";", self::DATES_INFORME_TRIMESTRAL);
@@ -568,7 +570,7 @@ class CronController extends BaseController {
 	
 	
 	
-		$this->logEntry(self::MAIL_ADMINTEST, 'INFORME TRIM CLUBS',
+		$this->logEntry(self::MAIL_ADMINLOG, 'INFORME TRIM CLUBS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 	
@@ -655,7 +657,7 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMINTEST, 'CRON PENDENTS',
+		$this->logEntry(self::MAIL_ADMINLOG, 'CRON PENDENTS',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'), $this->get('kernel')->getEnvironment());
 		
@@ -760,7 +762,7 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMINTEST, 'CRON PARTES DIA',
+		$this->logEntry(self::MAIL_ADMINLOG, 'CRON PARTES DIA',
 				$this->get('session')->get('remote_addr'),
 				$this->getRequest()->server->get('HTTP_USER_AGENT'));
 	

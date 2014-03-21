@@ -43,9 +43,6 @@ class FormDuplicat extends AbstractType {
 					->orderby('p.cognoms');
 				},
 		);
-		$builder->add('page', 'hidden', array('mapped' => false));
-		$builder->add('sort', 'hidden', array('mapped' => false));
-		$builder->add('direction', 'hidden', array('mapped' => false));
 		
 		$builder->add('persona', 'entity', $personesSelectOptions);
 		$builder->add('dni', 'text', array('mapped' => false, 'disabled' => true));

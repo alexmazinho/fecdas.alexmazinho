@@ -288,7 +288,7 @@
 	    return false;
 	};
 	
-	loadCalendar = function(elem) {
+	loadCalendar = function(elem, callback) {
 		$.datepicker.setDefaults( $.datepicker.regional[ "ca" ] );
 		
 		elem.datepicker({
@@ -296,7 +296,8 @@
 			 buttonImage: "../images/calendar.gif",
 			 buttonImageOnly: true,
 			 changeMonth: true,
-			 changeYear: true
+			 changeYear: true,
+			 onSelect: callback
 		});
 
 	};
@@ -369,6 +370,7 @@
 	});
 	
 	/* Mètode obsolet */
+	/*
 	llistaPaginationAndSort  = function(formElement) {
 	    // Paginació en llista o ordenació de columna
 		$('.navigation .pagination a, #list-header .col-listheader-sortable a')
@@ -385,9 +387,14 @@
 	        
 	        formElement.submit();
 	    });
-	};
-	
+	};*/
 
+	llistaPaginationAndSort = function(url, params) {
+		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+		window.location = url; 
+	}
+
+	
 	/*****************************************************************************************************************/
 	
 	/*************************************************** Menu ********************************************************/
@@ -518,6 +525,16 @@
 	    });
 	};
 	
+	asseguratsReload = function(url) {
+		var params = []; 
+		params.push( {'name':'tots','value': ($('#form_tots').is(':checked'))?1:0} );
+		params.push( {'name':'vigent','value': ($('#form_vigent').is(':checked'))?1:0} );
+		params.push( {'name':'dni','value': $('#form_dni').val()} );
+		params.push( {'name':'nom','value': $('#form_nom').val()} );
+		params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
+
+		llistaPaginationAndSort(url, params);
+	}
 	
 	showHistorialLlicencies = function() {
 	    //Carrega i mostra historial per un assegurat
@@ -723,21 +740,8 @@
 		var params = $('#formpersona').serializeArray();
 		
 		if (llicencia == true) {
-			if ($("#parte_dataalta_date_day").length ) {
-		        	// Existeix "parte_dataalta_date_day"
-		        	var alta_data = $("#parte_dataalta_date_day").val();
-		        	alta_data += "/" + $("#parte_dataalta_date_month").val();
-		        	alta_data += "/" + $("#parte_dataalta_date_year").val();
-		        	alta_data += " " + $("#parte_dataalta_time_hour").val();
-		        	alta_data += ":" + $("#parte_dataalta_time_minute").val();
-		        	alta_data += ":00";
-		    } else {
-		        	var alta_data = $("#parte_dataalta_date").val() + " " + $("#parte_dataalta_time").val();
-		    }
-		
-			params.push( {'name':'dataalta','value': alta_data} );
+			params.push( {'name':'dataalta','value':  $("#parte_dataalta").val() } );
 			params.push( {'name':'tipusparte','value': $('#parte_tipus').val()} );
-			params.push( {'name':'codiclub','value': $('#parte_club').val()} );
 			params.push( {'name':'llicenciaId','value': $('#parte_llicencies_id').val()} );
 		}
 		
@@ -1190,19 +1194,6 @@
 	
 	/*************************************************** Clubs *******************************************************/	
 	
-	selectRecentsClub = function() {
-		$("select#form_clubs").select2({
-			minimumInputLength: 2,
-			allowClear: true
-		});
-		
-		// Remove label on Select
-		$("select#form_clubs").change(function(e) {
-			if (e.val == "") $("#formrecents-club label").show();
-			else $("#formrecents-club label").hide();
-		});
-	};
-	
 	autocompletersNomsClub = function(routeid, clubid, codiid) {
 		/* Funció obsoleta */
 		var route = $("#"+routeid).attr("href");
@@ -1322,6 +1313,7 @@
 	    .off('click')
 	    .click(function(e) {
 			//Cancel the link behavior
+	    	
 	        e.preventDefault();
 	        if ($("#club_user").val() == "") {
 	        	alert("cal indicar el mail de l'usuari");
@@ -1340,7 +1332,6 @@
 	        	alert("Les claus no coincideixen");
 				return false;
 	        }
-	        
 	        var url = $("#formclub-usuarinou").attr("href");
 			
 			var params = $('#formclub').serializeArray();

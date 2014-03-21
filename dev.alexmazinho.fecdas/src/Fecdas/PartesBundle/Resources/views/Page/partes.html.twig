@@ -22,10 +22,7 @@
         
     <div id="partes-main">
 	    <div id="list-forms">
-	    	<form id="form_partes" action="{{ path('FecdasPartesBundle_partes') }}" method="post" {{ form_enctype(form) }}  class="appform">
-	    		{{ form_widget(form.page) }}
-	    		{{ form_widget(form.sort) }}
-   				{{ form_widget(form.direction) }}
+	    	<form id="form_partes" action="{{ path('FecdasPartesBundle_partes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
 	    		<div id="formpartes-desde" class="form-col column-left">
 	    			{{ form_label(form.desde, 'Dades des de', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.desde, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
@@ -50,7 +47,7 @@
 		   		<div id="header-parteid" class="col-listheader">{{ knp_pagination_sortable(partes, 'Albarà', 'p.id') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parteany" class="col-listheader">Any<span class="listheader-icon"></span></div>
-		   		<div id="header-partedata" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Data alta', 'p.dataalta') }}
+		   		<div id="header-partedata" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-partetipusdesc" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Tipus', 't.id') }}
 		   			<span class="listheader-icon {% if partes.isSorted('t.id')  %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
@@ -108,9 +105,11 @@ $(document).ready(function(){
 
 	showLlicenciesParte();
 
-	loadCalendar($( "#form_desde" ));
-
-	//llistaPaginationAndSort($('#form_partes'));
+	loadCalendar($( "#form_desde" ),function (selectedDateTime) {
+		// Recarrega consulta afegint la data
+		window.location = "{{ path('FecdasPartesBundle_partes', sortparams)|raw }}"+"&desde="+selectedDateTime; 
+	});
+	
 	//sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

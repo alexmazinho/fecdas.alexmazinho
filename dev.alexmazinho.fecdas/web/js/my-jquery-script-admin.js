@@ -17,6 +17,32 @@
 		});
 	}
 	
+	selectRecentsClub = function() {
+		$("select#form_clubs").select2({
+			minimumInputLength: 2,
+			allowClear: true
+		});
+		
+		// Remove label on Select
+		$("select#form_clubs").change(function(e) {
+			if (e.val == "") $("#formrecents-club label").show();
+			else $("#formrecents-club label").hide();
+		});
+	};
+
+	
+	recentsReload = function(url) {
+		var params = []; 
+		params.push( {'name':'clubs','value': $('#form_clubs').val()} );
+		params.push( {'name':'estat','value': $('#form_estat').val()} );
+		params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
+		params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
+		params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
+
+		llistaPaginationAndSort(url, params);
+	}
+
+	
 	confirmarPartePagat = function() {
 		// Click des de Partes
 		$('#formparte-button-pagat').click(function(e) {
@@ -137,6 +163,15 @@
 		});
 	};
 	
+	
+	clubsSaldosReload = function(url) {
+		var params = []; 
+		params.push( {'name':'estat','value': $('#form_estat').val()} );
+
+		llistaPaginationAndSort(url, params);
+	}
+
+	
 	varisAdminPeticioDuplicat = function() {
 		// Click des de Partes
 		$('a.duplicat-dades').click(function(e) {
@@ -163,8 +198,6 @@
 		    modal: true,
           	buttons : {
             	"Confirmar" : function() {
-            		alert($( "#numfactura" ).val());
-            		
             		if ($( "#numfactura" ).val() != '' && isNaN($( "#numfactura" ).val() ))  {
             			$("#numfactura").val("");
             			$("#dialeg #anyfactura").parent().append("<span class='error'>Incorrecte</span>");

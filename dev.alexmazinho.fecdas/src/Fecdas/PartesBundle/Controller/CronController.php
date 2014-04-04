@@ -424,36 +424,39 @@ class CronController extends BaseController {
 			
 			
 			//echo $this->getCurrentDate()->format('Y-m-d') . " > " . $datainiciRevisarSaldos->format('Y-m-d') . "</br>";   
-			if ($this->getCurrentDate() >= $datainiciRevisarSaldos and $club_iter->controlCredit()) {
-				if ($club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
-					// Init data notificació
-					$club_iter->setLimitnotificacio(null);
-					$incidencies .= ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit() . "<br/>";
-				} else {
-					if ($dadesClub['saldogestor'] > $club_iter->getLimitcredit()) {
-						// Comprovar si ja s'ha enviat la notificació
-						if ($club_iter->getLimitnotificacio() == null) {
-							$incidencies .= ">> (Notificació) Superat el límit de dèbit, s'envia la notificació al club per correu<br/>";
-							// Enviar notificació mail
-							$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-							if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
-								
-							$bccmails = $this->getFacturacioMails();
-							$tomails = array($club_iter->getMail());
-							$body = "<p>Benvolgut club ".$club_iter->getNom()."</p>";
-							$body .= "<p>Us fem saber que l'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
-							Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";
-								
-							//$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-							
-							$club_iter->setLimitnotificacio($this->getCurrentDate());
-						} else {
-							$incidencies .= ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
-						}
-						// Estat -> sense tramitació 
-						$club_iter->setEstat($estat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClubEstat')->find(self::CLUB_SENSE_TRAMITACIO));
-					} else {
+			
+			if (false) { // Desactivat
+				if ($this->getCurrentDate() >= $datainiciRevisarSaldos and $club_iter->controlCredit()) {
+					if ($club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
+						// Init data notificació
 						$club_iter->setLimitnotificacio(null);
+						$incidencies .= ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit() . "<br/>";
+					} else {
+						if ($dadesClub['saldogestor'] > $club_iter->getLimitcredit()) {
+							// Comprovar si ja s'ha enviat la notificació
+							if ($club_iter->getLimitnotificacio() == null) {
+								$incidencies .= ">> (Notificació) Superat el límit de dèbit, s'envia la notificació al club per correu<br/>";
+								// Enviar notificació mail
+								$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
+								if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+									
+								$bccmails = $this->getFacturacioMails();
+								$tomails = array($club_iter->getMail());
+								$body = "<p>Benvolgut club ".$club_iter->getNom()."</p>";
+								$body .= "<p>Us fem saber que l'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
+								Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";
+									
+								//$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+								
+								$club_iter->setLimitnotificacio($this->getCurrentDate());
+							} else {
+								$incidencies .= ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
+							}
+							// Estat -> sense tramitació 
+							$club_iter->setEstat($estat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityClubEstat')->find(self::CLUB_SENSE_TRAMITACIO));
+						} else {
+							$club_iter->setLimitnotificacio(null);
+						}
 					}
 				}
 			}

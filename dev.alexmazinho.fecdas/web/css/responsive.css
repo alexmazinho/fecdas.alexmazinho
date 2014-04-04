@@ -1,5 +1,19 @@
 @CHARSET "UTF-8";
 
+/*
+
+Mediaqueries, add meta
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+Examples
+> 320x480 smart phone portrait
+> 480x320 smart phone landscape
+> 768x1024 tablet portrait
+> 1024x768 tablet/netbook landscape
+> 1680x1050 desktop   
+
+*/
+
 @media only screen and (min-width: 960px) {
 }
 

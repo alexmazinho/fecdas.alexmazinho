@@ -1,7 +1,7 @@
 <?php
 namespace Fecdas\PartesBundle\Classes;
 
-class CSV_Reader {
+class CSVReader {
 	protected $_handle = null; //file handle
 	protected $_init = false; //have we initalized ourselves
 	protected $_csv = null; //  CSV file

@@ -473,8 +473,8 @@ class PDFController extends BaseController {
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		
-		if ($this->get('request')->query->has('vigent') && $this->get('request')->query->get('vigent') == 1) $currentVigent = true;
-		else $currentVigent = false;
+		$currentVigent = true;
+		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
 		
 		$currentTots = false;
 		if ($this->isCurrentAdmin() && $this->get('request')->query->has('tots') && $this->get('request')->query->get('tots') == 1) $currentTots = true;
@@ -505,6 +505,8 @@ class PDFController extends BaseController {
 		if ($currentVigent == true) $text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
 		else $text = '<b>Històric d\'assegurats</b>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
+		
+		$pdf->Ln();
 
 		if ($currentDNI != "" or $currentNom != "" or $currentCognoms != "") {
 			// Afegir dades del filtre
@@ -527,20 +529,17 @@ class PDFController extends BaseController {
 			$y += 2;
 			$pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
 			
+			$pdf->Ln();
 		} else {
 			$y += 15;
 		}
 		
 		$pdf->SetFont('dejavusans', '', 9, '', true);
 
-		$tbl = '<table border="0.5" cellpadding="7" cellspacing="0">
-				  <tr style="background-color:#DDDDDD;font-weight: bold;font-size: medium;">
-				  <td width="35">&nbsp;</td>
-				  <td width="155" align="left">Nom</td>
-				  <td width="75" align="center">DNI</td>
-				  <td width="240" align="left">Llicència / assegurança</td>
-				  <td width="135" align="center">Vigència</td>
-				 </tr>';
+		$w = array(8, 44, 26, 102); // Amplades
+		$this->asseguratsHeader($pdf, $w);
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		$pdf->SetFont('dejavusans', '', 9, '', true);
 		
 		$total = 0;
 
@@ -549,30 +548,45 @@ class PDFController extends BaseController {
 		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $strOrderBY); 
 		$persones = $query->getResult();
 		
+		
 		foreach ($persones as $c => $persona) {
 			$llicencia = $persona->getLlicenciaVigent();
-			
 
 			$total++;
-			$tbl .= '<tr nobr="true" style="font-size: small;"><td align="center">' . $total . '</td>';
-			$tbl .= '<td align="left">' . $persona->getCognoms() . ', ' . $persona->getNom() . '</td>';
-			$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
+			
+			$num_pages = $pdf->getNumPages();
+			$pdf->startTransaction();
+			
+			$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+			$pdf->Cell($w[1], 6, $persona->getCognoms() . ', ' . $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);
+			$pdf->Cell($w[2], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
 			if ($llicencia != null && $llicencia->getParte() != null) {
-				$tbl .= '<td align="left">' . $llicencia->getCategoria()->getDescripcio() . '</td>';
-				$tbl .= '<td align="center">' . $llicencia->getParte()->getDataalta()->format('d/m/Y')
-				. ' - ' . $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y') .  '</td>';
+				$text = $llicencia->getCategoria()->getDescripcio().". ";
+				$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
+				$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
 			} else {
-				$tbl .= '<td align="left" colspan="2">'.$persona->getInfoAssegurats($this->isCurrentAdmin()).'</td>';
+				$text =  $persona->getInfoAssegurats($this->isCurrentAdmin());
 			}
-			$tbl .= '</tr>';
+			$pdf->Cell($w[3], 6, $text , 'LRB', 0, 'L', 0, '', 1);
+			
+			$pdf->Ln();
+				
+			if($num_pages < $pdf->getNumPages()) {
+				//Undo adding the row.
+				$pdf->rollbackTransaction(true);
+			
+				$pdf->AddPage();
+				$this->asseguratsHeader($pdf, $w);
+				$pdf->SetFillColor(255, 255, 255); //Blanc
+				$pdf->SetFont('dejavusans', '', 9, '', true);
+			} else {
+				//Otherwise we are fine with this row, discard undo history.
+				$pdf->commitTransaction();
+			}
 		}
-		
-		$tbl .= '</table>';
 		
 		$pdf->Ln(10);
 		
-		$pdf->writeHTML($tbl, false, false, false, false, '');
-
 		$pdf->setPage(1); // Move to first page
 		
 		$pdf->setY($y_ini);
@@ -584,7 +598,6 @@ class PDFController extends BaseController {
 		
 		// reset pointer to the last page
 		$pdf->lastPage();
-
 		
 		if ($request->query->has('print') and $request->query->get('print') == true) {
 			// force print dialog
@@ -600,6 +613,18 @@ class PDFController extends BaseController {
 		return $response;
 		
 	}
+	
+	private function asseguratsHeader($pdf, $w) {
+		$pdf->SetFont('dejavusans', 'B', 10, '', true);
+		$pdf->SetFillColor(221, 221, 221); //Gris
+		
+		$pdf->Cell($w[0], 7, '', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
+		$pdf->Cell($w[1], 7, 'Nom', 1, 0, 'L', 1);
+		$pdf->Cell($w[2], 7, 'DNI', 1, 0, 'C', 1);
+		$pdf->Cell($w[3], 7, 'Informació llicència / assegurança', 1, 0, 'C', 1, '', 1);
+		$pdf->Ln();
+	}
+	
 	
 	public function partetopdfAction() {
 		$request = $this ->getRequest();
@@ -699,41 +724,47 @@ class PDFController extends BaseController {
 				
 				$pdf->Ln(10);	
 				
-				$pdf->SetFont('dejavusans', '', 11, '', true);
+				$w = array(26, 44, 28, 26, 50, 16, 30, 10, 35); // Amplades
+				$this->parteHeader($pdf, $w);
 				
-				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				 <tr style="background-color:#DDDDDD;font-weight: bold;font-size: medium;">
-				  <td width="94" align="center">DNI</td>
-				  <td width="172" align="center">COGNOMS</td>
-				  <td width="100" align="center">NOM</td>
-				  <td width="80" align="center">D NAIX</td>
-				  <td width="176" align="center">DOMICILI</td>
-				  <td width="60" align="center">CP</td>
-				  <td width="108" align="center">POBLACIO</td>
-				  <td width="40" align="center">CAT</td>
-				  <td width="120" align="center">ACTIVITATS</td>
-				 </tr>';
+				$pdf->SetFillColor(255, 255, 255); //Blanc
 				
 				$pdf->SetFont('dejavusans', '', 9, '', true);
-				//foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
-				$llicenciesSorted = $parte->getLlicenciesSortedByName();
-				foreach ($llicenciesSorted as $c => $llicencia_iter) {
-					$persona = $llicencia_iter->getPersona();
-					$tbl .= '<tr nobr="true">';
-					$tbl .= '<td align="center">' . $persona->getDni() .  '</td>';
-					$tbl .= '<td align="left">' . $persona->getCognoms() .  '</td>';
-					$tbl .= '<td align="left">' . $persona->getNom() .  '</td>';
-					$tbl .= '<td align="center">' . $persona->getDatanaixement()->format("d/m/y") .  '</td>';
-					$tbl .= '<td align="left">' . $persona->getAddradreca() .  '</td>';
-					$tbl .= '<td align="center">' . $persona->getAddrcp() .  '</td>';
-					$tbl .= '<td align="left">' . $persona->getAddrpob() .  '</td>';
-					$tbl .= '<td align="center">' . $llicencia_iter->getCategoria()->getSimbol() .  '</td>';
-					$tbl .= '<td align="center" style="font-size: small;">' . $llicencia_iter->getActivitats() . '</td>';
-					$tbl .= '</tr>';
-				}
-				$tbl .= '</table>';
 				
-				$pdf->writeHTML($tbl, true, false, false, false, '');
+				$llicenciesSorted = $parte->getLlicenciesSortedByName();
+				
+				foreach ($llicenciesSorted as $c => $llicencia_iter) {
+					$num_pages = $pdf->getNumPages();
+					$pdf->startTransaction();
+					
+					$persona = $llicencia_iter->getPersona();
+					
+					$pdf->Cell($w[0], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+					$pdf->Cell($w[1], 6, $persona->getCognoms(), 'LRB', 0, 'L', 0, '', 1); 
+					$pdf->Cell($w[2], 6, $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);  
+					$pdf->Cell($w[3], 6, $persona->getDatanaixement()->format("d/m/y") , 'LRB', 0, 'C', 0, '', 1); 
+					$pdf->Cell($w[4], 6, $persona->getAddradreca(), 'LRB', 0, 'L', 0, '', 1); 
+					$pdf->Cell($w[5], 6, $persona->getAddrcp(), 'LRB', 0, 'C', 0, '', 1);  
+					$pdf->Cell($w[6], 6, $persona->getAddrpob(), 'LRB', 0, 'L', 0, '', 1);
+					$pdf->Cell($w[7], 6, $llicencia_iter->getCategoria()->getSimbol(), 'LRB', 0, 'C', 0, '', 1);  
+					$pdf->Cell($w[8], 6, $llicencia_iter->getActivitats(), 'LRB', 0, 'C', 0, '', 1); 
+					$pdf->Ln();
+					
+					if($num_pages < $pdf->getNumPages()) {
+						//Undo adding the row.
+						$pdf->rollbackTransaction(true);
+						
+						$pdf->AddPage();
+						$this->parteHeader($pdf, $w);
+						$pdf->SetFillColor(255, 255, 255); //Blanc
+						$pdf->SetFont('dejavusans', '', 9, '', true);
+					} else {
+						//Otherwise we are fine with this row, discard undo history.
+						$pdf->commitTransaction();
+					}
+				}
+				
+				$pdf->Ln();
 				
 				$y = $pdf->getY();
 				
@@ -764,6 +795,8 @@ class PDFController extends BaseController {
 				
 				$pdf->writeHTML($tbl, false, false, false, false, '');
 				
+				$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+				
 				// reset pointer to the last page
 				$pdf->lastPage();
 			
@@ -776,6 +809,22 @@ class PDFController extends BaseController {
 		}
 		return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	}
+	
+	private function parteHeader($pdf, $w) { 
+		$pdf->SetFont('dejavusans', 'B', 10, '', true);
+		$pdf->SetFillColor(221, 221, 221); //Gris
+		$pdf->Cell($w[0], 7, 'DNI', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
+		$pdf->Cell($w[1], 7, 'COGNOMS', 1, 0, 'C', 1);
+		$pdf->Cell($w[2], 7, 'NOM', 1, 0, 'C', 1);
+		$pdf->Cell($w[3], 7, 'D NAIXEMENT', 1, 0, 'C', 1, '', 1);
+		$pdf->Cell($w[4], 7, 'DOMICILI', 1, 0, 'C', 1);
+		$pdf->Cell($w[5], 7, 'CP', 1, 0, 'C', 1);
+		$pdf->Cell($w[6], 7, 'POBLACIO', 1, 0, 'C', 1);
+		$pdf->Cell($w[7], 7, 'CAT', 1, 0, 'C', 1);
+		$pdf->Cell($w[8], 7, 'ACTIVITATS', 1, 0, 'C', 1);
+		$pdf->Ln();
+	}
+	
 	
 	public function licensetopdfAction() {
 		$request = $this ->getRequest();

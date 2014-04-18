@@ -7,7 +7,6 @@ use Doctrine\ORM\EntityRepository;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-use Fecdas\PartesBundle\Classes\CSV_Reader;
 
 use Fecdas\PartesBundle\Form\FormContact;
 use Fecdas\PartesBundle\Form\FormPayment;
@@ -188,17 +187,19 @@ class AdminController extends BaseController {
 		
 		if ($parte != null) {
 			// Actualitzar data pagament
-			$datapagat = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
-			$parte->setDatapagament($datapagat);
-			$parte->setEstatpagament($request->query->get('estatpagat'));
-			if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
-			if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
+			if ($request->query->get('estatpagat', '') != 'PENDENT OK') {
+				// Algun tipus de pagament
+				$datapagat = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
+				$parte->setDatapagament($datapagat);
+				$parte->setEstatpagament($request->query->get('estatpagat'));
+				if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
+				if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
+			}
 			$parte->setPendent(false);
 			if ($parte->getIdparteAccess() == null) {
 				$parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
 				$parte->setDatamodificacio($this->getCurrentDate()); // Només activa sincro si té preu indicat. La resta no sincronitzen el pagament s'envia per Gestor 
 			}
-			
 			
 			$em->flush();
 

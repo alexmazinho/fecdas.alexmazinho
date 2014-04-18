@@ -1,14 +1,16 @@
 <?php 
 namespace Fecdas\PartesBundle\Controller;
 
+use Fecdas\PartesBundle\Classes\CSVReader;
+use Fecdas\PartesBundle\Classes\Funcions;
+
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityRepository;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-use Fecdas\PartesBundle\Classes\CSV_Reader;
-use Fecdas\PartesBundle\Classes\Funcions;
 
 use Fecdas\PartesBundle\Form\FormContact;
 use Fecdas\PartesBundle\Form\FormPayment;
@@ -263,7 +265,7 @@ class PageController extends BaseController {
 	}
 	
 	private function importFileCSVData ($file, $parte, $persist = false) {
-		$reader = new CSV_Reader();
+		$reader = new CSVReader();
 		$reader->setCsv($file);
 		$reader->readLayoutFromFirstRow();
 		//$reader->setLayout(array('first_name', 'last_name'));

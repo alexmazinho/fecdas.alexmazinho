@@ -26,6 +26,8 @@
 				{{ form_label(form.vigent, 'Només mostrar les llicències vigents', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
+			
+			{% if persones.getTotalItemCount <= 3000 %}
 			<div class="buttons-top">
 				<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', persones.params) }}">
 					<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
@@ -34,6 +36,7 @@
 					<img src="{{ asset('images/icon-print.png') }}" alt="Descarregar les llistes" 
 					title="Descarregar les llistes" width="40px"></a></div>
 			</div> 
+			{% endif %}	
 		</div>
    		<div class="form-row clearfix">
 			<div id="formassegurats-dni" class="form-left">

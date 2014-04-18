@@ -126,11 +126,10 @@ class CronController extends BaseController {
 		
 		$partesrenovar = $query->getResult();
 		
-		$tomails = array();
-		$subject = "Notificació. Renovació llicència FECDAS";
-		
 		foreach ($partesrenovar as $c => $parte_iter) {
 			/* Per cada parte */
+			$tomails = array();
+			$subject = "Notificació. Renovació llicència FECDAS";
 			if ($parte_iter->getClub()->getMail() == null) {
 				$subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
 			} else {

@@ -1,5 +1,5 @@
 <?php 
-namespace Fecdas\PartesBundle\Controller;
+namespace Fecdas\PartesBundle\Controller; 
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;

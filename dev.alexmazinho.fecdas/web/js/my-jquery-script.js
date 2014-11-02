@@ -962,11 +962,9 @@
 					// Parte nou creta, desactiva data
 					$("#formparte-dataalta img").hide();
 					
-					var hrefpagament = $("#parte-pagament a").attr("href") + "?id=" + $("#parte_id").val();
 					var hrefpartetopdf = $("#parte-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
 					var hrefalbaratopdf = $("#albara-to-pdf a").attr("href") + "?id=" + $("#parte_id").val();
 
-					$("#parte-pagament a").attr("href", hrefpagament);
 					$("#parte-to-pdf a").attr("href", hrefpartetopdf);
 					$("#albara-to-pdf a").attr("href", hrefalbaratopdf);
 

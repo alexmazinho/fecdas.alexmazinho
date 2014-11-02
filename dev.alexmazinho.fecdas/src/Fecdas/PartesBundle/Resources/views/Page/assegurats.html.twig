@@ -26,6 +26,7 @@
 				{{ form_label(form.vigent, 'Només mostrar les llicències vigents', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
 			</div>
+			
 			{% if persones.getTotalItemCount <= 3000 %}
 			<div class="buttons-top">
 				<div class="button-top"><a href="{{ path('FecdasPartesBundle_asseguratstopdf', persones.params) }}">

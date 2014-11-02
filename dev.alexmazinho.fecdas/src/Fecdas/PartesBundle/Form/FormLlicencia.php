@@ -38,8 +38,6 @@ class FormLlicencia extends AbstractType {
 		'empty_value' => '',
 		'required'  => false,
 		'read_only' => !$this->options['edit'],
-		'property_path' => 'persona',
-		'mapped' => true,
 		//'mapped' => false,
 		));
 

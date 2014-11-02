@@ -89,7 +89,7 @@
 	    $("#dialeg").append("<p>Raó del pagament <select type='text' id='pagatestat' required='required'>" +
 	    					"<option selected='selected' value='TRANS WEB'>Transferència rebuda</option>" +
 	    					"<option value='METALLIC WEB'>Pagament en metàlic</option>" +
-	    					"<option value='PENDENT OK'>Sincronitzar sense pagament</option>" +
+						"<option value='PENDENT OK'>Sincronitzar sense pagament</option>" +
 	    					"<option value='TPV CORRECCIO'>Correcció errada TPV</option></select></p>");
 	    $("#dialeg").append("<p>Número de comanda TPV o rebut <input type='text' id='pagatdades' required='required'/></p>");
 	    $("#dialeg").append("<p>Comentari<textarea id='pagatcomentari' required='required'/></p>");

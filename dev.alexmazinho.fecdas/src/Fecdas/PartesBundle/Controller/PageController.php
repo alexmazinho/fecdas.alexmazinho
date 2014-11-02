@@ -166,6 +166,15 @@ class PageController extends BaseController {
 					$parte->setClub($currentClub);
 					$parte->setTipus($tipusparte);
 
+					/* id 4 - Competició --> és la única que es pot fer */
+					if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+						throw new \Exception('El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+					}
+					/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+								
+
 					$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
 					if ($errData != "") throw new \Exception($errData);
 					
@@ -182,15 +191,15 @@ class PageController extends BaseController {
 					
 					/* Copy file for future confirmation */
 					$file->move($this->getTempUploadDir(), $tempname);
-					
-					$this->logEntryAuth('IMPORT CSV OK', $file->getFileName());
-					
+					error_log("aqui"); 
 					/* Generate URL to send CSV confirmation */
 					$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
 							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
 							'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
 					
+					$this->logEntryAuth('IMPORT CSV OK', $file->getFileName());
+										
 					// Redirect to confirm page		
 					return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
@@ -201,7 +210,7 @@ class PageController extends BaseController {
 				}					
 			} else {
 				// Fitxer massa gran normalment
-				$this->logEntryAuth('IMPORT CSV ERROR', $e->getMessage());
+				$this->logEntryAuth('IMPORT CSV ERROR', "Error desconegut");
 				
 				$this->get('session')->getFlashBag()->add('error-notice',"Error important el fitxer".$form->getErrorsAsString());
 			}
@@ -230,7 +239,7 @@ class PageController extends BaseController {
 		$currentClub = $this->getCurrentClub();
 		
 		$tipusparte = $request->query->get('tipus');
-		$dataalta = $datanaixement = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
+		$dataalta = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
 		$temppath = $request->query->get('tempfile');
 		
 		try {
@@ -682,7 +691,7 @@ class PageController extends BaseController {
 			if ($request->request->has('parte_renew')) {
 				$p = $request->request->get('parte_renew');
 				$parteid = $p['cloneid'];
-				$currentClub = $p['club'];
+				//$currentClub = $p['club'];
 			}
 		} else {
 			if ($request->query->has('id') and $request->query->get('id') != "")
@@ -719,6 +728,7 @@ class PageController extends BaseController {
 		$options['admin'] = false; // No permet selecció club
 		$options['edit'] = false; // No permet selecció tipus
 		$options['codiclub'] = $parte->getClub()->getCodi();
+		
 		$options['tipusparte'] = $parte->getTipus()->getId();
 		$options['any'] = $parte->getAny(); // Mostrar preu segons any parte
 	
@@ -729,6 +739,17 @@ class PageController extends BaseController {
 		$avisos = "";
 		if ($request->getMethod() == 'POST') {
 			$form->bind($request);
+
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				$this->get('session')->getFlashBag()->clear();
+				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+			} else {
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */			
+
 	
 			if ($form->isValid() && $request->request->has('parte_renew')) {
 				$em = $this->getDoctrine()->getManager();
@@ -765,6 +786,10 @@ class PageController extends BaseController {
 			} else {
 				$this->get('session')->getFlashBag()->add('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador'.$form->getErrorsAsString());
 			}
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			}
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 		} else {
 			/*
 			 * Validacions  de les llicències
@@ -793,7 +818,16 @@ class PageController extends BaseController {
 					continue;
 				}
 			}
-			
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				$this->get('session')->getFlashBag()->clear();
+				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+			}
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+
 			$this->logEntryAuth('RENOVAR VIEW', $parte->getId() . "-" .$avisos);
 		}
 			
@@ -998,7 +1032,21 @@ class PageController extends BaseController {
 					// Data alta molt aprop de la caducitat.
 					$this->get('session')->getFlashBag()->add('sms-notice', $errData);
 					$valida = false;
-				}				
+				}		
+
+				/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+				/* id 4 - Competició --> és la única que es pot fer */
+				if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+					$this->get('session')->getFlashBag()->clear();
+					$this->get('session')->getFlashBag()->add('sms-notice','El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+					$valida = false;
+				}
+				/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+
+
+		
 				if ($valida == true) {
 					if ($this->validaLlicenciaInfantil($llicencia) == false) {
 						$this->get('session')->getFlashBag()->add('sms-notice',
@@ -1177,6 +1225,20 @@ class PageController extends BaseController {
 			if (($tipusid == 5 or $tipusid == 6) and ($dataalta_parte < $datainici_reduida)) { // reduïdes
 				$this->get('session')->getFlashBag()->add('error-notice',	'Les llicències reduïdes només a partir de 1 de setembre');
 			}
+
+
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				$this->get('session')->getFlashBag()->clear();
+				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+			}
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			
+
+
 			
 			return $this->render('FecdasPartesBundle:Page:partellicencia.html.twig',
 					array('llicencia' => $formllicencia->createView(),

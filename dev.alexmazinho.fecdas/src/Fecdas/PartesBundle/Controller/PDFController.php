@@ -825,7 +825,6 @@ class PDFController extends BaseController {
 		$pdf->Ln();
 	}
 	
-	
 	public function licensetopdfAction() {
 		$request = $this ->getRequest();
 	

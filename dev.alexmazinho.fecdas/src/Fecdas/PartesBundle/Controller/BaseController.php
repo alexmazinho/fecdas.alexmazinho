@@ -156,6 +156,8 @@ class BaseController extends Controller {
 	
 	protected function validaLlicenciaInfantil(EntityLlicencia $llicencia) {
 		// Valida menors, nascuts després del 01-01 any actual - 12
+		if ($llicencia->getParte()->getTipus()->getId() == 11) return true; // Llicències Dia no aplica
+
 		$nascut = $llicencia->getPersona()->getDatanaixement();
 	
 		/*$nascut = new \DateTime(date("Y-m-d", strtotime($llicencia->getPersona()->getDatanaixement()->format('Y-m-d'))));

@@ -87,6 +87,7 @@ class CronController extends BaseController {
 		
 		$request = $this->getRequest();
 
+		//$sortida = "";
 		$sortida = $this->checkRenovacio(30);
 		
 		$sortida .= $this->checkRenovacio(15);
@@ -106,17 +107,17 @@ class CronController extends BaseController {
 		// 30 dies
 		$aux = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
 		//echo $aux->format('Y-m-d') . "<br/>";
+
 		$aux->add(new \DateInterval('P'.$dies.'D'));
 		//echo $aux->format('Y-m-d H:i:s') . "<br/>";
 		$iniNotificacio = $aux->format('Y-m-d H:i:s'); // Format Mysql
 		$aux->add(new \DateInterval('P1D'));
 		//echo $aux->format('Y-m-d H:i:s') . "<br/>";
 		$fiNotificacio = $aux->format('Y-m-d H:i:s'); // Format Mysql
-		
 		// Crear índex taula partes per data entrada, tipus 8 i 9 
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
 		$strQuery .= "WHERE p.databaixa IS NULL  ";
-		$strQuery .= " AND t.es365 = 1 AND t.id <> 8 AND t.id <> 9";
+		$strQuery .= " AND t.es365 = 1 AND t.id <> 8 AND t.id <> 9 AND t.id <> 12 ";
 		$strQuery .= " AND p.dataalta >= :iniNotificacio ";
 		$strQuery .= " AND p.dataalta < :fiNotificacio";
 		
@@ -127,9 +128,9 @@ class CronController extends BaseController {
 		$partesrenovar = $query->getResult();
 		
 		foreach ($partesrenovar as $c => $parte_iter) {
-			/* Per cada parte */
 			$tomails = array();
 			$subject = "Notificació. Renovació llicència FECDAS";
+			/* Per cada parte */
 			if ($parte_iter->getClub()->getMail() == null) {
 				$subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
 			} else {
@@ -296,6 +297,16 @@ class CronController extends BaseController {
 				throw new \Exception('Aquesta persona ja té una llicència al club en aquests periode, en data ' .
 						$parteoverlap->getDataalta()->format('d/m/Y'));
 			}
+
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				throw new \Exception('El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment. 
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència. 
+						Gràcies per la vostra comprensió.');
+			}
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+
 		
 			if ($request->getMethod() == 'POST') {
 				$form->bind($request);

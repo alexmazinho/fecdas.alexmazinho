@@ -1,12 +1,11 @@
 <?php 
-namespace Fecdas\PartesBundle\Controller; 
+namespace Fecdas\PartesBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityRepository;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
 
 use Fecdas\PartesBundle\Form\FormContact;
 use Fecdas\PartesBundle\Form\FormPayment;

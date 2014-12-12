@@ -27,8 +27,8 @@ class BaseController extends Controller {
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
-	const INICI_TRAMITACIO_ANUAL_DIA = 10; // a partir de 10/12 any en curs
-	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 10/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_DIA = 12; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 15/12 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -36,7 +36,8 @@ class BaseController extends Controller {
 	const PAGAMENT_DUPLICAT = 'duplicat';
 	const UPLOADS_RELPATH = '/../../../../web/uploads/';  // Path is __DIR__.self::UPLOADS_RELPATH
 	
-	protected function getCommonRenderArrayOptions($more = array()) { 
+	protected function getCommonRenderArrayOptions($more = array()) {
+		$options = array();
 		if ($this->isCurrentAdmin()) {
 			$roleSelectOptions = array('class' => 'FecdasPartesBundle:EntityClub',
 					'property' => 'nom',
@@ -156,6 +157,8 @@ class BaseController extends Controller {
 	
 	protected function validaLlicenciaInfantil(EntityLlicencia $llicencia) {
 		// Valida menors, nascuts després del 01-01 any actual - 12
+		if ($llicencia->getParte()->getTipus()->getId() == 11) return true; // Llicències Dia no aplica
+
 		$nascut = $llicencia->getPersona()->getDatanaixement();
 	
 		/*$nascut = new \DateTime(date("Y-m-d", strtotime($llicencia->getPersona()->getDatanaixement()->format('Y-m-d'))));

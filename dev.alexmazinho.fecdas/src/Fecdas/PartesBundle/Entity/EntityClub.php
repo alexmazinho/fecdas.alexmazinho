@@ -919,7 +919,7 @@ class EntityClub {
     	$dades['err_sincro'] = array();
     	$dades['err_imports'] = array();
     	$dades['err_config'] = '';
-    	foreach($this->partes as $c => $parte_iter) {
+    	foreach($this->partes as $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			/* Només mirar sincronitzats */
     			$auxImportParte = $parte_iter->getPreuTotalIVA();
@@ -1010,7 +1010,7 @@ class EntityClub {
      */
     public function getTotalLlicenciesWeb() {
     	$nimport = 0;
-    	foreach($this->partes as $c => $parte_iter) {
+    	foreach($this->partes as $parte_iter) {
     		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			$nimport += $parte_iter->getPreuTotalIVA();
     		}
@@ -1036,11 +1036,12 @@ class EntityClub {
     public function getDadesDesde($desde)
     {
 	    /* Recollir estadístiques */
+    	$stat = array();
 	    $stat['ltotal'] = 0;	// Llicències total
 	    $stat['vigents'] = 0;	// Partes vigents
 	    $stat['lvigents'] = 0;	// llicències vigents
 	    
-	    foreach($this->partes as $c => $parte_iter) {
+	    foreach($this->partes as $parte_iter) {
 	    	if ($parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and $parte_iter->getDatabaixa() == null) {
 		    	$nlic = $parte_iter->getNumLlicencies();
 		    	if ($nlic > 0) {

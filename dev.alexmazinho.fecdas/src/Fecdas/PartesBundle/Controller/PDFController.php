@@ -79,7 +79,7 @@ class PDFController extends BaseController {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
-		$pdf->init($params = array('author' => 'FECDAS', 'title' => $titol));
+		$pdf->init(array('author' => 'FECDAS', 'title' => $titol));
 			
 		$pdf->AddPage();
 		
@@ -161,7 +161,7 @@ class PDFController extends BaseController {
 		$tbliva = "";
 		$tbltotal = "";
 		
-		foreach ($detall as $c => $lineafactura) {
+		foreach ($detall as $lineafactura) {
 			$tblref .= $lineafactura['codi'] . '<br/><br/>';
 			$tblconc .= $lineafactura['desc'] . '<br/><br/>';
 			$tblquant .= $lineafactura['quant'] . '<br/><br/>';
@@ -314,7 +314,7 @@ class PDFController extends BaseController {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 					
-		$pdf->init($params = array('author' => 'FECDAS', 'title' => $titol)); 
+		$pdf->init(array('author' => 'FECDAS', 'title' => $titol)); 
 					
 		$pdf->AddPage();
 	
@@ -396,7 +396,7 @@ class PDFController extends BaseController {
 		$tbliva = "";
 		$tbltotal = "";
 	
-		foreach ($detall as $c => $lineafactura) {
+		foreach ($detall as $lineafactura) {
 			$tblref .= $lineafactura['codi'] . '<br/><br/>';
 			$tblconc .= $lineafactura['desc'] . '<br/><br/>';
 			$tblquant .= $lineafactura['quant'] . '<br/><br/>';
@@ -484,7 +484,7 @@ class PDFController extends BaseController {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
-		$pdf->init($params = array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
+		$pdf->init(array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
 				true, "Club " . $club->getNom());
 			
 		$pdf->AddPage();
@@ -549,7 +549,7 @@ class PDFController extends BaseController {
 		$persones = $query->getResult();
 		
 		
-		foreach ($persones as $c => $persona) {
+		foreach ($persones as $persona) {
 			$llicencia = $persona->getLlicenciaVigent();
 
 			$total++;
@@ -644,7 +644,7 @@ class PDFController extends BaseController {
 				// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 				$pdf = new TcpdfBridge('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
-				$pdf->init($params = array('author' => 'FECDAS', 'title' => 'Llicències ' . date("Y")), 
+				$pdf->init(array('author' => 'FECDAS', 'title' => 'Llicències ' . date("Y")), 
 						true, "Llista número: " . $parte->getId());
 							
 				$pdf->AddPage();
@@ -707,7 +707,7 @@ class PDFController extends BaseController {
 				  <td width="120" align="center">PREU</td>
 				 </tr>';
 				
-				foreach ($parte->getTipus()->getCategories() as $c => $categoria) {
+				foreach ($parte->getTipus()->getCategories() as $categoria) {
 					$numpercat = $parte->getNumLlicenciesCategoria($categoria->getSimbol());
 					$preu = $categoria->getPreuAny($parte->getAny());
 					$tbl .= '<tr><td width="100" align="right">' . $categoria->getCategoria() . '</td>';
@@ -733,7 +733,7 @@ class PDFController extends BaseController {
 				
 				$llicenciesSorted = $parte->getLlicenciesSortedByName();
 				
-				foreach ($llicenciesSorted as $c => $llicencia_iter) {
+				foreach ($llicenciesSorted as $llicencia_iter) {
 					$num_pages = $pdf->getNumPages();
 					$pdf->startTransaction();
 					
@@ -825,7 +825,6 @@ class PDFController extends BaseController {
 		$pdf->Ln();
 	}
 	
-	
 	public function licensetopdfAction() {
 		$request = $this ->getRequest();
 	
@@ -846,7 +845,7 @@ class PDFController extends BaseController {
 				// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 				$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	
-				$pdf->init($params = array('author' => 'FECDAS',
+				$pdf->init(array('author' => 'FECDAS',
 						'title' => 'Llicència FECDAS' . date("Y")));
 				
 				// Add a page
@@ -872,12 +871,12 @@ class PDFController extends BaseController {
 				$pdf->SetLineStyle(array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 4, 'color' => array(0, 0, 0)));
 				//$pdf->writeHTMLCell($width + 4, 2*($height + 2), $x - 2, $y - 2, '', 1, 0, 0, true, 'L', true);
 
-				$pdf->Image('images/federativa-cara.png', $x, $y, 
-						$width, $height , 'png', '', '', true, 150, 
+				$pdf->Image('images/federativa-cara.jpg', $x, $y, 
+						$width, $height , 'jpg', '', '', false, 300, 
 						'', false, false, 1, false, false, false);
 				
-				$pdf->Image('images/federativa-dors.png', $x, $y + $height,
-						$width, $height , 'png', '', '', true, 150,
+				$pdf->Image('images/federativa-dors.jpg', $x, $y + $height,
+						$width, $height , 'jpg', '', '', false, 300,
 						'', false, false, 1, false, false, false);
 				
 				// set color for text and font
@@ -908,27 +907,27 @@ class PDFController extends BaseController {
 				$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
 				
 				$x = $x_ini + 54.2;
-				$y = $y_ini + 39.2;
+				$y = $y_ini + 38.6; // 39.2
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 62.5;
-				$y = $y_ini + 43;
+				$y = $y_ini + 42.4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 65;
-				$y = $y_ini + 46.7;
+				$y = $y_ini + 46.1;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 63.6;
-				$y = $y_ini + 50.7;
+				$y = $y_ini + 49.9;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 56;
-				$y = $y_ini + 54.5;
+				$y = $y_ini + 53.7;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 60;
-				$y = $y_ini + 58.3;
+				$y = $y_ini + 57.5;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
 				
 				//$datacaduca = $llicencia->getParte()->getDataalta();

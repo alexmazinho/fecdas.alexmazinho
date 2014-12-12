@@ -32,7 +32,7 @@ class CronController extends BaseController {
 		$query = $em->createQuery($strQuery)->setParameter('maxid', $maxid);
 		$partesweb = $query->getResult();
 		
-		foreach ($partesweb as $c => $parte) {
+		foreach ($partesweb as $parte) {
 			
 			$parte->setImportparte($parte->getPreuTotalIVA());
 			
@@ -85,8 +85,7 @@ class CronController extends BaseController {
 
 		 * */
 		
-		$request = $this->getRequest();
-
+		//$sortida = "";
 		$sortida = $this->checkRenovacio(30);
 		
 		$sortida .= $this->checkRenovacio(15);
@@ -103,22 +102,24 @@ class CronController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 		
-		// 30 dies
 		$aux = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
 		//echo $aux->format('Y-m-d') . "<br/>";
+
 		$aux->add(new \DateInterval('P'.$dies.'D'));
 		//echo $aux->format('Y-m-d H:i:s') . "<br/>";
 		$iniNotificacio = $aux->format('Y-m-d H:i:s'); // Format Mysql
 		$aux->add(new \DateInterval('P1D'));
 		//echo $aux->format('Y-m-d H:i:s') . "<br/>";
 		$fiNotificacio = $aux->format('Y-m-d H:i:s'); // Format Mysql
-		
 		// Crear índex taula partes per data entrada, tipus 8 i 9 
 		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
 		$strQuery .= "WHERE p.databaixa IS NULL  ";
-		$strQuery .= " AND t.es365 = 1 AND t.id <> 8 AND t.id <> 9";
+		$strQuery .= " AND t.es365 = 1 AND t.id <> 8 AND t.id <> 9 AND t.id <> 12 and t.id <> 4 ";
 		$strQuery .= " AND p.dataalta >= :iniNotificacio ";
 		$strQuery .= " AND p.dataalta < :fiNotificacio";
+		/* Valida tipus actiu --> és la única que es pot fer */
+		$strQuery .= " AND t.actiu = 1 ";
+		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 		
 		$query = $em->createQuery($strQuery)
 		->setParameter('iniNotificacio', $iniNotificacio)
@@ -126,17 +127,52 @@ class CronController extends BaseController {
 		
 		$partesrenovar = $query->getResult();
 		
-		foreach ($partesrenovar as $c => $parte_iter) {
-			/* Per cada parte */
+		
+		/* Valida tipus actiu --> és la única que es pot fer */
+		// Llicències curs escolar final 08-31
+		/*$strQuery = "SELECT t FROM Fecdas\PartesBundle\Entity\EntityParteType t ";
+		$strQuery .= " WHERE t.es365 = 1 AND t.actiu = 1 AND t.id NOT IN (8, 9, 12) ";
+		
+		$tipus365actius = $em->createQuery($strQuery)->getResult();
+		
+		foreach ($tipus365actius as $tipus) {
+			
+		}*/
+		$aux = \DateTime::createFromFormat('Y-m-d H:i:s', (date("Y") - 1) . "-" . date("m") . "-" . date("d") . "  00:00:00");
+		$aux->add(new \DateInterval('P'.$dies.'D'));
+		$iniNotificacio = $aux->format('Y-m-d H:i:s'); // Format Mysql
+		echo 'ini ' . $iniNotificacio . "<br/>";
+		
+		$aux->add(new \DateInterval('P1Y')); // + 1 any
+		$fiNotificacio = $aux->format('m-d'); // Format Mysql
+		echo 'fi ' . $fiNotificacio . "<br/>";
+		
+		
+		$strQuery = "SELECT p FROM Fecdas\PartesBundle\Entity\EntityParte p JOIN p.tipus t ";
+		$strQuery .= "WHERE p.databaixa IS NULL  ";
+		$strQuery .= " AND t.es365 = 1 AND t.id = 4 AND t.actiu = 1 ";
+		$strQuery .= " AND p.dataalta >= :iniNotificacio ";
+		$strQuery .= " AND t.final = :fiNotificacio ";
+		
+		
+		$query = $em->createQuery($strQuery)
+		->setParameter('iniNotificacio', $iniNotificacio)
+		->setParameter('fiNotificacio', $fiNotificacio);
+		
+		$partesrenovar = array_merge ($partesrenovar, $query->getResult());
+		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+		
+		foreach ($partesrenovar as $parte_iter) {
 			$tomails = array();
 			$subject = "Notificació. Renovació llicència FECDAS";
+			/* Per cada parte */
 			if ($parte_iter->getClub()->getMail() == null) {
 				$subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
 			} else {
 				$tomails[] = $parte_iter->getClub()->getMail();
 			}
 			
-			foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
+			foreach ($parte_iter->getLlicencies() as $llicencia_iter) {
 				/* Per cada llicència del parte */
 				if ($this->checkSendMail($llicencia_iter) == true) {
 					$body = $this->renderView('FecdasPartesBundle:Cron:renovacioEmail.html.twig',
@@ -177,9 +213,9 @@ class CronController extends BaseController {
 										
 		$personaaltresclubs = $query->getResult();
 										
-		foreach ($personaaltresclubs as $c => $persona_iter) {
+		foreach ($personaaltresclubs as $persona_iter) {
 			//->setParameter('dataalta', $llicencia->getParte()->getDataalta()->format('yyyy-mm-dd'))
-			foreach ($persona_iter->getLlicencies() as $c => $llicencia_iter) {
+			foreach ($persona_iter->getLlicencies() as $llicencia_iter) {
 				if ($llicencia_iter->getDatabaixa() == null and 
 					 $llicencia_iter->getParte()->getDataalta() >  $llicencia->getParte()->getDataalta()) {
 					// Nova llicència posterior altre club
@@ -296,6 +332,21 @@ class CronController extends BaseController {
 				throw new \Exception('Aquesta persona ja té una llicència al club en aquests periode, en data ' .
 						$parteoverlap->getDataalta()->format('d/m/Y'));
 			}
+
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				throw new \Exception('El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment. 
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència. 
+						Gràcies per la vostra comprensió.');
+			}*/
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* Valida tipus actiu --> és la única que es pot fer */
+			if ($parte->getTipus()->getActiu() == false) {
+				throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+			}
+			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+			
 		
 			if ($request->getMethod() == 'POST') {
 				$form->bind($request);

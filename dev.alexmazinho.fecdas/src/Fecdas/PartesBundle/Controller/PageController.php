@@ -129,7 +129,7 @@ class PageController extends BaseController {
 				'data' => $dataalta->format('d/m/Y')
 		));
 		
-		$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
+		//$repository = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType');
 		$formbuilder->add('tipus', 'entity', 
 					array('class' => 'FecdasPartesBundle:EntityParteType',
 						'query_builder' => function($repository) use ($llistatipus) {
@@ -153,7 +153,7 @@ class PageController extends BaseController {
 
 					if ($dataalta->format('y') > $this->getCurrentDate()->format('y')) {
 						// Només a partir 10/12 poden fer llicències any següent
-						if ($currentMonth < 12 or ($currentMonth == 12 and $currentDay < 10)) 
+						if ($currentMonth < self::INICI_TRAMITACIO_ANUAL_MES or ($currentMonth == self::INICI_TRAMITACIO_ANUAL_MES and $currentDay < self::INICI_TRAMITACIO_ANUAL_DIA)) 
 								throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');					
 					}
 					
@@ -165,6 +165,22 @@ class PageController extends BaseController {
 					$parte->setDataalta($dataalta);
 					$parte->setClub($currentClub);
 					$parte->setTipus($tipusparte);
+
+					/* id 4 - Competició --> és la única que es pot fer */
+					/* id 9 i 12 - Tecnocampus també es pot fer */
+					/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
+						&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {
+						throw new \Exception('El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+					}*/
+					/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+					/* Valida tipus actiu --> és la única que es pot fer */
+					if ($parte->getTipus()->getActiu() == false) {
+								throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+					}
+					/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+					
 
 					$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
 					if ($errData != "") throw new \Exception($errData);
@@ -183,14 +199,14 @@ class PageController extends BaseController {
 					/* Copy file for future confirmation */
 					$file->move($this->getTempUploadDir(), $tempname);
 					
-					$this->logEntryAuth('IMPORT CSV OK', $file->getFileName());
-					
 					/* Generate URL to send CSV confirmation */
 					$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
 							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
 							'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
 					
+					$this->logEntryAuth('IMPORT CSV OK', $file->getFileName());
+										
 					// Redirect to confirm page		
 					return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
@@ -201,7 +217,7 @@ class PageController extends BaseController {
 				}					
 			} else {
 				// Fitxer massa gran normalment
-				$this->logEntryAuth('IMPORT CSV ERROR', $e->getMessage());
+				$this->logEntryAuth('IMPORT CSV ERROR', "Error desconegut");
 				
 				$this->get('session')->getFlashBag()->add('error-notice',"Error important el fitxer".$form->getErrorsAsString());
 			}
@@ -219,8 +235,8 @@ class PageController extends BaseController {
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
-	
-		if (!$request->query->has('tipus') or !$request->query->has('club') or 
+
+		if (!$request->query->has('tipus') or 
 			!$request->query->has('dataalta') or !$request->query->has('tempfile'))
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 		
@@ -230,7 +246,7 @@ class PageController extends BaseController {
 		$currentClub = $this->getCurrentClub();
 		
 		$tipusparte = $request->query->get('tipus');
-		$dataalta = $datanaixement = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
+		$dataalta = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
 		$temppath = $request->query->get('tempfile');
 		
 		try {
@@ -239,11 +255,9 @@ class PageController extends BaseController {
 			$parte->setTipus($this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipusparte));
 			$parte->setClub($currentClub);
 			$parte->setDataalta($dataalta);
-				
 			$em = $this->getDoctrine()->getManager();
 			
 			$this->importFileCSVData($temppath, $parte, true);
-			
 			$em->flush();
 			
 			$this->get('session')->getFlashBag()->add('error-notice',"Llicències enviades correctament");
@@ -407,11 +421,12 @@ class PageController extends BaseController {
 		$direction = $request->query->get('direction', 'desc');
 		
 		if ($request->getMethod() == 'POST') {
+
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_parte'));
 			
-			$this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$formdata['desde']);
 		} else {
-			$this->logEntryAuth('VIEW PARTES', $club->getCodi());
+			if ($request->query->has('desde')) $this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$desde->format('Y-m-d'));
+			else $this->logEntryAuth('VIEW PARTES', $club->getCodi());
 		}
 
 		
@@ -430,7 +445,7 @@ class PageController extends BaseController {
 		);
 		$partesclub->setParam('desde',$desde->format('d/m/Y'));
 		
-		if (date("m") == self::MONTH_TRAMITAR_ANY_SEG and date("d") >= self::DAY_TRAMITAR_ANY_SEG) {
+		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) {
 			// A partir 10/12 poden fer llicències any següent
 			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
 		}
@@ -453,8 +468,6 @@ class PageController extends BaseController {
 	
 		if (!$request->query->has('id')) return new Response("");
 	
-		$em = $this->getDoctrine()->getManager();
-	
 		$parteId = $request->query->get('id');
 			
 		$parte = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParte')->find($parteId);
@@ -471,8 +484,6 @@ class PageController extends BaseController {
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_login'));
-	
-		$em = $this->getDoctrine()->getManager();
 	
 		$currentClub = $this->getCurrentClub()->getCodi();
 		
@@ -551,7 +562,7 @@ class PageController extends BaseController {
 			$persones = $query->getResult();
 
 			$llicencies = array();
-			foreach ($persones as $c => $persona_iter) {
+			foreach ($persones as $persona_iter) {
 				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate());
 			}
 			
@@ -611,7 +622,7 @@ class PageController extends BaseController {
 			}
 			
 			if (count($persones) > 0) {
-				foreach ($persones as $c => $persona) {
+				foreach ($persones as $persona) {
 					/* Obtenir llicències encara no caducades per aquesta persona*/
 					$strQuery = "SELECT l FROM Fecdas\PartesBundle\Entity\EntityLlicencia l ";
 					$strQuery .= " WHERE l.datacaducitat >= :dataactual ";
@@ -625,7 +636,7 @@ class PageController extends BaseController {
 					$llicencies = $query->getResult();
 					
 					if (count($llicencies) > 0) {
-						foreach ($llicencies as $c => $llicencia) {
+						foreach ($llicencies as $llicencia) {
 							/* Comprovar si la llicència està vigent i no és futura */
 							$inicivigencia = $llicencia->getParte()->getDataalta();
 							if ($inicivigencia <= $dataactual) {
@@ -682,7 +693,7 @@ class PageController extends BaseController {
 			if ($request->request->has('parte_renew')) {
 				$p = $request->request->get('parte_renew');
 				$parteid = $p['cloneid'];
-				$currentClub = $p['club'];
+				//$currentClub = $p['club'];
 			}
 		} else {
 			if ($request->query->has('id') and $request->query->get('id') != "")
@@ -719,6 +730,7 @@ class PageController extends BaseController {
 		$options['admin'] = false; // No permet selecció club
 		$options['edit'] = false; // No permet selecció tipus
 		$options['codiclub'] = $parte->getClub()->getCodi();
+		
 		$options['tipusparte'] = $parte->getTipus()->getId();
 		$options['any'] = $parte->getAny(); // Mostrar preu segons any parte
 	
@@ -729,6 +741,21 @@ class PageController extends BaseController {
 		$avisos = "";
 		if ($request->getMethod() == 'POST') {
 			$form->bind($request);
+
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				$this->get('session')->getFlashBag()->clear();
+				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+			} else {*/
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */			
+				/* Valida tipus actiu --> és la única que es pot fer */
+			if ($parte->getTipus()->getActiu() == false) {
+				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+			} else {
+			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 	
 			if ($form->isValid() && $request->request->has('parte_renew')) {
 				$em = $this->getDoctrine()->getManager();
@@ -765,6 +792,10 @@ class PageController extends BaseController {
 			} else {
 				$this->get('session')->getFlashBag()->add('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador'.$form->getErrorsAsString());
 			}
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			}
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 		} else {
 			/*
 			 * Validacions  de les llicències
@@ -793,7 +824,22 @@ class PageController extends BaseController {
 					continue;
 				}
 			}
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
+				$this->get('session')->getFlashBag()->clear();
+				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+			}*/
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* Valida tipus actiu --> és la única que es pot fer */
+			if ($parte->getTipus()->getActiu() == false) {
+				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+			}
+			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 			
+
 			$this->logEntryAuth('RENOVAR VIEW', $parte->getId() . "-" .$avisos);
 		}
 			
@@ -818,7 +864,6 @@ class PageController extends BaseController {
 		
 		$options = $this->getFormOptions();
 		$parteid = 0;
-		$action = "";
 		$currentClub = $this->getCurrentClub();
 		
 		if ($request->getMethod() == 'POST') {
@@ -831,8 +876,6 @@ class PageController extends BaseController {
 		} else {
 			if ($request->query->has('id') and $request->query->get('id') != "")
 				$parteid = $request->query->get('id');
-			if ($request->query->has('action'))
-				$action = $request->query->get('action');
 		}
 		
 		if ($parteid > 0) {
@@ -871,7 +914,6 @@ class PageController extends BaseController {
 		// Dates mínima i màxima del selector en l'alta de partes (nou parte, import csv...)
 		$datesparte = array();
 		
-		$current_year = date("Y");
 		$end_year = date("Y");
 		if (date("m") == 12 and date("d") >= 10) $end_year++; // A partir 10/12 poden fer llicències any següent
 		
@@ -911,7 +953,7 @@ class PageController extends BaseController {
 		
 		if ($requestParams['action'] == 'remove') {
 			// Cercar llicència a esborrar
-			foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+			foreach ($parte->getLlicencies() as $llicencia_iter) {
 				if ($llicencia_iter->getId() == $requestParams['llicenciaId']) $llicencia = $llicencia_iter;
 			}
 			$llicencia->setDatamodificacio($this->getCurrentDate());
@@ -952,7 +994,7 @@ class PageController extends BaseController {
 			
 			if ($l['id'] != "") {
 				// Update
-				foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+				foreach ($parte->getLlicencies() as $llicencia_iter) {
 					if ($llicencia_iter->getId() == $l['id'])
 						$llicencia = $llicencia_iter;
 				}
@@ -998,7 +1040,29 @@ class PageController extends BaseController {
 					// Data alta molt aprop de la caducitat.
 					$this->get('session')->getFlashBag()->add('sms-notice', $errData);
 					$valida = false;
-				}				
+				}		
+
+				/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+				/* id 4 - Competició --> és la única que es pot fer */
+				/* id 9 i 12 - Tecnocampus també es pot fer */
+				/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
+					&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {					
+					
+					$this->get('session')->getFlashBag()->clear();
+					$this->get('session')->getFlashBag()->add('sms-notice','El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+					$valida = false;
+				}*/
+				/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+				/* Valida tipus actiu --> és la única que es pot fer */
+				if ($parte->getTipus()->getActiu() == false) {
+					$this->get('session')->getFlashBag()->add('sms-notice','Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+					$valida = false;
+				}
+				/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+				
+				
 				if ($valida == true) {
 					if ($this->validaLlicenciaInfantil($llicencia) == false) {
 						$this->get('session')->getFlashBag()->add('sms-notice',
@@ -1177,6 +1241,27 @@ class PageController extends BaseController {
 			if (($tipusid == 5 or $tipusid == 6) and ($dataalta_parte < $datainici_reduida)) { // reduïdes
 				$this->get('session')->getFlashBag()->add('error-notice',	'Les llicències reduïdes només a partir de 1 de setembre');
 			}
+
+
+			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* id 4 - Competició --> és la única que es pot fer */
+			/* id 9 i 12 - Tecnocampus també es pot fer */
+			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
+					&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {				
+				
+				$this->get('session')->getFlashBag()->clear();
+				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+						Gràcies per la vostra comprensió.');
+			}*/
+			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+			/* Valida tipus actiu --> és la única que es pot fer */
+			if ($parte->getTipus()->getActiu() == false) {
+				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+			}
+			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+			
+
 			
 			return $this->render('FecdasPartesBundle:Page:partellicencia.html.twig',
 					array('llicencia' => $formllicencia->createView(),
@@ -1351,7 +1436,6 @@ class PageController extends BaseController {
 		$form = $this->createForm(new FormDuplicat(array('club' => $currentClub)), $duplicat);
 		
 		if ($request->getMethod() == 'POST') {
-			$data = $request->request->all();
 			$form->submit($request); 
 			if ($form->isValid()) {
 				try {
@@ -1804,7 +1888,7 @@ class PageController extends BaseController {
 		$tipuspermesos = "";
 		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus
 		
-		foreach ($llistatipus as $c => $tipus) {
+		foreach ($llistatipus as $tipus) {
 			$entitytipus = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityParteType')->find($tipus);
 			$tipuspermesos .= "<option value=" . $tipus . ">" . $entitytipus->getDescripcio() . "</option>";
 		}
@@ -1820,26 +1904,26 @@ class PageController extends BaseController {
 
 		$currentmonthday = sprintf("%02d", $month) . "-" . sprintf("%02d", $day);
 
-		$em = $this->getDoctrine()->getManager();
-		$repository = $em->getRepository('FecdasPartesBundle:EntityUser');
 		/* Llista tipus parte administrador en funció del club seleccionat. Llista d'un club segons club de l'usuari */
 		$club = $this->getCurrentClub();
 		if ($club == null) return $llistatipus;  // Sense info del club!!?
 		
 		$tipuspartes = $club->getTipusparte();
 			
-		foreach ($tipuspartes as $c => $tipusparte) {
-			if ($tipusparte->getEs365() == true) {
-				/* 365 directament sempre. Es poden usar en qualsevol moment  */
-				array_push($llistatipus, $tipusparte->getId());
-			} else { 
-				$inici = '01-01';
-				$final = '12-31';
-				if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
-				if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
-				
-				if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+		foreach ($tipuspartes as $tipusparte) {
+			if ($tipusparte->getActiu() == true) {
+				if ($tipusparte->getEs365() == true) {
+					/* 365 directament sempre. Es poden usar en qualsevol moment  */
 					array_push($llistatipus, $tipusparte->getId());
+				} else { 
+					$inici = '01-01';
+					$final = '12-31';
+					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
+					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
+					
+					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+						array_push($llistatipus, $tipusparte->getId());
+					}
 				}
 			}
 		}

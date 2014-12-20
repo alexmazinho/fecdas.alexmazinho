@@ -11,7 +11,40 @@ use Fecdas\PartesBundle\Classes\TcpdfBridge;
 use Fecdas\PartesBundle\Entity\EntityLlicencia;
 
 class PDFController extends BaseController {
-
+	const TITOL_ARMES = "INFORMACIÓ IMPORTANT PER ALS PESCADORS SUBMARINS";
+	const TEXT_ARMES = '<p>La FECDAS informa que:</p>
+						<p>1. Per al transport d’un fusell de pesca subaquàtica i per a la pràctica de la pesca 
+						subaquàtica cal estar en possessió de la llicència federativa, que actua com a permís 
+						d’armes segons el reglament d’Armes de l’Estat espanyol (categoria  7º.5 de l’article 3 
+						i article 54.4 del Reial Decret 137/1993, de 29 de gener / BOE 55/1993).</p>
+						<p>La llicència federativa, a més d’actuar com a permís d’armes, inclou l’assegurança 
+						d’accidents obligatòria i l’assegurança de Responsabilitat civil obligatòria.
+						<p>Aquesta llicència es pot tramitar en qualsevol dels clubs federats a què s’accedeix 
+						a través d’aquest enllaç:</p>
+						<p><a style="font-size:1.1em;" href="http://www.fecdas.cat/clubs.php?user_text=&agenda_modalitat=28&boton.x=38&boton.y=10" target="_blank">
+						http://www.fecdas.cat/clubs.php?user_text=&agenda_modalitat=28&boton.x=38&boton.y=10</a></p>   
+						<p>2. Per practicar la pesca subaquàtica cal estar en possessió de la llicència administrativa 
+						de pesca subaquàtica que té prevista l’administració catalana en la llei 25/1998, de 31 de desembre, 
+						i el decret 100/2000, de 6 de març, pel qual s’unifiquen les llicències de pesca recreativa.</p>
+						<p>Aquesta llicència administrativa és la que li permet extreure recursos –peixos- del medi natural.</p>
+						<p>Aquesta llicència administrativa l’expedeix la Generalitat de Catalunya i l’ha de gestionar 
+						el pescador subaquàtic a través d’internet des del portal del departament d\'Agricultura, 
+						Ramaderia, Pesca, Alimentació i Medi Natural o de manera presencial a les seves oficines.</p>
+						<p>Aquesta llicència administrativa es pot tramitar en línia a través d’aquest enllaç:</p>
+						<p><a style="font-size:0.9em;" href="https://www14.gencat.cat/mediamb_sgll_public/AppJava/llicencies/gestioLlicenciesTitular.do?reqCode=prepareLocale&set-locale=es_CA" 
+						target="_blank">https://www14.gencat.cat/mediamb_sgll_public/AppJava/llicencies/gestioLlicenciesTitular.do?reqCode=prepareLocale&set-locale=es_CA</a></p> 
+						<p>3. Per practicar la pesca subaquàtica es recomanable tenir els coneixements que permeten 
+						dur a terme l’activitat amb seguretat i conèixer i complir la legislació vigent que hi està relacionada.</p>
+						<p>A Catalunya, aquesta formació es pot adquirir en un dels clubs esportius federats a què s’accedeix 
+						a través d’aquest enllaç:</p>
+						<p><a style="font-size:1.1em;" href="http://www.fecdas.cat/clubs.php?user_text=&agenda_modalitat=28&boton.x=38&boton.y=10" 
+						target="_blank">http://www.fecdas.cat/clubs.php?user_text=&agenda_modalitat=28&boton.x=38&boton.y=10</a></p>
+						<p>4. Els practicants de la pesca subaquàtica han de comptar amb un certificat mèdic vigent amb 
+						una antiguitat inferior a un any que els serà sol·licitat en el moment de tramitar la llicència administrativa 
+						de pesca subaquàtica.</p>
+						';
+	
+	
 	public function facturatopdfAction() {
 		/* Factura parte */
 		$request = $this ->getRequest();
@@ -865,18 +898,18 @@ class PDFController extends BaseController {
 				
 				$width = 85; //Original
 				$height = 54; //Original
-				
+						
 				
 				// Border dashed
 				$pdf->SetLineStyle(array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 4, 'color' => array(0, 0, 0)));
 				//$pdf->writeHTMLCell($width + 4, 2*($height + 2), $x - 2, $y - 2, '', 1, 0, 0, true, 'L', true);
 
 				$pdf->Image('images/federativa-cara.jpg', $x, $y, 
-						$width, $height , 'jpg', '', '', false, 300, 
+						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 				
 				$pdf->Image('images/federativa-dors.jpg', $x, $y + $height,
-						$width, $height , 'jpg', '', '', false, 300,
+						$width, $height , 'jpg', '', '', false, 320,
 						'', false, false, 1, false, false, false);
 				
 				// set color for text and font
@@ -969,6 +1002,29 @@ class PDFController extends BaseController {
 					$pdf->SetX($x);
 					$pdf->MultiCell($height,$width,$titolsPlastic[$llicencia->getParte()->getTipus()->getId()],0,'C',1);
 				}
+				
+				
+				// Alex 20/12/2014 Afegir texte legal llicències tipus F
+				if ($llicencia->getParte()->getTipus()->getId() == 8) {
+					
+					$padding = 15;
+					$x = $x_ini + $padding; // Padding
+					$y = $y_ini + 123;
+					
+					$pdf->SetFont('Helvetica', '', 7, '', true);
+					$tbl = '<h2><span style="text-align:justify;">'.self::TITOL_ARMES.'</h2></span>';
+					$pdf->SetTextColor(80, 80, 80); // Gris
+					$pdf->writeHTMLCell($pdf->getPageWidth(0) - (2*$x), 0, $x, $y, $tbl, '', 1, 1, true, 'L', true);
+					
+					$tbl = '<span style="text-align:justify;">'.self::TEXT_ARMES.'</span>';
+					$pdf->SetTextColor(90, 90, 90); // Gris
+					$pdf->writeHTMLCell($pdf->getPageWidth(0) - (2*$x), 0, $x, $y, $tbl, '', 1, 1, true, 'L', true);
+					 
+					
+					$pdf->SetAutoPageBreak(FALSE, 0);
+				
+				}				
+				// Fi Alex 20/12/2014 Afegir texte legal llicències tipus F 
 				
 				// reset pointer to the last page
 				$pdf->lastPage();

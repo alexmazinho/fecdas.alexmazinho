@@ -109,6 +109,12 @@ class PageController extends BaseController {
 				$formdata = $request->request->get('form');
 				if (isset($formdata['dataalta'])) {
 					$dataalta = \DateTime::createFromFormat('d/m/Y', $formdata['dataalta']);
+					if ($this->getCurrentDate() != $dataalta) {
+						$dataalta->setTime(0, 1); // No és el mateix dia 
+					}
+					else {
+						$dataalta->setTime($this->getCurrentDate()->format('H'), $this->getCurrentDate()->format('i') + 20);// Add 20 minutes
+					}
 					$currentMonth = $dataalta->format('m');
 					$currentDay = $dataalta->format('d');
 				}
@@ -116,7 +122,7 @@ class PageController extends BaseController {
 					$tipusparte = $em->getRepository('FecdasPartesBundle:EntityParteType')->find($formdata['tipus']);
 				}
 		} else {
-			$dataalta->add(new \DateInterval('PT1200S')); // Add 20 minutes
+			//$dataalta->add(new \DateInterval('PT1200S')); // Add 20 minutes
 		}
 		
 		$llistatipus = $this->getLlistaTipusParte($currentDay, $currentMonth);
@@ -153,7 +159,9 @@ class PageController extends BaseController {
 
 					if ($dataalta->format('y') > $this->getCurrentDate()->format('y')) {
 						// Només a partir 10/12 poden fer llicències any següent
-						if ($currentMonth < self::INICI_TRAMITACIO_ANUAL_MES or ($currentMonth == self::INICI_TRAMITACIO_ANUAL_MES and $currentDay < self::INICI_TRAMITACIO_ANUAL_DIA)) 
+						if ($this->getCurrentDate()->format('m') < self::INICI_TRAMITACIO_ANUAL_MES || 
+								($this->getCurrentDate()->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
+								$this->getCurrentDate()->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) 
 								throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');					
 					}
 					
@@ -198,15 +206,15 @@ class PageController extends BaseController {
 					
 					/* Copy file for future confirmation */
 					$file->move($this->getTempUploadDir(), $tempname);
-					
 					/* Generate URL to send CSV confirmation */
+					
 					$urlconfirm = $this->generateUrl('FecdasPartesBundle_confirmcsv', array(
-							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
+							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->format('YmdHi'),
 							'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
 					
 					$this->logEntryAuth('IMPORT CSV OK', $file->getFileName());
-										
+					
 					// Redirect to confirm page		
 					return $this->render('FecdasPartesBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
@@ -246,7 +254,8 @@ class PageController extends BaseController {
 		$currentClub = $this->getCurrentClub();
 		
 		$tipusparte = $request->query->get('tipus');
-		$dataalta = \DateTime::createFromFormat('U', $request->query->get('dataalta'));
+		$dataalta = \DateTime::createFromFormat('YmdHi', $request->query->get('dataalta'));
+		
 		$temppath = $request->query->get('tempfile');
 		
 		try {
@@ -914,9 +923,6 @@ class PageController extends BaseController {
 		// Dates mínima i màxima del selector en l'alta de partes (nou parte, import csv...)
 		$datesparte = array();
 		
-		$end_year = date("Y");
-		if (date("m") == 12 and date("d") >= 10) $end_year++; // A partir 10/12 poden fer llicències any següent
-		
 		$current = $this->getCurrentDate();
 		$datemin = $current; 
 		if ($this->isCurrentAdmin()) $datemin = \DateTime::createFromFormat('Y-m-d H:i:s', $datemin->format('Y') . '-01-01 00:00:00'); 
@@ -1042,6 +1048,17 @@ class PageController extends BaseController {
 					$valida = false;
 				}		
 
+				
+				if ($parte->getDataalta()->format('y') > $this->getCurrentDate()->format('y')) {
+					// Només a partir 10/12 poden fer llicències any següent
+					if ($this->getCurrentDate()->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
+							($this->getCurrentDate()->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
+									$this->getCurrentDate()->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) {
+							$this->get('session')->getFlashBag()->add('sms-notice', 'Encara no es poden tramitar llicències per a l\'any vinent');
+							$valida = false;
+					}
+				}
+				
 				/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 				/* id 4 - Competició --> és la única que es pot fer */
 				/* id 9 i 12 - Tecnocampus també es pot fer */

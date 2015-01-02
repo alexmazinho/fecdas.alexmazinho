@@ -6,7 +6,6 @@ use Fecdas\PartesBundle\Entity\EntityPersona;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\Event\DataEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 
@@ -44,18 +43,23 @@ class FormLlicencia extends AbstractType {
 		));
 
 		$llistacategoria = 'llistaText';
-		if ($this->options['any'] > Date('Y')) {  // Seleccionar preu post (any posterior)
+		$current = $this->options['any'];
+		if ($current > Date('Y')) {  // Seleccionar preu post (any posterior)
 			$llistacategoria = 'llistaTextPost';
 		}
 		
 		$tipusparte = $this->options['tipusparte'];
 		$builder->add('categoria', 'entity', array(
 			'class' => 'FecdasPartesBundle:EntityCategoria',
-			'query_builder' => function($repository) use ($tipusparte) {
+			'query_builder' => function($repository) use ($tipusparte, $current) {
 				return $repository->createQueryBuilder('c')
 										->join('c.tipusparte', 'tp')
+										->join('c.preus', 'p')	
 										->where('tp.id = :tipusparte')
+										->andwhere('p.anypreu = :anypreu')
+										->andwhere('p.preu > 0')
 										->orderBy('c.simbol', 'ASC')
+										->setParameter('anypreu', $current)
 										->setParameter('tipusparte', $tipusparte);
 			},
 			'property' => $llistacategoria,

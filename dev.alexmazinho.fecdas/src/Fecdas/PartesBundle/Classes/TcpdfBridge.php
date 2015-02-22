@@ -3,7 +3,7 @@ namespace Fecdas\PartesBundle\Classes;
 /**
 * TCPDF Bridge 
 */
-use Symfony\Component\HttpFoundation\Response;
+
 
 class TcpdfBridge extends \TCPDF{
 	protected $pagenum;

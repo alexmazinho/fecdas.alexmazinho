@@ -583,28 +583,15 @@ class PDFController extends BaseController {
 		
 		
 		foreach ($persones as $persona) {
-			$llicencia = $persona->getLlicenciaVigent();
-
 			$total++;
 			
 			$num_pages = $pdf->getNumPages();
 			$pdf->startTransaction();
 			
-			$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-			$pdf->Cell($w[1], 6, $persona->getCognoms() . ', ' . $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);
-			$pdf->Cell($w[2], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
-			if ($llicencia != null && $llicencia->getParte() != null) {
-				$text = $llicencia->getCategoria()->getDescripcio().". ";
-				$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
-				$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
-			} else {
-				$text =  $persona->getInfoAssegurats($this->isCurrentAdmin());
-			}
-			$pdf->Cell($w[3], 6, $text , 'LRB', 0, 'L', 0, '', 1);
-			
-			$pdf->Ln();
+			$this->asseguratsRow($pdf, $persona, $total, $w);
 				
 			if($num_pages < $pdf->getNumPages()) {
+				error_log("nova pagina".$persona->getCognoms() . ', ' . $persona->getNom());
 				//Undo adding the row.
 				$pdf->rollbackTransaction(true);
 			
@@ -612,6 +599,9 @@ class PDFController extends BaseController {
 				$this->asseguratsHeader($pdf, $w);
 				$pdf->SetFillColor(255, 255, 255); //Blanc
 				$pdf->SetFont('dejavusans', '', 9, '', true);
+				
+				$this->asseguratsRow($pdf, $persona, $total, $w);
+				
 			} else {
 				//Otherwise we are fine with this row, discard undo history.
 				$pdf->commitTransaction();
@@ -637,13 +627,32 @@ class PDFController extends BaseController {
 			$js = 'print(true);';
 			// set javascript
 			$pdf->IncludeJS($js);
-			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "I")); // inline
+			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // inline
 		} else {
 		// Close and output PDF document
 			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // save as...
 		}
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
+		
+	}
+	
+	private function asseguratsRow($pdf, $persona, $total, $w) {
+		$llicencia = $persona->getLlicenciaVigent();
+		
+		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+		$pdf->Cell($w[1], 6, $persona->getCognoms() . ', ' . $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[2], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
+		if ($llicencia != null && $llicencia->getParte() != null) {
+			$text = $llicencia->getCategoria()->getDescripcio().". ";
+			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
+			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
+		} else {
+			$text =  $persona->getInfoAssegurats($this->isCurrentAdmin());
+		}
+		$pdf->Cell($w[3], 6, $text , 'LRB', 0, 'L', 0, '', 1);
+			
+		$pdf->Ln();
 		
 	}
 	

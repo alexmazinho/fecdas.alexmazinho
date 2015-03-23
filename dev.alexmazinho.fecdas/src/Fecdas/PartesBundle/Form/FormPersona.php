@@ -20,8 +20,8 @@ class FormPersona extends AbstractType {
 		
 		$readonly = ! $this->options['edit'];
 		
-		$builder->add('nom', 'text', array('read_only' => $readonly,));
-		$builder->add('cognoms', 'text', array('read_only' => $readonly,));
+		$builder->add('nom', 'text');
+		$builder->add('cognoms', 'text');
 		$builder->add('dni', 'text', array('read_only' => $readonly,));
 		
 		$builder->add('datanaixement', 'genemu_jquerydate',

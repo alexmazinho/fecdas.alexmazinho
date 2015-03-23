@@ -423,8 +423,16 @@ class PageController extends BaseController {
 
 		$club = $this->getCurrentClub();
 		
-		$desdeDefault = "01/01/".(date("Y") - 1); 
-		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault)); 
+		$desdeDefault = "01/01/".(date("Y") - 1);
+		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault));
+		
+		$finsDefault = "31/12/".(date("Y"));
+		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) $finsDefault = "31/12/".(date("Y")+1);		
+		$fins = \DateTime::createFromFormat('d/m/Y', $request->query->get('fins', $finsDefault));
+		
+		$tipus = $request->query->get('tipus', 0);
+		error_log($tipus);
+		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'p.dataalta');
 		$direction = $request->query->get('direction', 'desc');
@@ -434,17 +442,40 @@ class PageController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_parte'));
 			
 		} else {
-			if ($request->query->has('desde')) $this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$desde->format('Y-m-d'));
+			if ($request->query->has('desde') || $request->query->has('fins') || $request->query->has('tipus')) {
+				$this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$tipus.":".
+									$desde->format('Y-m-d')."->".$fins->format('Y-m-d'));
+			}
 			else $this->logEntryAuth('VIEW PARTES', $club->getCodi());
 		}
-
 		
+		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) {
+			// A partir 10/12 poden fer llicències any següent
+			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
+		}
+				
 		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
 				'read_only' => true,
 				'data' => $desde->format('d/m/Y'),
 		));
+		$formBuilder->add('fins', 'text', array('read_only'  => true, 'data' => $fins->format('d/m/Y')));
 		
-		$query = $this->consultaPartesClub($club->getCodi(), $desde, $sort);
+		$tipusSearch =  $this->getTotsTipusParte();
+		$formBuilder->add('tipus', 'choice', array(
+							/*'class' => 'FecdasPartesBundle:EntityParteType', 
+							'query_builder' => function($repository) use ($tipusSearch) {
+							return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
+								->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
+								->setParameter('llistatipus', $tipusSearch);
+							}, 
+							'property' => 'descripcio', */
+							'choices' => $tipusSearch,
+							'required'  => false, 
+							'empty_value' => 'Qualsevol...',
+							'data' => $tipus,
+		));
+		
+		$query = $this->consultaPartesClub($club->getCodi(), $tipus, $desde, $fins, $sort);
 		$paginator  = $this->get('knp_paginator');
 		
 		$partesclub = $paginator->paginate(
@@ -454,13 +485,10 @@ class PageController extends BaseController {
 		);
 		$partesclub->setParam('desde',$desde->format('d/m/Y'));
 		
-		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) {
-			// A partir 10/12 poden fer llicències any següent
-			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
-		}
+		
 		
 		/* Recollir estadístiques */
-		$stat = $club->getDadesDesde($desde);
+		$stat = $club->getDadesDesde( $tipus, $desde, $fins );
 		$stat['saldo'] = $club->getSaldoweb();
 		
 		return $this->render('FecdasPartesBundle:Page:partes.html.twig',
@@ -1916,6 +1944,22 @@ class PageController extends BaseController {
 		return $response;
 	}  
 
+	private function getTotsTipusParte() {
+		$llistatipus = array();
+	
+		/* Llista tipus parte administrador en funció del club seleccionat. Llista d'un club segons club de l'usuari */
+		$club = $this->getCurrentClub();
+		if ($club == null) return $llistatipus;  // Sense info del club!!?
+	
+		$tipuspartes = $club->getTipusparte();
+			
+		foreach ($tipuspartes as $tipusparte) {
+			$llistatipus[$tipusparte->getId()] = $tipusparte->getDescripcio();
+		}
+	
+		return $llistatipus;
+	}
+	
 	private function getLlistaTipusParte($day, $month) {
 		$llistatipus = array();
 

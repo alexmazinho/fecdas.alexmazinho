@@ -786,6 +786,7 @@
 			$("#edicio-persona").html("");
 			
 			if (llicencia == true) loadLlicenciaData(data);
+			else location.reload();  
 		});
 	};
 	

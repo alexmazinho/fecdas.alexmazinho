@@ -238,7 +238,7 @@ class BaseController extends Controller {
 		return null;
 	}
 	
-	protected function consultaPartesClub($club, $desde, $strOrderBY = '') {
+	protected function consultaPartesClub($club, $tipus, $desde, $fins, $strOrderBY = '') {
 		$em = $this->getDoctrine()->getManager();
 	
 		// Consultar no només les vigents sinó totes
@@ -246,13 +246,18 @@ class BaseController extends Controller {
 		$strQuery .= "WHERE p.club = :club ";
 		$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
 		$strQuery .= " AND p.dataalta >= :ininormal";
+		$strQuery .= " AND p.dataalta <= :finormal";
+		if ($tipus == 0) $strQuery .= " AND t.id <> :tipus";
+		else $strQuery .= " AND t.id = :tipus";
 		$strQuery .= " GROUP BY p ";
 
 		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  // Només per PDF el paginator ho fa sol mentre el mètode de crida sigui POST
 		
 		$query = $em->createQuery($strQuery)
 			->setParameter('club', $club)
-			->setParameter('ininormal', $desde->format('Y-m-d'));
+			->setParameter('tipus', $tipus)
+			->setParameter('ininormal', $desde->format('Y-m-d'))
+			->setParameter('finormal', $fins->format('Y-m-d'));
 			
 		return $query;
 	}

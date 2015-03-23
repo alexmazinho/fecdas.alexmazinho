@@ -23,12 +23,20 @@
     <div id="partes-main">
 	    <div id="list-forms">
 	    	<form id="form_partes" action="{{ path('FecdasPartesBundle_partes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
-	    		<div id="formpartes-desde" class="form-col column-left">
+    			<div id="formpartes-desde" class="form-col column-left form-left">
 	    			{{ form_label(form.desde, 'Dades des de', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 					{{ form_widget(form.desde, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
 				</div> 
-				<div id="formpartes-club" class="form-col column-center titol-club-nom">{{ club.nom }}</div>
-				<div id="formpartes-submit" class="form-col column-right">	
+				<div id="formpartes-fins" class="form-col column-left form-left">
+	    			{{ form_label(form.fins, 'fins', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_widget(form.fins, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
+				</div> 
+				<div id="formpartes-tipus" class="form-col column-left form-left">
+					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+					{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
+				</div>
+				<div id="formpartes-club" class="form-col column-center"><p class="titol-club-nom">{{ club.nom }}</p></div>
+				<div id="formpartes-submit" class="form-col column-right form-right">	
 					<div class="formlabel-outside">&nbsp;</div>
 					<input id="form_nouparte" type="submit" class="forminput-inside" value="Nou comunicat" name="formpartes-button-new"/>
 				</div> 
@@ -105,10 +113,24 @@ $(document).ready(function(){
 
 	showLlicenciesParte();
 
+	var dataDesde = $( "#form_desde" ).val();
+	var dataFins = $( "#form_fins" ).val();
+	var tipusParte = $( "#form_tipus" ).val();
+	
 	loadCalendar($( "#form_desde" ),function (selectedDateTime) {
 		// Recarrega consulta afegint la data
-		window.location = "{{ path('FecdasPartesBundle_partes', sortparams)|raw }}"+"&desde="+selectedDateTime; 
+		window.location = "{{ path('FecdasPartesBundle_partes', sortparams)|raw }}"+"&desde="+selectedDateTime+"&fins="+dataFins+"&tipus="+tipusParte; 
 	});
+
+	loadCalendar($( "#form_fins" ),function (selectedDateTime) {
+		// Recarrega consulta afegint la data
+		window.location = "{{ path('FecdasPartesBundle_partes', sortparams)|raw }}"+"&desde="+dataDesde+"&fins="+selectedDateTime+"&tipus="+tipusParte; 
+	});
+
+	$("#form_tipus").change(function() {
+		tipusParte = $( "#form_tipus" ).val();
+		window.location = "{{ path('FecdasPartesBundle_partes', sortparams)|raw }}"+"&desde="+dataDesde+"&fins="+dataFins+"&tipus="+tipusParte; 
+    });
 	
 	//sortLlista("col-listheader", "list-data");
 

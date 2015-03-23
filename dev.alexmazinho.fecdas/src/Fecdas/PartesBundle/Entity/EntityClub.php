@@ -1029,11 +1029,11 @@ class EntityClub {
     }
     
     /**
-     * Dades del club des de certa data
+     * Dades del club des de certa data,fins una data, per un tipus
      *
      * @return array
      */
-    public function getDadesDesde($desde)
+    public function getDadesDesde($tipus, $desde, $fins)
     {
 	    /* Recollir estadístiques */
     	$stat = array();
@@ -1042,7 +1042,10 @@ class EntityClub {
 	    $stat['lvigents'] = 0;	// llicències vigents
 	    
 	    foreach($this->partes as $parte_iter) {
-	    	if ($parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and $parte_iter->getDatabaixa() == null) {
+	    	if ($parte_iter->getDatabaixa() == null and 
+	    		$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and 
+	    		$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d') and
+	    		$parte_iter->getTipus()->getId() == $tipus ) {
 		    	$nlic = $parte_iter->getNumLlicencies();
 		    	if ($nlic > 0) {
 		    		$stat['ltotal'] +=  $nlic;

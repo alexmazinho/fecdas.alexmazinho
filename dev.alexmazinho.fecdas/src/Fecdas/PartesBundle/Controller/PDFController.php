@@ -591,7 +591,7 @@ class PDFController extends BaseController {
 			$this->asseguratsRow($pdf, $persona, $total, $w);
 				
 			if($num_pages < $pdf->getNumPages()) {
-				error_log("nova pagina".$persona->getCognoms() . ', ' . $persona->getNom());
+
 				//Undo adding the row.
 				$pdf->rollbackTransaction(true);
 			

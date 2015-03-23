@@ -809,11 +809,13 @@ select#parte_renovar_tipus { width: 240px; }
 
 #formpartes-club {  }
 
-#partes-main .form-col { display:inline-block; padding-bottom: 10px }
-#partes-main .column-left { width: 25% }
-#partes-main .column-center { width: 50%; text-align: center; }
-#partes-main .titol-club-nom { color: #1240A0; font-size: 24px; border-bottom: 1px dashed #1240A0; }
-#partes-main .column-right { width: 22%; text-align: right; float: right;}
+#partes-main .form-col { display:inline-block;  }
+#partes-main .column-left { /*width: 35%*/ }
+#partes-main .column-center { /*width: 40%;*/ text-align: center; }
+#partes-main .titol-club-nom { color: #1240A0; font-size: 24px; border-bottom: 1px dashed #1240A0; padding: 0 15% 10px; }
+#partes-main .column-right { /*width: 22%;*/ text-align: right; float: right; padding: 0;}
+
+#form_partes .form-left { padding: 0 10px 0 0; }
 
 
 #partes-main .table-scroll {

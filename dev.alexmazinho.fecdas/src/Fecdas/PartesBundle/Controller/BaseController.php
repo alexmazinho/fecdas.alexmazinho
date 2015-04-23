@@ -16,9 +16,10 @@ class BaseController extends Controller {
 	const MAIL_ADMINLOG = "logerror@fecdasgestio.cat";  /* Ha d'estar a la taula d'usuaris. CAT000 */
 	const MAIL_ADMINTEST = "test@fecdasgestio.cat";  /* Canviar. Crear nou mail  */
 	const MAIL_ADMIN = "webadmin@fecdasgestio.cat";  
-	const MAIL_FACTURACIO = "remei@fecdas.cat";
-	const MAIL_LLICENCIES = "secretari@fecdas.cat";
-	const MAIL_CONTACTE = "info@fecdas.cat";
+	const MAIL_FACTURACIO = "remei.s@fecdas.cat";
+	const MAIL_LLICENCIES = "remei.s@fecdas.cat";
+	const MAIL_CARNETS = "a.batalla@fecdas.cat";
+	const MAIL_CONTACTE = "info@fecdas.cat";//o.montferrer@fecdas.cat
 	const CLUBS_DEFAULT_STATE = 1;
 	const TOTS_CLUBS_DEFAULT_STATE = 0;
 	const CLUBS_STATES = 'Tots els tipus;Pagament diferit;Pagament immediat;Sense tramitació';
@@ -118,6 +119,13 @@ class BaseController extends Controller {
 		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
 		
 		$mails = array(self::MAIL_LLICENCIES);
+		return $mails;
+	}
+	
+	protected function getCarnetsMails() {
+		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
+	
+		$mails = array(self::MAIL_CARNETS);
 		return $mails;
 	}
 	

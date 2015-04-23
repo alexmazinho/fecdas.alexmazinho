@@ -421,13 +421,17 @@ class AdminController extends BaseController {
 			$em->flush();
 	
 			// Enviar notificació mail
+			$fedeMail = array();
+			if ($duplicat->getCarnet()->esLlicencia() == true) $fedeMail = $this->getLlicenciesMails(); // Llicències Remei
+			else $fedeMail = $this->getCarnetsMails(); // Carnets Albert
+			
 			if ($duplicat->getClub()->getMail() != null) {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();
 				$tomails = array($duplicat->getClub()->getMail());
-				$bccmails = $this->getLlicenciesMails();
+				$bccmails = $fedeMail;
 			} else {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " CLUB SENSE CORREU!! ";
-				$tomails = $this->getLlicenciesMails();
+				$tomails = $fedeMail;
 				$bccmails = array();
 			}
 			

@@ -48,6 +48,13 @@ class EntityCarnet {
 		$this->titols = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
+	/**
+	 * @return boolean
+	 */
+	public function esLlicencia() {
+		return $this->codisortida == 7090000;
+	}
+	
 	public function __toString() {
 	 return $this->getId()."-".$this->getTipus();
 	}

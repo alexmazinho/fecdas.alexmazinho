@@ -410,7 +410,7 @@ class AdminController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasPartesBundle_homepage'));
 	
 		$em = $this->getDoctrine()->getManager();
-	
+
 		$duplicatid = $request->query->get("id");
 	
 		$duplicat = $this->getDoctrine()->getRepository('FecdasPartesBundle:EntityDuplicat')->find($duplicatid);

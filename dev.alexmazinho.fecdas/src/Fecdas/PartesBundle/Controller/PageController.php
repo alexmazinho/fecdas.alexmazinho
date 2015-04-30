@@ -1536,7 +1536,12 @@ class PageController extends BaseController {
 					
 					// Enviar notificació mail
 					$subject = ":: Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " ::";
-					$tomails = $this->getLlicenciesMails();
+					
+					//$tomails = $this->getLlicenciesMails();
+					$tomails = array();
+					if ($duplicat->getCarnet()->esLlicencia() == true) $tomails = $this->getLlicenciesMails(); // Llicències Remei
+					else $tomails = $this->getCarnetsMails(); // Carnets Albert
+									
 					$body = "<h3>Petició de duplicat del club ". $duplicat->getClub()->getNom()."</h3>";
 					$body .= "<p>". $duplicat->getTextCarnet() ."</p>";
 					$body .= "<p>". $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms();

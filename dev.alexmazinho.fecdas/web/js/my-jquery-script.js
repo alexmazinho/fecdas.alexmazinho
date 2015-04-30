@@ -722,11 +722,11 @@
 	          	},
 	        	title: "Valida les dades",
 	        	height: 180,
-	        	width: 320,
+	        	width: 400,
 	        	zIndex:	350
 	        });
 	
-	        $("#dialeg").html("Comprova que les dades són correctes.<br/> Després no les podràs modificar.");
+	        $("#dialeg").html("<p>Comprova que el DNI és correcte i està ben escrit.</p><p>Després no el podràs modificar.</p>");
 	        $("#dialeg").dialog("open");
 	        
 	    });   

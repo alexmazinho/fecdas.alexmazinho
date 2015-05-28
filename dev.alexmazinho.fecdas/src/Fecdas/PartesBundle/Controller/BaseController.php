@@ -132,7 +132,7 @@ class BaseController extends Controller {
 	protected function getContactMails() {
 		if ($this->get('kernel')->getEnvironment() == 'dev') return array(self::MAIL_ADMINTEST);
 		
-		$mails = array(self::MAIL_CONTACTE, self::MAIL_ADMINTEST);
+		$mails = array(self::MAIL_CONTACTE, self::MAIL_ADMINTEST, self::MAIL_LLICENCIES);
 		return $mails;
 	}
 	

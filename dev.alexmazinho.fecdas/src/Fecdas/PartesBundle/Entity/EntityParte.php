@@ -1035,7 +1035,7 @@ class EntityParte {
     	
     	if ($this->club->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
 
-    	if ($this->dadespagament != null) return true;  // La resta poden imprimir si està pagat
+    	if ($this->datapagament != null) return true;  // La resta poden imprimir si està pagat
     	
     	return false;
     }

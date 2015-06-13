@@ -1,0 +1,175 @@
+{# src/Fecdas/PartesBundle/Resources/views/layout.html.twig #}
+{% extends '::base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/responsive.css') }}" type="text/css" rel="stylesheet" />
+    {% if roleform is defined %}
+    {{ form_stylesheet(roleform) }}
+    {% endif %}
+{% endblock %}
+
+ {% block javascriptshead %}
+    {{ parent() }}
+    <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
+    {% if roleform is defined %}
+    {{ form_javascript(roleform) }}
+    {% endif %}
+{% endblock %}
+
+{% block fecdas_logo %}
+	<a href="http://www.fecdas.cat" target="_blank">
+	<img src="{{ asset('images/fecdaslogo.png') }}">
+	</a>
+{% endblock %}
+
+{% block fecdas_title %}
+    Aplicació de tramitació de llistes d'assegurats<br/> <i>Federació Catalana d'Activitats Subaquàtiques</i>
+{% endblock %}
+
+{% block fecdas_login %} 
+	{# if ( not ( app.session.has('username') and app.session.has('remote_addr') ) or
+    	  ( app.session.get('remote_addr') != app.request.server.get("REMOTE_ADDR") ) )  #}
+   	{% if authenticated == false  %}
+    	<a href="{{ path('FecdasBundle_login') }}">Iniciar sessió<img src="{{ asset('images/icon_login.png') }}"></a>
+  	{% else %}
+    	{{ app.session.get('username') }} <a href="{{ path('FecdasBundle_logout') }}"><img src="{{ asset('images/icon_signout.png') }}"></a>
+	{% endif %}
+    	<div id="menu-user">
+			<div class="menu-user-club-info">
+			{% if roleform is defined %}
+			{{ form_label(roleform.role) }}
+			{{ form_widget(roleform.role) }}
+			{% endif %}
+			{% if userclub is defined %}{{ userclub }}{% endif %}
+			</div>
+			{% if enquestausuaripendent is defined and enquestausuaripendent == true %}
+			<div class="menu-user-action"><a class="featured enquesta-action-open" href="{{ path('FecdasBundle_enquestausuari') }}">Enquesta</a></div>
+			{% endif %}
+			<div class="menu-user-action"><a href="{{ path('FecdasBundle_contact') }}">Contacte</a></div>
+			{% if authenticated == true  %}<div class="menu-user-action"><a href="{{ path('FecdasBundle_user') }}">Racó d'usuari</a></div>{% endif %}
+			<div class="menu-user-action"><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
+			
+	    	<select id="mobile-menu-principal">
+				<option value="">Seleccionar una pàgina</option>
+				<option value="{{ path('FecdasBundle_homepage') }}">Pàgina principal</option>
+				{% if authenticated == false  %}
+				<option value="{{ path('FecdasBundle_login') }}">Iniciar sessió</option>
+				<option value="{{ path('FecdasBundle_contact') }}">Contacte</option>
+				{% else %}
+				{% if admin == true  %}
+				<option value="">Administració</option>
+				<option value="{{ path('FecdasBundle_club') }}"> - Clubs i usuaris</option>
+				<option value="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}"> - Llistes recents</option>
+				<option value="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}"> - Saldos clubs</option>
+				<option value="{{ path('FecdasBundle_enquestes') }}"> - Enquestes</option>
+				{% endif %}
+				<option value="">Tramitació</option>
+				<option value="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"> - Llicències</option>
+				<option value="{{ path('FecdasBundle_importcsv') }}"> - Importació de llicències</option>
+				<option value="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"> - Duplicats</option>
+				<option value="">Consulta</option>
+				<option value="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"> - Assegurats</option>
+				{% if busseig == true  %}
+				<option value="{{ path('FecdasBundle_busseig') }}"> - Llicències amb el DNI</option>
+				{% endif %}
+				<option value="">Racó d'usuari</option>
+				<option value="{{ path('FecdasBundle_user') }}">Racó d'usuari</option>
+				{% if enquestausuari is defined and enquestausuari == true %}
+				<option value="{{ path('FecdasBundle_enquestausuari') }}">Enquesta</option>
+				{% endif %}
+				<option value="{{ path('FecdasBundle_contact') }}">Contacte</option>
+				<option value="http://www.fecdas.cat/faqs.php">FAQ</option>
+				{% endif %}
+			</select>
+		</div>
+   	
+	
+{% endblock %}
+
+{% block sidebar %}
+	<nav>
+		<ul class="navigation">
+			<li id="menu-home"><a href="{{ path('FecdasBundle_homepage') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Pàgina principal</a></li>
+			{% if authenticated == false  %}
+			<li id="menu-login"><a href="{{ path('FecdasBundle_login') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Iniciar sessió</a></li>
+			<li id="menu-contact"><a href="{{ path('FecdasBundle_contact') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Contacte</a></li>
+			{% else %}
+				{% if admin == true  %}
+				<li id="menu-adm"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Administració</a>
+				<ul class="submenu">
+					<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">
+					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Clubs i usuaris</a></li>
+					<li id="menu-admllistes"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">
+					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
+					<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">
+					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos clubs</a></li>
+					<li id="menu-admenquestes"><a href="{{ path('FecdasBundle_enquestes') }}">
+					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>
+				</ul></li>
+				{% endif %}
+				<li id="menu-tram"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Tramitació</a>
+				<ul class="submenu">
+					<li id="menu-partes"><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències</a></li>
+					<li id="menu-import"><a href="{{ path('FecdasBundle_importcsv') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Importació de llicències</a></li>
+					<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Duplicats</a></li>
+				</ul></li>				
+				<li id="menu-cons"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Consulta</a>
+				<ul class="submenu">	
+					<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Assegurats</a></li>
+					{% if busseig == true  %}
+					<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències amb el DNI</a></li>
+					{% endif %}
+				</ul></li>
+			{% endif %}
+		</ul>
+	</nav>
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+	if (($.browser.msie && parseInt($.browser.version, 10) < 8) ||
+	    ($.browser.webkit && parseInt($.browser.version, 10) < 14) ||
+	    ($.browser.mozilla && parseInt($.browser.version, 10) < 11) ||
+	    ($.browser.opera && parseInt($.browser.version, 10) < 11)) {
+		/* http://browsershots.org
+		IE >= 9, Firefox >= 11, Chorme >=14, Opera >= 11, Safari >= 5 */
+		location.href="/browsernotsupported.html";
+	};
+</script>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		formFocus();
+
+		showEnquestaClick();
+
+		mainMenuClick();
+
+		changeRoleClub("{{ path('FecdasBundle_changerole') }}");
+
+		$("#mobile-menu-principal").change(function() {
+	    	document.location = $(this).val();
+		});
+	});
+
+	$('#menu-user')
+	  .css('opacity', 0)
+	  .slideDown('slow')
+	  .animate(
+	    { opacity: 1 },
+	    { queue: false, duration: 'slow' }
+	  );
+	
+</script>
+
+
+{% endblock %}

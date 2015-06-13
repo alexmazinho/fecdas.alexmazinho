@@ -1,0 +1,379 @@
+#FecdasBundle_homepage:
+#    pattern:  /fecdas/{name}
+#    defaults: { _controller: FecdasBundle:Default:index }
+
+FecdasBundle_homepage:
+    pattern:  /
+    defaults: { _controller: "FecdasBundle:Page:index" }
+    requirements:
+        _scheme:  http
+        _method:  GET
+        
+FecdasBundle_contact:
+    pattern:  /contact
+    defaults: { _controller: "FecdasBundle:Page:contact" }
+    requirements:
+        _scheme:  http
+        _method:  GET|POST
+
+FecdasBundle_login:
+    pattern:  /login
+    defaults: { _controller: "FecdasBundle:Security:login" }
+    requirements:
+        _scheme:  https
+        _method:  GET|POST
+
+FecdasBundle_pwdrecovery:
+    pattern:  /pwdrecovery
+    defaults: { _controller: "FecdasBundle:Security:pwdrecovery" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_user:
+    pattern:  /user
+    defaults: { _controller: "FecdasBundle:Security:user" }
+    requirements:
+        _method:  GET|POST
+
+
+FecdasBundle_logout:
+    pattern:  /logout
+    defaults: { _controller: "FecdasBundle:Security:logout" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_club:
+    pattern:  /club
+    defaults: { _controller: "FecdasBundle:Security:club" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_usuariclub:
+    pattern:  /usuariclub
+    defaults: { _controller: "FecdasBundle:Security:usuariclub" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_changerole:
+    pattern:  /changerole
+    defaults: { _controller: "FecdasBundle:Admin:changerole" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_recents:
+    pattern:  /recents
+    defaults: { _controller: "FecdasBundle:Admin:recents" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_clubs:
+    pattern:  /clubs
+    defaults: { _controller: "FecdasBundle:Admin:clubs" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_canviestatclub:
+    pattern:  /canviestatclub
+    defaults: { _controller: "FecdasBundle:Admin:canviestatclub" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_confirmapagament:
+    pattern:  /confirmapagament
+    defaults: { _controller: "FecdasBundle:Admin:confirmapagament" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_sincroaccess:
+    pattern:  /sincroaccess
+    defaults: { _controller: "FecdasBundle:Admin:sincroaccess" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_anularpeticio:
+    pattern:  /anularpeticio
+    defaults: { _controller: "FecdasBundle:Admin:anularpeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_imprespeticio:
+    pattern:  /imprespeticio
+    defaults: { _controller: "FecdasBundle:Admin:imprespeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_dadespagamentfactura:
+    pattern:  /dadespagamentfactura
+    defaults: { _controller: "FecdasBundle:Admin:dadespagamentfactura" }
+    requirements:
+        _method:  GET
+        
+FecdasBundle_ajaxclubsnoms:
+    pattern:  /ajaxclubsnoms
+    defaults: { _controller: "FecdasBundle:Admin:ajaxclubsnoms" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_assegurats:
+    pattern:  /assegurats
+    defaults: { _controller: "FecdasBundle:Page:assegurats" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_partes:
+    pattern:  /partes
+    defaults: { _controller: "FecdasBundle:Page:partes" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_llicenciesParte: 
+    pattern:  /llicenciesParte
+    defaults: { _controller: "FecdasBundle:Page:llicenciesParte" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_historialLlicencies: 
+    pattern:  /historialLlicencies
+    defaults: { _controller: "FecdasBundle:Page:historialLlicencies" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_busseig:
+    pattern:  /consultadni
+    defaults: { _controller: "FecdasBundle:Page:busseig" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_parte:
+    pattern:  /parte
+    defaults: { _controller: "FecdasBundle:Page:parte" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_renovar:
+    pattern:  /renovar
+    defaults: { _controller: "FecdasBundle:Page:renovar" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_pagament:
+    pattern:  /pagament
+    defaults: { _controller: "FecdasBundle:Page:pagament" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_importcsv:
+    pattern:  /importcsv
+    defaults: { _controller: "FecdasBundle:Page:importcsv" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_confirmcsv:
+    pattern:  /confirmcsv
+    defaults: { _controller: "FecdasBundle:Page:confirmcsv" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_notificaciotest:
+    pattern:  /notificaciotest
+    defaults: { _controller: "FecdasBundle:Page:notificaciotest" }
+    requirements:
+        _method:  GET|POST
+
+
+FecdasBundle_notificacio:
+    pattern:  /notificacio
+    defaults: { _controller: "FecdasBundle:Page:notificacio" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_notificacioOk:
+    pattern:  /notificacioOk
+    defaults: { _controller: "FecdasBundle:Page:notificacioOk" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_notificacioKo:
+    pattern:  /notificacioKo
+    defaults: { _controller: "FecdasBundle:Page:notificacioKo" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_llicencia:
+    pattern:  /llicencia
+    defaults: { _controller: "FecdasBundle:Page:llicencia" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_persona:
+    pattern:  /persona
+    defaults: { _controller: "FecdasBundle:Page:persona" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_ajaxpoblacions:
+    pattern:  /ajaxpoblacions
+    defaults: { _controller: "FecdasBundle:Page:ajaxpoblacions" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_gettipuspartes:
+    pattern:  /gettipuspartes
+    defaults: { _controller: "FecdasBundle:Page:gettipuspartes" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_duplicats:
+    pattern:  /duplicats
+    defaults: { _controller: "FecdasBundle:Page:duplicats" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_duplicatsform:
+    pattern:  /duplicatsform
+    defaults: { _controller: "FecdasBundle:Page:duplicatsform" }
+    requirements:
+        _method:  GET
+        
+FecdasBundle_pagamentpeticio:
+    pattern:  /pagamentpeticio
+    defaults: { _controller: "FecdasBundle:Page:pagamentpeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_licensetopdf:
+    pattern:  /license
+    defaults: { _controller: "FecdasBundle:PDF:licensetopdf" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_partetopdf:
+    pattern:  /printparte
+    defaults: { _controller: "FecdasBundle:PDF:partetopdf" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_asseguratstopdf:
+    pattern:  /printllistes
+    defaults: { _controller: "FecdasBundle:PDF:asseguratstopdf" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_facturatopdf:
+    pattern:  /printfactura
+    defaults: { _controller: "FecdasBundle:PDF:facturatopdf" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_albaratopdf:
+    pattern:  /printalbara
+    defaults: { _controller: "FecdasBundle:PDF:albaratopdf" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_albarapeticio:
+    pattern:  /albarapeticio
+    defaults: { _controller: "FecdasBundle:PDF:albarapeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_facturapeticio:
+    pattern:  /facturapeticio
+    defaults: { _controller: "FecdasBundle:PDF:facturapeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_checkrenovacio:
+    pattern:  /checkrenovacio
+    defaults: { _controller: "FecdasBundle:Cron:checkrenovacio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_renovarllicencia:
+    pattern:  /renovarllicencia
+    defaults: { _controller: "FecdasBundle:Cron:renovarllicencia" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_checkclubs:
+    pattern:  /checkclubs
+    defaults: { _controller: "FecdasBundle:Cron:checkclubs" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_checkupdatepreu:
+    pattern:  /checkupdatepreu/{maxid}
+    defaults: { _controller: "FecdasBundle:Cron:checkupdatepreu" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_checkpendents:
+    pattern:  /checkpendents
+    defaults: { _controller: "FecdasBundle:Cron:checkpendents" }
+    requirements:
+        _method:  GET
+        
+FecdasBundle_checkpartesdia:
+    pattern:  /checkpartesdia
+    defaults: { _controller: "FecdasBundle:Cron:checkpartesdia" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_informesaldos:
+    pattern:  /informesaldos
+    defaults: { _controller: "FecdasBundle:Cron:informesaldos" }
+    requirements:
+        _method:  GET
+        
+FecdasBundle_enquestes:
+    pattern:  /enquestes
+    defaults: { _controller: "FecdasBundle:Enquestes:enquestes" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_enquesta:
+    pattern:  /enquesta
+    defaults: { _controller: "FecdasBundle:Enquestes:enquesta" }
+    requirements:
+        _method:  GET|POST
+
+
+FecdasBundle_tancarenquesta:
+    pattern:  /tancarenquesta
+    defaults: { _controller: "FecdasBundle:Enquestes:tancarenquesta" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_estadistiques:
+    pattern:  /estadistiques
+    defaults: { _controller: "FecdasBundle:Enquestes:estadistiques" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_estadistiquestab1:
+    pattern:  /estadistiquestab1
+    defaults: { _controller: "FecdasBundle:Enquestes:estadistiquestab1" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_estadistiquestab2:
+    pattern:  /estadistiquestab2
+    defaults: { _controller: "FecdasBundle:Enquestes:estadistiquestab2" }
+    requirements:
+        _method:  GET
+
+
+FecdasBundle_enquestausuari:
+    pattern:  /enquestausuari
+    defaults: { _controller: "FecdasBundle:Enquestes:enquestausuari" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_enquestaresultats:
+    pattern:  /enquestaresultats
+    defaults: { _controller: "FecdasBundle:Enquestes:enquestaresultats" }
+    requirements:
+        _method:  GET
+
+
+        

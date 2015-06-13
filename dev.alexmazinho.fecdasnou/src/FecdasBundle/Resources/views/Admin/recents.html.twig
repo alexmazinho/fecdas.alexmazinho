@@ -1,0 +1,162 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+
+  	{{ form_javascript(form) }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Comunicacions recents{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Comunicacions recents</h1>
+    </header>
+
+    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+        <div class="sms-notice">
+  			{{ flashMessage }}
+  		</div>	
+	{% endfor %}
+    
+    <div id="list-forms">
+    	<form id="formrecents" action="{{ path('FecdasBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
+      		<div id="formrecents-club" class="form-left">
+				{{ form_label(form.clubs, 'Filtre per club... ', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside ', 'style': 'width:100%'} }) }}
+			</div> 
+      		<div id="formrecents-estat" class="form-left">
+				{{ form_widget(form.estat, { 'attr': {'class': 'forminput-outside '} }) }}
+			</div> 
+      		<div id="formrecents-baixa" class="form-left">
+      			{{ form_label(form.baixa, 'Incloure baixes', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.baixa, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			</div> 
+			<div id="formrecents-pagament" class="form-left">
+				{{ form_label(form.nopagat, 'Només no pagats', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.nopagat, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			</div> 
+      		<div id="formrecents-sincro" class="form-left">
+      			{{ form_label(form.nosincro, 'Només no sincronitzats', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
+				{{ form_widget(form.nosincro, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			</div> 
+	   	</form>
+    </div>
+    <!--  <div id="list-header" class="clearfix"> -->
+    <br/>
+    <div id="list-recents" class="clearfix">
+    	<div class="table-header">	
+	   		<div id="list-header">
+		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.id') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsentrada" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Entrada', 'p.dataentrada') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsrel" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Rel', 'p.numrelacio') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.numrelacio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsdata" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Club', 'c.nom') }}
+		   				<span class="listheader-icon {% if partes.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentstipus" class="col-listheader listheader-noorder">Tipus<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentspreu" class="col-listheader listheader-noorder">Preu<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentspagat" class="col-listheader listheader-noorder">Pagat<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentdadespagat" class="col-listheader listheader-noorder">comanda/rebut<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsfactura" class="col-listheader listheader-noorder">Facturat<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   	</div>
+		</div>
+		{% if partes|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for parte in partes %}
+		   		<li class="data-detall 
+		   		{% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}
+				{% if parte.pendent == true  %} parte-pendent {% endif %}
+		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
+			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
+			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
+			   		<div class="data-detall-cell parterecents-rel">{{ parte.numrelacio }}</div>
+		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
+		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
+		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }} ({{ parte.numLlicencies }})</div>
+		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
+		   			<div class="data-detall-cell parterecents-pagat">
+					{% if parte.datapagament is null %}&nbsp; {% else %} 
+					<time datetime="{{ parte.datapagament|date('c') }}">{{ parte.datapagament|date('d/m/y') }}</time>				
+					{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell parterecents-dadespagat">{{ parte.dadespagament }} {{ parte.estatpagament }}</div>
+		   			<div class="data-detall-cell parterecents-factura">{{ parte.infoLlistat }}
+		   			</div>
+		   			<div class="data-detall-cell parterecents-actions">
+		   			{% if parte.pendent != true  %}
+		   			<a class="parterecents-action-sincro" href="{{ path('FecdasBundle_sincroaccess', sortparams|merge(partes.params|merge({ 'id': parte.id }))) }}">
+		   				<img src="{{ asset('images/icon-access.png') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
+		   			{% else %}
+		   			<a class="parterecents-action-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}">
+		   				<img src="{{ asset('images/icon-euro.png') }}" alt="Confirmar pagament" title="Confirmar pagament" width="23px"></a>
+		   			{% endif %}
+		   			<a class="parterecents-action-view" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}">
+		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure" title="Veure" width="23px"></a>
+					</div>
+		   		</li>
+		   	{% endfor %}
+			</ol>
+		</div>
+		{% if partes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(partes, null, sortparams) }}</div>{% endif %}
+   	{% else %}
+        	<div class="sms-notice">Cap comunicació</div>
+    {% endif %}
+    </div>
+    
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	setMenuActive("menu-admllistes");
+
+	$("#menu-adm").click();
+
+	confirmarPartePagat();
+	
+	selectRecentsClub();
+
+	$('#form_clubs').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_estat').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_baixa').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_nopagat').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_nosincro').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
+	
+	//sortLlista("col-listheader", "list-data");
+
+	var tableScroll = $('.table-scroll');
+	if (tableScroll.hasOverflowY()) {
+		$('.table-scroll').css({"width":"101.5%"});
+	}
+});
+
+</script>
+
+{% endblock %}
+

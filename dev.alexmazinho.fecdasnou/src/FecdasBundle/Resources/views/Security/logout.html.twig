@@ -1,0 +1,20 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Autenticació {% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Gestió FECDAS</h1>
+    </header>
+
+    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
+    <div class="sms-notice">
+		{{ flashMessage }}
+  	</div>	
+	{% endfor %}
+	{# app.session.clearflashes #}
+   
+    <p><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió</a></p>
+    
+{% endblock %}

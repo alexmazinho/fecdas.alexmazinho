@@ -1,0 +1,94 @@
+<form id="formpersona" action="{{ path('FecdasBundle_persona') }}" method="post" {{ form_enctype(formpersona) }}  class="modalform appform">
+	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
+	<h1>Dades personals</h1>
+	<div class="form-row clearfix">
+		<div id="formpersona-nom" class="form-left">
+			{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.nom, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div> 
+		<div id="formpersona-cognoms" class="form-left">
+			{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div> 
+		<div id="formpersona-dni" class="form-left">
+			{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.dni, { 'attr': {'class': 'forminput-inside'} }) }}
+			<img width="21px" id="help-dni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
+			<div id="formpersona-estranger">
+				<label class="formlabel-lefttocheckbox" for="formpersona-check-estranger">Estranger?</label>
+				<input id="formpersona-check-estranger" class="formcheckbox-right" type="checkbox" value="1">
+			</div>
+		</div>
+	</div>
+	<div class="form-row clearfix">
+		<div id="formpersona-datanaixement" class="form-left">
+			{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'forminput-outside'} }) }}
+		</div>
+		<div id="formpersona-sexe" class="form-left">
+			{{ form_label(formpersona.sexe, 'Sexe', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+			{{ form_widget(formpersona.sexe, { 'attr': {'class': 'forminput-outside'} }) }}
+		</div>
+		{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
+	</div> 
+	<div class="form-row clearfix">
+		<div id="formpersona-tlf1" class="form-left">
+			{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formpersona-tlf2" class="form-left">
+			{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+		<div id="formpersona-mail" class="form-left">
+			{{ form_label(formpersona.mail, 'Adreça electrònica', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.mail, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+	</div> 
+	<div class="form-row clearfix">
+	 	<div id="adreca-header" >
+			<div><h3>Adreça</h3></div>
+			<div id="sms-mailpersona">* Indica l'adreça de correu per poder rebre notificacions de la Federeació</div>
+		</div>
+		<div id="formpersona-addrpob" class="form-left">
+			<label class="formlabel-inside required" for="parte_persona_addrpob">Població</label>
+			{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrpob' }) }}
+		</div>
+		<div id="formpersona-addrcp" class="form-left">
+			<label class="formlabel-inside required" for="parte_persona_addrcp">CP</label>
+			{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcp' }) }}
+		</div>
+		<div id="formpersona-addradreca" class="form-left">
+			{{ form_label(formpersona.addradreca, 'Adreça', { 'label_attr': {'class': 'formlabel-inside'} }) }}
+			{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'forminput-inside'} }) }}
+		</div>
+	</div> 
+	<div class="form-row clearfix">
+		<div id="formpersona-addrprovincia" class="form-left">
+			<label class="formlabel-inside required" for="parte_persona_addrprovincia">Província</label>
+			{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'forminput-inside'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia' }) }}
+		</div>
+		<div id="formpersona-addrcomarca" class="form-left">
+			<label class="formlabel-inside required" for="parte_persona_addrcomarca">Comarca</label>
+			{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcomarca' }) }}
+		</div>
+		<div id="formpersona-addrnacionalitat" class="form-left">
+			<label class="formlabel-inside required" for="parte_persona_addrnacionalitat">Nacionalitat</label>
+			{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrnacionalitat' }) }}
+		</div>
+	</div> 
+	<div class="form-row clearfix">
+		<div id="formpersona-cancel" class="persona-submit form-right">	
+			<input type="submit" id="formpersona-button-cancel" class="form-button-cancel forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
+		</div>
+		<div id="formpersona-remove" class="persona-submit form-right">	
+			<input type="submit" id="formpersona-button-remove" class="forminput-inside" value="Esborrar" name="formpersona-button-remove"/>
+		</div>
+		<div id="formpersona-submit" class="persona-submit form-right">	
+			<input type="submit" id="formpersona-button-save" class="forminput-inside" value="Desar" name="formpersona-button-save"/>
+		</div>
+	</div>	
+	<div id="error-persona"></div>
+	<a id="formpersona-autocompleters" href="{{ path('FecdasBundle_ajaxpoblacions') }}" style="display:none">
+	<div id="formpersona-rest">	{{ form_rest(formpersona) }}</div>
+</form>

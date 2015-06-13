@@ -86,6 +86,12 @@ class EntityProducte {
 	public function __toString() {
 		return $this->getId()."-".$this->codi;
 	}
+	
+	public function esBaixa()
+	{
+		return $this->databaixa != null;
+	}
+	
     /**
      * Get id
      *
@@ -361,6 +367,16 @@ class EntityProducte {
     }
     
     /**
+     * Get preu any actual 
+     *
+     * @return decimal
+     */
+    public function getCurrentPreu()
+    {
+    	return $this->getPreuAny(Date('Y'));
+    }
+    
+    /**
      * Get preu any
      *
      * @return decimal
@@ -368,12 +384,36 @@ class EntityProducte {
     public function getPreuAny($any)
     {
     	foreach($this->preus as $preu) {
-    		if ($preu->getAnypreu() == $any) return $preu->getpreu();
+    		if ($preu->getAnypreu() == $any) return $preu->getPreu();
     	}
     	/* Never shhould happen */
     	return 0;
     }
 
+    
+    /**
+     * Get iva any actual 
+     *
+     * @return decimal
+     */
+    public function getCurrentIva()
+    {
+    	return $this->getIvaAny(Date('Y'));
+    }
+    
+    /**
+     * Get iva any
+     *
+     * @return decimal
+     */
+    public function getIvaAny($any)
+    {
+    	foreach($this->preus as $preu) {
+    		if ($preu->getAnypreu() == $any) return ($preu->getIva()==null?0:$preu->getIva());
+    	}
+    	/* Never shhould happen */
+    	return 0;
+    }
 
     /**
      * Add preu

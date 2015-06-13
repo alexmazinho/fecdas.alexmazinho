@@ -324,6 +324,35 @@ FecdasBundle_informesaldos:
     defaults: { _controller: "FecdasBundle:Cron:informesaldos" }
     requirements:
         _method:  GET
+
+
+# ---------------------------------------------------------------------------
+# -----------------------  FACTURACIO ---------------------------------------
+# ---------------------------------------------------------------------------
+
+
+FecdasBundle_productes:
+    pattern:  /productes
+    defaults: { _controller: "FecdasBundle:Facturacio:productes" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_editarproducte:
+    pattern:  /editarproducte
+    defaults: { _controller: "FecdasBundle:Facturacio:editarproducte" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_baixaproducte:
+    pattern:  /baixaproducte
+    defaults: { _controller: "FecdasBundle:Facturacio:baixaproducte" }
+    requirements:
+        _method:  GET
+
+
+# ---------------------------------------------------------------------------
+# -----------------------  ENQUESTES ----------------------------------------
+# ---------------------------------------------------------------------------
         
 FecdasBundle_enquestes:
     pattern:  /enquestes
@@ -336,7 +365,6 @@ FecdasBundle_enquesta:
     defaults: { _controller: "FecdasBundle:Enquestes:enquesta" }
     requirements:
         _method:  GET|POST
-
 
 FecdasBundle_tancarenquesta:
     pattern:  /tancarenquesta

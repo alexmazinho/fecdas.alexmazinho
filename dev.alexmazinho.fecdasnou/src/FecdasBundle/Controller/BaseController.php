@@ -37,6 +37,72 @@ class BaseController extends Controller {
 	const PAGAMENT_DUPLICAT = 'duplicat';
 	const UPLOADS_RELPATH = '/../../../../web/uploads/';  // Path is __DIR__.self::UPLOADS_RELPATH
 	
+	
+	const TIPUS_PRODUCTE_LLICENCIES = 1;
+	const TIPUS_PRODUCTE_DUPLICATS 	= 2;
+	const TIPUS_PRODUCTE_KITS 		= 3;
+	const TIPUS_PRODUCTE_MERCHA 	= 4;
+	const TIPUS_PRODUCTE_ALTRES 	= 5;
+	
+	const TIPUS_PAGAMENT_CASH 			= 1;
+	const TIPUS_PAGAMENT_TRANS_SARDENYA = 2;
+	const TIPUS_PAGAMENT_TRANS_LAIETANA	= 3;
+	
+	
+	protected static $tipusproducte; // Veure getTipusDeProducte()
+	protected static $tipuspagament; // Veure getTipusDePagament()
+	
+	/**
+	 * Array possibles tipus de producte
+	 */
+	public static function getTipusDeProducte() {
+		if (self::$tipusproducte == null) {
+			self::$tipusproducte = array(
+					self::TIPUS_PRODUCTE_LLICENCIES => 'Llicències',
+					self::TIPUS_PRODUCTE_DUPLICATS => 'Duplicats',
+					self::TIPUS_PRODUCTE_KITS => 'Kits',
+					self::TIPUS_PRODUCTE_MERCHA => 'Merchandising',
+					self::TIPUS_PRODUCTE_ALTRES => 'Altres'
+			);
+		}
+		return self::$tipusproducte;
+	}
+	
+	/**
+	 * Obté tipus de producte
+	 */
+	public static function getTipusProducte($index) {
+		$tipus = BaseController::getTipusDeProducte();
+		if (isset($tipus[$index])) return $tipus[$index];
+	
+		return '';
+	}
+	
+	/**
+	 * Array possibles tipus de pagament
+	 */
+	public static function getTipusDePagament() {
+		if (self::$tipuspagament == null) {
+			self::$tipuspagament = array(
+					self::TIPUS_PAGAMENT_CASH => 'Metàl·lic',
+					self::TIPUS_PAGAMENT_TRANS_SARDENYA => 'Transferència Sardenya',
+					self::TIPUS_PAGAMENT_TRANS_LAIETANA => 'La Caixa Laietana',
+			);
+		}
+		return self::$tipuspagament;
+	}
+	
+	/**
+	 * Obté tipus de pagament
+	 */
+	public static function getTipusPagament($index) {
+		$tipus = BaseController::getTipusDePagament();
+		if (isset($tipus[$index])) return $tipus[$index];
+	
+		return '';
+	}
+	
+	
 	protected function getCommonRenderArrayOptions($more = array()) {
 		$options = array();
 		if ($this->isCurrentAdmin()) {

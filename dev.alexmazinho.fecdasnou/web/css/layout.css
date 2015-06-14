@@ -131,15 +131,15 @@ html>body #wrapper {
 * html #wrapper { height:96%; }*/ /* IE Hack only*/
 
 #header { 
-	height: 50px; 
+	height: 80px; 
 	padding: 10px;
 	position: relative;
 }
 
 #main {
 	/*overflow: auto;*/
-	width: 95%;
-   	padding:10px;
+	/*width: 100%;*/
+   	padding:5px;
    	padding-bottom:60px;   /* Height of the footer + 10*/
 }
 
@@ -155,7 +155,7 @@ html>body #wrapper {
 	float:left;
 	min-width: 130px; 
 	width: 10%;
-	padding: 80px 20px 10px 0px; /* 60 px Height of the footer */
+	padding: 80px 5px 10px 0px; /* 60 px Height of the footer */
 }
 
 /*html>body #left-menu { 
@@ -164,18 +164,18 @@ html>body #wrapper {
 
 #main-col,
 #no-js {
-	min-width: 550px; /* Params resize */ 
-    width: 75%;			 /* Params resize */ 
+	/*min-width: 550px;   
+    width: 75%;			   
     max-width: 1000px;
-    min-height:600px;
+    min-height:600px;*/
 	padding:10px;
     padding-bottom:10px;   /* Height of the footer */
   	position: relative;
 }
 
 * html #main-col { /*max-width: 1000px;  max-height IE hack */
-   width: expression( this.scrollWidth > 999 ? "1000px" : "auto" ); /* sets max-width for IE */
-   height: expression( this.scrollHeight < 601 ? "600px" : "auto" ); /* sets min-height for IE */
+  /* width: expression( this.scrollWidth > 999 ? "1000px" : "auto" );*/ /* sets max-width for IE */
+  /* height: expression( this.scrollHeight < 601 ? "600px" : "auto" );*/ /* sets min-height for IE */
 }
 
 
@@ -208,7 +208,7 @@ a img {border: none; }
 #header {  color: #EEEEEE; z-index: 10}
 
 #header .logo { width: 0; float: left; display: inline-block;  }
-#header .title { width: 380px; padding-left: 154px; display: inline-block; }
+#header .title { /*width: 380px;*/ padding-left: 154px; display: inline-block; line-height:1; }
 #header .login { max-width: 350px; float: right; display: inline-block; width: auto; }
 #header .login img { vertical-align: middle; padding: 0 10px; }
 #header a { color: #EEEEEE; }
@@ -231,7 +231,7 @@ a img {border: none; }
 #left-menu .navigation li a { 
 	display: inline-block; 
 	padding: 10px 15px;
-	width: 80%; 
+	width: 100%; 
 	line-height: 24px;
 	margin-bottom: 5px;
 }
@@ -302,10 +302,11 @@ html>body #left-menu a:hover {
 	background: none repeat-x scroll 0 0 #F0F9FF;
 }*/
 
+/*
 #main-col { 
 	display: inline-block; 
 	border-left: 1px solid #ccc; 
-}
+}*/
 
 #main-col a { 
 	/*color: #1240a0;*/ 
@@ -329,7 +330,7 @@ html>body #left-menu a:hover {
 }
 
 #main-col .login {
-	margin-top:70px; 
+	margin-top:30px; 
 	margin-left:30px;
 }
 
@@ -367,7 +368,7 @@ html>body #left-menu a:hover {
 
 #no-js { 
 	border-left: 1px solid #ccc;
-	display: inline-block;
+	/*display: inline-block;*/
 }
     					
 #no-js a { 

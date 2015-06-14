@@ -45,9 +45,8 @@ class PDFController extends BaseController {
 						';
 	
 	
-	public function facturatopdfAction() {
+	public function facturatopdfAction(Request $request) {
 		/* Factura parte */
-		$request = $this ->getRequest();
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -77,9 +76,8 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function facturapeticioAction() {
+	public function facturapeticioAction(Request $request) {
 		/* Factura petició */
-		$request = $this ->getRequest();
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -279,9 +277,8 @@ class PDFController extends BaseController {
 		return $response;
 	}
 	
-	public function albaratopdfAction() {
+	public function albaratopdfAction(Request $request) {
 		/* Albarà parte */
-		$request = $this ->getRequest();
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -310,9 +307,8 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function albarapeticioAction() {
+	public function albarapeticioAction(Request $request) {
 		/* Albarà petició */
-		$request = $this ->getRequest();
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -493,9 +489,8 @@ class PDFController extends BaseController {
 		
 	}
 	
-	public function  asseguratstopdfAction() {
+	public function  asseguratstopdfAction(Request $request) {
 		/* Llistat d'assegurats vigents */
-		$request = $this ->getRequest();
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -668,8 +663,7 @@ class PDFController extends BaseController {
 	}
 	
 	
-	public function partetopdfAction() {
-		$request = $this ->getRequest();
+	public function partetopdfAction(Request $request) {
 	
 		if ($request->query->has('id')) {
 			$parte = $this->getDoctrine()
@@ -681,7 +675,7 @@ class PDFController extends BaseController {
 			if ($parte) {
 				$this->logEntry($this->get('session')->get('username'), 'PRINT PARTE',
 						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+						$request->server->get('HTTP_USER_AGENT'), $parte->getId());
 				
 				// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 				$pdf = new TcpdfBridge('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -867,8 +861,7 @@ class PDFController extends BaseController {
 		$pdf->Ln();
 	}
 	
-	public function licensetopdfAction() {
-		$request = $this ->getRequest();
+	public function licensetopdfAction(Request $request) {
 	
 		if ($request->query->has('id')) {
 			$llicencia = $this->getDoctrine()
@@ -882,7 +875,7 @@ class PDFController extends BaseController {
 			if ($llicencia) {
 				$this->logEntry($this->get('session')->get('username'), 'PRINT LLICENCIA',
 						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $llicencia->getId());
+						$request->server->get('HTTP_USER_AGENT'), $llicencia->getId());
 				
 				// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 				$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);

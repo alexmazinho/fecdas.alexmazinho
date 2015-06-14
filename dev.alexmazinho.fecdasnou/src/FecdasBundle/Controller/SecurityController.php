@@ -7,6 +7,7 @@ use Symfony\Bundle\AsseticBundle\Factory\Worker\UseControllerWorker;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use FecdasBundle\Form\FormLogin;
 use FecdasBundle\Form\FormUser;
 use FecdasBundle\Form\FormClub;
@@ -18,7 +19,7 @@ use FecdasBundle\Entity\EntityClub;
 class SecurityController extends BaseController
 {
 	
-    public function loginAction()
+    public function loginAction(Request $request)
     {
     	if ($this->get('session')->has('username')){
     		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -27,8 +28,6 @@ class SecurityController extends BaseController
     	$userlogin = new EntityUser();
     	$form = $this->createForm(new FormLogin(), $userlogin);
     
-    	$request = $this->getRequest();
-    	
     	if ($request->getMethod() == 'POST') {
     		$form->bind($request);
     		if ($form->isValid()) {
@@ -44,8 +43,8 @@ class SecurityController extends BaseController
     					$this->get('session')->getFlashBag()->add('sms-notice', 'Paraula clau incorrecta!');
     					
     					$this->logEntry($form->getData()->getUser(), 'LOGIN KO',
-    							$this->getRequest()->server->get('REMOTE_ADDR'),
-    							$this->getRequest()->server->get('HTTP_USER_AGENT'));
+    							$request->server->get('REMOTE_ADDR'),
+    							$request->server->get('HTTP_USER_AGENT'));
     						
     				} else {
 	    				/* Manteniment */
@@ -57,7 +56,7 @@ class SecurityController extends BaseController
     					// 	Redirect - This is important to prevent users re-posting
     					// 	the form if they refresh the page
     					
-    					$remote_addr = $this->getRequest()->server->get('REMOTE_ADDR');
+    					$remote_addr = $request->server->get('REMOTE_ADDR');
     					$this->get('session')->set('username', $form->getData()->getUser());
     					$this->get('session')->set('remote_addr', $remote_addr);
 
@@ -86,7 +85,7 @@ class SecurityController extends BaseController
     					
     					$this->logEntry($this->get('session')->get('username'), 'LOGIN',
     							$this->get('session')->get('remote_addr'),
-    							$this->getRequest()->server->get('HTTP_USER_AGENT'));
+    							$request->server->get('HTTP_USER_AGENT'));
 
     					if ($this->get('session')->has('url_request')) {
     						/* Comprovar petició url abans de login. Exemple mail renovacions*/
@@ -109,11 +108,11 @@ class SecurityController extends BaseController
 						array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
     
-    public function logoutAction()
+    public function logoutAction(Request $request)
     {
     	$this->logEntry($this->get('session')->get('username'), 'LOGOUT',
     			$this->get('session')->get('remote_addr'),
-    			$this->getRequest()->server->get('HTTP_USER_AGENT'));
+    			$request->server->get('HTTP_USER_AGENT'));
     	
     	$this->get('session')->clear();
     	
@@ -123,9 +122,8 @@ class SecurityController extends BaseController
 						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
     
-    public function userAction()
+    public function userAction(Request $request)
     {
-    	$request = $this->getRequest();
     
     	$request->getSession()->getFlashBag()->clear();
     	
@@ -178,14 +176,14 @@ class SecurityController extends BaseController
 	    			$em->flush();
 	    			
 	    			if ($this->isAuthenticated() == false) {
-	    				$remote_addr = $this->getRequest()->server->get('REMOTE_ADDR');
+	    				$remote_addr = $request->server->get('REMOTE_ADDR');
 	    				$this->get('session')->set('username', $user->getUser());
 	    				$this->get('session')->set('remote_addr', $remote_addr);
 	    			}
 	    			
 	    			$this->logEntry($this->get('session')->get('username'), 'PWD RESET',
 	    					$this->get('session')->get('remote_addr'),
-	    					$this->getRequest()->server->get('HTTP_USER_AGENT'));
+	    					$request->server->get('HTTP_USER_AGENT'));
 	    			
 	    			$this->get('session')->getFlashBag()->add('error-notice', "Paraula clau actualitzada correctament!");
 	    		} else {
@@ -199,7 +197,7 @@ class SecurityController extends BaseController
     }
     
     
-    public function pwdrecoveryAction()
+    public function pwdrecoveryAction(Request $request)
     {
     	if ($this->get('session')->has('username')){
     		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -208,8 +206,6 @@ class SecurityController extends BaseController
     	$formbuilder = $this->createFormBuilder()->add('user', 'email');
     	$form = $formbuilder->getForm();
     	
-    	$request = $this->getRequest();
-    	 
     	if ($request->getMethod() == 'POST') {
     		$form->bind($request);
     		if ($form->isValid()) {
@@ -249,8 +245,8 @@ class SecurityController extends BaseController
     				$this->get('mailer')->send($message);
     				
     				$this->logEntry($userEmail, 'PWD RECOVER',
-    						$this->getRequest()->server->get('REMOTE_ADDR'),
-    						$this->getRequest()->server->get('HTTP_USER_AGENT'));
+    						$request->server->get('REMOTE_ADDR'),
+    						$request->server->get('HTTP_USER_AGENT'));
     				
     				$this->get('session')->clear();
     				$this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
@@ -266,9 +262,9 @@ class SecurityController extends BaseController
     }
     
     
-    public function clubAction() {
+    public function clubAction(Request $request) {
     	$this->get('session')->getFlashBag()->clear();
-    	$request = $this->getRequest();
+    	
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
     
@@ -402,8 +398,7 @@ class SecurityController extends BaseController
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
     }
     
-    public function usuariclubAction() {
-    	$request = $this->getRequest();
+    public function usuariclubAction(Request $request) {
     	//$this->get('session')->getFlashBag()->clear();
     
     	if ($request->isXmlHttpRequest()) {
@@ -443,14 +438,14 @@ class SecurityController extends BaseController
     						
    					$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW OK',
    							$this->get('session')->get('remote_addr'),
-   							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+   							$request->server->get('HTTP_USER_AGENT'),
    							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     			} else {
     					// Existeix -> error
     				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest usuari ja existeix');
     				$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW KO',
     						$this->get('session')->get('remote_addr'),
-    						$this->getRequest()->server->get('HTTP_USER_AGENT'),
+    						$request->server->get('HTTP_USER_AGENT'),
     						'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     			}
     			
@@ -490,7 +485,7 @@ class SecurityController extends BaseController
     					
     					$this->logEntry($this->get('session')->get('username'), 'USER '. strtoupper($action) . ' OK',
     							$this->get('session')->get('remote_addr'),
-    							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+    							$request->server->get('HTTP_USER_AGENT'),
     							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
     				} else {
     					// Error

@@ -13,9 +13,8 @@ use FecdasBundle\Form\FormLlicenciaRenovar;
 
 class FacturacioController extends BaseController {
 
-	public function productesAction() {
+	public function productesAction(Request $request) {
 		// Llista de productes i edició massiva
-		$request = $this->getRequest();
 
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -23,52 +22,40 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin()) 
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
+		$em = $this->getDoctrine()->getManager();
+		$producte = null;		
+		$idproducte = $request->query->get('cerca', 0);
+
+		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
+		
+
 		$tipus = $request->query->get('tipus', 0);
-		$cerca = $request->query->get('cerca', '');
-		$baixes = $request->query->get('baixes', false);
+		$baixes = $request->query->get('baixes', 0);
+		$baixes = ($baixes == 0?true:false);
 		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'p.descripcio');
 		$direction = $request->query->get('direction', 'asc');
 		
-		//$club = $this->getCurrentClub();
-		
-		/*$desdeDefault = "01/01/".(date("Y") - 1);
-		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault));
-		
-		$finsDefault = "31/12/".(date("Y"));
-		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) $finsDefault = "31/12/".(date("Y")+1);		
-		$fins = \DateTime::createFromFormat('d/m/Y', $request->query->get('fins', $finsDefault));
-		
-		
-		error_log($tipus);
-		
-		*/
-		
-		/*if ($request->getMethod() == 'POST') {
+		if ($idproducte > 0) {
+			$tipus = 0;
+			$baixes = true;
+			$page = 1;
+		}	
 
-			return $this->redirect($this->generateUrl('FecdasBundle_parte'));
+		$query = $this->consultaProductes($idproducte, $tipus, $baixes, $sort);
 			
-		} else {
-			if ($request->query->has('desde') || $request->query->has('fins') || $request->query->has('tipus')) {
-				$this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$tipus.":".
-									$desde->format('Y-m-d')."->".$fins->format('Y-m-d'));
-			}
-			else $this->logEntryAuth('VIEW PARTES', $club->getCodi());
-		}*/
-		
-		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
-		
-		
-		/*if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) {
-			// A partir 10/12 poden fer llicències any següent
-			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
-		}*/
-				
+		$paginator  = $this->get('knp_paginator');
+			
+		$productes = $paginator->paginate(
+			$query,
+			$page,
+			10/*limit per page*/
+		);
+			
 		$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'text', array(
-				'read_only' => false,
-				'required'  => false,
+			->add('cerca', 'hidden', array(
+				'data' => $idproducte
 		));
 		
 		$formBuilder
@@ -86,49 +73,92 @@ class FacturacioController extends BaseController {
 				
 		));
 			
-		$query = $this->consultaProductes($cerca, $tipus, $baixes, $sort);
-		
-		$paginator  = $this->get('knp_paginator');
-		
-		$productes = $paginator->paginate(
-				$query,
-				$page,
-				10/*limit per page*/
-		);
-		
 		return $this->render('FecdasBundle:Facturacio:productes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'productes' => $productes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
 	
-	public function editarproducteAction() {
+	public function editarproducteAction(Request $request) {
 		// Formulari d'edició d'un producte
 		return new Response("");  
 	}
 	
-	public function baixaproducteAction() {
+	
+	public function nouproducteAction(Request $request) {
+		// Formulari d'edició d'un producte
+		return new Response("");
+	}
+	
+	public function baixaproducteAction(Request $request) {
 		// Crida per donar de baixa un producte
 		return new Response("");  
 	}
 	
+	public function jsonproductesAction(Request $request) {
+		//foment.dev/jsonperson?id=32
+		$response = new Response();
 	
-	protected function consultaProductes($cerca, $tipus, $baixes, $strOrderBY = '') {
+		$cerca = $request->get('cerca', '');
+		$id = $request->get('id', 0);
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		if ($id > 0) {
+			error_log("id ==========> ".$id);
+			$producte = $em->getRepository('FecdasBundle:EntityProducte')->find($id);
+			
+			if ($producte != null) {
+				$response->headers->set('Content-Type', 'application/json');
+				$response->setContent(json_encode(array("id" => $producte->getId(), "text" => $producte->getDescripcio()) ));
+				return $response;
+			}
+		}
+		
+		
+		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
+		$strQuery .= " WHERE p.databaixa IS NULL ";
+		$strQuery .= " AND p.descripcio LIKE :cerca";
+		$strQuery .= " ORDER BY p.descripcio";  
+	
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('cerca', '%'.$cerca.'%');
+	
+		
+		$search = array();
+		if ($query != null) {
+			$result = $query->getResult();
+			foreach ($result as $p) {
+				$search[] = array("id" => $p->getId(), "text" => $p->getDescripcio());
+			}
+		}
+		
+		$response->headers->set('Content-Type', 'application/json');
+		$response->setContent(json_encode($search));
+		
+		return $response;
+	}
+	
+	protected function consultaProductes($idproducte, $tipus, $baixes, $strOrderBY = '') {
 		$em = $this->getDoctrine()->getManager();
 	
+		if ($idproducte > 0) {
+			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
+			$strQuery .= "WHERE p.id = :idproducte ";
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('idproducte', $idproducte);
+			return $query;
+		}
+		
 		// Consultar no només les vigents sinó totes
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
 		$strQuery .= "WHERE 1 = 1 ";
 		if (! $baixes) $strQuery .= " AND p.databaixa IS NULL ";
-		if ($tipus > 0) $strQuery .= " AND t.id == :tipus";
-		if ($cerca != '') $strQuery .= " AND p.descripcio LIKE :cerca";
+		if ($tipus > 0) $strQuery .= " AND p.tipus = :tipus";
 		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  
-	
 		$query = $em->createQuery($strQuery);
 		
 		if ($tipus > 0) $query->setParameter('tipus', $tipus);
-		if ($cerca != '') $query->setParameter('cerca', '%'.$cerca.'%');
-			
 		return $query;
 	}
 	

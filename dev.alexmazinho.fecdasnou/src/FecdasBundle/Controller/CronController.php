@@ -13,7 +13,7 @@ use FecdasBundle\Form\FormLlicenciaRenovar;
 
 class CronController extends BaseController {
 
-	public function checkupdatepreuAction($maxid) {
+	public function checkupdatepreuAction(Request $request, $maxid) {
 		return new Response("");  // Funció desactivada
 		
 		
@@ -39,8 +39,8 @@ class CronController extends BaseController {
 			if ($parte->getImportpagament() != null) {
 				if ($parte->getImportparte() != $parte->getImportpagament()) {
 					$this->logEntry(self::MAIL_ADMINLOG, 'UPD PREU ERROR',
-							$this->getRequest()->server->get('REMOTE_ADDR'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'),
+							$request->server->get('REMOTE_ADDR'),
+							$request->server->get('HTTP_USER_AGENT'),
 							$parte->getId() . " . calculat: " . $parte->getImportparte() . "  pagament: " .$parte->getImportpagament());
 				}
 			} 
@@ -52,7 +52,7 @@ class CronController extends BaseController {
 		return new Response("");
 	}
 	
-	public function checkrenovacioAction() {
+	public function checkrenovacioAction(Request $request) {
 		// Avís renovació partes: 30 dies, 15 dies i 2 dies
 		/* Planificar cron diari
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkrenovacio >> mailsrenovacio.txt*/
@@ -86,16 +86,16 @@ class CronController extends BaseController {
 		 * */
 		
 		//$sortida = "";
-		$sortida = $this->checkRenovacio(30);
+		$sortida = $this->checkRenovacio($request, 30);
 		
-		$sortida .= $this->checkRenovacio(15);
+		$sortida .= $this->checkRenovacio($request, 15);
 		
-		$sortida .= $this->checkRenovacio(2);
+		$sortida .= $this->checkRenovacio($request, 2);
 		
 		return new Response($sortida);
 	}
 	
-	private function checkRenovacio($dies) {
+	private function checkRenovacio($request, $dies) {
 		$sortida = 'Avís renovació ' . $dies . ', en data '. date('Y-m-d') . '\n';
 		$subject = '';
 		$body = '';
@@ -181,8 +181,8 @@ class CronController extends BaseController {
 					$sortida .= $body;
 						
 					$this->logEntry('alexmazinho@gmail.com', 'CRON RENEW',
-							$this->getRequest()->server->get('REMOTE_ADDR'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'), 
+							$request()->server->get('REMOTE_ADDR'),
+							$request()->server->get('HTTP_USER_AGENT'), 
 							'club ' . $parte_iter->getClub()->getNom() . ', llicència ' . $llicencia_iter->getId() . ', dies ' .  $dies);
 				}
 			}
@@ -228,17 +228,15 @@ class CronController extends BaseController {
 	}
 	
 	
-	public function renovarllicenciaAction() {
+	public function renovarllicenciaAction(Request $request) {
 		/* Entra una id de llicència i se li renova la llicència vigent o la darrera llicència des de data d'avui */
 		/* p.e. fecdas.dev/renovarllicencia?id=5897 */
 		
 		$this->get('session')->getFlashBag()->clear();
 		
-		$request = $this->getRequest();
-		
 		if ($this->isAuthenticated() != true) {
 			// keep url. Redirect after login
-			$url_request = $this->getRequest()->server->get('REQUEST_URI');
+			$url_request = $request->server->get('REQUEST_URI');
 			$this->get('session')->set('url_request', $url_request);
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 		}
@@ -366,7 +364,7 @@ class CronController extends BaseController {
 			
 					$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA OK',
 							$this->get('session')->get('remote_addr'),
-							$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+							$request->server->get('HTTP_USER_AGENT'), $parte->getId());
 			
 					$this->get('session')->getFlashBag()->add('error-notice',	'Llicència enviada correctament');
 			
@@ -378,14 +376,14 @@ class CronController extends BaseController {
 			} else {
 				$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA VIEW',
 						$this->get('session')->get('remote_addr'),
-						$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+						$request->server->get('HTTP_USER_AGENT'), $parte->getId());
 			}			
 		} catch (\Exception $e) {
 			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 			
 			$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA ERROR',
 					$this->get('session')->get('remote_addr'),
-					$this->getRequest()->server->get('HTTP_USER_AGENT'), $parte->getId());
+					$request->server->get('HTTP_USER_AGENT'), $parte->getId());
 				
 		}
 			
@@ -393,14 +391,13 @@ class CronController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte)));
 	}
 	
-	public function checkclubsAction() {
+	public function checkclubsAction(Request $request) {
 		/* Revisar diferències saldos gestors
 		 * Detectar si un club de pagament diferit supera el límit 
 		 * Detectar clubs amb partes sense factura */
 		/* Planificar cron diari
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkclubs >> checkclubs.txt*/
 		
-		$request = $this->getRequest();
 		$sortida = "<style type='text/css'>";
 		$sortida .= "table	{ border-collapse:collapse; font-family: Arial; font-size: 13px; }";
 		$sortida .= "table, th, td { border: 1px solid black; }";
@@ -551,13 +548,13 @@ class CronController extends BaseController {
 		
 		$this->logEntry(self::MAIL_ADMINLOG, 'CRON CLUBS',
 				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+				$request->server->get('HTTP_USER_AGENT'));
 		
 		return new Response($sortida);
 	}
 	
 	
-	public function informesaldosAction() {
+	public function informesaldosAction(Request $request) {
 		/* Informe trimestral de saldos als clubs 
 		 * 31 de març, 30 de juny, 30 setembre i 30 novembre
 		 * Planificar cron diari
@@ -572,8 +569,6 @@ class CronController extends BaseController {
 		$current_dm = $this->getCurrentDate()->format('d/m');
 		if (!in_array($current_dm, $datesinforme)) return new Response("N/A");
 		
-		$request = $this->getRequest();
-	
 		$em = $this->getDoctrine()->getManager();
 	
 		$states = explode(";", self::CLUBS_STATES);
@@ -625,13 +620,13 @@ class CronController extends BaseController {
 	
 		$this->logEntry(self::MAIL_ADMINLOG, 'INFORME TRIM CLUBS',
 				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+				$request->server->get('HTTP_USER_AGENT'));
 	
 		return new Response($sortida);
 	}
 	
 	
-	public function checkpendentsAction() {
+	public function checkpendentsAction(Request $request) {
 		/* Revisar partes pendents
 		 * Donar de baixa si pendents i fa més de 10 dies que van entrar al sistema  
 		 * Avisar per mail si falten 2 dies per donar de baixa (fa 8 dies de l'entrada)
@@ -640,7 +635,6 @@ class CronController extends BaseController {
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkpendents >> checkpendents.txt*/
 		
 		$sortida = "";
-		$request = $this->getRequest();
 
 		$current = $this->getCurrentDate();
 		
@@ -712,7 +706,7 @@ class CronController extends BaseController {
 	
 		$this->logEntry(self::MAIL_ADMINLOG, 'CRON PENDENTS',
 				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $this->get('kernel')->getEnvironment());
+				$request->server->get('HTTP_USER_AGENT'), $this->get('kernel')->getEnvironment());
 		
 		return new Response($sortida);
 	}
@@ -741,14 +735,13 @@ class CronController extends BaseController {
 		return false;
 	}
 	
-	public function checkpartesdiaAction() {
+	public function checkpartesdiaAction(Request $request) {
 		/* Revisar partes tramitats durant el dia
 		 * Validar llicències mateix dni diferents clubs */
 		/* Planificar cron diari
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkpartesdia >> partesdia.txt*/
 	
 		$sortida = "";
-		$request = $this->getRequest();
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -817,7 +810,7 @@ class CronController extends BaseController {
 	
 		$this->logEntry(self::MAIL_ADMINLOG, 'CRON PARTES DIA',
 				$this->get('session')->get('remote_addr'),
-				$this->getRequest()->server->get('HTTP_USER_AGENT'));
+				$request->server->get('HTTP_USER_AGENT'));
 	
 		return new Response($sortida);
 	}

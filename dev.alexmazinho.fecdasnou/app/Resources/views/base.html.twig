@@ -1,6 +1,6 @@
 <!-- app/Resources/views/base.html.twig Aplication level Template -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
-<html>
+<!DOCTYPE html>
+<html lang="ca">
     <head>
         <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -26,12 +26,6 @@
 			<style>section#main-col{display:none;}</style>            
         {% endblock %}
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
-        {% block javascriptshead %}
-        	<script src="{{ asset('js/jquery.min.js') }}" type="text/javascript"></script>
-			<script src="{{ asset('js/jquery-ui-min.js') }}" type="text/javascript"></script>        	
-        	<script src="{{ asset('js/jquery-bubble-popup-v3.min.js') }}" type="text/javascript"></script>
-        	<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>
-        {% endblock %}
         <script type="text/javascript">
 		  var _gaq = _gaq || [];
 		  _gaq.push(['_setAccount', 'UA-37415197-1']);
@@ -52,10 +46,8 @@
                 <div class="login">{% block fecdas_login %} {% endblock %}</div>
             </header>
 			
-			<section id="main" class="clearfix">
-	            <div id="left-menu">
-	            {% block sidebar %}{% endblock %}
-	            </div>
+			<section id="main" class="container">
+				{% block menu_navigation %}{% endblock %}
 	            <noscript>
 					<div id="no-js">
 					<h1>Navegador sense suport JAVASCRIPT</h1>
@@ -102,11 +94,19 @@
            
         </section>
 
+       
+        
+       {% block javascripts %}
+       
+      	<script src="{{ asset('js/jquery.min.js') }}" type="text/javascript"></script>
+		<script src="{{ asset('js/jquery-ui-min.js') }}" type="text/javascript"></script>        	
+        <script src="{{ asset('js/jquery-bubble-popup-v3.min.js') }}" type="text/javascript"></script>
+        <script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>
+       
+       {% endblock %}
+       
         <script type="text/javascript">
     		$('#main-col').css('display', 'inline-block');
 		</script>
-        
-       {% block javascripts %}
-       {% endblock %}
     </body>
 </html>

@@ -135,8 +135,9 @@ class BaseController extends Controller {
 	}
 	
 	protected function isAuthenticated() {
+		$request = $this->container->get('request_stack')->getCurrentRequest();
 		if ($this->get('session')->has('username') and $this->get('session')->has('remote_addr')
-				and $this->get('session')->has('remote_addr') == $this->getRequest()->server->get('REMOTE_ADDR')) {
+				and $this->get('session')->has('remote_addr') == $request->server->get('REMOTE_ADDR')) {
 			return true;
 		}
 		return false;
@@ -589,8 +590,9 @@ class BaseController extends Controller {
 	}
 	
 	protected function logEntryAuth($accio = null, $extrainfo = null) {
+		$request = $this->container->get('request_stack')->getCurrentRequest();
 		$this->logEntry($this->get('session')->get('username'), $accio, $this->get('session')->get('remote_addr'), 
-				$this->getRequest()->server->get('HTTP_USER_AGENT'), $extrainfo);
+				$request()->server->get('HTTP_USER_AGENT'), $extrainfo);
 	}
 	
 	protected function logEntry($user = null, $accio = null, $remoteaddr = null, $useragent = null, $extrainfo = null) {
@@ -610,7 +612,8 @@ class BaseController extends Controller {
 	}
 	
 	protected function getLogMailUserData($source = null) {
-		return $source." ".$this->get('session')->get('username')." (".$this->getRequest()->server->get('HTTP_USER_AGENT').")";
+		$request = $this->container->get('request_stack')->getCurrentRequest();
+		return $source." ".$this->get('session')->get('username')." (".$request->server->get('HTTP_USER_AGENT').")";
 	}
 	
 	

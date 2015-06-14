@@ -2,9 +2,7 @@
 {% extends 'FecdasBundle::layout.html.twig' %}
 
 {% block javascriptshead %}
- 	{{ parent() }}
-	<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>
-   	 {{ form_javascript(form) }}
+ 	
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Racó de l'usuari{% endblock %}
@@ -52,7 +50,10 @@
 
 {% block javascripts %}
 
+
 {{ parent() }}
+	<script src="{{ asset('js/jquery-ui-1.8.21.custom.min.js') }}" type="text/javascript"></script>
+   	 {{ form_javascript(form) }}
 
 <script type="text/javascript">
 

@@ -3,18 +3,16 @@
 .sms-notice { text-align: center; padding: 10px;
 background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; }
 
-
+/*
 .textaccio {
-	/*background: #EEEEEE;*/
+	
 	background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;
     -webkit-border-radius: 3px;
     border-radius: 3px 3px 3px 3px;
-    /*color: #005A8C;*/
     padding: 3px 5px 5px;
     border: 1px solid #AAAAAA;
     text-transform: uppercase;
     font-size: 0.9em;
-    /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);*/
     -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -27,7 +25,7 @@ background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; }
     border-color: #555555;
     text-decoration: none;
 }
-
+*/
 .textaccio img {
 	position: relative;
 	top: 3px;
@@ -85,13 +83,19 @@ input[type="image"] {
 	border: none;
 	background: none;
 }
-
+/*
 input[type="checkbox"] {
 	background: none repeat scroll 0 0 transparent;
 	border: none;
-}
+}*/
 
 input {
+	
+}
+
+input[type="text"], 
+input[type="email"],
+input[type="password"] { 
 	max-width: 400px; 
 	line-height: 24px; 
 	min-height:26px; 
@@ -101,14 +105,8 @@ input {
 	-webkit-border-radius: 5px;
 	border: 1px solid #AAA; 
 	/*color: #555555;*/
-	color: #1240A0;
+	color: #1240A0;	
 	background: #EFEFEF; 
-}
-
-input[type="text"], 
-input[type="email"],
-input[type="password"] { 
-	
 }
 
 input[type="search"]  { 
@@ -124,23 +122,19 @@ input[type="submit"]  { line-height: 24px; min-height: 24px; }
 textarea  { 
 	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; padding: 5px; resize: both;
 	border: 1px solid #AAA; background: #EEEEEE; /*color: #555555;*/ color: #1240A0;}
-
+/*
 select {
 	background: #EEEEEE;
-	/*color: #555555;*/
 	color: #1240A0;
 	-webkit-border-radius: 5px;
     border-radius: 5px;
     border: 1px solid #AAA;
     margin: 0 2px 0 2px;
   	overflow: hidden;
-  	/*padding-top: 3px;*/
-  	/*padding-bottom: 1px;*/
   	padding: 0 3px;
   	text-overflow: ellipsis;
   	white-space: nowrap;
   	min-height: 20px;
-  	/*text-align: center;*/
 }
 
 select option {
@@ -149,8 +143,9 @@ select option {
 
 
 /* Disabled Elements */
+/*
 select[disabled="true"],
-select[disabled="disabled"],
+select[disabled="disabled"],*/
 input[disabled="true"],
 input[disabled="disabled"]  
 { 
@@ -252,6 +247,119 @@ html[xmlns] .clearfix {
 * html .clearfix {
 	height: 1%;
 }
+
+/*************** FECDAS NOU bootstrap ****************/
+
+label { color: #555555; font-weight: normal; }
+
+button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } 
+
+#left-menu { display:none; }
+
+.col-last-right { text-align: right; }
+
+.checkbox-inline label { margin-bottom: 0; } 
+
+.select2-container { padding: 0; border: none;  height: 100%;}
+
+.select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
+
+.data-detall .data-detall-cell i.fa { 
+	padding: 5px;
+	border-radius: 50%;
+	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
+  	-moz-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
+  	-ms-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
+  	-o-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
+  	transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
+} 
+.data-detall .data-detall-cell i.fa:hover { color: #ffffff;  } 
+.data-detall .data-detall-cell i.fa-pencil:hover { background-color: #31708f;  }
+.data-detall .data-detall-cell i.fa-trash-o:hover { background-color: #a94442;  }
+ 
+
+
+#menu-user {
+  	z-index: 1; 
+  	display:none; 
+  	/*margin: 10px;*/
+  	position: absolute; 
+  	right: 10px; 
+  	top: 10px;
+  	z-index: 1; 
+    /*font-weight: bold;
+    font-style: italic;*/
+    text-decoration: none;
+    /*float:left;
+    width: auto;*/
+}
+
+
+#menu-user .menu-user-dropdown {
+    /*padding: 0px 10px;*/
+    padding: 0;
+    margin-left: 1px;
+	float:left;
+	color: #67a2cf;
+	/*background-color: #67a2cf;*/
+    font-size: 16px;
+    font-weight: bold;
+    font-style: normal;
+    
+}
+
+
+#header #menu-user .menu-user-dropdown.open .dropdown-menu { width: 100%; text-align: right; left:inherit; right: 0; }
+
+#header #menu-user .menu-user-dropdown.open .dropdown-menu a { color: #555555; font-weight: normal;}
+
+#header #menu-user .menu-user-dropdown.open .dropdown-menu a i.fa { color: #31708f; }
+
+#header #menu-user .menu-user-dropdown.open .dropdown-menu > li > p,
+#header #menu-user .menu-user-dropdown.open .dropdown-menu > li > label {
+    clear: both;
+    color: #333;
+    display: block;
+    font-weight: 400;
+    line-height: 1.42857;
+    padding-bottom: 3px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 3px;
+    white-space: nowrap;
+}
+
+.fluxslider .surface { overflow: hidden; padding-bottom: 20px; } 
+
+#slider .pagination { border:none; display:block; }
+
+/*************** FECDAS NOU productes ****************/
+
+#header-producte-codi { width: 10%; text-align: right; }
+#header-producte-nomcurt  { width: 7%; text-align: center; }
+#header-producte-descripcio { width: 22%; text-align: left;  }
+#header-producte-tipus { width: 7%; text-align: left; }
+#header-producte-import { width: 7%; text-align: right; }
+#header-producte-iva { width: 7%; text-align: right; }
+#header-producte-total { width: 7%; text-align: right; }
+#header-producte-minim { width: 7%; text-align: center; }
+#header-producte-limit { width: 7%; text-align: center; }
+#header-producte-stock { width: 7%; text-align: center; }
+#header-producte-actions { width: 10%; text-align: right;  color: #3c763d;  }
+	   	
+.data-detall-cell.producte-codi  { width: 10%; text-align: right; }
+.data-detall-cell.producte-nomcurt  { width: 7%; text-align: center; }
+.data-detall-cell.producte-descripcio { width: 22%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.producte-tipus { width: 7%; text-align: left; }
+.data-detall-cell.producte-import { width: 7%; text-align: right; }
+.data-detall-cell.producte-iva { width: 7%; text-align: right; }
+.data-detall-cell.producte-total { width: 7%; text-align: right; font-weight: bold; }
+.data-detall-cell.producte-minim { width: 7%; text-align: center; }
+.data-detall-cell.producte-limit { width: 7%; text-align: center; }
+.data-detall-cell.producte-stock { width: 7%; text-align: center; }
+.data-detall-cell.producte-actions { width: 10%; text-align: right;}
+
+
 
 /***************** Llistes ******************/
 
@@ -431,7 +539,7 @@ html[xmlns] .clearfix {
     padding: 4px;
     text-align: center;
     vertical-align: middle;
-    width: 15px;
+    width: 25px;
     border-radius: 2px;
 }
 
@@ -1927,12 +2035,9 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 /*****************************************************************************************************************/
-
+/*
 #menu-user {
 	z-index: 1; display:none; margin: 24px 16px 0 2px;
-  	/*max-width: 250px;
-  	min-width: 165px; 
-  	padding: 7px; font-family: arial; */
   	position: absolute; right: 0; z-index: 1; 
     font-weight: bold;
     font-style: italic;
@@ -1942,7 +2047,6 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 #menu-user .menu-user-club-info {
-    /*padding: 0px 10px;*/
     padding: 6px 10px 10px;
     margin-left: 1px;
 	float:left;
@@ -1961,13 +2065,9 @@ li.parte-pendent-sincro .parterecents-actions {
 	width: 200px;
 	color: #1240A0;
 	font-size: 12px;
-	height: 20px;
-    line-height: 20px;
 }
 
 #menu-user .menu-user-action {
-	/*-webkit-border-radius: 0 0 10px 10px;
-   	-moz-border-radius: 0 0 10px 10px;*/
     border-radius: 0 0 10px 10px;
 	background-color: #67A2CF;
     box-shadow: 0 10px 5px rgba(0, 0, 0, 0.17), 0 0 0 #000000 inset;
@@ -1981,11 +2081,10 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 #menu-user .featured {
-	/*color: #FADA13;*/
 	color: #F0F2CA;
 	text-decoration: blink;
 }
-
+*/
 #browsernotsupported {
 	margin: 70px 190px 90px;
 	color: #444444;

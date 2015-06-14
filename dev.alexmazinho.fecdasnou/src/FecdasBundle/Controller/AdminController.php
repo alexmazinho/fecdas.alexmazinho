@@ -26,19 +26,16 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class AdminController extends BaseController {
 	
-	public function changeroleAction() {
+	public function changeroleAction(Request $request) {
 		if (!$this->isCurrentAdmin()) return new Response(""); 
 			
-		$request = $this->getRequest();
-
 		// Canviar Club Administrador	
 		if ($request->query->has('roleclub')) $this->get('session')->set('roleclub', $request->query->get('roleclub'));
 		
 		return new Response("");
 	}
 	
-	public function recentsAction() {
-		$request = $this->getRequest();
+	public function recentsAction(Request $request) {
 	
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -173,9 +170,7 @@ class AdminController extends BaseController {
 				)));
 	}
 	
-	public function confirmapagamentAction() {
-		$request = $this->getRequest();
-		
+	public function confirmapagamentAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 		
@@ -212,9 +207,7 @@ class AdminController extends BaseController {
 		return new Response("ko");
 	}
 	
-	public function sincroaccessAction() {
-		$request = $this->getRequest();
-	
+	public function sincroaccessAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
@@ -254,9 +247,7 @@ class AdminController extends BaseController {
 		return $response;
 	}
 	
-	public function canviestatclubAction () {
-		$request = $this->getRequest();
-		
+	public function canviestatclubAction (Request $request) {
 		if ($this->isCurrentAdmin() != true) return new Response("no admin");
 		
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($request->query->get('codiclub'));
@@ -311,9 +302,7 @@ class AdminController extends BaseController {
 		return new Response("ok");
 	}
 	
-	public function clubsAction() {
-		$request = $this->getRequest();
-	
+	public function clubsAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
@@ -371,10 +360,9 @@ class AdminController extends BaseController {
 			))); 
 	}
 	
-	public function anularpeticioAction() {
+	public function anularpeticioAction(Request $request) {
 		/* Anular petició duplicat */
-		$request = $this->getRequest();
-		
+				
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
@@ -402,9 +390,8 @@ class AdminController extends BaseController {
 		//return $this->redirect($this->generateUrl('FecdasBundle_duplicats'));
 	}
 	
-	public function imprespeticioAction() {
+	public function imprespeticioAction(Request $request) {
 		/* Marca petició duplicat com impressa i enviar un correu */
-		$request = $this->getRequest();
 	
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -454,8 +441,7 @@ class AdminController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_duplicats'));
 	}
 	
-	public function dadespagamentfacturaAction() {
-		$request = $this->getRequest();
+	public function dadespagamentfacturaAction(Request $request) {
 	
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));

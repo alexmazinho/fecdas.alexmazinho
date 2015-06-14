@@ -41,8 +41,7 @@ class PageController extends BaseController {
 		return $this->render('FecdasBundle:Page:index.html.twig', $this->getCommonRenderArrayOptions()); 
 	}
 
-	public function contactAction() {
-		$request = $this->getRequest();
+	public function contactAction(Request $request) {
 
 		$contact = new EntityContact();
 
@@ -81,8 +80,7 @@ class PageController extends BaseController {
 		return $this->render('FecdasBundle:Page:contact.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 
-	public function importcsvAction() {
-		$request = $this->getRequest();
+	public function importcsvAction(Request $request) {
 		
 		$request->getSession()->getFlashBag()->clear();
 		
@@ -238,9 +236,8 @@ class PageController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'datesparte' => $this->datesAltaParte())));
 	}
 	
-	public function confirmcsvAction() {
-		$request = $this->getRequest();
-	
+	public function confirmcsvAction(Request $request) {
+		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
@@ -415,8 +412,7 @@ class PageController extends BaseController {
 		$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 	}
 	
-	public function partesAction() {
-		$request = $this->getRequest();
+	public function partesAction(Request $request) {
 
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -498,8 +494,7 @@ class PageController extends BaseController {
 						));
 	}
 
-	public function llicenciesParteAction() {
-		$request = $this->getRequest();
+	public function llicenciesParteAction(Request $request) {
 	
 		if ($this->isAuthenticated() != true) return new Response("");
 	
@@ -516,8 +511,7 @@ class PageController extends BaseController {
 		return $this->render('FecdasBundle:Page:partesllicencies.html.twig', array('parte' => $parte, 'llicencies' => $llicencies));
 	}
 	
-	public function asseguratsAction() {
-		$request = $this->getRequest();
+	public function asseguratsAction(Request $request) {
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -574,8 +568,7 @@ class PageController extends BaseController {
 						));
 	}
 	
-	public function historialLlicenciesAction() {
-		$request = $this->getRequest();
+	public function historialLlicenciesAction(Request $request) {
 		
 		if ($this->isAuthenticated() != true) return new Response("");
 
@@ -624,8 +617,7 @@ class PageController extends BaseController {
 		
 	}
 	
-	public function busseigAction() {
-		$request = $this->getRequest();
+	public function busseigAction(Request $request) {
 
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -700,12 +692,12 @@ class PageController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 	}
 
-	public function renovarAction() {
+	public function renovarAction(Request $request) {
 		$this->get('session')->getFlashBag()->clear();
-		$request = $this->getRequest();
+		
 		if ($this->isAuthenticated() != true) {
 			// keep url. Redirect after login
-			$url_request = $this->getRequest()->server->get('REQUEST_URI');
+			$url_request = $request->server->get('REQUEST_URI');
 			$this->get('session')->set('url_request', $url_request);
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 		}
@@ -884,9 +876,7 @@ class PageController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'avisos' => $avisos)));
 	}
 
-	public function parteAction() {
-
-		$request = $this->getRequest();
+	public function parteAction(Request $request) {
 
 		if ($request->query->has('source') == false) $this->get('session')->getFlashBag()->clear(); // No ve de renovació
 		
@@ -1220,8 +1210,8 @@ class PageController extends BaseController {
 		return ''; 
 	} 
 	
-	public function llicenciaAction() {
-		$request = $this->getRequest();
+	public function llicenciaAction(Request $request) {
+		
 		if ($request->isXmlHttpRequest()) {
 			$options = $this->getFormOptions();
 
@@ -1317,8 +1307,7 @@ class PageController extends BaseController {
 		return new Response("Error. Contacti amb l'administrador (llicenciaAction)");
 	}
 
-	public function personaAction() {
-		$request = $this->getRequest();
+	public function personaAction(Request $request) {
 
 		$options = array();
 		/* Get provincies, comarques, nacions*/
@@ -1464,8 +1453,7 @@ class PageController extends BaseController {
 		return new Response("Error personaAction ");
 	}
 	
-	public function duplicatsAction() {
-		$request = $this->getRequest();
+	public function duplicatsAction(Request $request) {
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -1609,9 +1597,8 @@ class PageController extends BaseController {
 						));
 	}
 	
-	public function duplicatsformAction() {
+	public function duplicatsformAction(Request $request) {
 		// retorna els camps del formulari de duplicats de la petició   	
-		$request = $this->getRequest();
 		
 		if ($this->isAuthenticated() != true || 
 			!$request->query->has('carnet') ||
@@ -1635,8 +1622,7 @@ class PageController extends BaseController {
 		return $this->render('FecdasBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView()))); 
 	} 
 	
-	public function pagamentpeticioAction() {
-		$request = $this->getRequest();
+	public function pagamentpeticioAction(Request $request) {
 	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -1679,9 +1665,8 @@ class PageController extends BaseController {
 	}
 	
 	
-	public function pagamentAction() {
-		$request = $this->getRequest();
-
+	public function pagamentAction(Request $request) {
+	
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
@@ -1721,19 +1706,18 @@ class PageController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function notificacioOkAction() {
+	public function notificacioOkAction(Request $request) {
 		// Resposta TPV on-line, genera resposta usuaris correcte
-		return $this->notificacioOnLine();
+		return $this->notificacioOnLine($request);
 	}
 	
-	public function notificacioKoAction() {
+	public function notificacioKoAction(Request $request) {
 		// Resposta TPV on-line, genera resposta usuaris incorrecte		
-		return $this->notificacioOnLine();
+		return $this->notificacioOnLine($request);
 	}
 	
 	
-	public function notificacioOnLine() {
-		$request = $this->getRequest();
+	public function notificacioOnLine(Request $request) {
 	
 		$tpvresponse = $this->tpvResponse($request->query);
 
@@ -1755,9 +1739,8 @@ class PageController extends BaseController {
 	}
 	
 	
-	public function notificacioAction() {
+	public function notificacioAction(Request $request) {
 		// Crida asincrona des de TPV. Actualització dades pagament del parte
-		$request = $this->getRequest();
 
 		$tpvresponse = $this->tpvResponse($request->request);
 		
@@ -1872,7 +1855,7 @@ class PageController extends BaseController {
 		return $tpvresponse;
 	}
 	
-	public function notificacioTestAction() {
+	public function notificacioTestAction(Request $request) {
 	
 		$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text');
 		$formBuilder->add('Ds_MerchantData', 'text', array('required' => false));

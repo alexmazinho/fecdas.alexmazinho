@@ -3,22 +3,14 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css') }}" type="text/css" rel="stylesheet" />
     {% if roleform is defined %}
     {{ form_stylesheet(roleform) }}
-    {% endif %}
-{% endblock %}
-
- {% block javascriptshead %}
-    {{ parent() }}
-    <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
-    {% if roleform is defined %}
-    {{ form_javascript(roleform) }}
     {% endif %}
 {% endblock %}
 
@@ -35,25 +27,34 @@
 {% block fecdas_login %} 
 	{# if ( not ( app.session.has('username') and app.session.has('remote_addr') ) or
     	  ( app.session.get('remote_addr') != app.request.server.get("REMOTE_ADDR") ) )  #}
-   	{% if authenticated == false  %}
-    	<a href="{{ path('FecdasBundle_login') }}">Iniciar sessió<img src="{{ asset('images/icon_login.png') }}"></a>
-  	{% else %}
-    	{{ app.session.get('username') }} <a href="{{ path('FecdasBundle_logout') }}"><img src="{{ asset('images/icon_signout.png') }}"></a>
-	{% endif %}
     	<div id="menu-user">
-			<div class="menu-user-club-info">
-			{% if roleform is defined %}
-			{{ form_label(roleform.role) }}
-			{{ form_widget(roleform.role) }}
-			{% endif %}
-			{% if userclub is defined %}{{ userclub }}{% endif %}
+			
+			<div class="btn-group menu-user-dropdown">
+			  <a class="btn btn-primary" href="#"><i class="fa fa-user fa-fw"></i> {{ app.session.get('username') }}{% if userclub is defined %}{{ userclub }}{% else %} entrada{% endif %}</a>
+			  <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+			    <span class="fa fa-caret-down"></span></a>
+			  <ul class="dropdown-menu">
+				<li><a href="{{ path('FecdasBundle_contact') }}">Contacte <i class="fa fa-envelope-o fa-fw"></i></a></li>
+			    <li><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ <i class="fa fa-info fa-fw"></i></a></li>
+				{% if authenticated == true  %}
+					{% if enquestausuaripendent is defined and enquestausuaripendent == true %}
+						<li><a class="featured enquesta-action-open" href="{{ path('FecdasBundle_enquestausuari') }}">Enquesta <i class="fa fa-question fa-fw"></i></a></li>
+					{% endif %}
+					<li><a href="{{ path('FecdasBundle_user') }}">Racó d'usuari <i class="fa fa-key fa-fw"></i></a></li>
+					<li><a href="{{ path('FecdasBundle_logout') }}">Tancar sessió <i class="fa fa-sign-out fa-fw"></i></a></li>
+				{% else %}
+					<li><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió <i class="fa fa-sign-in fa-fw"></i></a></li>	
+				{% endif %}	
+			    {% if roleform is defined %}
+			    <li class="divider"></li>
+			    <li>{{ form_label(roleform.role) }}</li>
+			    <li><p>{{ form_widget(roleform.role) }} <i class="fa fa-exchange fa-fw"></i></p></li>
+				{% endif %}
+				{% if userclub is defined %}
+				<li>{{ userclub }}</li>
+				{% endif %}
+			  </ul>
 			</div>
-			{% if enquestausuaripendent is defined and enquestausuaripendent == true %}
-			<div class="menu-user-action"><a class="featured enquesta-action-open" href="{{ path('FecdasBundle_enquestausuari') }}">Enquesta</a></div>
-			{% endif %}
-			<div class="menu-user-action"><a href="{{ path('FecdasBundle_contact') }}">Contacte</a></div>
-			{% if authenticated == true  %}<div class="menu-user-action"><a href="{{ path('FecdasBundle_user') }}">Racó d'usuari</a></div>{% endif %}
-			<div class="menu-user-action"><a href="http://www.fecdas.cat/faqs.php" target="_blank">FAQ</a></div>
 			
 	    	<select id="mobile-menu-principal">
 				<option value="">Seleccionar una pàgina</option>
@@ -70,10 +71,11 @@
 				<option value="{{ path('FecdasBundle_enquestes') }}"> - Enquestes</option>
 				{% endif %}
 				<option value="">Tramitació</option>
-				<option value="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"> - Llicències</option>
+				<option value="{{ path('FecdasBundle_parte') }}"> - Introduir noves llicències</option>
 				<option value="{{ path('FecdasBundle_importcsv') }}"> - Importació de llicències</option>
 				<option value="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"> - Duplicats</option>
 				<option value="">Consulta</option>
+				<option value="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"> - Llicències</option>
 				<option value="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"> - Assegurats</option>
 				{% if busseig == true  %}
 				<option value="{{ path('FecdasBundle_busseig') }}"> - Llicències amb el DNI</option>
@@ -92,6 +94,75 @@
 	
 {% endblock %}
 
+{% block menu_navigation %}
+
+	{% if authenticated == true  %}
+		<nav class="navbar navbar-default">
+		  <div class="container-fluid">
+		    <!-- Brand and toggle get grouped for better mobile display -->
+		    <div class="navbar-header">
+		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </button>
+		      <a class="navbar-brand" href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i></a>
+		    </div>
+		
+		    <!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <ul class="nav navbar-nav">
+		        <li class="active"><a href="{{ path('FecdasBundle_homepage') }}">Inici <span class="sr-only">Inici</span></a></li>
+		        <li class="dropdown">
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tramitació <span class="caret"></span></a>
+		          <ul class="dropdown-menu" role="menu">
+		          	<li><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
+					<li><a href="{{ path('FecdasBundle_importcsv') }}">Importació de llicències</a></li>
+					<li class="divider"></li>
+					<li><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
+		          </ul>
+		        </li>
+		        <li class="dropdown">
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consulta <span class="caret"></span></a>
+		          <ul class="dropdown-menu" role="menu">
+		          	<li><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llicències</a></li>
+		          	<li class="divider"></li>
+		          	<li><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
+					{% if busseig == true  %}
+			            <li class="divider"></li>
+						<li><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>
+					{% endif %}
+		          </ul>
+		        </li>
+		      </ul>
+		      	
+		      	<ul class="nav navbar-nav navbar-right">
+		      		<li><a href="{{ path('FecdasBundle_club') }}">Clubs i usuaris</a></li>
+		      		<li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Llicències <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">Llistes recents</a></li>
+			          </ul>
+			        </li>	
+		      		<li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Facturació <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Productes</a></li>
+			          	<li><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">Saldos clubs</a></li>
+			          </ul>
+			        </li>
+					<li><a href="{{ path('FecdasBundle_enquestes') }}">Enquestes</a></li>
+		      	</ul>
+		      	<p class="navbar-text navbar-right">Administració:</p>
+		    </div><!-- /.navbar-collapse -->
+		  </div><!-- /.container-fluid -->
+		</nav>
+
+	{% endif %}
+{% endblock %}
+
+
 {% block sidebar %}
 	<nav>
 		<ul class="navigation">
@@ -107,8 +178,13 @@
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Clubs i usuaris</a></li>
 					<li id="menu-admllistes"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
-					<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">
-					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos clubs</a></li>
+					<li id="menu-adm"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Administració</a>
+					<li><ul class="submenu">					
+						<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">
+						<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos clubs</a></li>
+						<li id="menu-admproductes"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">
+						<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Productes</a></li>
+					</ul></li>
 					<li id="menu-admenquestes"><a href="{{ path('FecdasBundle_enquestes') }}">
 					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>
 				</ul></li>
@@ -132,44 +208,58 @@
 {% endblock %}
 
 {% block javascripts %}
-
-{{ parent() }}
-
-<script type="text/javascript">
-	if (($.browser.msie && parseInt($.browser.version, 10) < 8) ||
-	    ($.browser.webkit && parseInt($.browser.version, 10) < 14) ||
-	    ($.browser.mozilla && parseInt($.browser.version, 10) < 11) ||
-	    ($.browser.opera && parseInt($.browser.version, 10) < 11)) {
-		/* http://browsershots.org
-		IE >= 9, Firefox >= 11, Chorme >=14, Opera >= 11, Safari >= 5 */
-		location.href="/browsernotsupported.html";
-	};
-</script>
-
-<script type="text/javascript">
-	$(document).ready(function(){
-		formFocus();
-
-		showEnquestaClick();
-
-		mainMenuClick();
-
-		changeRoleClub("{{ path('FecdasBundle_changerole') }}");
-
-		$("#mobile-menu-principal").change(function() {
-	    	document.location = $(this).val();
-		});
-	});
-
-	$('#menu-user')
-	  .css('opacity', 0)
-	  .slideDown('slow')
-	  .animate(
-	    { opacity: 1 },
-	    { queue: false, duration: 'slow' }
-	  );
+ 	
+	{{ parent() }}
 	
-</script>
+    <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    
+    <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>
+	
+	{% if roleform is defined %}
+	    {{ form_javascript(roleform) }}
+	{% endif %}
+
+	<script type="text/javascript">
+		if (($.browser.msie && parseInt($.browser.version, 10) < 8) ||
+		    ($.browser.webkit && parseInt($.browser.version, 10) < 14) ||
+		    ($.browser.mozilla && parseInt($.browser.version, 10) < 11) ||
+		    ($.browser.opera && parseInt($.browser.version, 10) < 11)) {
+			/* http://browsershots.org
+			IE >= 9, Firefox >= 11, Chorme >=14, Opera >= 11, Safari >= 5 */
+			location.href="/browsernotsupported.html";
+		};
+	</script>
+
+
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+			
+			formFocus();
+	
+			showEnquestaClick();
+	
+			mainMenuClick();
+	
+			changeRoleClub("{{ path('FecdasBundle_changerole') }}");
+	
+			$("#mobile-menu-principal").change(function() {
+		    	document.location = $(this).val();
+			});
+		});
+	
+		$('#menu-user')
+		  .css('opacity', 0)
+		  .slideDown('slow')
+		  .animate(
+		    { opacity: 1 },
+		    { queue: false, duration: 'slow' }
+		  );
+		
+	</script>
 
 
 {% endblock %}

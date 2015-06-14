@@ -1,6 +1,8 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
+
 
 /**
  * @ORM\Entity
@@ -192,6 +194,16 @@ class EntityProducte {
     public function getTipus()
     {
         return $this->tipus;
+    }
+    
+    /**
+     * Get tipus text
+     *
+     * @return integer
+     */
+    public function getTipusText()
+    {
+    	return BaseController::getTipusProducte($this->tipus);
     }
 
     /**

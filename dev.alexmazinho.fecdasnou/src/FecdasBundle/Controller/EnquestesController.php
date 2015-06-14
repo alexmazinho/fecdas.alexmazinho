@@ -13,8 +13,7 @@ use FecdasBundle\Entity\Enquestes\EntityResposta;
 use FecdasBundle\Form\Enquestes\FormEnquesta;
 
 class EnquestesController extends BaseController {
-	public function enquestesAction() {
-		$request = $this->getRequest();
+	public function enquestesAction(Request $request) {
 	
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -44,8 +43,7 @@ class EnquestesController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('enquestes' => $enquestes, 'poblacio' => $poblacio)));
 	}
 	
-	public function tancarenquestaAction() {
-		$request = $this->getRequest();
+	public function tancarenquestaAction(Request $request) {
 		
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -79,8 +77,7 @@ class EnquestesController extends BaseController {
 	}
 	
 	
-	public function enquestaAction() {
-		$request = $this->getRequest();
+	public function enquestaAction(Request $request) {
 	
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -248,8 +245,7 @@ class EnquestesController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'preguntessi' => $preguntestotes, 'preguntesno' => $preguntesno)));
 	}
 	
-	public function enquestausuariAction() {
-		$request = $this->getRequest();
+	public function enquestausuariAction(Request $request) {
 		
 		//if ($this->isAuthenticated() != true or $this->get('session')->has('enquestapendent') != true) return new Response("error");
 		if ($this->isAuthenticated() != true) return new Response("error");
@@ -415,9 +411,8 @@ class EnquestesController extends BaseController {
 	}
 	
 	
-	public function enquestaresultatsAction() {
+	public function enquestaresultatsAction(Request $request) {
 		/* Genera les dades de les respostes d'una enquesta */
-		$request = $this->getRequest();
 		
 		if ($request->query->has('id')) {
 			$id = $request->query->get('id'); // Demana administrador per revisar
@@ -437,8 +432,7 @@ class EnquestesController extends BaseController {
 		return new Response("No s'ha trobat dades");
 	}
 
-	public function estadistiquesAction() {
-		$request = $this->getRequest();
+	public function estadistiquesAction(Request $request) {
 		
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -457,7 +451,7 @@ class EnquestesController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('tab' => $tab,  'pselected' => $preguntaid)));
 	}
 	
-	public function estadistiquesTab1Action() {
+	public function estadistiquesTab1Action(Request $request) {
 		/* AJAX. Evolució de la mitjana de totes les respostes */
 		//return new Response("hola tab1");
 		
@@ -509,10 +503,8 @@ class EnquestesController extends BaseController {
 	}
 	
 	
-	public function estadistiquesTab2Action() {  
+	public function estadistiquesTab2Action(Request $request) {  
 		/* AJAX. Evolució d'una pregunta tipus RANG o BOOL al llarg de les diferents enquestes (temps) */
-		
-		$request = $this->getRequest();
 		
 		if ($this->isCurrentAdmin() != true) return new Response("La sessió ha expirat");
 		

@@ -107,113 +107,83 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i></a>
+		      <ul class="nav navbar-nav"><li id="menu-contact"><a class="navbar-brand" href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i></a></li></ul>
 		    </div>
 		
 		    <!-- Collect the nav links, forms, and other content for toggling -->
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
-		        <li class="active"><a href="{{ path('FecdasBundle_homepage') }}">Inici <span class="sr-only">Inici</span></a></li>
+		        <li id="menu-home"><a href="{{ path('FecdasBundle_homepage') }}">Inici <span class="sr-only">Inici</span></a></li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tramitació <span class="caret"></span></a>
 		          <ul class="dropdown-menu" role="menu">
-		          	<li><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
-					<li><a href="{{ path('FecdasBundle_importcsv') }}">Importació de llicències</a></li>
+		          	<li id="menu-parte"><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
+					<li id="menu-import"><a href="{{ path('FecdasBundle_importcsv') }}">Importació de llicències</a></li>
 					<li class="divider"></li>
-					<li><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
+					<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
 		          </ul>
 		        </li>
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consulta <span class="caret"></span></a>
 		          <ul class="dropdown-menu" role="menu">
-		          	<li><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llicències</a></li>
+		          	<li id="menu-partes"><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llicències</a></li>
 		          	<li class="divider"></li>
-		          	<li><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
+		          	<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
 					{% if busseig == true  %}
 			            <li class="divider"></li>
-						<li><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>
+						<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>
 					{% endif %}
 		          </ul>
 		        </li>
 		      </ul>
 		      	
 		      	<ul class="nav navbar-nav navbar-right">
-		      		<li><a href="{{ path('FecdasBundle_club') }}">Clubs i usuaris</a></li>
+		      		<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">Clubs i usuaris</a></li>
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Llicències <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			          	<li><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">Llistes recents</a></li>
+			          	<li id="menu-admllistes"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">Llistes recents</a></li>
 			          </ul>
 			        </li>	
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Facturació <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			          	<li><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Productes</a></li>
-			          	<li><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">Saldos clubs</a></li>
+			          	<li id="menu-admproductes"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Productes</a></li>
+			          	<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">Saldos clubs</a></li>
 			          </ul>
 			        </li>
-					<li><a href="{{ path('FecdasBundle_enquestes') }}">Enquestes</a></li>
+					<li id="menu-admenquestes"><a href="{{ path('FecdasBundle_enquestes') }}">Enquestes</a></li>
 		      	</ul>
-		      	<p class="navbar-text navbar-right">Administració:</p>
+		      	<p class="navbar-text navbar-right"><i class="admin-nav">ADMINISTRACIÓ </i></p>
 		    </div><!-- /.navbar-collapse -->
 		  </div><!-- /.container-fluid -->
 		</nav>
-
-	{% endif %}
+    {% endif %} 
+	
 {% endblock %}
 
 
-{% block sidebar %}
+{% block body %}
 	<nav>
-		<ul class="navigation">
-			<li id="menu-home"><a href="{{ path('FecdasBundle_homepage') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Pàgina principal</a></li>
-			{% if authenticated == false  %}
-			<li id="menu-login"><a href="{{ path('FecdasBundle_login') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Iniciar sessió</a></li>
-			<li id="menu-contact"><a href="{{ path('FecdasBundle_contact') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Contacte</a></li>
-			{% else %}
-				{% if admin == true  %}
-				<li id="menu-adm"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Administració</a>
-				<ul class="submenu">
-					<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">
-					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Clubs i usuaris</a></li>
-					<li id="menu-admllistes"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">
-					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llistes recents</a></li>
-					<li id="menu-adm"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Administració</a>
-					<li><ul class="submenu">					
-						<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">
-						<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Saldos clubs</a></li>
-						<li id="menu-admproductes"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">
-						<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Productes</a></li>
-					</ul></li>
-					<li id="menu-admenquestes"><a href="{{ path('FecdasBundle_enquestes') }}">
-					<span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Enquestes</a></li>
-				</ul></li>
-				{% endif %}
-				<li id="menu-tram"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Tramitació</a>
-				<ul class="submenu">
-					<li id="menu-partes"><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències</a></li>
-					<li id="menu-import"><a href="{{ path('FecdasBundle_importcsv') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Importació de llicències</a></li>
-					<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Duplicats</a></li>
-				</ul></li>				
-				<li id="menu-cons"><a class="main-menu-action" href="#"><span class="menu-icon ui-icon ui-icon-triangle-1-e"></span>Consulta</a>
-				<ul class="submenu">	
-					<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Assegurats</a></li>
-					{% if busseig == true  %}
-					<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}"><span class="menu-icon ui-icon ui-icon-triangle-1-e menu-subitem"></span>Llicències amb el DNI</a></li>
-					{% endif %}
-				</ul></li>
-			{% endif %}
+	{% if authenticated != true  %}
+		<ul class="nav nav-pills">
+			<li id="menu-home" role="presentation"><a href="{{ path('FecdasBundle_homepage') }}"><i class="fa fa-home"></i>Inici</a></li>
+			<li id="menu-login" role="presentation"><a href="{{ path('FecdasBundle_login') }}"><i class="fa fa-user"></i>Entrar</a></li>
+			<li id="menu-contact" role="presentation"><a href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i>Contacte</a></li>
 		</ul>
+	{% endif %}
 	</nav>
 {% endblock %}
+
 
 {% block javascripts %}
  	
 	{{ parent() }}
-	
+
+	<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>	
     <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
     <script src="{{ asset('js/my-jquery-script-enquestes.js') }}" type="text/javascript"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    
     
     <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
 	<script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>

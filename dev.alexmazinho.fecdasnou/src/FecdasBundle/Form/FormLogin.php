@@ -3,7 +3,7 @@ namespace FecdasBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FormLogin extends AbstractType {
 
@@ -13,9 +13,11 @@ class FormLogin extends AbstractType {
 		$builder->add('pwd', 'password');
 	}
 	
-	public function setDefaultOptions(OptionsResolverInterface $resolver)
+	public function configureOptions(OptionsResolver $resolver)
 	{
-		$resolver->setDefaults(array('data_class' => 'FecdasBundle\Entity\EntityUser'));
+	    $resolver->setDefaults(array(
+	        'data_class' => 'FecdasBundle\Entity\EntityUser'
+	    ));
 	}
 	
 	public function getName()

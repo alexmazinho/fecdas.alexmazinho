@@ -84,12 +84,18 @@
 	};
 	
 	setMenuActive = function(menuid) {
+		
+		var menuItem = $('nav ul.nav ' + '#'+menuid);
+		//$('nav ul.nav li').removeClass('active');
+		menuItem.addClass('active');
+		menuItem.parents('li.dropdown').addClass('active');
+		/*
 		var menuItem = $('#'+menuid); 
 		
-		menuItem.children('a').addClass("left-menu-active"); /* <a a/> under menu li*/
+		menuItem.children('a').addClass("left-menu-active"); // <a a/> under menu li
 		menuItem.find('span').show();
 		
-		/* Drop down main parent main menu */
+		// Drop down main parent main menu 
 		var parentMenuItem = $('#'+menuid).parents('li');
 		var mainAction = parentMenuItem.children('.main-menu-action');
 		var subMenu = parentMenuItem.children('.submenu');
@@ -97,7 +103,7 @@
 		mainAction.addClass("left-menu-active");	
 		mainAction.find('.menu-icon').removeClass('ui-icon-triangle-1-e');
 		mainAction.find('.menu-icon').addClass('ui-icon-triangle-1-s');
-		subMenu.show(); 
+		subMenu.show(); */
 	};
 	
 	
@@ -288,6 +294,8 @@
 	    return false;
 	};
 	
+	/********** Selectors de dates ***************/
+	
 	loadCalendar = function(elem, callback) {
 		$.datepicker.setDefaults( $.datepicker.regional[ "ca" ] );
 		
@@ -320,6 +328,38 @@
 		});
 
 	};
+	
+	initDateTimePicker = function (elem, min, max, current, id, showtime, callback ) {
+
+		var curformat = 'd/m/Y';
+		if (showtime) curformat = 'd/m/Y H:i';
+		
+		elem.datetimepicker({
+			 onGenerate:function( ct, $input ) {
+				$input.parent().on('click', '.open-calendar', function () {
+					if ( ! $(id).is(":visible") ) {
+						//$input.datetimepicker('hide');
+	 	 			//} else {
+	 	 				$input.datetimepicker('show');
+	 	 			}
+				});
+			 },
+			 onChangeDateTime:callback,
+			 closeOnDateSelect: true,
+			 timepicker: showtime,
+			 lang:'ca',
+			 id:  id,
+			 //className: 'pickerclass',
+			 format: curformat, // '',
+			 minDate: min,
+			 maxDate: max,
+			 defaultDate: current,
+			 //startDate: current,
+			 yearStart: min.getFullYear(),
+			 yearEnd: max.getFullYear()
+			 
+		});
+	} 
 	
 	dialegError = function(titol, strError, dwidth, dheight) {
 		$("#dialeg").dialog({
@@ -959,6 +999,7 @@
 					$("#parte_tipus option:not(:selected)").each(function(i, item){
 						$(item).remove();
 					});
+					$('#formparte-novallicencia').show();
 
 					// Parte nou creta, desactiva data
 					$("#formparte-dataalta img").hide();
@@ -988,7 +1029,7 @@
 	partePagamentButton = function() {
 		$('#formparte-payment').click(function(e) {
 			e.preventDefault();
-			var url = $(this).attr("href");
+			var url = $(this).attr("data-href");
 			$("#dialeg").dialog({
 	          	buttons : {
 	            	"Continuar" : function() {

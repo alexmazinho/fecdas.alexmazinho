@@ -14,11 +14,15 @@
 			{# form_errors(llicencia.persona) #}
 		</div>
 		{% if llicenciadades.parte.allowEdit == true %} 
+		
+		
+		
 		<div class="form-left">
-			<div class="textaccio">
-				<a id="formllicencia-openmodal" href="{{ path('FecdasBundle_persona') }}" name="modal">
+			<label>&nbsp;</label>
+			<button type="button" id="formllicencia-openmodal" class="btn btn-default btn-lg" name="modal" 
+				href="{{ path('FecdasBundle_persona') }}">
 				{% if llicenciadades.persona is not null %}	modifica assegurat 
-				{% else %} nou assegurat {% endif %}<img src="{{ asset('images/icon_add.png') }}"></a></div>
+				{% else %} nou assegurat {% endif %}<i class="fa fa-user-plus"></i></button>
 		</div>
 		{% endif %} 
 		<div id="formllicencia-categoria" class="form-left">
@@ -32,10 +36,12 @@
 		</div> 
 	</div>
 	<div class="form-row clearfix">
-		<div class="llicencia-check check-correu" class="form-left">
-			{{ form_label(llicencia.enviarllicencia, 'Rebre llicència per correu?', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-			{{ form_widget(llicencia.enviarllicencia, { 'attr': {'class': 'formcheckbox-right'} }) }}
+		<div class="checkbox-inline llicencia-check check-correu">
+		    <label>
+		      {{ form_widget(llicencia.enviarllicencia) }} Rebre llicència per correu?
+		    </label>
 		</div>
+		
 	</div>
 	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
 	<div class="form-row clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
@@ -102,10 +108,8 @@
 	</div>
 	{% if llicenciadades.parte.allowEdit == true %}
 	<div class="form-row clearfix">
-		<div class="form-left">
-			<div class="textaccio"><a id="formllicencia-add" href="javascript:void(0);" name="add-llicencia">
-			confirmar llicència<img src="{{ asset('images/icon_down16.png') }}"></a></div>
-		</div>
+		<button type="button" id="formllicencia-add" class="btn btn-default btn-lg" name="add-llicencia">confirmar llicència <i class="fa fa-check"></i></button>
+		
 	</div>
 	{% endif %}
 	<div class="clearfix">

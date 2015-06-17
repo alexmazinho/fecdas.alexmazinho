@@ -3,12 +3,9 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ExecutionContext;
 
 /**
  * 
- * @Assert\Callback(methods={"isLlicenciaValid"})
- *
  * @ORM\Entity
  * @ORM\Table(name="m_llicencies")
  * 
@@ -16,16 +13,6 @@ use Symfony\Component\Validator\ExecutionContext;
  *
  */
 class EntityLlicencia {
-	
-	public function isLlicenciaValid(ExecutionContext $context)
-	{
-		/*if ($this->persona == null) {
-			echo " nullla ";
-			$propertyPath = $context->getPropertyPath() . '.persona';
-			$context->setPropertyPath($propertyPath);
-			$context->addViolation('Persona nula!', array(), null);
-		} echo " ok ";*/
-	}
 	
 	/**
 	 * @ORM\Id

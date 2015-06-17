@@ -97,8 +97,8 @@ input[type="text"],
 input[type="email"],
 input[type="password"] { 
 	max-width: 400px; 
-	line-height: 24px; 
-	min-height:26px; 
+	line-height: 30px; 
+	min-height:30px; 
 	text-indent: 5px;
 	padding-right: 5px;
 	border-radius: 5px; 
@@ -117,11 +117,18 @@ input[type="search"]  {
 	  
 input[type="email"] { max-width: 500px; }
 	  
-input[type="submit"]  { line-height: 24px; min-height: 24px; }
+input[type="submit"]  { line-height: 30px; min-height: 30px; }
 
 textarea  { 
-	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 24px; padding: 5px; resize: both;
-	border: 1px solid #AAA; background: #EEEEEE; /*color: #555555;*/ color: #1240A0;}
+	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 30px; padding: 5px; resize: both;
+	border: 1px solid #AAA; border-radius: 5px;  background: #EEEEEE; /*color: #555555;*/ color: #1240A0;}
+
+select { line-height: 30px; height: 34px; padding: 0 3px; text-overflow: ellipsis; white-space: nowrap; }
+
+select option {
+    padding: 2px 5px;
+}
+
 /*
 select {
 	background: #EEEEEE;
@@ -202,6 +209,8 @@ input#datepicker,
 	text-indent: 0px;
 }
 
+.open-calendar { cursor: pointer; }
+
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
 .ui-timepicker-div dl { text-align: left; }
@@ -226,6 +235,14 @@ input#datepicker,
 	display: table-cell;
 	width: auto;
 }
+
+#main-col nav .nav-pills { margin: 0 auto 20px auto;  width: 340px;  }
+#main-col nav .nav-pills a { font-size: 1.1em; color: #1240a0; }
+#main-col nav .nav-pills .active a {  background-color: #fff; text-decoration:underline; }
+#main-col nav .nav-pills .fa { font-size: 1.1em; width: 30px; }
+/*#main-col nav .nav-pills > li.active > a,*/ 
+#main-col nav .nav-pills > li.active > a:focus, 
+#main-col nav .nav-pills > li.active > a:hover { color: #2281cf; background-color: #eee; /*#337ab7;*/  }
 
 .clearfix:after {
     clear: both;
@@ -517,13 +534,34 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
    height: expression( this.scrollHeight > 409 ? "410px" : "auto" ); /* sets max-height for IE */
 }
 
-
+/*
 .navigation {
 	color: #005A8C;
 	display: inline-block;
 	width: 100%;
 	text-align: right;	
+}*/
+
+.container a { text-decoration: none; color: #1240a0;  }
+.container span.highlight { color: #1240a0; }
+
+
+.navbar-default { /* background-color: #F0F9FF; background-image: linear-gradient(to bottom, #FFFFFF 0px, #EEEEEE 100%); */}
+
+.navbar-default .navbar-nav > li > a, .navbar-default .navbar-nav .dropdown-menu > li > a  {  color: #1240a0; } 
+
+.navbar-default .navbar-nav > .active > a,  .navbar-default .navbar-nav .dropdown-menu > li.active > a,
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:focus, .navbar-default .navbar-nav > .open > a:hover {
+	background-color: #2281CF;
+	background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%);
+	color: #fff;
 }
+
+.navbar-right li { text-align: right; } 
+
+.admin-nav { padding-right: 10px; }
+
+.navbar-default .navbar-nav > .active > a:hover { color: #fff; }  
 
 .navigation .pagination {
 	padding: 3px 0;
@@ -851,7 +889,6 @@ input#parte_any {
 	text-indent: 0px;
 }
 
-select#parte_tipus { width: 250px; /*min-width: 250px;*/ }
 
 select#parte_renovar_club { width: 295px; }
 
@@ -1478,14 +1515,6 @@ p.info-bold {
     border-radius: 5px 5px 5px 5px;
 }
 
-#login_user, #login_pwd {
-	width: 250px;
-}
-
-.login div {
-	padding-bottom: 10px;
-}
-
 .login p {
 	padding-bottom: 10px;
 }
@@ -1623,9 +1652,7 @@ p.info-bold {
 
 /************************************************* Contacte ******************************************************/
 
-#contact div {
-	padding-bottom: 10px;
-}
+
 
 /*****************************************************************************************************************/
 

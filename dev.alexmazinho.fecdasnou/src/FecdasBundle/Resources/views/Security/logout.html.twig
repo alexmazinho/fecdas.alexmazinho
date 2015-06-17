@@ -4,17 +4,22 @@
 {% block title %}Aplicació gestió FECDAS. Autenticació {% endblock %}
 
 {% block body %}
-    <header>
-        <h1>Gestió FECDAS</h1>
-    </header>
-
-    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
-	{# app.session.clearflashes #}
-   
-    <p><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió</a></p>
-    
+	<div class="logout page-center"> 
+		{{ parent() }}
+		
+		<div class="login-content content-center"> 
+		    <header>
+		        <h1>Sortida</h1>
+		    </header>
+		
+		    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
+		    <div class="sms-notice">
+				{{ flashMessage }}
+		  	</div>	
+			{% endfor %}
+			{# app.session.clearflashes #}
+		   
+		    <p><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió</a></p>
+	    </div>
+    </div>
 {% endblock %}

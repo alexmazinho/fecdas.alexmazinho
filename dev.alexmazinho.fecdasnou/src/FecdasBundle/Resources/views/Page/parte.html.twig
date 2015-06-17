@@ -1,12 +1,11 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/parte.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block javascriptshead %}
- 	{{ parent() }}
-   	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
-   	<script src="{{ asset('js/jquery-ui-timepicker-addon.js') }}" type="text/javascript"></script>
-   	<script src="{{ asset('js/jquery-ui-timepicker-ca.js') }}" type="text/javascript"></script>
-   	 {{ form_javascript(form) }}
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Gestió de llistes d'assegurats{% endblock %}
@@ -24,63 +23,86 @@
 		<div id="formparte-id">
 			{{ form_widget(form.id) }}
 		</div>
-		<div class="sms-header-info">{{ parte.infoParte }}</div> 
+		
 		<div class="form-row clearfix">
-			<div id="formparte-any" class="form-left">
-				<label class="formlabel-outside required">Any</label>
-				{{ form_widget(form.any, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formparte-dataalta" class="form-left">
-				<label class="formlabel-outside required">Validesa des de</label>
-				{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside formtime-calendar'} }) }}
-			</div>
-			<div id="formparte-tipus" class="form-left" data-ajax-route="{{ path('FecdasBundle_gettipuspartes') }}">
-				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
-				<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
-			</div>
-			<div id="formparte-novallicencia" class="form-left">
-				<div class="textaccio">
-					<a  onclick="loadLlicencia.call(this, 0)" href="javascript:void(0);" id="displayText">Afegir llicència<img src="/images/icon_dropdown.png"></a></div>
-				</div>
-			<div id="formparte-datapagament" class="form-left" {% if parte.datapagament is null %} style="display: none" {% endif %}>
-				<label class="formlabel-outside required">Data Pagament</label>
-				{{ form_widget(form.datapagament, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
-			</div>
-			{% if admin == true and parte.datapagament is null %}
-				{% if parte.id is not null %}
-				<div id="formparte-pagamentconfirm" class="form-left">
-					<div class="textaccio">
-						<a id="formparte-button-pagat" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}">
-						Pagament Rebut<img src="/images/icon-euro.png"></a>
-					</div>
-				</div>
-				{% endif %}
-			{% endif %}
+			<div class="sms-header-info">{{ parte.infoParte }}</div> 
 			<div class="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
 				{% if not parte.pagat and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
-	        		<a id="formparte-payment" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament" title="Pagament" width="40px"></a>
+	        		<a id="formparte-payment" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
+	        			<i class="fa fa-credit-card fa-2x"></i></a>
 				</div>
 				{% endif %}	
 				<div id="parte-to-pdf" class="button-top">
-					<a href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-pdf.png') }}" alt="llista llicències" title="llista llicències" width="40px"></a></div>
+					<a href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
+						<i class="fa fa-pdf-o fa-2x"></i></a></div>
 					<!-- només factures amb número factura del web -->
 				{% if parte.numfactura is not null %} 
 					<div id="factura-to-pdf" class="button-top">
-						<a href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="40px"></a>
+						<a href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
+							<i class="fa fa-file-text-o fa-2x"></i></a>
 					</div>
 				{% else %}
 					<div id="albara-to-pdf" class="button-top">
-						<a href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}">
-						<img src="{{ asset('images/icon-albara.jpg') }}" alt="Albarà" title="Albarà" width="35px"></a>
+						<a href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
+							<i class="fa fa-list fa-2x"></i></a>
 					</div>
 				{% endif %}
 			</div>	
+		</div>
+		
+
+		<div class="row">
+			 <div class="col-md-1">
+				<div class="form-group">
+					{{ form_label(form.any) }}
+					<div id="formparte-any"  class="input-group ">
+		  				<span class="input-group-addon"></span>
+						{{ form_widget(form.any, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			 </div>
+			 <div class="col-md-3">
+				<div class="form-group">
+					{{ form_label(form.dataalta, 'Validesa') }}
+					<div id="formparte-dataalta" class="input-group">
+		  				<span class="input-group-addon">Des de</span>
+						{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			  </div>
+			  <div class="col-md-3">
+			    <div id="formparte-tipus" class="form-group">
+			    	{{ form_label(form.tipus, 'Tipus de llista d\'assegurats') }}
+					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
+				</div>
+			  </div>
+			<div class="col-md-2">
+				<label>&nbsp;</label>
+				<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg"
+					 onclick="loadLlicencia.call(this, 0)">Afegir llicència <i class="fa fa-chevron-down"></i></button>
+			</div>
+			  
+			<div class="col-md-3" {% if parte.datapagament is null %} style="display: none" {% endif %}>
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<div id="formparte-datapagament" class="input-group" >
+		  				<span class="input-group-addon required">Data Pagament</span>
+						{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+					</div>
+				</div>
+			</div>
+			{% if admin == true and parte.datapagament is null %}
+				{% if parte.id is not null %}
+					<div class="col-md-2">
+						<label>&nbsp;</label>
+						<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
+							data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i> Pagament Rebut</button>
+					</div>
+				{% endif %}	
+			{% endif %}	
 		</div>
          
 		<div id="formparte-rest">	{{ form_rest(form) }}</div>
@@ -107,23 +129,42 @@
 
 {% block javascripts %}
 
-{{ parent() }}
+	{{ parent() }}
+
+	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+   	<script src="{{ asset('js/jquery-ui-timepicker-addon.js') }}" type="text/javascript"></script>
+   	<script src="{{ asset('js/jquery-ui-timepicker-ca.js') }}" type="text/javascript"></script>
+	
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
+	
+	{{ form_javascript(form) }}
 
 <script type="text/javascript">
 
-$(document).ready(function(){
-	setMenuActive("menu-partes");
+$(document).ready(function() {
+
+	setMenuActive("menu-parte");
 
 	{% if (parte.id is null) %}
-		loadTimeCalendar($( "#parte_dataalta" ),	
-				new Date({{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }}), 
-				new Date({{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }}),
-				function (selectedDateTime) {
-					reloadParteData(selectedDateTime);
-				}); 
-
+		$('#parte_tipus').val(0);
+		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
+		
+		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});
+		var maxdate = new Date ( {{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }});
+		initDateTimePicker ( 
+			$( '#parte_dataalta' ), 
+			mindate, 
+			maxdate, 
+			new Date (), 
+			'dataalta-picker', 
+			true,
+			function (selectedDateTime) {
+				reloadParteData(selectedDateTime);
+			}
+		);
 	{% endif %} 
-
+	
 	{% if parte.allowedit == true %}
 		reloadParteTipus();
 	{% endif %} 

@@ -592,7 +592,7 @@ class BaseController extends Controller {
 	protected function logEntryAuth($accio = null, $extrainfo = null) {
 		$request = $this->container->get('request_stack')->getCurrentRequest();
 		$this->logEntry($this->get('session')->get('username'), $accio, $this->get('session')->get('remote_addr'), 
-				$request()->server->get('HTTP_USER_AGENT'), $extrainfo);
+				$request->server->get('HTTP_USER_AGENT'), $extrainfo);
 	}
 	
 	protected function logEntry($user = null, $accio = null, $remoteaddr = null, $useragent = null, $extrainfo = null) {

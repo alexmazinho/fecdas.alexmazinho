@@ -49,7 +49,15 @@ class EntityComptabilitat {
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
-
+	/**
+	 * Get Info comanda
+	 *
+	 * @return string
+	 */
+	public function getInfoComptabilitat()
+	{
+		return $this->dataenviament->format("d/m/Y");
+	}
     /**
      * Get id
      *

@@ -379,6 +379,20 @@ class EntityProducte {
     }
     
     /**
+     * Get preu (objecte) any
+     *
+     * @return decimal
+     */
+    public function getPreu($any)
+    {
+    	foreach($this->preus as $preu) {
+    		if ($preu->getAnypreu() == $any) return $preu;
+    	}
+    	
+    	return null;
+    }
+    
+    /**
      * Get preu any actual 
      *
      * @return decimal
@@ -395,11 +409,9 @@ class EntityProducte {
      */
     public function getPreuAny($any)
     {
-    	foreach($this->preus as $preu) {
-    		if ($preu->getAnypreu() == $any) return $preu->getPreu();
-    	}
-    	/* Never shhould happen */
-    	return 0;
+    	$preu = $this->getPreu($any);
+    	if ($preu == null) return 0;
+    	return $preu->getPreu();
     }
 
     
@@ -420,11 +432,9 @@ class EntityProducte {
      */
     public function getIvaAny($any)
     {
-    	foreach($this->preus as $preu) {
-    		if ($preu->getAnypreu() == $any) return ($preu->getIva()==null?0:$preu->getIva());
-    	}
-    	/* Never shhould happen */
-    	return 0;
+    	$preu = $this->getPreu($any);
+    	if ($preu == null) return 0;
+    	return $preu->getIva();
     }
 
     /**

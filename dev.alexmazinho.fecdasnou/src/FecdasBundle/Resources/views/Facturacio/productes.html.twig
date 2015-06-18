@@ -167,12 +167,8 @@ filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
 }
 
 $(document).ready(function(){
-	setMenuActive("menu-productes");
+	setMenuActive("menu-admproductes");
 	
-	//removeproducteLink();
-
-	//showLlicenciesproducte();
-
 	$("#form_tipus").change(function() {
 		filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
     });
@@ -185,13 +181,6 @@ $(document).ready(function(){
 		filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
 	});
 	
-	//sortLlista("col-listheader", "list-data");
-
-	/*var tableScroll = $('.table-scroll');
-	if (tableScroll.hasOverflowY()) {
-		$('.table-scroll').css({"width":"101.5%"});
-	}*/
-
 	// Producte
 	init_cercaproducte_JSON('#form_cerca', 'Cercar descripció del producte');
 });

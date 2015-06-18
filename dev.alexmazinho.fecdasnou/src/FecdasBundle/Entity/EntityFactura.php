@@ -39,6 +39,11 @@ class EntityFactura {
 	protected $concepte;
 
 	/**
+	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="factura")
+	 **/
+	protected $comanda;	// FK taula m_comandes
+	
+	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $datapagament;
@@ -57,6 +62,11 @@ class EntityFactura {
 	 * @ORM\Column(type="integer")
 	 */
 	protected $idanulacio;
+	
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 
 	public function __construct($currentDate) {
 		$this->setDataentrada($currentDate);
@@ -65,7 +75,16 @@ class EntityFactura {
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}
-
+	
+	/**
+	 * Factura format amb any  XXXXX/20XX
+	 *
+	 * @return string
+	 */
+	public function getNumFactura() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datafactura->format("Y");
+	}
+	
 	/**
 	 * @return integer
 	 */
@@ -137,6 +156,20 @@ class EntityFactura {
 	}
 
 	/**
+	 * @return comanda
+	 */
+	public function getComanda() {
+		return $this->comanda;
+	}
+	
+	/**
+	 * @param \FecdasBundle\Entity\EntityComanda $comanda
+	 */
+	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
+		$this->comanda = $comanda;
+	}
+	
+	/**
 	 * @return datetime
 	 */
 	public function getDatapagament() {
@@ -193,11 +226,16 @@ class EntityFactura {
 	}
 
 	/**
-	 * Factura format amb any  XXXXX/20XX
-	 *
-	 * @return string
+	 * @return comandaoriginal
 	 */
-	public function getNumFactura() {
-		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datafactura->format("Y");
+	public function getComandaoriginal() {
+		return $this->comandaoriginal;
+	}
+	
+	/**
+	 * @param int $comandaoriginal
+	 */
+	public function setComandaoriginal($comandaoriginal) {
+		$this->comandaoriginal = $comandaoriginal;
 	}
 }

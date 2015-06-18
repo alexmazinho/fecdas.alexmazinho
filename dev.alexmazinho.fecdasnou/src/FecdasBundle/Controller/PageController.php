@@ -1810,10 +1810,13 @@ class PageController extends BaseController {
 			
 			if ($duplicat != null) {
 				// Crear pagament
-				$pagament = $this->crearPagament($this->getCurrentDate(), $duplicat->getCarnet()->getPreu(), "TPV OK", $ordre);
+				
+				/* Aqui CREAR comanda */
+				
+				//$pagament = $this->crearPagament($this->getCurrentDate(), $duplicat->getCarnet()->getPreu(), "TPV OK", $ordre);
 				
 				// Actualitzar pagament
-				$duplicat->setPagament($pagament);
+				//$duplicat->setPagament($pagament);
 				
 				$em->flush();
 				return true;

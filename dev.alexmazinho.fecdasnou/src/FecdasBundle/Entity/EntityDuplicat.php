@@ -4,7 +4,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="m_duplicats")
+ * @ORM\Table(name="m_duplicats", uniqueConstraints={@ORM\UniqueConstraint(name="comanda_idx", columns={"comanda"})})
  * 
  * @author alex
  *
@@ -64,16 +64,10 @@ class EntityDuplicat {
 	protected $databaixa;
 
 	/**
-	 * @ORM\OneToOne(targetEntity="EntityPagament")
-	 * @ORM\JoinColumn(name="pagament", referencedColumnName="id")
+	 * @ORM\OneToOne(targetEntity="EntityComanda")
+	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
 	 */
-	protected $pagament;
-
-	/**
-	 * @ORM\OneToOne(targetEntity="EntityFactura")
-	 * @ORM\JoinColumn(name="factura", referencedColumnName="id")
-	 */
-	protected $factura;
+	protected $comanda;
 
 	/**
 	 * @ORM\OneToOne(targetEntity="EntityImatge")
@@ -215,37 +209,19 @@ class EntityDuplicat {
 	}
 
 	/**
-	 * Get pagament
+	 * Get comanda
 	 * 
-	 * @return FecdasBundle\Entity\EntityPagament
+	 * @return FecdasBundle\Entity\EntityComanda
 	 */
-	public function getPagament() {
-		return $this->pagament;
+	public function getComanda() {
+		return $this->comanda;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityPagament $pagament
-	 * @return EntityPagament
+	 * @param FecdasBundle\Entity\EntityComanda $comanda
 	 */
-	public function setPagament(\FecdasBundle\Entity\EntityPagament $pagament) {
-		$this->pagament = $pagament;
-	}
-
-	/**
-	 * Get factura
-	 * 
-	 * @return FecdasBundle\Entity\EntityFactura
-	 */
-	public function getFactura() {
-		return $this->factura;
-	}
-
-	/**
-	 * @param FecdasBundle\Entity\EntityFactura $factura
-	 * @return EntityFactura
-	 */
-	public function setFactura(\FecdasBundle\Entity\EntityFactura $factura = null) {
-		$this->factura = $factura;
+	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
+		$this->comanda = $comanda;
 	}
 
 	/**
@@ -313,10 +289,14 @@ class EntityDuplicat {
 		 
 		if ($this->databaixa != null) return "Petició anul·lada " . $this->databaixa->format("d/m/Y");
 		
-		if ($this->pagament != null) $textInfo .= "Petició pagada.";
-		
-		if ($this->factura != null) $textInfo .= "Factura " . $this->getFactura()->getNumFactura(). " - " .$this->factura->getDatafactura()->format("d/m/Y")."." ;
-	
+		if ($this->comanda != null) { 
+			if ($this->comanda->getRebut() != null) $textInfo .= "Petició pagada.";
+			
+			if ($this->comanda->getFactura() != null) $textInfo .= "Factura " . $this->comanda->getFactura()->getNumFactura(). " - " .$this->comanda->getFactura()->getDatafactura()->format("d/m/Y")."." ;
+		} else {
+			return 'Error, petició de duplicat sense comanda associada ';
+		}
+			
 		if ($this->observacions != null) $textInfo .= $this->observacions;
 		
 		return $textInfo;

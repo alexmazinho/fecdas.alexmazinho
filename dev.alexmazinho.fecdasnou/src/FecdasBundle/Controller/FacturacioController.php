@@ -6,10 +6,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use FecdasBundle\Entity\EntityParte;
-use FecdasBundle\Entity\EntityLlicencia;
-use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Form\FormLlicenciaRenovar;
+use FecdasBundle\Form\FormProducte;
+use FecdasBundle\Entity\EntityProducte;
+use FecdasBundle\Form\FormFactura;
+use FecdasBundle\Entity\EntityFactura;
+use FecdasBundle\Form\FormRebut;
+use FecdasBundle\Entity\EntityRebut;
+use FecdasBundle\Form\FormComanda;
+use FecdasBundle\Entity\EntityComanda;
+use FecdasBundle\Form\FormComandaDetall;
+use FecdasBundle\Entity\EntityComandaDetall;
+
 
 class FacturacioController extends BaseController {
 
@@ -81,13 +88,94 @@ class FacturacioController extends BaseController {
 	
 	public function editarproducteAction(Request $request) {
 		// Formulari d'edició d'un producte
-		return new Response("");  
+		$this->get('session')->getFlashBag()->clear();
+    	
+    	if ($this->isAuthenticated() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+    
+    	/* De moment administradors */
+    	if ($this->isCurrentAdmin() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+    	
+    	$producte = null;
+    	if ($request->getMethod() != 'POST') {
+    		$id = $request->query->get('id', 0);
+    		
+    		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
+    		 
+    		if ($producte == null) {
+    			// No trobat
+    			$this->logEntryAuth('PRODUCTE EDIT KO',	'producte : ' . $request->query->get('id', 0));
+    			$this->get('session')->getFlashBag()->add('error-notice', 'Producte no trobat ');
+    			return $this->redirect($this->generateUrl('FecdasBundle_productes'));
+    		}
+    		$this->logEntryAuth('PRODUCTE EDIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
+    	} else {
+   			/* Alta o modificació de clubs */
+    		$data = $request->request->get('producte');
+    		$id = (isset($data['id'])?$data['id']:0);
+    		
+    		if ($id > 0) $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
+    		
+    		if ($producte == null) $producte = new EntityProducte();
+    	}	
+
+    	$form = $this->createForm(new FormProducte(), $producte);
+    	
+    	if ($request->getMethod() == 'POST') {
+    		try {
+    			$form->handleRequest($request);
+    			 
+    			$anypreus 	= $form->get('anypreus')->getData();
+    			$preu 		= $form->get('preu')->getData();
+    			$iva 		= $form->get('iva')->getData();
+    			
+    			 
+    			
+    			if (!$form->isValid()) {
+    				
+    				$producte->setAbreviatura(strtoupper($producte->getAbreviatura));
+    				
+    				//..... validacions
+    				
+    				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' ); //$form->getErrorsAsString()
+    			}
+
+    			$em->flush();
+    			 
+    			$this->get('session')->getFlashBag()->add('notice',	'El producte s\'ha desat correctament');
+    			
+    			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
+    			
+    			// Ok, retorn form sms ok
+    		} catch (\Exception $e) {
+    			// Ko, mostra form amb errors
+    			$this->get('session')->getFlashBag()->add('error',	$e->getMessage());
+    		}
+   		} 
+   		
+    	return $this->render('FecdasBundle:Facturacio:producte.html.twig', 
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'producte' => $producte))); 
 	}
 	
 	
 	public function nouproducteAction(Request $request) {
-		// Formulari d'edició d'un producte
-		return new Response("");
+		// Formulari de creació d'un producte
+		$this->get('session')->getFlashBag()->clear();
+    	
+    	if ($this->isAuthenticated() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+    
+    	/* De moment administradors */
+    	if ($this->isCurrentAdmin() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+    	
+    	$producte = new EntityProducte();
+    	
+    	$form = $this->createForm(new FormProducte(), $producte);
+    	
+    	return $this->render('FecdasBundle:Facturacio:producte.html.twig',
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'producte' => $producte)));
 	}
 	
 	public function baixaproducteAction(Request $request) {

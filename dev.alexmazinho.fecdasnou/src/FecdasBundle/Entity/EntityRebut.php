@@ -4,12 +4,12 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="m_pagaments")
+ * @ORM\Table(name="m_rebuts")
  * 
  * @author alex
  *
  */
-class EntityPagament {
+class EntityRebut {
 
 	/**
 	 * @ORM\Id
@@ -24,19 +24,24 @@ class EntityPagament {
 	protected $datapagament;
 
 	/**
-	 * @ORM\Column(type="string", length=15)
+	 * @ORM\Column(type="integer")
 	 */
-	protected $estat;
-
+	protected $num;
+	
 	/**
 	 * @ORM\Column(type="decimal", precision=8, scale=2)
 	 */
 	protected $import;
 
 	/**
+	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="rebut")
+	 **/
+	protected $comanda;	// FK taula m_comandes
+	
+	/**
 	 * @ORM\Column(type="string", length=15, nullable=true)
 	 */
-	protected $dades;
+	protected $dadespagament;  // Del TPV per exemple
 
 	/**
 	 * @ORM\Column(type="text", nullable=true)
@@ -53,14 +58,28 @@ class EntityPagament {
 	 */
 	protected $dataanulacio;
 
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
+	
 	public function __construct($currentDate) {
 		$this->setDataentrada($currentDate);
 	}
 
 	public function __toString() {
-		return $this->getId() . "-" . $this->getEstat();
+		return $this->getId() . "-" . $this->getNum();
 	}
 
+	/**
+	 * Rebut format amb any  XXXXX/20XX
+	 *
+	 * @return string
+	 */
+	public function getNumRebut() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datapagament->format("Y");
+	}
+	
 	/**
 	 * @return integer
 	 */
@@ -76,6 +95,20 @@ class EntityPagament {
 	}
 
 	/**
+	 * @return integer
+	 */
+	public function getNum() {
+		return $this->num;
+	}
+	
+	/**
+	 * @param integer $num
+	 */
+	public function setNum($num) {
+		$this->num = $num;
+	}
+	
+	/**
 	 * @return datetime
 	 */
 	public function getDatapagament() {
@@ -87,20 +120,6 @@ class EntityPagament {
 	 */
 	public function setDatapagament($datapagament) {
 		$this->datapagament = $datapagament;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getEstat() {
-		return $this->estat;
-	}
-
-	/**
-	 * @param string $estat
-	 */
-	public function setEstat($estat) {
-		$this->estat = $estat;
 	}
 
 	/**
@@ -118,17 +137,31 @@ class EntityPagament {
 	}
 
 	/**
+	 * @return comanda
+	 */
+	public function getComanda() {
+		return $this->comanda;
+	}
+	
+	/**
+	 * @param \FecdasBundle\Entity\EntityComanda $comanda
+	 */
+	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
+		$this->comanda = $comanda;
+	}
+	
+	/**
 	 * @return string
 	 */
-	public function getDades() {
-		return $this->dades;
+	public function getDadespagament() {
+		return $this->dadespagament;
 	}
 
 	/**
-	 * @param string $dades
+	 * @param string $dadespagament
 	 */
-	public function setDades($dades) {
-		$this->dades = $dades;
+	public function setDadespagament($dadespagament) {
+		$this->dadespagament = $dadespagament;
 	}
 
 	/**
@@ -173,4 +206,18 @@ class EntityPagament {
 		$this->dataanulacio = $dataanulacio;
 	}
 
+	/**
+	 * @return comandaoriginal
+	 */
+	public function getComandaoriginal() {
+		return $this->comandaoriginal;
+	}
+	
+	/**
+	 * @param int $comandaoriginal
+	 */
+	public function setComandaoriginal($comandaoriginal) {
+		$this->comandaoriginal = $comandaoriginal;
+	}
+	
 }

@@ -1,7 +1,9 @@
 @CHARSET "UTF-8";
 
-.sms-notice { text-align: center; padding: 10px;
-background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; }
+.sms-notice { 
+	text-align: center; padding: 10px;
+	background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; 
+}
 
 /*
 .textaccio {
@@ -38,6 +40,19 @@ html>body .textaccio img {
 }
 
 
+input, .form-control {
+	
+background: rgba(250,250,250,1);
+background: -moz-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(250,250,250,1)), color-stop(30%, rgba(255,255,255,1)), color-stop(70%, rgba(255,255,255,1)), color-stop(100%, rgba(250,250,250,1)));
+background: -webkit-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+background: -o-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+background: -ms-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+background: linear-gradient(to bottom, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fafafa', endColorstr='#fafafa', GradientType=0 );
+
+}
+
 input[type="submit"], button  {
 	/*border-top: 1px solid #FFFFFF;*/
   	/* background: #CCCCCC;
@@ -48,7 +63,7 @@ input[type="submit"], button  {
    text-shadow: rgba(0,0,0,.4) 0 1px 0;
    text-decoration: none;
    vertical-align: middle;*/
-    background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;
+    /*background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;*/
     
     /*background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#DDDDDD));
    	background: -webkit-linear-gradient(top, #FFFFFF, #DDDDDD);
@@ -68,16 +83,21 @@ input[type="submit"], button  {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-input[type="submit"]:hover, button:hover {
+input[type="submit"]:hover, button:hover, .btn-default:hover,
+input[type="submit"]:active, button:active,  .btn-default:active  {
    	border-color: #555555;
-  	background: #DDDDDD;
-  	text-decoration: none;
+	background: rgba(200,200,200,1);
+	background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,255,255,1)), color-stop(100%, rgba(200,200,200,1)));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: -o-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#cccccc', GradientType=0 );
+ 	
 }
 
-input[type="submit"]:active, button:active {
-   	border-color: #555555;
-  	background: #DDDDDD;
-}
+input[type="submit"]:hover, button:hover { text-decoration: none; }
 
 input[type="image"] {
 	border: none;
@@ -88,10 +108,6 @@ input[type="checkbox"] {
 	background: none repeat scroll 0 0 transparent;
 	border: none;
 }*/
-
-input {
-	
-}
 
 input[type="text"], 
 input[type="email"],
@@ -106,11 +122,13 @@ input[type="password"] {
 	border: 1px solid #AAA; 
 	/*color: #555555;*/
 	color: #1240A0;	
-	background: #EFEFEF; 
+	/*background: #EFEFEF;*/
+	/*background: #fafafa;*/ 
 }
 
 input[type="search"]  { 
-	background: #EFEFEF url(../images/icon-lupa.png) no-repeat right center;
+	/*background: #EFEFEF url(../images/icon-lupa.png) no-repeat right center;*/
+	background: #fafafa url(../images/icon-lupa.png) no-repeat right center;
 	min-height: 26px;
     padding: 1px 24px 1px 2px;
 }
@@ -120,8 +138,8 @@ input[type="email"] { max-width: 500px; }
 input[type="submit"]  { line-height: 30px; min-height: 30px; }
 
 textarea  { 
-	max-width: 300px; min-width: 200px; width:300px; height: 150px; line-height: 30px; padding: 5px; resize: both;
-	border: 1px solid #AAA; border-radius: 5px;  background: #EEEEEE; /*color: #555555;*/ color: #1240A0;}
+	min-width: 200px; line-height: 30px; padding: 5px; resize: both;
+	border: 1px solid #AAA; border-radius: 5px; background: #fafafa; /*background: #EEEEEE; color: #555555;*/ color: #1240A0;}
 
 select { line-height: 30px; height: 34px; padding: 0 3px; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -158,6 +176,14 @@ input[disabled="disabled"]
 { 
 	/*background-color: #f0ebe2;*/
     color: #777777; 
+    background: rgba(239,239,239,1);
+	background: -moz-linear-gradient(top, rgba(239,239,239,1) 0%, rgba(250,250,250,1) 40%, rgba(250,250,250,1) 60%, rgba(239,239,239,1) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(239,239,239,1)), color-stop(40%, rgba(250,250,250,1)), color-stop(60%, rgba(250,250,250,1)), color-stop(100%, rgba(239,239,239,1)));
+	background: -webkit-linear-gradient(top, rgba(239,239,239,1) 0%, rgba(250,250,250,1) 40%, rgba(250,250,250,1) 60%, rgba(239,239,239,1) 100%);
+	background: -o-linear-gradient(top, rgba(239,239,239,1) 0%, rgba(250,250,250,1) 40%, rgba(250,250,250,1) 60%, rgba(239,239,239,1) 100%);
+	background: -ms-linear-gradient(top, rgba(239,239,239,1) 0%, rgba(250,250,250,1) 40%, rgba(250,250,250,1) 60%, rgba(239,239,239,1) 100%);
+	background: linear-gradient(to bottom, rgba(239,239,239,1) 0%, rgba(250,250,250,1) 40%, rgba(250,250,250,1) 60%, rgba(239,239,239,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#efefef', GradientType=0 );
 }
 
 #dialeg p {
@@ -294,7 +320,9 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall .data-detall-cell i.fa-pencil:hover { background-color: #31708f;  }
 .data-detall .data-detall-cell i.fa-trash-o:hover { background-color: #a94442;  }
  
-
+.form-control-left { text-align: left; }
+.form-control-right { text-align: right; }
+.form-control-center { text-align: center; }
 
 #menu-user {
   	z-index: 1; 
@@ -349,6 +377,10 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .fluxslider .surface { overflow: hidden; padding-bottom: 20px; } 
 
 #slider .pagination { border:none; display:block; }
+
+
+.blue { color: #1240a0; }
+.red { color: red; }
 
 /*************** FECDAS NOU productes ****************/
 
@@ -534,13 +566,13 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
    height: expression( this.scrollHeight > 409 ? "410px" : "auto" ); /* sets max-height for IE */
 }
 
-/*
+
 .navigation {
 	color: #005A8C;
 	display: inline-block;
 	width: 100%;
 	text-align: right;	
-}*/
+}
 
 .container a { text-decoration: none; color: #1240a0;  }
 .container span.highlight { color: #1240a0; }

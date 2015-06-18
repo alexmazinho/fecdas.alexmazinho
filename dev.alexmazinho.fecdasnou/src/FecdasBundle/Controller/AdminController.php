@@ -467,9 +467,12 @@ class AdminController extends BaseController {
 				$estat = $request->query->get('estatpagat');
 				$dades = $request->query->get('dadespagat');
 				$comentari = $request->query->get('comentaripagat');
-				$pagament = $this->crearPagament($datapagament, $import, $estat, $dades, $comentari);
+				
+				/* Aqui CREAR comanda */
+				
+				//$pagament = $this->crearPagament($datapagament, $import, $estat, $dades, $comentari);
 				// Actualitzar pagament
-				$duplicat->setPagament($pagament);
+				//$duplicat->setPagament($pagament);
 			}
 				
 			$em->flush();

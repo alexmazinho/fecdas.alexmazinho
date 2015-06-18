@@ -9,7 +9,7 @@ use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityUserLog;
-use FecdasBundle\Entity\EntityPagament;
+use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Entity\EntityFactura;
 
 class BaseController extends Controller {
@@ -42,11 +42,14 @@ class BaseController extends Controller {
 	const TIPUS_PRODUCTE_DUPLICATS 	= 2;
 	const TIPUS_PRODUCTE_KITS 		= 3;
 	const TIPUS_PRODUCTE_MERCHA 	= 4;
-	const TIPUS_PRODUCTE_ALTRES 	= 5;
+	const TIPUS_PRODUCTE_CURSOS 	= 5;
+	const TIPUS_PRODUCTE_ALTRES 	= 6;
 	
 	const TIPUS_PAGAMENT_CASH 			= 1;
 	const TIPUS_PAGAMENT_TRANS_SARDENYA = 2;
 	const TIPUS_PAGAMENT_TRANS_LAIETANA	= 3;
+	
+	const ANY_INICI_WEB	= 2012;
 	
 	
 	protected static $tipusproducte; // Veure getTipusDeProducte()
@@ -62,6 +65,7 @@ class BaseController extends Controller {
 					self::TIPUS_PRODUCTE_DUPLICATS => 'Duplicats',
 					self::TIPUS_PRODUCTE_KITS => 'Kits',
 					self::TIPUS_PRODUCTE_MERCHA => 'Merchandising',
+					self::TIPUS_PRODUCTE_CURSOS => 'Cursos',
 					self::TIPUS_PRODUCTE_ALTRES => 'Altres'
 			);
 		}
@@ -102,6 +106,25 @@ class BaseController extends Controller {
 		return '';
 	}
 	
+	/**
+	 * Obté array anys preus
+	 */
+	public static function getArrayAnysPreus($inici = self::ANY_INICI_WEB) {
+		$final = date('Y') + 1;
+		
+		$anyspreus = array();
+		for ($a = $inici; $a <= $final; $a++) $anyspreus[$a] = $a;
+	
+		return $anyspreus;
+	}
+	
+	/**
+	 * Obté array IVA
+	 */
+	public static function getIVApercents() {
+		$ivaArray = array(0 => 'Exempt', 0.4 => '4%', 0.8 => '8%', 0.21 => '21%' );
+		return $ivaArray;
+	}
 	
 	protected function getCommonRenderArrayOptions($more = array()) {
 		$options = array();
@@ -387,7 +410,7 @@ class BaseController extends Controller {
 		
 		if (trim($dades) == '') $dades = null;
 		if (trim($comentari) == '') $comentari = null;
-		$pagament = new EntityPagament($this->getCurrentDate());
+		$pagament = new EntityRebut($this->getCurrentDate());
 		$pagament->setDatapagament($data);
 		$pagament->setEstat($estat);
 		$pagament->setImport($import);

@@ -19,6 +19,11 @@ class EntityComanda {
 	protected $id;
 
 	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $num;
+	
+	/**
 	 * @ORM\Column(type="text")
 	 */
 	protected $comentaris;
@@ -30,9 +35,9 @@ class EntityComanda {
 	protected $club;	// FK taula m_clubs
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityFactura")
-	 * @ORM\JoinColumn(name="club", referencedColumnName="id")
-	 */
+	 * @ORM\OneToOne(targetEntity="EntityFactura", inversedBy="comanda")
+	 * @ORM\JoinColumn(name="factura", referencedColumnName="id")
+	 **/
 	protected $factura;	// FK taula m_factures
 
 	/**
@@ -42,10 +47,10 @@ class EntityComanda {
 	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityPagament")
-	 * @ORM\JoinColumn(name="club", referencedColumnName="id")
-	 */
-	protected $rebut;	// FK taula m_pagaments
+	 * @ORM\OneToOne(targetEntity="EntityRebut", inversedBy="comanda")
+	 * @ORM\JoinColumn(name="rebut", referencedColumnName="id")
+	 **/
+	protected $rebut;	// FK taula m_rebuts
 	
 	/**
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
@@ -82,6 +87,37 @@ class EntityComanda {
 		$this->detalls = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
+	/**
+	 * Comanda format amb any  XXXXX/20XX
+	 *
+	 * @return string
+	 */
+	public function getNumComanda() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
+	}
+	
+	/**
+	 * Get Info comanda
+	 *
+	 * @return string
+	 */
+	public function getInfoComanda()
+	{
+		return $this->getNumComanda().", dia ".$this->dataentrada->format("d/m/Y").
+			", club ".$this->getClub()->getNom().". Total: ".number_format($this->total, 2, ',', '.');
+	}
+
+	/**
+	 * Get total suma dels detalls
+	 *
+	 * @return double
+	 */
+	public function getTotalDetalls()
+	{
+		$total = 0;
+		foreach ($this->detalls as $d) $total += $d->getTotal();
+		return $total;
+	}
 
     /**
      * Get id
@@ -93,6 +129,23 @@ class EntityComanda {
         return $this->id;
     }
 
+    /**
+     * @param integer $num
+     * @return EntityComanda
+     */
+    public function setNum($num) {
+    	$this->num = $num;
+    	
+    	return $this;
+    }
+    
+    /**
+     * @return integer
+     */
+    public function getNum() {
+    	return $this->num;
+    }
+    
     /**
      * Set comentaris
      *
@@ -280,10 +333,10 @@ class EntityComanda {
     /**
      * Set rebut
      *
-     * @param \FecdasBundle\Entity\EntityPagament $rebut
+     * @param \FecdasBundle\Entity\EntityRebut $rebut
      * @return EntityComanda
      */
-    public function setRebut(\FecdasBundle\Entity\EntityPagament $rebut = null)
+    public function setRebut(\FecdasBundle\Entity\EntityRebut $rebut = null)
     {
         $this->rebut = $rebut;
 
@@ -293,7 +346,7 @@ class EntityComanda {
     /**
      * Get rebut
      *
-     * @return \FecdasBundle\Entity\EntityPagament 
+     * @return \FecdasBundle\Entity\EntityRebut 
      */
     public function getRebut()
     {

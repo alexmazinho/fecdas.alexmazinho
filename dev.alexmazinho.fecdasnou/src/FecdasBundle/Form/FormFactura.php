@@ -1,0 +1,85 @@
+<?php
+namespace FecdasBundle\Form;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class FormFactura extends AbstractType {
+
+	
+	public function buildForm(FormBuilderInterface $builder, array $options)
+	{
+		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
+			$form = $event->getForm();
+			$factura = $event->getData();
+		
+			/* Check we're looking at the right data/form */
+			if ($factura instanceof EntityFactura) {
+				
+				$form->add('numfactura', 'text', array(
+						'required' 	=> true,
+						'read_only' => true,
+						'mapped' 	=> false,
+						'data'		=> $factura->getNumFactura()
+				));
+			}
+		});
+		
+		$builder->add('id', 'hidden');
+		
+		$builder->add('num', 'hidden');
+		
+		$builder->add('datafactura', 'date', array(
+				'read_only' 	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'date',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
+		));
+		
+		$builder->add ( 'import', 'number', array (
+				'required' 		=> true,
+				'precision' 	=> 2,
+				'mapped' 		=> false,
+				'constraints' 	=> array (
+						new NotBlank ( array ( 'message' => 'Cal indicar l\'import.' )),
+						new Type ( array ('type' => 'numeric', 'message' => 'L\'import ha de ser numèric.')),
+						new GreaterThanOrEqual ( array ('value' => 0, 'message' => 'L\'import no és vàlid.'))
+				)
+		));
+		
+		$builder->add('concepte', 'textarea', array(
+				'required' => true,
+		));
+		
+		
+		$builder->add('comanda', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityComanda',
+				'property' 		=> 'InfoComanda',
+				'empty_value' 	=> '',
+				'required'  	=> false,
+				'read_only' 	=> true,
+		));
+		
+		$builder->add('dataanulacio', 'date', array(
+				'read_only' 	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'date',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
+		));
+	}
+	
+	public function configureOptions(OptionsResolver $resolver)
+	{
+		$resolver->setDefaults(array('data_class' => 'FecdasBundle\Entity\EntityFactura'));
+	}
+		
+	public function getName()
+	{
+		return 'factura';
+	}
+
+}

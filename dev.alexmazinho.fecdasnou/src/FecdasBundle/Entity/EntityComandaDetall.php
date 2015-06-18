@@ -31,7 +31,7 @@ class EntityComandaDetall {
 	protected $producte;
 
 	/**
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
+	 * @ORM\Column(type="integer")
 	 */
 	protected $unitats;
 
@@ -61,10 +61,37 @@ class EntityComandaDetall {
 	protected $databaixa;
 	
 	public function __construct() {
-		
+		$this->unitats = 1;
 	}
 
-
+	/**
+	 * Get total
+	 *
+	 * @return double
+	 */
+	public function getTotal()
+	{
+		if ($this->producte == null) return 0;	
+		
+		if ($this->esBaixa()) return 0; 
+		
+		$preu 	= $this->producte->getCurrentPreu();
+		$iva 	= $this->producte->getCurrentIva();
+		
+		return $preu * $this->unitats * (1 + $iva) * (1 - $this->descomptedetall);
+	}
+	
+	/**
+	 * Get id
+	 *
+	 * @return boolean
+	 */
+	public function esBaixa()
+	{
+		return $this->databaixa != null;
+	}
+	
+	
     /**
      * Get id
      *

@@ -1,6 +1,8 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/producte.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
+{% form_theme form 'FecdasBundle:Includes:formtheming.html.twig' %}
+
 {% block stylesheets %}
 	
 	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
@@ -14,18 +16,14 @@
     <header>
         <h1>Gestió de productes</h1>
     </header>
-   
-	{% for flashMessage in app.session.flashbag.get('error-notice') %}
-	    <div class="sms-notice">
-			{{ flashMessage }}
-  		</div>	
-	{% endfor %}
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+    
 	<form id="formproducte" action="{{ path('FecdasBundle_editarproducte') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
 			 <div class="col-md-2">
 				{{ form_label(form.codi, 'Codi comptabilitat') }}
 				<div id="formproducte-codi"  class="">
-					{{ form_widget(form.codi, { 'attr': {'class': 'form-control form-control-right'} }) }}
+					{{ form_widget(form.codi, { 'attr': {'class': 'form-control form-control-center'} }) }}
 				</div>
 			 </div>
 			 <div class="col-md-1">
@@ -43,7 +41,7 @@
 			 <div class="col-md-2">
 				{{ form_label(form.minim, 'Uds. mínim') }}
 				<div id="formproducte-minim"  class="">
-					{{ form_widget(form.minim, { 'attr': {'class': 'form-control form-control-center'} }) }}
+					{{ form_widget(form.minim, { 'attr': {'class': 'form-control form-control-center'} }) }}{{ form_errors(form.minim)  }}
 				</div>
 			 </div>
 			 <div class="col-md-3">
@@ -78,6 +76,7 @@
 						  				<span class="input-group-addon">Límit</span>
 										{{ form_widget(form.limitnotifica, { 'attr': {'class': 'form-control form-control-center'} }) }}
 									</div>
+									{{ form_errors(form.limitnotifica)  }}
 								</div>
 							 </div>
 							 <div class="col-md-4">
@@ -85,7 +84,7 @@
 									<div id="formproducte-stock"  class="input-group ">
 						  				<span class="input-group-addon">Stock</span>
 										{{ form_widget(form.stock, { 'attr': {'class': 'form-control form-control-center'} }) }}
-									</div>
+									</div>{{ form_errors(form.stock)  }}
 								</div>
 							 </div>
 						</div>
@@ -95,47 +94,94 @@
 		</div>
 		
 		<div class="row">
-			 <div class="col-md-12">
+			 <div class="col-md-6">
 	    		<h4 class="blue">Import del producte</h4>
 			 </div>
-			 <div class="col-md-2">
-				<div class="form-group">
-					{{ form_label(form.anypreus, 'Any') }}
-					<div id="formproducte-minim"  class="input-group ">
-		  				<span class="input-group-addon"><i class="fa fa-calendar-o"></i></span>
-						{{ form_widget(form.anypreus, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				</div>
+			 <div class="col-md-6">
+	    		<h4 class="blue">Històric de preus</h4>
 			 </div>
-			 <div class="col-md-2">
-				<div class="form-group">
-					{{ form_label(form.preu, 'Preu') }}
-					<div id="formproducte-stock"  class="input-group ">
-						{{ form_widget(form.preu, { 'attr': {'class': 'form-control form-control-right'} }) }}
-						<span class="input-group-addon"><i class="fa fa-euro"></i></span>
-					</div>
-				</div>
+			 <div class="col-md-6">
+				 <div class="row">
+					 <div class="col-md-4">
+						<div class="form-group">
+							{{ form_label(form.anypreus, 'Any') }}
+							<div id="formproducte-minim"  class="input-group ">
+				  				<span class="input-group-addon"><i class="fa fa-calendar-o"></i></span>
+								{{ form_widget(form.anypreus, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+					 </div>
+					 <div class="col-md-4">
+						<div class="form-group">
+							{{ form_label(form.preu, 'Preu') }}
+							<div id="formproducte-stock"  class="input-group ">
+								{{ form_widget(form.preu, { 'attr': {'class': 'form-control form-control-right'} }) }}
+								<span class="input-group-addon"><i class="fa fa-euro"></i></span>
+							</div>{{ form_errors(form.preu)  }}
+						</div>
+					 </div>
+					 <div class="col-md-4">
+						<div class="form-group">
+							{{ form_label(form.iva, 'IVA') }}
+							<div id="formproducte-stock"  class="input-group ">
+								<span class="input-group-addon">%</span>
+								{{ form_widget(form.iva, { 'attr': {'class': 'form-control form-control-center'} }) }}
+							</div>{{ form_errors(form.iva)  }}
+						</div>
+					 </div>
+					  <div class="col-md-8">
+					 	<div class="form-group">
+					 		<label>&nbsp;</label>
+					 		<div class="input-group">
+								<button type="submit" id="formproducte-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
+							</div>
+						</div>
+					  </div>	
+				 </div>
 			 </div>
-			 <div class="col-md-2">
-				<div class="form-group">
-					{{ form_label(form.iva, 'IVA') }}
-					<div id="formproducte-stock"  class="input-group ">
-						<span class="input-group-addon">%</span>
-						{{ form_widget(form.iva, { 'attr': {'class': 'form-control form-control-center'} }) }}
-					</div>
+			 <div id="historic-preus" class="col-md-4">
+				<div class="table-header">	
+				  	<div id="list-header">
+				  		<div id="header-preuid" class="col-listheader collistheader-noorder">Id</div>
+				   		<div id="header-preuany" class="col-listheader collistheader-noorder">Any</div>
+				   		<div id="header-preuimport" class="col-listheader collistheader-noorder">Import</div>
+				   		<div id="header-preuiva" class="col-listheader collistheader-noorder">IVA</div>
+				   		<div id="header-preuaction" class="col-listheader collistheader-noorder">&nbsp;</div>
+				  	</div>
 				</div>
+				
+				{% if producte.preusConsolidated|length > 0 %}
+					<div class="table-scroll">
+					   	<ol id="list-data">
+						{% for preu in producte.preusConsolidated %}
+					   		<li class="data-detall">
+						   		<div class="data-detall-cell preuid">{{ preu.id }}</div>
+						   		<div class="data-detall-cell preuany">{{ preu.anypreu }}</div>
+						   		<div class="data-detall-cell preuimport">{{ preu.preu|number_format(2, ',', '.') }} €</div>
+						   		<div class="data-detall-cell preuiva">{{ (preu.iva*100)|number_format(2, ',', '.') }} %</div>
+						   		<div class="data-detall-cell preuaction">
+						   			<a class="load-preu" href="{{ path('FecdasBundle_jsonpreu', { 'id': producte.id, 'anypreu':preu.anypreu  }) }}" ><span class="fa fa-edit fa-1x blue"></span></a>
+						   			<a class="baixa-preu" href="{{ path('FecdasBundle_baixapreu', { 'id': preu.id }) }}" ><span class="fa fa-trash fa-1x red"></span></a>
+						   		</div>
+					   		</li>
+					   	{% endfor %}
+						</ol>
+					 </div>
+					 {% else %}
+					 <div class="alert alert-warning" role="alert">No hi ha cap preu per aquest producte</div>
+				{% endif %}
+				 
 			 </div>
 		</div>
 		
-		<div class="row">
-			 <div class="col-md-12">
-				<button type="submit" id="formproducte-desar" class="btn btn-default btn-lg">Desar <i class="fa fa-save"></i></button>
-			 </div>			
-		</div>
-         
 		<div id="formproducte-rest">{{ form_rest(form) }}</div>
 		
-		<div id="error" class="sms-notice" style="display:none"> </div>	
+		<div id="error" class="sms-notice" style="display:none"> </div>
+		
+		<div class="row">
+			 
+			 
+		</div>
     </form>
 
 {% endblock %}
@@ -148,6 +194,18 @@
 	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
 	<script type="text/javascript">
+
+		loadPreu = function(url, params) {
+			
+			
+			$.get(url, params,
+			function(data, textStatus) {
+						
+				$("#producte_anypreus").val(data.anypreu);
+		    	$("#producte_preu").val(data.preu);
+		    	$("#producte_iva").val(data.iva);
+			});
+		};
 	
 		$(document).ready(function(){
 			setMenuActive("menu-admproducte");
@@ -164,18 +222,47 @@
 				false,
 				''
 			);
-			alert(window.location.pathname+'?id='+$('#producte_id').val()+'&anypreu='+$('#producte_anypreus').val());
 
-			{% if (producte.id is not null) %}
+			if ($('#producte_id').val() > 0) {
+				
 				$('#producte_anypreus').change( function() {
+					var params = { 	id: $('#producte_id').val(), anypreu: $('#producte_anypreus').val()  };
+					var url = "{{ path('FecdasBundle_jsonpreu') }}";
+					loadPreu(url, params );
+				});
+			}
+
+			$('.load-preu').click( function(e) {
+				e.preventDefault();
+				loadPreu( $(this).attr('href') );
+			});
+			$('.baixa-preu').click( function(e) {
+				e.preventDefault();
+
+				var url = $(this).attr('href');
+				var parentRow = $(this).parents('data-detall'); 
+				
+				var strHtml = '<p>Segur que vols esborrar aquest preu?</p>';
+				dialegConfirmacio(strHtml, 'Baixa preu', 'auto', 400, function() { 
+
+					$.get(url, function(data, textStatus) {
+						var sms = smsResultAjax(data.result, data.sms);
+						if (data.result == 'OK') {
+							parentRow.remove();
+						}
+						$( "#main-col header" ).after( sms  );
+					});
 					
-					
-					window.location = window.location.pathname+'?id='+$('#producte_id').val()+'&anypreu='+$(this).val();
-				} );
-			{% endif %} 
+					//window.location(url);
+					 
+				}, function() { });
+			});
+
 			
 		});
-	
+
+
+		
 	</script>
 
 

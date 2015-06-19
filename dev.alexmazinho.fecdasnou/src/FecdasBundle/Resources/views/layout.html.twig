@@ -9,6 +9,8 @@
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/redmond/jquery.ui.theme.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/redmond/jquery-ui.min.css') }}" type="text/css" rel="stylesheet" />
     {% if roleform is defined %}
     {{ form_stylesheet(roleform) }}
     {% endif %}
@@ -148,9 +150,13 @@
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Facturació <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			          	<li id="menu-admproductes"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llista de productes</a></li>
-			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
 			          	<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">Saldos clubs</a></li>
+			          	<li class="divider"></li>
+			          	<li id="menu-admproductes"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
+			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
+			          	<li class="divider"></li>
+			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Llistat de comandes</a></li>
+			          	<li id="menu-admcomanda"><a href="{{ path('FecdasBundle_novacomanda') }}">Nova comanda</a></li>
 			          </ul>
 			        </li>
 					<li id="menu-admenquestes"><a href="{{ path('FecdasBundle_enquestes') }}">Enquestes</a></li>

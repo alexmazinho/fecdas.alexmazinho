@@ -1,0 +1,180 @@
+{# src/Fecdas/comandesBundle/Resources/views/Facturacio/comandes.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Llista de comandes {% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Llistat de comandes</h1>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+        
+    <div id="comandes-main">
+	    <div id="list-forms">
+	    	<form id="form_comandes" action="{{ path('FecdasBundle_novacomanda') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+		    	<div class="row">
+				  <div class="col-md-5">
+				  	<div class="form-group">
+				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				  </div>
+				  <div class="col-md-2">
+					  <div class="checkbox-inline">
+					    <label>
+					      {{ form_widget(form.baixes) }} Mostrar baixes
+					    </label>
+					  </div>
+				  </div>
+				  <div class="col-md-5 col-last-right">
+						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
+				  </div>
+				</div>
+		   	</form>
+	    </div>
+	    <div class="table-header">	
+		   	<div id="list-header">
+				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
+				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">Estat</div>
+		   		<div id="header-comanda-codi" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Codi', 'p.codi') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-nomcurt" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Abr.', 'p.abreviatura') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.abreviatura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-descripcio" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Descripcio', 'p.descripcio') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.descripcio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-tipus" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Tipus', 'p.tipus') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.tipus') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-import" class="col-listheader collistheader-noorder">Preu</div>
+		   		<div id="header-comanda-iva" class="col-listheader collistheader-noorder">IVA</div>
+		   		<div id="header-comanda-total" class="col-listheader collistheader-noorder">Total</div>
+		   		<div id="header-comanda-minim" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Uds. mín.', 'p.minim') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.minim') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-limit" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Límit avís', 'p.stockable') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.stockable') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-stock" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'En Stock', 'p.stock') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('p.stock') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ comandes.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   	</div>
+	   	</div>
+		{% if comandes|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for comanda in comandes %} 
+		   		<li class="data-detall {% if comanda.esBaixa %} data-detall-fosc {% endif %}">
+		   			<div class="data-detall-cell comanda-id hidden">{{ comanda.id }}</div>
+		   			<div class="data-detall-cell comanda-estat">{{ comanda.estat }}</div>
+		   			<div class="data-detall-cell comanda-codi">{{ comanda.codi }}</div>
+		   			<div class="data-detall-cell comanda-nomcurt">{{ comanda.abreviatura }}</div>
+		   			<div class="data-detall-cell comanda-descripcio">{{ comanda.descripcio }}</div>
+		   			<div class="data-detall-cell comanda-tipus">{{ comanda.tipustext }}</div>
+		   			<div class="data-detall-cell comanda-import">{{ comanda.currentPreu|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell comanda-iva">{{ (comanda.currentIva*100)|number_format(0, ',', '.') }}%</div>
+		   			<div class="data-detall-cell comanda-total">{{ (comanda.currentPreu * (1+comanda.currentIva))|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell comanda-minim">{{ comanda.minim }}</div>
+		   			<div class="data-detall-cell comanda-limit">{{ comanda.limitnotifica }}</div>
+		   			<div class="data-detall-cell comanda-stock">{{ comanda.stock }}</div>
+		   			<div class="data-detall-cell comanda-actions">
+		   				<a class="comanda-action-edit" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
+						{% if not comanda.esBaixa %}
+		   				<a class="comanda-action-baixa" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger"></i></a>
+		   				{% else %}
+		   				<i class="fa fa-trash-o transparent"></i>
+		   				{% endif %}
+		   			</div>
+		   		</li>
+		   		{% endfor %}
+			</ol>
+		</div>
+		{% if comandes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(comandes, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha comandes per mostrar</div>
+	    {% endif %}
+	</div>
+    <div id="dialeg-edicio-comanda" class="finestra-overlay"></div>
+{% endblock %}
+
+{% block javascripts %}
+
+
+	{{ parent() }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+
+	<script type="text/javascript">
+	
+	//Cercador de clubs
+	init_cercaclub_JSON = function(elem_sel, placeholder_txt) {
+		
+		/* Inicialitza el control de cerca (input hidden) */
+		$(elem_sel).select2({
+			minimumInputLength: 3,
+			allowClear: true,
+			multiple: false,
+			placeholder: placeholder_txt,
+	
+			query: function (query) {
+				var data = {results: []};
+				var url = "{{  path('FecdasBundle_jsonclubs') }}";
+	
+				var params = { 	cerca: query.term };
+				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
+				// alert(JSON.stringify(params));
+				$.get(url,	params, function(jdata) {
+					//alert(JSON.stringify(jdata) + ' ' + jdata[0].text);
+					data.results = jdata;
+					query.callback(data);
+				}).fail(function() {
+					query.callback(data);
+				});
+			},
+			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple) 
+				var data = [];
+				var url = "{{ path('FecdasBundle_jsonclubs') }}";
+				var params = { 	codi: element.val() };
+				$.get(url,	params, function(jdata) {
+					console.log(JSON.stringify(jdata) + ' ' + jdata['text']);
+					callback(jdata);
+				}).fail(function() {
+					callback(data);
+				});
+				
+		        callback(data);
+			} 
+		});
+	}
+	
+	filtreLlistacomandes = function(cerca, tipusprducte, baixes) {
+		
+		window.location = "{{ path('FecdasBundle_comandes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
+	}
+	
+	$(document).ready(function(){
+		setMenuActive("menu-admcomandes");
+		
+		$("#form_tipus").change(function() {
+			filtreLlistacomandes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$("#form_cerca").change(function() {
+			filtreLlistacomandes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$( '#form_baixes' ).change(function(e) {
+			filtreLlistacomandes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+		});
+		
+		// Comanda
+		init_cercaclub_JSON('#form_cerca', 'Filtrar per nom del club');
+	});
+	
+	</script>
+
+
+{% endblock %}
+

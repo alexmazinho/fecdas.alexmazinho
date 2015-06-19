@@ -9,24 +9,16 @@
 {% endblock %}
 
 {% block javascriptshead %}
- 	{{ parent() }}
- 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
- 	<script src="{{ asset('js/utils/purl.js') }}" type="text/javascript"></script>
  	
-    {{ form_javascript(form) }}
 {% endblock %}
 
-{% block title %}Aplicació gestió FECDAS. Llista de productes {% endblock %}
+{% block title %}Aplicació gestió FECDAS. Llistat de productes {% endblock %}
 
 {% block body %}
 	<header>
-        <h1>Llista de productes</h1>
+        <h1>Llistat de productes</h1>
     </header>
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
         
     <div id="productes-main">
 	    <div id="list-forms">
@@ -60,6 +52,7 @@
 	    <div class="table-header">	
 		   	<div id="list-header">
 				<div id="header-producte-id" class="col-listheader hidden">&nbsp;</div>
+				<div id="header-producte-estat" class="col-listheader collistheader-noorder">Estat</div>
 		   		<div id="header-producte-codi" class="col-listheader">{{ knp_pagination_sortable(productes, 'Codi', 'p.codi') }}
 		   			<span class="listheader-icon {% if productes.isSorted('p.codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-producte-nomcurt" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Abr.', 'p.abreviatura') }}
@@ -86,6 +79,7 @@
 			{% for producte in productes %} 
 		   		<li class="data-detall {% if producte.esBaixa %} data-detall-fosc {% endif %}">
 		   			<div class="data-detall-cell producte-id hidden">{{ producte.id }}</div>
+		   			<div class="data-detall-cell producte-estat">{{ producte.estat }}</div>
 		   			<div class="data-detall-cell producte-codi">{{ producte.codi }}</div>
 		   			<div class="data-detall-cell producte-nomcurt">{{ producte.abreviatura }}</div>
 		   			<div class="data-detall-cell producte-descripcio">{{ producte.descripcio }}</div>
@@ -100,6 +94,8 @@
 		   				<a class="producte-action-edit" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
 						{% if not producte.esBaixa %}
 		   				<a class="producte-action-baixa" href="{{ path('FecdasBundle_baixaproducte', { 'id': producte.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger"></i></a>
+		   				{% else %}
+		   				<i class="fa fa-trash-o transparent"></i>
 		   				{% endif %}
 		   			</div>
 		   		</li>
@@ -116,76 +112,77 @@
 
 {% block javascripts %}
 
-{{ parent() }}
-
-<script type="text/javascript">
-
-//Cercador de productes
-init_cercaproducte_JSON = function(elem_sel, placeholder_txt) {
+	{{ parent() }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+ 	
+	<script type="text/javascript">
 	
-	/* Inicialitza el control de cerca (input hidden) */
-	$(elem_sel).select2({
-		minimumInputLength: 3,
-		allowClear: true,
-		multiple: false,
-		placeholder: placeholder_txt,
-
-		query: function (query) {
-			var data = {results: []};
-			var url = "{{  path('FecdasBundle_jsonproductes') }}";
-
-			var params = { 	cerca: query.term };
-			// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
-			// alert(JSON.stringify(params));
-			$.get(url,	params, function(jdata) {
-				//alert(JSON.stringify(jdata) + ' ' + jdata[0].text);
-				data.results = jdata;
-				query.callback(data);
-			}).fail(function() {
-				query.callback(data);
-			});
-		},
-		initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple) 
-			var data = [];
-			var url = "{{ path('FecdasBundle_jsonproductes') }}";
-			var params = { 	id: element.val() };
-			$.get(url,	params, function(jdata) {
-				console.log(JSON.stringify(jdata) + ' ' + jdata['text']);
-				callback(jdata);
-			}).fail(function() {
-				callback(data);
-			});
-			
-	        callback(data);
-		} 
+	//Cercador de productes
+	init_cercaproducte_JSON = function(elem_sel, placeholder_txt) {
+		
+		/* Inicialitza el control de cerca (input hidden) */
+		$(elem_sel).select2({
+			minimumInputLength: 3,
+			allowClear: true,
+			multiple: false,
+			placeholder: placeholder_txt,
+	
+			query: function (query) {
+				var data = {results: []};
+				var url = "{{  path('FecdasBundle_jsonproductes') }}";
+	
+				var params = { 	cerca: query.term };
+				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
+				// alert(JSON.stringify(params));
+				$.get(url,	params, function(jdata) {
+					//alert(JSON.stringify(jdata) + ' ' + jdata[0].text);
+					data.results = jdata;
+					query.callback(data);
+				}).fail(function() {
+					query.callback(data);
+				});
+			},
+			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple) 
+				var data = [];
+				var url = "{{ path('FecdasBundle_jsonproductes') }}";
+				var params = { 	id: element.val() };
+				$.get(url,	params, function(jdata) {
+					console.log(JSON.stringify(jdata) + ' ' + jdata['text']);
+					callback(jdata);
+				}).fail(function() {
+					callback(data);
+				});
+				
+		        callback(data);
+			} 
+		});
+	}
+	
+	filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
+		
+		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
+	}
+	
+	$(document).ready(function(){
+		setMenuActive("menu-admproductes");
+		
+		$("#form_tipus").change(function() {
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$("#form_cerca").change(function() {
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$( '#form_baixes' ).change(function(e) {
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+		});
+		
+		// Producte
+		init_cercaproducte_JSON('#form_cerca', 'Cercar descripció del producte');
 	});
-}
-
-filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
 	
-	window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
-}
-
-$(document).ready(function(){
-	setMenuActive("menu-admproductes");
-	
-	$("#form_tipus").change(function() {
-		filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
-    });
-
-	$("#form_cerca").change(function() {
-		filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
-    });
-
-	$( '#form_baixes' ).change(function(e) {
-		filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
-	});
-	
-	// Producte
-	init_cercaproducte_JSON('#form_cerca', 'Cercar descripció del producte');
-});
-
-</script>
+	</script>
 
 
 {% endblock %}

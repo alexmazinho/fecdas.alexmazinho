@@ -5,6 +5,8 @@
 	background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; 
 }
 
+.field-error-alert { display: block; font-size: 0.9em; font-style: italic; margin: 5px 0; padding: 3px 10px; text-align: right; width: 100%; }
+
 /*
 .textaccio {
 	
@@ -41,19 +43,17 @@ html>body .textaccio img {
 
 
 input, .form-control {
-	
-background: rgba(250,250,250,1);
-background: -moz-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
-background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(250,250,250,1)), color-stop(30%, rgba(255,255,255,1)), color-stop(70%, rgba(255,255,255,1)), color-stop(100%, rgba(250,250,250,1)));
-background: -webkit-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
-background: -o-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
-background: -ms-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
-background: linear-gradient(to bottom, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fafafa', endColorstr='#fafafa', GradientType=0 );
-
+	background: rgba(250,250,250,1);
+	background: -moz-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(250,250,250,1)), color-stop(30%, rgba(255,255,255,1)), color-stop(70%, rgba(255,255,255,1)), color-stop(100%, rgba(250,250,250,1)));
+	background: -webkit-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+	background: -o-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+	background: -ms-linear-gradient(top, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+	background: linear-gradient(to bottom, rgba(250,250,250,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, rgba(250,250,250,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fafafa', endColorstr='#fafafa', GradientType=0 );
 }
 
-input[type="submit"], button  {
+input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
 	/*border-top: 1px solid #FFFFFF;*/
   	/* background: #CCCCCC;
    	padding: 5px 10px;
@@ -65,22 +65,26 @@ input[type="submit"], button  {
    vertical-align: middle;*/
     /*background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;*/
     
-    /*background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#DDDDDD));
-   	background: -webkit-linear-gradient(top, #FFFFFF, #DDDDDD);
-   	background: -moz-linear-gradient(top, #FFFFFF, #DDDDDD);
-   	background: -ms-linear-gradient(top, #FFFFFF, #DDDDDD);
-   	background: -o-linear-gradient(top, #FFFFFF, #DDDDDD);*/
-   	font-size: 0.85em;
-    padding: 4px 9px 4px 4px;
+    background: -moz-linear-gradient(top, #fff 0%, #e0e0e0 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, #fff), color-stop(100%, #e0e0e0));
+	background: -webkit-linear-gradient(top, #fff 0%, #e0e0e0 100%);
+	background: -o-linear-gradient(top, #fff 0%, #e0e0e0 100%);
+	background: -ms-linear-gradient(top,#fff 0%, #e0e0e0 100%);
+   	background: linear-gradient(to bottom, #fff 0px, #e0e0e0 100%);
+   	font-size: 14px;
+    padding: 7px 16px;
    	-webkit-border-radius: 5px;
    	/*-moz-border-radius: 5px;*/
-    border-radius: 5px;
-    color: #005A8C;
+    border-radius: 6px;
+    border-color: #ccc;
+    color: #1240a0;
     text-transform: uppercase;
+    text-shadow: 0 1px 0 #fff;
     cursor: pointer;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    /*-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);*/
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 1px 1px rgba(0, 0, 0, 0.075);
 }
 
 input[type="submit"]:hover, button:hover, .btn-default:hover,
@@ -319,6 +323,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall .data-detall-cell i.fa:hover { color: #ffffff;  } 
 .data-detall .data-detall-cell i.fa-pencil:hover { background-color: #31708f;  }
 .data-detall .data-detall-cell i.fa-trash-o:hover { background-color: #a94442;  }
+.data-detall .data-detall-cell i.fa.trasnparent:hover { background-color: transparent; color: transparent;  } 
  
 .form-control-left { text-align: left; }
 .form-control-right { text-align: right; }
@@ -339,6 +344,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     width: auto;*/
 }
 
+.fa-noicon { display:block; width: 13px; height: 16px; padding: }
 
 #menu-user .menu-user-dropdown {
     /*padding: 0px 10px;*/
@@ -352,6 +358,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     font-style: normal;
     
 }
+
 
 
 #header #menu-user .menu-user-dropdown.open .dropdown-menu { width: 100%; text-align: right; left:inherit; right: 0; }
@@ -379,14 +386,16 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #slider .pagination { border:none; display:block; }
 
 
-.blue { color: #1240a0; }
+.blue { color: #2281cf; }
 .red { color: red; }
+.transparent { color: transparent; }
 
 /*************** FECDAS NOU productes ****************/
 
-#header-producte-codi { width: 10%; text-align: right; }
-#header-producte-nomcurt  { width: 7%; text-align: center; }
-#header-producte-descripcio { width: 22%; text-align: left;  }
+#header-producte-estat { width: 6%; text-align: left; }
+#header-producte-codi { width: 8%; text-align: right; }
+#header-producte-nomcurt  { width: 5%; text-align: center; }
+#header-producte-descripcio { width: 20%; text-align: left;  }
 #header-producte-tipus { width: 7%; text-align: left; }
 #header-producte-import { width: 7%; text-align: right; }
 #header-producte-iva { width: 7%; text-align: right; }
@@ -396,9 +405,10 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-producte-stock { width: 7%; text-align: center; }
 #header-producte-actions { width: 10%; text-align: right;  color: #3c763d;  }
 	   	
-.data-detall-cell.producte-codi  { width: 10%; text-align: right; }
-.data-detall-cell.producte-nomcurt  { width: 7%; text-align: center; }
-.data-detall-cell.producte-descripcio { width: 22%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.producte-estat  { width: 6%; text-align: left; }
+.data-detall-cell.producte-codi  { width: 8%; text-align: right; }
+.data-detall-cell.producte-nomcurt  { width: 5%; text-align: center; }
+.data-detall-cell.producte-descripcio { width: 20%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.producte-tipus { width: 7%; text-align: left; }
 .data-detall-cell.producte-import { width: 7%; text-align: right; }
 .data-detall-cell.producte-iva { width: 7%; text-align: right; }
@@ -407,8 +417,23 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.producte-limit { width: 7%; text-align: center; }
 .data-detall-cell.producte-stock { width: 7%; text-align: center; }
 .data-detall-cell.producte-actions { width: 10%; text-align: right;}
+.data-detall-cell.producte-actions .fa { font-size: 1.2em; }
 
+#historic-preus .table-scroll {  max-height: 150px; }
 
+/*************** FECDAS NOU preu ****************/
+
+#header-preuid { display:none; }
+#header-preuany { width: 25%; text-align: center; }
+#header-preuimport { width: 25%; text-align: center; }
+#header-preuiva { width: 25%; text-align: center; }
+#header-preuaction { width: 25%; text-align: right; }
+
+.data-detall-cell.preuid { display:none; }
+.data-detall-cell.preuany { width: 25%; text-align: center; }
+.data-detall-cell.preuimport { width: 25%; text-align: center; }
+.data-detall-cell.preuiva { width: 25%; text-align: center; }
+.data-detall-cell.preuaction { width: 25%; text-align: right; }
 
 /***************** Llistes ******************/
 

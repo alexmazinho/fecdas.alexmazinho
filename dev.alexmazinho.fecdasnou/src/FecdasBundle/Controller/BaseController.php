@@ -122,7 +122,7 @@ class BaseController extends Controller {
 	 * Obté array IVA
 	 */
 	public static function getIVApercents() {
-		$ivaArray = array(0 => 'Exempt', 0.4 => '4%', 0.8 => '8%', 0.21 => '21%' );
+		$ivaArray = array('0' => 'Exempt', '0.04' => '4%', '0.08' => '8%', '0.21' => '21%' );
 		return $ivaArray;
 	}
 	
@@ -734,5 +734,48 @@ class BaseController extends Controller {
 		}
 	
 		return array('name' => $nameAjustat, 'path' => $strPath);
+	}
+	
+	public function jsonclubsAction(Request $request) {
+		//foment.dev/jsonclubs?cerca=textcerca
+		$response = new Response();
+	
+		$cerca = $request->get('cerca', '');
+		$codi = $request->get('id', 0);
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		if ($codi > 0) {
+			$club = $em->getRepository('FecdasBundle:EntityClub')->find($codi);
+				
+			if ($club != null) {
+				$response->headers->set('Content-Type', 'application/json');
+				$response->setContent(json_encode(array("id" => $club->getCodi(), "text" => $club->getNom()) ));
+				return $response;
+			}
+		}
+	
+	
+		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+		$strQuery .= " WHERE c.databaixa IS NULL ";
+		$strQuery .= " AND c.descripcio LIKE :cerca";
+		$strQuery .= " ORDER BY c.descripcio";
+	
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('cerca', '%'.$cerca.'%');
+	
+	
+		$search = array();
+		if ($query != null) {
+			$result = $query->getResult();
+			foreach ($result as $c) {
+				$search[] = array("id" => $c->getId(), "text" => $c->getNom());
+			}
+		}
+	
+		$response->headers->set('Content-Type', 'application/json');
+		$response->setContent(json_encode($search));
+	
+		return $response;
 	}
 }

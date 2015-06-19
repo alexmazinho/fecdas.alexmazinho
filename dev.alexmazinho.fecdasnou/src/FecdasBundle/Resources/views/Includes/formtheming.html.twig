@@ -1,0 +1,13 @@
+{# Mirar Symfony/Bridge/Twig/Resources/views/Form  #}
+{% block form_errors %}
+    {% spaceless %}
+        {% if errors|length > 0 %}
+        <div class="alert alert-danger field-error-alert">
+		<ul>
+            {% for error in errors %}
+                <li>{{ error.message }} <span class="fa fa-exclamation-circle fa-1x"></span></li>
+            {% endfor %}
+        </ul></div>
+        {% endif %}
+    {% endspaceless %}
+{% endblock form_errors %}

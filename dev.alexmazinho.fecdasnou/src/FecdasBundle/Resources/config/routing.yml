@@ -355,11 +355,48 @@ FecdasBundle_baixaproducte:
     requirements:
         _method:  GET
 
+FecdasBundle_baixapreu:
+    pattern:  /baixapreu
+    defaults: { _controller: "FecdasBundle:Facturacio:baixapreu" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_comandes:
+    pattern:  /comandes
+    defaults: { _controller: "FecdasBundle:Facturacio:comandes" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_novacomanda:
+    pattern:  /novacomanda
+    defaults: { _controller: "FecdasBundle:Facturacio:novacomanda" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_editarcomanda:
+    pattern:  /editarcomanda
+    defaults: { _controller: "FecdasBundle:Facturacio:editarcomanda" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_jsonproductes:
     pattern:  /jsonproductes
     defaults: { _controller: "FecdasBundle:Facturacio:jsonproductes" }
     requirements:
         _method:  GET
+
+FecdasBundle_jsonpreu:
+    pattern:  /jsonpreu
+    defaults: { _controller: "FecdasBundle:Facturacio:jsonpreu" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_jsonclubs:
+    pattern:  /jsonclubs
+    defaults: { _controller: "FecdasBundle:Facturacio:jsonclubs" }
+    requirements:
+        _method:  GET
+
 
 
 # ---------------------------------------------------------------------------

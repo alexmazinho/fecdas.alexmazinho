@@ -386,6 +386,52 @@
 	};
 
 	
+	dialegConfirmacio = function(strHtml, titol, h, w, callbackok, callbackko) {
+		if ( h === undefined ) var h = 'auto'; 
+		if ( w === undefined ) var w = 300;
+
+		$( '#dialeg' ).html(strHtml);
+		
+		$( '#dialeg' ).dialog({
+			 resizable: false,
+			 title: titol,
+			 height: h,
+			 width: w,
+			 modal: true,
+			 buttons: {
+			 	"Continuar": function() {
+			 		$( this ).dialog( "close" );
+			 		//$( this ).dialog( "destroy" );
+			 		$( '#dialeg' ).html('');
+			 		callbackok();
+			 	},
+			 	"Cancel·lar": function() {
+			 		$( this ).dialog( "close" );
+			 		//$( this ).dialog( "destroy" );
+			 		$( '#dialeg' ).html('');
+			 		callbackko();
+			 	}
+			 }
+		});
+	}; 
+	
+	smsResultAjax = function(result, sms) {
+
+		var classAlert = '';
+		if (result == 'OK')	classAlert = 'alert-danger';
+		else classAlert = 'alert-info';
+		
+		var errorRemove = '<div class="alert '+classAlert+' form-alert alert-dismissible">';
+		errorRemove += '<button data-dismiss="alert" class="close" type="button">';
+		errorRemove += '<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>';
+		errorRemove += '<ul><li><span class="fa fa-exclamation-circle fa-1x"></span>';
+		errorRemove += sms+'</li></ul></div>';
+
+		return errorRemove;
+	}
+	
+	
+	
 	jQuery.fn.extend({
 		slideRightShow: function() {
 		    return this.each(function() {

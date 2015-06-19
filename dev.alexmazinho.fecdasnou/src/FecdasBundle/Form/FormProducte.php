@@ -19,9 +19,6 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 
 	public static function getSubscribedEvents() {
 
-		error_log("subscribed  ");
-		
-		
 		// Tells the dispatcher that you want to listen on the form.pre_set_data
 		// event and that the preSetData method should be called.
 		return array (
@@ -32,6 +29,16 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		);
 	}
 	
+	private $anypreu;
+	
+	public function __construct($anypreu = 0)
+	{
+		if ($anypreu == 0) $anypreu = date('Y');
+		
+		$this->anypreu = $anypreu;
+	}
+	
+	
 	// Mètode del subscriptor => implements EventSubscriberInterface
 	public function preSetData(FormEvent $event) {
 		// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
@@ -41,8 +48,8 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		/* Check we're looking at the right data/form */
 		if ($producte instanceof EntityProducte) {
 				
-			$preu = $producte->getPreu(date('Y'));
-					
+			$preu = $producte->getPreu($this->anypreu);
+			
 			$form->add ( 'idpreu', 'hidden', array (
 					'mapped' 	=> false,
 					'data' 		=> ($preu == null?0:$preu->getId())
@@ -50,11 +57,11 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 				
 			// Selector anys
 			$form->add('anypreus', 'choice', array(
-					'choices'   => BaseController::getArrayAnysPreus(date('Y')),
+					'choices'   => BaseController::getArrayAnysPreus($this->anypreu),
 					'multiple'  => false,
 					'expanded'  => false,
 					'mapped' 	=> false,
-					'data' 		=> ($preu == null?0:$preu->getPreu(date('Y'))),
+					'data' 		=> ($preu == null?0:$preu->getAnypreu()),
 			));
 			
 			$form->add ( 'preu', 'number', array (
@@ -62,41 +69,29 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'mapped' 		=> false,
 					'precision' 	=> 2,
 					'data' 			=> ($preu == null?0:$preu->getPreu()),
-					'mapped' 		=> false,
-					'constraints' 	=> array (
-							new NotBlank ( array ( 'message' => 'Cal indicar el preu.' )),
-							new Type ( array ('type' => 'numeric', 'message' => 'El preu ha de ser numèric.')),
-							new GreaterThanOrEqual ( array ('value' => 0, 'message' => 'El preu no és vàlid.'))
-					)
+					'mapped' 		=> false
 			));
 					
 			$form->add('iva', 'choice', array(
 					'choices'   => BaseController::getIVApercents(),
 					'multiple'  => false,
 					'expanded'  => false,
-					'mapped' 		=> false,
+					'mapped' 	=> false,
 					'data' 		=> ($preu == null?0:$preu->getIva()),
+					
 			));
 			
 			
 			$form->add ('limitnotifica', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					'disabled' 		=> $producte->getStockable() != true,
-					'constraints' 	=> array (
-							new Type ( array ( 'type' => 'numeric', 'message' => 'El límit d\'stock per notificar ha de ser numèric.'	)),
-							new GreaterThanOrEqual( array ( 'value' => 0, 'message' => 'El límit d\'stock per notificar no és vàlid.'	))
-					)
+					'disabled' 		=> $producte->getStockable() != true
 			));
 			
 			$form->add ('stock', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					'disabled' 		=> $producte->getStockable() != true,
-					'constraints' 	=> array (
-							new Type ( array ( 'type' => 'numeric', 'message' => 'La quantitat d\'stock ha de ser numèric.'	)),
-							new GreaterThanOrEqual( array ( 'value' => 0, 'message' => 'La quantitat d\'stock no és vàlid.'	))
-					)
+					'disabled' 		=> $producte->getStockable() != true
 			));
 			
 			/*$form->add ( 'iva', 'number', array (
@@ -118,7 +113,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 	// No propagar, evita validacions
 	public function postSubmitData(FormEvent $event) {
 	
-		$event->stopPropagation();
+		//$event->stopPropagation();
 	}
 	
 	public function submitData(FormEvent $event) {
@@ -129,7 +124,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 	
 		$origen = $form->get('anypreus')->getData(); // Detectar origen, si és selector anys refrescar els valors del preu, iva...
 	
-		error_log("origen submit data anyspreus  ==> ".$origen);
+		//error_log("origen submit data anyspreus  ==> ".$origen);
 		
 		/*if ($origen instanceof Activitat) { // Canvi d'activitat, actualitza camps associats: deutors, facturacions
 			$activitat = $origen;
@@ -168,11 +163,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		
 		$builder->add ('minim', 'integer', array (
 				'required' => false,
-				'scale' => 0,
-				'constraints' => array (
-						new Type ( array ( 'type' => 'numeric', 'message' => 'El mínim de productes de la comanda ha de ser numèric.'	)),
-						new GreaterThanOrEqual( array ( 'value' => 0, 'message' => 'El mínim de productes de la comanda no és vàlid.'	))
-				)
+				'scale' => 0
 		));
 		
 		$builder->add('stockable', 'checkbox', array(

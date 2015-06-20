@@ -10,13 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
  * @author alex
  *
  */
-class EntityParte {
+class EntityParte extends EntityComanda {
 	const PREFIX_ALBARA_LLICENCIES = 'L';
 	
 	/**
 	 * @ORM\Id
 	 * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;	
 
@@ -28,9 +27,9 @@ class EntityParte {
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="partes")
-	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
+	 * @ORM\JoinColumn(name="clubdel", referencedColumnName="codi")
 	 */
-	protected $club;	// FK taula m_clubs
+	protected $clubdel;	// FK taula m_clubdels
 	
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
@@ -45,17 +44,17 @@ class EntityParte {
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
-	protected $dataentrada;
+	protected $dataentradadel;
 	
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
-	protected $datamodificacio;
+	protected $datamodificaciodel;
 	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
-	protected $databaixa;
+	protected $databaixadel;
 	
 	/**
 	 * @ORM\Column(type="date", nullable = true)
@@ -122,8 +121,21 @@ class EntityParte {
 	 */
 	protected $llicencies;	// Owning side of the relationship
 	
-	public function __construct($currentDate) {
-		$this->setDataentrada($currentDate);
+	
+	/*
+	 * @ORM\OneToOne(targetEntity="EntityComanda", inversedBy="parte")
+	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
+	 *
+	protected $comanda;*/
+	
+	/*
+	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="parte")
+	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
+	 *
+	protected $comanda;*/
+	
+	public function __construct() {
+		$this->setDataentradadel(new \DateTime());
 		$this->web = true;
 		$this->renovat = false;
 		$this->pendent = false;
@@ -152,13 +164,14 @@ class EntityParte {
 		$llicencies = $this->getLlicencies();
 	
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
+		
 		foreach ($llicencies as $llicencia_iter) {
-			if ($llicencia_iter->getDatabaixa() == null) {
+			if ($llicencia_iter->getDatabaixadel() == null) {
 				$cloneLlicencia = clone $llicencia_iter;
 				
 				/* Init camps */
-				$cloneLlicencia->setDataEntrada($currentDate);
-				$cloneLlicencia->setDatamodificacio($currentDate);
+				$cloneLlicencia->setDataentradadel($currentDate);
+				$cloneLlicencia->setDatamodificaciodel($currentDate);
 				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat("cloneLlicencies"));
 				$cloneLlicencia->setIdparteAccess(null);
 				$cloneLlicencia->getIdpartedetall_access(null);
@@ -167,6 +180,16 @@ class EntityParte {
 				$cloneLlicencia->setParte($this);
 			}
 		}
+	}
+	
+	/**
+	 * Get id
+	 *
+	 * @return boolean
+	 */
+	public function esBaixa()
+	{
+		return $this->databaixadel != null;
 	}
 	
     /**
@@ -250,23 +273,23 @@ class EntityParte {
     }
     
     /**
-     * Set dataentrada
+     * Set dataentradadel
      *
-     * @param datetime $dataentrada
+     * @param datetime $dataentradadel
      */
-    public function setDataentrada($dataentrada)
+    public function setDataentradadel($dataentradadel)
     {
-        $this->dataentrada = $dataentrada;
+        $this->dataentradadel = $dataentradadel;
     }
 
     /**
-     * Get dataentrada
+     * Get dataentradadel
      *
      * @return datetime 
      */
-    public function getDataentrada()
+    public function getDataentradadel()
     {
-        return $this->dataentrada;
+        return $this->dataentradadel;
     }
 
     /**
@@ -481,23 +504,23 @@ class EntityParte {
     }
 
     /**
-     * Set club
+     * Set clubdel
      *
-     * @param FecdasBundle\Entity\EntityClub $club
+     * @param FecdasBundle\Entity\EntityClub $clubdel
      */
-    public function setClub(\FecdasBundle\Entity\EntityClub $club)
+    public function setClubdel(\FecdasBundle\Entity\EntityClub $clubdel)
     {
-        $this->club = $club;
+        $this->clubdel = $clubdel;
     }
 
     /**
-     * Get club
+     * Get clubdel
      *
-     * @return FecdasBundle\Entity\EntityClub 
+     * @return FecdasBundle\Entity\EntityClub
      */
-    public function getClub()
+    public function getClubdel()
     {
-        return $this->club;
+        return $this->clubdel;
     }
 
     /**
@@ -561,44 +584,45 @@ class EntityParte {
     }
     
     /**
-     * Set datamodificacio
+     * Set datamodificaciodel
      *
-     * @param datetime $datamodificacio
+     * @param datetime $datamodificaciodel
      */
-    public function setDatamodificacio($datamodificacio)
+    public function setDatamodificaciodel($datamodificaciodel)
     {
-    	$this->datamodificacio = $datamodificacio;
+    	$this->datamodificaciodel = $datamodificaciodel;
     }
     
     /**
-     * Get datamodificacio
+     * Get datamodificaciodel
      *
      * @return datetime
      */
-    public function getDatamodificacio()
+    public function getDatamodificaciodel()
     {
-    	return $this->datamodificacio;
+    	return $this->datamodificaciodel;
     }
     
     /**
-     * Set databaixa
+     * Set databaixadel
      *
-     * @param datetime $databaixa
+     * @param datetime $databaixadel
      */
-    public function setDatabaixa($databaixa)
+    public function setDatabaixadel($databaixadel)
     {
-    	$this->databaixa = $databaixa;
+    	$this->databaixadel = $databaixadel;
     }
     
     /**
-     * Get databaixa
+     * Get databaixadel
      *
      * @return datetime
      */
-    public function getDatabaixa()
+    public function getDatabaixadel()
     {
-    	return $this->databaixa;
+    	return $this->databaixadel;
     }
+
     /**
      * Add llicencia
      *
@@ -621,7 +645,6 @@ class EntityParte {
     	$this->llicencies->removeElement($llicencia);
     }
     
-    
     /**
      * Get llicencies
      *
@@ -637,7 +660,7 @@ class EntityParte {
     {
     	$arr = array();
     	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->getDatabaixa() == null) $arr[] = $llicencia;
+    		if ($llicencia->getDatabaixadel() == null) $arr[] = $llicencia;
     	}
     	
     	usort($arr, function($a, $b) {
@@ -673,7 +696,7 @@ class EntityParte {
     	$count = 0;
     	foreach($this->llicencies as $c=>$llicencia_iter) {
     		//$llicencia_iter->setPersonaSelect($llicencia_iter->getPersona());
-    		if ($llicencia_iter->getDatabaixa() == null) $count++;
+    		if ($llicencia_iter->getDatabaixadel() == null) $count++;
     	}
     	return $count;
     }
@@ -711,7 +734,7 @@ class EntityParte {
     	// Només si no estan donades de baixa
     	$count = 0;
     	foreach($this->llicencies as $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null and 
+    		if ($llicencia_iter->getDatabaixadel() == null and 
     			$llicencia_iter->getCategoria()->getSimbol() == $simbol) $count++;
     	}
     	return $count;
@@ -721,7 +744,7 @@ class EntityParte {
     	// Retorna el preu total sense IVA de totes les llicències actives del Parte
     	$preu = 0;
     	foreach ($this->getLlicencies() as $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null) {
+    		if ($llicencia_iter->getDatabaixadel() == null) {
     			$preu += $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
     		}
     	}
@@ -778,7 +801,7 @@ class EntityParte {
     	// Només si no estan donades de baixa
     	$count = 0;
     	foreach($this->llicencies as $c=>$llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null) {
+    		if ($llicencia_iter->getDatabaixadel() == null) {
     			switch ($activitat) {
     				case 'pesca':
     					if ($llicencia_iter->getPesca() == true) $count++;
@@ -875,10 +898,10 @@ class EntityParte {
      */
     public function isPendentSincronitzar()
     {
-    	if ($this->databaixa != null) return false; // Baixes no cal sincronitzar
+    	if ($this->databaixadel != null) return false; // Baixes no cal sincronitzar
     	if ($this->pendent == true) return false; // Pendents no s'han de sincronitzar
     	if ($this->idparte_access == null) return true;
-    	if ($this->idparte_access != null and $this->datamodificacio != null) return true;
+    	if ($this->idparte_access != null and $this->datamodificaciodel != null) return true;
     	
     	return false;
     }
@@ -931,8 +954,8 @@ class EntityParte {
     	$count = 0;
     	if ($this->numfactura != null and $this->datapagament != null) {
     		foreach($this->llicencies as $c=>$llicencia_iter) {
-    			if ($llicencia_iter->getDatabaixa() != null) {
-    				if ($llicencia_iter->getDatabaixa() >= $this->datapagament) {
+    			if ($llicencia_iter->getDatabaixadel() != null) {
+    				if ($llicencia_iter->getDatabaixadel() >= $this->datapagament) {
     					return false;
     				}
     			}
@@ -951,7 +974,7 @@ class EntityParte {
     	//$iva = $parte->getTipus()->getIVA() + 100;
     	$iva = $this->getTipus()->getIVA();
     	foreach ($this->getLlicencies() as $c => $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null) {
+    		if ($llicencia_iter->getDatabaixadel() == null) {
     			$codi = $llicencia_iter->getCategoria()->getCodisortida();
     
     			$preu = $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
@@ -987,7 +1010,7 @@ class EntityParte {
     	// Missatge que es mostra a la llista de partes
     	$textInfo = "";
     	
-    	if ($this->databaixa != null) return "Llista anulada";
+    	if ($this->databaixadel != null) return "Llista anulada";
     	
     	if ($this->isPassat() == true) return "Validesa de les llicències finalitzada";
     	
@@ -1020,10 +1043,10 @@ class EntityParte {
     }
     
     /**
-     * Comprova si el club pot imprimir les llicències 
-     * Clubs DIFE amb impressio   --> sempre
-     * Clubs IMME --> llicències pagades i web
-     * Clubs NOTR --> Mai
+     * Comprova si el clubdel pot imprimir les llicències 
+     * Clubdels DIFE amb impressio   --> sempre
+     * Clubdels IMME --> llicències pagades i web
+     * Clubdels NOTR --> Mai
      *
      * @return boolean
      */
@@ -1031,9 +1054,9 @@ class EntityParte {
     {
     	if ($this->web == false) return false;  // No web no permet imprimir
     	
-    	if ($this->club->getEstat()->getCodi() == "DIFE" and $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
+    	if ($this->clubdel->getEstat()->getCodi() == "DIFE" and $this->clubdel->getImpressio() == true) return true;  // DIFE amb impressio sempre
     	
-    	if ($this->club->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
+    	if ($this->clubdel->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
 
     	if ($this->datapagament != null) return true;  // La resta poden imprimir si està pagat
     	

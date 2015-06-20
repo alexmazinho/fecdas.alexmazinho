@@ -179,6 +179,16 @@ class EntityLlicencia {
 	}
 	
 	/**
+	 * Get id
+	 *
+	 * @return boolean
+	 */
+	public function esBaixa()
+	{
+		return $this->databaixa != null;
+	}
+	
+	/**
      * Get id
      *
      * @return integer 

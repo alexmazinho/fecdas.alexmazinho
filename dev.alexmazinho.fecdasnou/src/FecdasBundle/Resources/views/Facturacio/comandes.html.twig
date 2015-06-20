@@ -43,23 +43,22 @@
 		   	<div id="list-header">
 				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">Estat</div>
-		   		<div id="header-comanda-codi" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Codi', 'p.codi') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-nomcurt" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Abr.', 'p.abreviatura') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.abreviatura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-descripcio" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Descripcio', 'p.descripcio') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.descripcio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-tipus" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Tipus', 'p.tipus') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.tipus') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-import" class="col-listheader collistheader-noorder">Preu</div>
-		   		<div id="header-comanda-iva" class="col-listheader collistheader-noorder">IVA</div>
-		   		<div id="header-comanda-total" class="col-listheader collistheader-noorder">Total</div>
-		   		<div id="header-comanda-minim" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Uds. mín.', 'p.minim') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.minim') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-limit" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Límit avís', 'p.stockable') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.stockable') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-stock" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'En Stock', 'p.stock') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('p.stock') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Num.', 'c.num') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-club" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Club', 'c.club') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.club') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-items" class="col-listheader collistheader-noorder">items</div>
+		   		<div id="header-comanda-total" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Total', 'c.total') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.total') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-data" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Data', 'c.dataentrada') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-factura" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Factura', 'c.factura') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.factura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-rebut" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Rebut', 'c.rebut') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.rebut') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-comanda-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
+		   		<div id="header-comanda-compta" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Enviat\nCompta.', 'c.comptabilitat') }}
+		   			<span class="listheader-icon {% if comandes.isSorted('c.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ comandes.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 	   	</div>
@@ -70,16 +69,15 @@
 		   		<li class="data-detall {% if comanda.esBaixa %} data-detall-fosc {% endif %}">
 		   			<div class="data-detall-cell comanda-id hidden">{{ comanda.id }}</div>
 		   			<div class="data-detall-cell comanda-estat">{{ comanda.estat }}</div>
-		   			<div class="data-detall-cell comanda-codi">{{ comanda.codi }}</div>
-		   			<div class="data-detall-cell comanda-nomcurt">{{ comanda.abreviatura }}</div>
-		   			<div class="data-detall-cell comanda-descripcio">{{ comanda.descripcio }}</div>
-		   			<div class="data-detall-cell comanda-tipus">{{ comanda.tipustext }}</div>
-		   			<div class="data-detall-cell comanda-import">{{ comanda.currentPreu|number_format(2, ',', '.') }}€</div>
-		   			<div class="data-detall-cell comanda-iva">{{ (comanda.currentIva*100)|number_format(0, ',', '.') }}%</div>
-		   			<div class="data-detall-cell comanda-total">{{ (comanda.currentPreu * (1+comanda.currentIva))|number_format(2, ',', '.') }}€</div>
-		   			<div class="data-detall-cell comanda-minim">{{ comanda.minim }}</div>
-		   			<div class="data-detall-cell comanda-limit">{{ comanda.limitnotifica }}</div>
-		   			<div class="data-detall-cell comanda-stock">{{ comanda.stock }}</div>
+		   			<div class="data-detall-cell comanda-num">{{ comanda.numcomanda }}</div>
+		   			<div class="data-detall-cell comanda-club">{{ comanda.club.nom }}</div>
+		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
+		   			<div class="data-detall-cell comanda-total">{{ comanda.total|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell comanda-factura">{{ comanda.numfactura }}</div>
+		   			<div class="data-detall-cell comanda-rebut">{{ comanda.numrebut }}</div>
+		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.comentaris }}</div>
+		   			<div class="data-detall-cell comanda-compta">{{ comanda.comptabilitat.infoComptabilitat }}</div>
 		   			<div class="data-detall-cell comanda-actions">
 		   				<a class="comanda-action-edit" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
 						{% if not comanda.esBaixa %}
@@ -149,24 +147,20 @@
 		});
 	}
 	
-	filtreLlistacomandes = function(cerca, tipusprducte, baixes) {
+	filtreLlistacomandes = function(cerca, baixes) {
 		
-		window.location = "{{ path('FecdasBundle_comandes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
+		window.location = "{{ path('FecdasBundle_comandes', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes;
 	}
 	
 	$(document).ready(function(){
 		setMenuActive("menu-admcomandes");
 		
-		$("#form_tipus").change(function() {
-			filtreLlistacomandes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
-	    });
-	
 		$("#form_cerca").change(function() {
-			filtreLlistacomandes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistacomandes($( "#form_cerca" ).val(), $(this).is(':checked'));
 	    });
 	
 		$( '#form_baixes' ).change(function(e) {
-			filtreLlistacomandes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistacomandes($( "#form_cerca" ).val(), $(this).is(':checked'));
 		});
 		
 		// Comanda

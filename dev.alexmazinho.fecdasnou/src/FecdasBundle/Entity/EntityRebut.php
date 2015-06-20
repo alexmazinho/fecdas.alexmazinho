@@ -38,6 +38,12 @@ class EntityRebut {
 	 **/
 	protected $comanda;	// FK taula m_comandes
 	
+	
+	/**
+	 * @ORM\Column(type="integer", nullable=true)
+	 */
+	protected $tipuspagament;  // Llista
+	
 	/**
 	 * @ORM\Column(type="string", length=15, nullable=true)
 	 */
@@ -59,12 +65,12 @@ class EntityRebut {
 	protected $dataanulacio;
 
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 	
-	public function __construct($currentDate) {
-		$this->setDataentrada($currentDate);
+	public function __construct() {
+		$this->dateentrada = new \DateTime();
 	}
 
 	public function __toString() {
@@ -149,6 +155,21 @@ class EntityRebut {
 	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
 		$this->comanda = $comanda;
 	}
+	
+	/**
+	 * @return integer
+	 */
+	public function getTipuspagament() {
+		return $this->tipuspagament;
+	}
+	
+	/**
+	 * @param integer $tipuspagament
+	 */
+	public function setTipuspagament($tipuspagament) {
+		$this->tipuspagament = $tipuspagament;
+	}
+	
 	
 	/**
 	 * @return string

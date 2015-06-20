@@ -64,6 +64,11 @@ class EntityClub {
 	protected $cif;
 
 	/**
+	 * @ORM\Column(type="integer", nullable=true)
+	 */
+	protected $compte; // Comptable
+	
+	/**
 	 * @ORM\Column(type="string", length=75, nullable=true)
 	 */
 	protected $addradreca;
@@ -362,6 +367,26 @@ class EntityClub {
         return $this->cif;
     }
 
+    /**
+     * Set compte
+     *
+     * @param integer $compte
+     */
+    public function setCompte($compte)
+    {
+    	$this->compte = $compte;
+    }
+    
+    /**
+     * Get compte
+     *
+     * @return integer
+     */
+    public function getCompte()
+    {
+    	return $this->compte;
+    }
+    
     /**
      * Set mail
      *

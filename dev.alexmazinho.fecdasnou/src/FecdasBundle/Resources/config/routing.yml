@@ -379,6 +379,12 @@ FecdasBundle_editarcomanda:
     requirements:
         _method:  GET
 
+FecdasBundle_baixacomanda:
+    pattern:  /baixacomanda
+    defaults: { _controller: "FecdasBundle:Facturacio:baixacomanda" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_jsonproductes:
     pattern:  /jsonproductes
     defaults: { _controller: "FecdasBundle:Facturacio:jsonproductes" }
@@ -397,6 +403,24 @@ FecdasBundle_jsonclubs:
     requirements:
         _method:  GET
 
+
+# ---------------------------------------------------------------------------
+# ---------------------  SCRIPTS COMANDES -----------------------------------
+# ----------------------  (PER ESBORRAR) ------------------------------------
+# ---------------------------------------------------------------------------
+
+
+FecdasBundle_migracomandes:
+    pattern:  /migracomandes
+    defaults: { _controller: "FecdasBundle:Facturacio:migracomandes" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_resetcomandes:
+    pattern:  /resetcomandes
+    defaults: { _controller: "FecdasBundle:Facturacio:resetcomandes" }
+    requirements:
+        _method:  GET
 
 
 # ---------------------------------------------------------------------------

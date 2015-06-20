@@ -4,26 +4,25 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="m_duplicats", uniqueConstraints={@ORM\UniqueConstraint(name="comanda_idx", columns={"comanda"})})
+ * @ORM\Table(name="m_duplicats")
  * 
  * @author alex
  *
  */
-class EntityDuplicat {
+class EntityDuplicat extends EntityComanda {
 	const PREFIX_ALBARA_DUPLICATS = 'D';
 	
 	/**
 	 * @ORM\Id
 	 * @ORM\Column(type="integer")
-	 * @ORM\GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityClub") 
-	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
+	 * @ORM\JoinColumn(name="clubdel", referencedColumnName="codi")
 	 */
-	protected $club; // FK taula m_clubs
+	protected $clubdel; // FK taula m_clubs
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityPersona")
@@ -61,19 +60,27 @@ class EntityDuplicat {
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
-	protected $databaixa;
-
-	/**
-	 * @ORM\OneToOne(targetEntity="EntityComanda")
-	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
-	 */
-	protected $comanda;
+	protected $databaixadel;
 
 	/**
 	 * @ORM\OneToOne(targetEntity="EntityImatge")
 	 * @ORM\JoinColumn(name="foto", referencedColumnName="id")
 	 */
 	protected $foto;
+	
+	
+	/*
+	 * @ORM\OneToOne(targetEntity="EntityComanda", inversedBy="parte")
+	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
+	 *
+	protected $comanda;*/
+	
+	/*
+	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="duplicat")
+	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
+	 *
+	protected $comanda;*/
+	
 	
 	public function __construct() {
 	}
@@ -82,6 +89,11 @@ class EntityDuplicat {
 		return $this->getId() . "-" . $this->getClub();
 	}
 
+	public function esBaixa()
+	{
+		return $this->databaixadel != null;
+	}
+	
 	/**
 	 * @return integer
 	 */
@@ -99,15 +111,15 @@ class EntityDuplicat {
 	/**
 	 * @return FecdasBundle\Entity\EntityClub
 	 */
-	public function getClub() {
-		return $this->club;
+	public function getClubdel() {
+		return $this->clubdel;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityClub $club
+	 * @param FecdasBundle\Entity\EntityClub $clubdel
 	 */
-	public function setClub(\FecdasBundle\Entity\EntityClub $club) {
-		$this->club = $club;
+	public function setClubdel(\FecdasBundle\Entity\EntityClub $clubdel) {
+		$this->clubdel = $clubdel;
 	}
 
 	/**
@@ -197,31 +209,15 @@ class EntityDuplicat {
 	/**
 	 * @return datetime
 	 */
-	public function getDatabaixa() {
-		return $this->databaixa;
+	public function getDatabaixadel() {
+		return $this->databaixadel;
 	}
 
 	/**
-	 * @param datetime $databaixa
+	 * @param datetime $databaixadel
 	 */
-	public function setDatabaixa($databaixa) {
-		$this->databaixa = $databaixa;
-	}
-
-	/**
-	 * Get comanda
-	 * 
-	 * @return FecdasBundle\Entity\EntityComanda
-	 */
-	public function getComanda() {
-		return $this->comanda;
-	}
-
-	/**
-	 * @param FecdasBundle\Entity\EntityComanda $comanda
-	 */
-	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
-		$this->comanda = $comanda;
+	public function setDatabaixadel($databaixadel) {
+		$this->databaixadel = $databaixadel;
 	}
 
 	/**
@@ -287,15 +283,11 @@ class EntityDuplicat {
 		// Missatge que es mostra a la llista de duplicats
 		$textInfo = "";
 		 
-		if ($this->databaixa != null) return "Petició anul·lada " . $this->databaixa->format("d/m/Y");
+		if ($this->databaixadel != null) return "Petició anul·lada " . $this->databaixadel->format("d/m/Y");
 		
-		if ($this->comanda != null) { 
-			if ($this->comanda->getRebut() != null) $textInfo .= "Petició pagada.";
+		if ($this->getRebut() != null) $textInfo .= "Petició pagada.";
 			
-			if ($this->comanda->getFactura() != null) $textInfo .= "Factura " . $this->comanda->getFactura()->getNumFactura(). " - " .$this->comanda->getFactura()->getDatafactura()->format("d/m/Y")."." ;
-		} else {
-			return 'Error, petició de duplicat sense comanda associada ';
-		}
+		if ($this->getFactura() != null) $textInfo .= "Factura " . $this->comanda->getFactura()->getNumFactura(). " - " .$this->comanda->getFactura()->getDatafactura()->format("d/m/Y")."." ;
 			
 		if ($this->observacions != null) $textInfo .= $this->observacions;
 		

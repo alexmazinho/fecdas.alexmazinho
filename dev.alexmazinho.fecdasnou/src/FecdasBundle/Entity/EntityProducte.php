@@ -82,7 +82,7 @@ class EntityProducte {
 	
 	public function __construct() {
 		$this->stockable = false;
-		$this->dateentrada = new \DateTime();
+		$this->dataentrada = new \DateTime();
 		$this->preus = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	

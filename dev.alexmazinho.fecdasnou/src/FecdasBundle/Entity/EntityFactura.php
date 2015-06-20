@@ -59,17 +59,17 @@ class EntityFactura {
 	protected $dataanulacio;
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $idanulacio;
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 
-	public function __construct($currentDate) {
-		$this->setDataentrada($currentDate);
+	public function __construct() {
+		$this->dateentrada = new \DateTime();
 	}
 
 	public function __toString() {

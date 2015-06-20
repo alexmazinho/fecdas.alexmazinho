@@ -393,7 +393,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 /*************** FECDAS NOU productes ****************/
 
 #header-producte-estat { width: 6%; text-align: left; }
-#header-producte-codi { width: 8%; text-align: right; }
+#header-producte-codi { width: 8%; text-align: center; }
 #header-producte-nomcurt  { width: 5%; text-align: center; }
 #header-producte-descripcio { width: 20%; text-align: left;  }
 #header-producte-tipus { width: 7%; text-align: left; }
@@ -406,7 +406,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-producte-actions { width: 10%; text-align: right;  color: #3c763d;  }
 	   	
 .data-detall-cell.producte-estat  { width: 6%; text-align: left; }
-.data-detall-cell.producte-codi  { width: 8%; text-align: right; }
+.data-detall-cell.producte-codi  { width: 8%; text-align: center; }
 .data-detall-cell.producte-nomcurt  { width: 5%; text-align: center; }
 .data-detall-cell.producte-descripcio { width: 20%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.producte-tipus { width: 7%; text-align: left; }
@@ -434,6 +434,33 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.preuimport { width: 25%; text-align: center; }
 .data-detall-cell.preuiva { width: 25%; text-align: center; }
 .data-detall-cell.preuaction { width: 25%; text-align: right; }
+
+
+/*************** FECDAS NOU comandes ****************/
+
+#header-comanda-estat  { width: 5%; text-align: left; }
+#header-comanda-num { width: 8%; text-align: left; }
+#header-comanda-club { width: 15%; text-align: left;  }
+#header-comanda-items { width: 5%; text-align: center; }
+#header-comanda-total { width: 7%; text-align: right; }
+#header-comanda-data { width: 7%; text-align: center; }
+#header-comanda-factura { width: 7%; text-align: right; }
+#header-comanda-rebut { width: 8%; text-align: right; }
+#header-comanda-comentaris { width: 20%; text-align: center; }
+#header-comanda-compta { width: 8%; text-align: right; }
+#header-comanda-actions { width: 10%; text-align: right; }
+
+.data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
+.data-detall-cell.comanda-num { width: 8%; text-align: left; }
+.data-detall-cell.comanda-club { width: 15%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-items { width: 5%; text-align: center; }
+.data-detall-cell.comanda-total { width: 7%; text-align: right; }
+.data-detall-cell.comanda-data { width: 7%; text-align: center; }
+.data-detall-cell.comanda-factura { width: 7%; text-align: right; }
+.data-detall-cell.comanda-rebut { width: 8%; text-align: right; }
+.data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-compta { width: 8%; text-align: right; }
+.data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
 
 /***************** Llistes ******************/
 
@@ -483,6 +510,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #summary-header .total-rowcount {
 	font-size: 16px;
     text-align: right;
+    color: #1240a0;
 }
 
 .col-listheader {

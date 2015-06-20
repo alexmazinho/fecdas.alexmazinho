@@ -46,14 +46,24 @@ class BaseController extends Controller {
 	const TIPUS_PRODUCTE_ALTRES 	= 6;
 	
 	const TIPUS_PAGAMENT_CASH 			= 1;
-	const TIPUS_PAGAMENT_TRANS_SARDENYA = 2;
-	const TIPUS_PAGAMENT_TRANS_LAIETANA	= 3;
+	const TIPUS_PAGAMENT_TPV			= 2;
+	const TIPUS_PAGAMENT_TRANS_SARDENYA = 3;
+	const TIPUS_PAGAMENT_TRANS_LAIETANIA= 4;	// Caixa
+	
+	const TIPUS_COMANDA_LLICENCIES 		= 1;
+	const TIPUS_COMANDA_DUPLICATS 		= 2;
+	const TIPUS_COMANDA_ALTRES			= 3;
+	
+	const REBUTS	= 1;
+	const FACTURES	= 2;
+	const COMANDES	= 3;
 	
 	const ANY_INICI_WEB	= 2012;
 	
 	
 	protected static $tipusproducte; // Veure getTipusDeProducte()
 	protected static $tipuspagament; // Veure getTipusDePagament()
+	protected static $tipuscomanda; // Veure getTipusDeComanda()
 	
 	/**
 	 * Array possibles tipus de producte
@@ -105,6 +115,32 @@ class BaseController extends Controller {
 	
 		return '';
 	}
+	
+	/**
+	 * Array possibles tipus de comanda
+	 */
+	public static function getTipusDeComanda() {
+		if (self::$tipuscomanda == null) {
+			self::$tipuscomanda = array(
+					self::TIPUS_COMANDA_LLICENCIES => 'Llicències',
+					self::TIPUS_COMANDA_DUPLICATS => 'Duplicats',
+					self::TIPUS_COMANDA_ALTRES => 'Altres'
+			);
+		}
+		return self::$tipuscomanda;
+	}
+	
+	/**
+	 * Obté tipus de comanda
+	 */
+	public static function getTipusComanda($index) {
+		$tipus = BaseController::getTipusDeComanda();
+		if (isset($tipus[$index])) return $tipus[$index];
+	
+		return '';
+	}
+	
+	
 	
 	/**
 	 * Obté array anys preus

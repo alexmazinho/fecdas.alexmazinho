@@ -172,9 +172,9 @@ select option {
 
 
 /* Disabled Elements */
-/*
+
 select[disabled="true"],
-select[disabled="disabled"],*/
+select[disabled="disabled"],
 input[disabled="true"],
 input[disabled="disabled"]  
 { 
@@ -386,8 +386,18 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #slider .pagination { border:none; display:block; }
 
 
-.blue { color: #2281cf; }
+.input-group-button-right .form-control { border-bottom-right-radius: 5px !important; border-top-right-radius: 5px !important; }
+
+.input-group-button-right .form-control, 
+.input-group-button-right .separator,
+.input-group-button-right .link { display: table-cell; vertical-align: middle; }
+.input-group-button-right .link { font-size: 1.3em; }
+
+.input-group-button-right > .separator { width: 10px;  }
+
+.blue { color: #1240a0; /*#2281cf;*/ }
 .red { color: red; }
+.gray { color: #cccccc; }
 .transparent { color: transparent; }
 
 /*************** FECDAS NOU productes ****************/
@@ -461,6 +471,70 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-compta { width: 8%; text-align: right; }
 .data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
+
+/*************** FECDAS NOU comanda ****************/
+
+.detall-form-row-prototype { display: none; }
+.comanda-detall-form { font-size: 1.2em; }
+
+.comanda-detall-form-header, .comanda-detall-form { display: table; width:100%; position: relative; }
+
+.comanda-detall-form-header .col-listheader { display: table-cell; } 
+.comanda-detall-form .data-detall-cell { border: none;
+border-bottom-color: #ffffff;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-top-color: #ffffff;
+    border-top-style: solid;
+    border-top-width: 1px;
+
+ } 
+
+.data-detall-cell input.form-control { font-size: 0.9em; padding: 6px 2px; }
+.data-detall-cell textarea.form-control { font-size: 0.8em; padding: 6px 2px; }
+.data-detall-cell .form-control .select2-chosen { font-size: 0.9em; }
+
+.comanda-detall-form-header .col-id {  }
+.comanda-detall-form-header .col-listheader.col-producte { width: 22%; text-align: left; }
+.comanda-detall-form-header .col-listheader.col-unitats { width: 7%; text-align: center; }
+.comanda-detall-form-header .col-listheader.col-descompte { width: 9%; text-align: center; font-size: 0.9em; }
+.comanda-detall-form-header .col-listheader.col-ivaproducte { width: 7%; text-align: center; }
+.comanda-detall-form-header .col-listheader.col-preuunitat { width: 7%; text-align: center; }
+.comanda-detall-form-header .col-listheader.col-totalnet { width: 9%; text-align: center; }
+.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; }
+.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; }
+.comanda-detall-form-header .col-listheader.col-comentaris { width: 15%; text-align: left; }
+.comanda-detall-form-header .col-listheader.col-actions  { width: 3%; }
+
+.comanda-detall-form .col-id {  }
+.col-seq {  
+	color: #aaaaaa;
+    font-style: italic;
+    left: -20px;
+    position: absolute;
+    top: 15px;
+    text-align: left;
+}
+.comanda-detall-form .col-producte { width: 23%; font-size: 0.9em; text-align: left; }
+.comanda-detall-form .col-unitats { width: 7%; }
+.comanda-detall-form .col-descompte { width: 9%; }
+.comanda-detall-form .col-ivaproducte { width: 7%;  }
+.comanda-detall-form .col-ivaproducte input { background: #ffffff; background:transparent; border:none; border-color: #ffffff; border-color: transparent; box-shadow: none; }
+.comanda-detall-form .col-preuunitat { width: 7%; }
+.comanda-detall-form .col-preuunitat input { background: #ffffff; background:transparent; border:none; border-color: #ffffff; border-color: transparent; box-shadow: none; }
+.comanda-detall-form .col-totalnet { width: 9%; }
+.comanda-detall-form .col-totaliva { width: 9%; }
+.comanda-detall-form .col-total { width: 11%; }
+.comanda-detall-form .data-detall-cell.col-total { width: 11%; text-align: center; }
+.comanda-detall-form .data-detall-cell.col-total input { font-size: 1em; font-weight: bold; }
+.comanda-detall-form .col-comentaris { width: 15%; max-width: 15%;  text-align: left; }
+.comanda-detall-form .col-actions { width: 3%; text-align: right; }
+
+.comanda-detall-form .col-actions .fa  { font-size: 1.2em; }
+
+.detall-form-header, .detall-form-row { /*margin: -6px 6px;*/}
+
+ul.detalls li .alert { margin: 10px 0; }
 
 /***************** Llistes ******************/
 

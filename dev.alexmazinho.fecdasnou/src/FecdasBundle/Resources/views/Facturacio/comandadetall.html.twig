@@ -1,0 +1,15 @@
+<li class="{% if id == 0 %}detall-form-row-prototype{% else %}detall-form-row{% endif %}">
+	<div class="comanda-detall-form">
+		<div class="col-id col-seq">{{ form_widget(detall.id) }}</div>
+		<div class="data-detall-cell col-producte">{{ form_widget(detall.producte, { 'attr': {'class': 'form-control form-control-left comanda_detalls_producte'} }) }}</div>
+		<div class="data-detall-cell col-unitats">{{ form_widget(detall.unitats, { 'attr': {'class': 'form-control form-control-center'} }) }}{{ form_errors(detall.unitats)  }}</div>
+		<div class="data-detall-cell col-descompte">{{ form_widget(detall.descomptedetall, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-detall-cell col-ivaproducte">{{ form_widget(detall.ivaproducte, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-detall-cell col-preuunitat">{{ form_widget(detall.preuunitat, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-detall-cell col-totalnet">{{ form_widget(detall.totalnet, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-detall-cell col-totaliva">{{ form_widget(detall.totaliva, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-detall-cell col-total">{{ form_widget(detall.total, { 'attr': {'class': 'form-control form-control-center blue'} }) }}</div>
+		<div class="data-detall-cell col-comentaris">{{ form_widget(detall.anotacions, { 'attr': {'class': 'form-control'} }) }}</div>
+		<div class="data-detall-cell col-actions"><a class="baixa-detall" href="javascript:void(0);" ><span class="fa fa-remove fa-1x red"></span></a></div>
+	</div>
+</li>

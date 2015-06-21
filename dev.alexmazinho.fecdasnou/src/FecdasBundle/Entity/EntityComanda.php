@@ -1,7 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
-
+use FecdasBundle\Controller\BaseController;
 /* 
 */
 
@@ -96,18 +96,19 @@ class EntityComanda {
 	protected $duplicat;*/
 	
 	
-	public function __construct($num, $club, $total, $comentaris, $parte, $duplicat) {
+	public function __construct($num, $factura = null, $club = null, $total = 0, $comentaris = '') {
 		$this->num = $num;
+		$this->factura = $factura;
 		$this->club = $club;
 		$this->total = $total;
 		$this->comentaris = ($comentaris==''?null:$comentaris);
-		if ($parte != null) {
+		if ($this->esParte()) {
 			$this->comentaris = 'Llista '.$parte->getId().'-'.$this->comentaris;
 			$this->parte = $parte;
 			$this->parte->setComanda($this);
 		}
 		
-		if ($duplicat != null) {
+		if ($this->esDuplicat()) {
 			$this->comentaris = 'Petició '.$duplicat->getId().'/'.$duplicat->getDatapeticio()->format('Y-m-d').'-'.$this->comentaris;
 			$this->duplicat = $duplicat;
 			$this->duplicat->setComanda($this);
@@ -123,7 +124,28 @@ class EntityComanda {
 	 * @return string
 	 */
 	public function getNumComanda() {
-		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
+		return $this->getPrefixAlbara().str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
+	}
+	
+	/**
+	 * Get num albarà PREFIX + id => getNumComanda()
+	 *
+	 * @return string
+	 */
+	public function getNumAlbara()
+	{
+		return getNumComanda();
+	}
+	
+	/**
+	 * Get prefix albarà comú.
+	 * A sobrecarregar pels fills
+	 * 
+	 * @return string
+	 */
+	public function getPrefixAlbara()
+	{
+		return BaseController::PREFIX_ALBARA_ALTRES;
 	}
 	
 	public function getEstat()
@@ -161,8 +183,6 @@ class EntityComanda {
 	}
 
 	
-	
-	
 	/**
 	 * Get total suma dels detalls
 	 *
@@ -190,6 +210,16 @@ class EntityComanda {
 	public function esBaixa()
 	{
 		return $this->databaixa != null;
+	}
+	
+	public function esParte()
+	{
+		return false;
+	}
+	
+	public function esDuplicat()
+	{
+		return false;
 	}
 	
     /**

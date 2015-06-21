@@ -68,8 +68,12 @@ class EntityFactura {
 	 */
 	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 
-	public function __construct() {
-		$this->dateentrada = new \DateTime();
+	public function __construct($datafactura, $num, $import = 0, $concepte = '') {
+		$this->dataentrada = new \DateTime();
+		$this->datafactura = $datafactura;
+		$this->num = $num;
+		$this->import = $import;
+		$this->concepte = $concepte;
 	}
 
 	public function __toString() {

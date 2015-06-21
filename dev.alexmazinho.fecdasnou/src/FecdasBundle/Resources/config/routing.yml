@@ -403,6 +403,23 @@ FecdasBundle_jsonclubs:
     requirements:
         _method:  GET
 
+FecdasBundle_editarfactura:
+    pattern:  /editarfactura
+    defaults: { _controller: "FecdasBundle:Facturacio:editarfactura" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_editarrebut:
+    pattern:  /editarrebut
+    defaults: { _controller: "FecdasBundle:Facturacio:editarrebut" }
+    requirements:
+        _method:  GET|POST
+        
+FecdasBundle_nourebut:
+    pattern:  /nourebut
+    defaults: { _controller: "FecdasBundle:Facturacio:nourebut" }
+    requirements:
+        _method:  GET
 
 # ---------------------------------------------------------------------------
 # ---------------------  SCRIPTS COMANDES -----------------------------------

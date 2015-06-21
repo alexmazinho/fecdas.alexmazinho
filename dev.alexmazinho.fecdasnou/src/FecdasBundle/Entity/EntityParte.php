@@ -2,6 +2,8 @@
 namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
+
 
 /**
  * @ORM\Entity
@@ -11,8 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
  *
  */
 class EntityParte extends EntityComanda {
-	const PREFIX_ALBARA_LLICENCIES = 'L';
-	
 	/**
 	 * @ORM\Id
 	 * @ORM\Column(type="integer")
@@ -190,6 +190,16 @@ class EntityParte extends EntityComanda {
 	public function esBaixa()
 	{
 		return $this->databaixadel != null;
+	}
+	
+	/**
+	 * Get prefix albarà duplicats. Sobreescriptura
+	 *
+	 * @return string
+	 */
+	public function getPrefixAlbara()
+	{
+		return BaseController::PREFIX_ALBARA_LLICENCIES;
 	}
 	
     /**
@@ -1062,14 +1072,5 @@ class EntityParte extends EntityComanda {
     	
     	return false;
     }
-    
-    /**
-     * Get num albarà PREFIX + id
-     *
-     * @return integer
-     */
-    public function getNumAlbara()
-    {
-    	return self::PREFIX_ALBARA_LLICENCIES.str_pad($this->getId(),6,'0',STR_PAD_LEFT);
-    }
+
 }

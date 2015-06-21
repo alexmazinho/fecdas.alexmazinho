@@ -374,7 +374,8 @@ class AdminController extends BaseController {
 		
 		if ($duplicat != null) {
 			$duplicat->setDatabaixa($this->getCurrentDate());
-				
+			
+			
 			$em->flush();
 		
 			$this->get('session')->getFlashBag()->add('error-notice', 'Petició de duplicat anulada correctament');

@@ -2,6 +2,9 @@
 namespace FecdasBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+
 
 use FecdasBundle\Classes\Funcions;
 
@@ -60,6 +63,9 @@ class BaseController extends Controller {
 	
 	const ANY_INICI_WEB	= 2012;
 	
+	const PREFIX_ALBARA_DUPLICATS = 'D';
+	const PREFIX_ALBARA_LLICENCIES = 'L';
+	const PREFIX_ALBARA_ALTRES = 'A';
 	
 	protected static $tipusproducte; // Veure getTipusDeProducte()
 	protected static $tipuspagament; // Veure getTipusDePagament()
@@ -774,14 +780,15 @@ class BaseController extends Controller {
 	
 	public function jsonclubsAction(Request $request) {
 		//foment.dev/jsonclubs?cerca=textcerca
+		
 		$response = new Response();
 	
 		$cerca = $request->get('cerca', '');
-		$codi = $request->get('id', 0);
+		$codi = $request->get('id', '');
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		if ($codi > 0) {
+		if ($codi != '') {
 			$club = $em->getRepository('FecdasBundle:EntityClub')->find($codi);
 				
 			if ($club != null) {
@@ -793,9 +800,9 @@ class BaseController extends Controller {
 	
 	
 		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
-		$strQuery .= " WHERE c.databaixa IS NULL ";
-		$strQuery .= " AND c.descripcio LIKE :cerca";
-		$strQuery .= " ORDER BY c.descripcio";
+		$strQuery .= " WHERE c.activat = 1 ";
+		$strQuery .= " AND c.nom LIKE :cerca";
+		$strQuery .= " ORDER BY c.nom";
 	
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('cerca', '%'.$cerca.'%');
@@ -805,7 +812,7 @@ class BaseController extends Controller {
 		if ($query != null) {
 			$result = $query->getResult();
 			foreach ($result as $c) {
-				$search[] = array("id" => $c->getId(), "text" => $c->getNom());
+				$search[] = array("id" => $c->getCodi(), "text" => $c->getNom());
 			}
 		}
 	

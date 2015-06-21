@@ -69,8 +69,13 @@ class EntityRebut {
 	 */
 	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 	
-	public function __construct() {
-		$this->dateentrada = new \DateTime();
+	public function __construct($datapagament, $num, $import = 0, $comentari = '') {
+		$this->dataentrada = new \DateTime();
+		
+		$this->datapagament = $datapagament;
+		$this->num = $num;
+		$this->import = $import;
+		$this->comentari = $comentari;
 	}
 
 	public function __toString() {

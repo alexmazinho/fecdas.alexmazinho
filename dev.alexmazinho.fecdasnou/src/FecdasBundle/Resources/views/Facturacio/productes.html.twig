@@ -117,46 +117,7 @@
  	
 	<script type="text/javascript">
 	
-	//Cercador de productes
-	init_cercaproducte_JSON = function(elem_sel, placeholder_txt) {
-		
-		/* Inicialitza el control de cerca (input hidden) */
-		$(elem_sel).select2({
-			minimumInputLength: 3,
-			allowClear: true,
-			multiple: false,
-			placeholder: placeholder_txt,
 	
-			query: function (query) {
-				var data = {results: []};
-				var url = "{{  path('FecdasBundle_jsonproductes') }}";
-	
-				var params = { 	cerca: query.term };
-				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
-				// alert(JSON.stringify(params));
-				$.get(url,	params, function(jdata) {
-					//alert(JSON.stringify(jdata) + ' ' + jdata[0].text);
-					data.results = jdata;
-					query.callback(data);
-				}).fail(function() {
-					query.callback(data);
-				});
-			},
-			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple) 
-				var data = [];
-				var url = "{{ path('FecdasBundle_jsonproductes') }}";
-				var params = { 	id: element.val() };
-				$.get(url,	params, function(jdata) {
-					console.log(JSON.stringify(jdata) + ' ' + jdata['text']);
-					callback(jdata);
-				}).fail(function() {
-					callback(data);
-				});
-				
-		        callback(data);
-			} 
-		});
-	}
 	
 	filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
 		

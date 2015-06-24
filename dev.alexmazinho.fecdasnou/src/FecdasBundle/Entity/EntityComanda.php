@@ -9,7 +9,7 @@ use FecdasBundle\Controller\BaseController;
  * @ORM\Entity 
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="tipus", type="string", length=1)
- * @ORM\DiscriminatorMap({"P" = "EntityParte", "D" = "EntityDuplicat", "" = "EntityComanda"})
+ * @ORM\DiscriminatorMap({"P" = "EntityParte", "D" = "EntityDuplicat", "A" = "EntityComanda"})
  * @ORM\Table(name="m_comandes")
  * 
  * @author alex

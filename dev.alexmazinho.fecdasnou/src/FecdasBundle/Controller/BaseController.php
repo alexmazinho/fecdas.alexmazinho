@@ -105,6 +105,7 @@ class BaseController extends Controller {
 		if (self::$tipuspagament == null) {
 			self::$tipuspagament = array(
 					self::TIPUS_PAGAMENT_CASH => 'Metàl·lic',
+					self::TIPUS_PAGAMENT_TPV => 'Pagament On-Line TPV',
 					self::TIPUS_PAGAMENT_TRANS_SARDENYA => 'Transferència Sardenya',
 					self::TIPUS_PAGAMENT_TRANS_LAIETANA => 'La Caixa Laietana',
 			);
@@ -172,7 +173,7 @@ class BaseController extends Controller {
 		$options = array();
 		if ($this->isCurrentAdmin()) {
 			$roleSelectOptions = array('class' => 'FecdasBundle:EntityClub',
-					'property' => 'nom',
+					'choice_label' => 'nom',
 					'label' => 'El teu rol actual és: ',
 					'required'  => true );
 			
@@ -788,6 +789,9 @@ class BaseController extends Controller {
 	
 		$em = $this->getDoctrine()->getManager();
 	
+		error_log($cerca . " " .$codi);
+		
+		
 		if ($codi != '') {
 			$club = $em->getRepository('FecdasBundle:EntityClub')->find($codi);
 				

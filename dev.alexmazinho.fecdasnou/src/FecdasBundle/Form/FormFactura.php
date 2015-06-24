@@ -57,7 +57,7 @@ class FormFactura extends AbstractType {
 		
 		$builder->add('comanda', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityComanda',
-				'property' 		=> 'InfoComanda',
+				'choice_label' 		=> 'InfoComanda',
 				'empty_value' 	=> '',
 				'required'  	=> false,
 				'read_only' 	=> true,

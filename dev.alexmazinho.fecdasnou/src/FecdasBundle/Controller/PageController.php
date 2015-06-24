@@ -140,7 +140,7 @@ class PageController extends BaseController {
 						return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
 							->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
 							->setParameter('llistatipus', $llistatipus);
-						}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1
+						}, 'choice_label' => 'descripcio', 'required'  => count($llistatipus) == 1
 					));
 		
 		$form = $formbuilder->getForm();
@@ -464,7 +464,7 @@ class PageController extends BaseController {
 								->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
 								->setParameter('llistatipus', $tipusSearch);
 							}, 
-							'property' => 'descripcio', */
+							'choice_label' => 'descripcio', */
 							'choices' => $tipusSearch,
 							'required'  => false, 
 							'empty_value' => 'Qualsevol...',

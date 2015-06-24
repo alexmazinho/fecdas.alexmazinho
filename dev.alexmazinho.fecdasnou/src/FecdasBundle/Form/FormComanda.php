@@ -52,7 +52,7 @@ class FormComanda extends AbstractType {
 		
 		$builder->add('club', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityClub',
-				'property' 		=> 'nom',
+				'choice_label' 		=> 'nom',
 				'empty_value' 	=> 'Seleccionar Club',
 				'required'  	=> false,
 				'read_only' 	=> true,
@@ -60,7 +60,7 @@ class FormComanda extends AbstractType {
 		
 		$builder->add('comptabilitat', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityComptabilitat',
-				'property' 		=> 'InfoComptabilitat',
+				'choice_label' 		=> 'InfoComptabilitat',
 				'empty_value' 	=> 'Pendent d\'enviar a comptabilitat',
 				'required'  	=> false,
 				'disabled' 		=> true,

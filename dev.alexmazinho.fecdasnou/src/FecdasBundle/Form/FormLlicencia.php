@@ -33,7 +33,7 @@ class FormLlicencia extends AbstractType {
 				->orderBy('e.cognoms', 'ASC')
 				->setParameter('codiclub', $codiclub);
 		},
-		'property' => 'llistaText',
+		'choice_label' => 'llistaText',
 		'empty_value' => '',
 		'required'  => false,
 		'read_only' => !$this->options['edit'],
@@ -63,7 +63,7 @@ class FormLlicencia extends AbstractType {
 										->setParameter('anypreu', $current)
 										->setParameter('tipusparte', $tipusparte);
 			},
-			'property' => $llistacategoria,
+			'choice_label' => $llistacategoria,
 			'required'  => true,
 			'read_only' => !$this->options['edit'],
 		));

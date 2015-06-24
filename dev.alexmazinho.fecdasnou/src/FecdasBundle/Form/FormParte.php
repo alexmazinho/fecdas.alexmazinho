@@ -46,7 +46,7 @@ class FormParte extends AbstractType {
 					return $repository->createQueryBuilder('t')->orderBy('t.descripcio', 'ASC')
 					->where($repository->createQueryBuilder('t')->expr()->in('t.id', ':llistatipus'))
 					->setParameter('llistatipus', $llistatipus);
-			}, 'property' => 'descripcio', 'required'  => count($llistatipus) == 1, 'empty_value' => 'Selecciona una...',
+			}, 'choice_label' => 'descripcio', 'required'  => count($llistatipus) == 1, 'empty_value' => 'Selecciona una...',
 			);
 			$builder->add('tipus', 'entity', $tipusparteoptions);
 		} else {
@@ -55,7 +55,7 @@ class FormParte extends AbstractType {
 					return $repository->createQueryBuilder('t')->orderBy('t.id', 'ASC')
 					->where('t.id = :tipusparte')
 					->setParameter('tipusparte', $tipusparte); 
-					}, 'property' => 'descripcio', 'read_only' => true,
+					}, 'choice_label' => 'descripcio', 'read_only' => true,
 			);
 			$builder->add('tipus', 'entity', $tipusparteoptions);
 			//$builder->add('tipus', 'text', array('mapped'  => false, 'data' => $llistatipus[0], 'read_only' => true,));

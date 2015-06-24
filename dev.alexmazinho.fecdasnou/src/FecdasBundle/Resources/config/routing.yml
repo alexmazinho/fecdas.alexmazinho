@@ -433,6 +433,18 @@ FecdasBundle_migracomandes:
     requirements:
         _method:  GET
 
+FecdasBundle_migraaltres:
+    pattern:  /migraaltres
+    defaults: { _controller: "FecdasBundle:Facturacio:migraaltres" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_migrahistoric:
+    pattern:  /migrahistoric
+    defaults: { _controller: "FecdasBundle:Facturacio:migrahistoric" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_resetcomandes:
     pattern:  /resetcomandes
     defaults: { _controller: "FecdasBundle:Facturacio:resetcomandes" }

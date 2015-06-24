@@ -47,7 +47,7 @@
 				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
 				console.log(JSON.stringify(params));
 				$.get(url,	params, function(jdata) {
-					console.log(JSON.stringify(jdata) + ' - ' + jdata[0].text);
+					//console.log(JSON.stringify(jdata) + ' - ' + jdata[0].text);
 					data.results = jdata;
 					query.callback(data);
 				}).fail(function() {
@@ -61,7 +61,7 @@
 					var params = { 	'id': element.val() };
 					console.log(url+ ' '+JSON.stringify(params) + ' ' +  element.val());
 					$.get(url,	params, function(jdata) {
-						console.log(JSON.stringify(jdata) + ' ' + jdata['id'] + ' ' + jdata['text']);
+						//console.log(JSON.stringify(jdata) + ' ' + jdata['id'] + ' ' + jdata['text']);
 						callback(jdata);
 					}).fail(function() {
 						callback(data);
@@ -74,7 +74,7 @@
 	}
 	
 	//Cercador de clubs
-	init_cercaclub_JSON = function(elem_sel, placeholder_txt) {
+	init_cercaclub_JSON = function(elem_sel, placeholder_txt, url) {
 		
 		/* Inicialitza el control de cerca (input hidden) */
 		$(elem_sel).select2({
@@ -85,7 +85,6 @@
 	
 			query: function (query) {
 				var data = {results: []};
-				var url = "{{  path('FecdasBundle_jsonclubs') }}";
 				var params = { 	cerca: query.term };
 				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
 				$.get(url,	params, function(jdata) {
@@ -97,7 +96,6 @@
 			},
 			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple) 
 				var data = [];
-				var url = "{{ path('FecdasBundle_jsonclubs') }}";
 				var params = { 	id: element.val() };
 				$.get(url,	params, function(jdata) {
 					callback(jdata);

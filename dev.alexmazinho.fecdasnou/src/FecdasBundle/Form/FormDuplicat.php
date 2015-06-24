@@ -25,7 +25,7 @@ class FormDuplicat extends AbstractType {
 		if (isset($this->options['club'])) $currentClub = $this->options['club']; 
 
 		$builder->add('carnet', 'entity', array('class' => 'FecdasBundle:EntityCarnet',
-				'property' => 'llistaText',
+				'choice_label' => 'llistaText',
 				'multiple' => false,
 				'required'  => false,
 				'preferred_choices' => array(),
@@ -33,7 +33,7 @@ class FormDuplicat extends AbstractType {
 		));
 		
 		$personesSelectOptions = array('class' => 'FecdasBundle:EntityPersona',
-				'property' => 'llistaText',
+				'choice_label' => 'llistaText',
 				'multiple' => false,
 				'required'  => false,
 				'query_builder' => function($repository)  use ($currentClub) {
@@ -57,7 +57,7 @@ class FormDuplicat extends AbstractType {
 			
 			if (is_array($duplicat) and isset($duplicat['titol'])) {
 				$form->add('titol', 'entity', array('class' => 'FecdasBundle:EntityTitol',
-						'property' => 'llistaText',
+						'choice_label' => 'llistaText',
 						'multiple' => false,
 						'required'  => false,
 						'empty_value' => ' ... escull un títol ', 
@@ -82,7 +82,7 @@ class FormDuplicat extends AbstractType {
 			if ($duplicat->getCarnet() != null) {  // Formulari creat amb un duplicat que té carnet seleccionat (Ajax)
 				if ($duplicat->getCarnet()->getId() != 1) { // Llicències federatives 	
 					$form->add('titol', 'entity', array('class' => 'FecdasBundle:EntityTitol',
-								'property' => 'llistaText',
+								'choice_label' => 'llistaText',
 								'multiple' => false,
 								'required'  => false,
 								'empty_value' => ' ... escull un títol ',

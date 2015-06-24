@@ -99,7 +99,7 @@ class AdminController extends BaseController {
 		$formBuilder = $this->createFormBuilder();
 		
 		$clubsSelectOptions = array('class' => 'FecdasBundle:EntityClub',
-				'property' => 'nom',
+				'choice_label' => 'nom',
 				'label' => 'Filtre per club: ',
 				'required'  => false );
 			

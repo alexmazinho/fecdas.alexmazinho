@@ -29,7 +29,7 @@ class FormClub extends AbstractType {
 					'read_only' => !$this->options['nou']
 			));
 			
-			$tipuscluboptions = array('class' => 'FecdasBundle:EntityClubType', 'property' => 'tipus',
+			$tipuscluboptions = array('class' => 'FecdasBundle:EntityClubType', 'choice_label' => 'tipus',
 					'query_builder' => function($repository) {
 					return $repository->createQueryBuilder('t')->orderBy('t.id', 'ASC');
 				},
@@ -41,7 +41,7 @@ class FormClub extends AbstractType {
 					'required'  => false,
 			));
 		
-			$builder->add('estat', 'entity', array('class' => 'FecdasBundle:EntityClubEstat', 'property' => 'descripcio',
+			$builder->add('estat', 'entity', array('class' => 'FecdasBundle:EntityClubEstat', 'choice_label' => 'descripcio',
 					'query_builder' => function($repository) {
 						return $repository->createQueryBuilder('e')->orderBy('e.codi', 'ASC');
 					})
@@ -130,12 +130,12 @@ class FormClub extends AbstractType {
 		));
 		
 		//$builder->add('tipusparte');
-		$builder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 'property' => 'descripcio', 'multiple' => true, 'required' => false,
+		$builder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 'choice_label' => 'descripcio', 'multiple' => true, 'required' => false,
 				'query_builder' => function($repository) {
 					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
 				})
 		);
-		/*$builder->add('tipusparte', 'EntityParteType', array('data_class' => 'FecdasBundleEntityParteType', 'property' => 'descripcio', 'multiple' => true,
+		/*$builder->add('tipusparte', 'EntityParteType', array('data_class' => 'FecdasBundleEntityParteType', 'choice_label' => 'descripcio', 'multiple' => true,
 				'query_builder' => function($repository) {
 					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
 				})

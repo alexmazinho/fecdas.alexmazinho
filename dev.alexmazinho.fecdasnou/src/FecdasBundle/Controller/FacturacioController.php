@@ -34,8 +34,6 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
-		$em = $this->getDoctrine()->getManager();
-		
 		$this->logEntryAuth('VIEW COMANDES', $this->get('session')->get('username'));
 		
 		$codi = $request->query->get('cerca', '');
@@ -124,8 +122,8 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
-		$em = $this->getDoctrine()->getManager();
-		$producte = null;
+		//$em = $this->getDoctrine()->getManager();
+		//$producte = null;
 		return new Response("");
 	}
 	
@@ -139,8 +137,6 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin()) 
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		$em = $this->getDoctrine()->getManager();
-		$producte = null;		
 		$idproducte = $request->query->get('cerca', 0);
 
 		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
@@ -622,9 +618,9 @@ class FacturacioController extends BaseController {
 		$stmt = $em->getConnection()->prepare($sql);
 		$stmt->execute();
 		
-		/*$sql = "UPDATE m_comandes SET factura = NULL, rebut = NULL WHERE id > ".$id;
+		$sql = "UPDATE m_comandes SET factura = NULL, rebut = NULL WHERE id > ".$id;
 		$stmt = $em->getConnection()->prepare($sql);
-		$stmt->execute();*/
+		$stmt->execute();
 		
 		$sql = "DELETE FROM m_factures WHERE id > ".$factura;
 		$stmt = $em->getConnection()->prepare($sql);
@@ -643,7 +639,7 @@ class FacturacioController extends BaseController {
 	}
 	
 	public function migrahistoricAction(Request $request) {
-		// http://www.fecdasnou.dev/migrahistoric?year=20XX
+		// http://www.fecdasnou.dev/migrahistoric?desde=20XX&fins=20XX
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -654,19 +650,21 @@ class FacturacioController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		$year = $request->query->get('year', 0);
+		$yeardesde = $request->query->get('desde', 985);
+		$yearfins = $request->query->get('fins', 2015);
+		$year = $yeardesde;
 		
-		$batchSize = 100;
+		$batchSize = 20;
 		
 		$strQuery = "SELECT p.id, p.importparte, p.dataentradadel, p.databaixadel,";
 		$strQuery .= " p.clubdel, t.descripcio as tdesc, c.categoria as ccat,";
 		$strQuery .= " c.producte as cpro, c.simbol as csim, p.datapagament, p.estatpagament,";
 		$strQuery .= " p.dadespagament, p.importpagament,	p.comentari, p.datafacturacio, p.numfactura, ";
-		$strQuery .= " COUNT(p.id) as total FROM m_partes p ";
+		$strQuery .= " COUNT(l.id) as total FROM m_partes p LEFT JOIN m_llicencies l ON p.id = l.parte ";
 		$strQuery .= " INNER JOIN m_tipusparte t ON p.tipus = t.id ";
 		$strQuery .= " INNER JOIN m_categories c ON c.tipusparte = t.id ";
-		$strQuery .= " WHERE p.dataalta < '".($year+1)."-01-01 00:00:00' ";
-		if ($year > 2002) $strQuery .= " AND p.dataalta >= '".$year."-01-01 00:00:00' ";
+		$strQuery .= " WHERE p.dataalta < '".($yearfins+1)."-01-01 00:00:00' ";
+		$strQuery .= " AND p.dataalta >= '".$yeardesde."-01-01 00:00:00' ";
 		$strQuery .= " GROUP BY p.id, p.importparte, p.dataentradadel, p.databaixadel, p.clubdel, tdesc, ";
 		$strQuery .= " ccat, cpro, csim, p.datapagament, p.estatpagament, p.dadespagament, p.importpagament, ";
 		$strQuery .= " p.comentari, p.datafacturacio, p.numfactura";
@@ -677,9 +675,11 @@ class FacturacioController extends BaseController {
 		
 		$stmt = $em->getConnection()->prepare($strQuery);
 		$stmt->execute();
-		$partesAbans2015 = $stmt->fetchAll();
+		//$partesAbans2015 = $stmt->fetchAll();
 		
-		echo "Total partes: " . count($partesAbans2015) . PHP_EOL;
+		
+		
+		//echo "Total partes: " . count($partesAbans2015) . PHP_EOL;
 			
 		echo "Memory usage before: " . (memory_get_usage() / 1024) . " KB" . PHP_EOL."<br/>";
 		
@@ -689,7 +689,6 @@ class FacturacioController extends BaseController {
 		);
 		
 		$ipar = 0;
-		$i = 0;
 		
 		$parteid = 0;
 		$partes = array();
@@ -701,15 +700,10 @@ class FacturacioController extends BaseController {
 			/****************************   PARTES i DUPLICATS  ********************************/
 			/***********************************************************************************/
 				
-			error_log('Primer PARTE '.$partesAbans2015[0]['dataentradadel']);
-			echo 'Primer PARTE '.$partesAbans2015[0]['dataentradadel'].'<br/>';
+			while ($parte = $stmt->fetch()) {
 				
-			
-			
-			while (isset($partesAbans2015[$ipar])) {
-			
-				 if (substr($partesAbans2015[$ipar]['dataentradadel'], 0, 4) > $year) {
-					 $year = substr($partesAbans2015[$ipar]['dataentradadel'], 0, 4);
+				 if (substr($parte['dataentradadel'], 0, 4) > $year) {
+					 $year = substr($parte['dataentradadel'], 0, 4);
 					 $maxnums['maxnumcomanda'] = $this->getMaxNumEntity($year, BaseController::COMANDES) + 1;
 					 
 					 echo '***************************************************************************'.'<br/>';
@@ -717,7 +711,6 @@ class FacturacioController extends BaseController {
 					 echo '***************************************************************************'.'<br/>';
 				 }
 			
-				 $parte = $partesAbans2015[$ipar];
 				 if ($parteid == 0) $parteid = $parte['id'];
 						
 				 if ($parteid != $parte['id']) {
@@ -730,15 +723,19 @@ class FacturacioController extends BaseController {
 				 
 				 $partes[] = $parte;
 				 $ipar++;
+				 error_log('fi PARTE '.$parte['id']);
+				 $em->clear();
 			}
 			// El darrer parte del dia
 			if ($parteid > 0) $this->insertComandaParte($partes, $maxnums, ($maxnums['maxnumcomanda'] % $batchSize) == 0);
 				
+			$em->getConnection()->commit();
+			
 		} catch (Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
 		}
-				
+		
 		echo "Memory usage after: " . (memory_get_usage() / 1024) . " KB" . PHP_EOL."<br/>";
 			
 		return new Response("");
@@ -757,13 +754,13 @@ class FacturacioController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		$batchSize = 100;
+		$batchSize = 20;
 	
 		$strQuery = "SELECT p.id, p.importparte, p.dataentradadel, p.databaixadel,";
 		$strQuery .= " p.clubdel, t.descripcio as tdesc, c.categoria as ccat,";
 		$strQuery .= " c.producte as cpro, c.simbol as csim, p.datapagament, p.estatpagament,";
 		$strQuery .= " p.dadespagament, p.importpagament,	p.comentari, p.datafacturacio, p.numfactura, ";
-		$strQuery .= " COUNT(p.id) as total FROM m_partes p ";
+		$strQuery .= " COUNT(l.id) as total FROM m_partes p LEFT JOIN m_llicencies l ON p.id = l.parte ";
 		$strQuery .= " INNER JOIN m_tipusparte t ON p.tipus = t.id ";
 		$strQuery .= " INNER JOIN m_categories c ON c.tipusparte = t.id ";
 		$strQuery .= " WHERE p.dataalta >= '2015-01-01 00:00:00' ";
@@ -800,7 +797,6 @@ class FacturacioController extends BaseController {
 	
 		$idup = 0;
 		$ipar = 0;
-		$i = 0;
 	
 		$em->getConnection()->beginTransaction(); // suspend auto-commit
 		
@@ -864,7 +860,7 @@ class FacturacioController extends BaseController {
 				$dataCurrent->add(new \DateInterval('P1D'));
 			}
 			
-				
+			$em->getConnection()->commit();
 		} catch (Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
@@ -887,7 +883,7 @@ class FacturacioController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		$batchSize = 100;
+		$batchSize = 20;
 	
 		$strQuery = "SELECT p.*, e.preu, e.iva FROM m_productes p LEFT JOIN m_preus e ON e.producte = p.id WHERE e.anypreu = 2015 ORDER BY p.codi ";
 		$stmt = $em->getConnection()->prepare($strQuery);
@@ -955,8 +951,6 @@ class FacturacioController extends BaseController {
 			error_log('Primer ALTRE '.$altress2015[0]['data']);
 			echo 'Primer ALTRE '.$altress2015[0]['data'].'<br/>';
 				
-			$year = 2014;
-			
 			$altrenum = 0;
 			$altres = array();
 	
@@ -981,7 +975,7 @@ class FacturacioController extends BaseController {
 			}
 			// La darrera comanda altre del dia
 			if ($altrenum > 0) $this->insertComandaAltre($clubs, $productes, $altres, $maxnums, ($maxnums['maxnumcomanda'] % $batchSize) == 0);
-	
+			$em->getConnection()->commit();
 		} catch (Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
@@ -1068,8 +1062,7 @@ class FacturacioController extends BaseController {
 				
 				
 				// Count no funciona bé
-				$count = $em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
-
+				$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
 				
 				$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
 				$comanda = $statement->fetch();
@@ -1164,7 +1157,6 @@ class FacturacioController extends BaseController {
 					return;
 				}
 				
-				$rebut = null;		
 				$import = $altres['D'][0]['importapunt'];
 
 				// Revisió	
@@ -1225,12 +1217,16 @@ class FacturacioController extends BaseController {
 					//echo "1=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";
 					
 					// Insertar comanda
-					$query = "INSERT INTO m_comandes (id, comptabilitat, comentaris, total, dataentrada, databaixa, club, num, rebut,factura, tipus) VALUES ";
-					$query .= "(".$maxnums['maxnumcomanda'].", 1, '".$textComanda."', ".$import.",'".$data."'";
+					$query = "INSERT INTO m_comandes (comptabilitat, comentaris, total, dataentrada, databaixa, club, num, rebut,factura, tipus) VALUES ";
+					$query .= "(1, '".$textComanda."', ".$import.",'".$data."'";
 					$query .= ",NULL,'".$club['codi']."',".$maxnums['maxnumcomanda'];
 					$query .= ", ".($rebutId==0?"NULL":$rebutId).", ".($facturaId==0?"NULL":$facturaId).",'A')";
 					
+					$maxnums['maxnumcomanda']++;
+					
 					$em->getConnection()->exec( $query );
+					
+					$comandaId = $em->getConnection()->lastInsertId();
 					
 					for ($i = 0; $i < count($altres['H']); $i++) {
 						// Insertar detall
@@ -1240,18 +1236,19 @@ class FacturacioController extends BaseController {
 						$anota = $total.'x'.str_replace("'","''",$producte['descripcio']);
 					
 						$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, descomptedetall, anotacions, dataentrada, databaixa) VALUES ";
-						$query .= "(".$maxnums['maxnumcomanda'].",".$producte['id'].",".$total.", 0, '".$anota."',";
+						$query .= "(".$comandaId.",".$producte['id'].",".$total.", 0, '".$anota."',";
 						$query .= "'".$data."',NULL)"; 
 					
 						$em->getConnection()->exec( $query );
 					}
 					
-					$maxnums['maxnumcomanda']++;
+					
 					//error_log("2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>");
 					//echo "2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";
-					if ($flush || true) {
+					if ($flush) {
 						$em->getConnection()->commit();
 						$em->getConnection()->beginTransaction(); // suspend auto-commit
+						$em->clear();
 					}
 				}
 			}
@@ -1264,7 +1261,6 @@ class FacturacioController extends BaseController {
 	}
 	
 	private function insertComandaDuplicat($duplicat, &$maxnums, $flush = false) {
-		$current = date('Y');
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -1395,7 +1391,10 @@ class FacturacioController extends BaseController {
 	
 		$comanda->addDetall($detall);
 	
-		if ($flush)	$em->flush();
+		if ($flush)	{
+			$em->flush();
+			$em->clear();
+		}
 	}
 	
 	private function crearComandaParte($parte, $maxNumComanda, $flush = false) {
@@ -1431,7 +1430,10 @@ class FacturacioController extends BaseController {
 			}
 		}
 			
-		if ($flush)	$em->flush();
+		if ($flush)	{
+			$em->flush();
+			$em->clear();
+		}
 	}
 	
 	

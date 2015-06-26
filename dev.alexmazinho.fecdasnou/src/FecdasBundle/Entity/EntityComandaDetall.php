@@ -19,7 +19,7 @@ class EntityComandaDetall {
 	protected $id;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityComanda")
+	 * @ORM\ManyToOne(targetEntity="EntityComanda", inversedBy="detalls")
 	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
 	 */
 	protected $comanda;	// FK taula m_comandes

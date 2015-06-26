@@ -119,7 +119,7 @@ class EntityClub {
 	protected $usuaris;	// Owning side of the relationship
 	
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityParte", mappedBy="club")
+	 * @ORM\OneToMany(targetEntity="EntityParte", mappedBy="clubdel")
 	 */
 	protected $partes;	// Owning side of the relationship
 

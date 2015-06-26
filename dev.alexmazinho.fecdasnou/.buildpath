@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
-	<buildpathentry kind="src" path="app"/>
-	<buildpathentry kind="src" path="bin"/>
-	<buildpathentry kind="src" path="src/AppBundle"/>
-	<buildpathentry kind="src" path="vendor"/>
-	<buildpathentry kind="src" path="web"/>
+	<buildpathentry kind="src" path="vendor/doctrine"/>
+	<buildpathentry kind="src" path="vendor/composer"/>
+	<buildpathentry kind="src" path="vendor/kriswallsmith"/>
+	<buildpathentry kind="src" path="vendor/sensiolabs"/>
+	<buildpathentry kind="src" path="vendor/twig"/>
+	<buildpathentry kind="src" path="vendor/tcpdf"/>
+	<buildpathentry kind="src" path="vendor/knplabs"/>
+	<buildpathentry kind="src" path="vendor/genemu"/>
+	<buildpathentry kind="src" path="vendor/swiftmailer"/>
+	<buildpathentry kind="src" path="vendor/jdorn"/>
 	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
+	<buildpathentry kind="src" path="vendor/symfony"/>
+	<buildpathentry kind="src" path="vendor/psr"/>
+	<buildpathentry kind="src" path="vendor/sensio"/>
+	<buildpathentry kind="src" path="vendor/incenteev"/>
+	<buildpathentry excluding="composer/|doctrine/|swiftmailer/|jdorn/|twig/|kriswallsmith/|sensiolabs/|genemu/|tcpdf/|knplabs/|symfony/|psr/|sensio/|monolog/|incenteev/" kind="src" path="vendor"/>
+	<buildpathentry kind="src" path="src"/>
+	<buildpathentry kind="src" path="vendor/monolog"/>
 </buildpath>

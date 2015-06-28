@@ -120,7 +120,7 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutLlarg()
 	{
-		if ($this->comanda == null) return getNumRebut()." INGRES ".$this->getClub()->getNom();  // Ingrés a compte
+		if ($this->comanda == null) return $this->getNumRebut()." INGRES ".$this->getClub()->getNom();  // Ingrés a compte
 			
 		if ($this->comanda->getFactura() == null) return $this->comanda->getConcepteComanda(); 	
 		
@@ -134,7 +134,7 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutCurt()
 	{
-		if ($this->comanda == null) return "REBUT: ".getNumRebut();  // Ingrés a compte
+		if ($this->comanda == null) return "REBUT: ".$this->getNumRebut();  // Ingrés a compte
 			
 		if ($this->comanda->getFactura() == null) return "COMANDA: ".$this->comanda->getNumComanda();
 		

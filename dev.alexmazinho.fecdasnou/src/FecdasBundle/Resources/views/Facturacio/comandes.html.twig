@@ -72,7 +72,7 @@
 		   			<div class="data-detall-cell comanda-num">{{ comanda.numcomanda }}</div>
 		   			<div class="data-detall-cell comanda-club">{{ comanda.club.nom }}</div>
 		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
-		   			<div class="data-detall-cell comanda-total">{{ comanda.total|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell comanda-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
 		   			<div class="data-detall-cell comanda-factura">
 		   				{% if  comanda.factura is not null %}
@@ -85,7 +85,7 @@
 					</div>
 		   			<div class="data-detall-cell comanda-rebut">{{ comanda.numrebut }}</div>
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.comentaris }}</div>
-		   			<div class="data-detall-cell comanda-compta">{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell comanda-compta">{% if  comanda.comptabilitat is not null %}{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
 		   			<div class="data-detall-cell comanda-actions">
 		   				<a class="comanda-action-edit" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
 						{% if not comanda.esBaixa %}

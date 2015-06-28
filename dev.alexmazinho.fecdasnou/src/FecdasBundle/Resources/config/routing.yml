@@ -427,6 +427,12 @@ FecdasBundle_nourebut:
     requirements:
         _method:  GET
 
+FecdasBundle_traspascomptabilitat:
+    pattern:  /traspascomptabilitat
+    defaults: { _controller: "FecdasBundle:Facturacio:traspascomptabilitat" }
+    requirements:
+        _method:  GET
+
 
 FecdasBundle_fitxercomptabilitat:
     pattern:  /fitxercomptabilitat

@@ -52,11 +52,6 @@ class FormComanda extends AbstractType {
 						'by_reference' 	=> false,
 						//'data'			=> $comanda->getDetalls()
 				));
-				$form->add ( 'total', 'number', array (
-						'required' 		=> true,
-						'scale' 	=> 2,
-						'data'			=> $comanda->getTotal()
-				));
 				
 				$form->add ( 'totalsuma', 'number', array (
 						'required' 	=> false,

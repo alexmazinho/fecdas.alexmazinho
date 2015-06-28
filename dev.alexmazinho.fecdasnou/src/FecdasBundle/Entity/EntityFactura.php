@@ -110,6 +110,15 @@ class EntityFactura {
 	}
 	
 	/**
+	 * Factura format curt amb any  XXXXX/XX
+	 *
+	 * @return string
+	 */
+	public function getNumFacturaCurt() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datafactura->format("y");
+	}
+	
+	/**
 	 * @return integer
 	 */
 	public function getId() {

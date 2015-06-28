@@ -39,23 +39,14 @@
 			 </div>
 			 <div class="col-md-2">
 				<div class="form-group">
-					{{ form_label(form.total, 'Total') }}
-					<div id="formcomanda-total"  class="input-group ">
-						{{ form_widget(form.total, { 'attr': {'class': 'form-control form-control-right'} }) }}
-						<span class="input-group-addon"><i class="fa fa-euro"></i></span>
-					</div>{{ form_errors(form.total)  }}
-				</div>
-			 </div>
-			 <div class="col-md-2">
-				<div class="form-group">
-					{{ form_label(form.total, 'Suma') }}
+					{{ form_label(form.totalsuma, 'Import') }}
 					<div id="formcomanda-totalsuma"  class="input-group ">
 						{{ form_widget(form.totalsuma, { 'attr': {'class': 'form-control form-control-right'} }) }}
 						<span class="input-group-addon"><i class="fa fa-euro"></i></span>
 					</div>{{ form_errors(form.totalsuma)  }}
 				</div>
 			 </div>
-			 <div class="col-md-3">
+			 <div class="col-md-5">
 			 	<div class="form-group">
 					{{ form_label(form.comptabilitat, 'Codi comptabilitat') }}
 					<div id="formcomanda-comptabilitat"  class="">
@@ -259,16 +250,11 @@
 			var totalComanda = 0;
 			$('.data-detall-cell.col-total input').each( function(e) {
 				totalComanda += $(this).val()*1;
-				console.log(totalComanda);
 			});
 
 			
 			$('#comanda_totalsuma').val( formatter.format(totalComanda) );
 
-			if ($('#comanda_id').val() == 0 || $('#comanda_id').val() == "" ||
-					$('#comanda_total').val() == 0 || $('#comanda_total').val() == "") {
-				$('#comanda_total').val( formatter.format(totalComanda) );
-			}
 		}
 		
 		var $collectionHolder;

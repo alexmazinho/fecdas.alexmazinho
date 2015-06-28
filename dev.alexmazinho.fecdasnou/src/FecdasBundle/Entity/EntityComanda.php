@@ -59,11 +59,6 @@ class EntityComanda {
 	protected $rebut;	// FK taula m_rebuts
 	
 	/**
-	 * @ORM\Column(type="decimal", precision=9, scale=2)
-	 */
-	protected $total;  // Es pot editar preu
-	
-	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -116,12 +111,11 @@ class EntityComanda {
 	}
 	
 	
-	public function __constructParams($num, $factura = null, $club = null, $total = 0, $comentaris = '') {
+	public function __constructParams($num, $factura = null, $club = null, $comentaris = '') {
 	
 		$this->num = $num;
 		$this->factura = $factura;
 		$this->club = $club;
-		$this->total = $total;
 		$this->comentaris = ($comentaris==''?null:$comentaris);
 		
 		/*if ($this->esParte()) {
@@ -146,6 +140,16 @@ class EntityComanda {
 		return $this->getPrefixAlbara().str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
 	}
 	
+	
+	/**
+	 * Comanda format curt amb any  XXXXX/XX
+	 *
+	 * @return string
+	 */
+	public function getNumComandaCurt() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("y");
+	}
+	
 	/**
 	 * Get num albarà PREFIX + id => getNumComanda()
 	 *
@@ -153,7 +157,7 @@ class EntityComanda {
 	 */
 	public function getNumAlbara()
 	{
-		return getNumComanda();
+		return $this->getNumComanda();
 	}
 	
 	/**
@@ -198,7 +202,7 @@ class EntityComanda {
 	public function getInfoComanda()
 	{
 		return $this->getNumComanda().", dia ".$this->dataentrada->format("d/m/Y").
-			", club ".$this->getClub()->getNom().". Total: ".number_format($this->total, 2, ',', '.');
+			", club ".$this->getClub()->getNom().". Total: ".number_format($this->getTotalDetalls(), 2, ',', '.');
 	}
 
 	/**
@@ -287,9 +291,9 @@ class EntityComanda {
 	public function getNumAssentament()
 	{
 	
-		if ($this->factura == null) return $this->getNumComanda();
+		if ($this->factura == null) return $this->getNumComandaCurt();
 	
-		return $this->factura->getNumFactura();
+		return $this->factura->getNumFacturaCurt();
 	}
 	
 	/**
@@ -392,29 +396,6 @@ class EntityComanda {
     public function getComentaris()
     {
         return $this->comentaris;
-    }
-
-    /**
-     * Set total
-     *
-     * @param string $total
-     * @return EntityComanda
-     */
-    public function setTotal($total)
-    {
-        $this->total = $total;
-
-        return $this;
-    }
-
-    /**
-     * Get total
-     *
-     * @return double 
-     */
-    public function getTotal()
-    {
-        return $this->total;
     }
 
     /**

@@ -36,18 +36,15 @@
 		/* Inicialitza el control de cerca (input hidden) */
 		$(elem_sel).select2({
 			minimumInputLength: 3,
-			allowClear: true,
+			allowClear: false,
 			multiple: false,
 			placeholder: placeholder_txt,
 	
 			query: function (query) {
 				var data = { results: [] };
-				console.log(url + '==> '+JSON.stringify(query) + ' - ' + query.term);
 				var params = { 	'cerca': query.term };
 				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
-				console.log(JSON.stringify(params));
 				$.get(url,	params, function(jdata) {
-					//console.log(JSON.stringify(jdata) + ' - ' + jdata[0].text);
 					data.results = jdata;
 					query.callback(data);
 				}).fail(function() {
@@ -55,13 +52,11 @@
 				});
 			},
 			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple)
-				console.log(JSON.stringify(element));
 				//if (element.val() !== undefined && element.val() > 0) {
 					var data = [];
 					var params = { 	'id': element.val() };
-					console.log(url+ ' '+JSON.stringify(params) + ' ' +  element.val());
 					$.get(url,	params, function(jdata) {
-						//console.log(JSON.stringify(jdata) + ' ' + jdata['id'] + ' ' + jdata['text']);
+						//callback(jdata['id']);
 						callback(jdata);
 					}).fail(function() {
 						callback(data);

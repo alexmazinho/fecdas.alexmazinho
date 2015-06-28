@@ -47,7 +47,7 @@ class EntityComanda {
 	protected $factura;	// FK taula m_factures
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat")
+	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat", inversedBy="comandes")
 	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
 	 */
 	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
@@ -79,7 +79,7 @@ class EntityComanda {
 	protected $databaixa;
 	
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityComandaDetall", mappedBy="comanda")
+	 * @ORM\OneToMany(targetEntity="EntityComandaDetall", mappedBy="comanda" )
 	 */
 	protected $detalls;
 	
@@ -96,28 +96,47 @@ class EntityComanda {
 	protected $duplicat;*/
 	
 	
-	public function __construct($num, $factura = null, $club = null, $total = 0, $comentaris = '') {
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+
+		$this->id = 0;
+		$this->dataentrada = new \DateTime();
+		$this->detalls = new \Doctrine\Common\Collections\ArrayCollection();
+	
+		// Hack per permetre múltiples constructors
+		$a = func_get_args();
+		$i = func_num_args();
+	
+		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}
+	}
+	
+	
+	public function __constructParams($num, $factura = null, $club = null, $total = 0, $comentaris = '') {
+	
 		$this->num = $num;
 		$this->factura = $factura;
 		$this->club = $club;
 		$this->total = $total;
 		$this->comentaris = ($comentaris==''?null:$comentaris);
-		if ($this->esParte()) {
-			$this->comentaris = 'Llista '.$parte->getId().'-'.$this->comentaris;
-			$this->parte = $parte;
-			$this->parte->setComanda($this);
-		}
 		
-		if ($this->esDuplicat()) {
-			$this->comentaris = 'Petició '.$duplicat->getId().'/'.$duplicat->getDatapeticio()->format('Y-m-d').'-'.$this->comentaris;
-			$this->duplicat = $duplicat;
-			$this->duplicat->setComanda($this);
-		}
+		/*if ($this->esParte()) {
+		 $this->comentaris = 'Llista '.$parte->getId().'-'.$this->comentaris;
+		 $this->parte = $parte;
+		 $this->parte->setComanda($this);
+		 }
 		
-		$this->dataentrada = new \DateTime();
-		$this->detalls = new \Doctrine\Common\Collections\ArrayCollection();
+		 if ($this->esDuplicat()) {
+		 $this->comentaris = 'Petició '.$duplicat->getId().'/'.$duplicat->getDatapeticio()->format('Y-m-d').'-'.$this->comentaris;
+		 $this->duplicat = $duplicat;
+		 $this->duplicat->setComanda($this);
+		 }*/
 	}
-
+	
 	/**
 	 * Comanda format amb any  XXXXX/20XX
 	 *
@@ -182,6 +201,37 @@ class EntityComanda {
 			", club ".$this->getClub()->getNom().". Total: ".number_format($this->total, 2, ',', '.');
 	}
 
+	/**
+	 * Get tipus comanda: kits, llicències, etc... 
+	 *
+	 * @return string
+	 */
+	public function getTipusComanda()
+	{
+		$keystipus = array();
+		foreach ($this->detalls as $d) {
+			if (!$d->esBaixa() && $d->getProducte() != null) {
+				$keystipus[$d->getProducte()->getTipus()] = true;
+			}
+		}
+		$tipusTexts = array();
+		foreach (array_keys($keystipus) as $tipus) {
+			$tipusTexts[] = BaseController::getTipusProducte($tipus);
+		}
+		
+		return implode(", ", $tipusTexts);
+	}
+	
+	/**
+	 * Get concepte comanda (Factura / Rebut)
+	 *
+	 * @return string
+	 */
+	public function getConcepteComanda()
+	{
+		return $this->getNumComanda()." - ".$this->getTipusComanda();
+	}
+	
 	
 	/**
 	 * Get total suma dels detalls
@@ -301,7 +351,7 @@ class EntityComanda {
     /**
      * Get total
      *
-     * @return string 
+     * @return double 
      */
     public function getTotal()
     {
@@ -449,15 +499,12 @@ class EntityComanda {
     /**
      * Add detall
      *
-     * @param \FecdasBundle\Entity\EntityComandaDetall $detall
+     * @param EntityComandaDetall $detall
      * @return EntityComanda
      */
-    public function addDetall(\FecdasBundle\Entity\EntityComandaDetall $detall) 
+    public function addDetall(EntityComandaDetall $detall) 
     {
-    	
-    	$detall->setComanda($this);
     	$this->detalls->add($detall);
-        //$this->detalls[] = $detalls;
 
         return $this;
     }
@@ -475,13 +522,33 @@ class EntityComanda {
     /**
      * Remove detalls
      *
-     * @param \FecdasBundle\Entity\EntityComandaDetall $detalls
+     * @param EntityComandaDetall $detall
      */
-    public function removeDetall(\FecdasBundle\Entity\EntityComandaDetall $detalls)
+    public function removeDetall(EntityComandaDetall $detall)
     {
-        $this->detalls->removeElement($detalls);
+        $this->detalls->removeElement($detall);
     }
 
+    /**
+     * Remove all detalls
+     *
+     */
+    public function resetDetalls()
+    {
+    	$this->detalls = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    /**
+     * Set detalls
+     *
+     * @param \Doctrine\Common\Collections\Collection $detalls
+     */
+    public function setDetalls(\Doctrine\Common\Collections\ArrayCollection $detalls)
+    {
+    	$this->detalls = $detalls;
+    }  
+    
+    
     /**
      * Set comptabilitat
      *

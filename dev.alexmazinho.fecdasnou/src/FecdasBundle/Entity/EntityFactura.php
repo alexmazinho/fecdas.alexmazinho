@@ -68,13 +68,33 @@ class EntityFactura {
 	 */
 	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 
-	public function __construct($datafactura, $num, $import = 0, $concepte = '') {
+	
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->id = 0;
 		$this->dataentrada = new \DateTime();
+	
+		// Hack per permetre múltiples constructors
+		$a = func_get_args();
+		$i = func_num_args();
+	
+		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}
+	}
+	
+	
+	public function __constructParams($datafactura, $num, $import = 0, $concepte = '') {
+	
 		$this->datafactura = $datafactura;
 		$this->num = $num;
 		$this->import = $import;
 		$this->concepte = $concepte;
 	}
+	
 
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();

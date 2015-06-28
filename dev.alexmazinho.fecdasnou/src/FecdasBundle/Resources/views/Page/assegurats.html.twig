@@ -72,6 +72,8 @@
 		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-asseguratcognoms" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Cognoms', 'e.cognoms', {'direction': 'desc'}) }}
 		   				<span class="listheader-icon {% if sortparams['direction'] == '' %} listheader-icon-asc {% endif %}{% if sortparams['sort'] == 'e.cognoms' %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-asseguratnaixement" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nascut/da', 'e.datanaixement') }}
+		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicències</div>
 		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
@@ -86,6 +88,7 @@
 				   		<div class="data-detall-cell assegurat-dni col-noresponsive">{{ persona.dni }}</div>
 				   		<div class="data-detall-cell assegurat-nom col-noresponsive">{{ persona.nom }}</div>
 				   		<div class="data-detall-cell assegurat-cognoms col-noresponsive">{{ persona.cognoms }}</div>
+				   		<div class="data-detall-cell assegurat-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell assegurat-tipusdesc">
 				   			<a class="llicencia-historial" href="{{ path('FecdasBundle_historialLlicencies', { 'id': persona.id }) }}" title="Historial llicències">
 				   			<img src="{{ asset('images/icon-historial.png') }}" alt="Historial llicències" title="Historial llicències" width="23px">

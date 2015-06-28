@@ -87,7 +87,7 @@ class EntityProducte {
 	}
 	
 	public function __toString() {
-		return $this->getId()."-".$this->codi;
+		return $this->getId()."".$this->getCodi();
 	}
 	
 	public function esBaixa()

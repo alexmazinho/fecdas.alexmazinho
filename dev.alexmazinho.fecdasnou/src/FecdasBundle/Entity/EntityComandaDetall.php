@@ -34,6 +34,16 @@ class EntityComandaDetall {
 	 * @ORM\Column(type="integer")
 	 */
 	protected $unitats;
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=6, scale=2)
+	 */
+	protected $preuunitat;  // Preu aplicat en el moment de fer la comanda
+
+	/**
+	 * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
+	 */
+	protected $ivaunitat;  // IVA aplicat en el moment de fer la comanda
 
 	/**
 	 * @ORM\Column(type="decimal", precision=4, scale=2)
@@ -60,15 +70,39 @@ class EntityComandaDetall {
 	 */
 	protected $databaixa;
 	
-	public function __construct($comanda, $producte, $unitats, $descomptedetall, $anotacions) {
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->id = 0;
+		$this->unitats = 1;
+		$this->preuunitat = 0;
+		$this->ivaunitat = 0;
+		$this->dataentrada = new \DateTime();
+	
+		// Hack per permetre múltiples constructors
+		$a = func_get_args();
+		$i = func_num_args();
+	
+		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}	
+	}
+	
+	
+	public function __constructParams($comanda, $producte = null, $unitats = 1, $descomptedetall = 0, $anotacions = '') {
+	
 		$this->comanda 	= $comanda;
 		$this->producte = $producte;
 		$this->unitats = ($unitats < 1?1:$unitats);
+		$this->preuunitat = ($producte != null?$producte->getCurrentPreu():0);
+		$this->ivaunitat = ($producte != null?$producte->getCurrentIva():0);
 		$this->descomptedetall = $descomptedetall;
 		$this->anotacions = $anotacions;
-		$this->dataentrada = new \DateTime();
 	}
-
+	
+	
 	/**
 	 * Get total
 	 *
@@ -80,10 +114,10 @@ class EntityComandaDetall {
 		
 		if ($this->esBaixa()) return 0; 
 		
-		$preu 	= $this->producte->getCurrentPreu();
-		$iva 	= $this->producte->getCurrentIva();
+		/*$preu 	= $this->producte->getCurrentPreu();
+		$iva 	= $this->producte->getCurrentIva();*/
 		
-		return $preu * $this->unitats * (1 + $iva) * (1 - $this->descomptedetall);
+		return $this->preuunitat * $this->unitats * (1 + $this->ivaunitat) * (1 - $this->descomptedetall);
 	}
 	
 	/**
@@ -141,6 +175,52 @@ class EntityComandaDetall {
         return $this->unitats;
     }
 
+    /**
+     * Set preuunitat
+     *
+     * @param decimal $preuunitat
+     * @return EntityComandaDetall
+     */
+    public function setPreuunitat($preuunitat)
+    {
+    	$this->preuunitat = $preuunitat;
+    
+    	return $this;
+    }
+    
+    /**
+     * Get preuunitat
+     *
+     * @return decimal
+     */
+    public function getPreuunitat()
+    {
+    	return $this->preuunitat;
+    }
+    
+    /**
+     * Set ivaunitat
+     *
+     * @param string $ivaunitat
+     * @return EntityComandaDetall
+     */
+    public function setIvaunitat($ivaunitat)
+    {
+    	$this->ivaunitat = $ivaunitat;
+    
+    	return $this;
+    }
+    
+    /**
+     * Get ivaunitat
+     *
+     * @return string
+     */
+    public function getIvaunitat()
+    {
+    	return $this->ivaunitat;
+    }
+    
     /**
      * Set descomptedetall
      *
@@ -301,4 +381,5 @@ class EntityComandaDetall {
     {
         return $this->producte;
     }
+    
 }

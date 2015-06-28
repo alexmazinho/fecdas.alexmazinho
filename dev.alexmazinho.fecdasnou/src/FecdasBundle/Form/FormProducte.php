@@ -65,11 +65,11 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 			));
 			
 			$form->add ( 'preu', 'number', array (
-					'required' 		=> true,
-					'mapped' 		=> false,
-					'precision' 	=> 2,
-					'data' 			=> ($preu == null?0:$preu->getPreu()),
-					'mapped' 		=> false
+					'required' 	=> true,
+					'mapped' 	=> false,
+					'scale' 	=> 2,
+					'data' 		=> ($preu == null?0:$preu->getPreu()),
+					'mapped' 	=> false
 			));
 					
 			$form->add('iva', 'choice', array(
@@ -97,7 +97,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 			/*$form->add ( 'iva', 'number', array (
 					'required' => true,
 					'mapped' => false,
-					'precision' => 2,
+					'scale' => 2,
 					'data' => $preu->getIva(),
 					'mapped' => false,
 					'constraints' => array (

@@ -371,13 +371,13 @@ FecdasBundle_novacomanda:
     pattern:  /novacomanda
     defaults: { _controller: "FecdasBundle:Facturacio:novacomanda" }
     requirements:
-        _method:  GET|POST
+        _method:  GET
 
 FecdasBundle_editarcomanda:
     pattern:  /editarcomanda
     defaults: { _controller: "FecdasBundle:Facturacio:editarcomanda" }
     requirements:
-        _method:  GET
+        _method:  GET|POST
 
 FecdasBundle_baixacomanda:
     pattern:  /baixacomanda
@@ -408,6 +408,12 @@ FecdasBundle_editarfactura:
     defaults: { _controller: "FecdasBundle:Facturacio:editarfactura" }
     requirements:
         _method:  GET|POST
+
+FecdasBundle_novafactura:
+    pattern:  /novafactura
+    defaults: { _controller: "FecdasBundle:Facturacio:novafactura" }
+    requirements:
+        _method:  GET
 
 FecdasBundle_editarrebut:
     pattern:  /editarrebut

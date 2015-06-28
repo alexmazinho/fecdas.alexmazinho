@@ -507,13 +507,13 @@ class PDFController extends BaseController {
 		$currentTots = false;
 		if ($this->isCurrentAdmin() && $this->get('request')->query->has('tots') && $this->get('request')->query->get('tots') == 1) $currentTots = true;
 		
-		$this->logEntryAuth('PRINT ASSEGURATS', "club: ". $club->getCodi()." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
-		
+		$this->logEntryAuth('PRINT ASSEGURATS', $club->getCodi()." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
+		error_log("0 TCPDF");
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-			
+		error_log("1 TCPDF");
 		$pdf->init(array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
-				true, "Club " . $club->getNom());
+				true, $club->getNom());
 			
 		$pdf->AddPage();
 		
@@ -562,12 +562,10 @@ class PDFController extends BaseController {
 			$y += 15;
 		}
 		
-		$pdf->SetFont('dejavusans', '', 9, '', true);
-
-		$w = array(8, 44, 26, 102); // Amplades
+		$w = array(8, 44, 20, 26, 82); // Amplades
 		$this->asseguratsHeader($pdf, $w);
 		$pdf->SetFillColor(255, 255, 255); //Blanc
-		$pdf->SetFont('dejavusans', '', 9, '', true);
+		$pdf->SetFont('dejavusans', '', 8, '', true);
 		
 		$total = 0;
 
@@ -627,6 +625,7 @@ class PDFController extends BaseController {
 		// Close and output PDF document
 			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // save as...
 		}
+		error_log("2 TCPDF");
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
 		
@@ -637,7 +636,8 @@ class PDFController extends BaseController {
 		
 		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
 		$pdf->Cell($w[1], 6, $persona->getCognoms() . ', ' . $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);
-		$pdf->Cell($w[2], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[2], 6, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[3], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
 		if ($llicencia != null && $llicencia->getParte() != null) {
 			$text = $llicencia->getCategoria()->getDescripcio().". ";
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
@@ -645,20 +645,21 @@ class PDFController extends BaseController {
 		} else {
 			$text =  $persona->getInfoAssegurats($this->isCurrentAdmin());
 		}
-		$pdf->Cell($w[3], 6, $text , 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
 			
 		$pdf->Ln();
 		
 	}
 	
 	private function asseguratsHeader($pdf, $w) {
-		$pdf->SetFont('dejavusans', 'B', 10, '', true);
+		$pdf->SetFont('dejavusans', 'B', 9, '', true);
 		$pdf->SetFillColor(221, 221, 221); //Gris
 		
 		$pdf->Cell($w[0], 7, '', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
 		$pdf->Cell($w[1], 7, 'Nom', 1, 0, 'L', 1);
-		$pdf->Cell($w[2], 7, 'DNI', 1, 0, 'C', 1);
-		$pdf->Cell($w[3], 7, 'Informació llicència / assegurança', 1, 0, 'C', 1, '', 1);
+		$pdf->Cell($w[2], 7, 'Nascut/da', 1, 0, 'C', 1);
+		$pdf->Cell($w[3], 7, 'DNI', 1, 0, 'C', 1);
+		$pdf->Cell($w[4], 7, 'Informació llicència / assegurança', 1, 0, 'C', 1, '', 1);
 		$pdf->Ln();
 	}
 	

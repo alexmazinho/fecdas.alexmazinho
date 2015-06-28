@@ -26,15 +26,14 @@ class EntityParte extends EntityComanda {
 	protected $tipus;	// FK taula m_tipuspartes
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="partes")
-	 * @ORM\JoinColumn(name="clubdel", referencedColumnName="codi")
+	 * @ORM\Column(type="string", length=30)
 	 */
-	protected $clubdel;	// FK taula m_clubdels
+	protected $clubdel;	// =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
 	 */
-	protected $numrelacio;
+	protected $numrelacio;   // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="datetime")
@@ -44,32 +43,32 @@ class EntityParte extends EntityComanda {
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
-	protected $dataentradadel;
+	protected $dataentradadel;   // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
-	protected $datamodificaciodel;
+	protected $datamodificaciodel;   // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
-	protected $databaixadel;
+	protected $databaixadel;   // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="date", nullable = true)
 	 */
-	protected $datapagament;
+	protected $datapagament;   // =================================================> PER ESBORRAR
 
 	/**
 	 * @ORM\Column(type="string", length=15, nullable=true)
 	 */
-	protected $estatpagament;  // NULL, TPV PEND, TPV OK, TPV CORRECCIO, METALLIC WEB, TRANS WEB, METALLIC GES,TRANS GES
+	protected $estatpagament;  // NULL, TPV PEND, TPV OK, TPV CORRECCIO, METALLIC WEB, TRANS WEB, METALLIC GES,TRANS GES  // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="string", length=15, nullable=true)
 	 */
-	protected $dadespagament;  // Num comanda TPV o num pago Gestor
+	protected $dadespagament;  // Num comanda TPV o num pago Gestor  // =================================================> PER ESBORRAR
 
 	/**
 	 * @ORM\Column(type="text", nullable=true)
@@ -79,32 +78,32 @@ class EntityParte extends EntityComanda {
 	/**
 	 * @ORM\Column(type="date", nullable = true)
 	 */
-	protected $datafacturacio;
+	protected $datafacturacio;	// =================================================> PER ESBORRAR
 
 	/**
 	 * @ORM\Column(type="string", length=10, nullable = true)
 	 */
-	protected $numfactura;
+	protected $numfactura;    // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
 	 */
-	protected $importpagament;
+	protected $importpagament;			// =================================================> PER ESBORRAR
 
 	/**
 	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
 	 */
-	protected $importparte;  /* No fer servir només per a Xavi */
+	protected $importparte;  /* No fer servir només per a Xavi */  // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="string", length=38, nullable=true)
 	 */
-	protected $idparte_access;
+	protected $idparte_access;		// =================================================> PER ESBORRAR
 
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $web;
+	protected $web;			// =================================================> PER ESBORRAR
 
 	/**
 	 * @ORM\Column(type="boolean")
@@ -516,9 +515,9 @@ class EntityParte extends EntityComanda {
     /**
      * Set clubdel
      *
-     * @param FecdasBundle\Entity\EntityClub $clubdel
+     * @param string $clubdel
      */
-    public function setClubdel(\FecdasBundle\Entity\EntityClub $clubdel)
+    public function setClubdel($clubdel)
     {
         $this->clubdel = $clubdel;
     }
@@ -526,7 +525,7 @@ class EntityParte extends EntityComanda {
     /**
      * Get clubdel
      *
-     * @return FecdasBundle\Entity\EntityClub
+     * @return string
      */
     public function getClubdel()
     {

@@ -5,7 +5,22 @@
 	background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; 
 }
 
-.field-error-alert { display: block; font-size: 0.9em; font-style: italic; margin: 5px 0; padding: 3px 10px; text-align: right; width: 100%; }
+.field-error-alert { 
+	/*display: block;*/ 
+	font-size: 0.85em; 
+	font-style: italic; 
+	margin: 0; 
+	padding: 1px 5px; 
+	text-align: right; 
+	opacity: 0.8;
+	position: absolute;
+	right: 10px;
+	bottom: -15px;
+	z-index: 100;
+}
+.form-group .field-error-alert { bottom: 5px; }
+
+/*.form-group { margin-bottom: 25px; }*/
 
 /*
 .textaccio {
@@ -385,7 +400,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 #slider .pagination { border:none; display:block; }
 
-
+/*
 .input-group-button-right .form-control { border-bottom-right-radius: 5px !important; border-top-right-radius: 5px !important; }
 
 .input-group-button-right .form-control, 
@@ -393,7 +408,12 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .input-group-button-right .link { display: table-cell; vertical-align: middle; }
 .input-group-button-right .link { font-size: 1.3em; }
 
-.input-group-button-right > .separator { width: 10px;  }
+.input-group-button-right > .separator { width: 10px;  }*/
+
+/*.form-control.form-control-button-right { margin-right: 20px;}*/
+.input-group.input-group-button-right { padding-right: 30px; position: relative; }
+.input-group.input-group-button-right .link { position:absolute; right: 0; top: 5px; }
+.input-group.input-group-button-right input { max-width:none; border-bottom-right-radius: 5px !important; border-top-right-radius: 5px !important; }
 
 .blue { color: #1240a0; /*#2281cf;*/ }
 .red { color: red; }
@@ -454,9 +474,9 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-comanda-items { width: 5%; text-align: center; }
 #header-comanda-total { width: 7%; text-align: right; }
 #header-comanda-data { width: 7%; text-align: center; }
-#header-comanda-factura { width: 7%; text-align: right; }
-#header-comanda-rebut { width: 8%; text-align: right; }
-#header-comanda-comentaris { width: 20%; text-align: center; }
+#header-comanda-factura { width: 7%; text-align: center; }
+#header-comanda-rebut { width: 8%; text-align: center; }
+#header-comanda-comentaris { width: 20%; text-align: left; }
 #header-comanda-compta { width: 8%; text-align: right; }
 #header-comanda-actions { width: 10%; text-align: right; }
 
@@ -466,8 +486,8 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
 .data-detall-cell.comanda-total { width: 7%; text-align: right; }
 .data-detall-cell.comanda-data { width: 7%; text-align: center; }
-.data-detall-cell.comanda-factura { width: 7%; text-align: right; }
-.data-detall-cell.comanda-rebut { width: 8%; text-align: right; }
+.data-detall-cell.comanda-factura { width: 7%; text-align: center; }
+.data-detall-cell.comanda-rebut { width: 8%; text-align: center; }
 .data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-compta { width: 8%; text-align: right; }
 .data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
@@ -480,31 +500,36 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .comanda-detall-form-header, .comanda-detall-form { display: table; width:100%; position: relative; }
 
 .comanda-detall-form-header .col-listheader { display: table-cell; } 
-.comanda-detall-form .data-detall-cell { border: none;
-border-bottom-color: #ffffff;
+.comanda-detall-form .data-detall-cell { 
+	border: none;
+	border-bottom-color: #ffffff;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-top-color: #ffffff;
     border-top-style: solid;
     border-top-width: 1px;
+    padding: 4px;
+    position: relative;
 
  } 
+ 
+ .comanda-detall-form .data-detall-cell .alert { right: initial; bottom: initial; left: 10px; top:20px; } 
 
 .data-detall-cell input.form-control { font-size: 0.9em; padding: 6px 2px; }
-.data-detall-cell textarea.form-control { font-size: 0.8em; padding: 6px 2px; }
+.data-detall-cell textarea.form-control { font-size: 0.8em; padding: 10px 6px 0 6px; line-height: 0.6; }
 .data-detall-cell .form-control .select2-chosen { font-size: 0.9em; }
 
 .comanda-detall-form-header .col-id {  }
-.comanda-detall-form-header .col-listheader.col-producte { width: 22%; text-align: left; }
-.comanda-detall-form-header .col-listheader.col-unitats { width: 7%; text-align: center; }
-.comanda-detall-form-header .col-listheader.col-descompte { width: 9%; text-align: center; font-size: 0.9em; }
-.comanda-detall-form-header .col-listheader.col-ivaproducte { width: 7%; text-align: center; }
-.comanda-detall-form-header .col-listheader.col-preuunitat { width: 7%; text-align: center; }
-.comanda-detall-form-header .col-listheader.col-totalnet { width: 9%; text-align: center; }
-.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; }
-.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; }
-.comanda-detall-form-header .col-listheader.col-comentaris { width: 15%; text-align: left; }
-.comanda-detall-form-header .col-listheader.col-actions  { width: 3%; }
+.comanda-detall-form-header .col-listheader.col-producte { width: 20%; text-align: left; width: 250px;  }
+.comanda-detall-form-header .col-listheader.col-unitats { width: 7%; text-align: center; width: 70px; }
+.comanda-detall-form-header .col-listheader.col-descompte { width: 10%; text-align: center; font-size: 0.9em;width: 80px;  }
+.comanda-detall-form-header .col-listheader.col-ivaunitat { width: 10%; text-align: center; width: 80px; }
+.comanda-detall-form-header .col-listheader.col-preuunitat { width: 7%; text-align: center; width: 70px;  }
+.comanda-detall-form-header .col-listheader.col-totalnet { width: 9%; text-align: center; width: 70px;  }
+.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; width: 70px; }
+.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; width: 120px; }
+.comanda-detall-form-header .col-listheader.col-comentaris { width: 13%; text-align: left; width: auto; }
+.comanda-detall-form-header .col-listheader.col-actions  { width: 3%; width: 30px; }
 
 .comanda-detall-form .col-id {  }
 .col-seq {  
@@ -515,24 +540,53 @@ border-bottom-color: #ffffff;
     top: 15px;
     text-align: left;
 }
-.comanda-detall-form .col-producte { width: 23%; font-size: 0.9em; text-align: left; }
-.comanda-detall-form .col-unitats { width: 7%; }
-.comanda-detall-form .col-descompte { width: 9%; }
-.comanda-detall-form .col-ivaproducte { width: 7%;  }
-.comanda-detall-form .col-ivaproducte input { background: #ffffff; background:transparent; border:none; border-color: #ffffff; border-color: transparent; box-shadow: none; }
-.comanda-detall-form .col-preuunitat { width: 7%; }
-.comanda-detall-form .col-preuunitat input { background: #ffffff; background:transparent; border:none; border-color: #ffffff; border-color: transparent; box-shadow: none; }
-.comanda-detall-form .col-totalnet { width: 9%; }
-.comanda-detall-form .col-totaliva { width: 9%; }
-.comanda-detall-form .col-total { width: 11%; }
-.comanda-detall-form .data-detall-cell.col-total { width: 11%; text-align: center; }
-.comanda-detall-form .data-detall-cell.col-total input { font-size: 1em; font-weight: bold; }
-.comanda-detall-form .col-comentaris { width: 15%; max-width: 15%;  text-align: left; }
-.comanda-detall-form .col-actions { width: 3%; text-align: right; }
+.comanda-detall-form .data-detall-cell.col-producte { width: 20%; font-size: 0.9em; text-align: left; width: 250px; }
+.comanda-detall-form .data-detall-cell.col-unitats { width: 7%; width: 70px; }
+.comanda-detall-form .data-detall-cell.col-descompte { width: 10%; width: 80px; }
+.comanda-detall-form .data-detall-cell.col-descompte .input-group-addon { width: auto; padding: 6px 3px; }
+.comanda-detall-form .data-detall-cell.col-ivaunitat { width: 10%; width: 80px; }
+.comanda-detall-form .data-detall-cell.col-ivaunitat .input-group-addon { width: auto; padding: 6px 3px; }
+.comanda-detall-form .data-detall-cell.col-preuunitat { width: 7%; width: 70px; }
+.comanda-detall-form .data-detall-cell.col-totalnet { width: 9%;  width: 70px; }
+.comanda-detall-form .data-detall-cell.col-totaliva { width: 9%;  width: 70px; }
+.comanda-detall-form .data-detall-cell.col-total { width: 11%; text-align: center; width: 120px; }
+.comanda-detall-form .data-detall-cell.col-total input.form-control { font-size: 1em; font-style:italic; color: #1240a0; } 
+.comanda-detall-form .data-detall-cell.col-comentaris { width: auto; }
+.comanda-detall-form .data-detall-cell.col-comentaris textarea { width: 100%; max-width: 270px;  text-align: left; }
+.comanda-detall-form .data-detall-cell.col-actions { width: 3%; text-align: right;  width: 30px;  }
 
 .comanda-detall-form .col-actions .fa  { font-size: 1.2em; }
 
+.comanda-detall-form .col-totalnet input, 
+.comanda-detall-form .col-totaliva input,
+.comanda-detall-form .col-ivaunitat input,
+.comanda-detall-form .col-preuunitat input { background: #ffffff; background:transparent; /*border:none; border-color: #ffffff; border-color: transparent; box-shadow: none;*/ }
+
+
+.comanda-detall-baixa .comanda-detall-form { opacity: 0.8; }
+
+.comanda-detall-baixa .comanda-detall-form input,
+.comanda-detall-baixa .comanda-detall-form a.select2-choice,
+.comanda-detall-baixa .comanda-detall-form .data-detall-cell.col-total input.form-control  
+	{ background: #f4f4f4; color: #AAAAAA; /*border:none; border-color: #ffffff; border-color: transparent; box-shadow: none;*/ }
+
+
+.data-detall-cell.col-producte .select2-choice { max-width: 240px; }
+
 .detall-form-header, .detall-form-row { /*margin: -6px 6px;*/}
+
+ul.detalls {
+	height: 250px;
+	max-height: 250px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /*border: 1px solid #81C6FF;*/
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), 0 -1px 2px rgba(0, 0, 0, 0.2);
+    margin: 10px 0;
+    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
 
 ul.detalls li .alert { margin: 10px 0; }
 
@@ -796,19 +850,21 @@ ul.detalls li .alert { margin: 10px 0; }
 
 #header-asseguratid { display:none}
 #header-asseguratcompacte { width: 40%; }
-#header-asseguratdni {	width: 12%;  }
-#header-asseguratnom {	width: 13%; text-align: left;}
-#header-asseguratcognoms {	width: 16%;text-align: left;}
+#header-asseguratdni {	width: 11%;  }
+#header-asseguratnom {	width: 10%; text-align: left;}
+#header-asseguratcognoms {	width: 13%;text-align: left;}
+#header-asseguratnaixement { width: 9%;text-align: center; }
 #header-assegurattipusdesc { width: 25%;text-align: left; }
-#header-asseguratactions { width: 10%;text-align: right; }
+#header-asseguratactions { width: 8%;text-align: right; }
 
 .assegurat-id {	display:none}
 .assegurat-compacte { width: 40%; }
-.assegurat-dni { width: 12%;  }
-.assegurat-nom { width: 13%; text-align: left; }
-.assegurat-cognoms { width: 16%; text-align:left;}
+.assegurat-dni { width: 11%;  }
+.assegurat-nom { width: 10%; text-align: left; }
+.assegurat-cognoms { width: 14%; text-align:left;}
+.assegurat-naixement { width: 8%; text-align:center;}
 .assegurat-tipusdesc { width: 25%; text-align:left; }
-.assegurat-actions { width: 10%; text-align: right;   }
+.assegurat-actions { width: 8%; text-align: right;   }
 
 /*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
@@ -940,7 +996,9 @@ input#form_dni {
 	padding-left: 5px;
 }
 
-
+.buttons-top-nous {
+	bottom: 20px;
+}
 
 #formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
 	float:left;

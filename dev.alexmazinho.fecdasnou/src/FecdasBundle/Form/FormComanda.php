@@ -8,6 +8,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use FecdasBundle\Entity\EntityComanda;
+use FecdasBundle\Entity\EntityComandaDetall;
 use FecdasBundle\Controller\BaseController;
 
 class FormComanda extends AbstractType {
@@ -23,7 +24,7 @@ class FormComanda extends AbstractType {
 			/* Check we're looking at the right data/form */
 			if ($comanda instanceof EntityComanda) {
 				
-				$form->add('numcomanda', 'text', array(
+				$form->add('num', 'text', array(
 						'required' 	=> true,
 						'disabled' 	=> true,
 						'mapped'	=> false,
@@ -43,24 +44,44 @@ class FormComanda extends AbstractType {
 						'disabled' 	=> true,
 						'data'		=> $comanda->getNumRebut()
 				));
+				
+				$form->add('detalls', 'collection', array(
+						'type' 			=> new FormComandaDetall(),
+						'allow_add'    	=> true,
+						'allow_delete' 	=> true,
+						'by_reference' 	=> false,
+						//'data'			=> $comanda->getDetalls()
+				));
+				$form->add ( 'total', 'number', array (
+						'required' 		=> true,
+						'scale' 	=> 2,
+						'data'			=> $comanda->getTotal()
+				));
+				
+				$form->add ( 'totalsuma', 'number', array (
+						'required' 	=> false,
+						'disabled' 	=> true,
+						'mapped' 	=> false,
+						'scale' => 2,
+						'data'		=> $comanda->getTotalDetalls()
+				));
+				
 			}
 		});
 		
 		$builder->add('id', 'hidden');
 		
-		$builder->add('num', 'hidden');
-		
 		$builder->add('club', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityClub',
-				'choice_label' 		=> 'nom',
-				'empty_value' 	=> 'Seleccionar Club',
+				'choice_label' 	=> 'nom',
+				'empty_value' 	=> 'Seleccionar Club',	
 				'required'  	=> false,
 				'read_only' 	=> true,
 		));
 		
 		$builder->add('comptabilitat', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityComptabilitat',
-				'choice_label' 		=> 'InfoComptabilitat',
+				'choice_label' 	=> 'InfoComptabilitat',
 				'empty_value' 	=> 'Pendent d\'enviar a comptabilitat',
 				'required'  	=> false,
 				'disabled' 		=> true,
@@ -72,11 +93,6 @@ class FormComanda extends AbstractType {
 		));
 		
 		
-		$builder->add ( 'total', 'number', array (
-				'required' 		=> true,
-				'precision' 	=> 2
-		));
-		
 		$builder->add('databaixa', 'datetime', array(
 				'required' 		=> false,
 				'read_only' 	=> false,
@@ -86,12 +102,7 @@ class FormComanda extends AbstractType {
 				'format' 		=> 'dd/MM/yyyy HH:mm',
 		));
 		
-		$builder->add('detalls', 'collection', array(
-				'type' 			=> new FormComandaDetall(),
-				'allow_add'    	=> true,
-				'allow_delete' 	=> true,
-				'by_reference' 	=> false,
-		));
+		
 		
 	}
 	

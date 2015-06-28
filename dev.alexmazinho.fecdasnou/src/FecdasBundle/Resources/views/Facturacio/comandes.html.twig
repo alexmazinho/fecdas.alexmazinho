@@ -74,10 +74,18 @@
 		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
 		   			<div class="data-detall-cell comanda-total">{{ comanda.total|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
-		   			<div class="data-detall-cell comanda-factura">{{ comanda.numfactura }}</div>
+		   			<div class="data-detall-cell comanda-factura">
+		   				{% if  comanda.factura is not null %}
+							<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
+								{{ comanda.numfactura }}</a>
+						{% else %}
+							<a id="crear-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+								<i class="fa fa-plus-circle fa-1x"></i></a>
+						{% endif %}		
+					</div>
 		   			<div class="data-detall-cell comanda-rebut">{{ comanda.numrebut }}</div>
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.comentaris }}</div>
-		   			<div class="data-detall-cell comanda-compta">{{ comanda.comptabilitat.infoComptabilitat }}</div>
+		   			<div class="data-detall-cell comanda-compta">{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}</div>
 		   			<div class="data-detall-cell comanda-actions">
 		   				<a class="comanda-action-edit" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
 						{% if not comanda.esBaixa %}
@@ -116,11 +124,11 @@
 		setMenuActive("menu-admcomandes");
 		
 		$("#form_cerca").change(function() {
-			filtreLlistacomandes($( "#form_cerca" ).val(), $(this).is(':checked'));
+			filtreLlistacomandes($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0) );
 	    });
 	
 		$( '#form_baixes' ).change(function(e) {
-			filtreLlistacomandes($( "#form_cerca" ).val(), $(this).is(':checked'));
+			filtreLlistacomandes($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0) );
 		});
 		
 		// Comanda

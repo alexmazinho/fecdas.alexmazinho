@@ -1,11 +1,19 @@
 <?php
 namespace FecdasBundle\Classes;
+
+
+if (!defined('K_PATH_IMAGES')) {
+	define ('K_PATH_IMAGES', __DIR__.'/../../../web/images/');
+}
 /**
 * TCPDF Bridge 
 */
+include_once (__DIR__.'/../../../vendor/tcpdf/tcpdf.php');
+
+//error_log(__DIR__.'/../../../vendor/tcpdf/tcpdf.php');
 
 
-class TcpdfBridge extends \TCPDF{
+class TcpdfBridge extends \TCPDF {
 	protected $pagenum;
 	protected $rightheader;
 	

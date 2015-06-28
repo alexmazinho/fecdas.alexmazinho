@@ -57,7 +57,7 @@ class EntityComptabilitat {
 	 */
 	public function getInfoComptabilitat()
 	{
-		return $this->dataenviament->format("d/m/Y");
+		return $this->dataenviament->format("d/m/Y"). " ".$this->comentaris;
 	}
     /**
      * Get id
@@ -206,5 +206,15 @@ class EntityComptabilitat {
     public function getComandes()
     {
         return $this->comandes;
+    }
+    
+    /**
+     * Set comandes
+     *
+     * @param \Doctrine\Common\Collections\Collection $comandes
+     */
+    public function setComandes(\Doctrine\Common\Collections\ArrayCollection $comandes)
+    {
+    	$this->comandes = $comandes;
     }
 }

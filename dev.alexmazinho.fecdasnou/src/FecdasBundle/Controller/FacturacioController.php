@@ -5,6 +5,7 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
 use FecdasBundle\Form\FormProducte;
@@ -24,6 +25,121 @@ use FecdasBundle\Controller\BaseController;
 
 
 class FacturacioController extends BaseController {
+	
+	public function editarfacturaAction(Request $request) {
+		// Edició d'una factura existent
+		
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$em = $this->getDoctrine()->getManager();
+		$factura = null;
+		
+		if ($request->getMethod() != 'POST') {
+			$id = $request->query->get('id', 0);
+		
+			$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($id);
+		
+		} else {
+			$data = $request->request->get('factura');
+			$id = (isset($data['id'])?$data['id']:0);
+		
+			if ($id > 0) $factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($id);
+		}
+
+		if ($factura == null) {
+			// No trobada
+			$this->logEntryAuth('FACTURA EDIT KO',	'Factura : ' . $id);
+			$this->get('session')->getFlashBag()->add('error-notice', 'Factura no trobada ');
+			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
+		}
+		
+		$this->logEntryAuth('FACTURA EDIT',	'Factura : ' . $factura->getId().' '.$factura->getConcepte());
+		
+		$form = $this->createForm(new FormFactura(), $factura);
+		
+		if ($request->getMethod() == 'POST') {
+			try {
+				$form->handleRequest($request);
+				
+				if ($form->isValid()) {
+						
+					if ($factura->getComanda() == null) {
+						$form->get('comanda')->addError(new FormError('Falta la comanda'));
+						throw new \Exception('Cal escollir una comanda ' );
+					}
+					$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
+					$factura->setNum($maxNumFactura); // Per si canvia
+						
+					if ($factura->getId() > 0)  $factura->setDatamodificacio(new \DateTime());
+						
+		
+				} else {
+					throw new \Exception('Dades incorrectes, cal revisar les dades de la factura ' ); //$form->getErrorsAsString()
+				}
+		
+				$em->flush();
+		
+				$this->get('session')->getFlashBag()->add('info-notice',	'La factura s\'ha desat correctament');
+					
+				$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $factura->getId().' '.$factura->getInfoComanda());
+				// Ok, retorn form sms ok
+				return $this->redirect($this->generateUrl('FecdasBundle_factura',
+						array( 'id' => $factura->getId() )));
+					
+			} catch (\Exception $e) {
+				// Ko, mostra form amb errors
+				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			}
+		}
+		
+		return $this->render('FecdasBundle:Facturacio:factura.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'factura' => $factura)));
+	}
+	
+	
+	public function novafacturaAction(Request $request) {
+		// Creació d'una nova factura
+		
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$this->logEntryAuth('FACTURA NOVA',	'');
+		
+		$idcomanda = $request->query->get('comanda', 0);
+		
+		$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($idcomanda);
+		
+		if ($comanda == null) {
+			// No trobada
+			$this->logEntryAuth('FACTURA NOVA KO',	'comanda : ' . $idcomanda);
+			$this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
+			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
+		}
+		
+		$this->logEntryAuth('FACTURA NOVA',	'Per la comanda : ' . $comanda->getId().' '.$comanda->getInfoComanda());
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
+		$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
+		
+		$em->persist($factura);
+		
+		$form = $this->createForm(new FormFactura(), $factura);
+		
+		return $this->render('FecdasBundle:Facturacio:factura.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'factura' => $factura)));
+	}
+	 
+	
+	
 	
 	public function comandesAction(Request $request) {
 		// Llistat de comandes
@@ -79,8 +195,6 @@ class FacturacioController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
 						'comandes' => $comandes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 				));
-		
-		return new Response("");
 	}
 	
 	public function novacomandaAction(Request $request) {
@@ -96,18 +210,21 @@ class FacturacioController extends BaseController {
 
 		$em = $this->getDoctrine()->getManager();
 		
-		$num = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES);
-		$factura = new EntityFactura(new \DateTime(), $num + 1);
+		$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
+		$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
 		
 		$em->persist($factura);
 		
-		$num = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES);
-		$comanda = new EntityComanda($num + 1, $factura);
+		$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
+		$comanda = new EntityComanda($maxNumComanda, $factura);
+		$detall = new EntityComandaDetall($comanda, null, 0, 0, '');
+											
+		$comanda->addDetall($detall);// Sempre afegir un detall si comanda nova
 		
 		$em->persist($comanda);
 		
 		$form = $this->createForm(new FormComanda(), $comanda);
-		 
+		
 		return $this->render('FecdasBundle:Facturacio:comanda.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'comanda' => $comanda)));
 	}
@@ -122,9 +239,194 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
-		//$em = $this->getDoctrine()->getManager();
-		//$producte = null;
-		return new Response("");
+		$em = $this->getDoctrine()->getManager();
+		$comanda = null;
+		$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
+		if ($request->getMethod() != 'POST') {
+			$id = $request->query->get('id', 0);
+		
+			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
+			 
+			if ($comanda == null) {
+				// No trobada
+				$this->logEntryAuth('COMANDA EDIT KO',	'Comanda : ' . $request->query->get('id', 0));
+				$this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
+				return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
+			}
+		
+			$this->logEntryAuth('COMANDA EDIT',	'Comanda : ' . $comanda->getId().' '.$comanda->getInfoComanda());
+			
+		} else {
+			/* Alta o modificació de clubs */
+			$data = $request->request->get('comanda');
+			$id = (isset($data['id'])?$data['id']:0);
+		
+			if ($id > 0) $comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
+		
+			$originalDetalls = new ArrayCollection();
+			
+			if ($comanda == null) {
+				
+				// Comanda nova. Crear factura
+				$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
+				$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
+				
+				$em->persist($factura);
+				
+				$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
+				$comanda = new EntityComanda($maxNumComanda, $factura);
+				$detall = new EntityComandaDetall($comanda, null, 0, 0, '');
+					
+				$comanda->addDetall($detall);// Sempre afegir un detall si comanda nova
+				
+				$em->persist($detall);
+				$em->persist($comanda);
+			} else {
+				// Create an ArrayCollection of the current detalls
+				foreach ($comanda->getDetalls() as $detall) {
+					$originalDetalls->add($detall);
+				}
+			}
+		}
+		
+		$form = $this->createForm(new FormComanda(), $comanda);
+		if ($request->getMethod() == 'POST') {
+			try {
+				$form->handleRequest($request);
+				if ($form->isValid()) {
+					
+					
+					if ($comanda->getClub() == null) {
+						$form->get('club')->addError(new FormError('Falta el club'));
+						throw new \Exception('Cal escollir un club ' );
+					}
+					
+					/*if (doubleval($comanda->getTotal()) <= 0) {
+						$form->get('total')->addError(new FormError('Valor incorrecte'));
+						throw new \Exception('Cal indicar un import vàlid ' );
+					}*/
+					
+					if ($comanda->getNumDetalls() <= 0) {
+						throw new \Exception('La comanda ha de tenir algún producte'  );
+					}
+					
+					// remove the relationship between the tag and the Task
+					foreach ($originalDetalls as $detall) {
+						if (false === $comanda->getDetalls()->contains($detall)) {
+					
+							$detall->setDatabaixa(new \DateTime());
+							$detall->setDatamodificacio(new \DateTime());
+							$em->persist($detall);
+					
+						}
+					}
+					
+					// Nous detalls i validació
+					
+					$formdetalls = $form->get('detalls');
+					
+					foreach ($comanda->getDetalls() as $detall) {
+						if (false === $originalDetalls->contains($detall)) {
+							$em->persist($detall);
+						}
+						$detall->setDatamodificacio(new \DateTime());
+						
+						if ($detall->getProducte() == null) {
+							$camp = $this->cercarCampColleccio($formdetalls, $detall, 'producte');
+							if ($camp != null) $camp->addError(new FormError('Escollir producte'));
+							throw new \Exception('Cal escollir algun producte de la llista'  );
+						}
+						
+						if ($detall->getUnitats() == 0) {
+							$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
+							if ($camp != null) $camp->addError(new FormError('?'));
+							throw new \Exception('Cal afegir mínim una unitat del producte'  );
+						}
+					}
+					
+					$comanda->setNum($maxNumComanda); // Per si canvia
+					
+					if ($comanda->getId() > 0)  $comanda->setDatamodificacio(new \DateTime());
+					
+		
+				} else {
+					throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda ' ); //$form->getErrorsAsString()
+				}
+		
+				$em->flush();
+		
+				$this->get('session')->getFlashBag()->add('info-notice',	'La comanda s\'ha desat correctament');
+				 
+				$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $comanda->getId().' '.$comanda->getInfoComanda());
+				// Ok, retorn form sms ok
+				return $this->redirect($this->generateUrl('FecdasBundle_editarcomanda',
+						array( 'id' => $comanda->getId() )));
+				 
+			} catch (\Exception $e) {
+				// Ko, mostra form amb errors
+				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			}
+		}
+		
+		return $this->render('FecdasBundle:Facturacio:comanda.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'comanda' => $comanda)));
+	}
+	
+	private function cercarCampColleccio($colleccio, $data, $camp) {
+		foreach ($colleccio as $fill) {
+			if ($fill->getData() === $data)  {
+				$camps = $fill->all();
+				
+				if (isset($camps[$camp])) return $camps[$camp];
+				else return null;
+			}
+		}
+		return null;		
+	}
+	
+	public function baixacomandaAction(Request $request) {
+		// Crida per donar de baixa una comanda
+		$this->get('session')->getFlashBag()->clear();
+			
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		/* De moment administradors */
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$id = $request->get('id', 0);
+	
+		$comanda = $em->getRepository('FecdasBundle:EntityComanda')->find($id);
+	
+		if ($comanda == null) {
+			$this->logEntryAuth('BAIXA COMANDA KO', 'comanda : ' . $id);
+			$this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
+			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
+		}
+	
+		// Baixa dels detalls 
+		foreach ($comanda->getDetalls() as $detall) {
+			if (!$detall->esBaixa()) {
+				$detall->setDatabaixa(new \DateTime());
+				$detall->setDatamodificacio(new \DateTime());
+			}
+		}
+		
+		// Baixa de la factura
+		if ($comanda->getFactura() != null) {
+			$comanda->getFactura()->setDataanulacio(new \DateTime());
+		}			
+		$comanda->setDatamodificacio(new \DateTime());
+		$comanda->setDatabaixa(new \DateTime());
+	
+		$em->flush();
+	
+		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId());
+		$this->get('session')->getFlashBag()->add('info-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
+		return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 	}
 	
 	
@@ -436,7 +738,7 @@ class FacturacioController extends BaseController {
 	
 	
 	public function jsonpreuAction(Request $request) {
-		//foment.dev/ajaxpreus?id=32&anypreu=2015
+		//foment.dev/jsonpreu?id=32&anypreu=2015
 		$response = new Response();
 	
 		$id = $request->get('id', 0);
@@ -474,7 +776,8 @@ class FacturacioController extends BaseController {
 			
 			if ($producte != null) {
 				$response->headers->set('Content-Type', 'application/json');
-				$response->setContent(json_encode(array("id" => $producte->getId(), "text" => $producte->getDescripcio()) ));
+				
+				$response->setContent(json_encode(array("id" => $producte->getId(), "text" => $producte->getDescripcio()) ) );
 				return $response;
 			}
 		}

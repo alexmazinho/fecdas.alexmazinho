@@ -4,6 +4,9 @@ namespace FecdasBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
+
 
 class FormRebut extends AbstractType {
 
@@ -41,13 +44,8 @@ class FormRebut extends AbstractType {
 		
 		$builder->add ( 'import', 'number', array (
 				'required' => true,
-				'precision' => 2,
-				'mapped' => false,
-				'constraints' => array (
-						new NotBlank ( array ( 'message' => 'Cal indicar l\'import.' )),
-						new Type ( array ('type' => 'numeric', 'message' => 'L\'import ha de ser numèric.')),
-						new GreaterThanOrEqual ( array ('value' => 0, 'message' => 'L\'import no és vàlid.'))
-				)
+				'scale' => 2,
+				'mapped' => false
 		));
 		
 		$builder->add('dadespagament', 'text', array(

@@ -14,7 +14,7 @@
 
 {% block body %}
     <header>
-        <h1>Gestió de productes</h1>
+        <h1><a href="{{ path('FecdasBundle_productes') }}">Llistat de productes</a> > Edició</h1>
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
@@ -24,19 +24,19 @@
 				{{ form_label(form.codi, 'Codi comptabilitat') }}
 				<div id="formproducte-codi"  class="">
 					{{ form_widget(form.codi, { 'attr': {'class': 'form-control form-control-center'} }) }}
-				</div>
+				</div>{{ form_errors(form.codi)  }}
 			 </div>
 			 <div class="col-md-1">
 				{{ form_label(form.abreviatura, 'Abreviatura') }}
 				<div id="formproducte-abreviatura"  class="">
 					{{ form_widget(form.abreviatura, { 'attr': {'class': 'form-control form-control-center'} }) }}
-				</div>
+				</div>{{ form_errors(form.abreviatura)  }}
 			 </div>
 			 <div class="col-md-3">
 			    <div id="formproducte-tipus" class="form-group">
 			    	{{ form_label(form.tipus, 'Tipus de producte') }}
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
-				</div>
+				</div>{{ form_errors(form.tipus)  }}
 			 </div>
 			 <div class="col-md-2">
 				{{ form_label(form.minim, 'Uds. mínim') }}
@@ -51,7 +51,7 @@
 		  				<span class="input-group-addon">Des de</span>
 						{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
 						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-					</div>
+					</div>{{ form_errors(form.databaixa)  }}
 				</div>
 			 </div>
 			<div class="col-md-6">

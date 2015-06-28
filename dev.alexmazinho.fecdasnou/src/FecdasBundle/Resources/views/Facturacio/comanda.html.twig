@@ -14,51 +14,59 @@
 
 {% block body %}
     <header>
-        <h1>Edició comanda</h1>
+        <h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Edició</h1>
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
 	<form id="formcomanda" action="{{ path('FecdasBundle_editarcomanda') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
 			{{ form_widget(form.id) }}
-			{{ form_widget(form.num) }}
-			 <div class="col-md-4">
+			 <div class="col-md-3">
 			 	<div class="form-group">
 					<label>Club</label>
 					<div id="formcomanda-club"  class="">
 						{{ form_widget(form.club, { 'attr': {'class': 'form-control form-control-left'} }) }}
-					</div>
+					</div>{{ form_errors(form.club) }}
 				</div>
 			 </div>
 			 <div class="col-md-2">
 			 	<div class="form-group">
-					{{ form_label(form.numcomanda, 'Núm. comanda') }}
-					<div id="formcomanda-numcomanda"  class="">
-						{{ form_widget(form.numcomanda, { 'attr': {'class': 'form-control form-control-center'} }) }}
-					</div>
+					{{ form_label(form.num, 'Núm. comanda') }}
+					<div id="formcomanda-num"  class="">
+						{{ form_widget(form.num, { 'attr': {'class': 'form-control form-control-center'} }) }}
+					</div>{{ form_errors(form.num)  }}
 				</div>
 			 </div>
 			 <div class="col-md-2">
 				<div class="form-group">
 					{{ form_label(form.total, 'Total') }}
-					<div id="formcomanda-total"  class="input-group ">{{ form_errors(form.total)  }}
+					<div id="formcomanda-total"  class="input-group ">
 						{{ form_widget(form.total, { 'attr': {'class': 'form-control form-control-right'} }) }}
 						<span class="input-group-addon"><i class="fa fa-euro"></i></span>
 					</div>{{ form_errors(form.total)  }}
 				</div>
 			 </div>
-			 <div class="col-md-4">
+			 <div class="col-md-2">
+				<div class="form-group">
+					{{ form_label(form.total, 'Suma') }}
+					<div id="formcomanda-totalsuma"  class="input-group ">
+						{{ form_widget(form.totalsuma, { 'attr': {'class': 'form-control form-control-right'} }) }}
+						<span class="input-group-addon"><i class="fa fa-euro"></i></span>
+					</div>{{ form_errors(form.totalsuma)  }}
+				</div>
+			 </div>
+			 <div class="col-md-3">
 			 	<div class="form-group">
-					{{ form_label(form.comptabilitat, 'Codi comptabilitat') }}{{ form_errors(form.comptabilitat)  }}
+					{{ form_label(form.comptabilitat, 'Codi comptabilitat') }}
 					<div id="formcomanda-comptabilitat"  class="">
 						{{ form_widget(form.comptabilitat, { 'attr': {'class': 'form-control form-control-left'} }) }}
-					</div>
+					</div>{{ form_errors(form.comptabilitat)  }}
 				</div>
 			 </div>
 			
 			 <div class="col-md-2">
 			 	<div class="form-group">
-					{{ form_label(form.numfactura, 'Factura') }}{{ form_errors(form.numfactura)  }}
+					{{ form_label(form.numfactura, 'Factura') }}
 					<div id="formcomanda-factura" class="input-group input-group-button-right">
 						{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control form-control-center  form-control-button-right'} }) }}
 						<div class="separator"></div>
@@ -74,7 +82,7 @@
 							<i class="fa fa-pencil fa-1x link gray"></i>
 						{% endif %}
 						
-					</div>
+					</div>{{ form_errors(form.numfactura)  }}
 				</div>
 			 </div>
 			 <div class="col-md-2">
@@ -94,7 +102,7 @@
 						{% else %}
 							<i class="fa fa-file-text-o fa-1x link gray"></i>
 						{% endif %}
-					</div>
+					</div>{{ form_errors(form.numrebut)  }}
 				</div>
 			 </div>
 			 <div class="col-md-3">
@@ -104,14 +112,14 @@
 		  				<span class="input-group-addon">Des de</span>
 						{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
 						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-					</div>
+					</div>{{ form_errors(form.databaixa)  }}
 				</div>
 			 </div>
 			  <div class="col-md-5">
 				{{ form_label(form.comentaris, 'Comentaris') }}{{ form_errors(form.comentaris)  }}
 				<div id="formcomanda-comentaris"  class="">
 					{{ form_widget(form.comentaris, { 'attr': {'class': 'form-control'} }) }}
-				</div>
+				</div>{{ form_errors(form.comentaris)  }}
 			 </div>
 		</div>
 		<div class="clearfix"></div>
@@ -122,15 +130,15 @@
 			    		<h3 class="blue">Detalls de la comanda<a class="add-detall pull-right" href="javascript:void(0);" ><span class="fa fa-plus-square fa-1x blue"></span></a></h3>
 					 </div>
 					 
-					 <ul class="col-md-12 detalls" data-prototype="">
+					 <ul class="col-md-12 detalls-header">
 						 <li class="detall-form-header">
 							<div class="comanda-detall-form-header list-header">
 								<div class="col-id hidden">Id</div>
 								<div class="col-listheader col-producte">Producte</div>
 								<div class="col-listheader col-unitats">Uds.</div>
-								<div class="col-listheader col-descompte">Descompte</div>
-								<div class="col-listheader col-ivaproducte">IVA</div>
 								<div class="col-listheader col-preuunitat">Preu</div>
+								<div class="col-listheader col-descompte">Descompte</div>
+								<div class="col-listheader col-ivaunitat">IVA</div>
 								<div class="col-listheader col-totalnet">T. net</div>
 								<div class="col-listheader col-totaliva">T. IVA</div>
 								<div class="col-listheader col-total">Total</div>
@@ -138,8 +146,10 @@
 								<div class="col-listheader col-actions">&nbsp;</div>
 							</div>
 						 </li>
+					 </ul>	 
+					 <ul class="col-md-12 detalls">
 						 {% set detall = form.detalls.vars.prototype %}
-						 {% set id = 0 %}
+						 {% set id = -1 %}
 						 {% set fila = 0 %}
 						 {% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}			
 						 {% if form.detalls|length == 0 %}
@@ -148,7 +158,9 @@
 							 {% for key, detall in form.detalls %}
 								{% set id = detall.vars.data.id %}
 								{% set fila = loop.index %}
-								{% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}					
+								{% if detall.vars.data.esbaixa == false %}
+									{% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}
+								{% endif %}
 							 {% endfor %}	
 						 {% endif %}
 					 </ul>				 
@@ -200,10 +212,65 @@
 		    $collectionHolder.append($newFormLi);
 		    
 			// Producte
-			init_cercaproducte_JSON('#'+$newFormLi.find('.comanda_detalls_producte').attr('id'), 'Cercar la descripció del producte', "{{ path('FecdasBundle_jsonproductes') }}");			
+			//init_cercaproducte_JSON('#'+$newFormLi.find('.comanda_detalls_producte').attr('id'), 'Cercar la descripció del producte', "{# path('FecdasBundle_jsonproductes') #}");		
+
+			$('#'+$newFormLi.find('.comanda_detalls_producte').attr('id')).select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				query: function (query) {
+					var data = { results: [] };
+					var params = { 	'cerca': query.term };
+					var url = "{{ path('FecdasBundle_jsonproductes') }}";
+					// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
+					$.get(url,	params, function(jdata) {
+						data.results = jdata;
+						query.callback(data);
+					}).fail(function() {
+						query.callback(data);
+					});
+				},
+			});	
 		    
 		}
-	
+
+		function recalcularCanviPreu(rowDetall) {
+			var formatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+			
+			var preu = rowDetall.find('.data-detall-cell.col-preuunitat input').val();
+			var iva  = rowDetall.find('.data-detall-cell.col-ivaunitat input').val();
+			var uds  = rowDetall.find('.data-detall-cell.col-unitats input').val();
+			var descompte = rowDetall.find('.data-detall-cell.col-descompte input').val();
+
+			if (descompte > 100) {
+				rowDetall.find('.data-detall-cell.col-descompte input').val(100);
+				descompte = 100;
+			}
+			if (descompte < 0) {
+				rowDetall.find('.data-detall-cell.col-descompte input').val(0);
+				descompte = 0;
+			}
+			var totalNet = preu * uds * (1 - descompte/100);
+			var totlIVA = totalNet * ( iva/100 ); 
+			rowDetall.find('.data-detall-cell.col-totalnet input').val( formatter.format(totalNet) );
+			rowDetall.find('.data-detall-cell.col-totaliva input').val( formatter.format(totlIVA) );
+			rowDetall.find('.data-detall-cell.col-total input').val( formatter.format(totalNet + totlIVA) );
+
+			// Recalcular total
+			var totalComanda = 0;
+			$('.data-detall-cell.col-total input').each( function(e) {
+				totalComanda += $(this).val()*1;
+				console.log(totalComanda);
+			});
+
+			
+			$('#comanda_totalsuma').val( formatter.format(totalComanda) );
+
+			if ($('#comanda_id').val() == 0 || $('#comanda_id').val() == "" ||
+					$('#comanda_total').val() == 0 || $('#comanda_total').val() == "") {
+				$('#comanda_total').val( formatter.format(totalComanda) );
+			}
+		}
+		
 		var $collectionHolder;
 		
 		$(document).ready(function(){
@@ -224,12 +291,9 @@
 
 			$("select#comanda_club").select2({
 				minimumInputLength: 2,
-				allowClear: true
+				allowClear: true,
 			});
 
-			//init_cercaclub_JSON('#form_club', 'Cercar el nom del club');
-
-			
 
 			// Afegir detalls
 			// Get the ul that holds the collection of tags
@@ -241,14 +305,13 @@
 		        e.preventDefault();
 				
 		        var parentRow = $(this).parents('li.detall-form-row');
-		        console.log(parentRow.html());
 		        // remove the li for the tag form
+		        
 		        parentRow.remove();
 	    	});
 			
 			
-		    // count the current form inputs we have (e.g. 2), use that as the new
-		    // index when inserting a new item (e.g. 2)
+		    // Activar select2 pels productes
 		    $collectionHolder.data('index', $collectionHolder.find('li.detall-form-row').length);
 	
 		    $('.add-detall').on('click', function(e) {
@@ -261,7 +324,77 @@
 		        $('ul.detalls li .alert').hide();
 		        
 		    });
+
+		    if ($collectionHolder.find('li.detall-form-row').length > 0 ) {
+	    		
+				$("select.comanda_detalls_producte").select2({
+					minimumInputLength: 2,
+					allowClear: true
+				});
+
+				// Actualitzar tots els detalls
+				$('li.detall-form-row').each( function(e) {
+					recalcularCanviPreu($(this));	 
+				});
+
+			}
 			
+			// Event cange qualsevol select2 de producte
+			$collectionHolder.on( "change", ".comanda_detalls_producte", function (e) {
+
+		    	var rowDetall = $(this).parents('li.detall-form-row');
+		    	
+		    	if ($(this).val() == "") {
+		    		rowDetall.find('.data-detall-cell.col-preuunitat input').val( 0 );
+			    	rowDetall.find('.data-detall-cell.col-ivaunitat input').val( 0 );
+
+			    	recalcularCanviPreu(rowDetall);		
+			    	
+			    	return;
+		    	} 
+
+		    	var formatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+			    var url = "{{ path('FecdasBundle_jsonpreu') }}";
+			    url += "?id="+$(this).val()+"&anypreu="+current.getFullYear();
+
+			    $.get(url, function(data, textStatus) {
+
+					var preu = data.preu;
+					var iva = data.iva;
+					rowDetall.find('.data-detall-cell.col-preuunitat input').val( formatter.format(data.preu) );
+			    	rowDetall.find('.data-detall-cell.col-ivaunitat input').val( Math.round( data.iva * 100 ) );
+					
+			    	recalcularCanviPreu(rowDetall);					
+			    }); 
+			});
+
+			$collectionHolder.on( "change", ".comanda_detalls_unitats", function (e) {
+		    	
+		    	var rowDetall = $(this).parents('li.detall-form-row');
+		    	recalcularCanviPreu(rowDetall)
+		    });
+
+		    $collectionHolder.on( "change", ".comanda_detalls_descompte", function (e) {
+
+		    	if ($(this).val() < 0) $(this).val(0);
+		    	if ($(this).val() > 100) $(this).val(100);
+
+		    	
+		    	var rowDetall = $(this).parents('li.detall-form-row'); 
+		    	recalcularCanviPreu(rowDetall)
+		    });
+
+
+		    // Form submit. Remove prototype
+		    $( "#formcomanda" ).submit(function( event ) {
+		    	  //event.preventDefault();
+
+		    	  $('.detall-form-row-prototype').remove();
+
+		    	  $(this).submit();
+		    });
+		    
 		});
 
 

@@ -4,6 +4,10 @@ namespace FecdasBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
+
+use FecdasBundle\Entity\EntityFactura;
 
 class FormFactura extends AbstractType {
 
@@ -15,14 +19,34 @@ class FormFactura extends AbstractType {
 			$form = $event->getForm();
 			$factura = $event->getData();
 		
+			error_log("1".get_class($factura));
+			
 			/* Check we're looking at the right data/form */
 			if ($factura instanceof EntityFactura) {
 				
+				error_log("2");
+				
+				$form->add('comandatext', 'text', array(
+						/*'class' 		=> 'FecdasBundle:EntityComanda',
+						'choice_label' 	=> 'InfoComanda',
+						'required'  	=> false,*/
+						'disabled' 		=> true,
+						'mapped'		=> false,
+						'data'			=> ($factura->getComanda()!=null?$factura->getComanda()->getConcepteComanda():'')
+				));
+				
 				$form->add('numfactura', 'text', array(
 						'required' 	=> true,
-						'read_only' => true,
+						'disabled' 	=> true,
 						'mapped' 	=> false,
 						'data'		=> $factura->getNumFactura()
+				));
+				
+				$form->add('club', 'text', array(
+						'required' 	=> true,
+						'disabled' 	=> true,
+						'mapped' 	=> false,
+						'data'		=> ($factura->getComanda()!=null && $factura->getComanda()->getClub() != null?$factura->getComanda()->getClub()->getNom():'')
 				));
 			}
 		});
@@ -32,41 +56,34 @@ class FormFactura extends AbstractType {
 		$builder->add('num', 'hidden');
 		
 		$builder->add('datafactura', 'date', array(
-				'read_only' 	=> true,
+				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
-				'input' 		=> 'date',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
+		));
+		
+		$builder->add('datapagament', 'date', array(
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
 				'empty_value' 	=> false,
 				'format' 		=> 'dd/MM/yyyy',
 		));
 		
 		$builder->add ( 'import', 'number', array (
 				'required' 		=> true,
-				'precision' 	=> 2,
-				'mapped' 		=> false,
-				'constraints' 	=> array (
-						new NotBlank ( array ( 'message' => 'Cal indicar l\'import.' )),
-						new Type ( array ('type' => 'numeric', 'message' => 'L\'import ha de ser numèric.')),
-						new GreaterThanOrEqual ( array ('value' => 0, 'message' => 'L\'import no és vàlid.'))
-				)
+				'scale' 		=> 2,
 		));
 		
 		$builder->add('concepte', 'textarea', array(
 				'required' => true,
 		));
 		
-		
-		$builder->add('comanda', 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityComanda',
-				'choice_label' 		=> 'InfoComanda',
-				'empty_value' 	=> '',
-				'required'  	=> false,
-				'read_only' 	=> true,
-		));
-		
 		$builder->add('dataanulacio', 'date', array(
-				'read_only' 	=> true,
+				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
-				'input' 		=> 'date',
+				'input' 		=> 'datetime',
 				'empty_value' 	=> false,
 				'format' 		=> 'dd/MM/yyyy',
 		));

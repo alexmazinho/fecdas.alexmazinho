@@ -1,6 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity

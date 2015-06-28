@@ -36,6 +36,11 @@ class EntityComptabilitat {
 	protected $comandes;
 	
 	/**
+	 * @ORM\OneToMany(targetEntity="EntityRebut", mappedBy="comptabilitat")
+	 */
+	protected $rebuts;
+	
+	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $datamodificacio;
@@ -48,6 +53,7 @@ class EntityComptabilitat {
 	public function __construct() {
 		$this->dateenviament = new \DateTime();
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->rebuts = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
 	/**
@@ -216,5 +222,49 @@ class EntityComptabilitat {
     public function setComandes(\Doctrine\Common\Collections\ArrayCollection $comandes)
     {
     	$this->comandes = $comandes;
+    }
+    
+    /**
+     * Add rebut
+     *
+     * @param \FecdasBundle\Entity\EntityRebut $rebut
+     * @return EntityComptabilitat
+     */
+    public function addRebut(\FecdasBundle\Entity\EntityRebut $rebut)
+    {
+    	$rebut->setRebut($this);
+    	$this->rebuts->add($rebut);
+    
+    	return $this;
+    }
+    
+    /**
+     * Remove rebut
+     *
+     * @param \FecdasBundle\Entity\EntityRebut $rebut
+     */
+    public function removeRebut(\FecdasBundle\Entity\EntityRebut $rebut)
+    {
+    	$this->rebuts->removeElement($rebut);
+    }
+    
+    /**
+     * Get rebuts
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRebuts()
+    {
+    	return $this->rebuts;
+    }
+    
+    /**
+     * Set rebuts
+     *
+     * @param \Doctrine\Common\Collections\Collection $rebuts
+     */
+    public function setRebuts(\Doctrine\Common\Collections\ArrayCollection $rebuts)
+    {
+    	$this->rebuts = $rebuts;
     }
 }

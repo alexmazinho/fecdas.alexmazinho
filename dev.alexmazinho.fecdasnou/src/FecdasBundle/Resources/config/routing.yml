@@ -427,6 +427,13 @@ FecdasBundle_nourebut:
     requirements:
         _method:  GET
 
+
+FecdasBundle_fitxercomptabilitat:
+    pattern:  /fitxercomptabilitat
+    defaults: { _controller: "FecdasBundle:Facturacio:fitxercomptabilitat" }
+    requirements:
+        _method:  GET
+
 # ---------------------------------------------------------------------------
 # ---------------------  SCRIPTS COMANDES -----------------------------------
 # ----------------------  (PER ESBORRAR) ------------------------------------

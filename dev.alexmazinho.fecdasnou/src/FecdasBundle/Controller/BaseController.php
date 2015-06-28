@@ -40,6 +40,11 @@ class BaseController extends Controller {
 	const PAGAMENT_DUPLICAT = 'duplicat';
 	const UPLOADS_RELPATH = '/../../../../web/uploads/';  // Path is __DIR__.self::UPLOADS_RELPATH
 	
+	const PREFIX_ASSENTAMENTS = 'DI';  // Prefix del fitxer
+	// Fitxer domiciliacions
+	const PATH_TO_COMPTA_FILES = '/../../../fitxers/assentaments/';
+	// Pedent de canviar fora document root
+	const PATH_TO_WEB_FILES = '/../../../web/';
 	
 	const TIPUS_PRODUCTE_LLICENCIES = 1;
 	const TIPUS_PRODUCTE_DUPLICATS 	= 2;
@@ -48,10 +53,13 @@ class BaseController extends Controller {
 	const TIPUS_PRODUCTE_CURSOS 	= 5;
 	const TIPUS_PRODUCTE_ALTRES 	= 6;
 	
-	const TIPUS_PAGAMENT_CASH 			= 1;
-	const TIPUS_PAGAMENT_TPV			= 2;
-	const TIPUS_PAGAMENT_TRANS_SARDENYA = 3;
-	const TIPUS_PAGAMENT_TRANS_LAIETANIA= 4;	// Caixa
+	const DEBE 		= 'D';
+	const HABER 	= 'H';
+	
+	const TIPUS_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
+	const TIPUS_PAGAMENT_TPV			= 5720001;		// 5720001  La Caixa
+	const TIPUS_PAGAMENT_TRANS_SARDENYA = 5720003;		// 5720003	Sardenya
+	const TIPUS_PAGAMENT_TRANS_LAIETANIA= 5720001;		// 5720001  La Caixa
 	
 	const TIPUS_COMANDA_LLICENCIES 		= 1;
 	const TIPUS_COMANDA_DUPLICATS 		= 2;

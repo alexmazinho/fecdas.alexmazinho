@@ -222,6 +222,36 @@ class EntityComanda {
 		return implode(", ", $tipusTexts);
 	}
 	
+	
+	/**
+	 * Get obtenir dades dels detalls agrupades i acumulades per producte: 'kits' => 3, 'llicències..' => 1, etc...
+	 *
+	 * @return string
+	 */
+	public function getDetallsAcumulats()
+	{
+		$acumulades = array();
+		
+		foreach ($this->detalls as $d) {
+			if (!$d->esBaixa() && $d->getProducte() != null) {
+				
+				$codi = $d->getProducte()->getCodi();
+				
+				if (isset($acumulades[$codi])) {
+					$acumulades[$codi]['total']++;
+					$acumulades[$codi]['import'] += $d->getTotal();
+				}
+				else {
+					$acumulades[$codi] = array(
+						'total' => 1, 
+						'import' => $d->getTotal(),
+						'producte' => $d->getProducte()->getDescripcio());
+				}
+			}
+		}
+		return $acumulades;
+	}
+	
 	/**
 	 * Get concepte comanda (Factura / Rebut)
 	 *
@@ -229,9 +259,38 @@ class EntityComanda {
 	 */
 	public function getConcepteComanda()
 	{
-		return $this->getNumComanda()." - ".$this->getTipusComanda();
+		
+		if ($this->factura == null) return "COMANDA: ".$this->getNumComanda()." ".$this->getTipusComanda();
+		
+		return $this->factura->getConcepte();
+		
 	}
 	
+	/**
+	 * Get concepte comanda curt
+	 *
+	 * @return string
+	 */
+	public function getConcepteComandaCurt()
+	{
+	
+		if ($this->factura == null) return "COMANDA: ".$this->getNumComanda();
+	
+		return "FACTURA: ".$this->factura->getNumFactura();
+	}
+	
+	/**
+	 * Get num assentament
+	 *
+	 * @return string
+	 */
+	public function getNumAssentament()
+	{
+	
+		if ($this->factura == null) return $this->getNumComanda();
+	
+		return $this->factura->getNumFactura();
+	}
 	
 	/**
 	 * Get total suma dels detalls

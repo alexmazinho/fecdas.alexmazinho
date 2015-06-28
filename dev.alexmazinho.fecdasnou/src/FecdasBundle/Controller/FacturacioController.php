@@ -8,6 +8,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 use FecdasBundle\Form\FormProducte;
 use FecdasBundle\Entity\EntityProducte;
 use FecdasBundle\Form\FormFactura;
@@ -26,9 +31,206 @@ use FecdasBundle\Controller\BaseController;
 
 class FacturacioController extends BaseController {
 	
+	public function fitxercomptabilitatAction(Request $request) {
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$current = date("Y-m-d");
+		 
+		$inici = $request->query->get('inici', $current);
+		$final = $request->query->get('final', $current);
+		$pendents = ($request->query->get('pendents', 0) == 1?true:false);
+		 
+		$datainici = \DateTime::createFromFormat('Y-m-d', $inici);
+		$datafinal = \DateTime::createFromFormat('Y-m-d', $final);
+		 
+		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.date("Ymd_His").".txt";
+	
+		$fs = new Filesystem();
+		try {
+			if (!$fs->exists(__DIR__.BaseController::PATH_TO_COMPTA_FILES)) {
+				throw new NotFoundHttpException("No existeix el directori " .__DIR__.BaseController::PATH_TO_COMPTA_FILES);
+			} else {
+				$assentaments = $this->generarFitxerAssentaments($datainici, $datafinal, $pendents); // Array
+				 
+				if (count($assentaments) == 0) throw new NotFoundHttpException("No hi ha assentaments per per aquests criteris de cerca ");
+				
+				$fs->dumpFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES, implode(PHP_EOL,$assentaments));
+				 
+			}
+		} catch (IOException $e) {
+			throw new NotFoundHttpException("No es pot accedir al directori ".__DIR__.BaseController::PATH_TO_COMPTA_FILES."  ". $e->getMessage());
+		}
+	
+		$response = $this->downloadFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, $filename, 'Fitxer traspàs assentaments dia '.date("Y-m-d H:i"));
+		 
+		$response->prepare($request);
+		 
+		return $response;
+	}
+	
+	/**
+	 * Get fitxer assentaments per transpassar al programa de comptabilitat
+	 *
+	 * @return array
+	 */
+	protected function generarFitxerAssentaments($datainici, $datafinal, $pendents) {
+
+		/**
+		 *  
+		   
+		    Descripció									Longitud	Posició
+			-------------------------------------------	----------- -----------
+			Clau de l'Assentament							1		1 - 1
+			Data de l'Assentament (AAAAMMDD)				8		2 - 9
+			Núm. d'Assentament								6		10 - 15
+			Línia											4		16 - 19
+			Codi del Compte									9		20 - 28
+			Descripció del Compte							100		29 - 128
+			Concepte de l'Assentament						40		129 - 168
+			Núm. de Document								8		169 - 176
+			Centre de Cost									4		177 - 180
+			Projecte										4		181 - 184
+			Import											13		185 - 197
+			Signe ( D / H )									1		198 - 198
+			Codi del Concepte								2		199 - 200
+			Intern											2		201 - 202
+			Intern											10		203 - 212
+			Intern											1		213 - 213
+			
+			«Clave de Entrada: clave del Asiento para el Diario de Comprobación. Se debe
+			introducir una código existente en el archivo de Claves de Entrada, pulsar el botón
+			de selección (o F4) para visualizar las Claves disponibles.»
+			
+			Número de Asiento:
+			
+			Para dar un ALTA pondremos un 0 y el programa automáticamente asignará
+			el número de asiento que corresponda después de grabar la primera línea
+
+		 	Exemple de DI_00237_CAT191
+
+			0												  5													100												  150												200
+			123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123 
+			
+			02015022710023700014310136  F. 00237/2015  CAT191                                                                               Factura: 00716/2015                     00237/15        0000000105.00H000000000000000  (SALT) 
+			x........vvvvvv----+++++++++xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx........................................^^^^^^^^xxxx----+++++++++++++ 
+						
+			02015022710023700025720001  F. 00237/2015  CAT191                                                                               Factura: 00716/2015                     00237/15        0000000105.00D000000000000000  (SALT)
+		 
+		 
+		 * 
+		 */
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		// Comandes	  => Club apunt D + Producte corresponent apunt H	
+		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
+		$strQuery .= " WHERE ((c.dataentrada >= :ini AND c.dataentrada <= :final) ";
+		$strQuery .= " OR (c.databaixa >= :ini AND c.databaixa <= :final)) ";
+		if ($pendents == true) $strQuery .= " AND (c.comptabilitat IS NULL) ";
+		$strQuery .= " ORDER BY c.dataentrada";
+		
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('ini', $datainici);
+		$query->setParameter('final', $datafinal);
+		
+		$assentaments = array();
+		$linia = 1;
+		$result = $query->getResult();
+		foreach ($result as $comanda) {
+			$data = $comanda->getDataentrada()->format('Ymd');
+			$numAssenta = str_repeat("0",6);
+			$desc = $comanda->getConcepteComanda();
+			$conc = $comanda->getConcepteComandaCurt();
+			$doc = $comanda->getNumAssentament();
+			$import = str_pad((number_format($comanda->getTotalDetalls(), 2, '.', '').''), 13, "0", STR_PAD_LEFT);
+				
+			// Apunt club
+			$club = $comanda->getClub();
+			$compte = $club->getCompte();
+			
+			$apuntclub = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
+			$apuntclub .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
+			$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);
+				
+			// Validar que quadren imports
+			$assentaments[] = $apuntclub;
+				
+			$linia++;
+			
+			$detalls = $comanda->getDetallsAcumulats();
+			
+			foreach ($detalls as $compte => $d) {
+				// Apunt/s producte/s
+				
+				$desc = $d['total']." x ".$d['producte'];
+					
+				$import = str_pad((number_format($d['producte'], 2, '.', '').''), 13, "0", STR_PAD_LEFT);
+				
+				$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
+				$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
+				$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
+				
+				$assentaments[] = $apunt;
+					
+				$linia++;
+			}
+		}
+		
+		// Rebuts	=> Club apunt H  + Caixa corresponent apunt D 
+		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE ((r.datapagament >= :ini AND r.datapagament <= :final) ";
+		$strQuery .= " OR (r.dataanulacio >= :ini AND r.dataanulacio <= :final)) ";
+		if ($pendents == true) $strQuery .= " AND (r.comptabilitat IS NULL) ";
+		$strQuery .= " ORDER BY r.datapagament";
+		
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('ini', $datainici);
+		$query->setParameter('final', $datafinal);
+		
+		$result = $query->getResult();
+		foreach ($result as $rebut) {
+			$data = $rebut->getDatapagament()->format('Ymd');
+			$numAssenta = str_repeat("0",6);
+			$desc = $rebut->getConcepteRebutLlarg();
+			$conc = $rebut->getConcepteRebutCurt();
+			$doc = $rebut->getNumRebutCurt();
+			$import = str_pad((number_format($rebut->getImport(), 2, '.', '').''), 13, "0", STR_PAD_LEFT);
+			
+			
+			// Apunt club
+			$club = $rebut->getClub();	
+			$compte = $club->getCompte();
+
+			$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
+			$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
+			$apunt .= $import.BaseController::HABER.str_repeat("0",15);
+			
+			$assentaments[] = $apunt;
+			
+			$linia++;
+			// Apunt caixa
+			$compte = $rebut->getTipuspagament();
+			
+			$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
+			$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
+			$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
+			
+			$assentaments[] = $apunt;
+			
+			$linia++;
+		}
+		 
+		return $assentaments;
+	}
+	
+	
 	public function editarfacturaAction(Request $request) {
 		// Edició d'una factura existent
-		
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 		
@@ -1384,13 +1586,37 @@ class FacturacioController extends BaseController {
 				$dadespagament = null;
 				
 				$tipuspagament = null;
-				if ($parte != null) {
+				switch ($compteD) {
+					case 5700000:  	// CAIXA FEDERACIÓ, PTES.
+						$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
+						break;
+					case 5720001: 	// "LA CAIXA"  LAIETANIA
+						$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
+						break;
+					case 5720003:	// LA CAIXA-SARDENYA
+						$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
+						break;
+					case 5720002:	// LA CAIXA-OF. MALLORCA
+					case 5720004:	// CAIXA CATALUNYA
+					case 5720005:	// POLISSA DE CREDIT
+						error_log("ERROR 7 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD);
+						echo "ERROR 7 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD."<br/>";
+						return;
+							
+						break;
+				}
+				
+				
+				if ($parte != null && $tipuspagament == BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA) {
 					
+					if ($parte['estatpagament'] == 'TPV OK' || $parte['estatpagament'] == 'TPV CORRECCIO')  $tipuspagament = BaseController::TIPUS_PAGAMENT_TPV;
+					
+					/*
 					if ($parte['estatpagament'] == 'TPV OK' || $parte['estatpagament'] == 'TPV CORRECCIO')  $tipuspagament = BaseController::TIPUS_PAGAMENT_TPV;
 					if ($parte['estatpagament'] == 'METALLIC GES' || $parte['estatpagament'] == 'METALLIC WEB')  $tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
 					if ($parte['estatpagament'] == 'TRANS WEB') $tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
 					if ($parte['estatpagament'] == 'TRANS GES') $tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
-					
+					*/
 					$dataentrada = $parte['dataentradadel'];
 					if ($parte['datapagament'] != null && $parte['datapagament'] != '') {
 						$datapagament = $parte['datapagament'];
@@ -1399,35 +1625,15 @@ class FacturacioController extends BaseController {
 					
 				}
 				
-				if ($tipuspagament == null) {
 				
-					switch ($compteD) {
-						case 5700000:  	// CAIXA FEDERACIÓ, PTES.
-							$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
-							break;
-						case 5720001: 	// "LA CAIXA"  LAIETANIA
-							$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
-							break;
-						case 5720003:	// LA CAIXA-SARDENYA
-							$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
-							break;
-						case 5720002:	// LA CAIXA-OF. MALLORCA
-						case 5720004:	// CAIXA CATALUNYA
-						case 5720005:	// POLISSA DE CREDIT
-							error_log("ERROR 7 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD);
-							echo "ERROR 7 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD."<br/>";
-							return;
-							
-							break;
-					}				
-				}			
 				// Insertar/Actualitzar rebut
 				
 				$comentari = "Rebut comanda ".$comanda['num']." ".str_replace("'","''",$comanda['comentaris']);
 				
-				$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada) VALUES ";
+				$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
 				$query .= "('".$datapagament."',".$numRebut.",".$import;
-				$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."')";
+				$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
+				$query .= ",'".$clubs[$compteH]['codi']."')";
 				
 				//$maxnums['maxnumrebut']++;
 					

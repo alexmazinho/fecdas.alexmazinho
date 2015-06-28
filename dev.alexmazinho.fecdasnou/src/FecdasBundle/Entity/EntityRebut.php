@@ -38,6 +38,17 @@ class EntityRebut {
 	 **/
 	protected $comanda;	// FK taula m_comandes
 	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityClub")
+	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
+	 */
+	protected $club;	// FK taula m_clubs
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat", inversedBy="rebuts")
+	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
+	 */
+	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
 	
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
@@ -69,19 +80,67 @@ class EntityRebut {
 	 */
 	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
 	
-	public function __construct($datapagament, $num, $import = 0, $comentari = '') {
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+	
+		$this->id = 0;
 		$this->dataentrada = new \DateTime();
-		
+	
+		// Hack per permetre múltiples constructors
+		$a = func_get_args();
+		$i = func_num_args();
+	
+		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}
+	}
+	
+	
+	public function __constructParams($datapagament, $num, $import = 0, $comentari = '') {
+	
 		$this->datapagament = $datapagament;
 		$this->num = $num;
 		$this->import = $import;
 		$this->comentari = $comentari;
 	}
-
+	
+	
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}
 
+	
+	/**
+	 * Get concepte rebut/ingrés
+	 *
+	 * @return string
+	 */
+	public function getConcepteRebutLlarg()
+	{
+		if ($this->comanda == null) return getNumRebut()." INGRES ".$this->getClub()->getNom();  // Ingrés a compte
+			
+		if ($this->comanda->getFactura() == null) return $this->comanda->getConcepteComanda(); 	
+		
+		return $this->comanda->getFactura()->getConcepte();
+	}
+	
+	/**
+	 * Get concepte rebut/ingrés
+	 *
+	 * @return string
+	 */
+	public function getConcepteRebutCurt()
+	{
+		if ($this->comanda == null) return "REBUT: ".getNumRebut();  // Ingrés a compte
+			
+		if ($this->comanda->getFactura() == null) return "COMANDA: ".$this->comanda->getNumComanda();
+		
+		return "FACTURA: ".$this->comanda->getFactura()->getNumFactura();
+	}
+	
 	/**
 	 * Rebut format amb any  XXXXX/20XX
 	 *
@@ -89,6 +148,15 @@ class EntityRebut {
 	 */
 	public function getNumRebut() {
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datapagament->format("Y");
+	}
+	
+	/**
+	 * Rebut format curt amb any  XXXXX/XX
+	 *
+	 * @return string
+	 */
+	public function getNumRebutCurt() {
+		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datapagament->format("y");
 	}
 	
 	/**
@@ -159,6 +227,53 @@ class EntityRebut {
 	 */
 	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
 		$this->comanda = $comanda;
+	}
+	
+	/**
+	 * Set club
+	 *
+	 * @param \FecdasBundle\Entity\EntityClub $club
+	 * @return EntityRebut
+	 */
+	public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+	{
+		$this->club = $club;
+	
+		return $this;
+	}
+	
+	/**
+	 * Get club
+	 *
+	 * @return \FecdasBundle\Entity\EntityClub
+	 */
+	public function getClub()
+	{
+		return $this->club;
+	}
+	
+	
+	/**
+	 * Set comptabilitat
+	 *
+	 * @param \FecdasBundle\Entity\EntityComptabilitat $comptabilitat
+	 * @return EntityRebut
+	 */
+	public function setComptabilitat(\FecdasBundle\Entity\EntityComptabilitat $comptabilitat = null)
+	{
+		$this->comptabilitat = $comptabilitat;
+	
+		return $this;
+	}
+	
+	/**
+	 * Get comptabilitat
+	 *
+	 * @return \FecdasBundle\Entity\EntityComptabilitat
+	 */
+	public function getComptabilitat()
+	{
+		return $this->comptabilitat;
 	}
 	
 	/**

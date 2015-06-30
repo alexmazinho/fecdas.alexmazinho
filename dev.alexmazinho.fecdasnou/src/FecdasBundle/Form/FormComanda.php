@@ -38,13 +38,36 @@ class FormComanda extends AbstractType {
 						'data'		=> $comanda->getNumFactura()
 				));
 				
-				$form->add('numrebut', 'text', array(
-						'required' 	=> false,
-						'mapped'	=> false,
-						'disabled' 	=> true,
-						'data'		=> $comanda->getNumRebut()
-				));
 				
+				if ($comanda->getRebut() == null) { // Comanda sense rebut
+					$form->add('numrebut', 'hidden', array(
+							'required' 	=> false,
+							'mapped'	=> false,
+					));
+					
+					$form->add('datapagament', 'datetime', array(
+							'required' 		=> false,
+							'mapped'		=> false,
+							'widget' 		=> 'single_text',
+							'input' 		=> 'datetime',
+							'empty_value' 	=> false,
+							'format' 		=> 'dd/MM/yyyy HH:mm',
+					));
+				} else {
+					$form->add('numrebut', 'text', array(
+							'required' 	=> false,
+							'mapped'	=> false,
+							'disabled' 	=> true,
+							'data'		=> $comanda->getNumRebut()
+					));
+						
+					$form->add('datapagament', 'hidden', array(
+							'required' 		=> false,
+							'mapped'	=> false,
+					));
+				}
+					
+					
 				$form->add('detalls', 'collection', array(
 						'type' 			=> new FormComandaDetall(),
 						'allow_add'    	=> true,

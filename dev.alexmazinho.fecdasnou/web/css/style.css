@@ -415,6 +415,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .input-group.input-group-button-right .link { position:absolute; right: 0; top: 5px; }
 .input-group.input-group-button-right input { max-width:none; border-bottom-right-radius: 5px !important; border-top-right-radius: 5px !important; }
 
+
 .blue { color: #1240a0; /*#2281cf;*/ }
 .red { color: red; }
 .gray { color: #cccccc; }
@@ -512,6 +513,14 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     position: relative;
 
  } 
+ 
+ /*************** FECDAS NOU traspas ****************/
+ 
+ .table-scroll.enviaments { max-width: 650px; }
+ 
+ .data-detall-cell.enviament-desc  { text-align: left; }
+ 
+ /*************** FECDAS NOU traspas ****************/
  
  .comanda-detall-form .data-detall-cell .alert { right: initial; bottom: initial; left: 10px; top:20px; } 
 

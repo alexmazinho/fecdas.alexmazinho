@@ -45,7 +45,7 @@ class EntityRebut {
 	protected $club;	// FK taula m_clubs
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat", inversedBy="rebuts")
+	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat")
 	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
 	 */
 	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta

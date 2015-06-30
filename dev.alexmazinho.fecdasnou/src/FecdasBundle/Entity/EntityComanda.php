@@ -35,7 +35,7 @@ class EntityComanda {
 	protected $comentaris;
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub")
+	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="comandes")
 	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
 	 */
 	protected $club;	// FK taula m_clubs
@@ -47,7 +47,7 @@ class EntityComanda {
 	protected $factura;	// FK taula m_factures
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat", inversedBy="comandes")
+	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat")
 	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
 	 */
 	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
@@ -149,6 +149,21 @@ class EntityComanda {
 	public function getNumComandaCurt() {
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("y");
 	}
+	
+	/**
+	 * Adds a comentari
+	 * 
+	 * @param string $comentari
+	 */
+	public function addComentari($comentari) {
+		
+		if ($this->comentaris == null || $this->comentaris == "") $this->comentaris = $comentari;
+		else {
+			$pos = strpos($this->comentaris, $comentari);
+			if ($pos === false) $this->comentaris = $this->comentaris.PHP_EOL.$comentari;
+		}
+	}
+	
 	
 	/**
 	 * Get num albarà PREFIX + id => getNumComanda()
@@ -333,6 +348,11 @@ class EntityComanda {
 	public function esDuplicat()
 	{
 		return false;
+	}
+	
+	public function esAltre()
+	{
+		return !$this->esDuplicat() && !$this->esParte();
 	}
 	
     /**

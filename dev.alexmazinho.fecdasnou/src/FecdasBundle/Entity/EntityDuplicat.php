@@ -93,7 +93,10 @@ class EntityDuplicat extends EntityComanda {
 		return $this->databaixadel != null;
 	}
 	
-	
+	public function esDuplicat()
+	{
+		return true;
+	}
 	/**
 	 * Get prefix albarà duplicats. Sobreescriptura
 	 *

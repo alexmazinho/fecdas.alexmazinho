@@ -28,6 +28,7 @@ use FecdasBundle\Entity\EntityComandaDetall;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Controller\BaseController;
+use FecdasBundle\Entity\EntityComptabilitat;
 
 
 class FacturacioController extends BaseController {
@@ -40,18 +41,27 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
-		
+		$page = $request->query->get('page', 1);
+			
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComptabilitat c ";
-		$strQuery .= " WHERE c.databaixa IS NULL ";
+		$strQuery .= " WHERE c.databaixa IS NULL AND c.fitxer <> '' ";
 		$strQuery .= " ORDER BY c.dataenviament DESC";
 		
 		$query = $em->createQuery($strQuery)->setMaxResults( 1 );
 		
-		$result = $query->getResult();
+		//$result = $query->getResult();
+		$paginator  = $this->get('knp_paginator');
+			
+		$enviaments = $paginator->paginate(
+			$query,
+			$page,
+			10/*limit per page*/
+		);
 		
-		$enviament = (count($result) == 0?null:$result[0]);
+		
+		//$enviament = (count($result) == 0?null:$result[0]);
 			
 		$formBuilder = $this->createFormBuilder()
 			->add('datadesde', 'date', array(
@@ -59,26 +69,36 @@ class FacturacioController extends BaseController {
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'empty_value' 	=> false,
-				'format' 		=> 'dd/MM/yyyy',
-		));
-			
-		$formBuilder = $this->createFormBuilder()
+				'format' 		=> 'dd/MM/yyyy'))
 			->add('datafins', 'date', array(
-				'disabled' 		=> false,
-				'widget' 		=> 'single_text',
-				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
-				'format' 		=> 'dd/MM/yyyy',
-		));
+							'disabled' 		=> false,
+							'widget' 		=> 'single_text',
+							'input' 		=> 'datetime',
+							'empty_value' 	=> false,
+							'format' 		=> 'dd/MM/yyyy',
+			));
 		
 		return $this->render('FecdasBundle:Facturacio:traspas.html.twig',
 				$this->getCommonRenderArrayOptions(
-						array('form' 			=> $formBuilder->getForm()->createView(),
-							  'ultimenviament' 	=> $enviament
+						array('form' 		=> $formBuilder->getForm()->createView(),
+							  'enviaments' 	=> $enviaments
 						)
 				));
 			
 	}
+	
+	public function anulartraspasAction(Request $request) {
+		// http://www.fecdasnou.dev/traspascomptabilitat
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$id = $request->query->get('id', 1);
+			
+		return new Response("anular".$id);
+	}	
 	
 	public function fitxercomptabilitatAction(Request $request) {
 		// http://www.fecdasnou.dev/fitxercomptabilitat?inici=2015-01-01&final=2015-06-22
@@ -88,36 +108,54 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		$current = date("Y-m-d");
+		$current = date("d/m/Y");
 		 
 		$inici = $request->query->get('inici', $current);
 		$final = $request->query->get('final', $current);
 		 
-		$datainici = \DateTime::createFromFormat('Y-m-d', $inici);
-		$datafinal = \DateTime::createFromFormat('Y-m-d', $final);
+		$datainici = \DateTime::createFromFormat('d/m/Y H:i:s', $inici." 00:00:00");
+		$datafinal = \DateTime::createFromFormat('d/m/Y H:i:s', $final." 23:59:59");
 		 
 		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.date("Ymd_His").".txt";
 	
 		$fs = new Filesystem();
 		try {
 			if (!$fs->exists(__DIR__.BaseController::PATH_TO_COMPTA_FILES)) {
-				throw new NotFoundHttpException("No existeix el directori " .__DIR__.BaseController::PATH_TO_COMPTA_FILES);
+				throw new \Exception("No existeix el directori " .__DIR__.BaseController::PATH_TO_COMPTA_FILES);
 			} else {
-				$assentaments = $this->generarFitxerAssentaments($datainici, $datafinal); // Array
+				$em = $this->getDoctrine()->getManager();
+				$enviament = new EntityComptabilitat($filename, $datainici, $datafinal);
+				$em->persist($enviament);
+				
+				$assentaments = $this->generarFitxerAssentaments($enviament); // Array
 				 
-				if (count($assentaments) == 0) throw new NotFoundHttpException("No hi ha assentaments per per aquests criteris de cerca ");
+				if ($enviament->getApunts() == 0) throw new \Exception("No hi ha assentaments per aquests criteris de cerca ");
 				
 				$fs->dumpFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, implode("\r\n",$assentaments));
-				 
+				
+				$em->flush();
 			}
-		} catch (IOException $e) {
-			throw new NotFoundHttpException("No es pot accedir al directori ".__DIR__.BaseController::PATH_TO_COMPTA_FILES."  ". $e->getMessage());
+		} catch (\Exception $e) {
+			$em->detach($enviament);
+			$this->logEntryAuth('FITXER COMPTA KO',	'Dates : ' . $inici ." - ".$final);
+			
+			$response = new Response();
+			$response->setStatusCode(500, $e->getMessage());
+			return $response;
 		}
-	
-		$response = $this->downloadFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, $filename, 'Fitxer traspàs assentaments dia '.date("Y-m-d H:i"));
-		 
-		$response->prepare($request);
-		 
+		$this->logEntryAuth('FITXER COMPTA OK',	'Dates : ' . $inici ." - ".$final);
+		
+		//$response = new Response(  $this->generateUrl('FecdasBundle_downloadassentaments', array('filename' => $filename), true));  
+		//$response = $this->downloadFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, $filename, 'Fitxer traspàs assentaments dia '.date("Y-m-d H:i"));
+		//$response->prepare($request);
+		$response = new Response();
+		$response->headers->set('Content-Type', 'application/json');
+		$response->setContent(json_encode(array(
+				'id'=> $enviament->getId(), 
+				'filename' => $enviament->getFitxer(),
+				'text' => $enviament->getTextComptabilitat(),
+		))); 
+		
 		return $response;
 	}
 	
@@ -126,7 +164,7 @@ class FacturacioController extends BaseController {
 	 *
 	 * @return array
 	 */
-	private function generarFitxerAssentaments($datainici, $datafinal) {
+	private function generarFitxerAssentaments($enviament) {
 
 		/**
 		 *  
@@ -168,19 +206,19 @@ class FacturacioController extends BaseController {
 			x........vvvvvv----+++++++++xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx........................................^^^^^^^^xxxx----+++++++++++++H000000000000000 
 						
 			02015022710023700025720001  F. 00237/2015  CAT191                                                                               Factura: 00716/2015                     00237/15        0000000105.00D000000000000000  (SALT)
-		 
-		 
 		 * 
 		 */
-		$apuntsComandesAltes = $this->generarAssentamentsComandes($datainici, $datafinal, false);
+		$apuntsComandesAltes = $this->generarAssentamentsComandes($enviament, false);
 		
-		$apuntsComandesBaixes = $this->generarAssentamentsComandes($datainici, $datafinal, true);
+		$apuntsComandesBaixes = $this->generarAssentamentsComandes($enviament, true);
 		
-		$apuntsRebutsAltes	= $this->generarAssentamentsRebuts($datainici, $datafinal, false);
+		$apuntsRebutsAltes	= $this->generarAssentamentsRebuts($enviament, false);
 		
-		$apuntsRebutsBaixes	= $this->generarAssentamentsRebuts($datainici, $datafinal, true);
+		$apuntsRebutsBaixes	= $this->generarAssentamentsRebuts($enviament, true);
 		
-		return array_merge($apuntsComandesAltes, $apuntsComandesBaixes, $apuntsRebutsAltes, $apuntsRebutsBaixes);
+		$assentaments = array_merge($apuntsComandesAltes, $apuntsComandesBaixes, $apuntsRebutsAltes, $apuntsRebutsBaixes);
+		
+		return $assentaments;
 	}
 
 	/**
@@ -192,7 +230,7 @@ class FacturacioController extends BaseController {
 	 * @param string $baixes
 	 * @return multitype:string
 	 */
-	private function generarAssentamentsComandes($datainici, $datafinal, $baixes = false) {
+	private function generarAssentamentsComandes($enviament, $baixes = false) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
@@ -207,16 +245,18 @@ class FacturacioController extends BaseController {
 		$strQuery .= " ORDER BY c.dataentrada";
 		
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('ini', $datainici);
-		$query->setParameter('final', $datafinal);
+		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
+		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
 		
 		$result = $query->getResult();
 		
+		$comandes = $enviament->getComandes();
 		$assentaments = array();
 		foreach ($result as $comanda) {
 			$importTotal = $comanda->getTotalDetalls();
 			
-			if ($importTotal > 0) {			
+			if ($importTotal > 0) {	
+				$comandes++;
 				$linia = 1;
 				$signe = ($baixes == false?'0':'-');
 				
@@ -258,9 +298,14 @@ class FacturacioController extends BaseController {
 						
 					$linia++;
 				}
+				
+				$comanda->setComptabilitat($enviament);
+			} else {
+				$comanda->addComentari("Comanda amb import 0 no s'envia a comptabilitat");
 			}
 		}
-		
+		$enviament->setComandes($comandes);
+
 		return $assentaments;
 	}	
 
@@ -273,7 +318,7 @@ class FacturacioController extends BaseController {
 	 * @param string $baixes
 	 * @return multitype:string
 	 */
-	private function generarAssentamentsRebuts($datainici, $datafinal, $baixes = false) {
+	private function generarAssentamentsRebuts($enviament, $baixes = false) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r WHERE r.import > 0 AND ";
@@ -287,14 +332,18 @@ class FacturacioController extends BaseController {
 		}
 		$strQuery .= " ORDER BY r.datapagament";
 		
+		error_log($enviament->getDatadesde()->format('Y-m-d H:i:s') ."-". $enviament->getDatafins()->format('Y-m-d H:i:s'));
+		 
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('ini', $datainici);
-		$query->setParameter('final', $datafinal);
+		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
+		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
 		
 		$result = $query->getResult();
 
+		$rebuts = $enviament->getRebuts();
 		$assentaments = array();
 		foreach ($result as $rebut) {
+			$rebuts++;
 			$linia = 1;
 			$signe = ($baixes == false?'0':'-');
 			$data = $rebut->getDatapagament()->format('Ymd');
@@ -327,24 +376,32 @@ class FacturacioController extends BaseController {
 			$assentaments[] = $apunt;
 			
 			$linia++;
+			$rebut->setComptabilitat($enviament);
 		}
-		 
+		$enviament->setRebuts($rebuts);
+		
 		return $assentaments;
 	}
 	
-	private function downloadFile($fitxer, $path, $desc) {
-		$response = new BinaryFileResponse($fitxer);
+	
+	
+	//private function downloadFile($fitxer, $path, $desc) {
+	public function downloadassentamentsAction(Request $request, $filename) {
+			
+		error_log($filename);
+		$response = new BinaryFileResponse(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename);
 	
 		$response->setCharset('UTF-8');
 	
 		$response->headers->set('Content-Type', 'text/plain');
-		$response->headers->set('Content-Disposition', 'attachment; filename="'.$path.'"');
-		$response->headers->set('Content-Description', $desc);
+		$response->headers->set('Content-Disposition', 'attachment; filename="'.$filename.'"');
+		$response->headers->set('Content-Description', 'Fitxer traspàs assentaments '.$filename);
 			
 		$response->headers->set('Content-Transfer-Encoding', 'binary');
 		$response->headers->set('Pragma', 'no-cache');
 		$response->headers->set('Expires', '0');
-			
+		
+		$response->prepare($request);
 		return $response;
 	}
 	
@@ -450,6 +507,8 @@ class FacturacioController extends BaseController {
 		
 		$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
 		$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
+		$factura->setComanda($comanda);
+		$comanda->setFactura($factura);
 		
 		$em->persist($factura);
 		
@@ -459,9 +518,6 @@ class FacturacioController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'factura' => $factura)));
 	}
 	 
-	
-	
-	
 	public function comandesAction(Request $request) {
 		// Llistat de comandes
 	
@@ -474,7 +530,26 @@ class FacturacioController extends BaseController {
 		$this->logEntryAuth('VIEW COMANDES', $this->get('session')->get('username'));
 		
 		$codi = $request->query->get('cerca', '');
-		$tipus = $request->query->get('tipus', 0); // Llicències, Duplicats, Altres
+		$nf = $request->query->get('numfactura', '');
+		
+		$arrayFact = explode("/", $nf);
+		$numfactura = $nf;
+		$anyfactura = 0;
+		if (count($arrayFact) > 1) {
+			$numfactura = is_numeric($arrayFact[0])?$arrayFact[0]:0;
+			$anyfactura = is_numeric($arrayFact[1])?$arrayFact[1]:0;
+		}
+		
+		$nr = $request->query->get('numrebut', '');
+		
+		$arrayReb = explode("/", $nr);
+		$numrebut = $nr;
+		$anyrebut = 0;
+		if (count($arrayReb) > 1) {
+			$numrebut = is_numeric($arrayReb[0])?$arrayReb[0]:0;
+			$anyrebut = is_numeric($arrayReb[1])?$arrayReb[1]:0;
+		}
+		
 		$baixes = $request->query->get('baixes', 0);
 		$baixes = ($baixes == 1?true:false);
 		
@@ -482,7 +557,7 @@ class FacturacioController extends BaseController {
 		$sort = $request->query->get('sort', 'c.dataentrada');
 		$direction = $request->query->get('direction', 'desc');
 		
-		$query = $this->consultaComandes($codi, $tipus, $baixes, $sort, $direction);
+		$query = $this->consultaComandes($codi, $numfactura, $anyfactura, $numrebut, $anyrebut, $baixes, $sort, $direction);
 			
 		$paginator  = $this->get('knp_paginator');
 			
@@ -491,26 +566,19 @@ class FacturacioController extends BaseController {
 				$page,
 				10/*limit per page*/
 		);
-			
+		
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'hidden', array(
-				'data' => $codi
-		));
-		
-		$formBuilder
-			->add('tipus', 'choice', array(
-				'choices' => BaseController::getTipusDeComanda(),
-				'required'  => false,
-				'empty_value' => 'Qualsevol...',
-				'data' => $tipus,
-		));
-		
-		$formBuilder
+				'data' => $codi	))
+			->add('numfactura', 'text', array(
+				'data' 	=> $nf ))
+			->add('numrebut', 'text', array(
+				'data' => $nr	))
 			->add('baixes', 'checkbox', array(
 				'required' => false,
 				'data' => $baixes
-		
 		));
+		
 			
 		return $this->render('FecdasBundle:Facturacio:comandes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
@@ -1143,33 +1211,65 @@ class FacturacioController extends BaseController {
 		$strQuery .= "WHERE 1 = 1 ";
 		if (! $baixes) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($tipus > 0) $strQuery .= " AND p.tipus = :tipus";
-		$strQuery .= " ORDER BY " .$strOrderBY ." ".$direction;  
+		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
+		
 		$query = $em->createQuery($strQuery);
 		
 		if ($tipus > 0) $query->setParameter('tipus', $tipus);
 		return $query;
 	}
 	
-	protected function consultaComandes($codi, $tipus, $baixes, $strOrderBY = 'c.id', $direction = 'desc' ) {
+	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $strOrderBY = 'c.id', $direction = 'desc' ) {
 		$em = $this->getDoctrine()->getManager();
-	
-		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
+		
+		$strQuery = "SELECT c, f, r FROM FecdasBundle\Entity\EntityComanda c LEFT JOIN c.factura f LEFT JOIN c.rebut r ";
 		$strQuery .= "WHERE 1 = 1 ";
 		if ($codi != '') $strQuery .= " AND c.club = :codi ";
+		
+		if (is_numeric($nf) && $nf > 0) $strQuery .= " AND f.num = :numfactura ";
+
+		if (is_numeric($af) && $af > 0) {
+			$datainicifactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-01-01 00:00:00");
+			$datafinalfactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-12-31 23:59:59");
+			$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ";
+		}
+		
+		if (is_numeric($nr) && $nr > 0) $strQuery .= " AND r.num = :numrebut ";
+
+		if (is_numeric($ar) && $ar > 0) {
+			$datainicirebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-01-01 00:00:00");
+			$datafinalrebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-12-31 23:59:59");
+			$strQuery .= " AND r.datapagament >= :rini AND r.datapagament <= :rfi ";
+		}
+		
+		
 		if (! $baixes) $strQuery .= " AND c.databaixa IS NULL ";
-		if ($tipus == BaseController::TIPUS_COMANDA_LLICENCIES) $strQuery .= " AND c.parte IS NOT NULL ";
-		if ($tipus == BaseController::TIPUS_COMANDA_DUPLICATS) $strQuery .= " AND c.duplicat IS NOT NULL ";
-		if ($tipus == BaseController::TIPUS_COMANDA_ALTRES) $strQuery .= " AND c.duplicat IS NULL AND c.parte IS NULL ";
 		
+		$pos = strpos($strOrderBY, "r.num");
+		if ($pos !== false) $strQuery .= " AND c.rebut IS NOT NULL ";
 		
-		$strQuery .= " ORDER BY " .$strOrderBY ." ".$direction;
+		$pos = strpos($strOrderBY, "f.num");
+		if ($pos !== false) $strQuery .= " AND c.factura IS NOT NULL ";
+		
+		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
 		$query = $em->createQuery($strQuery);
 	
 		if ($codi != '') $query->setParameter('codi', $codi);
+		if (is_numeric($nf) && $nf > 0) $query->setParameter('numfactura', $nf);
+		if (is_numeric($nr) && $nr > 0) $query->setParameter('numrebut', $nr);
+		if (is_numeric($af) && $af > 0) {
+			$query->setParameter('fini', $datainicifactura);
+			$query->setParameter('ffi', $datafinalfactura);
+		}
 		
+		if (is_numeric($ar) && $ar > 0) {
+			$query->setParameter('rini', $datainicirebut);
+			$query->setParameter('rfi', $datafinalrebut);
+		}
+			
+		error_log($strQuery);		
 		return $query;
 	}
-	
 	
 	public function getMaxNumEntity($year, $tipus) {
 		$em = $this->getDoctrine()->getManager();
@@ -1642,6 +1742,8 @@ class FacturacioController extends BaseController {
 		// SELECT * FROM apunts_2015 WHERE num IN ( 119, 510 ) ORDER BY num, dh
 		$em = $this->getDoctrine()->getManager();
 		
+		$rebutId = 0;
+		
 		if (count($altres['D']) == 1) {
 			// Un debe. Situació normal un club deutor
 			$compteD = $altres['D'][0]['compte']; 
@@ -1783,6 +1885,7 @@ class FacturacioController extends BaseController {
 				$em->getConnection()->exec( $query );
 				
 				$rebutId = $em->getConnection()->lastInsertId();
+				
 				$em->getConnection()->commit();
 				$em->getConnection()->beginTransaction(); // suspend auto-commit
 				
@@ -1863,8 +1966,6 @@ class FacturacioController extends BaseController {
 					$em->getConnection()->commit();
 					$em->getConnection()->beginTransaction(); // suspend auto-commit
 
-					$rebutId = 0;
-						
 					//error_log("1=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>");
 					//echo "1=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";
 					

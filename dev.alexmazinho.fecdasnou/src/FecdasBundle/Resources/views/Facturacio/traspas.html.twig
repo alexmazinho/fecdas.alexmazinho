@@ -18,12 +18,12 @@
     </header>
     
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}    
-	<form id="formtraspas" action="{{ path('FecdasBundle_traspascomptabilitat') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	<form id="formtraspas" action="{{ path('FecdasBundle_fitxercomptabilitat') }}" method="get" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
-			{% if ultimenviament is not null %}
-			<h4>darrer enviament fins a {{ ultimenviament.dataenviament|date('d/m/Y') }}</h4>
+			{% if enviaments|length > 0 %}
+			<h4 class="col-md-12">darrer enviament apunts fins a <span class="blue">{{ enviaments[0].datafins|date('d/m/Y') }}</span></h4>
 			{% else %}
-			<h4>encara no s'ha realitzat cap enviament</h4>
+			<h4 class="col-md-12">encara no s'ha realitzat cap enviament</h4>
 			{% endif %}
 			<div class="col-md-3">
 				<div class="form-group">
@@ -45,28 +45,49 @@
 					</div>
 				</div>
 			 </div>
-			 <div class="col-md-3">
-				<div class="form-group">
-					<label></label>
-					<div id="formtraspas-datafins" class="input-group">
-		  				<span class="input-group-addon">Any fiscal</span>
-						( Pendent selector de l'any fiscal )
-						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-					</div>
-				</div>
-			 </div>
 			 <div class="col-md-2">
 			 	<div class="form-group">
-			 		<label>&nbsp;</label>
+			 		<label></label>
 			 		<div class="input-group">
-						<button type="submit" id="formtraspas-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
+						<button type="submit" id="formtraspas-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Enviar</button>
 					</div>
 				</div>
 			 </div>	
 		</div>
-		
 		<div id="formtraspas-rest" class="sr-only">{{ form_rest(form) }}</div>
 		
+		<div class="row">
+			<div class="col-md-9">
+	    		<h4 class="blue">Històric</h4>
+			</div>
+			 <div class="col-md-9">
+			{% if enviaments|length > 0 %}
+			<div class="table-scroll enviaments">
+			   	<ol id="list-data">
+				{% for enviament in enviaments %} 
+			   		<li class="data-detall {% if enviament.esBaixa %} data-detall-fosc {% endif %}">
+			   			<div class="data-detall-cell enviament-id hidden">{{ enviament.id }}</div>
+			   			<div class="data-detall-cell enviament-desc">
+			   				<a href="{{ path('FecdasBundle_downloadassentaments', { 'filename' : enviament.fitxer }) }}" target="_blank">
+			   					{{ enviament.fitxer }}</a>{{ enviament.textComptabilitat  }}
+			   			</div>
+			   			<div class="data-detall-cell enviament-actions">
+							{% if not enviament.esBaixa %}
+			   				<a class="enviament-action-baixa" href="{{ path('FecdasBundle_anulartraspas', { 'id': enviament.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger"></i></a>
+			   				{% else %}
+			   				<i class="fa fa-trash-o transparent"></i>
+			   				{% endif %}
+			   			</div>
+			   		</li>
+			   		{% endfor %}
+				</ol>
+			</div>
+			{% if enviaments.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(enviaments, null, { 'sort': 'c.dataenviament','direction': 'desc' }) }}</div>{% endif %}
+		   	{% else %}
+		    <div class="sms-notice">No hi ha enviaments per mostrar</div>
+		    {% endif %}
+		</div></div>
+				
 		<div id="error" class="sms-notice" style="display:none"> </div>
 		
 		<div class="row"></div>
@@ -94,7 +115,7 @@
 			initDateTimePicker ( 
 				$( '#form_datadesde' ), 
 				mindate, 
-				maxdate, 
+				current, 
 				current, 
 				'datadesde-picker', 
 				false,
@@ -104,13 +125,64 @@
 			initDateTimePicker ( 
 				$( '#form_datafins' ), 
 				mindate, 
-				current, 
+				maxdate, 
 				current, 
 				'datafins-picker', 
 				false,
 				''
 			);
-			
+
+
+			// Form submit. Remove prototype
+		    $( "#formtraspas" ).submit(function( event ) {
+		    	  event.preventDefault();
+
+		    	  var url = $(this).attr('action');
+		    	  var params = [];
+
+		    	  params.push( {'name':'inici','value':  $("#form_datadesde").val() } );
+		    	  params.push( {'name':'final','value':  $("#form_datafins").val() } );
+		    	  
+		    	  console.log(url);
+		    	  $( ".alert").remove();
+				  $.get(url, params, function(data, textStatus) {
+
+					    var fileRow = "<div class='data-detall-cell enviament-id hidden'>__ID__</div>";
+					    fileRow += "<div class='data-detall-cell enviament-desc'><a href='";
+					    fileRow += "{{ path('FecdasBundle_downloadassentaments', { 'filename' : '__FILE__' }) }}";
+					    fileRow += "' target='_blank'>__FILE__</a>__TEXT__</div>";
+			   			fileRow += "<div class='data-detall-cell enviament-actions'><a class='enviament-action-baixa' href='";
+			   			fileRow += "{{ path('FecdasBundle_anulartraspas', { 'id': '__ID__' }) }}";
+			   			fileRow += "' alt='Baixa' title='Baixa'><i class='fa fa-trash-o text-danger'></i></a></div>";
+					  
+					    /*var link=document.createElement('a');
+					    link.href=data.filename;
+					    link.text=data;*/
+
+					    fileRow = fileRow.replace("__ID__", data.id);
+					    fileRow = fileRow.replace("__FILE__", data.filename);
+					    fileRow = fileRow.replace("__TEXT__", data.text);
+
+					    var wrapper= document.createElement('li');
+					    wrapper.setAttribute('class', 'data-detall');
+					    wrapper.innerHTML = fileRow;
+					    
+					    /*$(wrapper).find('.enviament-desc').append(link);*/
+					    
+					    $( "#formtraspas #list-data" ).append( wrapper );
+
+					    $(wrapper).find('.enviament-desc a').click();
+	  						
+				  }).fail( function(xhr, status, error) {
+					 // xhr.status + " " + xhr.statusText, status, error
+					 var sms = smsResultAjax('OK', error);
+					 if (xhr.status != 500) {
+						var sms = smsResultAjax('OK', "Error desconegut: " + error );
+					 }
+					
+					 $( "#formtraspas" ).before( sms  );
+				}); 
+		    });
 		});
 		
 	</script>

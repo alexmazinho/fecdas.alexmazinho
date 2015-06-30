@@ -119,15 +119,14 @@ class EntityClub {
 	protected $usuaris;	// Owning side of the relationship
 	
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityParte", mappedBy="clubdel")
+	 * @ORM\OneToMany(targetEntity="EntityComanda", mappedBy="club")
 	 */
-	protected $partes;	// Owning side of the relationship
+	protected $comandes;	// Owning side of the relationship
 
 	/*
 	 * @ORM\OneToMany(targetEntity="EntityDuplicat", mappedBy="club")
 	 */
 	/*protected $duplicats;*/	// Owning side of the relationship
-	
 	
 	/**
 	 * @ORM\ManyToMany(targetEntity="EntityParteType", cascade={"remove", "persist"})
@@ -201,7 +200,7 @@ class EntityClub {
 		$this->totalaltres = 0;
 		$this->ajustsubvencions = 0;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
-		$this->partes = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 		/*$this->duplicats = new \Doctrine\Common\Collections\ArrayCollection();*/
 		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -637,6 +636,17 @@ class EntityClub {
     	}
     }
 
+    
+    /**
+     * Get comandes
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getComandes()
+    {
+    	return $this->comandes;
+    }
+    
     /**
      * Get partes
      *
@@ -644,27 +654,34 @@ class EntityClub {
      */
     public function getPartes()
     {
-    	return $this->partes;
+    	$partes = array();
+    	foreach ($this->comandes as $comanda) {
+    		if ($comanda->esParte()) $partes[] = $comanda;
+    	}
+    	return $partes;
     }
     
     /**
-     * Add parte
+     * Add comanda
      *
-     * @param FecdasBundle\Entity\EntityParte $parte
+     * @param FecdasBundle\Entity\EntityParte $comanda
      */
-    /*
-    public function addEntityParte(\FecdasBundle\Entity\EntityParte $parte)
+    public function addEntityComanda(\FecdasBundle\Entity\EntityComanda $comanda)
     {
-    	$parte->setClub($this);
-    	$this->partes->add($parte);
-    }*/
+    	$comanda->setClub($this);
+    	$this->comandes->add($comanda);
+    }
     
-    
-    public function setPartes(\Doctrine\Common\Collections\ArrayCollection $partes)
+    /**
+     * Set comandes
+     * 
+     * @param \Doctrine\Common\Collections\ArrayCollection $comandes
+     */
+    public function setComandes(\Doctrine\Common\Collections\ArrayCollection $comandes)
     {
-    	$this->partes = $partes;
-    	foreach ($partes as $parte) {
-    		$parte->setClub($this);
+    	$this->comandes = $comandes;
+    	foreach ($comandes as $comanda) {
+    		$comanda->setClub($this);
     	}
     }
     
@@ -944,8 +961,8 @@ class EntityClub {
     	$dades['err_sincro'] = array();
     	$dades['err_imports'] = array();
     	$dades['err_config'] = '';
-    	foreach($this->partes as $parte_iter) {
-    		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
+    	foreach($this->comandes as $parte_iter) {
+    		if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			/* Només mirar sincronitzats */
     			$auxImportParte = $parte_iter->getPreuTotalIVA();
     			$npartes++;
@@ -1035,8 +1052,8 @@ class EntityClub {
      */
     public function getTotalLlicenciesWeb() {
     	$nimport = 0;
-    	foreach($this->partes as $parte_iter) {
-    		if ($parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
+    	foreach($this->comandes as $parte_iter) {
+    		if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
     			$nimport += $parte_iter->getPreuTotalIVA();
     		}
     	}
@@ -1066,8 +1083,8 @@ class EntityClub {
 	    $stat['vigents'] = 0;	// Partes vigents
 	    $stat['lvigents'] = 0;	// llicències vigents
 	    
-	    foreach($this->partes as $parte_iter) {
-	    	if ($parte_iter->getDatabaixa() == null and 
+	    foreach($this->comandes as $parte_iter) {
+	    	if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and 
 	    		$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and 
 	    		$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d') and
 	    		$parte_iter->getTipus()->getId() == $tipus ) {

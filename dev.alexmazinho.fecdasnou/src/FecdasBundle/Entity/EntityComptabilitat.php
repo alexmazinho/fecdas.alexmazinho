@@ -31,31 +31,80 @@ class EntityComptabilitat {
 	protected $dataenviament;
 	
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityComanda", mappedBy="comptabilitat")
+	 * @ORM\Column(type="text")
+	 */
+	protected $fitxer; 
+	
+	/**
+	 * @ORM\Column(type="integer")
 	 */
 	protected $comandes;
 	
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityRebut", mappedBy="comptabilitat")
+	 * @ORM\Column(type="integer")
 	 */
 	protected $rebuts;
 	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
-	protected $datamodificacio;
+	protected $datadesde;
+	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $datafins;
+	
 	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $databaixa;
 	
-	public function __construct() {
-		$this->dateenviament = new \DateTime();
-		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
-		$this->rebuts = new \Doctrine\Common\Collections\ArrayCollection();
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		
+		$this->dataenviament = new \DateTime();
+		$this->comandes = 0;
+		$this->rebuts = 0;
+	
+		// Hack per permetre múltiples constructors
+		$a = func_get_args();
+		$i = func_num_args();
+	
+		if ($i > 0 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}
 	}
-
+	
+	
+	public function __constructParams($fitxer = '', $datadesde = null, $datafins = null) {
+		if ($datadesde == null) $datadesde = new \DateTime();
+		if ($datafins == null) $datafins = new \DateTime();
+		
+		$this->datadesde = $datadesde;
+		$this->datafins = $datafins;
+		$this->fitxer = $fitxer;
+	}
+	
+	public function esBaixa()
+	{
+		return $this->databaixa != null;
+	}
+	
+	/**
+	 * Get total apunts
+	 *
+	 * @return integer
+	 */
+	public function getApunts()
+	{
+		return $this->comandes + $this->rebuts;
+	}
+	
 	/**
 	 * Get Info comanda
 	 *
@@ -65,6 +114,18 @@ class EntityComptabilitat {
 	{
 		return $this->dataenviament->format("d/m/Y"). " ".$this->comentaris;
 	}
+	
+	/**
+	 * Get Text comanda
+	 *
+	 * @return string
+	 */
+	public function getTextComptabilitat()
+	{
+		return "  des de ".$this->datadesde->format("d/m/Y"). " fins ".$this->datafins->format("d/m/Y"). " (".$this->comandes." comandes, ".$this->rebuts." rebuts)";
+	}
+	
+	
     /**
      * Get id
      *
@@ -124,6 +185,30 @@ class EntityComptabilitat {
     }
 
     /**
+     * Set fitxer
+     *
+     * @param string $fitxer
+     * @return EntityComptabilitat
+     */
+    public function setFitxer($fitxer)
+    {
+    	$this->fitxer = $fitxer;
+    
+    	return $this;
+    }
+    
+    /**
+     * Get fitxer
+     *
+     * @return string
+     */
+    public function getFitxer()
+    {
+    	return $this->fitxer;
+    }
+    
+    
+    /**
      * Get dataenviament
      *
      * @return \DateTime 
@@ -134,28 +219,51 @@ class EntityComptabilitat {
     }
 
     /**
-     * Set datamodificacio
+     * Set datadesde
      *
-     * @param \DateTime $datamodificacio
+     * @param \DateTime $datadesde
      * @return EntityComptabilitat
      */
-    public function setDatamodificacio($datamodificacio)
+    public function setDatadesde($datadesde)
     {
-        $this->datamodificacio = $datamodificacio;
+        $this->datadesde = $datadesde;
 
         return $this;
     }
 
     /**
-     * Get datamodificacio
+     * Get datadesde
      *
      * @return \DateTime 
      */
-    public function getDatamodificacio()
+    public function getDatadesde()
     {
-        return $this->datamodificacio;
+        return $this->datadesde;
     }
 
+    /**
+     * Set datafins
+     *
+     * @param \DateTime $datafins
+     * @return EntityComptabilitat
+     */
+    public function setDatafins($datafins)
+    {
+    	$this->datafins = $datafins;
+    
+    	return $this;
+    }
+    
+    /**
+     * Get datafins
+     *
+     * @return \DateTime
+     */
+    public function getDatafins()
+    {
+    	return $this->datafins;
+    }
+    
     /**
      * Set databaixa
      *
@@ -180,34 +288,9 @@ class EntityComptabilitat {
     }
 
     /**
-     * Add comanda
-     *
-     * @param \FecdasBundle\Entity\EntityComanda $comanda
-     * @return EntityComptabilitat
-     */
-    public function addComanda(\FecdasBundle\Entity\EntityComanda $comanda)
-    {
-    	$comanda->setComanda($this);
-    	$this->comandes->add($comanda);
-    	//$this->comandes[] = $comandes;
-
-        return $this;
-    }
-
-    /**
-     * Remove comanda
-     *
-     * @param \FecdasBundle\Entity\EntityComanda $comanda
-     */
-    public function removeComanda(\FecdasBundle\Entity\EntityComanda $comanda)
-    {
-        $this->comandes->removeElement($comanda);
-    }
-
-    /**
      * Get comandes
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return integer
      */
     public function getComandes()
     {
@@ -217,41 +300,17 @@ class EntityComptabilitat {
     /**
      * Set comandes
      *
-     * @param \Doctrine\Common\Collections\Collection $comandes
+     * @param integer $comandes
      */
-    public function setComandes(\Doctrine\Common\Collections\ArrayCollection $comandes)
+    public function setComandes($comandes)
     {
     	$this->comandes = $comandes;
     }
     
     /**
-     * Add rebut
-     *
-     * @param \FecdasBundle\Entity\EntityRebut $rebut
-     * @return EntityComptabilitat
-     */
-    public function addRebut(\FecdasBundle\Entity\EntityRebut $rebut)
-    {
-    	$rebut->setRebut($this);
-    	$this->rebuts->add($rebut);
-    
-    	return $this;
-    }
-    
-    /**
-     * Remove rebut
-     *
-     * @param \FecdasBundle\Entity\EntityRebut $rebut
-     */
-    public function removeRebut(\FecdasBundle\Entity\EntityRebut $rebut)
-    {
-    	$this->rebuts->removeElement($rebut);
-    }
-    
-    /**
      * Get rebuts
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return integer
      */
     public function getRebuts()
     {
@@ -261,9 +320,9 @@ class EntityComptabilitat {
     /**
      * Set rebuts
      *
-     * @param \Doctrine\Common\Collections\Collection $rebuts
+     * @param integer
      */
-    public function setRebuts(\Doctrine\Common\Collections\ArrayCollection $rebuts)
+    public function setRebuts($rebuts)
     {
     	$this->rebuts = $rebuts;
     }

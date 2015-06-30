@@ -76,24 +76,24 @@
 					</div>{{ form_errors(form.numfactura)  }}
 				</div>
 			 </div>
-			 <div class="col-md-2">
+			 <div class="col-md-3">
 			 	<div class="form-group">
-					{{ form_label(form.numrebut, 'Rebut') }}{{ form_errors(form.numrebut)  }}
-					<div id="formcomanda-rebut" class="input-group input-group-button-right">
-						{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control form-control-center form-control-button-right'} }) }}
-						<div class="separator"></div>
-						{% if comanda.id > 0 %}
-							{% if  comanda.rebut is not null %}
-								<a id="editar-rebut" class="link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}" title="Editar rebut" alt="Editar rebut">
-									<i class="fa fa-pencil fa-1x"></i></a>
-							{% else %}
-								<a id="crear-rebut" class="link" href="{{ path('FecdasBundle_nourebut', {'comanda': comanda.id }) }}" title="Crear rebut" alt="Crear rebut">
-									<i class="fa fa-file-text-o fa-1x"></i></a>
-							{% endif %}
+			 		{% if comanda.rebut is null %}
+						{{ form_label(form.numrebut, 'Data pagament') }}
+						<div id="formcomanda-rebut" class="input-group">
+							<span class="input-group-addon">Pagat</span>
+							{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control form-control-center form-control-button-right'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						</div>
 						{% else %}
-							<i class="fa fa-file-text-o fa-1x link gray"></i>
-						{% endif %}
-					</div>{{ form_errors(form.numrebut)  }}
+						{{ form_label(form.numrebut, 'Rebut') }}
+						<div id="formcomanda-rebut" class="input-group input-group-button-right">
+							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control form-control-center form-control-button-right'} }) }}
+							<div class="separator"></div>
+							<a id="editar-rebut" class="link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}" title="Editar rebut" alt="Editar rebut">
+									<i class="fa fa-pencil fa-1x"></i></a>
+						</div>
+					{% endif %}{{ form_errors(form.numrebut)  }}{{ form_errors(form.datapagament)  }}
 				</div>
 			 </div>
 			 <div class="col-md-3">
@@ -106,7 +106,7 @@
 					</div>{{ form_errors(form.databaixa)  }}
 				</div>
 			 </div>
-			  <div class="col-md-5">
+			  <div class="col-md-4">
 				{{ form_label(form.comentaris, 'Comentaris') }}{{ form_errors(form.comentaris)  }}
 				<div id="formcomanda-comentaris"  class="">
 					{{ form_widget(form.comentaris, { 'attr': {'class': 'form-control'} }) }}
@@ -265,6 +265,7 @@
 			var current = new Date();
 			
 			var maxdate = new Date (current.getFullYear(), current.getMonth() + 1, current.getDay());
+			var mindate = new Date (current.getFullYear(), current.getMonth() -12, current.getDay());
 			initDateTimePicker ( 
 				$( '#comanda_databaixa' ), 
 				current, 
@@ -275,6 +276,17 @@
 				''
 			);
 
+			var maxdate = new Date (current.getFullYear(), current.getMonth() + 1, current.getDay());
+			initDateTimePicker ( 
+				$( '#comanda_datapagament' ), 
+				mindate, 
+				current, 
+				current, 
+				'datapagament-picker', 
+				false,
+				''
+			);
+			
 			$("select#comanda_club").select2({
 				minimumInputLength: 2,
 				allowClear: true,

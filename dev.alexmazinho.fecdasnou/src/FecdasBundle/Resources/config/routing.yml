@@ -433,12 +433,21 @@ FecdasBundle_traspascomptabilitat:
     requirements:
         _method:  GET
 
+FecdasBundle_anulartraspas:
+    pattern:  /anulartraspas
+    defaults: { _controller: "FecdasBundle:Facturacio:anulartraspas" }
+    requirements:
+        _method:  GET
 
 FecdasBundle_fitxercomptabilitat:
     pattern:  /fitxercomptabilitat
     defaults: { _controller: "FecdasBundle:Facturacio:fitxercomptabilitat" }
     requirements:
         _method:  GET
+
+FecdasBundle_downloadassentaments:
+    pattern:  /fitxers/assentaments/{filename}
+    defaults: { _controller: "FecdasBundle:Facturacio:downloadassentaments" }
 
 # ---------------------------------------------------------------------------
 # ---------------------  SCRIPTS COMANDES -----------------------------------

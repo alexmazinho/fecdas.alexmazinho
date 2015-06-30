@@ -181,6 +181,11 @@ class EntityParte extends EntityComanda {
 		}
 	}
 	
+	public function esParte()
+	{
+		return true;
+	}
+	
 	/**
 	 * Get id
 	 *

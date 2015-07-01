@@ -326,7 +326,8 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
 
-.data-detall .data-detall-cell i.fa { 
+.data-detall .data-detall-cell i.fa,
+.link i.fa { 
 	padding: 5px;
 	border-radius: 50%;
 	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
@@ -335,10 +336,14 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
   	-o-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
 } 
-.data-detall .data-detall-cell i.fa:hover { color: #ffffff;  } 
+.data-detall .data-detall-cell i.fa:hover, .link i.fa:hover { color: #ffffff;  } 
 .data-detall .data-detall-cell i.fa-pencil:hover { background-color: #31708f;  }
 .data-detall .data-detall-cell i.fa-trash-o:hover { background-color: #a94442;  }
-.data-detall .data-detall-cell i.fa.trasnparent:hover { background-color: transparent; color: transparent;  } 
+.data-detall .data-detall-cell i.fa-plus-circle:hover { background-color: #31708f; }
+.link i.fa.blue:hover { background-color: #31708f; }
+.link i.fa.red:hover { background-color: #a94442; } 
+.data-detall .data-detall-cell i.fa.transparent:hover { background-color: transparent; color: transparent;  } 
+  
  
 .form-control-left { text-align: left; }
 .form-control-right { text-align: right; }
@@ -416,10 +421,12 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .input-group.input-group-button-right input { max-width:none; border-bottom-right-radius: 5px !important; border-top-right-radius: 5px !important; }
 
 
+.label-actions { float:right; }
+
 .blue { color: #1240a0; /*#2281cf;*/ }
-.red { color: red; }
+.red { color: #a94442; }
 .gray { color: #cccccc; }
-.transparent { color: transparent; }
+.transparent { color: transparent; cursor: default; }
 
 /*************** FECDAS NOU productes ****************/
 
@@ -471,7 +478,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 #header-comanda-estat  { width: 5%; text-align: left; }
 #header-comanda-num { width: 8%; text-align: left; }
-#header-comanda-club { width: 15%; text-align: left;  }
+#header-comanda-club { width: 10%; text-align: left;  }
 #header-comanda-items { width: 5%; text-align: center; }
 #header-comanda-total { width: 7%; text-align: right; }
 #header-comanda-data { width: 7%; text-align: center; }
@@ -483,7 +490,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
 .data-detall-cell.comanda-num { width: 8%; text-align: left; }
-.data-detall-cell.comanda-club { width: 15%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-club { width: 10%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
 .data-detall-cell.comanda-total { width: 7%; text-align: right; }
 .data-detall-cell.comanda-data { width: 7%; text-align: center; }
@@ -513,6 +520,29 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     position: relative;
 
  } 
+ 
+ /*************** FECDAS NOU ingresos ****************/
+
+
+#header-ingres-estat  { width: 5%; text-align: left; }
+#header-ingres-num { width: 10%; text-align: left; }
+#header-ingres-club { width: 15%; text-align: left;  }
+#header-ingres-import { width: 10%; text-align: right; }
+#header-ingres-data { width: 10%; text-align: center; }
+#header-ingres-comentaris { width: 25%; text-align: left; }
+#header-ingres-compta { width: 10%; text-align: center; }
+#header-ingres-actions { width: 10%; text-align: right; }
+
+
+.data-detall-cell.ingres-estat  { width: 5%; text-align: left; }
+.data-detall-cell.ingres-num { width: 10%; text-align: left; }
+.data-detall-cell.ingres-club { width: 15%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.ingres-import { width: 10%; text-align: right; }
+.data-detall-cell.ingres-data { width: 10%; text-align: center; }
+.data-detall-cell.ingres-comentaris { width: 25%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.ingres-compta { width: 10%; text-align: center; }
+.data-detall-cell.ingres-actions { width: 10%; text-align: right; font-size: 1.2em; }
+ 
  
  /*************** FECDAS NOU traspas ****************/
  
@@ -585,8 +615,8 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .detall-form-header, .detall-form-row { /*margin: -6px 6px;*/}
 
 ul.detalls {
-	height: 250px;
-	max-height: 250px;
+	height: 180px;
+	max-height: 180px;
     overflow-x: hidden;
     overflow-y: scroll;
     /*border: 1px solid #81C6FF;*/
@@ -608,6 +638,8 @@ ul.detalls li .alert { margin: 10px 0; }
 	border: none;
 	padding: 0 0 10px;
 }
+
+.table-header-scroll { padding-right: 15px; }
 
 #list-header,
 #summary-header {
@@ -741,7 +773,7 @@ ul.detalls li .alert { margin: 10px 0; }
 
 .table-scroll, .table-noscroll {
 	display: inline-block;
-	max-height: 410px;
+	max-height: 450px;
     overflow-x: hidden;
     overflow-y: auto;
     border: 1px solid #81C6FF;

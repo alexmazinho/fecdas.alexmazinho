@@ -405,6 +405,62 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
+	
+	public function ingresosAction(Request $request) {
+		// Llistat ingresos a compte dels clubs
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	
+		$this->logEntryAuth('VIEW INGRESOS', $this->get('session')->get('username'));
+	
+		$codi = $request->query->get('cerca', '');
+		$nr = $request->query->get('numrebut', '');
+	
+		$arrayReb = explode("/", $nr);
+		$numrebut = $nr;
+		$anyrebut = 0;
+		if (count($arrayReb) > 1) {
+			$numrebut = is_numeric($arrayReb[0])?$arrayReb[0]:0;
+			$anyrebut = is_numeric($arrayReb[1])?$arrayReb[1]:0;
+		}
+	
+		$baixes = $request->query->get('baixes', 0);
+		$baixes = ($baixes == 1?true:false);
+	
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'r.datapagament');
+		$direction = $request->query->get('direction', 'desc');
+	
+		$query = $this->consultaIngresos($codi, $numrebut, $anyrebut, $baixes, $sort, $direction);
+					
+		$paginator  = $this->get('knp_paginator');
+					
+		$ingresos = $paginator->paginate(
+				$query,
+				$page,
+				10/*limit per page*/
+		);
+	
+		$formBuilder = $this->createFormBuilder()
+			->add('cerca', 'hidden', array(
+				'data' => $codi	))
+			->add('numrebut', 'text', array(
+				'data' => $nr	))
+			->add('baixes', 'checkbox', array(
+				'required' => false,
+				'data' => $baixes
+		));
+												
+		return $this->render('FecdasBundle:Facturacio:ingresos.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+						'ingresos' => $ingresos,  'sortparams' => array('sort' => $sort,'direction' => $direction))
+		));
+	}
+	
 	public function editarfacturaAction(Request $request) {
 		// Edició d'una factura existent
 		if (!$this->isAuthenticated())
@@ -678,6 +734,8 @@ class FacturacioController extends BaseController {
 			}
 		}
 		
+		$comandaPagat = $comanda->comandaPagada(); // Per detectar nous pagaments 
+		
 		$form = $this->createForm(new FormComanda(), $comanda);
 		if ($request->getMethod() == 'POST') {
 			try {
@@ -692,6 +750,10 @@ class FacturacioController extends BaseController {
 					
 					if ($comanda->getNumDetalls() <= 0) {
 						throw new \Exception('La comanda ha de tenir algún producte'  );
+					}
+					
+					if ($comanda->getTotalDetalls() == 0) {
+						throw new \Exception('L\'import de la comanda ha de ser diferent de 0'  );
 					}
 					
 					// remove the relationship between the tag and the Task
@@ -729,6 +791,29 @@ class FacturacioController extends BaseController {
 					}
 					
 					$comanda->setNum($maxNumComanda); // Per si canvia
+
+					$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
+					$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
+					if (!$comandaPagat && ($strDatapagament != '' || $tipusPagament != '')) {
+						
+						if ($strDatapagament != '' && $tipusPagament == '') {
+							$form->get('tipuspagament')->addError(new FormError('Escollir un valor'));
+							throw new \Exception('Cal indicar com s\'ha pagat la comanda'  );
+						}
+						if ($strDatapagament == '' && $tipusPagament != '') {
+							$form->get('datapagament')->addError(new FormError('Indicar una data'));
+							throw new \Exception('Cal indicar quan s\'ha pagat la comanda'  );
+						}
+						
+						// Nou pagament, crear rebut
+						$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
+						
+						$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
+						
+						$rebut = new EntityRebut($datapagament, $tipusPagament, $maxNumRebut, 0, $comanda); // Import agafat de la comanda
+						
+						$em->persist($rebut);
+					} 
 					
 					if ($comanda->getId() > 0)  $comanda->setDatamodificacio(new \DateTime());
 					
@@ -1219,6 +1304,38 @@ class FacturacioController extends BaseController {
 		return $query;
 	}
 	
+	protected function consultaIngresos($codi, $nr, $ar, $baixes, $strOrderBY = 'r.datapagament', $direction = 'desc' ) {
+		$em = $this->getDoctrine()->getManager();
+	
+		$strQuery = "SELECT r, c FROM FecdasBundle\Entity\EntityRebut r LEFT JOIN r.comanda c ";
+		$strQuery .= "WHERE c IS NULL "; 								// Ingrés no associat a cap comanda
+		if ($codi != '') $strQuery .= " AND r.club = :codi ";
+	
+		if (is_numeric($nr) && $nr > 0) $strQuery .= " AND r.num = :numrebut ";
+	
+		if (is_numeric($ar) && $ar > 0) {
+			$datainicirebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-01-01 00:00:00");
+			$datafinalrebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-12-31 23:59:59");
+			$strQuery .= " AND r.datapagament >= :rini AND r.datapagament <= :rfi ";
+		}
+	
+		if (! $baixes) $strQuery .= " AND r.dataanulacio IS NULL ";
+	
+		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
+		$query = $em->createQuery($strQuery);
+	
+		if ($codi != '') $query->setParameter('codi', $codi);
+		if (is_numeric($nr) && $nr > 0) $query->setParameter('numrebut', $nr);
+	
+		if (is_numeric($ar) && $ar > 0) {
+			$query->setParameter('rini', $datainicirebut);
+			$query->setParameter('rfi', $datafinalrebut);
+		}
+		
+		return $query;
+	}
+	
+	
 	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $strOrderBY = 'c.id', $direction = 'desc' ) {
 		$em = $this->getDoctrine()->getManager();
 		
@@ -1267,7 +1384,6 @@ class FacturacioController extends BaseController {
 			$query->setParameter('rfi', $datafinalrebut);
 		}
 			
-		error_log($strQuery);		
 		return $query;
 	}
 	

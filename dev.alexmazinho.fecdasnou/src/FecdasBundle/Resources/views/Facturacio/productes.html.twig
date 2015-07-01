@@ -49,7 +49,7 @@
 				</div>
 		   	</form>
 	    </div>
-	    <div class="table-header">	
+	    <div class="table-header table-header-scroll">	
 		   	<div id="list-header">
 				<div id="header-producte-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-producte-estat" class="col-listheader collistheader-noorder">Estat</div>
@@ -91,9 +91,9 @@
 		   			<div class="data-detall-cell producte-limit">{{ producte.limitnotifica }}</div>
 		   			<div class="data-detall-cell producte-stock">{{ producte.stock }}</div>
 		   			<div class="data-detall-cell producte-actions">
-		   				<a class="producte-action-edit" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
+		   				<a class="producte-action-edit link" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil blue"></i></a>			
 						{% if not producte.esBaixa %}
-		   				<a class="producte-action-baixa" href="{{ path('FecdasBundle_baixaproducte', { 'id': producte.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger"></i></a>
+		   				<a class="producte-action-baixa link" href="{{ path('FecdasBundle_baixaproducte', { 'id': producte.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o red"></i></a>
 		   				{% else %}
 		   				<i class="fa fa-trash-o transparent"></i>
 		   				{% endif %}

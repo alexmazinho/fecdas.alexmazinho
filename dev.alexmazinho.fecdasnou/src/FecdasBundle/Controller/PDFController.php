@@ -45,6 +45,27 @@ class PDFController extends BaseController {
 						';
 	
 	
+	public function rebuttopdfAction(Request $request) {
+		/* Rebut comanda */
+	
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$reqId = 0;
+		if ($request->query->has('id')) {
+			$reqId = $request->query->get('id');
+			$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
+	
+			if ($rebut != null) {
+					return new Response("print rebut");
+			}
+		}
+		/* Error */
+		$this->logEntryAuth('PRINT REBUT KO', $reqId);
+		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir el rebut, poseu-vos en contacte amb la Federació' );
+		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	}
+	
 	public function facturatopdfAction(Request $request) {
 		/* Factura parte */
 		

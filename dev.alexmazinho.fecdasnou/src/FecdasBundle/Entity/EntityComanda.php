@@ -131,6 +131,16 @@ class EntityComanda {
 		 }*/
 	}
 	
+	public function estBaixa()
+	{
+		return $this->databaixa != null;
+	}
+	
+	public function comandaPagada()
+	{
+		return $this->rebut != null && !$this->rebut->esBaixa();
+	}
+	
 	/**
 	 * Comanda format amb any  XXXXX/20XX
 	 *

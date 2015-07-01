@@ -112,10 +112,10 @@ class BaseController extends Controller {
 	public static function getTipusDePagament() {
 		if (self::$tipuspagament == null) {
 			self::$tipuspagament = array(
-					self::TIPUS_PAGAMENT_CASH => 'Metàl·lic',
-					self::TIPUS_PAGAMENT_TPV => 'Pagament On-Line TPV',
-					self::TIPUS_PAGAMENT_TRANS_SARDENYA => 'Transferència Sardenya',
-					self::TIPUS_PAGAMENT_TRANS_LAIETANA => 'La Caixa Laietana',
+					self::TIPUS_PAGAMENT_CASH 			 => 'Metàl·lic',
+					self::TIPUS_PAGAMENT_TPV 			 => 'Pagament On-Line TPV',
+					self::TIPUS_PAGAMENT_TRANS_SARDENYA  => 'Transferència Sardenya',
+					self::TIPUS_PAGAMENT_TRANS_LAIETANIA => 'La Caixa Laietana',
 			);
 		}
 		return self::$tipuspagament;

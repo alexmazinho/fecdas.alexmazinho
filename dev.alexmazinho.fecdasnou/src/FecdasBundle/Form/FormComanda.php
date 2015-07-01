@@ -51,7 +51,13 @@ class FormComanda extends AbstractType {
 							'widget' 		=> 'single_text',
 							'input' 		=> 'datetime',
 							'empty_value' 	=> false,
-							'format' 		=> 'dd/MM/yyyy HH:mm',
+							'format' 		=> 'dd/MM/yyyy',
+					));
+					$form->add('tipuspagament', 'choice', array(
+							'required' 		=> false,
+							'mapped'		=> false,
+							'choices' 		=> BaseController::getTipusDePagament(),
+							'empty_value' 	=> ''
 					));
 				} else {
 					$form->add('numrebut', 'text', array(
@@ -62,6 +68,10 @@ class FormComanda extends AbstractType {
 					));
 						
 					$form->add('datapagament', 'hidden', array(
+							'required' 		=> false,
+							'mapped'	=> false,
+					));
+					$form->add('tipuspagament', 'hidden', array(
 							'required' 		=> false,
 							'mapped'	=> false,
 					));

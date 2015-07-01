@@ -1,0 +1,138 @@
+{# src/Fecdas/ingresosBundle/Resources/views/Facturacio/ingresos.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Llista d'ingresos a compte {% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Llistat d'ingresos a compte</h1>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+        
+    <div id="ingresos-main">
+	    <div id="list-forms">
+	    	<form id="form_ingresos" action="{{ path('FecdasBundle_nourebut') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+		    	<div class="row">
+				  <div class="col-md-4">
+				  	<div class="form-group">
+				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				  </div>
+				  <div class="col-md-2">
+				  	<div class="form-group">
+				    	<div class="input-group">
+					    	<span class="input-group-addon">Rebut</span>
+							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				  </div>
+				  <div class="col-md-2">
+					  <div class="checkbox-inline">
+					    <label>
+					      {{ form_widget(form.baixes) }} Mostrar baixes
+					    </label>
+					  </div>
+				  </div>
+				  <div class="col-md-2 col-last-right">
+						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
+				  </div>
+				</div>
+		   	</form>
+	    </div>
+	    <div class="table-header table-header-scroll">	
+		   	<div id="list-header">
+				<div id="header-ingres-id" class="col-listheader hidden">&nbsp;</div>
+				<div id="header-ingres-estat" class="col-listheader collistheader-noorder">Estat</div>
+		   		<div id="header-ingres-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Num.', 'r.num') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-club" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Club', 'r.club') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.club') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-import" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Import', 'c.total') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.import') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-data" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Data', 'r.datapagament') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.datapagament') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
+		   		<div id="header-ingres-compta" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Enviat\nCompta.', 'r.comptabilitat') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ ingresos.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   	</div>
+	   	</div> 
+		{% if ingresos|length > 0 %} 
+		<div class="table-scroll">
+		   	<ol id="list-data"> 
+			{% for ingres in ingresos %} 
+		   		<li class="data-detall {% if ingres.esBaixa %} data-detall-fosc {% endif %}">
+		   			<div class="data-detall-cell ingres-id hidden">{{ ingres.id }}</div>
+		   			<div class="data-detall-cell ingres-estat">{{ ingres.estat }}</div>
+		   			<div class="data-detall-cell ingres-num">{{ ingres.numrebut }}</div>
+		   			<div class="data-detall-cell ingres-club">{{ ingres.club.nom }}</div>
+		   			<div class="data-detall-cell ingres-import">{{ ingres.import|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell ingres-data">{{ ingres.datapagament|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
+		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
+		   			<div class="data-detall-cell ingres-actions">
+		   				<a class="ingres-action-edit link" href="{{ path('FecdasBundle_editarrebut', { 'id': ingres.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil blue"></i></a>			
+						{% if not ingres.esBaixa %}
+		   					<a class="ingres-action-baixa link" href="{{ path('FecdasBundle_anularrebut', { 'id': ingres.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o red"></i></a>
+		   				{% else %}
+		   					<i class="fa fa-trash-o transparent"></i>
+		   				{% endif %}
+		   			</div>
+		   		</li>
+		   		{% endfor %}
+			</ol>
+		</div>
+		{% if ingresos.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(ingresos, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha ingresos per mostrar</div>
+	    {% endif %}
+	</div>
+    <div id="dialeg-edicio-ingres" class="finestra-overlay"></div>
+{% endblock %}
+
+{% block javascripts %}
+
+
+	{{ parent() }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+
+	<script type="text/javascript">
+	
+	
+	filtreLlistaingresos = function(cerca, baixes, numfactura, numrebut) {
+		
+		window.location = "{{ path('FecdasBundle_ingresos', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes+"&numrebut="+numrebut;
+	}
+	
+	$(document).ready(function(){
+		setMenuActive("menu-admingresos");
+		
+		$("#form_cerca").change(function() {
+			filtreLlistaingresos($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numrebut" ).val() );
+	    });
+
+		$("#form_numrebut").change(function() {
+			filtreLlistaingresos($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numrebut" ).val() );
+	    });
+		
+		$( '#form_baixes' ).change(function(e) {
+			filtreLlistaingresos($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numrebut" ).val() );
+		});
+		
+		// ingres
+		init_cercaclub_JSON('#form_cerca', 'Filtrar per nom del club', "{{  path('FecdasBundle_jsonclubs') }}");
+	});
+	
+	</script>
+
+
+{% endblock %}
+

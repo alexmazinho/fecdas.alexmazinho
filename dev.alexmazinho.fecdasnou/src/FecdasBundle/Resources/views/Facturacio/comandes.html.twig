@@ -55,7 +55,7 @@
 				</div>
 		   	</form>
 	    </div>
-	    <div class="table-header">	
+	    <div class="table-header table-header-scroll">	
 		   	<div id="list-header">
 				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">Estat</div>
@@ -92,20 +92,29 @@
 		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
 		   			<div class="data-detall-cell comanda-factura">
 		   				{% if  comanda.factura is not null %}
-							<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
+							<a class="editar-factura link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
 								{{ comanda.numfactura }}</a>
 						{% else %}
-							<a id="crear-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+							<a class="crear-factura link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
 								<i class="fa fa-plus-circle fa-1x"></i></a>
 						{% endif %}		
 					</div>
-		   			<div class="data-detall-cell comanda-rebut">{{ comanda.numrebut }}</div>
+		   			<div class="data-detall-cell comanda-rebut">
+		   				{% if comanda.rebut is not null %}
+							<a class="editar-rebut link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}"  title="Editar rebut" alt="Editar rebut">
+								{{ comanda.numrebut }}</a>
+						{% else %}
+							<a class="crear-rebut link" href="{{ path('FecdasBundle_nourebut', {'comanda': comanda.id }) }}" title="Crear rebut" alt="Crear rebut">
+								<i class="fa fa-plus-circle fa-1x blue"></i></a>
+						{% endif %}	
+						
+					</div>
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.comentaris }}</div>
 		   			<div class="data-detall-cell comanda-compta">{% if  comanda.comptabilitat is not null %}{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
 		   			<div class="data-detall-cell comanda-actions">
-		   				<a class="comanda-action-edit" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info"></i></a>			
+		   				<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info blue"></i></a>			
 						{% if not comanda.esBaixa %}
-		   				<a class="comanda-action-baixa" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger"></i></a>
+		   				<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger red"></i></a>
 		   				{% else %}
 		   				<i class="fa fa-trash-o transparent"></i>
 		   				{% endif %}

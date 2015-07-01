@@ -99,12 +99,22 @@ class EntityRebut {
 	}
 	
 	
-	public function __constructParams($datapagament, $num, $import = 0, $comentari = '') {
+	public function __constructParams($datapagament, $tipusPagament, $num, $import = 0, $comanda) {
 	
 		$this->datapagament = $datapagament;
+		$this->tipuspagament = $tipusPagament;
 		$this->num = $num;
-		$this->import = $import;
-		$this->comentari = $comentari;
+		$this->comanda = $comanda;
+		$this->club = $comanda->getClub();
+		if ($comanda == null) { // Ingrés no  associat a cap comanda
+			$this->import = $import;
+			$this->comentari = "Ingrés a compte del club ".($this->club!=null?$this->club->getNom():'');
+		} else {  // Pagament d'una comanda
+			$this->import = $this->comanda->getTotalDetalls();
+			$this->comentari = "Rebut comanda ".$this->comanda->getNumComanda()." ".$this->comanda->getTipusComanda();
+			
+			$this->comanda->setRebut($this); 
+		}
 	}
 	
 	
@@ -112,6 +122,16 @@ class EntityRebut {
 		return $this->getId() . "-" . $this->getNum();
 	}
 
+		
+	public function esBaixa()
+	{
+		return $this->dataanulacio != null;
+	}
+	
+	public function getEstat()
+	{
+		return $this->dataanulacio != null?'anul·lat':'';
+	}
 	
 	/**
 	 * Get concepte rebut/ingrés

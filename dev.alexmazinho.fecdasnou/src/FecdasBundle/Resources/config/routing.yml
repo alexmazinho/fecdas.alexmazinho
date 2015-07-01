@@ -277,6 +277,12 @@ FecdasBundle_albarapeticio:
     requirements:
         _method:  GET
 
+FecdasBundle_rebuttopdf:
+    pattern:  /printrebut
+    defaults: { _controller: "FecdasBundle:PDF:printrebut" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_facturapeticio:
     pattern:  /facturapeticio
     defaults: { _controller: "FecdasBundle:PDF:facturapeticio" }
@@ -424,6 +430,18 @@ FecdasBundle_editarrebut:
 FecdasBundle_nourebut:
     pattern:  /nourebut
     defaults: { _controller: "FecdasBundle:Facturacio:nourebut" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_anularrebut:
+    pattern:  /anularrebut
+    defaults: { _controller: "FecdasBundle:Facturacio:anularrebut" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_ingresos:
+    pattern:  /ingresos
+    defaults: { _controller: "FecdasBundle:Facturacio:ingresos" }
     requirements:
         _method:  GET
 

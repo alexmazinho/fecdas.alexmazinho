@@ -58,44 +58,59 @@
 			 <div class="col-md-2">
 			 	<div class="form-group">
 					{{ form_label(form.numfactura, 'Factura') }}
-					<div id="formcomanda-factura" class="input-group input-group-button-right">
-						{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control form-control-center  form-control-button-right'} }) }}
-						<div class="separator"></div>
-						{% if comanda.id > 0 %}
-							{% if  comanda.factura is not null %}
-								<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
-									<i class="fa fa-pencil fa-1x"></i></a>
-							{% else %}
-								<a id="editar-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
-									<i class="fa fa-file-text-o fa-1x"></i></a>
-							{% endif %}
+					<div class="label-actions">
+					{% if comanda.id > 0 %}
+						{% if  comanda.factura is not null %}
+							<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
+								<i class="fa fa-pencil fa-1x blue"></i></a>
+							<a id="factura-to-pdf" class="link" href="{{ path('FecdasBundle_facturatopdf', {'id': comanda.factura.id }) }}"  title="PDF factura" alt="PDF factura">
+								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% else %}
-							<i class="fa fa-pencil fa-1x link gray"></i>
+							<a id="editar-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+								<i class="fa fa-file-text-o fa-1x blue"></i></a>
 						{% endif %}
-						
+					{% endif %}
+					</div>
+					<div id="formcomanda-factura" class="">
+						{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control form-control-center'} }) }}
 					</div>{{ form_errors(form.numfactura)  }}
 				</div>
 			 </div>
+			 {% if comanda.rebut is null %}
 			 <div class="col-md-3">
 			 	<div class="form-group">
-			 		{% if comanda.rebut is null %}
-						{{ form_label(form.numrebut, 'Data pagament') }}
-						<div id="formcomanda-rebut" class="input-group">
-							<span class="input-group-addon">Pagat</span>
-							{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control form-control-center form-control-button-right'} }) }}
-							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-						</div>
-						{% else %}
-						{{ form_label(form.numrebut, 'Rebut') }}
-						<div id="formcomanda-rebut" class="input-group input-group-button-right">
-							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control form-control-center form-control-button-right'} }) }}
-							<div class="separator"></div>
-							<a id="editar-rebut" class="link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}" title="Editar rebut" alt="Editar rebut">
-									<i class="fa fa-pencil fa-1x"></i></a>
-						</div>
-					{% endif %}{{ form_errors(form.numrebut)  }}{{ form_errors(form.datapagament)  }}
+					{{ form_label(form.numrebut, 'Data pagament') }}
+					<div id="formcomanda-rebut" class="input-group">
+						<span class="input-group-addon">Pagat</span>
+						{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control form-control-center'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>{{ form_errors(form.datapagament)  }}
+				</div>
+			</div>
+			<div class="col-md-2">
+			 	<div class="form-group">
+					{{ form_label(form.tipuspagament, 'Tipus pagament') }}
+					<div id="formcomanda-tipuspagament"  class="">
+						{{ form_widget(form.tipuspagament, { 'attr': {'class': 'form-control form-control-left'} }) }}
+					</div>{{ form_errors(form.tipuspagament)  }}
+				</div>
+			</div>
+			{% else %}
+			 <div class="col-md-2">
+			 	<div class="form-group">
+					{{ form_label(form.numrebut, 'Rebut') }}
+					<div class="label-actions">
+						<a id="editar-rebut" class="link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}" title="Editar rebut" alt="Editar rebut">
+							<i class="fa fa-pencil fa-1x blue"></i></a>
+						<a id="rebut-to-pdf" class="link" href="{{ path('FecdasBundle_rebuttopdf', {'id': comanda.rebut.id }) }}"  title="PDF Rebut" alt="PDF Rebut">
+							<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+					</div>
+					<div id="formcomanda-rebut">
+						{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control form-control-center'} }) }}
+					</div>
 				</div>
 			 </div>
+			 {% endif %}{{ form_errors(form.numrebut)  }}
 			 <div class="col-md-3">
 				<div class="form-group">
 					{{ form_label(form.databaixa, 'Data de baixa') }}
@@ -106,11 +121,21 @@
 					</div>{{ form_errors(form.databaixa)  }}
 				</div>
 			 </div>
-			  <div class="col-md-4">
-				{{ form_label(form.comentaris, 'Comentaris') }}{{ form_errors(form.comentaris)  }}
-				<div id="formcomanda-comentaris"  class="">
+			 <div class="{% if comanda.rebut is null %}col-md-2{% else %}col-md-5{% endif %}">
+			 	<div class="form-group">
+			 		{{ form_label(form.comentaris, 'Comentaris') }}
+					<div id="formcomanda-comentaris"  class="">
 					{{ form_widget(form.comentaris, { 'attr': {'class': 'form-control'} }) }}
+					</div>
 				</div>{{ form_errors(form.comentaris)  }}
+			 </div> 
+			 <div class="col-md-6">
+			 	<div class="form-group">
+			 		<label>&nbsp;</label>
+			 		<div class="input-group">
+						<button type="submit" id="formcomanda-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
+					</div>
+				</div>
 			 </div>
 		</div>
 		<div class="clearfix"></div>
@@ -118,7 +143,7 @@
 			 <div class="col-md-12">
 				 <div class="row">
 					 <div class="col-md-12">
-			    		<h3 class="blue">Detalls de la comanda<a class="add-detall pull-right" href="javascript:void(0);" ><span class="fa fa-plus-square fa-1x blue"></span></a></h3>
+			    		<h3 class="blue">Detalls de la comanda<a class="add-detall pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-1x blue"></i></a></h3>
 					 </div>
 					 
 					 <ul class="col-md-12 detalls-header">
@@ -157,14 +182,6 @@
 					 </ul>				 
 				</div> 
 			 </div>
-			 <div class="col-md-8">
-			 	<div class="form-group">
-			 		<label>&nbsp;</label>
-			 		<div class="input-group">
-						<button type="submit" id="formcomanda-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
-					</div>
-				</div>
-			 </div>	
 		</div>
 		
 		<div id="formcomanda-rest" class="sr-only">{{ form_rest(form) }}</div>

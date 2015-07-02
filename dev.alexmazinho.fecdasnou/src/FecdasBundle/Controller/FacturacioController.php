@@ -444,11 +444,12 @@ class FacturacioController extends BaseController {
 				$page,
 				10/*limit per page*/
 		);
-	
+		error_log("==> ".$nr);
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'hidden', array(
 				'data' => $codi	))
 			->add('numrebut', 'text', array(
+				'required' => false,
 				'data' => $nr	))
 			->add('baixes', 'checkbox', array(
 				'required' => false,
@@ -810,7 +811,7 @@ class FacturacioController extends BaseController {
 						
 						$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
 						
-						$rebut = new EntityRebut($datapagament, $tipusPagament, $maxNumRebut, 0, $comanda); // Import agafat de la comanda
+						$rebut = new EntityRebut($datapagament, $tipusPagament, $maxNumRebut, $comanda); // Import i club agafat de la comanda
 						
 						$em->persist($rebut);
 					} 
@@ -1308,7 +1309,8 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 	
 		$strQuery = "SELECT r, c FROM FecdasBundle\Entity\EntityRebut r LEFT JOIN r.comanda c ";
-		$strQuery .= "WHERE c IS NULL "; 								// Ingrés no associat a cap comanda
+		$strQuery .= "WHERE 1 = 1 ";
+		//$strQuery .= "WHERE c IS NULL "; 								// Ingrés no associat a cap comanda
 		if ($codi != '') $strQuery .= " AND r.club = :codi ";
 	
 		if (is_numeric($nr) && $nr > 0) $strQuery .= " AND r.num = :numrebut ";
@@ -1333,6 +1335,132 @@ class FacturacioController extends BaseController {
 		}
 		
 		return $query;
+	}
+	
+	public function nourebutAction(Request $request) {
+		// Formulari de creació d'un producte
+		$this->get('session')->getFlashBag()->clear();
+		 
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+			/* De moment administradors */
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+				 
+		$this->logEntryAuth('REBUT NOU','');
+				 
+		$comandaid = $request->query->get('comanda', 0);
+		
+		$comanda = null;
+		if ($comandaid > 0) $comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaid);
+		
+		$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
+		if ($comanda == null) $rebut = new EntityRebut(new \DateTime, 0, $maxNumRebut);
+		else $rebut = new EntityRebut(new \DateTime, 0, $maxNumRebut, $comanda);
+				 
+		$form = $this->createForm(new FormRebut(), $rebut);
+				 
+		return $this->render('FecdasBundle:Facturacio:rebut.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
+	}
+	
+	public function editarrebutAction(Request $request) {
+		// Formulari d'edició d'un rebut
+		//$this->get('session')->getFlashBag()->clear();
+		 
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		/* De moment administradors */
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+				 
+		$em = $this->getDoctrine()->getManager();
+				 
+		$rebut = null;
+		
+		if ($request->getMethod() != 'POST') {
+			$id = $request->query->get('id', 0);
+	
+			$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($id);
+					 
+			if ($rebut == null) {
+				// No trobat
+				$this->logEntryAuth('REBUT EDIT KO',	'rebut : ' . $request->query->get('id', 0));
+				$this->get('session')->getFlashBag()->add('error-notice', 'Rebut no trobat ');
+				return $this->redirect($this->generateUrl('FecdasBundle_ingresos'));
+			}
+	
+			$this->logEntryAuth('REBUT EDIT',	'rebut : ' . $rebut->getId().' '.$rebut->getComentari());
+			
+		} else {
+			/* Alta o modificació de clubs */
+			$data = $request->request->get('rebut');
+			$id = (isset($data['id'])?$data['id']:0);
+	
+			if ($id > 0) $rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($id);
+			if ($rebut == null) {
+				$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
+				$rebut = new EntityRebut(new \DateTime, 0, $maxNumRebut);
+				$em->persist($rebut);
+			}
+		}
+		$form = $this->createForm(new FormRebut(), $rebut);
+				 
+		if ($request->getMethod() == 'POST') {
+			try {
+				$form->handleRequest($request);
+		
+				if ($form->isValid()) {
+	
+					$rebut->setDatamodificacio(new \DateTime());
+					if ($rebut->getId() == 0)  {
+						$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
+						$rebut->setNum($maxNumRebut);
+						if ($rebut->getComanda() != null) $rebut->getComanda()->setRebut($rebut);
+					}
+	
+					if ($rebut->getImport() < 0) {
+						$form->get('import')->addError(new FormError('Valor incorrecte'));
+						throw new \Exception('Cal indicar un import superior a 0' );
+					}
+		
+					if ($rebut->getComanda() != null) {
+						
+						if ($rebut->getDatapagament()->format('Y-m-d') < $rebut->getComanda()->getDataentrada()->format('Y-m-d')) {
+							$form->get('datapagament')->addError(new FormError('Data incorrecte'));
+							throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
+						}
+						
+						if (abs($rebut->getImport() - $rebut->getComanda()->getTotalDetalls()) > 0.01) {
+							error_log("==> ".$rebut->getImport()." ".$rebut->getComanda()->getTotalDetalls()." comanda ".$rebut->getComanda()->getId());
+							
+							$form->get('import')->addError(new FormError('Valor incorrecte'));
+							throw new \Exception('El rebut no coincideix amb l\'import de la comanda ');
+						}
+					}
+		
+				} else {
+					throw new \Exception('Dades incorrectes, cal revisar les dades del rebut ' ); //$form->getErrorsAsString()
+				}
+		
+				$em->flush();
+		
+				$this->get('session')->getFlashBag()->add('info-notice','El rebut s\'ha desat correctament');
+							 
+				$this->logEntryAuth('REBUT SUBMIT',	'rebut : ' . $rebut->getId().' '.$rebut->getComentari());
+				// Ok, retorn form sms ok
+				return $this->redirect($this->generateUrl('FecdasBundle_editarrebut',
+									array( 'id' => $rebut->getId() )));
+							 
+			} catch (\Exception $e) {
+				// Ko, mostra form amb errors
+				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			}
+		}
+		return $this->render('FecdasBundle:Facturacio:rebut.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
 	}
 	
 	
@@ -1934,8 +2062,8 @@ class FacturacioController extends BaseController {
 				$comanda = $statement->fetch();
 				
 				if ($comanda == null) {
-					error_log("ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD);
-					echo "ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD."<br/>";
+					error_log("ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD. " ".$numFactura);
+					echo "ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD. " ".$numFactura."<br/>";
 					return;
 				}
 				
@@ -2001,6 +2129,12 @@ class FacturacioController extends BaseController {
 				$em->getConnection()->exec( $query );
 				
 				$rebutId = $em->getConnection()->lastInsertId();
+				
+				$query = "UPDATE m_comandes SET rebut = ".$rebutId." WHERE id = ". $comanda['id'];
+				
+				//$maxnums['maxnumrebut']++;
+					
+				$em->getConnection()->exec( $query );
 				
 				$em->getConnection()->commit();
 				$em->getConnection()->beginTransaction(); // suspend auto-commit
@@ -2112,6 +2246,11 @@ class FacturacioController extends BaseController {
 						$em->getConnection()->exec( $query );
 					}
 					
+					/*
+					$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
+					$query .= "('".$datapagament."',".$numRebut.",".$import;
+					$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
+					$query .= ",'".$clubs[$compteH]['codi']."')";*/
 					
 					//error_log("2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>");
 					//echo "2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";

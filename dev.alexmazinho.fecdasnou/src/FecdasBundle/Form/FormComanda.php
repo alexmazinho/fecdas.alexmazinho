@@ -117,7 +117,7 @@ class FormComanda extends AbstractType {
 		
 		$builder->add('comentaris', 'textarea', array(
 				'required' 	=> false,
-				'attr' 		=> array('rows' => '2')
+				'attr' 		=> array('rows' => '1')
 		));
 		
 		

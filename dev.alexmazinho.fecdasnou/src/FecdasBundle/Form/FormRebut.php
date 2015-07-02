@@ -7,6 +7,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 
+use FecdasBundle\Entity\EntityRebut;
+use FecdasBundle\Controller\BaseController;
 
 class FormRebut extends AbstractType {
 
@@ -22,10 +24,53 @@ class FormRebut extends AbstractType {
 			if ($rebut instanceof EntityRebut) {
 				
 				$form->add('numrebut', 'text', array(
-						'required' => true,
-						'read_only' => true,
+						'required' 	=> true,
+						'disabled' 	=> true,
 						'mapped'	=> false,
 						'data'		=> $rebut->getNumRebut()
+				));
+				
+				if ($rebut->getComanda() == null) {
+					$current = date('Y') - 1;
+					$datadesde = \DateTime::createFromFormat('Y-m-d H:i:s', $current."-01-01 00:00:00");
+					
+					$options = array('class' => 'FecdasBundle:EntityComanda', 
+									'query_builder' => function($repository) use ($datadesde) {
+										return $repository->createQueryBuilder('c')->orderBy('c.dataentrada, c.num', 'DESC')
+										->where(' c.databaixa IS NULL AND c.rebut IS NULL AND c.dataentrada >= :desde')
+										->setParameter('desde', $datadesde);
+									}, 
+									'choice_label' 	=> 'InfoComanda', 
+									'required'  	=> false,  
+									'empty_value' 	=> 'Associar a ...',);
+				} else {
+					$id = $rebut->getComanda()->getId();
+					
+					$options = array('class' => 'FecdasBundle:EntityComanda',
+							'query_builder' => function($repository) use ( $id ) {
+								return $repository->createQueryBuilder('c')
+								->where(' c.id = :id ')
+								->setParameter('id', $id);
+							},
+							'choice_label' 	=> 'InfoComanda',
+							'required'  	=> false,);
+					
+					/*$options = array(
+						'class' 		=> 'FecdasBundle:EntityComanda',
+						'choice_label' 	=> 'InfoComanda',
+						'required'  	=> false,
+						'mapped'  		=> false,
+						'data'			=> $rebut->getComanda());*/
+				}
+									
+				$form->add('comanda', 'entity', $options);
+				
+				$form->add('comptabilitat', 'entity', array(
+						'class' 		=> 'FecdasBundle:EntityComptabilitat',
+						'choice_label' 	=> 'InfoComptabilitat',
+						'empty_value' 	=> 'Pendent d\'enviar a comptabilitat',
+						'required'  	=> false,
+						'disabled' 		=> true,
 				));
 			}
 		});
@@ -34,44 +79,49 @@ class FormRebut extends AbstractType {
 		
 		$builder->add('num', 'hidden');
 		
+		$builder->add('club', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityClub',
+				'choice_label' 	=> 'nom',
+				'empty_value' 	=> 'Seleccionar Club',
+				'required'  	=> false,
+				'read_only' 	=> true,
+		));
+		
 		$builder->add('datapagament', 'date', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'date',
-				'empty_value' => false,
-				'format' => 'dd/MM/yyyy',
+				'required'  	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
 		));
 		
 		$builder->add ( 'import', 'number', array (
-				'required' => true,
-				'scale' => 2,
-				'mapped' => false
+				'required' 	=> true,
+				'scale' 	=> 2,
 		));
 		
 		$builder->add('dadespagament', 'text', array(
 				'required' => false,
 		));
 		
-		$builder->add('comentaris', 'textarea', array(
+		$builder->add('tipuspagament', 'choice', array(
+				'required' 		=> true,
+				'choices' 		=> BaseController::getTipusDePagament(),
+				'empty_value' 	=> ''
+		));
+		
+		$builder->add('comentari', 'textarea', array(
 				'required' => false,
 		));
 		
-		
-		$builder->add('comanda', 'entity', array(
-				'class' => 'FecdasBundle:EntityComanda',
-				'choice_label' => 'InfoComanda',
-				'empty_value' => '',
-				'required'  => false,
-				'read_only' => true,
-		));
-		
 		$builder->add('dataanulacio', 'date', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'date',
-				'empty_value' => false,
-				'format' => 'dd/MM/yyyy',
+				'required' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
 		));
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

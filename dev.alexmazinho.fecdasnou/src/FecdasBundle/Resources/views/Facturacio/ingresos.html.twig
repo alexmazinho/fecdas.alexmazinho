@@ -41,13 +41,13 @@
 					    </label>
 					  </div>
 				  </div>
-				  <div class="col-md-2 col-last-right">
+				  <div class="col-md-2 col-md-offset-2 col-last-right">
 						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
 				  </div>
 				</div>
 		   	</form>
 	    </div>
-	    <div class="table-header table-header-scroll">	
+	    <div class="table-header">	
 		   	<div id="list-header">
 				<div id="header-ingres-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-ingres-estat" class="col-listheader collistheader-noorder">Estat</div>
@@ -59,6 +59,8 @@
 		   			<span class="listheader-icon {% if ingresos.isSorted('r.import') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-ingres-data" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Data', 'r.datapagament') }}
 		   			<span class="listheader-icon {% if ingresos.isSorted('r.datapagament') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-comanda" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Comanda', 'c.dataentrada,c.num') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('c.dataentrada,c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-ingres-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
 		   		<div id="header-ingres-compta" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Enviat\nCompta.', 'r.comptabilitat') }}
 		   			<span class="listheader-icon {% if ingresos.isSorted('r.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
@@ -76,6 +78,12 @@
 		   			<div class="data-detall-cell ingres-club">{{ ingres.club.nom }}</div>
 		   			<div class="data-detall-cell ingres-import">{{ ingres.import|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell ingres-data">{{ ingres.datapagament|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell ingres-comanda">
+		   				{% if  ingres.comanda is not null %}
+		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'id': ingres.comanda.id }) }}"  title="Editar comanda" alt="Editar comanda">
+		   					{{ ingres.comanda.numComanda }}</a>	
+		   				{% endif %}	
+		   			</div>
 		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
 		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
 		   			<div class="data-detall-cell ingres-actions">
@@ -107,7 +115,7 @@
 	<script type="text/javascript">
 	
 	
-	filtreLlistaingresos = function(cerca, baixes, numfactura, numrebut) {
+	filtreLlistaingresos = function(cerca, baixes, numrebut) {
 		
 		window.location = "{{ path('FecdasBundle_ingresos', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes+"&numrebut="+numrebut;
 	}
@@ -129,6 +137,13 @@
 		
 		// ingres
 		init_cercaclub_JSON('#form_cerca', 'Filtrar per nom del club', "{{  path('FecdasBundle_jsonclubs') }}");
+
+		$('#form_ingresos').submit( function(e){
+			e.preventDefault();
+
+			var url = $(this).attr("action");
+			window.location = url;
+		});
 	});
 	
 	</script>

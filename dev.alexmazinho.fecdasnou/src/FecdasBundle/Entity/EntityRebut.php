@@ -69,6 +69,11 @@ class EntityRebut {
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
+
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $datamodificacio;
 	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
@@ -99,20 +104,21 @@ class EntityRebut {
 	}
 	
 	
-	public function __constructParams($datapagament, $tipusPagament, $num, $import = 0, $comanda) {
+	public function __constructParams($datapagament, $tipusPagament, $num, $comanda = null, $club = null, $import = 0) {
 	
 		$this->datapagament = $datapagament;
 		$this->tipuspagament = $tipusPagament;
 		$this->num = $num;
 		$this->comanda = $comanda;
-		$this->club = $comanda->getClub();
 		if ($comanda == null) { // Ingrés no  associat a cap comanda
+			$this->club = $club;
 			$this->import = $import;
 			$this->comentari = "Ingrés a compte del club ".($this->club!=null?$this->club->getNom():'');
 		} else {  // Pagament d'una comanda
+			$this->club = $comanda->getClub();
 			$this->import = $this->comanda->getTotalDetalls();
 			$this->comentari = "Rebut comanda ".$this->comanda->getNumComanda()." ".$this->comanda->getTipusComanda();
-			
+
 			$this->comanda->setRebut($this); 
 		}
 	}
@@ -360,6 +366,26 @@ class EntityRebut {
 		return $this->dataanulacio;
 	}
 
+	/**
+	 * Set datamodificacio
+	 *
+	 * @param \DateTime $datamodificacio
+	 */
+	public function setDatamodificacio($datamodificacio)
+	{
+		$this->datamodificacio = $datamodificacio;
+	}
+	
+	/**
+	 * Get datamodificacio
+	 *
+	 * @return \DateTime
+	 */
+	public function getDatamodificacio()
+	{
+		return $this->datamodificacio;
+	}
+	
 	/**
 	 * @param datetime $dataanulacio
 	 */

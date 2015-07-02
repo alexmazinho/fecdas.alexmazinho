@@ -328,7 +328,7 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .data-detall .data-detall-cell i.fa,
 .link i.fa { 
-	padding: 5px;
+	padding: 4px;
 	border-radius: 50%;
 	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-moz-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
@@ -342,6 +342,10 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall .data-detall-cell i.fa-plus-circle:hover { background-color: #31708f; }
 .link i.fa.blue:hover { background-color: #31708f; }
 .link i.fa.red:hover { background-color: #a94442; } 
+.link i.fa.green:hover { background-color: #5cb85c; }
+.link i.fa.orange:hover { background-color: #eea236; } 
+
+
 .data-detall .data-detall-cell i.fa.transparent:hover { background-color: transparent; color: transparent;  } 
   
  
@@ -425,6 +429,8 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .blue { color: #1240a0; /*#2281cf;*/ }
 .red { color: #a94442; }
+.green { color: #5cb85c; }
+.orange { color: #eea236; }
 .gray { color: #cccccc; }
 .transparent { color: transparent; cursor: default; }
 
@@ -484,9 +490,9 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-comanda-data { width: 7%; text-align: center; }
 #header-comanda-factura { width: 7%; text-align: center; }
 #header-comanda-rebut { width: 8%; text-align: center; }
-#header-comanda-comentaris { width: 20%; text-align: left; }
+#header-comanda-comentaris { width: 18%; text-align: left; }
 #header-comanda-compta { width: 8%; text-align: right; }
-#header-comanda-actions { width: 10%; text-align: right; }
+#header-comanda-actions { width: 12%; text-align: right; }
 
 .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
 .data-detall-cell.comanda-num { width: 8%; text-align: left; }
@@ -496,9 +502,9 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.comanda-data { width: 7%; text-align: center; }
 .data-detall-cell.comanda-factura { width: 7%; text-align: center; }
 .data-detall-cell.comanda-rebut { width: 8%; text-align: center; }
-.data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-comentaris { width: 18%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-compta { width: 8%; text-align: right; }
-.data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
+.data-detall-cell.comanda-actions { width: 12%; text-align: right; font-size: 1.2em; }
 
 /*************** FECDAS NOU comanda ****************/
 
@@ -527,21 +533,23 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-ingres-estat  { width: 5%; text-align: left; }
 #header-ingres-num { width: 10%; text-align: left; }
 #header-ingres-club { width: 15%; text-align: left;  }
-#header-ingres-import { width: 10%; text-align: right; }
+#header-ingres-import { width: 8%; text-align: right; }
 #header-ingres-data { width: 10%; text-align: center; }
-#header-ingres-comentaris { width: 25%; text-align: left; }
+#header-ingres-comanda { width: 10%; text-align: center; }
+#header-ingres-comentaris { width: 23%; text-align: left; }
 #header-ingres-compta { width: 10%; text-align: center; }
-#header-ingres-actions { width: 10%; text-align: right; }
+#header-ingres-actions { width: 6%; text-align: right; }
 
 
 .data-detall-cell.ingres-estat  { width: 5%; text-align: left; }
 .data-detall-cell.ingres-num { width: 10%; text-align: left; }
 .data-detall-cell.ingres-club { width: 15%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.ingres-import { width: 10%; text-align: right; }
+.data-detall-cell.ingres-import { width: 8%; text-align: right; }
 .data-detall-cell.ingres-data { width: 10%; text-align: center; }
-.data-detall-cell.ingres-comentaris { width: 25%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.ingres-comanda { width: 10%; text-align: center; }
+.data-detall-cell.ingres-comentaris { width: 23%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.ingres-compta { width: 10%; text-align: center; }
-.data-detall-cell.ingres-actions { width: 10%; text-align: right; font-size: 1.2em; }
+.data-detall-cell.ingres-actions { width: 6%; text-align: right; font-size: 1.2em; }
  
  
  /*************** FECDAS NOU traspas ****************/

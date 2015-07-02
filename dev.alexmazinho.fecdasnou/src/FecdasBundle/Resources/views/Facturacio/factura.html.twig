@@ -37,7 +37,7 @@
 						{{ form_widget(form.comandatext, { 'attr': {'class': 'form-control form-control-center form-control-button-right'} }) }}
 						{% if factura.comanda is not null %}
 							<a id="veure-comanda" class="link" href="{{ path('FecdasBundle_editarcomanda', {'id': factura.comanda.id }) }}"  title="Veure comanda" alt="Veure comanda">
-								<i class="fa fa-search fa-1x"></i></a>
+								<i class="fa fa-search fa-1x blue"></i></a>
 						{% endif %}
 					</div>{{ form_errors(form.comandatext)  }}
 				</div>
@@ -49,7 +49,7 @@
 						{{ form_widget(form.club, { 'attr': {'class': 'form-control form-control-center'} }) }}
 						{% if factura.comanda is not null and factura.comanda.club is not null %}
 							<a id="veure-club" class="link" href="{{ path('FecdasBundle_club', {'codiclub': factura.comanda.club.codi }) }}"  title="Veure club" alt="Veure club">
-							<i class="fa fa-search fa-1x"></i></a>
+							<i class="fa fa-search fa-1x blue"></i></a>
 						{% endif %}
 					</div>{{ form_errors(form.club)  }}
 				</div>
@@ -114,12 +114,7 @@
 		</div>
 		<div class="row">
 			 <div class="col-md-2">
-			 	<div class="form-group">
-			 		<label>&nbsp;</label>
-			 		<div class="input-group">
-						<button type="submit" id="formfactura-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
-					</div>
-				</div>
+				<button type="submit" id="formfactura-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
 			 </div>	
 		</div>
 		

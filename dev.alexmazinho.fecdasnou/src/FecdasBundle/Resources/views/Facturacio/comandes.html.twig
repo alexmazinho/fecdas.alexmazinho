@@ -55,7 +55,7 @@
 				</div>
 		   	</form>
 	    </div>
-	    <div class="table-header table-header-scroll">	
+	    <div class="table-header">	
 		   	<div id="list-header">
 				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">Estat</div>
@@ -114,9 +114,20 @@
 		   			<div class="data-detall-cell comanda-actions">
 		   				<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info blue"></i></a>			
 						{% if not comanda.esBaixa %}
-		   				<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o text-danger red"></i></a>
+							{% if comanda.factura is not null %}
+			   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': comanda.id}) }}" alt="PDF Factura" title="PDF Factura">
+									<i class="fa fa-file-text-o fa-1x green"></i></a>
+							{% else %}
+								<i class="fa fa-file-text-o transparent"></i>
+							{% endif %}
+			   				<a class="comanda-action-albara link" href="{{ path('FecdasBundle_albaratopdf', { 'id': comanda.id}) }}" alt="PDF Albarà" title="PDF Albarà">
+								<i class="fa fa-list fa-1x orange"></i></a>
+			   				<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa">
+		   						<i class="fa fa-trash-o text-danger red"></i></a>
 		   				{% else %}
-		   				<i class="fa fa-trash-o transparent"></i>
+			   				<i class="fa fa-file-text-o transparent"></i>
+			   				<i class="fa fa-list transparent"></i>
+			   				<i class="fa fa-trash-o transparent"></i>
 		   				{% endif %}
 		   			</div>
 		   		</li>

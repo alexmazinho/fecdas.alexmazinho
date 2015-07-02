@@ -392,7 +392,7 @@ class PageController extends BaseController {
 				throw new \Exception('Una de les persones ja té una llicència en aquesta llista (DNI: ' . $row['dni'] . ')');
 			}
 
-			$parte->addEntityLlicencia($llicencia);
+			$parte->addLlicencia($llicencia);
 
 			if ($this->validaLlicenciaInfantil($llicencia) == false) {
 				throw new \Exception('L\'edat d\'una de les persones no correspon amb el tipus de llicència (DNI: ' . $row['dni'] . ')');
@@ -794,7 +794,7 @@ class PageController extends BaseController {
 				foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
 					if (!isset($p['llicencies'][$i]['renovar'])) {
 						// Treure llicències que no es volen renovar
-						$parte->removeEntityLlicencia($llicencia_iter);
+						$parte->removeLlicencia($llicencia_iter);
 					} else {
 						$em->persist($llicencia_iter);
 					}
@@ -1025,7 +1025,7 @@ class PageController extends BaseController {
 			} else {
 				// Insert
 				$llicencia = new EntityLlicencia($this->getCurrentDate());
-				$parte->addEntityLlicencia($llicencia);
+				$parte->addLlicencia($llicencia);
 				$em->persist($llicencia);
 			}
 			
@@ -1170,7 +1170,7 @@ class PageController extends BaseController {
 						} else {
 							// Nou parte
 							$logaction = 'PARTE NEW KO';
-							$parte->removeEntityLlicencia($llicencia); 
+							$parte->removeLlicencia($llicencia); 
 							$em->detach($llicencia);
 							$em->detach($parte);
 						}
@@ -1253,7 +1253,7 @@ class PageController extends BaseController {
 				// Noves llicències, permeten edició no pdf
 				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
 
-				$parte->addEntityLlicencia($llicencia);
+				$parte->addLlicencia($llicencia);
 
 			}
 			// Person submitted

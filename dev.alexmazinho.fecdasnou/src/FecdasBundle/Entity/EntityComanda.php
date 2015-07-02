@@ -1,14 +1,13 @@
 <?php
 namespace FecdasBundle\Entity;
+
 use Doctrine\ORM\Mapping as ORM;
 use FecdasBundle\Controller\BaseController;
-/* 
-*/
 
 /**
  * @ORM\Entity 
  * @ORM\InheritanceType("JOINED")
- * @ORM\DiscriminatorColumn(name="tipus", type="string", length=1)
+ * @ORM\DiscriminatorColumn(name="tipuscomanda", type="string", length=1)
  * @ORM\DiscriminatorMap({"P" = "EntityParte", "D" = "EntityDuplicat", "A" = "EntityComanda"})
  * @ORM\Table(name="m_comandes")
  * 

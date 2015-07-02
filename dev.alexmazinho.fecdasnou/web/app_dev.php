@@ -22,10 +22,9 @@ $loader = require_once __DIR__.'/../app/bootstrap.php.cache';
 Debug::enable();
 
 /* Alex */
-/*
 $apcLoader = new ApcClassLoader(sha1(__FILE__), $loader);
 $loader->unregister();
-$apcLoader->register(true);*/
+$apcLoader->register(true);
 /* Alex */
 
 require_once __DIR__.'/../app/AppKernel.php';

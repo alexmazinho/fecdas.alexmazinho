@@ -74,7 +74,7 @@
 		   			<div class="data-detall-cell parte-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parte-any">{{ parte.any }}</div>
 			   		<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
-			   		<div class="data-detall-cell parte-tipusdesc">{{ parte.tipus.descripcio }}</div>
+			   		<div class="data-detall-cell parte-tipusdesc">{% if parte.tipus is not null %} {{ parte.tipus.descripcio }} {% endif %}</div>
 			   		<div class="data-detall-cell parte-total"> 
 			   		<a class="llista-llicencies" href="{{ path('FecdasBundle_llicenciesParte', { 'id': parte.id }) }}" title="Llicències">{{ parte.numLlicencies }}
 			   		<img src="{{ asset('images/icon-historial.png') }}" alt="Llicències" title="Llicències" width="23px"></a>

@@ -7,15 +7,16 @@ use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="m_partes")
+ * @ORM\Table(name="m_partes_backup")
  * 
  * @author alex
  *
  */
-class EntityParte extends EntityComanda {
+class EntityParteBKUP {
 	/**
 	 * @ORM\Id
 	 * @ORM\Column(type="integer")
+	 * @ORM\GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;	
 
@@ -24,6 +25,11 @@ class EntityParte extends EntityComanda {
 	 * @ORM\JoinColumn(name="tipus", referencedColumnName="id")
 	 */
 	protected $tipus;	// FK taula m_tipuspartes
+	
+	/**
+	 * @ORM\Column(type="string", length=30)
+	 */
+	protected $clubdel;	// =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
@@ -35,6 +41,21 @@ class EntityParte extends EntityComanda {
 	 */
 	protected $dataalta;
 
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $dataentradadel;   // =================================================> PER ESBORRAR
+	
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $datamodificaciodel;   // =================================================> PER ESBORRAR
+	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $databaixadel;   // =================================================> PER ESBORRAR
+	
 	/**
 	 * @ORM\Column(type="date", nullable = true)
 	 */
@@ -504,6 +525,26 @@ class EntityParte extends EntityComanda {
     }
 
     /**
+     * Set clubdel
+     *
+     * @param string $clubdel
+     */
+    /*public function setClubdel($clubdel)
+    {
+        $this->clubdel = $clubdel;
+    }*/
+
+    /**
+     * Get clubdel
+     *
+     * @return string
+     */
+    /*public function getClubdel()
+    {
+        return $this->clubdel;
+    }*/
+
+    /**
      * Set web
      *
      * @param boolean $web
@@ -564,11 +605,51 @@ class EntityParte extends EntityComanda {
     }
     
     /**
+     * Set datamodificaciodel
+     *
+     * @param datetime $datamodificaciodel
+     */
+    /*public function setDatamodificaciodel($datamodificaciodel)
+    {
+    	$this->datamodificaciodel = $datamodificaciodel;
+    }*/
+    
+    /**
+     * Get datamodificaciodel
+     *
+     * @return datetime
+     */
+    /*public function getDatamodificaciodel()
+    {
+    	return $this->datamodificaciodel;
+    }*/
+    
+    /**
+     * Set databaixadel
+     *
+     * @param datetime $databaixadel
+     */
+    /*public function setDatabaixadel($databaixadel)
+    {
+    	$this->databaixadel = $databaixadel;
+    }*/
+    
+    /**
+     * Get databaixadel
+     *
+     * @return datetime
+     */
+    /*public function getDatabaixadel()
+    {
+    	return $this->databaixadel;
+    }*/
+
+    /**
      * Add llicencia
      *
      * @param FecdasBundle\Entity\EntityLlicencia $llicencia
      */
-    public function addLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
+    public function addEntityLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
     {
     	$llicencia->setParte($this);
     	$this->llicencies->add($llicencia);
@@ -579,7 +660,7 @@ class EntityParte extends EntityComanda {
      *
      * @param FecdasBundle\Entity\EntityLlicencia $llicencia
      */
-    public function removeLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
+    public function removeEntityLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
     {
     	$llicencia->setParte();
     	$this->llicencies->removeElement($llicencia);
@@ -1004,28 +1085,5 @@ class EntityParte extends EntityComanda {
     	
     	return false;
     }
- 
 
-    /**
-     * Add llicencies
-     *
-     * @param \FecdasBundle\Entity\EntityLlicencia $llicencies
-     * @return EntityParte
-     */
-    public function addLlicency(\FecdasBundle\Entity\EntityLlicencia $llicencies)
-    {
-        $this->llicencies[] = $llicencies;
-
-        return $this;
-    }
-
-    /**
-     * Remove llicencies
-     *
-     * @param \FecdasBundle\Entity\EntityLlicencia $llicencies
-     */
-    public function removeLlicency(\FecdasBundle\Entity\EntityLlicencia $llicencies)
-    {
-        $this->llicencies->removeElement($llicencies);
-    }
 }

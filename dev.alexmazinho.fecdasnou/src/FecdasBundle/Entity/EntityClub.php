@@ -135,7 +135,7 @@ class EntityClub {
 	 *      inverseJoinColumns={@ORM\JoinColumn(name="tipus", referencedColumnName="id")}
 	 *      )
 	 */
-	private $tipusparte;
+	protected $tipusparte;
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityClubEstat")
@@ -1084,7 +1084,8 @@ class EntityClub {
 	    $stat['lvigents'] = 0;	// llicències vigents
 	    
 	    foreach($this->comandes as $parte_iter) {
-	    	if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and 
+	    	
+	    	/*if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and 
 	    		$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and 
 	    		$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d') and
 	    		$parte_iter->getTipus()->getId() == $tipus ) {
@@ -1096,6 +1097,24 @@ class EntityClub {
 		    			$stat['vigents']++;
 		    		}
 		    	}
+	    	}*/
+	    	
+	    	if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and
+	    		$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and
+	    		$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d')) {
+				
+	    			error_log("parte => ".$parte_iter->getId()." 0-".get_class($parte_iter)." 1-"." 2-".($parte_iter->getTipus()==null)." 3-".is_array($parte_iter->getTipus()));
+	    			
+	    		if ( $parte_iter->getTipus() != null && $parte_iter->getTipus()->getId() == $tipus ) {
+	    			$nlic = $parte_iter->getNumLlicencies();
+	    			if ($nlic > 0) {
+	    				$stat['ltotal'] +=  $nlic;
+	    				if ($parte_iter->isVigent()) {
+	    					$stat['lvigents'] +=  $nlic;
+	    					$stat['vigents']++;
+	    				}
+	    			}
+	    		}
 	    	}
 	    }
 	    return $stat;
@@ -1139,4 +1158,50 @@ class EntityClub {
     	return $this->estat->getCodi() == 'DIFE';
     }
     
+
+    /**
+     * Add usuaris
+     *
+     * @param \FecdasBundle\Entity\EntityUser $usuaris
+     * @return EntityClub
+     */
+    public function addUsuari(\FecdasBundle\Entity\EntityUser $usuaris)
+    {
+        $this->usuaris[] = $usuaris;
+
+        return $this;
+    }
+
+    /**
+     * Remove usuaris
+     *
+     * @param \FecdasBundle\Entity\EntityUser $usuaris
+     */
+    public function removeUsuari(\FecdasBundle\Entity\EntityUser $usuaris)
+    {
+        $this->usuaris->removeElement($usuaris);
+    }
+
+    /**
+     * Add comandes
+     *
+     * @param \FecdasBundle\Entity\EntityComanda $comandes
+     * @return EntityClub
+     */
+    public function addComande(\FecdasBundle\Entity\EntityComanda $comandes)
+    {
+        $this->comandes[] = $comandes;
+
+        return $this;
+    }
+
+    /**
+     * Remove comandes
+     *
+     * @param \FecdasBundle\Entity\EntityComanda $comandes
+     */
+    public function removeComande(\FecdasBundle\Entity\EntityComanda $comandes)
+    {
+        $this->comandes->removeElement($comandes);
+    }
 }

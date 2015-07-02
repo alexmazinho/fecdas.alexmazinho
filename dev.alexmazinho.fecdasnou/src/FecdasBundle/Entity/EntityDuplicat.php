@@ -18,12 +18,6 @@ class EntityDuplicat extends EntityComanda {
 	protected $id;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub") 
-	 * @ORM\JoinColumn(name="clubdel", referencedColumnName="codi")
-	 */
-	protected $clubdel; // FK taula m_clubs
-
-	/**
 	 * @ORM\ManyToOne(targetEntity="EntityPersona")
 	 * @ORM\JoinColumn(name="persona", referencedColumnName="id")
 	 */
@@ -85,7 +79,7 @@ class EntityDuplicat extends EntityComanda {
 	}
 
 	public function __toString() {
-		return $this->getId() . "-" . $this->getClub();
+		return $this->getId() . "-" . $this->getClub()->getNom();
 	}
 
 	public function esBaixa()
@@ -119,20 +113,6 @@ class EntityDuplicat extends EntityComanda {
 	 */
 	public function setId($id) {
 		$this->id = $id;
-	}
-
-	/**
-	 * @return FecdasBundle\Entity\EntityClub
-	 */
-	public function getClubdel() {
-		return $this->clubdel;
-	}
-
-	/**
-	 * @param FecdasBundle\Entity\EntityClub $clubdel
-	 */
-	public function setClubdel(\FecdasBundle\Entity\EntityClub $clubdel) {
-		$this->clubdel = $clubdel;
 	}
 
 	/**

@@ -53,7 +53,6 @@ class EntityParteType {
 	 */
 	protected $actiu;
 	
-	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityCategoria", mappedBy="tipusparte")
 	 */

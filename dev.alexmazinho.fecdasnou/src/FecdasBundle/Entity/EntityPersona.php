@@ -3,7 +3,6 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ExecutionContext;
 
 /**
  * @Assert\Callback(methods={"isPersonaValid"})
@@ -15,9 +14,6 @@ use Symfony\Component\Validator\ExecutionContext;
  *
  */
 class EntityPersona {
-	
-	public function isPersonaValid(ExecutionContext $context) {  }
-	
 	
 	/**
 	 * @ORM\Id
@@ -455,7 +451,7 @@ class EntityPersona {
      *
      * @param FecdasBundle\Entity\EntityLlicencia $llicencies
      */
-    public function addEntityLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencies)
+    public function addLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencies)
     {
         $this->llicencies->add($llicencies);
     }

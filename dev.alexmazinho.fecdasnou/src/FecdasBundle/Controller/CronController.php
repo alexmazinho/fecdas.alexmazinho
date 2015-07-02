@@ -295,7 +295,7 @@ class CronController extends BaseController {
 		$cloneLlicencia->setIdparteAccess(null);
 		$cloneLlicencia->getIdpartedetall_access(null);
 		
-		$parte->addEntityLlicencia($cloneLlicencia);
+		$parte->addLlicencia($cloneLlicencia);
 		$parte->setImportparte($parte->getPreuTotalIVA());   // Actualitza preu si escau
 
 		/* Preparar formulari */

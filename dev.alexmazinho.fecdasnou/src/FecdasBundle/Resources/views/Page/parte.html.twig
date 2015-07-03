@@ -27,7 +27,7 @@
 		<div class="form-row clearfix">
 			<div class="sms-header-info">{{ parte.infoParte }}</div> 
 			<div class="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-				{% if not parte.pagat and (parte.pendent or parte.pendentSincronitzar)  %}
+				{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
 	        		<a id="formparte-payment" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">

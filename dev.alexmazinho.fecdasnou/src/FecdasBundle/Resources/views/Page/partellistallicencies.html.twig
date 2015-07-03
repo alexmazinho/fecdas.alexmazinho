@@ -98,7 +98,7 @@
 						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}"><img src="{{ asset('images/icon-license.png') }}" alt="llicència" title="llicència" width="23px"></a>
 					{% endif %}
 					<a class="label-edit-llicencia" href="javascript:loadLlicencia({{ llicencia.id }});"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a>
-					{% if admin == true and not parte.pagat and (parte.pendentSincronitzar or parte.pendent) %}
+					{% if admin == true and not parte.comandaPagada and (parte.pendentSincronitzar or parte.pendent) %}
 						<a href="#" name="remove-llicencia" value="{{ llicencia.id }}"><img src="{{ asset('images/icon-remove.png') }}" alt="Esborra" title="Esborra" width="23px"></a>
 					{% endif %}
 					</div>

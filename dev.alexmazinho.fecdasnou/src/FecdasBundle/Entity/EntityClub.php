@@ -3,6 +3,7 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -968,8 +969,8 @@ class EntityClub {
     			$npartes++;
     			$nimport += $auxImportParte;
     			$nllicencies +=  $parte_iter->getNumLlicencies();
-    			if ($parte_iter->isPagat() &&
-    			$parte_iter->getEstatpagament() == "TPV OK" &&
+    			if ($parte_iter->comandaPagada() &&
+    			$parte_iter->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&
     			$parte_iter->getImportPagament() != null) {
     				$nimportweb += $parte_iter->getImportPagament();
     				$npartespagatsweb++;
@@ -980,29 +981,29 @@ class EntityClub {
     				// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
     				// Error si import calculat és null
     				// Error si no coincideix import calculat del parte i import pagament
-    				if ($parte_iter->isPagat() &&
-    					$parte_iter->getEstatpagament() == "TPV OK" &&
+    				if ($parte_iter->comandaPagada() &&
+    					$parte_iter->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&
     					$parte_iter->getImportPagament() == null) {
     					$dades['err_imports'][] = "(Pagament TPV incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				}
     				
     				if (($parte_iter->getDatapagament() != null ||
-    					$parte_iter->getEstatpagament() != null) && 
+    					$parte_iter->getTipuspagament() != null) && 
     					($parte_iter->getDatapagament() == null || 
-    					$parte_iter->getEstatpagament() == null)) {
+    					$parte_iter->getTipuspagament() == null)) {
     					$dades['err_imports'][] = "(falten dades pagament) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				}
     				
-    				if ($parte_iter->getImportparte() == null) 
+    				if ($parte_iter->getTotalDetalls() == null) 
     					$dades['err_imports'][] = "(import incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				else {
-	    				if ($parte_iter->getImportpagament() != null && $parte_iter->getImportpagament() != $parte_iter->getImportparte()) 
+	    				if ($parte_iter->getImportpagament() != null && $parte_iter->getImportpagament() != $parte_iter->getTotalDetalls()) 
 	    					$dades['err_imports'][] = "(imports no coincidents) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
     				}
     				
-    				if ($parte_iter->getImportparte() != null && $parte_iter->getImportparte() != $auxImportParte)
+    				if ($parte_iter->getTotalDetalls() != null && $parte_iter->getTotalDetalls() != $auxImportParte)
     					$dades['err_imports'][] = "(imports enviat al gestor incorrecte) " . $parte_iter->getId()
-    					. " - Web " .$auxImportParte . " >> Gestor ".$parte_iter->getImportparte();
+    					. " - Web " .$auxImportParte . " >> Gestor ".$parte_iter->getTotalDetalls();
     				
     				
     				// Només si tenen més d'una setmana
@@ -1012,7 +1013,7 @@ class EntityClub {
     					if ($parte_iter->getIdparteAccess() == null) $dades['err_sincro'][] = $parte_iter->getDataalta()->format('d/m/Y');
     					else {
 		    				// 	Sense dades de facturació
-	    					if ($parte_iter->getDatafacturacio() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
+	    					if ($parte_iter->getDatafactura() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
 	    					if ($parte_iter->getNumfactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
     					}
     				}

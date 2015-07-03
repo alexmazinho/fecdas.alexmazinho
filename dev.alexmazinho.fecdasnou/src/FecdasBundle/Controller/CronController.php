@@ -37,11 +37,11 @@ class CronController extends BaseController {
 			$parte->setImportparte($parte->getPreuTotalIVA());
 			
 			if ($parte->getImportpagament() != null) {
-				if ($parte->getImportparte() != $parte->getImportpagament()) {
+				if ($parte->getTotalDetalls() != $parte->getImportpagament()) {
 					$this->logEntry(self::MAIL_ADMINLOG, 'UPD PREU ERROR',
 							$request->server->get('REMOTE_ADDR'),
 							$request->server->get('HTTP_USER_AGENT'),
-							$parte->getId() . " . calculat: " . $parte->getImportparte() . "  pagament: " .$parte->getImportpagament());
+							$parte->getId() . " . calculat: " . $parte->getTotalDetalls() . "  pagament: " .$parte->getImportpagament());
 				}
 			} 
 		}

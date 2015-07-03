@@ -30,6 +30,7 @@ use FecdasBundle\Entity\EntityClub;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityCarnet;
 use FecdasBundle\Entity\EntityImatge; 
+use FecdasBundle\Entity\EntityFactura; 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
@@ -421,10 +422,13 @@ class PageController extends BaseController {
 		
 		$desdeDefault = "01/01/".(date("Y") - 1);
 		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault));
+		error_log($desde->format('Y-m-d'));
 		
 		$finsDefault = "31/12/".(date("Y"));
 		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) $finsDefault = "31/12/".(date("Y")+1);		
 		$fins = \DateTime::createFromFormat('d/m/Y', $request->query->get('fins', $finsDefault));
+		error_log($fins->format('Y-m-d'));
+		
 		
 		$tipus = $request->query->get('tipus', 0);
 		error_log($tipus);
@@ -1520,6 +1524,13 @@ class PageController extends BaseController {
 						$duplicat->getPersona()->setValidat(false);
 					}
 						
+					
+					/* Crear factura */
+
+					$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
+					$factura = new EntityFactura(new \DateTime(), $maxNumFactura, $duplicat->getTotalDetalls(), $duplicat->getTextCarnet(false)." ".$duplicat->getPersona()->getCognomsNom());
+					$duplicat->setFactura($factura);  
+							
 					$em->flush();
 					
 					// Enviar notificació mail

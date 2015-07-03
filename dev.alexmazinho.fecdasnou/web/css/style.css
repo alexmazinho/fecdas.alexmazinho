@@ -1218,17 +1218,6 @@ select#parte_renovar_tipus { width: 240px; }
 
 #ui-datepicker-div { font-size: 0.9em; }
 
-#formpartes-club {  }
-
-#partes-main .form-col { display:inline-block;  }
-#partes-main .column-left { /*width: 35%*/ }
-#partes-main .column-center { /*width: 40%;*/ text-align: center; }
-#partes-main .titol-club-nom { color: #1240A0; font-size: 24px; border-bottom: 1px dashed #1240A0; padding: 0 15% 10px; }
-#partes-main .column-right { /*width: 22%;*/ text-align: right; float: right; padding: 0;}
-
-#form_partes .form-left { padding: 0 10px 0 0; }
-
-
 #partes-main .table-scroll {
 	max-height: 300px;
 }
@@ -1248,9 +1237,11 @@ select#parte_renovar_tipus { width: 240px; }
     width: auto;
 }
 
-#partes-totals { text-align: left; width: 80%;}
+#partes-totals { text-align: left; width: 20%;}
 #partes-totals span,
 #partes-import span { font-style: italic; }
+#partes-club { width: 20%; }
+#partes-club .titol-club-nom { font-size: 24px; border-bottom: 1px dashed #1240A0; padding: 0 15% 10px; }
 #partes-import { width: 20%; }
 
 #header-parteid { width: 6%; }
@@ -1869,9 +1860,9 @@ p.info-bold {
 .duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
 .duplicat-foto img:hover { border-color: #7fcff6 }
 .duplicat-foto span.noimage-available { text-align: center; }
-.duplicat-impressio { width: 8%; }
+.duplicat-impressio { width: 8%; font-size: 1.2em;  }
 .duplicat-extra { width: 16%; text-align: left; }
-.duplicat-actions { width: auto; text-align: right; }
+.duplicat-actions { width: auto; text-align: right; font-size: 1.2em; }
 
 
 #dialeg .dialeg-titol {

@@ -51,42 +51,22 @@ class EntityDuplicat extends EntityComanda {
 	protected $dataimpressio;
 
 	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $databaixadel;
-
-	/**
 	 * @ORM\OneToOne(targetEntity="EntityImatge")
 	 * @ORM\JoinColumn(name="foto", referencedColumnName="id")
 	 */
 	protected $foto;
 	
 	
-	/*
-	 * @ORM\OneToOne(targetEntity="EntityComanda", inversedBy="parte")
-	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
-	 *
-	protected $comanda;*/
-	
-	/*
-	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="duplicat")
-	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
-	 *
-	protected $comanda;*/
-	
-	
 	public function __construct() {
+		parent::__construct();
+		
+		$this->datapeticio = new \DateTime();
 	}
 
 	public function __toString() {
 		return $this->getId() . "-" . $this->getClub()->getNom();
 	}
 
-	public function esBaixa()
-	{
-		return $this->databaixadel != null;
-	}
-	
 	public function esDuplicat()
 	{
 		return true;
@@ -200,20 +180,6 @@ class EntityDuplicat extends EntityComanda {
 	}
 
 	/**
-	 * @return datetime
-	 */
-	public function getDatabaixadel() {
-		return $this->databaixadel;
-	}
-
-	/**
-	 * @param datetime $databaixadel
-	 */
-	public function setDatabaixadel($databaixadel) {
-		$this->databaixadel = $databaixadel;
-	}
-
-	/**
 	 * Set foto
 	 *
 	 * @param FecdasBundle\Entity\EntityImatge $imatge
@@ -276,7 +242,7 @@ class EntityDuplicat extends EntityComanda {
 		// Missatge que es mostra a la llista de duplicats
 		$textInfo = "";
 		 
-		if ($this->databaixadel != null) return "Petició anul·lada " . $this->databaixadel->format("d/m/Y");
+		if ($this->esBaixa()) return "Petició anul·lada " . $this->getDatabaixa()->format("d/m/Y");
 		
 		if ($this->getRebut() != null) $textInfo .= "Petició pagada.";
 			

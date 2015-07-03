@@ -83,7 +83,7 @@ class PDFController extends BaseController {
 				$detall = $parte->getDetallFactura(); // Get detall
 				$totals = $this->getTotalsFactura($detall); // Get totals
 				
-				$response = $this->facturatopdf($parte->getNumfactura(), $parte->getDatafacturacio(), 'Factura Llista llicències ' . date("Y"),  
+				$response = $this->facturatopdf($parte->getNumfactura(), $parte->getDatafactura(), 'Factura Llista llicències ' . date("Y"),  
 											$parte->getClub(), $parte->getTipus()->getIva(), $detall, $totals, $pagat, $valida);
 				
 				$this->logEntryAuth('PRINT FACT PARTE', $reqId);

@@ -102,12 +102,6 @@ FecdasBundle_imprespeticio:
     requirements:
         _method:  GET
 
-FecdasBundle_dadespagamentfactura:
-    pattern:  /dadespagamentfactura
-    defaults: { _controller: "FecdasBundle:Admin:dadespagamentfactura" }
-    requirements:
-        _method:  GET
-        
 FecdasBundle_ajaxclubsnoms:
     pattern:  /ajaxclubsnoms
     defaults: { _controller: "FecdasBundle:Admin:ajaxclubsnoms" }

@@ -210,12 +210,52 @@ class EntityComanda {
 	}
 	
 	/**
+	 * Get datafactura
+	 *
+	 * @return date
+	 */
+	public function getDatafactura()
+	{
+		return ($this->factura != null?$this->factura->getDatafactura():null);
+	}
+	
+	
+	/**
 	 * Num rebut o res
 	 *
 	 * @return string
 	 */
 	public function getNumRebut() {
 		return ($this->rebut != null?$this->rebut->getNumRebut():"");
+	}
+	
+	/**
+	 * Get importpagament
+	 *
+	 * @return decimal
+	 */
+	public function getImportpagament()
+	{
+		return ($this->rebut != null?$this->rebut->getImport():null);
+	}
+	
+	/**
+	 * Get datapagament
+	 *
+	 * @return date
+	 */
+	public function getDatapagament()
+	{
+		return ($this->rebut != null?$this->rebut->getDatapagament():null);
+	}
+	
+	
+	
+	/**
+	 * @return integer
+	 */
+	public function getTipuspagament() {
+		return ($this->rebut != null?$this->rebut->getTipuspagament():null);
 	}
 	
 	/**

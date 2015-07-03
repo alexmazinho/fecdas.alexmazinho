@@ -75,8 +75,8 @@
 				   		<div class="data-detall-cell duplicat-impressio">
 				   		{% if duplicat.dataimpressio is null %}
 				   			{% if admin == true %}
-					   			<a class="duplicat-impres" href="{{ path('FecdasBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}">
-			   							<img src="{{ asset('images/icon-ok.png') }}" alt="Duplicat imprès" title="Duplicat imprès" width="23px"></a>
+					   			<a class="duplicat-impres link" href="{{ path('FecdasBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Duplicat imprès" title="Duplicat imprès">
+			   							<i class="fa fa-print orange"></i></a>
 			   				{% endif %}
 			   			{% else %}
 			   				{{ duplicat.dataimpressio|date('d/m/y') }}
@@ -85,15 +85,24 @@
 				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
 				   		<div class="data-detall-cell duplicat-actions">
 					   		{% if duplicat.factura is not null %} 
-								<a class="duplicat-factura" href="{{ path('FecdasBundle_facturapeticio', { 'id': duplicat.id}) }}">
-										<img src="{{ asset('images/icon-factura.png') }}" alt="Factura" title="Factura" width="23px"></a>
+								<a class="duplicat-factura link" href="{{ path('FecdasBundle_facturapeticio', { 'id': duplicat.id}) }}" alt="Factura" title="Factura">
+										<i class="fa fa-file-pdf-o fa-1x orange"></i></a>
 							{% else %}
-								<a class="duplicat-albara" href="{{ path('FecdasBundle_albarapeticio', { 'id': duplicat.id}) }}">
-										<img src="{{ asset('images/icon-print.png') }}" alt="Albarà" title="Albarà" width="23px"></a>
+								<i class="fa fa-file-pdf-o fa-1x transparent"></i>
 							{% endif %}
-							{% if duplicat.pagament is null %} 
-							<a class="duplicat-pagament" href="{{ path('FecdasBundle_pagamentpeticio', { 'id': duplicat.id}) }}">
-								<img src="{{ asset('images/icon-creditcard.png') }}" alt="Pagament On-line" title="Pagament On-line" width="23px"></a>
+							
+							{% if duplicat.comandaPagada == true %} 
+								<a class="duplicat-albara link" href="{{ path('FecdasBundle_albarapeticio', { 'id': duplicat.id}) }}"  alt="Rebut" title="Rebut">
+									<i class="fa fa-file-text-o fa-1x blue"></i></a>
+							{% else %}
+								<a class="duplicat-albara link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': duplicat.id}) }}"  alt="Albarà" title="Albarà">
+									<i class="fa fa-file-text-o fa-1x blue"></i></a>
+							{% endif %}
+							{% if duplicat.datapagament is null %} 
+								<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentpeticio', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
+									<i class="fa fa-euro fa-1x green"></i></a>
+							{%  else %}
+								<i class="fa fa-euro fa-1x transparent"></i>
 							{% endif %}	
 				   			{% if admin == true %}
 				   				{% if duplicat.factura is not null  %}
@@ -101,11 +110,8 @@
 								{% else %}
 								{% 	 set nf = '' %}
 								{% endif %}
-				   			
-					   			<a class="duplicat-dades" href="{{ path('FecdasBundle_dadespagamentfactura', { 'id': duplicat.id }) }}" data="{{ nf }}">
-		   							<img src="{{ asset('images/icon-euro.png') }}" alt="Afegir dades facturació i/o pagament" title="Afegir dades facturació i/o pagament" width="23px"></a>
-		   						<a class="duplicat-esborrar" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}">
-			   						<img src="{{ asset('images/icon-remove.png') }}" alt="Anul·lar petició" title="Anul·lar petició" width="23px"></a>
+		   						<a class="duplicat-esborrar" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Anul·lar petició" title="Anul·lar petició">
+			   						<i class="fa fa-trash-o fa-1x red"></i></a>
 				   			{% endif %}
 			   			</div>
 			   		</li>
@@ -120,7 +126,8 @@
 				   		<div class="data-detall-cell duplicat-foto">
 				   		{% if duplicat.carnet.foto == true %}
 				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
-				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
+				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}" class="link">
+				   				<img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
 				   			{% else %}
 				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
 				   		{% endif %}

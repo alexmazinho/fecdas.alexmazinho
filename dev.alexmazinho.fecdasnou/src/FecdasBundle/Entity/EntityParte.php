@@ -36,44 +36,9 @@ class EntityParte extends EntityComanda {
 	protected $dataalta;
 
 	/**
-	 * @ORM\Column(type="date", nullable = true)
-	 */
-	protected $datapagament;   // =================================================> PER ESBORRAR
-
-	/**
-	 * @ORM\Column(type="string", length=15, nullable=true)
-	 */
-	protected $estatpagament;  // NULL, TPV PEND, TPV OK, TPV CORRECCIO, METALLIC WEB, TRANS WEB, METALLIC GES,TRANS GES  // =================================================> PER ESBORRAR
-	
-	/**
-	 * @ORM\Column(type="string", length=15, nullable=true)
-	 */
-	protected $dadespagament;  // Num comanda TPV o num pago Gestor  // =================================================> PER ESBORRAR
-
-	/**
 	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $comentari;  // Comentaris del pagament o del parte en general
-	
-	/**
-	 * @ORM\Column(type="date", nullable = true)
-	 */
-	protected $datafacturacio;	// =================================================> PER ESBORRAR
-
-	/**
-	 * @ORM\Column(type="string", length=10, nullable = true)
-	 */
-	protected $numfactura;    // =================================================> PER ESBORRAR
-	
-	/**
-	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
-	 */
-	protected $importpagament;			// =================================================> PER ESBORRAR
-
-	/**
-	 * @ORM\Column(type="decimal", precision=8, scale=2, nullable = true)
-	 */
-	protected $importparte;  /* No fer servir només per a Xavi */  // =================================================> PER ESBORRAR
 	
 	/**
 	 * @ORM\Column(type="string", length=38, nullable=true)
@@ -101,22 +66,9 @@ class EntityParte extends EntityComanda {
 	protected $llicencies;	// Owning side of the relationship
 	
 	
-	/*
-	 * @ORM\OneToOne(targetEntity="EntityComanda", inversedBy="parte")
-	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
-	 *
-	protected $comanda;*/
-	
-	/*
-	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="parte")
-	 * @ORM\JoinColumn(name="comanda", referencedColumnName="id")
-	 *
-	protected $comanda;*/
-	
 	public function __construct() {
 		parent::__construct();
 		
-		$this->setDataentradadel(new \DateTime());
 		$this->web = true;
 		$this->renovat = false;
 		$this->pendent = false;
@@ -130,14 +82,7 @@ class EntityParte extends EntityComanda {
 	public function __clone() {
 		$this->id = null;
 		$this->numrelacio = null;
-		$this->datapagament = null;
-		$this->estatpagament = null;
-		$this->dadespagament = null;
 		$this->comentari = null;
-		$this->datafacturacio = null;
-		$this->numfactura = null;
-		$this->importpagament = null;
-		$this->importparte = null;
 		$this->idparte_access = null;
 		$this->web = true;
 		$this->renovat = false;
@@ -151,7 +96,7 @@ class EntityParte extends EntityComanda {
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
 		foreach ($llicencies as $llicencia_iter) {
-			if ($llicencia_iter->getDatabaixa() == null) {
+			if (!$llicencia_iter->esBaixa()) {
 				$cloneLlicencia = clone $llicencia_iter;
 				
 				/* Init camps */
@@ -273,86 +218,6 @@ class EntityParte extends EntityComanda {
     }
     
     /**
-     * Set dataentradadel
-     *
-     * @param datetime $dataentradadel
-     */
-    /*public function setDataentradadel($dataentradadel)
-    {
-        $this->dataentradadel = $dataentradadel;
-    }*/
-
-    /**
-     * Get dataentradadel
-     *
-     * @return datetime 
-     */
-    /*public function getDataentradadel()
-    {
-        return $this->dataentradadel;
-    }*/
-
-    /**
-     * Set datapagament
-     *
-     * @param date $datapagament
-     */
-    public function setDatapagament($datapagament)
-    {
-        $this->datapagament = $datapagament;
-    }
-
-    /**
-     * Get datapagament
-     *
-     * @return date 
-     */
-    public function getDatapagament()
-    {
-        return $this->datapagament;
-    }
-
-    /**
-     * Set estatpagament
-     *
-     * @param string $estatpagament
-     */
-    public function setEstatpagament($estatpagament)
-    {
-    	$this->estatpagament = $estatpagament;
-    }
-    
-    /**
-     * Get estatpagament
-     *
-     * @return string
-     */
-    public function getEstatpagament()
-    {
-    	return $this->estatpagament;
-    }
-    
-    /**
-     * Set dadespagament
-     *
-     * @param string $dadespagament
-     */
-    public function setDadespagament($dadespagament)
-    {
-    	$this->dadespagament = $dadespagament;
-    }
-    
-    /**
-     * Get dadespagament
-     *
-     * @return string
-     */
-    public function getDadespagament()
-    {
-    	return $this->dadespagament;
-    }
-    
-    /**
      * Set comentari
      *
      * @param text $comentari
@@ -371,98 +236,7 @@ class EntityParte extends EntityComanda {
     {
     	return $this->comentari;
     }
-    
-    /**
-     * Get pagat
-     *
-     * @return boolean
-     */
-    public function isPagat()
-    {
-    	//return (boolean) $this->datapagament != null or $this->numfactura == -1;
-    	return (boolean) $this->datapagament != null;
-    }
-
-    /**
-     * Set datafacturacio
-     *
-     * @param date $datafacturacio
-     */
-    public function setDatafacturacio($datafacturacio)
-    {
-    	$this->datafacturacio = $datafacturacio;
-    }
-    
-    /**
-     * Get datafacturacio
-     *
-     * @return date
-     */
-    public function getDatafacturacio()
-    {
-    	return $this->datafacturacio;
-    }
-    
-    /**
-     * Set numfactura
-     *
-     * @param string $numfactura
-     */
-    public function setNumfactura($numfactura)
-    {
-    	$this->numfactura = $numfactura;
-    }
-    
-    /**
-     * Get numfactura
-     *
-     * @return string
-     */
-    public function getNumfactura()
-    {
-    	return $this->numfactura;
-    }
-    
-    /**
-     * Set importpagament
-     *
-     * @param decimal $importpagament
-     */
-    public function setImportpagament($importpagament)
-    {
-    	$this->importpagament = $importpagament;
-    }
-    
-    /**
-     * Get importpagament
-     *
-     * @return decimal
-     */
-    public function getImportpagament()
-    {
-    	return $this->importpagament;
-    }
-    
-    /**
-     * Set importparte
-     *
-     * @param decimal $importparte
-     */
-    public function setImportparte($importparte)
-    {
-    	$this->importparte = $importparte;
-    }
-    
-    /**
-     * Get importparte
-     *
-     * @return decimal
-     */
-    public function getImportparte()
-    {
-    	return $this->importparte;
-    }
-    
+ 
     /**
      * Set idparte_access
      *
@@ -600,7 +374,7 @@ class EntityParte extends EntityComanda {
     {
     	$arr = array();
     	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->getDatabaixa() == null) $arr[] = $llicencia;
+    		if (!$llicencia->esBaixa()) $arr[] = $llicencia;
     	}
     	
     	usort($arr, function($a, $b) {
@@ -636,7 +410,7 @@ class EntityParte extends EntityComanda {
     	$count = 0;
     	foreach($this->llicencies as $llicencia_iter) {
     		//$llicencia_iter->setPersonaSelect($llicencia_iter->getPersona());
-    		if ($llicencia_iter->getDatabaixa() == null) $count++;
+    		if (!$llicencia_iter->esBaixa()) $count++;
     	}
     	return $count;
     }
@@ -674,7 +448,7 @@ class EntityParte extends EntityComanda {
     	// Només si no estan donades de baixa
     	$count = 0;
     	foreach($this->llicencies as $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null and 
+    		if (!$llicencia_iter->esBaixa() and 
     			$llicencia_iter->getCategoria()->getSimbol() == $simbol) $count++;
     	}
     	return $count;
@@ -684,7 +458,7 @@ class EntityParte extends EntityComanda {
     	// Retorna el preu total sense IVA de totes les llicències actives del Parte
     	$preu = 0;
     	foreach ($this->getLlicencies() as $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null) {
+    		if (!$llicencia_iter->esBaixa()) {
     			$preu += $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
     		}
     	}
@@ -743,7 +517,7 @@ class EntityParte extends EntityComanda {
     	// Només si no estan donades de baixa
     	$count = 0;
     	foreach($this->llicencies as $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null) {
+    		if (!$llicencia_iter->esBaixa()) {
     			switch ($activitat) {
     				case 'pesca':
     					if ($llicencia_iter->getPesca() == true) $count++;
@@ -830,7 +604,7 @@ class EntityParte extends EntityComanda {
     {
     	$currentdate = new \DateTime();
     	
-    	return (boolean) $this->datapagament == null and $this->dataalta >= $currentdate;
+    	return (boolean) $this->getDatapagament() == null and $this->dataalta >= $currentdate;
     }
     
     /**
@@ -840,7 +614,7 @@ class EntityParte extends EntityComanda {
      */
     public function isPendentSincronitzar()
     {
-    	if ($this->databaixa != null) return false; // Baixes no cal sincronitzar
+    	if ($this->esBaixa()) return false; // Baixes no cal sincronitzar
     	if ($this->pendent == true) return false; // Pendents no s'han de sincronitzar
     	if ($this->idparte_access == null) return true;
     	if ($this->idparte_access != null and $this->datamodificacio != null) return true;
@@ -893,11 +667,10 @@ class EntityParte extends EntityComanda {
      */
     public function isFacturaValida()
     {
-    	$count = 0;
-    	if ($this->numfactura != null and $this->datapagament != null) {
+    	if ($this->numfactura != null and $this->getDatapagament() != null) {
     		foreach($this->llicencies as $llicencia_iter) {
-    			if ($llicencia_iter->getDatabaixa() != null) {
-    				if ($llicencia_iter->getDatabaixa() >= $this->datapagament) {
+    			if ($llicencia_iter->esBaixa()) {
+    				if ($llicencia_iter->getDatabaixa() >= $this->getDatapagament()) {
     					return false;
     				}
     			}
@@ -916,7 +689,7 @@ class EntityParte extends EntityComanda {
     	//$iva = $parte->getTipus()->getIVA() + 100;
     	$iva = $this->getTipus()->getIVA();
     	foreach ($this->getLlicencies() as $llicencia_iter) {
-    		if ($llicencia_iter->getDatabaixa() == null) {
+    		if (!$llicencia_iter->esBaixa()) {
     			$codi = $llicencia_iter->getCategoria()->getCodisortida();
     
     			$preu = $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
@@ -952,7 +725,7 @@ class EntityParte extends EntityComanda {
     	// Missatge que es mostra a la llista de partes
     	$textInfo = "";
     	
-    	if ($this->databaixa != null) return "Llista anulada";
+    	if ($this->esBaixa()) return "Llista anulada";
     	
     	if ($this->isPassat() == true) return "Validesa de les llicències finalitzada";
     	
@@ -960,14 +733,14 @@ class EntityParte extends EntityComanda {
     	
     	if ($this->pendent) return "Pendent confirmació pagament";
     	
-    	if ($this->numfactura != null and $this->datafacturacio) {
-    		$textInfo .= "Fra. ". $this->numfactura;
-    		$textInfo .= " - ". $this->datafacturacio->format("d/m/Y");
+    	if ($this->getNumFactura() != null and $this->getDatafactura() != null) {
+    		$textInfo .= "Fra. ". $this->getNumFactura();
+    		$textInfo .= " - ". $this->getDatafactura()->format("d/m/Y");
     	} else {
     		if ($this->getAny() >= 2013) $textInfo .= "Llicències vigents (Factura pendent)";
     	}
     	
-    	if ($this->datapagament != null and $this->estatpagament == "TPV OK") $textInfo .=  ". Pagament on-line";
+    	if ($this->getDatapagament() != null and $this->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $textInfo .=  ". Pagament on-line";
 
     	return $textInfo;
     }
@@ -1000,7 +773,7 @@ class EntityParte extends EntityComanda {
     	
     	if ($this->club->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
 
-    	if ($this->datapagament != null) return true;  // La resta poden imprimir si està pagat
+    	if ($this->getDatapagament() != null) return true;  // La resta poden imprimir si està pagat
     	
     	return false;
     }

@@ -442,51 +442,6 @@ class AdminController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_duplicats'));
 	}
 	
-	public function dadespagamentfacturaAction(Request $request) {
-	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$em = $this->getDoctrine()->getManager();
-	
-		$duplicatid = $request->query->get('id');
-		$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
-	
-		if ($duplicat != null) {
-			$import = $duplicat->getCarnet()->getPreu();
-			if ( $request->query->has('numfactura') and $request->query->get('numfactura') != "") {
-			// Crear factura
-				$numfactura = $request->query->get('numfactura');
-				$datafactura = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
-				$concepte = $duplicat->getTextCarnet(false)." ".$duplicat->getPersona()->getCognomsNom();
-				$factura = $this->crearFactura($datafactura, $numfactura, $import, $concepte);
-				$duplicat->setFactura($factura);
-			} 
-			if ( $request->query->has('estatpagat') and $request->query->get('estatpagat') != "") {
-				// Crear pagament
-				$datapagament = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
-				$estat = $request->query->get('estatpagat');
-				$dades = $request->query->get('dadespagat');
-				$comentari = $request->query->get('comentaripagat');
-				
-				/* Aqui CREAR comanda */
-				
-				//$pagament = $this->crearPagament($datapagament, $import, $estat, $dades, $comentari);
-				// Actualitzar pagament
-				//$duplicat->setPagament($pagament);
-			}
-				
-			$em->flush();
-			
-			$this->logEntryAuth('DADES DUPLI', 'duplicat ' . $duplicatid);
-			
-			return new Response("ok");
-		}
-		$this->logEntryAuth('DADES DUPLI KO', 'duplicat ' . $duplicatid);
-	
-		return new Response("ko");
-	}
-	
 	public function ajaxclubsnomsAction(Request $request) {
 		$search = $this->consultaAjaxClubs($request->get('term'));
 		$response = new Response();

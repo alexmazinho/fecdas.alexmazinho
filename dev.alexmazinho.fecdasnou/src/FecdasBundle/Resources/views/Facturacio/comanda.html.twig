@@ -69,12 +69,19 @@
 					<div class="label-actions">
 					{% if comanda.id > 0 %}
 						{% if  comanda.factura is not null %}
-							<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
-								<i class="fa fa-pencil fa-1x blue"></i></a>
-							<a id="factura-to-pdf" class="link" href="{{ path('FecdasBundle_facturatopdf', {'id': comanda.factura.id }) }}"  title="PDF factura" alt="PDF factura">
-								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							{% if  comanda.factura.esBaixa == false %}
+								<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
+									<i class="fa fa-pencil fa-1x blue"></i></a>
+								<a id="factura-to-pdf" class="link" href="{{ path('FecdasBundle_facturatopdf', {'id': comanda.factura.id }) }}"  title="PDF factura" alt="PDF factura">
+									<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							{% else %}
+								<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
+									<i class="fa fa-pencil fa-1x blue"></i></a>
+								<a id="crear-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+									<i class="fa fa-file-text-o fa-1x blue"></i></a>
+							{% endif %}
 						{% else %}
-							<a id="editar-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+							<a id="crear-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
 								<i class="fa fa-file-text-o fa-1x blue"></i></a>
 						{% endif %}
 					{% endif %}

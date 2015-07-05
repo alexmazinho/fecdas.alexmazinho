@@ -45,27 +45,6 @@ class PDFController extends BaseController {
 						';
 	
 	
-	public function rebuttopdfAction(Request $request) {
-		/* Rebut comanda */
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$reqId = 0;
-		if ($request->query->has('id')) {
-			$reqId = $request->query->get('id');
-			$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
-	
-			if ($rebut != null) {
-					return new Response("print rebut");
-			}
-		}
-		/* Error */
-		$this->logEntryAuth('PRINT REBUT KO', $reqId);
-		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir el rebut, poseu-vos en contacte amb la Federació' );
-		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	}
-	
 	public function facturatopdfAction(Request $request) {
 		/* Factura parte */
 		
@@ -75,63 +54,31 @@ class PDFController extends BaseController {
 		$reqId = 0;
 		if ($request->query->has('id')) {
 			$reqId = $request->query->get('id');
-			$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($reqId);
+			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($reqId);
 		
-			if ($parte != null) {
-				$pagat = ($parte->getDatapagament() != null); // Parte pagat?
-				$valida = ($parte->isFacturaValida() == true); // Factura vàlida?
-				$detall = $parte->getDetallFactura(); // Get detall
-				$totals = $this->getTotalsFactura($detall); // Get totals
+			if ($comanda != null && $comanda->getFactura() != null) {
 				
-				$response = $this->facturatopdf($parte->getNumfactura(), $parte->getDatafactura(), 'Factura Llista llicències ' . date("Y"),  
-											$parte->getClub(), $parte->getTipus()->getIva(), $detall, $totals, $pagat, $valida);
+				$response = $this->facturatopdf($comanda);
 				
-				$this->logEntryAuth('PRINT FACT PARTE', $reqId);
+				$this->logEntryAuth('PRINT FACTURA OK', $reqId);
 				
 				return $response;
 			}
 		}
 		/* Error */
-		$this->logEntryAuth('PRINT FACT PARTE KO', $reqId);
+		$this->logEntryAuth('PRINT FACTURA KO', $reqId);
 		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir la factura, poseu-vos en contacte amb la Federació' );
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function facturapeticioAction(Request $request) {
-		/* Factura petició */
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$reqId = 0;
-		if ($request->query->has('id')) {
-			$reqId = $request->query->get('id');
-			$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($reqId);
-	
-			if ($duplicat != null) {
-				$pagat = ($duplicat->getPagament() != null); // Petició duplicat pagada?
-				$detall = $duplicat->getDetallFactura(); // Get detall
-				$totals = $this->getTotalsFactura($detall); // Get totals
-	
-				$response = $this->facturatopdf($duplicat->getFactura()->getNumfactura(), $duplicat->getFactura()->getDatafactura(), 'Factura petició de duplicat',  
-											$duplicat->getClub(), 0, $detall, $totals, $pagat, true);
-	
-				$this->logEntryAuth('PRINT FACT DUPLI', $reqId);
-	
-				return $response;
-			}
-		}
-		/* Error */
-		$this->logEntryAuth('PRINT FACT DUPLI KO', $reqId);
-		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir la factura, poseu-vos en contacte amb la Federació' );
-		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	}
-	
-	private function facturatopdf($numFactura, $dataFactura, $titol, $club, $iva, $detall, $totals, $pagat, $valida) {
+	private function facturatopdf($comanda) {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		$factura = $comanda->getFactura();
+		$club = $comanda->getClub();
+		
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
-		$pdf->init(array('author' => 'FECDAS', 'title' => $titol));
+		$pdf->init(array('author' => 'FECDAS', 'title' => $factura->getConcepte()));
 			
 		$pdf->AddPage();
 		
@@ -182,8 +129,8 @@ class PDFController extends BaseController {
 		$pdf->setX($pdf->getPageWidth() - 80);
 			
 		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-		$tbl .= '<tr><td width="150" align="right" style="color:#555555;">Factura número:</td><td width="120" align="left"><b>' . $numFactura . '</b></td></tr>';
-		$tbl .= '<tr><td align="right" style="color:#555555;">Data:</td><td align="left"><b>' . $dataFactura->format('d/m/Y') . '</b></td></tr>';
+		$tbl .= '<tr><td width="150" align="right" style="color:#555555;">Factura número:</td><td width="120" align="left"><b>' . $factura->getNumfactura() . '</b></td></tr>';
+		$tbl .= '<tr><td align="right" style="color:#555555;">Data:</td><td align="left"><b>' . $factura->getDatafactura()->format('d/m/Y') . '</b></td></tr>';
 		$tbl .= '<tr><td align="right" style="color:#555555;">CIF:</td><td align="left"><b>' . $club->getCif() . '</b></td></tr>';
 		$tbl .= '</table>';
 		
@@ -194,62 +141,61 @@ class PDFController extends BaseController {
 		
 		$pdf->SetFont('dejavusans', '', 8, '', true);
 		
-		$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				<tr style="background-color:#CCCCCC;">
-				<td width="80" align="center">REFERÈNCIA</td>
-				<td width="280" align="left">CONCEPTE</td>
-				<td width="50" align="center">QUANT.</td>
-				<td width="50" align="center">PREU</td>
-				<td width="70" align="center">IMPORT</td>
-				<td width="60" align="center">I.V.A<br/>(' . number_format($iva, 2, ',', '.') . '%)</td>
-				<td width="80" align="right">TOTAL</td>
+		$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
+				<tr style="background-color:#CCCCCC; border-color: #000000;">
+				<td width="65" align="center">Referència</td>
+				<td width="215" align="left">Concepte</td>
+				<td width="40" align="center">Uds.</td>
+				<td width="60" align="center">Preu<br/>unitat</td>
+				<td width="70" align="center">Subtotal</td>
+				<td width="40" align="center">IVA</td>
+				<td width="60" align="center">Import<br/>IVA</td>
+				<td width="100" align="right">TOTAL</td>
 				</tr>';
 		
-		$tblref = "";
-		$tblconc = "";
-		$tblquant = "";
-		$tblpreu = "";
-		$tblimp = "";
-		$tbliva = "";
-		$tbltotal = "";
+		$facturaSenseIVA = true;
+		$mindetalls = 10;
 		
-		foreach ($detall as $lineafactura) {
-			$tblref .= $lineafactura['codi'] . '<br/><br/>';
-			$tblconc .= $lineafactura['desc'] . '<br/><br/>';
-			$tblquant .= $lineafactura['quant'] . '<br/><br/>';
-			$tblpreu .= number_format($lineafactura['preuunitat'], 2, ',', '.') .  '€<br/><br/>';
-			$tblimp .=  number_format($lineafactura['preusiva'], 2, ',', '.') .  '€<br/><br/>';
-			$tbliva .=  number_format($lineafactura['iva'], 2, ',', '.') .  '€<br/><br/>';
-			$tbltotal .= number_format($lineafactura['totaldetall'], 2, ',', '.') .  '€<br/><br/>';
+		foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
+			if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
+			
+			error_log("===>".$lineafactura['ivaunitat']);
+			
+			$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
+			$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
+			
+			$tbl .= '<tr style="border-bottom: none;">';
+			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
+			$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
+			$tbl .= '</tr>';
+			
+			$mindetalls--;
 		}
 		
-		$tbl .= '<tr>';
-		$tbl .= '<td align="center">' . $tblref;
-		$tbl .= '<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></td>';
-		$tbl .= '<td align="left">' . $tblconc .  '</td>';
-		$tbl .= '<td align="center">' . $tblquant .  '</td>';
-		$tbl .= '<td align="right">' . $tblpreu . '</td>';
-		$tbl .= '<td align="right">' . $tblimp . '</td>';
-		$tbl .= '<td align="right">' . $tbliva . '</td>';
-		$tbl .= '<td align="right">' . $tbltotal . '</td>';
-		$tbl .= '</tr>';
+		while ($mindetalls > 0) {
+			$tbl .= '<tr style="border-bottom: none;">';
+			for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
+			$tbl .= '</tr>';
+			$mindetalls--;
+		}
 		
-		$tbl .= '<tr>';
-		$tbl .= '<td colspan="4" style="background-color:#EEEEEE;">&nbsp;</td>';
-		$tbl .= '<td align="center">IMPORT<br/>' . number_format($totals['totalparcial'], 2, ',', '.') . ' €</td>';
-		$tbl .= '<td align="center">I.V.A<br/>' . number_format($totals['iva'], 2, ',', '.') . ' €</td>';
-		$tbl .= '<td align="center">TOTAL<br/>' . number_format($totals['total'], 2, ',', '.') .  ' €</td>';
-		$tbl .= '</tr>';
-		$tbl .= '<tr border="0">';
-		$tbl .= '<td colspan="6" style="background-color:#EEEEEE;">&nbsp;</td>';
-		$tbl .= '<td align="center">A PAGAR<br/><b>' . number_format($totals['total'], 2, ',', '.') .  ' €</b></td>';
+		$tbl .= '<tr style="background-color:#CCCCCC; ">';
+		$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>TOTAL FACTURA:</span></td>';
+		$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
 		$tbl .= '</tr>';
 		
 		$tbl .= '</table>';
 		
 		$pdf->writeHTML($tbl, true, false, false, false, '');
 		
-		if ($iva == 0) {
+		if ($facturaSenseIVA == 0) {
 			// set color for text
 			$pdf->SetTextColor(50, 50, 50); // Gris
 			$pdf->SetFont('dejavusans', '', 8, '', true);
@@ -262,11 +208,11 @@ class PDFController extends BaseController {
 		$pdf->SetTextColor(100, 100, 100); // Gris
 		$pdf->SetFont('dejavusans', '', 16, '', true);
 		
-		if ($pagat == true) {
+		if ($comanda->comandaPagada() == true) {
 			$text = '<b>FACTURA PAGADA</b>';
 			$pdf->writeHTML($text, true, false, false, false, '');
 				
-			if ($valida == false) {
+			if ($comanda->isFacturaValida() == false) {
 				// Ha canviat la factura, mostra avís factura obsoleta
 				$pdf->SetFont('dejavusans', '', 14, '', true);
 				$y = $y_ini + 120;
@@ -289,7 +235,7 @@ class PDFController extends BaseController {
 		// reset pointer to the last page
 		$pdf->lastPage();
 			
-		$nomfitxer = "factura_" .  str_replace("/", "-", $numFactura) . "_" . $club->getCodi() . ".pdf";
+		$nomfitxer = "factura_" .  str_replace("/", "-", $factura->getNumfactura()) . "_" . $club->getCodi() . ".pdf";
 		
 		
 		// Close and output PDF document
@@ -307,64 +253,31 @@ class PDFController extends BaseController {
 		$reqId = 0;
 		if ($request->query->has('id')) {
 			$reqId = $request->query->get('id');
-			$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($reqId);
+			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($reqId);
 		
-			if ($parte != null) {
-				$pagat = ($parte->getDatapagament() != null); // Parte pagat?
-				$detall = $parte->getDetallFactura(); // Get detall
-				$totals = $this->getTotalsFactura($detall); // Get totals
-				
-				$response = $this->albaratopdf($parte->getNumAlbara(), $parte->getDataentrada(), 'Albarà Llista llicències ' . date("Y"),  
-											$parte->getClub(), $parte->getTipus()->getIva(), $detall, $totals, $pagat);
-				
-				$this->logEntryAuth('PRINT ALBARA PARTE', $reqId);
-				
+			if ($comanda != null) {
+			
+				$response = $this->albaratopdf($comanda);
+			
+				$this->logEntryAuth('PRINT ALBARA', $reqId);
+			
 				return $response;
 			}
 		}
 		/* Error */
-		$this->logEntryAuth('PRINT ALBARA PARTE KO', $reqId);
+		$this->logEntryAuth('PRINT ALBARA KO', $reqId);
 		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir l\'albarà, poseu-vos en contacte amb la Federació' );
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function albarapeticioAction(Request $request) {
-		/* Albarà petició */
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$reqId = 0;
-		if ($request->query->has('id')) {
-			$reqId = $request->query->get('id');
-			$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($reqId);
-	
-			if ($duplicat != null) {
-				$pagat = ($duplicat->getPagament() != null); // Petició duplicat pagada?
-				$detall = $duplicat->getDetallFactura(); // Get detall
-				$totals = $this->getTotalsFactura($detall); // Get totals
-	
-				$response = $this->albaratopdf($duplicat->getNumAlbara(), $duplicat->getDatapeticio(), 'Albarà petició de duplicat',
-						$duplicat->getClub(), 0, $detall, $totals, $pagat);
-	
-				$this->logEntryAuth('PRINT ALBARA DUPLI', $reqId);
-	
-				return $response;
-			}
-		}
-		/* Error */
-		$this->logEntryAuth('PRINT ALBARA DUPLI KO', $reqId);
-		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir l\'albarà, poseu-vos en contacte amb la Federació' );
-		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	}
-	
-	private function albaratopdf($numAlbara, $dataAlbara, $titol, $club, $iva, $detall, $totals, $pagat) { 
+	private function albaratopdf($comanda) { 
 		/* Printar albarà */
-		 
+		$club = $comanda->getClub();
+		
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 					
-		$pdf->init(array('author' => 'FECDAS', 'title' => $titol)); 
+		$pdf->init(array('author' => 'FECDAS', 'title' => $comanda->getConcepteComanda())); 
 					
 		$pdf->AddPage();
 	
@@ -380,7 +293,7 @@ class PDFController extends BaseController {
 		$x = $x_ini;
 	
 		$pdf->SetFont('dejavusans', '', 16, '', true);
-		$text = '<b>ALBARÀ #'. $numAlbara .'#</b>';
+		$text = '<b>ALBARÀ #'. $comanda->getNumComanda() .'#</b>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
 		$pdf->Ln(5);
 	
@@ -415,100 +328,113 @@ class PDFController extends BaseController {
 		$pdf->setY($y - 13); 
 		$pdf->setX($pdf->getPageWidth() - 79);
 					
+		
+		
 		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-		$tbl .= '<tr><td width="150" align="right" style="color:#555555;">Número d\'albarà:</td><td width="90" align="right"><b>' . $numAlbara  . '</b></td></tr>';
-		$tbl .= '<tr><td align="right" style="color:#555555;">Data de la comanda:</td><td align="right"><b>' . $dataAlbara->format('d/m/Y') . '</b></td></tr>';				
+		$tbl .= '<tr><td width="150" align="right" style="color:#555555;">Comanda número:</td><td width="120" align="left"><b>' . $comanda->getNumComanda() . '</b></td></tr>';
+		$tbl .= '<tr><td align="right" style="color:#555555;">Data:</td><td align="left"><b>' . $comanda->getDataentrada()->format('d/m/Y') . '</b></td></tr>';
 		$tbl .= '</table>';
-	
+		
 		$pdf->writeHTML($tbl, false, false, false, false, '');
-	
+		
 		$pdf->Ln(5);
 		$pdf->setX($x_ini);
-	
+		
 		$pdf->SetFont('dejavusans', '', 8, '', true);
-	
-		$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				<tr style="background-color:#CCCCCC;">
-				<td width="75" align="center">REFERÈNCIA</td>
-				<td width="270" align="left">CONCEPTE</td>
-				<td width="50" align="center">QUANT.</td>
-				<td width="50" align="center">PREU</td>
-				<td width="70" align="center">IMPORT</td>
-				<td width="55" align="center">I.V.A<br/>(' . number_format($iva, 2, ',', '.') . '%)</td>
-				<td width="80" align="right">TOTAL</td>
+		
+		$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
+				<tr style="background-color:#CCCCCC; border-color: #000000;">
+				<td width="65" align="center">Referència</td>
+				<td width="215" align="left">Concepte</td>
+				<td width="40" align="center">Uds.</td>
+				<td width="60" align="center">Preu<br/>unitat</td>
+				<td width="70" align="center">Subtotal</td>
+				<td width="40" align="center">IVA</td>
+				<td width="60" align="center">Import<br/>IVA</td>
+				<td width="100" align="right">TOTAL</td>
 				</tr>';
-	
-		$tblref = "";
-		$tblconc = "";
-		$tblquant = "";
-		$tblpreu = "";
-		$tblimp = "";
-		$tbliva = "";
-		$tbltotal = "";
-	
-		foreach ($detall as $lineafactura) {
-			$tblref .= $lineafactura['codi'] . '<br/><br/>';
-			$tblconc .= $lineafactura['desc'] . '<br/><br/>';
-			$tblquant .= $lineafactura['quant'] . '<br/><br/>';
-			$tblpreu .= number_format($lineafactura['preuunitat'], 2, ',', '.') .  '€<br/><br/>';
-			$tblimp .=  number_format($lineafactura['preusiva'], 2, ',', '.') .  '€<br/><br/>';
-			$tbliva .=  number_format($lineafactura['iva'], 2, ',', '.') .  '€<br/><br/>';
-			$tbltotal .= number_format($lineafactura['totaldetall'], 2, ',', '.') .  '€<br/><br/>';
+		
+		$mindetalls = 10;
+		
+		foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
+			$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
+			$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
+				
+			$tbl .= '<tr style="border-bottom: none;">';
+			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
+			$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
+			$tbl .= '</tr>';
+				
+			$mindetalls--;
 		}
-	
-		$tbl .= '<tr>';
-		$tbl .= '<td align="center">' . $tblref;
-		$tbl .= '<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></td>';
-		$tbl .= '<td align="left">' . $tblconc .  '</td>';
-		$tbl .= '<td align="center">' . $tblquant .  '</td>';
-		$tbl .= '<td align="right">' . $tblpreu . '</td>';
-		$tbl .= '<td align="right">' . $tblimp . '</td>';
-		$tbl .= '<td align="right">' . $tbliva . '</td>';
-		$tbl .= '<td align="right">' . $tbltotal . '</td>';
+		
+		while ($mindetalls > 0) {
+			$tbl .= '<tr style="border-bottom: none;">';
+			for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
+			$tbl .= '</tr>';
+			$mindetalls--;
+		}
+		
+		$tbl .= '<tr style="background-color:#CCCCCC; ">';
+		$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>TOTAL ALBARÀ:</span></td>';
+		$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
 		$tbl .= '</tr>';
 		
-		$tbl .= '<tr>';
-		$tbl .= '<td colspan="4" style="background-color:#EEEEEE;">&nbsp;</td>';
-		$tbl .= '<td align="center">IMPORT<br/>' . number_format($totals['totalparcial'], 2, ',', '.') . ' €</td>';
-		$tbl .= '<td align="center">I.V.A<br/>' . number_format($totals['iva'], 2, ',', '.') . ' €</td>';
-		$tbl .= '<td align="center">TOTAL<br/>' . number_format($totals['total'], 2, ',', '.') .  ' €</td>';
-		$tbl .= '</tr>';
-		$tbl .= '<tr border="0">';
-		$tbl .= '<td colspan="6" style="background-color:#EEEEEE;">&nbsp;</td>';
-		$tbl .= '<td align="center">A PAGAR<br/><b>' . number_format($totals['total'], 2, ',', '.') .  ' €</b></td>';
-		$tbl .= '</tr>';
-	
 		$tbl .= '</table>';
-	
+		
 		$pdf->writeHTML($tbl, true, false, false, false, '');
-	
-		if ($iva == 0) {
-			// set color for text
-			$pdf->SetTextColor(50, 50, 50); // Gris
-			$pdf->SetFont('dejavusans', '', 8, '', true);
-			$text = '<p>Exempt d\'I.V.A. segons la llei 49/2002</p>';
-			$pdf->writeHTML($text, true, false, false, false, '');
-			//$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
-		}
+		
+		
 		$pdf->Ln(5);
-	
+		
 		$pdf->SetTextColor(100, 100, 100); // Gris
 		$pdf->SetFont('dejavusans', '', 16, '', true);
-	
-		if ($pagat == true) {
+		
+		if ($comanda->comandaPagada() == true) {
 			$text = '<b>-- ALBARÀ PAGAT --</b>';
 			$pdf->writeHTML($text, true, false, false, false, '');
-		}
+		
+		} 
 	
 		// reset pointer to the last page
 		$pdf->lastPage();
 					
 		// Close and output PDF document
-		$response = new Response($pdf->Output("albara_" . $numAlbara . "_" . $club->getCodi() . ".pdf", "D"));
+		$response = new Response($pdf->Output("albara_" . $comanda->getNumComanda() . "_" . $club->getCodi() . ".pdf", "D"));
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
 		
 	}
+	
+	public function rebuttopdfAction(Request $request) {
+		/* Rebut comanda */
+	
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+			$reqId = 0;
+			if ($request->query->has('id')) {
+				$reqId = $request->query->get('id');
+				$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
+	
+				if ($rebut != null) {
+					if ($rebut->getComanda() != null) return new Response("print rebut amb comanda");
+					else return new Response("print rebut sense comanda");
+				}
+			}
+			/* Error */
+			$this->logEntryAuth('PRINT REBUT KO', $reqId);
+			$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir el rebut, poseu-vos en contacte amb la Federació' );
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	}
+	
 	
 	public function  asseguratstopdfAction(Request $request) {
 		/* Llistat d'assegurats vigents */

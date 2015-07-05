@@ -201,7 +201,7 @@ class EntityComandaDetall {
     /**
      * Set ivaunitat
      *
-     * @param string $ivaunitat
+     * @param decimal $ivaunitat
      * @return EntityComandaDetall
      */
     public function setIvaunitat($ivaunitat)
@@ -214,7 +214,7 @@ class EntityComandaDetall {
     /**
      * Get ivaunitat
      *
-     * @return string
+     * @return decimal
      */
     public function getIvaunitat()
     {

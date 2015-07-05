@@ -64,6 +64,7 @@ class FormFactura extends AbstractType {
 		));
 		
 		$builder->add('datapagament', 'date', array(
+				'required' 		=> false,
 				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
@@ -81,6 +82,7 @@ class FormFactura extends AbstractType {
 		));
 		
 		$builder->add('dataanulacio', 'date', array(
+				'required' 		=> false,
 				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',

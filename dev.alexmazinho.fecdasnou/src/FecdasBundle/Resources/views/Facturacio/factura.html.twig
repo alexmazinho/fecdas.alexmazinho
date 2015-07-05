@@ -14,7 +14,7 @@
 
 {% block body %}
     <header>
-        <h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Factura</h1>
+        <h1><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Llistat de comandes</a> > Factura</h1>
     </header>
     
     <div class="form-row clearfix">

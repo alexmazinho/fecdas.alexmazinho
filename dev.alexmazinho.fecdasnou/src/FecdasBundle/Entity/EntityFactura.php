@@ -56,6 +56,11 @@ class EntityFactura {
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
+	protected $datamodificacio;
+	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
 	protected $dataanulacio;
 	
 	/**
@@ -118,6 +123,10 @@ class EntityFactura {
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datafactura->format("y");
 	}
 	
+	public function esBaixa()
+	{
+		return $this->dataanulacio != null;
+	}
 	/**
 	 * @return integer
 	 */
@@ -229,6 +238,27 @@ class EntityFactura {
 	public function setDataentrada($dataentrada) {
 		$this->dataentrada = $dataentrada;
 	}
+	
+	/**
+	 * Set datamodificacio
+	 *
+	 * @param \DateTime $datamodificacio
+	 */
+	public function setDatamodificacio($datamodificacio)
+	{
+		$this->datamodificacio = $datamodificacio;
+	}
+	
+	/**
+	 * Get datamodificacio
+	 *
+	 * @return \DateTime
+	 */
+	public function getDatamodificacio()
+	{
+		return $this->datamodificacio;
+	}
+	
 	
 	/**
 	 * @return datetime

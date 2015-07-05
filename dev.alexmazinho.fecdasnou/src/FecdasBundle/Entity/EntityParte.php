@@ -660,61 +660,16 @@ class EntityParte extends EntityComanda {
     }
     
     /**
-     * Comprova si la factura es vàlida. 
-     * Les factures no són vàlides si s'ha esborrat alguna llicència després de pagar-la
+     * Comprova si la factura es vàlida.
      *
      * @return boolean
      */
     public function isFacturaValida()
     {
-    	if ($this->numfactura != null and $this->getDatapagament() != null) {
-    		foreach($this->llicencies as $llicencia_iter) {
-    			if ($llicencia_iter->esBaixa()) {
-    				if ($llicencia_iter->getDatabaixa() >= $this->getDatapagament()) {
-    					return false;
-    				}
-    			}
-    		}
-    	}
-    	return true;
+    	if ($this->factura == null) return false;
+    	
+    	return parent::isFacturaValida() && abs($this->factura->getImport() - $this->getPreuTotalNet() <= 0.01);
     }
-    
-    /**
-     * Array amb el detall de la factura del parte
-     *
-     * @return string
-     */
-    public function getDetallFactura() {
-    	$detallfactura = array();
-    	//$iva = $parte->getTipus()->getIVA() + 100;
-    	$iva = $this->getTipus()->getIVA();
-    	foreach ($this->getLlicencies() as $llicencia_iter) {
-    		if (!$llicencia_iter->esBaixa()) {
-    			$codi = $llicencia_iter->getCategoria()->getCodisortida();
-    
-    			$preu = $llicencia_iter->getCategoria()->getPreuAny($this->getAny());
-    
-    			if (isset($detallfactura[$codi])) {
-    				$detallfactura[$codi]['quant'] += 1;
-    				$detallfactura[$codi]['preusiva'] += $preu;
-    				$detallfactura[$codi]['iva'] += $preu*$iva/100;
-    				$detallfactura[$codi]['totaldetall'] = $detallfactura[$codi]['preusiva'] + $detallfactura[$codi]['iva'];
-    			} else {
-    				$detallfactura[$codi] = array(
-    						'codi' => $codi,
-    						'desc' => $llicencia_iter->getCategoria()->getDescripcio(),
-    						'quant' => 1,
-    						'preuunitat' => $preu,
-    						'preusiva' => $preu,
-    						'iva' => $preu*$iva/100,
-    						'totaldetall' => $preu + $preu*$iva/100);
-    			}
-    		}
-    	}
-    	ksort($detallfactura); // Ordenada per codi
-    	return $detallfactura;
-    }
-    
     
     /**
      * Missatge llista de partes

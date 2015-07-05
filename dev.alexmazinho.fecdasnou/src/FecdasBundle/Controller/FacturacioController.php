@@ -511,7 +511,9 @@ class FacturacioController extends BaseController {
 						
 					if ($factura->getId() > 0)  $factura->setDatamodificacio(new \DateTime());
 						
-		
+					if ($factura->esBaixa() && $factura->getComanda() != null) {
+						$factura->setComandaoriginal($factura->getComanda()->getId());
+					}
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades de la factura ' ); //$form->getErrorsAsString()
 				}
@@ -520,9 +522,9 @@ class FacturacioController extends BaseController {
 		
 				$this->get('session')->getFlashBag()->add('info-notice',	'La factura s\'ha desat correctament');
 					
-				$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $factura->getId().' '.$factura->getInfoComanda());
+				$this->logEntryAuth('FACTURA SUBMIT',	'factura : ' . $factura->getId().' '.$factura->getNumFactura());
 				// Ok, retorn form sms ok
-				return $this->redirect($this->generateUrl('FecdasBundle_factura',
+				return $this->redirect($this->generateUrl('FecdasBundle_editarfactura',
 						array( 'id' => $factura->getId() )));
 					
 			} catch (\Exception $e) {
@@ -544,8 +546,6 @@ class FacturacioController extends BaseController {
 		
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
-		$this->logEntryAuth('FACTURA NOVA',	'');
 		
 		$idcomanda = $request->query->get('comanda', 0);
 		
@@ -764,8 +764,8 @@ class FacturacioController extends BaseController {
 							$detall->setDatabaixa(new \DateTime());
 							$detall->setDatamodificacio(new \DateTime());
 							$em->persist($detall);
-					
 						}
+						if ($detall->getIvaunitat() > 0) $detall->setIvaunitat($detall->getIvaunitat()/100); 
 					}
 					
 					// Nous detalls i validació

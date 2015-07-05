@@ -265,21 +265,9 @@ FecdasBundle_albaratopdf:
     requirements:
         _method:  GET
 
-FecdasBundle_albarapeticio:
-    pattern:  /albarapeticio
-    defaults: { _controller: "FecdasBundle:PDF:albarapeticio" }
-    requirements:
-        _method:  GET
-
 FecdasBundle_rebuttopdf:
     pattern:  /printrebut
     defaults: { _controller: "FecdasBundle:PDF:printrebut" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_facturapeticio:
-    pattern:  /facturapeticio
-    defaults: { _controller: "FecdasBundle:PDF:facturapeticio" }
     requirements:
         _method:  GET
 

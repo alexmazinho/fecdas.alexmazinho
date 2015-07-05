@@ -446,16 +446,6 @@ class BaseController extends Controller {
 		return $query;
 	}
 	
-	protected function getTotalsFactura($detallfactura) {
-		$totalfactura = array('totalparcial' => 0, 'iva' => 0, 'total' => 0);
-		foreach ($detallfactura as $c => $lineafactura) {
-			$totalfactura['totalparcial'] += $lineafactura['preusiva'];
-			$totalfactura['iva'] = $lineafactura['iva'];
-			$totalfactura['total'] += $lineafactura['totaldetall'];
-		}
-		return $totalfactura;
-	}
-	
 	protected function crearPagament($data, $import, $estat, $dades, $comentari = '') {
 		$em = $this->getDoctrine()->getManager();
 		

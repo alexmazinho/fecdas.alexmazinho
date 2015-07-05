@@ -85,17 +85,17 @@
 				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
 				   		<div class="data-detall-cell duplicat-actions">
 					   		{% if duplicat.factura is not null %} 
-								<a class="duplicat-factura link" href="{{ path('FecdasBundle_facturapeticio', { 'id': duplicat.id}) }}" alt="Factura" title="Factura">
+								<a class="duplicat-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': duplicat.id}) }}" alt="Factura" title="Factura">
 										<i class="fa fa-file-pdf-o fa-1x orange"></i></a>
 							{% else %}
 								<i class="fa fa-file-pdf-o fa-1x transparent"></i>
 							{% endif %}
 							
 							{% if duplicat.comandaPagada == true %} 
-								<a class="duplicat-albara link" href="{{ path('FecdasBundle_albarapeticio', { 'id': duplicat.id}) }}"  alt="Rebut" title="Rebut">
+								<a class="duplicat-albara link" href="{{ path('FecdasBundle_albaratopdf', { 'id': duplicat.id}) }}"  alt="Albarà" title="Albarà">
 									<i class="fa fa-file-text-o fa-1x blue"></i></a>
 							{% else %}
-								<a class="duplicat-albara link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': duplicat.id}) }}"  alt="Albarà" title="Albarà">
+								<a class="duplicat-albara link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': duplicat.id}) }}"  alt="Rebut" title="Rebut">
 									<i class="fa fa-file-text-o fa-1x blue"></i></a>
 							{% endif %}
 							{% if duplicat.datapagament is null %} 

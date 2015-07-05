@@ -30,25 +30,32 @@
 				{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
-	        		<a id="formparte-payment" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
-	        			<i class="fa fa-credit-card fa-2x"></i></a>
+	        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
+	        			<i class="fa fa-credit-card fa-2x blue"></i></a>
 				</div>
 				{% endif %}	
 				<div id="parte-to-pdf" class="button-top">
-					<a href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
-						<i class="fa fa-pdf-o fa-2x"></i></a></div>
+					<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
+						<i class="fa fa-pdf-o fa-2x red"></i></a></div>
 					<!-- només factures amb número factura del web -->
-				{% if parte.numfactura is not null %} 
+				{% if parte.factura is not null %} 
 					<div id="factura-to-pdf" class="button-top">
-						<a href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
-							<i class="fa fa-file-text-o fa-2x"></i></a>
+						<a class="link" href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
+							<i class="fa fa-file-text-o fa-2x blue"></i></a>
 					</div>
 				{% else %}
 					<div id="albara-to-pdf" class="button-top">
-						<a href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
-							<i class="fa fa-list fa-2x"></i></a>
+						<a class="link" href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
+							<i class="fa fa-list fa-2x orange"></i></a>
 					</div>
 				{% endif %}
+				{% if parte.comandaPagada %} 
+					<div id="rebut-to-pdf" class="button-top">
+						<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
+							<i class="fa fa-file-text fa-2x green"></i></a>
+					</div>
+				{% endif %}
+				
 			</div>	
 		</div>
 		

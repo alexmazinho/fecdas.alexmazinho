@@ -113,6 +113,12 @@ class EntityComanda {
 	public function __constructParams($num, $factura = null, $club = null, $comentaris = '') {
 	
 		$this->num = $num;
+		
+		if ($factura != null && $this->factura != null && $this->factura->getId() != $factura->getId()) {
+			$this->factura->setComandaoriginal($this);
+			$this->factura->setIdanulacio($factura->getId());
+		}
+		
 		$this->factura = $factura;
 		$this->club = $club;
 		$this->comentaris = ($comentaris==''?null:$comentaris);
@@ -130,7 +136,7 @@ class EntityComanda {
 		 }*/
 	}
 	
-	public function estBaixa()
+	public function esBaixa()
 	{
 		return $this->databaixa != null;
 	}
@@ -140,22 +146,44 @@ class EntityComanda {
 		return $this->rebut != null && !$this->rebut->esBaixa();
 	}
 	
+	public function esParte()
+	{
+		return false;
+	}
+	
+	public function esDuplicat()
+	{
+		return false;
+	}
+	
+	public function esAltre()
+	{
+		return !$this->esDuplicat() && !$this->esParte();
+	}
+	
+	
 	/**
-	 * Comanda format amb any  XXXXX/20XX
+	 * Comanda 
+	 * format nou amb any  LXXXXX/20XX
+	 * format antic si comanda <= 2015  LXXXXXX
 	 *
 	 * @return string
 	 */
 	public function getNumComanda() {
+		if ($this->dataentrada->format("Y") <= 2015) return $this->getPrefixAlbara().str_pad($this->id, 6,"0", STR_PAD_LEFT);
 		return $this->getPrefixAlbara().str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
 	}
 	
 	
 	/**
-	 * Comanda format curt amb any  XXXXX/XX
-	 *
+	 * Comanda curt
+	 * format nou amb any  LXXXXX/XX
+	 * format antic si comanda <= 2015
+	 * 
 	 * @return string
 	 */
 	public function getNumComandaCurt() {
+		if ($this->dataentrada->format("Y") <= 2015) return $this->getNumComanda();
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("y");
 	}
 	
@@ -206,7 +234,9 @@ class EntityComanda {
 	 * @return string
 	 */
 	public function getNumFactura() {
-		return ($this->factura != null?$this->factura->getNumFactura():"");
+		if ($this->factura == null) return "";
+		
+		return (!$this->factura->esBaixa()?"":"baixa-").$this->factura->getNumFactura();
 	}
 	
 	/**
@@ -216,7 +246,18 @@ class EntityComanda {
 	 */
 	public function getDatafactura()
 	{
-		return ($this->factura != null?$this->factura->getDatafactura():null);
+		return ($this->factura != null && !$this->factura->esBaixa()?$this->factura->getDatafactura():null);
+	}
+	
+	/**
+	 * Comprova si la factura es vàlida.
+	 *
+	 * @return boolean
+	 */
+	public function isFacturaValida()
+	{
+		if ($this->factura == null) return false;
+		return abs($this->factura->getImport() - $this->getTotalDetalls() <= 0.01);
 	}
 	
 	
@@ -226,7 +267,7 @@ class EntityComanda {
 	 * @return string
 	 */
 	public function getNumRebut() {
-		return ($this->rebut != null?$this->rebut->getNumRebut():"");
+		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getNumRebut():"");
 	}
 	
 	/**
@@ -236,7 +277,7 @@ class EntityComanda {
 	 */
 	public function getImportpagament()
 	{
-		return ($this->rebut != null?$this->rebut->getImport():null);
+		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getImport():null);
 	}
 	
 	/**
@@ -246,7 +287,7 @@ class EntityComanda {
 	 */
 	public function getDatapagament()
 	{
-		return ($this->rebut != null?$this->rebut->getDatapagament():null);
+		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getDatapagament():null);
 	}
 	
 	
@@ -255,7 +296,18 @@ class EntityComanda {
 	 * @return integer
 	 */
 	public function getTipuspagament() {
-		return ($this->rebut != null?$this->rebut->getTipuspagament():null);
+		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getTipuspagament():null);
+	}
+	
+	/**
+	 * Comprova si el rebut es vàlid.
+	 *
+	 * @return boolean
+	 */
+	public function isRebutValid()
+	{
+		if ($this->rebut == null) return false;
+		return abs($this->rebut->getImport() - $this->getTotalDetalls() <= 0.01);
 	}
 	
 	/**
@@ -305,18 +357,25 @@ class EntityComanda {
 				
 				$codi = $d->getProducte()->getCodi();
 				
+				error_log("***>".$d->getIvaunitat());
+				
 				if (isset($acumulades[$codi])) {
-					$acumulades[$codi]['total']++;
+					$acumulades[$codi]['total'] += $d->getUnitats();
 					$acumulades[$codi]['import'] += $d->getTotal();
 				}
 				else {
 					$acumulades[$codi] = array(
-						'total' => 1, 
+						'total' => $d->getUnitats(), 
+						'preuunitat' => $d->getPreuunitat(),
+						'ivaunitat' => $d->getIvaunitat(),
 						'import' => $d->getTotal(),
-						'producte' => $d->getProducte()->getDescripcio());
+						'producte' => $d->getProducte()->getDescripcio(),
+						'codi' => $d->getProducte()->getCodi(),
+					);
 				}
 			}
 		}
+		ksort($acumulades); // Ordenada per codi
 		return $acumulades;
 	}
 	
@@ -328,9 +387,7 @@ class EntityComanda {
 	public function getConcepteComanda()
 	{
 		
-		if ($this->factura == null) return "COMANDA: ".$this->getNumComanda()." ".$this->getTipusComanda();
-		
-		return $this->factura->getConcepte();
+		return "COMANDA: ".$this->getNumComanda()." ".$this->getTipusComanda();
 		
 	}
 	
@@ -382,26 +439,6 @@ class EntityComanda {
 		$total = 0;
 		foreach ($this->detalls as $d) if (!$d->esBaixa()) $total ++;
 		return $total;
-	}
-	
-	public function esBaixa()
-	{
-		return $this->databaixa != null;
-	}
-	
-	public function esParte()
-	{
-		return false;
-	}
-	
-	public function esDuplicat()
-	{
-		return false;
-	}
-	
-	public function esAltre()
-	{
-		return !$this->esDuplicat() && !$this->esParte();
 	}
 	
     /**
@@ -567,7 +604,12 @@ class EntityComanda {
      */
     public function setFactura(\FecdasBundle\Entity\EntityFactura $factura = null)
     {
-        $this->factura = $factura;
+    	if ($factura != null && $this->factura != null && $this->factura->getId() != $factura->getId()) {
+    		$this->factura->setComandaoriginal($this);
+    		$this->factura->setIdanulacio($factura->getId());
+    	}
+    	
+    	$this->factura = $factura;
 
         return $this;
     }

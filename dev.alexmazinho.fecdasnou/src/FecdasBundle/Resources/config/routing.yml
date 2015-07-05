@@ -267,7 +267,7 @@ FecdasBundle_albaratopdf:
 
 FecdasBundle_rebuttopdf:
     pattern:  /printrebut
-    defaults: { _controller: "FecdasBundle:PDF:printrebut" }
+    defaults: { _controller: "FecdasBundle:PDF:rebuttopdf" }
     requirements:
         _method:  GET
 

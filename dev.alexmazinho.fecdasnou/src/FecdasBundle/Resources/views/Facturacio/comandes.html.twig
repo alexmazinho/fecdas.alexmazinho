@@ -124,7 +124,7 @@
 							{% if comanda.comandaPagada != true  %}
 								<i class="fa fa-list transparent"></i>
 							{% else %}
-				   				<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': comanda.id}) }}" alt="PDF Rebut" title="PDF Rebut">
+				   				<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': comanda.rebut.id}) }}" alt="PDF Rebut" title="PDF Rebut">
 									<i class="fa fa-list fa-1x orange"></i></a>
 							{% endif %}
 			   				<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa">

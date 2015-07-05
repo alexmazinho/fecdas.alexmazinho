@@ -148,9 +148,7 @@ class EntityRebut {
 	{
 		if ($this->comanda == null) return $this->getNumRebut()." INGRES ".$this->getClub()->getNom();  // Ingrés a compte
 			
-		if ($this->comanda->getFactura() == null) return $this->comanda->getConcepteComanda(); 	
-		
-		return $this->comanda->getFactura()->getConcepte();
+		return "REBUT ".$this->getNumRebut()." - ".$this->comanda->getConcepteComanda(); 	
 	}
 	
 	/**

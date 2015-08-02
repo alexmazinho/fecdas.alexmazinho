@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Fecdas Nou</name>
+	<name>Fecdas_Nou</name>
 	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
+		<buildCommand>
+			<name>com.aptana.ide.core.unifiedBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 		<buildCommand>
 			<name>com.dubture.doctrine.core.doctrineBuilder</name>
 			<arguments>
@@ -48,5 +53,6 @@
 		<nature>com.dubture.composer.core.composerNature</nature>
 		<nature>com.dubture.symfony.core.symfonyNature</nature>
 		<nature>com.dubture.doctrine.core.doctrineNature</nature>
+		<nature>com.aptana.ruby.core.rubynature</nature>
 	</natures>
 </projectDescription>

@@ -29,7 +29,7 @@
     	<div id="menu-user">
 			
 			<div class="btn-group menu-user-dropdown">
-			  <a class="btn btn-primary" href="#"><i class="fa fa-user fa-fw"></i> {{ app.session.get('username') }}{% if userclub is defined %}{{ userclub }}{% else %} entrada{% endif %}</a>
+			  <a class="btn btn-primary user-login" href="#"><i class="fa fa-user fa-fw"></i>{% if authenticated == true %}{{ app.session.get('username') }} {% else %} entrada{% endif %}</a>
 			  <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
 			    <span class="fa fa-caret-down"></span></a>
 			  <ul class="dropdown-menu">
@@ -49,45 +49,8 @@
 			    <li>{{ form_label(roleform.role) }}</li>
 			    <li><p>{{ form_widget(roleform.role) }} <i class="fa fa-exchange fa-fw"></i></p></li>
 				{% endif %}
-				{% if userclub is defined %}
-				<li>{{ userclub }}</li>
-				{% endif %}
 			  </ul>
 			</div>
-			
-	    	<select id="mobile-menu-principal">
-				<option value="">Seleccionar una pàgina</option>
-				<option value="{{ path('FecdasBundle_homepage') }}">Pàgina principal</option>
-				{% if authenticated == false  %}
-				<option value="{{ path('FecdasBundle_login') }}">Iniciar sessió</option>
-				<option value="{{ path('FecdasBundle_contact') }}">Contacte</option>
-				{% else %}
-				{% if admin == true  %}
-				<option value="">Administració</option>
-				<option value="{{ path('FecdasBundle_club') }}"> - Clubs i usuaris</option>
-				<option value="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}"> - Llistes recents</option>
-				<option value="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}"> - Saldos clubs</option>
-				<option value="{{ path('FecdasBundle_enquestes') }}"> - Enquestes</option>
-				{% endif %}
-				<option value="">Tramitació</option>
-				<option value="{{ path('FecdasBundle_parte') }}"> - Introduir noves llicències</option>
-				<option value="{{ path('FecdasBundle_importcsv') }}"> - Importació de llicències</option>
-				<option value="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}"> - Duplicats</option>
-				<option value="">Consulta</option>
-				<option value="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}"> - Llicències</option>
-				<option value="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}"> - Assegurats</option>
-				{% if busseig == true  %}
-				<option value="{{ path('FecdasBundle_busseig') }}"> - Llicències amb el DNI</option>
-				{% endif %}
-				<option value="">Racó d'usuari</option>
-				<option value="{{ path('FecdasBundle_user') }}">Racó d'usuari</option>
-				{% if enquestausuari is defined and enquestausuari == true %}
-				<option value="{{ path('FecdasBundle_enquestausuari') }}">Enquesta</option>
-				{% endif %}
-				<option value="{{ path('FecdasBundle_contact') }}">Contacte</option>
-				<option value="http://www.fecdas.cat/faqs.php">FAQ</option>
-				{% endif %}
-			</select>
 		</div>
    	
 	
@@ -96,17 +59,19 @@
 {% block menu_navigation %}
 
 	{% if authenticated == true  %}
-		<nav class="navbar navbar-default">
+	<div class="container">
+		<nav class="navbar navbar-default" >
 		  <div class="container-fluid">
 		    <!-- Brand and toggle get grouped for better mobile display -->
 		    <div class="navbar-header">
 		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-		        <span class="sr-only">Toggle navigation</span>
+		        <span class="sr-only">Menú</span>
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <ul class="nav navbar-nav"><li id="menu-contact"><a class="navbar-brand" href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i></a></li></ul>
+		      <!-- <nav id="navbar-nav menu-contact"><a href="/contact"><i class="fa fa-envelope"></i></a></nav> -->
+		      <ul class="nav"><li id="menu-contact"><a class="navbar-brand" href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i></a></li></ul>
 		    </div>
 		
 		    <!-- Collect the nav links, forms, and other content for toggling -->
@@ -135,7 +100,7 @@
 		          </ul>
 		        </li>
 		      </ul>
-		      	
+		      	<ul class="nav navbar-nav navbar-right"><li><p class="navbar-text"><i class="admin-nav">ADMINISTRACIÓ </i></p></li></ul>
 		      	<ul class="nav navbar-nav navbar-right">
 		      		<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">Clubs i usuaris</a></li>
 		      		<li class="dropdown">
@@ -162,10 +127,11 @@
 			        </li>
 					<li id="menu-admenquestes"><a href="{{ path('FecdasBundle_enquestes') }}">Enquestes</a></li>
 		      	</ul>
-		      	<p class="navbar-text navbar-right"><i class="admin-nav">ADMINISTRACIÓ </i></p>
+		      	
 		    </div><!-- /.navbar-collapse -->
 		  </div><!-- /.container-fluid -->
 		</nav>
+	</div>
     {% endif %} 
 	
 {% endblock %}
@@ -220,9 +186,7 @@
 	
 			changeRoleClub("{{ path('FecdasBundle_changerole') }}");
 	
-			$("#mobile-menu-principal").change(function() {
-		    	document.location = $(this).val();
-			});
+			
 		});
 	
 		$('#menu-user')

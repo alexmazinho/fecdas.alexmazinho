@@ -43,17 +43,17 @@
 		</script>
     </head>
     <body>
-		<section id="wrapper">
-            <header id="header"  {% if authenticated == false  %} class="header-nologin" {% endif %}>
+		<section id="wrapper" class="container-fluid">
+            <header id="header"  class="row {% if authenticated == false  %} header-nologin{% endif %}">
                 <div class="logo">{% block fecdas_logo %}{% endblock %}</div>
                 <div class="title">{% block fecdas_title %}{% endblock %}</div>
                 <div class="login">{% block fecdas_login %} {% endblock %}</div>
             </header>
 			
-			<section id="main" class="container">
+			<section id="main" class="row">
 				{% block menu_navigation %}{% endblock %}
 	            <noscript>
-					<div id="no-js">
+					<div id="no-js" class="container">
 					<h1>Navegador sense suport JAVASCRIPT</h1>
 					<p><b>L'Aplicació de Tramitació de Llistes d'Assegurats</b> requereix de l'activació de Javascript per al seu correcte funcionament.</p>
 					<p>Podeu trobar informació sobre el llenguatge Javascript aquí: <a href="http://ca.wikipedia.org/wiki/JavaScript" target="_blank">http://ca.wikipedia.org/wiki/JavaScript</a>.</p>
@@ -72,7 +72,7 @@
 					</div>
 				</noscript>
 	
-	            <div id="main-col">
+	            <div id="main-col" class="container">
 	           		{% block body %}{% endblock %}
 	    			<div id="enquesta" class="finestra-overlay"></div>
 	    			<div id="dialeg" title="Confirmation Required" style="display: none"></div>
@@ -81,17 +81,17 @@
 	    	</section>
  
             <div id="browser" style="display: none;"></div>
-            <div id="footer">
+            <div id="footer" class="row">
             	
                 {% block footer %}
-                	<div class="powered col-md-2">
-                		<div style="float: left;">Powered by<br>Symfony2 </div>
+                	<div class="powered col-xs-2">
+                		<div class="footer-text" style="float: left;">Powered by<br>Symfony2 </div>
                 		<div><img src="{{ asset('images/sf-logo.png') }}" width="25px"/></div>
                 	</div>
-                	<div class="fecdas-footer col-md-8"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyright {{ "now"|date("Y") }}<br/>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
+                	<div class="fecdas-footer col-xs-8"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyright {{ "now"|date("Y") }}<br/>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
                     </div>
-                    <div class="created-by col-md-2">
-					<br/>creat per <a href="http://www.ondissenyweb.com" target="_blank">On</a>
+                    <div class="created-by col-xs-2">
+					<span class="footer-text"><br/>creat per </span><a href="http://www.ondissenyweb.com" target="_blank">On</a>
 					</div>
                 {% endblock %}
                 

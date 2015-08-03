@@ -357,10 +357,10 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
   	z-index: 1; 
   	display:none; 
   	/*margin: 10px;*/
-  	position: absolute; 
+  	/*position: absolute; 
   	right: 10px; 
   	top: 10px;
-  	z-index: 1; 
+  	z-index: 1;*/ 
     /*font-weight: bold;
     font-style: italic;*/
     text-decoration: none;
@@ -809,10 +809,20 @@ ul.detalls li .alert { margin: 10px 0; }
 
 /*.navbar-default { background-color: #F0F9FF; background-image: linear-gradient(to bottom, #FFFFFF 0px, #EEEEEE 100%); }*/
 
-.navbar-default .navbar-nav > li > a, .navbar-default .navbar-nav .dropdown-menu > li > a  {  color: #1240a0; } 
+.navbar-brand {
+    font-size: 18px;
+    height: auto;
+    line-height: 20px;
+    padding: 15px;
+}
 
-.navbar-default .navbar-nav > .active > a,  .navbar-default .navbar-nav .dropdown-menu > li.active > a,
-.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:focus, .navbar-default .navbar-nav > .open > a:hover {
+.nav > li > a { padding: 15px; }
+
+.navbar-default .nav > li > a, .navbar-default .nav .dropdown-menu > li > a  {  color: #1240a0; } 
+
+.navbar-default .nav > li > a:hover,
+.navbar-default .nav > .active > a,  .navbar-default .nav .dropdown-menu > li.active > a,
+.navbar-default .nav > .open > a, .navbar-default .nav > .open > a:focus, .navbar-default .nav > .open > a:hover {
 	background-color: #2281CF;
 	background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%);
 	color: #fff;
@@ -822,7 +832,7 @@ ul.detalls li .alert { margin: 10px 0; }
 
 .admin-nav { padding-right: 10px; }
 
-.navbar-default .navbar-nav > .active > a:hover { color: #fff; }  
+.navbar-default .nav > .active > a:hover { color: #fff; }  
 
 .navigation .pagination {
 	padding: 3px 0;

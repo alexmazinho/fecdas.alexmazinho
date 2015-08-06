@@ -51,7 +51,7 @@ Examples
 	
 	#header { margin-bottom: 10px; }
 	
-	#main-col .content-center { margin: 0; }
+	/*#main-col .content-center { margin: 0; }*/
 	
 }
 
@@ -69,6 +69,8 @@ Examples
 }
 
 @media only screen and (max-width: 767px) {
+	input { min-width: inherit; }
+	
 	.navbar-text { display: block; padding: 0 10px; margin: 0; border-bottom: 1px solid  #cccccc; border-top: 1px solid  #cccccc; }
 	
 	.navbar-right li {
@@ -76,11 +78,15 @@ Examples
 	}
 	
 	#left-menu { display: none }
-	#main-col {border: none }
+	#main-col { border: none }
 	
 	#main-col #slider {  display: none }
 	
-	#main-col .narrow.page-center { width: 90%; }
+	#main-col .narrow.page-center { /*width: 90%;*/ }
+	
+	#main-col nav .nav-pills a { font-size: 1em; }
+	
+	#main-col .page-center { /*margin: 15px auto 0; width: auto;*/ }
 	
 /*	#menu-user {
 	    float: none;
@@ -104,44 +110,36 @@ Examples
 	*/
 	
 	#main-col, #no-js {
-    	max-width: inherit;
+    	/*max-width: inherit;
     	min-width: inherit;
     	width: 100%;
     	min-height: inherit;
-    	padding: 0;
+    	padding: 0;*/
 	}
 
 	#wrapper {
-	    margin: auto;
+	    /*margin: auto;
 	    min-width: 420px;
 	    position: relative;
-	    width: auto;
+	    width: auto;*/
 	}
 	
 	#header {
 	    height: auto;
-	    padding: 10px;
-	    position: relative;
+	    /*padding: 10px;
+	    position: relative;*/
 	    background-image:none;
 	    background-color: #67A2CF;
 	}
 	
 	#header.header-nologin {
-		 height: 60px;
-	}
-	
-	.login {
-	    display: block;
-		margin: auto;
-	    width: auto;
-	    float: none;
-	    text-align: center;
+		/* height: 60px;*/
 	}
 	
 	.title {
-	    display: block;
 	    padding-left: 70px;
-	    width: auto;
+	    /*display: block;
+	    width: auto;*/
 	    padding-bottom: 20px;
 	}
 	
@@ -149,15 +147,33 @@ Examples
 	    width: 60px;
 	}
 	
-	#main-col header {
-	    width: auto;
-	}
+	.title { font-size: 15px; line-height: 1; }
+	.title i { font-size: 13px; }
+	
+	#main-col h1, #main-col h2 { font-size: 28px; }
 }
 
 @media only screen and (min-width: 480px) and (max-width: 767px) {
 }
 
 @media only screen and (max-width: 479px) {
+	#main {
+    	padding-bottom: 120px;
+	}
+	
+	#main-col header { /*width: auto;*/ }
+
+	.login {
+	    /*display: block;
+		margin: auto;
+	    width: auto;*/
+	    /*float: none;
+	    text-align: center;
+	    width: 100%;*/
+	}
+
+	#main-col .content-center { padding: 0; }
+	
 	#menu-user .select2-container { width: 200px;}
 	
 	#formllicencia-persona #s2id_parte_llicencies_persona_select {
@@ -171,8 +187,17 @@ Examples
 	.fecdas-footer {
     	font-size: 0.8em;
 	}	
+	
+	#main-col h1, #main-col h2 { font-size: 24px; }
+	
+	h3 { font-size: 20px; }
+	
 	.col-responsive {  display: table-cell; }
 	.col-noresponsive { display: none;}
 	
 	.assegurat-tipusdesc { width: 45%; }
+	
+	#main-col nav .nav-pills a { font-size: 0.9em; padding: 5px 10px; }
+	
+	#main-col nav .nav-pills .fa { width: 20px;}
 }

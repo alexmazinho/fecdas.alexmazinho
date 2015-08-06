@@ -39,17 +39,25 @@
 	$(document).ready(function(){
 		setMenuActive("menu-login");
 	
-		//window.setTimeout(autofillLoginCheck, 50);  // Remove autofill
-		
 		helpBubbles("#login_user", '<p>L\'usuari és una adreça de correu electrònic. p.e. </p>\
 					<p>maildelclub@domini.com</p>');
 	
 		helpBubbles("#login_pwd", '<p>Indica la teva paraula clau d\'accés al sistema</p>');
-	
-		$('input').each(function() {
+
+
+		$('input').change(function() {
 	        var elem = $(this);
 	        if (elem.val()) elem.blur(); 
 	    });
+		/*
+		setTimeout(function() {
+			$('input').each(function() {
+		        var elem = $(this);
+		        //alert(elem.val());
+		        console.log('1');
+		        if (elem.val()) elem.blur(); 
+		    });
+		}, 50);*/
 	});
 	</script>
 {% endblock %}

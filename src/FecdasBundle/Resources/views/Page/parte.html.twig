@@ -25,8 +25,9 @@
 		</div>
 		
 		<div class="form-row clearfix">
-			<div class="sms-header-info">{{ parte.infoParte }}</div> 
-			<div class="buttons-top" {% if ((parte.id is null) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
+			<div class="sms-header-info">{{ parte.infoParte }}</div>
+			{% if ((parte.esnova != true) and (parte.numLlicencies > 0))  %} 
+			<div class="buttons-top">
 				{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
@@ -57,6 +58,7 @@
 				{% endif %}
 				
 			</div>	
+			{% endif %}
 		</div>
 		
 
@@ -70,7 +72,7 @@
 					</div>
 				</div>
 			 </div>
-			 <div class="col-md-3">
+			 <div class="col-md-4">
 				<div class="form-group">
 					{{ form_label(form.dataalta, 'Validesa') }}
 					<div id="formparte-dataalta" class="input-group">
@@ -80,7 +82,7 @@
 					</div>
 				</div>
 			  </div>
-			  <div class="col-md-3">
+			  <div class="col-md-4">
 			    <div id="formparte-tipus" class="form-group">
 			    	{{ form_label(form.tipus, 'Tipus de llista d\'assegurats') }}
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
@@ -102,7 +104,7 @@
 				</div>
 			</div>
 			{% if admin == true and parte.datapagament is null %}
-				{% if parte.id is not null %}
+				{% if parte.esnova != true %}
 					<div class="col-md-2">
 						<label>&nbsp;</label>
 						<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 

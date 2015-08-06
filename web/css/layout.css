@@ -208,8 +208,10 @@ a img {border: none; }
 
 #header .logo { width: 0; float: left; /*display: inline-block;*/  }
 
-.login { max-width: 270px; float: right; /*display: inline-block;*/ width: auto; }
+.login { float: right; /*display: inline-block; width: auto;*/ }
 .login .btn-primary.user-login { max-width: 240px; text-overflow: ellipsis; }
+
+#menu-user { max-width: 270px; }
 
 #header .login img { vertical-align: middle; padding: 0 10px; }
 #header a { color: #EEEEEE; }
@@ -328,9 +330,9 @@ html>body #left-menu a:hover {
 	text-decoration: underline;
 }
 
-#main-col .page-center { margin: 0px auto; width: 350px; }
-#main-col .narrow.page-center  { text-align: justify; width: 770px; }
-#main-col .content-center { margin-top: 50px; padding: 0 25px; }
+#main-col .page-center { margin: auto; max-width: 350px; }
+#main-col .narrow.page-center  { text-align: justify; max-width: 770px; }
+#main-col .content-center { margin-top: 50px; padding: 0 15px; }
 
 .content-center input { max-width: 100%; width: 100%; }
 

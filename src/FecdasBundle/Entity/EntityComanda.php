@@ -136,6 +136,11 @@ class EntityComanda {
 		 }*/
 	}
 	
+	public function esNova()
+	{
+		return $this->id == 0;
+	}
+	
 	public function esBaixa()
 	{
 		return $this->databaixa != null;

@@ -130,6 +130,7 @@ input[type="checkbox"] {
 
 input[type="text"], 
 input[type="email"],
+input[type="search"],
 input[type="password"] { 
 	max-width: 400px; 
 	line-height: 30px; 
@@ -281,7 +282,7 @@ input#datepicker,
 	width: auto;
 }
 
-#main-col nav .nav-pills { margin: 0 auto 20px auto;  width: 340px;  }
+#main-col nav .nav-pills { /*margin: 0 auto 20px auto;  width: 340px; */ }
 #main-col nav .nav-pills a { font-size: 1.1em; color: #1240a0; }
 #main-col nav .nav-pills .active a {  background-color: #fff; text-decoration:underline; }
 #main-col nav .nav-pills .fa { font-size: 1.1em; width: 30px; }
@@ -1246,12 +1247,12 @@ select#parte_renovar_tipus { width: 240px; }
     width: auto;
 }
 
-#partes-totals { text-align: left; width: 20%;}
+#partes-totals { text-align: left; /*width: 20%;*/}
 #partes-totals span,
 #partes-import span { font-style: italic; }
-#partes-club { width: 20%; }
+#partes-club { /*width: 20%;*/ }
 #partes-club .titol-club-nom { font-size: 24px; border-bottom: 1px dashed #1240A0; padding: 0 15% 10px; }
-#partes-import { width: 20%; }
+#partes-import { /*width: 20%;*/ }
 
 #header-parteid { width: 6%; }
 #header-parteany {	width: 6%; }
@@ -2403,11 +2404,11 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 .finestra-overlay {
-  	position:fixed;
-  	width:740px;
-  	height:440px;
-  	display:none;
-  	z-index:300;
+  	position: fixed;
+  	width: 740px;
+  	height: auto;
+  	display: none;
+  	z-index: 300;
   
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
    	-moz-box-shadow:0 0 90px 5px #000000;

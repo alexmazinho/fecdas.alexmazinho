@@ -282,7 +282,7 @@ input#datepicker,
 	width: auto;
 }
 
-#main-col nav .nav-pills { /*margin: 0 auto 20px auto;  width: 340px; */ }
+#main-col nav .nav-pills { /*margin: 0 auto 20px auto;  width: 340px; */ display: table; margin: 0 auto; }
 #main-col nav .nav-pills a { font-size: 1.1em; color: #1240a0; }
 #main-col nav .nav-pills .active a {  background-color: #fff; text-decoration:underline; }
 #main-col nav .nav-pills .fa { font-size: 1.1em; width: 30px; }
@@ -320,6 +320,8 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #left-menu { display:none; }
 
 .col-last-right { text-align: right; }
+
+.col-last-right label { display: block; }
 
 .checkbox-inline label { margin-bottom: 0; } 
 
@@ -406,9 +408,41 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     white-space: nowrap;
 }
 
-.fluxslider .surface { overflow: hidden; padding-bottom: 20px; } 
+#slider {
+  position: relative;
+  list-style: none;
+  overflow: hidden;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  }
 
-#slider .pagination { border:none; display:block; }
+#slider li {
+  -webkit-backface-visibility: hidden;
+  position: absolute;
+  display: none;
+  width: 100%;
+  left: 0;
+  top: 0;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  padding: 5px;  
+  }
+
+#slider li:first-child {
+  position: relative;
+  display: block;
+  float: left;
+  }
+
+#slider img {
+  display: block;
+  height: auto;
+  float: left;
+  width: 100%;
+  border: 0;
+  }
+
 
 /*
 .input-group-button-right .form-control { border-bottom-right-radius: 5px !important; border-top-right-radius: 5px !important; }
@@ -817,6 +851,8 @@ ul.detalls li .alert { margin: 10px 0; }
     padding: 15px;
 }
 
+.nav > li { display: table-cell; }
+
 .nav > li > a { padding: 15px; }
 
 .navbar-default .nav > li > a, .navbar-default .nav .dropdown-menu > li > a  {  color: #1240a0; } 
@@ -871,14 +907,6 @@ ul.detalls li .alert { margin: 10px 0; }
 
 
 /***************** Fi llistes ******************/
-
-#list-forms {
-	/*margin-bottom: 30px;
-    margin-top: 10px;
-    padding-bottom: 12px;*/
-	display: block;
-	/*padding: 10px 0;*/ 
-}
 
 .formassegurats-submit {
 	float:right;
@@ -1102,6 +1130,8 @@ input#form_dni {
     position: relative;
     /*margin-bottom: 10px;*/
 }
+
+#edicio-llicencies { margin-bottom: 10px; }
 
 #formparte-llicencia .form-row {
 	margin-bottom: 15px;

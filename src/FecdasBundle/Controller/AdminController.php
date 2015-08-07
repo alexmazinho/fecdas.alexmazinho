@@ -128,7 +128,7 @@ class AdminController extends BaseController {
 		$form = $formBuilder->getForm();
 		
 		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
+		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e LEFT JOIN p.rebut r ";
 		$strQuery .= "WHERE ";
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
@@ -137,7 +137,7 @@ class AdminController extends BaseController {
 		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
 				
 		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
-		if ($currentNoPagat == true) $strQuery .= " AND p.datapagament IS NULL ";
+		if ($currentNoPagat == true) $strQuery .= " AND (p.rebut IS NULL || (p.rebut IS NOT NULL AND r.dataanulacio IS NOT NULL)) ";
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
 		if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
@@ -184,14 +184,18 @@ class AdminController extends BaseController {
 			if ($request->query->get('estatpagat', '') != 'PENDENT OK') {
 				// Algun tipus de pagament
 				$datapagat = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
-				$parte->setDatapagament($datapagat);
+				/*$parte->setDatapagament($datapagat);
 				$parte->setEstatpagament($request->query->get('estatpagat'));
 				if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
-				if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));
+				if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));*/
+				
+				$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH; // ??
+				$this->crearRebut($datapagat, $parte->getPreuTotalIVA(), $tipusPagament, $request->query->get('dadespagat'), $request->query->get('comentaripagat'));
+				
 			}
 			$parte->setPendent(false);
 			if ($parte->getIdparteAccess() == null) {
-				$parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
+				//$parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
 				$parte->setDatamodificacio($this->getCurrentDate()); // Només activa sincro si té preu indicat. La resta no sincronitzen el pagament s'envia per Gestor 
 			}
 			

@@ -80,8 +80,6 @@ Examples
 	#left-menu { display: none }
 	#main-col { border: none }
 	
-	#main-col #slider {  display: none }
-	
 	#main-col .narrow.page-center { /*width: 90%;*/ }
 	
 	#main-col nav .nav-pills a { font-size: 1em; }
@@ -151,16 +149,16 @@ Examples
 	.title i { font-size: 13px; }
 	
 	#main-col h1, #main-col h2 { font-size: 28px; }
+	
+	#main {
+    	padding-bottom: 120px;
+	}
 }
 
 @media only screen and (min-width: 480px) and (max-width: 767px) {
 }
 
 @media only screen and (max-width: 479px) {
-	#main {
-    	padding-bottom: 120px;
-	}
-	
 	#main-col header { /*width: auto;*/ }
 
 	.login {

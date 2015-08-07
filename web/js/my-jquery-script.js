@@ -523,25 +523,6 @@
 	
 	/*************************************************** Home ********************************************************/	
 	
-	fluxhomepage = function()  {
-		//if(flux.browser.supportsTransitions) {
-		if (isBrowserOk() == true) { 
-			window.myFlux = new flux.slider('#slider', {
-			autoplay: true,
-			pagination: true,
-			//controls:true,
-			//captions: true,
-			transitions: new Array("bars3d", "zip", "blinds3d", "cube", "tiles3d", "bars", "slide"),
-			onTransitionEnd: function(data) {
-		        var img = data.currentImage;
-			    if (img.id == "sliderimg10") {
-			    	window.myFlux.stop();
-			    };
-		    }
-			});
-		};
-	};
-
 	login = function() {
 		//$('loginbox').show(); 
 		if ($('#loginbox').is(':visible')) {

@@ -604,7 +604,8 @@ class EntityParte extends EntityComanda {
     {
     	$currentdate = new \DateTime();
     	
-    	return (boolean) $this->getDatapagament() == null and $this->dataalta >= $currentdate;
+    	return (boolean) $this->comandaPagada() == false && 
+    			$this->dataalta->format('Y-m-d') >= $currentdate->format('Y-m-d');
     }
     
     /**
@@ -659,18 +660,7 @@ class EntityParte extends EntityComanda {
     	return ($currentdate->format('Y-m-d') > $this->getDataCaducitat("isPassat")->format("Y-m-d"));
     }
     
-    /**
-     * Comprova si la factura es vàlida.
-     *
-     * @return boolean
-     */
-    public function isFacturaValida()
-    {
-    	if ($this->factura == null) return false;
-    	
-    	return parent::isFacturaValida() && abs($this->factura->getImport() - $this->getPreuTotalNet() <= 0.01);
-    }
-    
+   
     /**
      * Missatge llista de partes
      *
@@ -695,7 +685,7 @@ class EntityParte extends EntityComanda {
     		if ($this->getAny() >= 2013) $textInfo .= "Llicències vigents (Factura pendent)";
     	}
     	
-    	if ($this->getDatapagament() != null and $this->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $textInfo .=  ". Pagament on-line";
+    	if ($this->comandaPagada() == true and $this->getRebut()->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $textInfo .=  ". Pagament on-line";
 
     	return $textInfo;
     }
@@ -728,9 +718,7 @@ class EntityParte extends EntityComanda {
     	
     	if ($this->club->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
 
-    	if ($this->getDatapagament() != null) return true;  // La resta poden imprimir si està pagat
-    	
-    	return false;
+    	return $this->comandaPagada();  // La resta poden imprimir si està pagat
     }
  
 

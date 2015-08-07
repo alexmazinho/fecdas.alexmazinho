@@ -724,6 +724,7 @@ class CronController extends BaseController {
 			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 			return true;
 		}
+		
 		if ($parte->getDatapagament() != null || $parte->getImportpagament() != null) {
 			$body = "<h1>Parte pendent pagat</h1>";
 			$body .= "<h2>Club : " . $parte->getClub()->getNom() . "</h2>";

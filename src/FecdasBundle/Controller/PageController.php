@@ -410,7 +410,7 @@ class PageController extends BaseController {
 		
 		if ($fila == 0) throw new \Exception('No s\'ha trobat cap llicència al fitxer');
 		
-		$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
+		//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 	}
 	
 	public function partesAction(Request $request) {
@@ -811,7 +811,7 @@ class PageController extends BaseController {
 				// Marcar pendent per a clubs pagament immediat
 				if ($parte->getClub()->pendentPagament()) $parte->setPendent(true);
 				
-				$parte->setImportparte($parte->getPreuTotalIVA());  // Actualitza preu si escau després de treure llicències
+				//$parte->setImportparte($parte->getPreuTotalIVA());  // Actualitza preu si escau després de treure llicències
 				
 				$em->persist($parte);
 				$em->flush();
@@ -968,7 +968,9 @@ class PageController extends BaseController {
 
 		$em = $this->getDoctrine()->getManager();
 		
-		if ($p['id'] != "") {
+		error_log('-'.$p['id'].'-');
+		
+		if (is_numeric($p['id']) && $p['id'] > 0) {
 			$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($p['id']);
 			$partedataalta = $parte->getDataalta();  // El posterior bind no carrega data pq està disabled al form
 		} else {
@@ -978,8 +980,9 @@ class PageController extends BaseController {
 			$parte->setClub($this->getCurrentClub());
 			$em->persist($parte);
 		}
-		
+		error_log('-'.'1'.'-');
 		if ($requestParams['action'] == 'remove') {
+			error_log('-'.'2'.'-');
 			// Cercar llicència a esborrar
 			foreach ($parte->getLlicencies() as $llicencia_iter) {
 				if ($llicencia_iter->getId() == $requestParams['llicenciaId']) $llicencia = $llicencia_iter;
@@ -996,7 +999,7 @@ class PageController extends BaseController {
 				$valida = false;
 			}
 			// Comprovació Pagat. No hauria de passar mai			
-			if ($parte->getDatapagament() != null) {
+			if ($parte->comandaPagada() == true) {
 				$this->get('session')->getFlashBag()->add('sms-notice',
 						'No es poden esborrar llicències que ja estan pagades');
 				$em->refresh($llicencia);
@@ -1005,7 +1008,7 @@ class PageController extends BaseController {
 			if ($valida == true) {
 				// Persistència
 				$parte->setDatamodificacio($this->getCurrentDate());
-				$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
+				//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 
 				// Baixa partes sense llicències
 				if ($parte->getNumLlicencies() == 0) $parte->setDatabaixa($this->getCurrentDate());
@@ -1018,6 +1021,7 @@ class PageController extends BaseController {
 			$extrainfo = 'parte:' . $parte->getId() . ' llicencia: ' . $llicencia->getId();
 			$this->logEntryAuth($logaction, $extrainfo);
 		} else {
+			error_log('-'.'3'.'-');
 			$l = $requestParams['llicencia'];
 			
 			if ($l['id'] != "") {
@@ -1032,7 +1036,7 @@ class PageController extends BaseController {
 				$parte->addLlicencia($llicencia);
 				$em->persist($llicencia);
 			}
-			
+			error_log('-'.'4'.'-');
 			$options = $this->getFormOptions();
 			
 			$options['codiclub'] = $parte->getClub()->getCodi();
@@ -1042,25 +1046,27 @@ class PageController extends BaseController {
 			$options['admin'] = true;
 			$options['nova'] = true;
 			$options['any'] = $parte->getAny();
-			
+			error_log('-'.'5'.'-');
 			$form = $this->createForm(new FormParte($options), $parte);
 			$formLlicencia = $this->createForm(new FormLlicencia($options),$llicencia);
-			
+			error_log('-'.'6'.'-');
 			$form->bind($request);
 			$formLlicencia->bind($request);
 			
 			if ($formLlicencia->isValid() and $form->isValid()) {
+				error_log('-'.'7'.'-');
+				
 				$parte->setDatamodificacio($this->getCurrentDate());
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				
 				if ($parte->getClub()->pendentPagament() == true) $parte->setPendent(true);  // Nous partes pendents
-
+				error_log('-'.'8'.'-');
 				/* Comprovació datacaducitat */
 				if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
 					error_log("DataCaducitat llicencia incorrecte " . $llicencia->getDatacaducitat()->format('d/m/Y') . " " . $parte->getDataCaducitat($this->getLogMailUserData("updateParte 1 "))->format('d/m/Y') , 0);
 					$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
 				}
-				
+				error_log('-'.'9'.'-');
 				$valida = true;
 				$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
 				if ($errData != "") {
@@ -1070,7 +1076,7 @@ class PageController extends BaseController {
 					$valida = false;
 				}		
 
-				
+				error_log('-'.'10'.'-');
 				if ($parte->getDataalta()->format('y') > $this->getCurrentDate()->format('y')) {
 					// Només a partir 10/12 poden fer llicències any següent
 					if ($this->getCurrentDate()->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
@@ -1080,7 +1086,7 @@ class PageController extends BaseController {
 							$valida = false;
 					}
 				}
-				
+				error_log('-'.'11'.'-');
 				/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 				/* id 4 - Competició --> és la única que es pot fer */
 				/* id 9 i 12 - Tecnocampus també es pot fer */
@@ -1101,7 +1107,7 @@ class PageController extends BaseController {
 				}
 				/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 				
-				
+				error_log('-'.'12'.'-');
 				if ($valida == true) {
 					if ($this->validaLlicenciaInfantil($llicencia) == false) {
 						$this->get('session')->getFlashBag()->add('sms-notice',
@@ -1109,7 +1115,7 @@ class PageController extends BaseController {
 						$valida = false;
 					}
 				}
-
+				error_log('-'.'13'.'-');
 				if ($valida == true) {
 					if ($this->validaPersonaRepetida($parte, $llicencia) == false) {
 						$this->get('session')->getFlashBag()->add('sms-notice',
@@ -1117,7 +1123,7 @@ class PageController extends BaseController {
 						$valida = false;
 					}
 				}
-				
+				error_log('-'.'14'.'-');
 				if ($valida == true) {
 					// Comprovar que no hi ha llicències vigents 
 					// Per la pròpia persona
@@ -1129,7 +1135,7 @@ class PageController extends BaseController {
 						$valida = false;
 					}
 				}
-				
+				error_log('-'.'15'.'-');
 				$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
 				if ($valida == true and 
 					$this->getCurrentDate() >= $datainiciRevisarSaldos and $parte->getClub()->controlCredit() == true) {
@@ -1141,9 +1147,10 @@ class PageController extends BaseController {
 						$valida = false;
 					}*/
 				}
-				
+				error_log('-'.'16'.'-');
 				// Persistència or rollback
 				if ($valida == true) {
+					error_log('-'.'17'.'-');
 					if ($parte->getId() != null) {
 						if ($llicencia->getId() != null) {
 							$logaction = 'LLICENCIA UPD OK';
@@ -1153,12 +1160,13 @@ class PageController extends BaseController {
 					}
 					else $logaction = 'PARTE NEW OK';
 					
-					$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
+					//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 										
 					$em->flush(); 
 				} else {
+					error_log('-'.'18'.'-');
 					if ($llicencia->getId() != null) {
 						// Modificar llicència
 						$logaction = 'LLICENCIA UPD KO';
@@ -1180,6 +1188,7 @@ class PageController extends BaseController {
 						}
 					}
 				}
+				error_log('-'.'19'.'-');
 				$extrainfo = '';
 				if ($parte->getId() != null) $extrainfo .= 'parte:' . $parte->getId();
 				if ($llicencia->getId() != null) $extrainfo .= ' llicencia: ' . $llicencia->getId();
@@ -1805,9 +1814,13 @@ class PageController extends BaseController {
 				// Actualitzar dades pagament
 				$parte->setEstatPagament("TPV OK");
 				$parte->setPendent(false);
-				$parte->setDadespagament($ordre);
+				
+				
+				$this->crearRebut($this->getCurrentDate(), $parte->getPreuTotalIVA(), BaseController::TIPUS_PAGAMENT_TPV, $ordre);
+				
+				/*$parte->setDadespagament($ordre);
 				$parte->setDatapagament($this->getCurrentDate());
-				$parte->setImportpagament($parte->getPreuTotalIVA());
+				$parte->setImportpagament($parte->getPreuTotalIVA());*/
 				$parte->setDatamodificacio($this->getCurrentDate());
 			
 				$em->flush();
@@ -1820,14 +1833,7 @@ class PageController extends BaseController {
 			$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($itemId);
 			
 			if ($duplicat != null) {
-				// Crear pagament
-				
-				/* Aqui CREAR comanda */
-				
-				//$pagament = $this->crearPagament($this->getCurrentDate(), $duplicat->getCarnet()->getPreu(), "TPV OK", $ordre);
-				
-				// Actualitzar pagament
-				//$duplicat->setPagament($pagament);
+				$this->crearRebut($this->getCurrentDate(), $duplicat->getTotalDetalls(), BaseController::TIPUS_PAGAMENT_TPV, $ordre);
 				
 				$em->flush();
 				return true;

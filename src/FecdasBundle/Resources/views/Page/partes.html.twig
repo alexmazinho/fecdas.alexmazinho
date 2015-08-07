@@ -23,45 +23,41 @@
 	{% endfor %}
         
     <div id="partes-main">
-	    <div id="list-forms">
-	    	<form id="form_partes" action="{{ path('FecdasBundle_partes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
-	    		<div class="row">
-		    		<div class="col-md-2">
-						<div class="form-group">
-							{{ form_label(form.desde, 'Dades des de') }}
-							<div id="formparte-datapagament" class="input-group" >
-								{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
+    	<form id="form_partes" action="{{ path('FecdasBundle_partes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+    		<div class="row">
+	    		<div class="col-md-2">
+					<div class="form-group">
+						{{ form_label(form.desde, 'Dades des de') }}
+						<div id="formparte-datapagament" class="input-group" >
+							{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 						</div>
 					</div>
-		    		<div class="col-md-2">
-						<div class="form-group">
-							{{ form_label(form.fins, 'Dades des de') }}
-							<div id="formparte-datapagament" class="input-group" >
-								{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
+				</div>
+	    		<div class="col-md-2">
+					<div class="form-group">
+						{{ form_label(form.fins, 'Dades des de') }}
+						<div id="formparte-datapagament" class="input-group" >
+							{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 						</div>
 					</div>
-					<div class="col-md-3">
-						<div class="form-group">
-							{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats') }}
-							<div id="formparte-datapagament" class="input-group" >
-				  				<span class="input-group-addon required">Tipus</span>
-								{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
-							</div>
+				</div>
+				<div class="col-md-4">
+					<div class="form-group">
+						{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats') }}
+						<div id="formparte-datapagament" class="input-group" >
+			  				<span class="input-group-addon required">Tipus</span>
+							{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
-					<div class="col-md-2 col-md-offset-3 col-last-right">
-						<div class="form-group">
-							<label>&nbsp;</label>
-							<button id="form_nouparte"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou comunicat</button>
-						</div>
-				  </div>
-				</div> 
-		   	</form>
-	    </div>
+				</div>
+				<div class="col-md-3 col-md-offset-1 col-last-right">
+					<label>&nbsp;</label>
+					<button id="form_nouparte"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou comunicat</button>
+			    </div>
+			</div> 
+	   	</form>
 	    <div class="sms-header-info clearfix">{{ club.infoLlistat }}</div>
 	    <div class="table-header">
 			<div id="summary-header">

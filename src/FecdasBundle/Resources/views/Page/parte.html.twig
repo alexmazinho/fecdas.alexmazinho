@@ -67,7 +67,7 @@
 				<div class="form-group">
 					{{ form_label(form.any) }}
 					<div id="formparte-any"  class="input-group ">
-		  				<span class="input-group-addon"></span>
+						<span class="input-group-addon"></span>		  				
 						{{ form_widget(form.any, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				</div>
@@ -88,13 +88,7 @@
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
 				</div>
 			  </div>
-			<div class="col-md-2">
-				<label>&nbsp;</label>
-				<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg"
-					 onclick="loadLlicencia.call(this, 0)">Afegir llicència <i class="fa fa-chevron-down"></i></button>
-			</div>
-			  
-			<div class="col-md-3" {% if parte.datapagament is null %} style="display: none" {% endif %}>
+  			  <div class="col-md-2" {% if parte.datapagament is null %} style="display: none" {% endif %}>
 				<div class="form-group">
 					<label>&nbsp;</label>
 					<div id="formparte-datapagament" class="input-group" >
@@ -102,16 +96,20 @@
 						{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
 					</div>
 				</div>
-			</div>
-			{% if admin == true and parte.datapagament is null %}
-				{% if parte.esnova != true %}
-					<div class="col-md-2">
-						<label>&nbsp;</label>
-						<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
-							data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i> Pagament Rebut</button>
-					</div>
-				{% endif %}	
-			{% endif %}	
+			  </div>
+  			  <div class="col-md-1 {% if parte.datapagament is null %} col-md-offset-2 {% endif %} col-last-right">
+			  {% if admin == true and parte.datapagament is null and parte.esnova != true  %}
+					<label>&nbsp;</label>
+					<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
+						data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></button>
+			  {% else %}	
+			  		{% if parte.esnova != true  %}
+					<label>&nbsp;</label>
+					<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg"
+						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-chevron-down"></i></button>
+					{% endif %}	 
+			  {% endif %}	
+		   	  </div>
 		</div>
          
 		<div id="formparte-rest">	{{ form_rest(form) }}</div>

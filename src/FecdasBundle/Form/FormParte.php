@@ -61,9 +61,13 @@ class FormParte extends AbstractType {
 			//$builder->add('tipus', 'text', array('mapped'  => false, 'data' => $llistatipus[0], 'read_only' => true,));
 		}
 		
-		$builder->add('datapagament', 'date',
-				array('widget' => 'single_text', 'format' => 'dd/MM/yyyy', 'years' => range(1990, 2020), 'read_only' => true));
-		
+		$builder->add('datapagament', 'date', array(
+				'widget' => 'single_text', 
+				'format' => 'dd/MM/yyyy', 
+				'years' => range(1990, 2020), 
+				'read_only' => true,
+				'mapped'  => false,
+		));
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

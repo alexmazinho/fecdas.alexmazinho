@@ -86,7 +86,11 @@
 					<time datetime="{{ parte.datapagament|date('c') }}">{{ parte.datapagament|date('d/m/y') }}</time>				
 					{% endif %}
 		   			</div>
-		   			<div class="data-detall-cell parterecents-dadespagat">{{ parte.dadespagament }} {{ parte.estatpagament }}</div>
+		   			<div class="data-detall-cell parterecents-dadespagat">
+		   				{% if parte.rebut is not null %}
+		   					{{ parte.rebut.dadespagament }} {{ parte.rebut.estat }}
+		   				{% endif %}
+		   			</div>
 		   			<div class="data-detall-cell parterecents-factura">{{ parte.infoLlistat }}
 		   			</div>
 		   			<div class="data-detall-cell parterecents-actions">

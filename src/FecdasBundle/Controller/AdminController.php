@@ -190,7 +190,7 @@ class AdminController extends BaseController {
 				if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));*/
 				
 				$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH; // ??
-				$this->crearRebut($datapagat, $parte->getPreuTotalIVA(), $tipusPagament, $request->query->get('dadespagat'), $request->query->get('comentaripagat'));
+				$this->crearRebut($datapagat, $tipusPagament, $parte, $request->query->get('dadespagat'), $request->query->get('comentaripagat'));
 				
 			}
 			$parte->setPendent(false);

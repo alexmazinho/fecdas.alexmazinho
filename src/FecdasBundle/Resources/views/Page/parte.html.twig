@@ -152,8 +152,8 @@
 $(document).ready(function() {
 
 	setMenuActive("menu-parte");
-
-	{% if (parte.id is null) %}
+	
+	{% if parte.esnova == true %}
 		$('#parte_tipus').val(0);
 		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
 		

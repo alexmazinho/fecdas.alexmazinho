@@ -974,11 +974,14 @@ class PageController extends BaseController {
 			$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($p['id']);
 			$partedataalta = $parte->getDataalta();  // El posterior bind no carrega data pq està disabled al form
 		} else {
-			$parte = new EntityParte($this->getCurrentDate());
-			$partedataalta = \DateTime::createFromFormat('d/m/Y H:i', $p['dataalta']);
-			$parte->setDataalta($partedataalta);
-			$parte->setClub($this->getCurrentClub());
-			$em->persist($parte);
+			// Parte nou. Crear factura
+			error_log('-'.'1a'.'-');
+			$partedataalta = $this->getCurrentDate();
+			error_log('-'.'1b'.'-');
+			$factura = $this->crearFactura($partedataalta);
+			error_log('-'.'1c'.'-');
+			$parte = $this->crearComandaParte($factura, $partedataalta);
+			error_log('-'.'1d'.'-');
 		}
 		error_log('-'.'1'.'-');
 		if ($requestParams['action'] == 'remove') {
@@ -1032,9 +1035,13 @@ class PageController extends BaseController {
 				}
 			} else {
 				// Insert
+				
 				$llicencia = new EntityLlicencia($this->getCurrentDate());
 				$parte->addLlicencia($llicencia);
 				$em->persist($llicencia);
+				
+				$producte = ($llicencia->getCategoria() != null?$llicencia->getCategoria()->getProducte():null);
+				$this->addComandaDetall($parte, $producte, 1);
 			}
 			error_log('-'.'4'.'-');
 			$options = $this->getFormOptions();
@@ -1165,15 +1172,19 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 										
 					$em->flush(); 
+					error_log('-'.'17 fi'.'-');
 				} else {
 					error_log('-'.'18'.'-');
 					if ($llicencia->getId() != null) {
+						error_log('-'.'18a'.'-');
 						// Modificar llicència
 						$logaction = 'LLICENCIA UPD KO';
 						$em->refresh($llicencia);
 						$em->refresh($parte);
+						error_log('-'.'18a fi'.'-');
 					}
 					else {
+						error_log('-'.'18b'.'-');
 						if ($parte->getId() != null) {
 							// Nova llicència
 							$logaction = 'LLICENCIA NEW KO';
@@ -1186,6 +1197,7 @@ class PageController extends BaseController {
 							$em->detach($llicencia);
 							$em->detach($parte);
 						}
+						error_log('-'.'18b fi'.'-');
 					}
 				}
 				error_log('-'.'19'.'-');
@@ -1532,13 +1544,9 @@ class PageController extends BaseController {
 						$duplicat->getPersona()->setDatamodificacio($this->getCurrentDate());
 						$duplicat->getPersona()->setValidat(false);
 					}
-						
 					
 					/* Crear factura */
-
-					$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
-					$factura = new EntityFactura(new \DateTime(), $maxNumFactura, $duplicat->getTotalDetalls(), $duplicat->getTextCarnet(false)." ".$duplicat->getPersona()->getCognomsNom());
-					$duplicat->setFactura($factura);  
+					$factura = $this->crearFactura($this->getCurrentDate(), $duplicat, $duplicat->getTextCarnet(false)." ".$duplicat->getPersona()->getCognomsNom());
 							
 					$em->flush();
 					
@@ -1816,11 +1824,7 @@ class PageController extends BaseController {
 				$parte->setPendent(false);
 				
 				
-				$this->crearRebut($this->getCurrentDate(), $parte->getPreuTotalIVA(), BaseController::TIPUS_PAGAMENT_TPV, $ordre);
-				
-				/*$parte->setDadespagament($ordre);
-				$parte->setDatapagament($this->getCurrentDate());
-				$parte->setImportpagament($parte->getPreuTotalIVA());*/
+				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $parte, $ordre);
 				$parte->setDatamodificacio($this->getCurrentDate());
 			
 				$em->flush();
@@ -1833,7 +1837,8 @@ class PageController extends BaseController {
 			$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($itemId);
 			
 			if ($duplicat != null) {
-				$this->crearRebut($this->getCurrentDate(), $duplicat->getTotalDetalls(), BaseController::TIPUS_PAGAMENT_TPV, $ordre);
+				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $duplicat, $ordre);
+				$duplicat->setDatamodificacio($this->getCurrentDate());
 				
 				$em->flush();
 				return true;

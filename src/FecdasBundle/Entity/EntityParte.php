@@ -67,14 +67,22 @@ class EntityParte extends EntityComanda {
 	
 	
 	public function __construct() {
-		parent::__construct();
-		
 		$this->web = true;
 		$this->renovat = false;
 		$this->pendent = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
+		
+		// Hack per permetre múltiples constructors
+		parent::__construct(); // Sense paràmetres
+		
+		$a = func_get_args();
+		$i = func_num_args();
+		
+		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}
 	}
-
+	
 	public function __toString() {
 		return $this->getId();
 	}

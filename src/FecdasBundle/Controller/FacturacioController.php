@@ -562,13 +562,11 @@ class FacturacioController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 		
-		$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
-		$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
-		$factura->setComanda($comanda);
-		$comanda->setFactura($factura);
+		// Comanda nova. Crear factura
+		$current = $this->getCurrentDate();
 		
-		$em->persist($factura);
-		
+		$factura = $this->crearFactura($current, $comanda);
+			
 		$form = $this->createForm(new FormFactura(), $factura);
 		
 		return $this->render('FecdasBundle:Facturacio:factura.html.twig',
@@ -656,18 +654,14 @@ class FacturacioController extends BaseController {
 
 		$em = $this->getDoctrine()->getManager();
 		
-		$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
-		$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
+		// Comanda nova. Crear factura
+		$current = $this->getCurrentDate();
 		
-		$em->persist($factura);
+		$factura = $this->crearFactura($current);
 		
-		$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
-		$comanda = new EntityComanda($maxNumComanda, $factura);
-		$detall = new EntityComandaDetall($comanda, null, 0, 0, '');
-											
-		$comanda->addDetall($detall);// Sempre afegir un detall si comanda nova
+		$comanda = $this->crearComanda($factura, $current);
 		
-		$em->persist($comanda);
+		$detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
 		
 		$form = $this->createForm(new FormComanda(), $comanda);
 		
@@ -714,19 +708,13 @@ class FacturacioController extends BaseController {
 			if ($comanda == null) {
 				
 				// Comanda nova. Crear factura
-				$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
-				$factura = new EntityFactura(new \DateTime(), $maxNumFactura);
+				$current = $this->getCurrentDate();
 				
-				$em->persist($factura);
+				$factura = $this->crearFactura($current);
+
+				$comanda = $this->crearComanda($factura, $current);
 				
-				$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
-				$comanda = new EntityComanda($maxNumComanda, $factura);
-				$detall = new EntityComandaDetall($comanda, null, 0, 0, '');
-					
-				$comanda->addDetall($detall);// Sempre afegir un detall si comanda nova
-				
-				$em->persist($detall);
-				$em->persist($comanda);
+				$detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
 			} else {
 				// Create an ArrayCollection of the current detalls
 				foreach ($comanda->getDetalls() as $detall) {
@@ -808,12 +796,7 @@ class FacturacioController extends BaseController {
 						
 						// Nou pagament, crear rebut
 						$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
-						
-						$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
-						
-						$rebut = new EntityRebut($datapagament, $tipusPagament, $maxNumRebut, $comanda); // Import i club agafat de la comanda
-						
-						$em->persist($rebut);
+						$this->crearRebut($datapagament, $tipusPagament, $comanda);
 					} 
 					
 					if ($comanda->getId() > 0)  $comanda->setDatamodificacio(new \DateTime());
@@ -1355,9 +1338,8 @@ class FacturacioController extends BaseController {
 		$comanda = null;
 		if ($comandaid > 0) $comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaid);
 		
-		$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
-		if ($comanda == null) $rebut = new EntityRebut(new \DateTime, 0, $maxNumRebut);
-		else $rebut = new EntityRebut(new \DateTime, 0, $maxNumRebut, $comanda);
+		$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH;
+		$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament, $comanda);
 				 
 		$form = $this->createForm(new FormRebut(), $rebut);
 				 
@@ -1401,9 +1383,8 @@ class FacturacioController extends BaseController {
 	
 			if ($id > 0) $rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($id);
 			if ($rebut == null) {
-				$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
-				$rebut = new EntityRebut(new \DateTime, 0, $maxNumRebut);
-				$em->persist($rebut);
+				$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH;
+				$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
 			}
 		}
 		$form = $this->createForm(new FormRebut(), $rebut);
@@ -1513,38 +1494,6 @@ class FacturacioController extends BaseController {
 		}
 			
 		return $query;
-	}
-	
-	public function getMaxNumEntity($year, $tipus) {
-		$em = $this->getDoctrine()->getManager();
-	
-		$inici = $year."-01-01";
-		$final = $year."-12-31";
-	
-		$strQuery = '';
-		switch ($tipus) {
-			case BaseController::REBUTS:
-				$strQuery = "SELECT MAX(r.num) FROM FecdasBundle\Entity\EntityRebut r ";
-				$strQuery .= " WHERE r.datapagament >= '".$inici."' AND r.datapagament <= '".$final."'";
-				break;
-			case BaseController::FACTURES:
-				$strQuery = " SELECT MAX(f.num) FROM FecdasBundle\Entity\EntityFactura f ";
-				$strQuery .= " WHERE f.datafactura >= '".$inici."' AND f.datafactura <= '".$final."'";
-				break;
-			case BaseController::COMANDES:
-				$strQuery = " SELECT MAX(c.num) FROM FecdasBundle\Entity\EntityComanda c ";
-				$strQuery .= " WHERE c.dataentrada >= '".$inici."' AND c.dataentrada <= '".$final."'";
-				break;
-			default:
-				return -1;
-		}
-		
-		$query = $em->createQuery($strQuery);
-		$result = $query->getSingleScalarResult();
-	
-		if ($result == null) return 0; // Primer de l'any
-			
-		return $result;
 	}
 	
 	/********************************************************************************************************************/
@@ -2383,69 +2332,4 @@ class FacturacioController extends BaseController {
 	
 		
 	}
-	
-	private function crearComandaDuplicat($duplicat, $maxNumComanda, $flush = false) {
-		$em = $this->getDoctrine()->getManager();
-	
-		$producte = $duplicat->getCarnet()->getProducte();
-		
-	
-		//echo "duplicat " .$duplicat->getId().' '.$producte->getDescripcio().' '.$duplicat->getClub()->getNom(). PHP_EOL."<br/>". PHP_EOL."<br/>";
-	
-		$comanda = new EntityComanda($maxNumComanda, $duplicat->getClub(), $producte->getDescripcio(), null, $duplicat);
-		$em->persist($comanda);
-			
-		if ($duplicat->esBaixa()) $comanda->setDatabaixa($duplicat->getDatabaixa());
-	
-		$detall = new EntityComandaDetall($comanda, $producte, 1, 0, $duplicat->getObservacions());
-		$em->persist($detall);
-	
-		$comanda->addDetall($detall);
-	
-		if ($flush)	{
-			$em->flush();
-			$em->clear();
-		}
-	}
-	
-	private function crearComandaParte($parte, $maxNumComanda, $flush = false) {
-		$em = $this->getDoctrine()->getManager();
-	
-		$comanda = new EntityComanda($maxNumComanda, $parte->getClub(), $parte->getTipus()->getDescripcio(), $parte, null);
-		$em->persist($comanda);
-			
-		if ($parte->esBaixa()) $comanda->setDatabaixa($parte->getDatabaixa());
-	
-		//echo "parte " .$parte->getId(). PHP_EOL."<br/>". PHP_EOL."<br/>";
-		foreach ($parte->getTipus()->getCategories() as $categoria) {
-				
-			switch ($categoria->getSimbol()) {
-				case 'A':
-					$total = $parte->getNumAficionats();
-					break;
-				case 'I':
-					$total = $parte->getNumInfantils();
-					break;
-				case 'T':
-					$total = $parte->getNumTecnics();
-					break;
-				default:
-					return -1;
-			}
-			if ($total > 0) {
-				//echo " ==> ".$total.'x'.$categoria->getCategoria()."(".$categoria->getProducte()->getDescripcio().")". PHP_EOL."<br/>". PHP_EOL."<br/>";
-				$detall = new EntityComandaDetall($comanda, $categoria->getProducte(), $total, 0, $total.'x'.$categoria->getCategoria());
-				$em->persist($detall);
-					
-				$comanda->addDetall($detall);
-			}
-		}
-			
-		if ($flush)	{
-			$em->flush();
-			$em->clear();
-		}
-	}
-	
-	
 }

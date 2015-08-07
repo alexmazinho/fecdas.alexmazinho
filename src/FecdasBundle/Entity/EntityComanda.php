@@ -29,7 +29,7 @@ class EntityComanda {
 	protected $num;
 	
 	/**
-	 * @ORM\Column(type="text")
+	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $comentaris;
 	
@@ -123,17 +123,6 @@ class EntityComanda {
 		$this->club = $club;
 		$this->comentaris = ($comentaris==''?null:$comentaris);
 		
-		/*if ($this->esParte()) {
-		 $this->comentaris = 'Llista '.$parte->getId().'-'.$this->comentaris;
-		 $this->parte = $parte;
-		 $this->parte->setComanda($this);
-		 }
-		
-		 if ($this->esDuplicat()) {
-		 $this->comentaris = 'Petició '.$duplicat->getId().'/'.$duplicat->getDatapeticio()->format('Y-m-d').'-'.$this->comentaris;
-		 $this->duplicat = $duplicat;
-		 $this->duplicat->setComanda($this);
-		 }*/
 	}
 	
 	public function esNova()
@@ -326,6 +315,20 @@ class EntityComanda {
 			", club ".$this->getClub()->getNom().". Total: ".number_format($this->getTotalDetalls(), 2, ',', '.');
 	}
 
+	/**
+	 * Get detall producte
+	 *
+	 * @return EntityComandaDetall
+	 */
+	public function getDetallComanda($producte)
+	{
+		foreach ($this->detalls as $d) {
+			if (!$d->esBaixa() && $d->getProducte() == $producte) return $d;
+		}
+		return null;
+	}
+	
+	
 	/**
 	 * Get tipus comanda: kits, llicències, etc... 
 	 *

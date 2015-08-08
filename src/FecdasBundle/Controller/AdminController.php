@@ -137,7 +137,7 @@ class AdminController extends BaseController {
 		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
 				
 		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
-		if ($currentNoPagat == true) $strQuery .= " AND (p.rebut IS NULL || (p.rebut IS NOT NULL AND r.dataanulacio IS NOT NULL)) ";
+		if ($currentNoPagat == true) $strQuery .= " AND (p.rebut IS NULL OR (p.rebut IS NOT NULL AND r.dataanulacio IS NOT NULL)) ";
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
 		if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";

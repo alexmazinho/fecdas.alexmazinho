@@ -269,20 +269,19 @@ class CronController extends BaseController {
 		if ($this->isCurrentAdmin() != true and $llicenciaarenovar->getParte()->getClub()->getCodi() != $currentClub)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
-		/* Crear el nou parte */
-		$parte = new EntityParte($this->getCurrentDate());
-		$data_alta = $this->getCurrentDate('now');
 		/* Si abans data caducitat renovació per tot el periode
 		 * En cas contrari només des d'ara
 		*/
-		if ($llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 1 ")) > $data_alta) {
-			$data_alta = $llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 2 "));
-			$data_alta->setTime(00, 00);
-			$data_alta->add(new \DateInterval('P1D')); // Add 1 dia
+		$dataalta = $this->getCurrentDate('now');
+		if ($llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 1 ")) > $dataalta) {
+			$dataalta = $llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 2 "));
+			$dataalta->setTime(00, 00);
+			$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 		}
-		$parte->setDataalta($data_alta);
-		$parte->setDatamodificacio($this->getCurrentDate());
-		$parte->setClub($llicenciaarenovar->getParte()->getClub());
+		/* Crear el nou parte */
+		$factura = $this->crearFactura($dataalta);
+		$parte = $this->crearComandaParte($factura, $dataalta);
+
 		$parte->setTipus($llicenciaarenovar->getParte()->getTipus());
 		
 		// Afegir llicència		
@@ -296,20 +295,9 @@ class CronController extends BaseController {
 		$cloneLlicencia->getIdpartedetall_access(null);
 		
 		$parte->addLlicencia($cloneLlicencia);
-		$parte->setImportparte($parte->getPreuTotalIVA());   // Actualitza preu si escau
-
+		
 		/* Preparar formulari */
-		$options = $this->getFormOptions();
-			
-		$options['codiclub'] = $parte->getClub()->getCodi();
-		$options['tipusparte'] = $parte->getTipus()->getId();
-		array_push($options['llistatipus'], $parte->getTipus()->getId()); // No es pot canviar de tipus
-		$options['any'] = $parte->getAny(); // Mostrar preu segons any parte
-		$options['edit'] = true;
-		$options['admin'] = true;
-		$options['nova'] = true;
-			
-		$form = $this->createForm(new FormLlicenciaRenovar($options),$cloneLlicencia);
+		$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);
 		
 		$form->get('cloneid')->setData($llicenciaid);  // Posar id
 		$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms

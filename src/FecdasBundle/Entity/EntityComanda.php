@@ -127,7 +127,7 @@ class EntityComanda {
 	
 	public function esNova()
 	{
-		return $this->id == 0;
+		return ($this->id == 0);
 	}
 	
 	public function esBaixa()

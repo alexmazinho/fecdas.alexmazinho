@@ -151,6 +151,7 @@ class EntityLlicencia {
 	protected $databaixa;
 
 	public function __construct($currentDate) {
+		$this->id = 0;
 		$this->setDataentrada($currentDate);
 		$this->pesca = false;
 		$this->escafandrisme = false;
@@ -175,7 +176,12 @@ class EntityLlicencia {
 	}
 	
 	public function __clone() {
-		$this->id = null;
+		$this->id = 0;
+	}
+	
+	public function esNova()
+	{
+		return ($this->id == 0);
 	}
 	
 	/**

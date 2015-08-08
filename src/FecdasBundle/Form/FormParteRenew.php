@@ -12,7 +12,7 @@ class FormParteRenew extends FormParte {
 		
 		$builder->add('cloneid', 'hidden', array('mapped'  => false,));
 		
-		$builder->add('llicencies', 'collection', array('type' => new FormLlicenciaRenew($this->options)));
+		$builder->add('llicencies', 'collection', array('type' => new FormLlicenciaRenew()));
 	}
 	
 	public function getName()

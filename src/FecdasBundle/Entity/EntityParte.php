@@ -70,6 +70,7 @@ class EntityParte extends EntityComanda {
 		$this->web = true;
 		$this->renovat = false;
 		$this->pendent = false;
+		$this->tipus = 1; // Per defecte
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
 		// Hack per permetre múltiples constructors
@@ -377,7 +378,26 @@ class EntityParte extends EntityComanda {
     	return $this->llicencies;
     }
 
+    /**
+     * Obtenir llicència amb id
+     * 
+     * @param $id
+     * @return $llicencia|NULL
+     */
+    public function getLlicenciaById($id)
+    {
+    	foreach ($this->llicencies as $llicencia) {
+    		if (!$llicencia->esBaixa() && $llicencia->getId() == $id) return $llicencia;
+    	}
+    	 
+   		return null;
+    }
     
+    /**
+     * Obtenir llista de llicències ordenades per nom de l'assegurat
+     * 
+     * @return array
+     */
     public function getLlicenciesSortedByName()
     {
     	$arr = array();

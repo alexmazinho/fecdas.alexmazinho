@@ -5,8 +5,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @Assert\Callback(methods={"isPersonaValid"})
- * 
  * @ORM\Entity
  * @ORM\Table(name="m_persones",indexes={@ORM\Index(name="dni_idx", columns={"dni"})})
  * 

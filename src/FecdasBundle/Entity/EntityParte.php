@@ -70,7 +70,6 @@ class EntityParte extends EntityComanda {
 		$this->web = true;
 		$this->renovat = false;
 		$this->pendent = false;
-		$this->tipus = 1; // Per defecte
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
 		// Hack per permetre múltiples constructors
@@ -88,19 +87,9 @@ class EntityParte extends EntityComanda {
 		return $this->getId();
 	}
 	
-	public function __clone() {
-		$this->id = null;
-		$this->numrelacio = null;
-		$this->comentari = null;
-		$this->idparte_access = null;
-		$this->web = true;
-		$this->renovat = false;
-		$this->pendent = false;
-	}
-	
-	public function cloneLlicencies($currentDate) {
+	public function cloneLlicencies($parteoriginal, $currentDate) {
 		// Get current collection
-		$llicencies = $this->getLlicencies();
+		$llicencies = $partearenovar->getLlicencies();
 	
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
@@ -109,11 +98,7 @@ class EntityParte extends EntityComanda {
 				$cloneLlicencia = clone $llicencia_iter;
 				
 				/* Init camps */
-				$cloneLlicencia->setDataentrada($currentDate);
-				$cloneLlicencia->setDatamodificacio($currentDate);
 				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat("cloneLlicencies"));
-				$cloneLlicencia->setIdparteAccess(null);
-				$cloneLlicencia->getIdpartedetall_access(null);
 				
 				$this->llicencies->add($cloneLlicencia);
 				$cloneLlicencia->setParte($this);

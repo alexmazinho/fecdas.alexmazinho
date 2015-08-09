@@ -417,7 +417,7 @@
 	smsResultAjax = function(result, sms) {
 
 		var classAlert = '';
-		if (result == 'OK')	classAlert = 'alert-danger';
+		if (result != 'OK')	classAlert = 'alert-danger';
 		else classAlert = 'alert-info';
 		
 		var errorRemove = '<div class="alert '+classAlert+' form-alert alert-dismissible">';
@@ -652,7 +652,7 @@
 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 		    	else $('#formparte-llicencia').slideUp('fast');
 			} else {
-				loadLlicencia();				
+				loadLlicencia(0);				
 			}
 	    });
 	};
@@ -738,7 +738,7 @@
 	};
 	
 	
-	showPersonModal = function(id, url, llicencia) {
+	showPersonModal = function(id, url, origenLlicencia) {
         // Show mask before overlay
         //Get the screen height and width
 		var maskHeight = $(document).height();
@@ -758,7 +758,7 @@
 			formFocus();
 			autocompleters();
 			actionsModalOverlay();
-			actionsPersonaForm(llicencia);
+			actionsPersonaForm(origenLlicencia);
 			/* Check estranger */
 			if ($('#parte_persona_id').val() != "") {
 				$("#formpersona-estranger").hide();
@@ -796,7 +796,7 @@
 		$('#parte_persona_addrpob').autocomplete($configs);
 	};
 	
-	actionsPersonaForm = function(llicencia) {
+	actionsPersonaForm = function(origenLlicencia) {
 		$('#formpersona-button-remove').click(function (e) {
 	        //Cancel the link behavior
 	        e.preventDefault();
@@ -809,7 +809,7 @@
 		              //window.location.href = targetUrl;
 	    	        	$(this).dialog("close");
 	    	        	//$("#formpersona").submit();	 // Submit form
-	    	        	submitPerson("remove", llicencia);
+	    	        	submitPerson("remove", origenLlicencia);
 	        		},
 	            	"Cancel·lar" : function() {
 	              		$(this).dialog("close");
@@ -835,13 +835,13 @@
 	    	        	$(this).dialog("close");
 	    	        	if ($('#parte_persona_id').val() != "") {
 	    	        		// Modificació no valida DNI
-	    	        		submitPerson("save", llicencia);
+	    	        		submitPerson("save", origenLlicencia);
 	    	        	} else {
 	    	        		/* Alex. Validar nou check estranger */
 	    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());*/
 	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#formpersona-check-estranger").is(':checked'));
 	    	        		if (error == "") {
-	    	        			submitPerson("save", llicencia);
+	    	        			submitPerson("save", origenLlicencia);
 	    	        		} else {
 	    	        			alert(error);
 	    	        		};
@@ -853,7 +853,7 @@
 	            	}
 	          	},
 	        	title: "Valida les dades",
-	        	height: 180,
+	        	height: 'auto',
 	        	width: 400,
 	        	zIndex:	350
 	        });
@@ -864,21 +864,29 @@
 	    });   
 	};
 	
-	submitPerson = function(action, llicencia) {
+	submitPerson = function(action, origenLlicencia) {
 		
 		$('#edicio-persona').hide();
 		
 		var url = $('#formpersona').attr("action");
-		var params = $('#formpersona').serializeArray();
+		//var params = $('#formpersona').serializeArray();
+		var params = $('#formpersona').serialize();
 		
-		if (llicencia == true) {
-			params.push( {'name':'dataalta','value':  $("#parte_dataalta").val() } );
-			params.push( {'name':'tipusparte','value': $('#parte_tipus').val()} );
-			params.push( {'name':'llicenciaId','value': $('#parte_llicencies_id').val()} );
+		if (origenLlicencia == true) {
+			var part = { 'id' : $("#parte_id").val(), 'dataalta': $("#parte_dataalta").val(), 'tipus': $('#parte_tipus').val() };
+	        var llic = { 'id' : $('#parte_llicencies_id').val() };
+			
+			//params.push( {'name':'parte','value':  part } );
+			//params.push( {'name':'llicencia','value': llic} );
+			params += '&'+$.param({ 'parte': part });
+			params += '&'+$.param({ 'llicencia': llic });
 		}
 		
-		params.push( {'name':'action','value': action} );
-		params.push( {'name':'llicencia','value': llicencia} );
+		//params.push( {'name':'action','value': action} );
+		//params.push( {'name':'origen','value': (origenLlicencia?'llicencia':'assegurats')} );
+		params += '&'+$.param({'action': action} );
+		params += '&'+$.param({'origen': (origenLlicencia?'llicencia':'assegurats')} );
+
 		
 		$.post(url, params,
 		function(data, textStatus) {
@@ -917,8 +925,15 @@
 			
 			$("#edicio-persona").html("");
 			
-			if (llicencia == true) loadLlicenciaData(data);
+			if (origenLlicencia == true) loadLlicenciaData(data);
 			else location.reload();  
+		}).fail( function(xhr, status, error) {
+			 // xhr.status + " " + xhr.statusText, status, error
+			 var sms = smsResultAjax('KO', xhr.responseText);
+ 			 $('#edicio-persona').show();
+			 
+			 $("#error-persona").html(sms);
+		     
 		});
 	};
 	
@@ -931,14 +946,27 @@
 		
 		var url = $("#formllicencia").attr("action");
         var tipusparte = $("#parte_tipus").val();
-        var alta_data = $("#parte_dataalta").val();
+        var altadata = $("#parte_dataalta").val();
 
     	if ($.browser.msie) $('#formparte-llicencia').hide(); 
     	else $('#formparte-llicencia').slideUp('fast');
         $('#progressbar').show();  // Rellotge
-        $.get(url, {source_ajax: 'edit-llicencia', tipusparte: tipusparte, dataalta: alta_data, llicenciaId: n},
+        var part = { 'id' : $("#parte_id").val(), 'dataalta': altadata, 'tipus': tipusparte };
+        var llic = { 'id' : n };
+        
+        $.get(url, { source_ajax: 'edit-llicencia', parte: part, llicencia: llic},
      	function(data, textStatus) {
         	loadLlicenciaData(data);
+		}).fail( function(xhr, status, error) {
+			 // xhr.status + " " + xhr.statusText, status, error
+			 var sms = smsResultAjax('KO', xhr.responseText);
+			 
+			 $('#progressbar').hide();  // Rellotge
+		    	
+			 $('#parte_tipus').val('');
+			 
+			 $('#formparte-llicencia').html(sms);
+		     
 		});
 	};
 	
@@ -1070,20 +1098,18 @@
 	    	else $('#formparte-llicencia').slideUp('fast');
 
 			$('#progressbar').show();  // Rellotge
-			 
 			
 			var paramsParte = $('#formparte').serializeArray();
 			var paramsLlicencia = $('#formllicencia').serializeArray();
 			var params = $.merge(paramsParte, paramsLlicencia);
 			params.push( {'name':'action','value': 'persist'} );
 			
-			$.post(url, params,
-			function(data, textStatus) {
+			$.post(url, params, function(data, textStatus) {
 				$('#progressbar').hide();  // Rellotge
 		    	
 		    	$("#llista-llicencies").html(data);
 				
-	        	if ($("#parte_id").val() == "" && $("#header-llicenciaparteid").length)	{  
+	        	if ($("#parte_id").val() == 0 && $("#header-llicenciaparteid").length)	{  
 	        		/* Creació del parte si no hi ha error. reload*/
 					$("#parte_id").val($("#header-llicenciaparteid").html());
 	        		
@@ -1093,7 +1119,7 @@
 					});
 					$('#formparte-novallicencia').show();
 
-					// Parte nou creta, desactiva data
+					// Parte nou creat, desactiva data
 					$("#formparte-dataalta img").hide();
 					
 					var hrefpagament = $("#parte-pagament a").attr("href") + "?id=" + $("#parte_id").val();
@@ -1114,6 +1140,15 @@
 				showResumParteDetall();
 	        	
 				sortLlista("col-listheader", "list-data");
+			}).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 var sms = smsResultAjax('KO', xhr.responseText);
+				 
+				 $('#progressbar').hide();  // Rellotge
+			    	
+				 $('#parte_tipus').val('');
+				 
+			     $("#llista-llicencies").html(sms);
 			});
 	    });
 	};

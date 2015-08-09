@@ -177,6 +177,10 @@ class EntityLlicencia {
 	
 	public function __clone() {
 		$this->id = 0;
+		$this->dataentrada = new \DateTime();
+		$this->datamodificacio = null;
+		$this->idparte_access = null;
+		$this->idpartedetall_access = null;
 	}
 	
 	public function esNova()

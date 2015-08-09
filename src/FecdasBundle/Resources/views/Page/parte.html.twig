@@ -32,28 +32,29 @@
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
 	        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
-	        			<i class="fa fa-credit-card fa-2x blue"></i></a>
+	        			<i class="fa fa-credit-card fa-1x blue"></i></a>
 				</div>
 				{% endif %}	
 				<div id="parte-to-pdf" class="button-top">
 					<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
-						<i class="fa fa-pdf-o fa-2x red"></i></a></div>
+						<i class="fa fa-file-text-o fa-1x orange"></i></a>
+				</div>
 					<!-- només factures amb número factura del web -->
 				{% if parte.factura is not null %} 
 					<div id="factura-to-pdf" class="button-top">
 						<a class="link" href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
-							<i class="fa fa-file-text-o fa-2x blue"></i></a>
+							<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 					</div>
 				{% else %}
 					<div id="albara-to-pdf" class="button-top">
 						<a class="link" href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
-							<i class="fa fa-list fa-2x orange"></i></a>
+							<i class="fa fa-list fa-1x red"></i></a>
 					</div>
 				{% endif %}
 				{% if parte.comandaPagada %} 
 					<div id="rebut-to-pdf" class="button-top">
 						<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
-							<i class="fa fa-file-text fa-2x green"></i></a>
+							<i class="fa fa-file-text fa-1x green"></i></a>
 					</div>
 				{% endif %}
 				
@@ -103,11 +104,12 @@
 					<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
 						data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></button>
 			  {% else %}	
-			  		{% if parte.esnova != true  %}
+			  		
 					<label>&nbsp;</label>
-					<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg"
+					<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg" 
+					{% if parte.esnova == true  %} style="display:none;" {% endif %}
 						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-chevron-down"></i></button>
-					{% endif %}	 
+						 
 			  {% endif %}	
 		   	  </div>
 		</div>

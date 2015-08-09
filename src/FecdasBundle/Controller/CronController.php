@@ -280,19 +280,13 @@ class CronController extends BaseController {
 		}
 		/* Crear el nou parte */
 		$factura = $this->crearFactura($dataalta);
-		$parte = $this->crearComandaParte($factura, $dataalta);
+		$parte = $this->crearComandaParte($factura, $dataalta, $llicenciaarenovar->getParte()->getTipus());
 
-		$parte->setTipus($llicenciaarenovar->getParte()->getTipus());
-		
 		// Afegir llicència		
 		$cloneLlicencia = clone $llicenciaarenovar;
 		
 		/* Init camps */
-		$cloneLlicencia->setDataEntrada($this->getCurrentDate());
-		$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
 		$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
-		$cloneLlicencia->setIdparteAccess(null);
-		$cloneLlicencia->getIdpartedetall_access(null);
 		
 		$parte->addLlicencia($cloneLlicencia);
 		
@@ -343,9 +337,6 @@ class CronController extends BaseController {
 					// Marquem com renovat
 					$parte->setRenovat(true);
 			
-					// Marcar pendent per a clubs pagament immediat
-					if ($parte->getClub()->pendentPagament()) $parte->setPendent(true);
-					
 					$em->persist($cloneLlicencia);
 					$em->persist($parte);
 					$em->flush();

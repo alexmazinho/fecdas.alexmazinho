@@ -210,6 +210,232 @@ class EntityClub {
 		return $this->codi;
 	}
 	
+	/**
+	 * Get partes
+	 *
+	 * @return Doctrine\Common\Collections\ArrayCollection
+	 */
+	public function getPartes()
+	{
+		$partes = array();
+		foreach ($this->comandes as $comanda) {
+			if ($comanda->esParte()) $partes[] = $comanda;
+		}
+		return $partes;
+	}
+	
+	/**
+	 * Dades del club any actual. Opcionalment comprova errors
+	 *
+	 * @return array
+	 */
+	
+	public function getDadesCurrent($errors = false)
+	{
+		$dades = array();
+		$npartes = 0;
+		$npartespagatsweb = 0;
+		$nllicencies = 0;
+		$nimport = 0;
+		$nimportweb = 0;
+		$nimportsincro = 0;
+		$dades['err_facturadata'] = array();
+		$dades['err_facturanum'] = array();
+		$dades['err_sincro'] = array();
+		$dades['err_imports'] = array();
+		$dades['err_config'] = '';
+		foreach($this->comandes as $parte_iter) {
+			if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
+				/* Només mirar sincronitzats */
+				$auxImportParte = $parte_iter->getPreuTotalIVA();
+				$npartes++;
+				$nimport += $auxImportParte;
+				$nllicencies +=  $parte_iter->getNumLlicencies();
+				if ($parte_iter->comandaPagada() &&
+					$parte_iter->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&
+					$parte_iter->getImportPagament() != null) {
+						$nimportweb += $parte_iter->getImportPagament();
+						$npartespagatsweb++;
+				}
+				if ($parte_iter->getIdparteAccess() != null) $nimportsincro += $auxImportParte;
+				if ($errors){
+					// Varis, validacions imports i dades pagaments
+					// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
+					// Error si import calculat és null
+					// Error si no coincideix import calculat del parte i import pagament
+					$rebut = $parte_iter->getRebut();
+	
+					if ($rebut != null) {
+						if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&	$rebut->getImport() == 0) {
+							$dades['err_imports'][] = "(Pagament TPV incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+						}
+						if ($parte_iter->getTotalDetalls() == null)
+							$dades['err_imports'][] = "(import incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+						else {
+							if ($rebut->getImport() != $parte_iter->getTotalDetalls())
+								$dades['err_imports'][] = "(imports no coincidents) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
+						}
+						if ($parte_iter->getTotalDetalls() != null && $parte_iter->getTotalDetalls() != $auxImportParte)
+							$dades['err_imports'][] = "(imports enviat al gestor incorrecte) " . $parte_iter->getId()
+							. " - Web " .$auxImportParte . " >> Gestor ".$parte_iter->getTotalDetalls();
+					}
+	
+					// Només si tenen més d'una setmana
+					$weekAgo = new \DateTime(date("Y-m-d", strtotime("-1 week")));
+					if ($parte_iter->getDataentrada() < $weekAgo) {
+					// No sincronitzats. Afegir relacio
+						if ($parte_iter->getIdparteAccess() == null) $dades['err_sincro'][] = $parte_iter->getDataalta()->format('d/m/Y');
+						else {
+							// 	Sense dades de facturació
+							if ($parte_iter->getDatafactura() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
+							if ($parte_iter->getNumfactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
+						}
+					}
+				}
+			}
+		}
+		if ($errors) {
+			/* Afegir errors de configuració */
+			if (count($this->tipusparte) == 0) $dades['err_config'] .= "Aquest club no té cap tipus de parte activat per tramitar</br>";
+			if (count($this->usuaris) == 0) $dades['err_config'] .= "Aquest club no té cap usuari activat per tramitar</br>";
+		}
+		$dades['partes'] = $npartes;
+		$dades['pagats'] = $npartespagatsweb;
+		$dades['llicencies'] = $nllicencies;
+		$dades['import'] = $nimport;  // Total suma preu partes any en curs
+		$dades['importsincro'] = $nimportsincro; // Total suma preu partes sincronitzats any en curs
+		$dades['importweb'] = $nimportweb; // Total suma preu partes pagats per web any en curs
+		$dades['saldo'] = $this->totalpagaments + $this->ajustsubvencions - $this->romanent - $nimport - $this->totalkits - $this->totalaltres;
+		$dades['saldogestor'] = $this->getSaldogestor();
+		 
+		return $dades;
+	}
+	
+	/**
+	 * Retorna el saldo del club amb les dades del gestor
+	 *
+	 * @return decimal
+	 */
+	public function getSaldogestor() {
+		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->totalllicencies - $this->totalkits - $this->totalaltres, 2);
+	}
+	
+	/**
+	 * Retorna l'import de les llicències del web de l'any actual
+	 *
+	 * @return decimal
+	 */
+	public function getTotalLlicenciesWeb() {
+		$nimport = 0;
+		foreach($this->comandes as $parte_iter) {
+			if ($parte_iter->esParte() && !$parte_iter->esBaixa() && $parte_iter->isCurrentYear()) {
+				$nimport += $parte_iter->getPreuTotalIVA();
+			}
+		}
+		 
+		return round($nimport, 2);
+	}
+	
+	/**
+	 * Retorna el saldo del club amb les dades actualitzades del web (llicencies) i del gestor
+	 *
+	 * @return decimal
+	 */
+	public function getSaldoweb() {
+		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->getTotalLlicenciesWeb() - $this->totalkits - $this->totalaltres, 2);
+	}
+	
+	/**
+	 * Dades del club des de certa data,fins una data, per un tipus
+	 *
+	 * @return array
+	 */
+	public function getDadesDesde($tipus, $desde, $fins)
+	{
+		if ($desde == null) $desde = \DateTime::createFromFormat('Y-m-d', date('Y') . '-01-01');
+		if ($fins == null) $fins = \DateTime::createFromFormat('Y-m-d', date('Y') . '-12-31');
+		
+		/* Recollir estadístiques */
+		$stat = array();
+		$stat['ltotal'] = 0;	// Llicències total
+		$stat['vigents'] = 0;	// Partes vigents
+		$stat['lvigents'] = 0;	// llicències vigents
+		 
+		foreach($this->comandes as $parte_iter) {
+	
+			/*if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and
+			 $parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and
+			 $parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d') and
+			 $parte_iter->getTipus()->getId() == $tipus ) {
+			 $nlic = $parte_iter->getNumLlicencies();
+			 if ($nlic > 0) {
+			 $stat['ltotal'] +=  $nlic;
+			 if ($parte_iter->isVigent()) {
+			 $stat['lvigents'] +=  $nlic;
+			 $stat['vigents']++;
+			 }
+			 }
+			 }*/
+	
+			if ($parte_iter->esParte() && !$parte_iter->esBaixa() &&
+				$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') &&
+				$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d')) {
+	
+				error_log("parte => ".$parte_iter->getId()." 0-".get_class($parte_iter)." 1-"." 2-".($parte_iter->getTipus()==null)." 3-".is_array($parte_iter->getTipus()));
+	
+				if ( $parte_iter->getTipus() != null && 
+					 ( $tipus == 0 || $parte_iter->getTipus()->getId() == $tipus )) {
+					$nlic = $parte_iter->getNumLlicencies();
+					if ($nlic > 0) {
+						$stat['ltotal'] +=  $nlic;
+						if ($parte_iter->isVigent()) {
+							$stat['lvigents'] +=  $nlic;
+							$stat['vigents']++;
+						}
+					}
+				}
+			}
+		}
+		return $stat;
+	}
+	
+	/**
+	 * Missatge llista de partes
+	 *
+	 * @return string
+	 */
+	public function getInfoLlistat() {
+		if ($this->estat->getCodi() == 'IMME') return "*Les tramitacions tindran validesa quan es confirmi el seu pagament";
+		if ($this->estat->getCodi() == 'NOTR') return "*Per poder fer tràmits en aquest sistema, cal que us poseu en contacte amb la FECDAS";
+		return "";
+	}
+	
+	/**
+	 * Indica si el club pot tramitar llicències
+	 *
+	 * @return boolean
+	 */
+	public function potTramitar() {
+		return $this->estat->getCodi() != 'NOTR';
+	}
+	
+	/**
+	 * Indica si els partes del club queden pendents de pagament
+	 *
+	 * @return boolean
+	 */
+	public function pendentPagament() {
+		return $this->estat->getCodi() != 'DIFE';
+	}
+	
+	/**
+	 * Indica si cal controlar el crèdit del club
+	 *
+	 * @return boolean
+	 */
+	public function controlCredit() {
+		return $this->estat->getCodi() == 'DIFE';
+	}
 	
     /**
      * Set codi
@@ -649,20 +875,6 @@ class EntityClub {
     }
     
     /**
-     * Get partes
-     *
-     * @return Doctrine\Common\Collections\ArrayCollection
-     */
-    public function getPartes()
-    {
-    	$partes = array();
-    	foreach ($this->comandes as $comanda) {
-    		if ($comanda->esParte()) $partes[] = $comanda;
-    	}
-    	return $partes;
-    }
-    
-    /**
      * Add comanda
      *
      * @param FecdasBundle\Entity\EntityParte $comanda
@@ -941,217 +1153,6 @@ class EntityClub {
     {
     	return $this->ajustsubvencions;
     }
-    
-    /**
-     * Dades del club any actual. Opcionalment comprova errors
-     *
-     * @return array
-     */
-    
-    public function getDadesCurrent($errors = false)
-    {
-    	$dades = array();
-    	$npartes = 0;
-    	$npartespagatsweb = 0;
-    	$nllicencies = 0;
-    	$nimport = 0;
-    	$nimportweb = 0;
-    	$nimportsincro = 0;
-    	$dades['err_facturadata'] = array();
-    	$dades['err_facturanum'] = array();
-    	$dades['err_sincro'] = array();
-    	$dades['err_imports'] = array();
-    	$dades['err_config'] = '';
-    	foreach($this->comandes as $parte_iter) {
-    		if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
-    			/* Només mirar sincronitzats */
-    			$auxImportParte = $parte_iter->getPreuTotalIVA();
-    			$npartes++;
-    			$nimport += $auxImportParte;
-    			$nllicencies +=  $parte_iter->getNumLlicencies();
-    			if ($parte_iter->comandaPagada() &&
-    			$parte_iter->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&
-    			$parte_iter->getImportPagament() != null) {
-    				$nimportweb += $parte_iter->getImportPagament();
-    				$npartespagatsweb++;
-    			}
-    			if ($parte_iter->getIdparteAccess() != null) $nimportsincro += $auxImportParte;    			
-    			if ($errors){ 
-    				// Varis, validacions imports i dades pagaments
-    				// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
-    				// Error si import calculat és null
-    				// Error si no coincideix import calculat del parte i import pagament
-    				$rebut = $parte_iter->getRebut();
-    				
-    				if ($rebut != null) {
-	    				if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&	$rebut->getImport() == 0) {
-	    					$dades['err_imports'][] = "(Pagament TPV incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
-	    				}
-    					if ($parte_iter->getTotalDetalls() == null) 
-    						$dades['err_imports'][] = "(import incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
-    					else {
-	    					if ($rebut->getImport() != $parte_iter->getTotalDetalls()) 
-	    						$dades['err_imports'][] = "(imports no coincidents) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
-    					}
-    					if ($parte_iter->getTotalDetalls() != null && $parte_iter->getTotalDetalls() != $auxImportParte)
-    						$dades['err_imports'][] = "(imports enviat al gestor incorrecte) " . $parte_iter->getId()
-    						. " - Web " .$auxImportParte . " >> Gestor ".$parte_iter->getTotalDetalls();
-    				
-    				}
-    				
-    				// Només si tenen més d'una setmana
-    				$weekAgo = new \DateTime(date("Y-m-d", strtotime("-1 week")));
-    				if ($parte_iter->getDataentrada() < $weekAgo) {
-    					// No sincronitzats. Afegir relacio
-    					if ($parte_iter->getIdparteAccess() == null) $dades['err_sincro'][] = $parte_iter->getDataalta()->format('d/m/Y');
-    					else {
-		    				// 	Sense dades de facturació
-	    					if ($parte_iter->getDatafactura() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
-	    					if ($parte_iter->getNumfactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
-    					}
-    				}
-    			}
-    		}
-    	}
-    	if ($errors) {
-    		/* Afegir errors de configuració */
-    		if (count($this->tipusparte) == 0) $dades['err_config'] .= "Aquest club no té cap tipus de parte activat per tramitar</br>";
-    		if (count($this->usuaris) == 0) $dades['err_config'] .= "Aquest club no té cap usuari activat per tramitar</br>";
-    	}
-    	$dades['partes'] = $npartes;
-    	$dades['pagats'] = $npartespagatsweb;
-    	$dades['llicencies'] = $nllicencies;
-    	$dades['import'] = $nimport;  // Total suma preu partes any en curs
-    	$dades['importsincro'] = $nimportsincro; // Total suma preu partes sincronitzats any en curs
-    	$dades['importweb'] = $nimportweb; // Total suma preu partes pagats per web any en curs
-    	$dades['saldo'] = $this->totalpagaments + $this->ajustsubvencions - $this->romanent - $nimport - $this->totalkits - $this->totalaltres;
-    	$dades['saldogestor'] = $this->getSaldogestor();
-    	
-    	return $dades;
-    }
-    
-    /**
-     * Retorna el saldo del club amb les dades del gestor
-     *
-     * @return decimal
-     */
-    public function getSaldogestor() {
-    	return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->totalllicencies - $this->totalkits - $this->totalaltres, 2);
-    }
-
-    /**
-     * Retorna l'import de les llicències del web de l'any actual
-     *
-     * @return decimal
-     */
-    public function getTotalLlicenciesWeb() {
-    	$nimport = 0;
-    	foreach($this->comandes as $parte_iter) {
-    		if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
-    			$nimport += $parte_iter->getPreuTotalIVA();
-    		}
-    	}
-    	
-    	return round($nimport, 2);
-    }
-    
-    /**
-     * Retorna el saldo del club amb les dades actualitzades del web (llicencies) i del gestor
-     *
-     * @return decimal
-     */
-    public function getSaldoweb() {
-    	return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->getTotalLlicenciesWeb() - $this->totalkits - $this->totalaltres, 2);
-    }
-    
-    /**
-     * Dades del club des de certa data,fins una data, per un tipus
-     *
-     * @return array
-     */
-    public function getDadesDesde($tipus, $desde, $fins)
-    {
-	    /* Recollir estadístiques */
-    	$stat = array();
-	    $stat['ltotal'] = 0;	// Llicències total
-	    $stat['vigents'] = 0;	// Partes vigents
-	    $stat['lvigents'] = 0;	// llicències vigents
-	    
-	    foreach($this->comandes as $parte_iter) {
-	    	
-	    	/*if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and 
-	    		$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and 
-	    		$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d') and
-	    		$parte_iter->getTipus()->getId() == $tipus ) {
-		    	$nlic = $parte_iter->getNumLlicencies();
-		    	if ($nlic > 0) {
-		    		$stat['ltotal'] +=  $nlic;
-		    		if ($parte_iter->isVigent()) {
-		    			$stat['lvigents'] +=  $nlic;
-		    			$stat['vigents']++;
-		    		}
-		    	}
-	    	}*/
-	    	
-	    	if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and
-	    		$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and
-	    		$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d')) {
-				
-	    			error_log("parte => ".$parte_iter->getId()." 0-".get_class($parte_iter)." 1-"." 2-".($parte_iter->getTipus()==null)." 3-".is_array($parte_iter->getTipus()));
-	    			
-	    		if ( $parte_iter->getTipus() != null && $parte_iter->getTipus()->getId() == $tipus ) {
-	    			$nlic = $parte_iter->getNumLlicencies();
-	    			if ($nlic > 0) {
-	    				$stat['ltotal'] +=  $nlic;
-	    				if ($parte_iter->isVigent()) {
-	    					$stat['lvigents'] +=  $nlic;
-	    					$stat['vigents']++;
-	    				}
-	    			}
-	    		}
-	    	}
-	    }
-	    return $stat;
-    }
-    
-    /**
-     * Missatge llista de partes
-     *
-     * @return string
-     */
-    public function getInfoLlistat() {
-    	if ($this->estat->getCodi() == 'IMME') return "*Les tramitacions tindran validesa quan es confirmi el seu pagament";
-    	if ($this->estat->getCodi() == 'NOTR') return "*Per poder fer tràmits en aquest sistema, cal que us poseu en contacte amb la FECDAS";
-    	return "";
-    }
-    
-    /**
-     * Indica si el club pot tramitar llicències
-     *
-     * @return boolean
-     */
-    public function potTramitar() {
-    	return $this->estat->getCodi() != 'NOTR';
-    }
-    
-    /**
-     * Indica si els partes del club queden pendents de pagament 
-     *
-     * @return boolean
-     */
-    public function pendentPagament() {
-    	return $this->estat->getCodi() != 'DIFE';
-    }
-    
-    /**
-     * Indica si cal controlar el crèdit del club 
-     *
-     * @return boolean
-     */
-    public function controlCredit() {
-    	return $this->estat->getCodi() == 'DIFE';
-    }
-    
 
     /**
      * Add usuaris

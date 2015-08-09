@@ -75,7 +75,7 @@
 	   	<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
-	   	<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
+	   	<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>
 	   	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
 	</div>
 </div>
@@ -93,13 +93,13 @@
 					<div class="data-detall-cell llicencia-enviarllicencia">		
 					{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
 					</div>
-					<div class="data-detall-cell llicencia-actions">
+					<div class="data-detall-cell llicencia-actions link">
 					{% if parte.allowPrintLlicencia == true %}
-						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}"><img src="{{ asset('images/icon-license.png') }}" alt="llicència" title="llicència" width="23px"></a>
+						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}" alt="llicència" title="llicència"><i class="fa fa-credit-card fa-1x orange"></i></a>
 					{% endif %}
-					<a class="label-edit-llicencia" href="javascript:loadLlicencia({{ llicencia.id }});"><img src="{{ asset('images/icon-view.png') }}" alt="Edita" title="Edita" width="23px"></a>
+					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
 					{% if admin == true and not parte.comandaPagada and (parte.pendentSincronitzar or parte.pendent) %}
-						<a href="#" name="remove-llicencia" value="{{ llicencia.id }}"><img src="{{ asset('images/icon-remove.png') }}" alt="Esborra" title="Esborra" width="23px"></a>
+						<a href="#" class="link" name="remove-llicencia" value="{{ llicencia.id }}" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
 					{% endif %}
 					</div>
 	  			</li>

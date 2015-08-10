@@ -681,6 +681,7 @@ class FacturacioController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 		$comanda = null;
+		$comandaOriginalBaixa = false;
 		$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
 		if ($request->getMethod() != 'POST') {
 			$id = $request->query->get('id', 0);
@@ -721,6 +722,7 @@ class FacturacioController extends BaseController {
 					$originalDetalls->add($detall);
 				}
 			}
+			$comandaOriginalBaixa = $comanda->esBaixa();
 		}
 		
 		$comandaPagat = $comanda->comandaPagada(); // Per detectar nous pagaments 
@@ -730,8 +732,6 @@ class FacturacioController extends BaseController {
 			try {
 				$form->handleRequest($request);
 				if ($form->isValid()) {
-					
-					
 					if ($comanda->getClub() == null) {
 						$form->get('club')->addError(new FormError('Falta el club'));
 						throw new \Exception('Cal escollir un club ' );
@@ -745,62 +745,73 @@ class FacturacioController extends BaseController {
 						throw new \Exception('L\'import de la comanda ha de ser diferent de 0'  );
 					}
 					
-					// remove the relationship between the tag and the Task
-					foreach ($originalDetalls as $detall) {
-						if (false === $comanda->getDetalls()->contains($detall)) {
-					
-							$detall->setDatabaixa(new \DateTime());
+					if ($comandaOriginalBaixa == false &&
+						$comanda->esBaixa()) {
+						// Baixa nova	
+						$comanda->baixa();
+					} else {
+						
+						// remove the relationship between the tag and the Task
+						foreach ($originalDetalls as $detall) {
+							if (false === $comanda->getDetalls()->contains($detall)) {
+								if (!$comanda->detallsEditables()) 
+									throw new \Exception('No es poden editar els detalls d\'aquest tipus de comandes');
+								
+								$this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
+							}
+							if ($detall->getIvaunitat() > 0) $detall->setIvaunitat($detall->getIvaunitat()/100); 
+						}
+						
+						// Nous detalls i validació
+						
+						$formdetalls = $form->get('detalls');
+						
+						foreach ($comanda->getDetalls() as $detall) {
+							if (false === $originalDetalls->contains($detall)) {
+								if (!$comanda->detallsEditables())
+									throw new \Exception('No es poden editar els detalls d\'aquest tipus de comandes');
+										
+								$em->persist($detall);
+							}
 							$detall->setDatamodificacio(new \DateTime());
-							$em->persist($detall);
+							
+							if ($detall->getProducte() == null) {
+								$camp = $this->cercarCampColleccio($formdetalls, $detall, 'producte');
+								if ($camp != null) $camp->addError(new FormError('Escollir producte'));
+								throw new \Exception('Cal escollir algun producte de la llista'  );
+							}
+							
+							if ($detall->getUnitats() == 0) {
+								$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
+								if ($camp != null) $camp->addError(new FormError('?'));
+								throw new \Exception('Cal afegir mínim una unitat del producte'  );
+							}
 						}
-						if ($detall->getIvaunitat() > 0) $detall->setIvaunitat($detall->getIvaunitat()/100); 
+						
+						$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
+						$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
+						if (!$comandaPagat && ($strDatapagament != '' || $tipusPagament != '')) {
+							
+							if ($strDatapagament != '' && $tipusPagament == '') {
+								$form->get('tipuspagament')->addError(new FormError('Escollir un valor'));
+								throw new \Exception('Cal indicar com s\'ha pagat la comanda'  );
+							}
+							if ($strDatapagament == '' && $tipusPagament != '') {
+								$form->get('datapagament')->addError(new FormError('Indicar una data'));
+								throw new \Exception('Cal indicar quan s\'ha pagat la comanda'  );
+							}
+							
+							// Nou pagament, crear rebut
+							$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
+							$this->crearRebut($datapagament, $tipusPagament, $comanda);
+						} 
+					
+						if (!$comanda->esNova())  $comanda->setDatamodificacio(new \DateTime());
+						else $comanda->setNum($maxNumComanda); // Per si canvia
 					}
-					
-					// Nous detalls i validació
-					
-					$formdetalls = $form->get('detalls');
-					
-					foreach ($comanda->getDetalls() as $detall) {
-						if (false === $originalDetalls->contains($detall)) {
-							$em->persist($detall);
-						}
-						$detall->setDatamodificacio(new \DateTime());
-						
-						if ($detall->getProducte() == null) {
-							$camp = $this->cercarCampColleccio($formdetalls, $detall, 'producte');
-							if ($camp != null) $camp->addError(new FormError('Escollir producte'));
-							throw new \Exception('Cal escollir algun producte de la llista'  );
-						}
-						
-						if ($detall->getUnitats() == 0) {
-							$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
-							if ($camp != null) $camp->addError(new FormError('?'));
-							throw new \Exception('Cal afegir mínim una unitat del producte'  );
-						}
-					}
-					
-					$comanda->setNum($maxNumComanda); // Per si canvia
-
-					$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
-					$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
-					if (!$comandaPagat && ($strDatapagament != '' || $tipusPagament != '')) {
-						
-						if ($strDatapagament != '' && $tipusPagament == '') {
-							$form->get('tipuspagament')->addError(new FormError('Escollir un valor'));
-							throw new \Exception('Cal indicar com s\'ha pagat la comanda'  );
-						}
-						if ($strDatapagament == '' && $tipusPagament != '') {
-							$form->get('datapagament')->addError(new FormError('Indicar una data'));
-							throw new \Exception('Cal indicar quan s\'ha pagat la comanda'  );
-						}
-						
-						// Nou pagament, crear rebut
-						$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
-						$this->crearRebut($datapagament, $tipusPagament, $comanda);
-					} 
-					
-					if ($comanda->getId() > 0)  $comanda->setDatamodificacio(new \DateTime());
-					
+					// Generar nova factura si s'ha enviat a comptabilitat. Revisar anulacions etc..
+					// Desvincular rebut si escau
+					$this->actualitzarFacturaRebut($this->getCurrentDate(), $comanda);
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda ' ); //$form->getErrorsAsString()
@@ -860,21 +871,10 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 		}
 	
-		// Baixa dels detalls 
-		foreach ($comanda->getDetalls() as $detall) {
-			if (!$detall->esBaixa()) {
-				$detall->setDatabaixa(new \DateTime());
-				$detall->setDatamodificacio(new \DateTime());
-			}
-		}
+		$comanda->baixa();
 		
-		// Baixa de la factura
-		if ($comanda->getFactura() != null) {
-			$comanda->getFactura()->setDataanulacio(new \DateTime());
-		}			
-		$comanda->setDatamodificacio(new \DateTime());
-		$comanda->setDatabaixa(new \DateTime());
-	
+		$this->actualitzarFacturaRebut($this->getCurrentDate(), $comanda);
+		
 		$em->flush();
 	
 		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId());

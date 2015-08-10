@@ -80,7 +80,7 @@ class FormParte extends AbstractType {
 				'widget' => 'single_text', 
 				'format' => 'dd/MM/yyyy', 
 				'years' => range(1990, 2020), 
-				'read_only' => true,
+				'disabled' => true,
 				'mapped'  => false,
 		));
 	}

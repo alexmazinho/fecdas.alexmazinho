@@ -165,7 +165,14 @@
 		<div class="clearfix"></div>
 		<div class="row">
 			<div class="col-md-12">
-				<h3 class="blue">Detalls de la comanda<a class="add-detall pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-1x blue"></i></a></h3>
+				<h3 class="blue">
+					Detalls de la comanda 
+					{% if comanda.detallsEditables == true %}
+						<a class="add-detall pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-1x blue"></i></a> 
+					{% else %}
+						<span class="title-comment">(No es poden editar els detalls d'aquest tipus de comandes)</span> 
+					{% endif %}
+				</h3>
 			</div>
 			<div class="col-md-12">
 				<ul class="detalls-header">
@@ -198,7 +205,7 @@
 						{% for key, detall in form.detalls %}
 							{% set id = detall.vars.data.id %}
 							{% set fila = loop.index %}
-							{% if detall.vars.data.esbaixa == false %}
+							{% if comanda.esBaixa or detall.vars.data.esbaixa == false %}
 								{% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}
 							{% endif %}
 						{% endfor %}	

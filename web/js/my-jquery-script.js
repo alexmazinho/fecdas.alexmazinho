@@ -944,6 +944,8 @@
 			return;
 		}
 		
+		$('#main-col .alert').remove();
+		
 		var url = $("#formllicencia").attr("action");
         var tipusparte = $("#parte_tipus").val();
         var altadata = $("#parte_dataalta").val();
@@ -956,8 +958,10 @@
         
         $.get(url, { source_ajax: 'edit-llicencia', parte: part, llicencia: llic},
      	function(data, textStatus) {
+
         	loadLlicenciaData(data);
-		}).fail( function(xhr, status, error) {
+		
+        }).fail( function(xhr, status, error) {
 			 // xhr.status + " " + xhr.statusText, status, error
 			 var sms = smsResultAjax('KO', xhr.responseText);
 			 
@@ -1035,25 +1039,34 @@
 	
 	
 	removeLlicenciaClick = function() {
-	    $('a[name^=remove-llicencia]')
+	    $('a.remove-llicencia')
 	    .off('click')
 	    .click(function(e) {
 	    	//Cancel the link behavior
 	        e.preventDefault();
-	        var id = $(this).attr('value');
+	        var llic = { id: $(this).attr('value') };
+			
+			//params.push( {'name':'parte','value':  part } );
+			//params.push( {'name':'llicencia','value': llic} );
+	        var params = $.param({ 'action' : 'remove' });
+			params += '&'+$('#formparte').serialize();
+			params += '&'+$.param({ 'llicencia': llic });
 	        
+	        var url = $(this).attr('href');
+	        console.log('a '+url);
 	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
-		              //window.location.href = targetUrl;
+	            		
 	    	        	$(this).dialog("close");
-	    	        	var url = $("#formllicencia").attr("action");
-	    	 	        var params = $('#formparte').serializeArray();
-	    	 	        params.push( {'name':'action','value': 'remove'} );
-	    	 	        params.push( {'name':'llicenciaId','value': id} );
-	    	 	        
+	    	        	
+	    	        	$('#progressbar').show();  // Rellotge
+	    	        	
 	    	 	        $.post(url, params,
 	    	 	        	function(data, textStatus) {
+	    	 	        	
+	    	 	        	$('#progressbar').hide();
+	    	 	        	
 	    	 	        	$("#llista-llicencies").html(data);
 	    	 	        	removeLlicenciaClick();
 	    	 	        	showResumParteDetall();
@@ -1061,16 +1074,22 @@
 	    	 	        	// Hide llicencia
 	    	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	    	 		    	else $('#formparte-llicencia').slideUp('fast');
-	    	 	        });
-	            	
-	            	
+	    	 		    	
+	    	 	        }).fail( function(xhr, status, error) {
+	    					 // xhr.status + " " + xhr.statusText, status, error
+	    					 var sms = smsResultAjax('KO', xhr.responseText);
+	    					 
+	    					 $('#progressbar').hide();  // Rellotge
+	    				    	
+	    				     $("#llista-llicencies").prepend(sms);
+	    				});
 	            	},
 	            	"Cancel·lar" : function() {
 	              		$(this).dialog("close");
 	            	}
 	          	},
 	        	title: "Confirmació per esborrar",
-	        	height: 180,
+	        	//height: 180,
 	        	width: 300,
 	        	zIndex:	350
 	        });
@@ -1105,12 +1124,19 @@
 			params.push( {'name':'action','value': 'persist'} );
 			
 			$.post(url, params, function(data, textStatus) {
+				
 				$('#progressbar').hide();  // Rellotge
 		    	
 		    	$("#llista-llicencies").html(data);
 				
-	        	if ($("#parte_id").val() == 0 && $("#header-llicenciaparteid").length)	{  
-	        		/* Creació del parte si no hi ha error. reload*/
+	        	if ($("#parte_id").val() == 0 && $("#header-llicenciaparteid").length)	{
+	        		
+	        		url = $("#formparte").attr("action")+'?id='+$("#header-llicenciaparteid").html();
+	        		
+	        		window.location = url;
+	        		
+	        		/*
+	        		// Creació del parte si no hi ha error. reload
 					$("#parte_id").val($("#header-llicenciaparteid").html());
 	        		
 	        		// Parte nou creat, deixa només el tipus de parte seleccionat
@@ -1131,7 +1157,7 @@
 					$("#albara-to-pdf a").attr("href", hrefalbaratopdf);
 
 					$(".buttons-top").show();
-
+	        		 	*/
 					//window.location = window.location.pathname + '?id=' + $("#header-llicenciaparteid").html(); 
 	        	};
 		    	
@@ -1142,13 +1168,12 @@
 				sortLlista("col-listheader", "list-data");
 			}).fail( function(xhr, status, error) {
 				 // xhr.status + " " + xhr.statusText, status, error
+				
 				 var sms = smsResultAjax('KO', xhr.responseText);
 				 
 				 $('#progressbar').hide();  // Rellotge
 			    	
-				 $('#parte_tipus').val('');
-				 
-			     $("#llista-llicencies").html(sms);
+			     $("#llista-llicencies").prepend(sms);
 			});
 	    });
 	};

@@ -4,7 +4,7 @@
   	</div>	
 {% endfor %}
 
-{% if parte.numLlicencies > 0 %}
+{% if parte.esnova != true %}
 <div class="table-header">
 	<div id="summary-header">
 		<div id="header-totals" class="col-listheader">Resum - 
@@ -23,8 +23,8 @@
 	   	</li>
 		<li class="data-totals data-detall">
 			<div class="data-detall-cell parte-totals" style="text-align:left">   	
-			<a id="parte-resum-more-show" href="#"><img style="cursor: pointer;" src="{{ asset('images/icon_dropdown.png') }}"></a>
-	   		<a id="parte-resum-more-hide" href="#" style="display:none"><img style="cursor: pointer;" src="{{ asset('images/icon_dropup.png') }}"></a>
+			<a id="parte-resum-more-show" href="javascript:void(0);"><img style="cursor: pointer;" src="{{ asset('images/icon_dropdown.png') }}"></a>
+	   		<a id="parte-resum-more-hide" href="javascript:void(0);" style="display:none"><img style="cursor: pointer;" src="{{ asset('images/icon_dropup.png') }}"></a>
 			</div>
 	  		<div class="data-detall-cell parte-totals">{{ parte.numAficionats }}</div>
 	   		<div class="data-detall-cell parte-totals">{{ parte.numInfantils }}</div>
@@ -64,7 +64,7 @@
 	</ul>
 	{% endif %} 
 </div>
-   	
+{% endif %}   	
 
 <div class="table-header">
 	<div id="list-header">
@@ -79,6 +79,7 @@
 	   	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
 	</div>
 </div>
+{% if parte.numLlicencies > 0 %}
 <div class="table-scroll">
 	<ol id="list-data">
 		{% for llicencia in parte.llicenciessortedbyname %}
@@ -99,7 +100,7 @@
 					{% endif %}
 					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
 					{% if admin == true and not parte.comandaPagada and (parte.pendentSincronitzar or parte.pendent) %}
-						<a href="#" class="link" name="remove-llicencia" value="{{ llicencia.id }}" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
+						<a href="{{ path('FecdasBundle_llicencia') }}" value="{{ llicencia.id }}" class="link remove-llicencia" name="remove-llicencia" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
 					{% endif %}
 					</div>
 	  			</li>

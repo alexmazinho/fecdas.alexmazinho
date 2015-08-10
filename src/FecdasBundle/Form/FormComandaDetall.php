@@ -30,7 +30,8 @@ class FormComandaDetall extends AbstractType {
 					$total = 0;
 						
 					$detall = $event->getData();
-					
+					$comanda = null;
+					$disabledFields = false;
 					if ($detall != null) {
 						$producte = ($detall != null?$detall->getProducte():null);
 						$preu = $detall->getPreuunitat();
@@ -40,14 +41,18 @@ class FormComandaDetall extends AbstractType {
 						$unitats = $detall->getUnitats();
 						$descompte = $detall->getDescomptedetall();
 						$total = $detall->getTotal();
-					}
+						$comanda = $detall->getComanda();
 						
+						if ($detall != null && $detall->esBaixa()) $disabledFields = true;
+						if ($comanda != null && !$comanda->detallsEditables()) $disabledFields = true;
+					}
+					
 					$form->add('producte', 'entity', array(
 							'class' 		=> 'FecdasBundle:EntityProducte',
 							'choice_label' 	=> 'descripcio',
 							'empty_value' 	=> 'Seleccionar Producte',
 							'required'  	=> false,
-							'disabled' 		=> $detall != null && $detall->esBaixa(),
+							'disabled' 		=> $disabledFields,
 					));
 					
 					$form->add ( 'preuunitat', 'number', array (
@@ -55,7 +60,7 @@ class FormComandaDetall extends AbstractType {
 							'disabled' 	=> true,
 							'scale' 	=> 2,
 							'data'		=> $preu,
-							'disabled' 	=> $detall != null && $detall->esBaixa(),
+							'disabled' 	=> $disabledFields,
 					));
 						
 					$form->add ( 'ivaunitat', 'integer', array (
@@ -63,7 +68,7 @@ class FormComandaDetall extends AbstractType {
 							'disabled' 	=> true,
 							'scale' 	=> 0,
 							'data'		=> $iva * 100,
-							'disabled' 	=> $detall != null && $detall->esBaixa(),
+							'disabled' 	=> $disabledFields,
 					));
 					
 					
@@ -71,7 +76,7 @@ class FormComandaDetall extends AbstractType {
 							'required' => true,
 							'scale' 	=> 0,
 							'data'		=> $unitats,
-							'disabled' 	=> $detall != null && $detall->esBaixa(),
+							'disabled' 	=> $disabledFields,
 					));
 					
 					$form->add ( 'descomptedetall', 'integer', array (
@@ -79,7 +84,7 @@ class FormComandaDetall extends AbstractType {
 							/*'disabled' 	=> true,*/
 							'scale' 	=> 0,
 							'data'		=> $descompte * 100,
-							'disabled' 	=> $detall != null && $detall->esBaixa(),
+							'disabled' 	=> $disabledFields,
 					));
 					
 					$form->add ( 'total', 'number', array (
@@ -92,7 +97,7 @@ class FormComandaDetall extends AbstractType {
 					$form->add('anotacions', 'textarea', array(
 							'required' 	=> false,
 							'attr'		=> array( 'rows' => 1, 'resize' => 'vertical' ),
-							'disabled' 	=> $detall != null && $detall->esBaixa(),
+							'disabled' 	=> $disabledFields,
 					));
 				}
 		);

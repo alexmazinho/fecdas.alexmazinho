@@ -26,8 +26,7 @@
 		
 		<div class="form-row clearfix">
 			<div class="sms-header-info">{{ parte.infoParte }}</div>
-			{% if ((parte.esnova != true) and (parte.numLlicencies > 0))  %} 
-			<div class="buttons-top">
+			<div class="buttons-top" {% if ((parte.esnova == true) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
 				{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
 				<!-- No Pagat -->
 	        	<div id="parte-pagament" class="button-top">	
@@ -39,8 +38,8 @@
 					<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
 						<i class="fa fa-file-text-o fa-1x orange"></i></a>
 				</div>
-					<!-- només factures amb número factura del web -->
-				{% if parte.factura is not null %} 
+				<!-- només factures enviades a comptabilitat -->
+				{% if parte.facturaComptabilitzada == true %} 
 					<div id="factura-to-pdf" class="button-top">
 						<a class="link" href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
 							<i class="fa fa-file-pdf-o fa-1x red"></i></a>
@@ -59,9 +58,7 @@
 				{% endif %}
 				
 			</div>	
-			{% endif %}
 		</div>
-		
 
 		<div class="row">
 			 <div class="col-md-1">
@@ -89,26 +86,28 @@
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
 				</div>
 			  </div>
-  			  <div class="col-md-2" {% if parte.datapagament is null %} style="display: none" {% endif %}>
+  			  <div class="col-md-2">
 				<div class="form-group">
-					<label>&nbsp;</label>
+					<label>Data Pagament</label>
 					<div id="formparte-datapagament" class="input-group" >
-		  				<span class="input-group-addon required">Data Pagament</span>
-						{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+		  				{% if parte.datapagament is not null %}
+			  				<span class="input-group-addon required"></span>
+							{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						{% else %}
+							{% if admin == true and parte.datapagament is null and parte.esnova != true  %}
+								<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
+									data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></button>
+				  			{% endif %}
+			  			{% endif %}		
 					</div>
 				</div>
 			  </div>
-  			  <div class="col-md-1 {% if parte.datapagament is null %} col-md-offset-2 {% endif %} col-last-right">
-			  {% if admin == true and parte.datapagament is null and parte.esnova != true  %}
-					<label>&nbsp;</label>
-					<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
-						data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></button>
-			  {% else %}	
-			  		
+  			  <div class="col-md-1 col-last-right">
+			  {% if parte.esnova != true and parte.isAllowEdit == true %}		
 					<label>&nbsp;</label>
 					<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg" 
 					{% if parte.esnova == true  %} style="display:none;" {% endif %}
-						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-chevron-down"></i></button>
+						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-plus"></i></button>
 						 
 			  {% endif %}	
 		   	  </div>

@@ -94,7 +94,9 @@ class PDFController extends BaseController {
 		$x = $x_ini;
 		
 		$pdf->SetFont('dejavusans', '', 16, '', true);
-		$text = '<b>FACTURA</b>';
+		if ($comanda->facturaComptabilitzada() == false) $text = '<b>FACTURA PROVISIONAL PENDENT COMPTABILITZAR</b>';
+		else $text = '<b>FACTURA</b>';
+		
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
 		$pdf->Ln(5);
 		
@@ -207,27 +209,28 @@ class PDFController extends BaseController {
 		
 		$pdf->SetTextColor(100, 100, 100); // Gris
 		$pdf->SetFont('dejavusans', '', 16, '', true);
-		
+
+		if ($comanda->facturaComptabilitzada() == false) $text = '<b>FACTURA PROVISIONAL PENDENT COMPTABILITZAR';
+		else $text = '<b>FACTURA';
+
 		if ($comanda->comandaPagada() == true) {
-			$text = '<b>FACTURA PAGADA</b>';
-			$pdf->writeHTML($text, true, false, false, false, '');
-				
-			if ($comanda->isFacturaValida() == false) {
-				// Ha canviat la factura, mostra avís factura obsoleta
-				$pdf->SetFont('dejavusans', '', 14, '', true);
-				$y = $y_ini + 120;
-				$x = $x_ini;
-				$text = 'Aquesta factura ha quedat obsoleta per modificacions posteriors al pagament de la llista.<br/>';
-				$text .= 'Per a obtenir la factura original, poseu-vos en contacte amb la federació.';
-					
-				//$pdf->writeHTML($text, true, false, false, false, 'L');
-				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
-			}
-		
-				
+			$text .= ' PAGADA</b>';
 		} else {
-			$text = '<b>FACTURA PENDENT DE PAGAMENT</b>';
-			$pdf->writeHTML($text, true, false, false, false, '');
+			$text .= ' PENDENT DE PAGAMENT</b>';
+		}
+		
+		$pdf->writeHTML($text, true, false, false, false, '');
+
+		if ($comanda->comandaPagada() == true && $comanda->isFacturaValida() == false) {
+			// Ha canviat la factura, mostra avís factura obsoleta
+			$text = 'Aquesta factura ha quedat obsoleta per modificacions posteriors al pagament de la llista.<br/>';
+			$text .= 'Per a obtenir la factura original, poseu-vos en contacte amb la federació.';
+			$pdf->SetFont('dejavusans', '', 14, '', true);
+			$y = $y_ini + 120;
+			$x = $x_ini;
+		
+			//$pdf->writeHTML($text, true, false, false, false, 'L');
+			$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
 		}
 		
 		

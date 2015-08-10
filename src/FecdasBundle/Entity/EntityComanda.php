@@ -139,6 +139,23 @@ class EntityComanda {
 	{
 		return $this->rebut != null && !$this->rebut->esBaixa();
 	}
+
+	public function estaComptabilitzada()
+	{
+		return $this->comptabilitat != null;
+	}
+	
+	public function facturaComptabilitzada()
+	{
+		return $this->comptabilitat != null && 
+				$this->factura != null &&
+				!$this->factura->esBaixa();
+	}
+
+	public function detallsEditables()
+	{
+		return !$this->esParte();
+	}
 	
 	public function esParte()
 	{
@@ -154,7 +171,20 @@ class EntityComanda {
 	{
 		return !$this->esDuplicat() && !$this->esParte();
 	}
-	
+
+	/* Per sobreescriure als fills */
+	public function baixa()
+	{
+		// Baixa dels detalls
+		foreach ($this->getDetalls() as $detall) {
+			if (!$detall->esBaixa()) {
+				$detall->setDatabaixa(new \DateTime());
+				$detall->setDatamodificacio(new \DateTime());
+			}
+		}
+		$this->datamodificacio = new \DateTime();
+		$this->databaixa = new \DateTime();
+	}
 	
 	/**
 	 * Comanda 

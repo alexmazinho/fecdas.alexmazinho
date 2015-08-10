@@ -84,7 +84,7 @@
 			   			</div>
 				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
 				   		<div class="data-detall-cell duplicat-actions">
-					   		{% if duplicat.factura is not null %} 
+					   		{% if duplicat.facturaComptabilitzada == true %} 
 								<a class="duplicat-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': duplicat.id}) }}" alt="Factura" title="Factura">
 										<i class="fa fa-file-pdf-o fa-1x orange"></i></a>
 							{% else %}

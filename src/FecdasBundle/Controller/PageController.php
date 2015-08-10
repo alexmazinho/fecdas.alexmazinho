@@ -747,11 +747,8 @@ class PageController extends BaseController {
 		}
 
 		$factura = $this->crearFactura($dataalta);
-		$parte = $this->crearComandaParte($factura, $dataalta, $partearenovar->getTipus());
+		$parte = $this->crearComandaParte($factura, $dataalta, $partearenovar->getTipus(), $partearenovar->getComentaris());
 		
-		// Copy comentaris
-		$parte->setComentaris($parte->getComentaris());
-
 		// Clone llicències
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
 	
@@ -950,35 +947,23 @@ class PageController extends BaseController {
 		
 		if ($request->getMethod() == 'POST') {
 			$requestParams = $request->request->all();
-			if (isset($requestParams['action']) && $requestParams['action'] != 'persona') {
-				// source: FormPersona
-				error_log('form persona');
-	
-			} else {
-				// source: FormLlicencia
-				$this->get('session')->getFlashBag()->clear();
-					
-				error_log('update Parte');
-			}
 		} else {
-			$this->get('session')->getFlashBag()->clear();
 			$requestParams = $request->query->all();
-	
-			error_log('llicenciaAction');
 		}
-	
+
+		// source: FormPersona
+		if (!isset($requestParams['action']) || $requestParams['action'] != 'persona') 			
+					$this->get('session')->getFlashBag()->clear();
+			
+		
 		try {
-	
 			$p = $requestParams['parte'];
 			$l = $requestParams['llicencia'];
-			error_log('-'.'1aaa'.'-');
+
 			$id = is_numeric($p['id']) && $p['id'] > 0?$p['id']:0;
-			error_log('-'.'1bbb'.'-');
 			$lid = is_numeric($l['id']) && $l['id'] > 0?$l['id']:0;
-			error_log('-'.'1cccc'.'-');
+			
 			if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
-				
-			error_log('=>'.$id.'*'.$lid.'*'.$currentPerson.'-');
 				
 			if ($lid == 0) {
 				// Insert
@@ -994,8 +979,8 @@ class PageController extends BaseController {
 						
 					// Crear parte nou per poder carregar llista
 					$factura = $this->crearFactura($partedataalta);
+					
 					$parte = $this->crearComandaParte($factura, $partedataalta, $tipus);
-						
 				} else {
 					$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($id);
 	
@@ -1005,12 +990,9 @@ class PageController extends BaseController {
 				// Noves llicències, permeten edició no pdf
 				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
 				$em->persist($llicencia);
-	
+				
 				$parte->addLlicencia($llicencia);
-	
-				$producte = ($llicencia->getCategoria() != null?$llicencia->getCategoria()->getProducte():null);
-				$detall = $this->addComandaDetall($parte, $producte, 1);
-					
+				
 			} else {
 				// Cercar llicència a actualitzar
 				$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($lid);
@@ -1030,61 +1012,23 @@ class PageController extends BaseController {
 				$llicencia->setPersona($persona);
 			}
 				
-			// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
-			/*
-			$datainici_reduida = new \DateTime(date("Y-m-d", strtotime($partedataalta->format('Y') . "-09-01")));
-			if (($tipusid == 5 or $tipusid == 6) &&
-			($partedataalta->format('Y-m-d') < $datainici_reduida->format('Y-m-d'))) { // reduïdes
-			throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');
-			}*/
-	
-			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* id 4 - Competició --> és la única que es pot fer */
-			/* id 9 i 12 - Tecnocampus també es pot fer */
-			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
-			 && $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {
-			 	
-			 $this->get('session')->getFlashBag()->clear();
-			 $this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
-			 Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
-			 Gràcies per la vostra comprensió.');
-			 }*/
-			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* Valida tipus actiu --> és la única que es pot fer */
-			/*if ($parte->getTipus()->getActiu() == false) {
-			 throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-				}*/
-			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
-	
 			if ($request->getMethod() == 'POST' &&
 				isset($requestParams['action']) && 
 				$requestParams['action'] != 'persona') {
 				
 				if ($requestParams['action'] == 'remove') {
-					// No admin. No hauria de passar mai
-					if (!$this->isCurrentAdmin()) throw new \Exception('Només pot esborrar l\'administrador');
+					// Errors generen excepció
+					$this->validaRemoveLlicencia($parte);
 					
-					// Comprovació Pagat. No hauria de passar mai
-					if ($parte->comandaPagada() == true) throw new \Exception('No es poden esborrar llicències que ja estan pagades');
-					
-					// Persistència
-					$llicencia->setDatamodificacio($this->getCurrentDate());
-					$llicencia->setDatabaixa($this->getCurrentDate());
-					
-					$parte->setDatamodificacio($this->getCurrentDate());
-						
-					// Baixa partes sense llicències
-					if ($parte->getNumLlicencies() == 0) $parte->setDatabaixa($this->getCurrentDate());
+					$this->removeParteDetall($parte, $llicencia);
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 					
 				} else {
 					// Update / insert llicència
-						
-					error_log('-'.'5'.'-');
 					$form = $this->createForm(new FormParte(), $parte);
 					$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
-					error_log('-'.'6'.'-');
+
 					$form->bind($request);
 					$formLlicencia->bind($request);
 	
@@ -1095,8 +1039,9 @@ class PageController extends BaseController {
 					// Errors generen excepció
 					$this->validaParteLlicencia($parte, $llicencia);
 
-					$parte->setDatamodificacio($this->getCurrentDate());
 					$llicencia->setDatamodificacio($this->getCurrentDate());
+					
+					$detall = $this->addParteDetall($parte, $llicencia);
 					
 					// Comprovació datacaducitat
 					if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
@@ -1105,11 +1050,14 @@ class PageController extends BaseController {
 					}
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 					
-					error_log('-'.'19'.'-');
-						
 				}
+
+				// Generar nova factura si s'ha enviat a comptabilitat. Revisar anulacions etc..
+				// Desvincular rebut si escau
+				$this->actualitzarFacturaRebut($this->getCurrentDate(), $parte);
 				
 				$em->flush();
+
 				$this->logEntryAuth('LLICENCIA '.$requestParams['action'].' OK', 'Parte:' . $parte->getId() . ' llicencia: ' . $llicencia->getId());
 				
 				$response = $this->render('FecdasBundle:Page:partellistallicencies.html.twig',
@@ -1128,8 +1076,6 @@ class PageController extends BaseController {
 			}
 		} catch (\Exception $e) {
 				
-			error_log('-'.'18'.'-');
-	
 			if ($parte != null) {
 				if ($parte->esNova()) {
 					if ($detall != null) $em->detach($detall);
@@ -1150,223 +1096,97 @@ class PageController extends BaseController {
 				else $em->refresh($llicencia);
 			}
 
-			
 			$this->logEntryAuth('LLICENCIA KO', ' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
 	
-			error_log(' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
-				
 			$response = new Response($e->getMessage());
 			$response->setStatusCode(500);
-			/*
-				$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
-					
-				if ($parte == null) {
-				// Crear parte nou per poder carregar llista
-				$partedataalta = $this->getCurrentDate();
-				$factura = $this->crearFactura($partedataalta);
-				$parte = $this->crearComandaParte($factura, $partedataalta);
-				}*/
 		}
 	
 		return $response;
 	}
 	
+	private function validaRemoveLlicencia($parte) {
+		// No admin
+		if (!$this->isCurrentAdmin()) throw new \Exception('Contacteu amb la Federació per anul·lar les llicències');
+
+		// Compte si deixem esborrar als clubs cal activar següents validacions
+		
+		// Comprovació Pagat
+		//if ($parte->comandaPagada() == true) throw new \Exception('No es poden esborrar llicències que ja estan pagades');
+		
+		// Comprovació comptabilitzat
+		//if ($parte->estaComptabilitzada() == true) throw new \Exception('La llista està facturada. Contacteu amb la Federació per anul·lar les llicències');
+		
+
+	}
+	
 	private function validaParteLlicencia($parte, $llicencia) {
 		
-		/* Des de llicència XMLRequest, update llicència i potser nou parte*/
-		/*$requestParams = $request->request->all();
-		$p = $requestParams['parte'];
-		$l = $requestParams['llicencia'];
-		$this->get('session')->getFlashBag()->clear();
-
-		
-
-		$parte = null;
-		$llicencia = null;
-		
-		$id = is_numeric($p['id']) && $p['id'] > 0?$p['id']:0;
-		$lid = is_numeric($l['id']) && $l['id'] > 0?$l['id']:0;
-		
-		error_log('updateParte-'.$id.'*'.$lid.'-');
-		*/
-		
 		$em = $this->getDoctrine()->getManager();
-		//try {
-			/*
-			if ($id == 0) {
-				$partedataalta = $this->getCurrentDate();
-				// Crear parte nou per poder carregar llista
-				$factura = $this->crearFactura($partedataalta);
-				$parte = $this->crearComandaParte($factura, $partedataalta);
-				
-			} else {	
-				$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($id);
-			
-				if ($parte == null) throw new \Exception('No s\'ha trobat la llista '.$id);
-			}	
-			
-			error_log('-'.'3'.'-');
 
-			if ($lid == 0) {
-				// Insert
-				// Noves llicències, permeten edició no pdf
-				$llicencia = new EntityLlicencia($this->getCurrentDate());
-				$parte->addLlicencia($llicencia);
-				
-				$em->persist($llicencia);
-				
-				$producte = ($llicencia->getCategoria() != null?$llicencia->getCategoria()->getProducte():null);
-				$this->addComandaDetall($parte, $producte, 1);
+		$dataalta = $parte->getDataalta();
+		$tipus = $parte->getTipus();
+		$current = $this->getCurrentDate();
+		$errData = $this->validaDataLlicencia($dataalta, $tipus);
+			
+		if ($errData != "") throw new \Exception($errData);
+		// NO llicències amb data passada. Excepte administradors
+		// Data alta molt aprop de la caducitat.
 
-			} else {
-			// Cercar llicència a actualitzar
-				$llicencia = $parte->getLlicenciaById($lid);
-				
-				if ($llicencia == null) throw new \Exception('No s\'ha trobat la llicència '.$lid);
-			}				
-			error_log('-'.'5'.'-');
-			$form = $this->createForm(new FormParte(), $parte);
-			$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
-			error_log('-'.'6'.'-');
-			$form->bind($request);
-			$formLlicencia->bind($request);
-			
-			if (!$formLlicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formLlicencia->getErrorsAsString());
-				
-			if (!$form->isValid()) throw new \Exception('Error validant les dades de la llista: '.$form->getErrorsAsString());
-			*/
-			error_log('-'.'7'.'-');
-				
-			$dataalta = $parte->getDataalta();
-			$tipus = $parte->getTipus();
-			$current = $this->getCurrentDate();
-			$errData = $this->validaDataLlicencia($dataalta, $tipus);
-			
-			if ($errData != "") throw new \Exception($errData);
-			// NO llicències amb data passada. Excepte administradors
-			// Data alta molt aprop de la caducitat.
-
-			error_log('-'.'10'.'-');
-			if ($dataalta->format('y') > $current->format('y')) {
-				// Només a partir 10/12 poden fer llicències any següent
-				if ($current->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
-					($current->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
-					 $current->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) {
-						throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
-				}
-			}
-			error_log('-'.'11'.'-');
-			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* id 4 - Competició --> és la única que es pot fer */
-			/* id 9 i 12 - Tecnocampus també es pot fer */
-			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
-				&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {					
-				
-				$this->get('session')->getFlashBag()->clear();
-				$this->get('session')->getFlashBag()->add('sms-notice','El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
-					Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
-					Gràcies per la vostra comprensió.');
-				$valida = false;
-			}*/
-			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* Valida tipus actiu --> és la única que es pot fer */
-			if ($tipus->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
-
-			// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
-			$datainici_reduida = new \DateTime(date("Y-m-d", strtotime($dataalta->format('Y') . "-09-01")));
-			if (($tipus->getId() == 5 or $tipus->getId() == 6) &&
-					($dataalta->format('Y-m-d') < $datainici_reduida->format('Y-m-d'))) { // reduïdes
-						throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');
-			}
-			
-				
-			
-			error_log('-'.'12'.'-');
-
-			
-			if ($this->validaLlicenciaInfantil($llicencia) == false) throw new \Exception('L\'edat de la persona no correspon amb el tipus de llicència');
-						
-			error_log('-'.'13'.'-');
-
-			if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ja té una llicència en aquesta llista');
-
-			error_log('-'.'14'.'-');
-			
-			// Comprovar que no hi ha llicències vigents 
-			// Per la pròpia persona
-			$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
-			if ($parteoverlap != null) throw new \Exception('Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
-															$parteoverlap->getDataalta()->format('d/m/Y'));
-			error_log('-'.'15'.'-');
-
-			$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
-			
-			if ($current->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d') && 
-				$parte->getClub()->controlCredit() == true) {
-					// Comprovació de saldos clubs DIFE
-/***************  SALDOS ENCARA NO ************************************************************************************************************************/					
-					/*if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
-						throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
-						Per poder fer noves gestions, cal que contacteu amb la FECDAS');
-					}*/
-			}
-			error_log('-'.'16'.'-');
-			// Persistència or rollback
-			//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
-			/*		
-			$parte->setDatamodificacio($this->getCurrentDate());
-			$llicencia->setDatamodificacio($this->getCurrentDate());
-
-			// Comprovació datacaducitat
-			if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
-				error_log("DataCaducitat llicencia incorrecte " . $llicencia->getDatacaducitat()->format('d/m/Y') . " " . $parte->getDataCaducitat($this->getLogMailUserData("updateParte 1 "))->format('d/m/Y') , 0);
-				$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
-			}
-					
-			$em->flush();
-			
-			$this->logEntryAuth('LLICENCIA OK', ' Parte '.$id.'- Llicencia '.$lid);
-			
-			error_log('-'.'19'.'-');
-			
-			$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
-			*/		
-			
-			
-		/*} catch (\Exception $e) {
-			
-			error_log('-'.'18'.'-');
-
-			if ($parte != null) {
-				if ($parte->esNova()) $em->detach($parte);
-				else $em->refresh($parte);
-			}
-			
-			if ($llicencia != null) {
-				if ($llicencia->esNova()) $em->detach($llicencia);
-				else $em->refresh($llicencia);
-			}
-				
-			$this->logEntryAuth('LLICENCIA KO', ' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
-
-			error_log(' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
-				
-			
-			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
-					
-			if ($parte == null) {
-				// Crear parte nou per poder carregar llista
-				$partedataalta = $this->getCurrentDate();
-				$factura = $this->crearFactura($partedataalta);
-				$parte = $this->crearComandaParte($factura, $partedataalta);
+		if ($dataalta->format('y') > $current->format('y')) {
+			// Només a partir 10/12 poden fer llicències any següent
+			if ($current->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
+				($current->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
+				 $current->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) {
+				throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
 			}
 		}
 		
-		
-		return $this->render('FecdasBundle:Page:partellistallicencies.html.twig',
-				array('parte' => $parte, 'admin' =>$this->isCurrentAdmin()));
-		*/
+		/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+		/* id 4 - Competició --> és la única que es pot fer */
+		/* id 9 i 12 - Tecnocampus també es pot fer */
+		/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
+			&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {					
+			
+			$this->get('session')->getFlashBag()->clear();
+			$this->get('session')->getFlashBag()->add('sms-notice','El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
+				Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
+				Gràcies per la vostra comprensió.');
+			$valida = false;
+		}*/
+		/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
+		/* Valida tipus actiu --> és la única que es pot fer */
+		if ($tipus->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+
+		// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
+		$datainici_reduida = new \DateTime(date("Y-m-d", strtotime($dataalta->format('Y') . "-09-01")));
+		if (($tipus->getId() == 5 or $tipus->getId() == 6) &&
+			($dataalta->format('Y-m-d') < $datainici_reduida->format('Y-m-d'))) { // reduïdes
+			throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');
+		}
+			
+		if ($this->validaLlicenciaInfantil($llicencia) == false) throw new \Exception('L\'edat de la persona no correspon amb el tipus de llicència');
+						
+		if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ja té una llicència en aquesta llista');
+
+		// Comprovar que no hi ha llicències vigents 
+		// Per la pròpia persona
+		$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
+		if ($parteoverlap != null) throw new \Exception('Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
+															$parteoverlap->getDataalta()->format('d/m/Y'));
+
+		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
+			
+		if ($current->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d') && 
+			$parte->getClub()->controlCredit() == true) {
+			// Comprovació de saldos clubs DIFE
+/***************  SALDOS ENCARA NO ************************************************************************************************************************/					
+			/*if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
+					throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
+					Per poder fer noves gestions, cal que contacteu amb la FECDAS');
+			}*/
+		}
 	}
  
 	private function validaDataLlicencia(\DateTime $dataalta, $tipus) {

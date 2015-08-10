@@ -30,6 +30,14 @@ class FormComanda extends AbstractType {
 						'mapped'	=> false,
 						'data'		=> $comanda->getNumComanda()
 				));
+
+				$form->add('club', 'entity', array(
+						'class' 		=> 'FecdasBundle:EntityClub',
+						'choice_label' 	=> 'nom',
+						'empty_value' 	=> 'Seleccionar Club',
+						'required'  	=> false,
+						'disabled' 		=> !$comanda->esNova(),
+				));
 				
 				$form->add('numfactura', 'text', array(
 						'required' 	=> false,
@@ -99,14 +107,6 @@ class FormComanda extends AbstractType {
 		
 		$builder->add('id', 'hidden');
 		
-		$builder->add('club', 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityClub',
-				'choice_label' 	=> 'nom',
-				'empty_value' 	=> 'Seleccionar Club',	
-				'required'  	=> false,
-				'read_only' 	=> true,
-		));
-		
 		$builder->add('comptabilitat', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityComptabilitat',
 				'choice_label' 	=> 'InfoComptabilitat',
@@ -127,7 +127,7 @@ class FormComanda extends AbstractType {
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'empty_value' 	=> false,
-				'format' 		=> 'dd/MM/yyyy HH:mm',
+				'format' 		=> 'dd/MM/yyyy',
 		));
 		
 		

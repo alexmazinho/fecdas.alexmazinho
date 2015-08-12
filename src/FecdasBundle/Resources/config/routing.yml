@@ -271,6 +271,12 @@ FecdasBundle_rebuttopdf:
     requirements:
         _method:  GET
 
+FecdasBundle_imprimirparte:
+    pattern:  /imprimirparte
+    defaults: { _controller: "FecdasBundle:PDF:imprimirparte" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_checkrenovacio:
     pattern:  /checkrenovacio
     defaults: { _controller: "FecdasBundle:Cron:checkrenovacio" }

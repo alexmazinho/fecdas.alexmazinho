@@ -59,6 +59,11 @@ class EntityParte extends EntityComanda {
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $pendent;
+
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $impres;
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityLlicencia", mappedBy="parte")
@@ -69,6 +74,7 @@ class EntityParte extends EntityComanda {
 	public function __construct() {
 		$this->web = true;
 		$this->renovat = false;
+		$this->impres = false;
 		$this->pendent = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
@@ -449,10 +455,11 @@ class EntityParte extends EntityComanda {
     	if ($this->pendent == true) return false;
     	
     	$currentdate = new \DateTime();
-    	if ($this->tipus->getId() == 11) {
+    	
+    	/*if ($this->tipus->getId() == 11) {
     		if ($this->dataalta->format("Y-m-d") == $currentdate->format("Y-m-d")) return true;
     		else return false;
-    	}
+    	}*/
     	/*
     	// Normal 31/12  	dataalta >= 01/01/current year 
     	$inianual = \DateTime::createFromFormat('Y-m-d H:i:s', date("Y") . "-01-01 00:00:00");
@@ -462,8 +469,12 @@ class EntityParte extends EntityComanda {
     		($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);*/
     	   
     	/* Dataalta <= avui and avui <= Caducitat */
+    	error_log('id=>'.$this->id.' avui => '.$currentdate->format('Y-m-d'));
+    	error_log($this->dataalta->format('Y-m-d') .'=>'.$this->getDataCaducitat("isVigent")->format("Y-m-d"));
+    	
+    	
     	return ( $this->dataalta->format('Y-m-d') <= $currentdate->format('Y-m-d') 
-    			and $currentdate->format('Y-m-d') <= $this->getDataCaducitat("isVigent")->format("Y-m-d"));
+    			&& $currentdate->format('Y-m-d') <= $this->getDataCaducitat("isVigent")->format("Y-m-d"));
     }
     
     
@@ -489,20 +500,27 @@ class EntityParte extends EntityComanda {
     	
     	if ($this->esBaixa()) return "Llista anulada";
     	
-    	if ($this->isPassat() == true) return "Validesa de les llicències finalitzada";
-    	
+    	if ($this->pendent) return "Pendent confirmació pagament";
+
     	if ($this->isVigent() == false) return "Aquesta llista encara no està vigent";
     	
-    	if ($this->pendent) return "Pendent confirmació pagament";
-    	
-    	if ($this->getNumFactura() != null and $this->getDatafactura() != null) {
+    	if ($this->isPassat() == true) $textInfo .= "Validesa de les llicències finalitzada";
+    	 
+    	if ($this->getNumFactura() != null && $this->getDatafactura() != null) {
+    		$textInfo .= $textInfo == ""?"":"<br/>";
     		$textInfo .= "Fra. ". $this->getNumFactura();
-    		$textInfo .= " - ". $this->getDatafactura()->format("d/m/Y");
+    		$textInfo .= " - ". $this->getDatafactura()->format("d/m/y");
     	} else {
     		if ($this->getAny() >= 2013) $textInfo .= "Llicències vigents (Factura pendent)";
     	}
     	
-    	if ($this->comandaPagada() == true and $this->getRebut()->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $textInfo .=  ". Pagament on-line";
+    	if ($this->getNumRebut() != null && $this->getDatapagament() != null) {
+    		$textInfo .= $textInfo == ""?"":"<br/>";
+    		$textInfo .= "Rebut. ". $this->getNumRebut();
+    		$textInfo .= " - ". $this->getDatapagament()->format("d/m/y");
+    	}
+    	
+    	//if ($this->comandaPagada() == true && $this->getRebut()->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $textInfo .=  ". Pagament on-line";
 
     	return $textInfo;
     }
@@ -717,6 +735,26 @@ class EntityParte extends EntityComanda {
     public function getPendent()
     {
     	return $this->pendent;
+    }
+    
+    /**
+     * Set impres
+     *
+     * @param boolean $impres
+     */
+    public function setImpres($impres)
+    {
+    	$this->impres = $impres;
+    }
+    
+    /**
+     * Get impres
+     *
+     * @return boolean
+     */
+    public function getImpres()
+    {
+    	return $this->impres;
     }
     
     /**

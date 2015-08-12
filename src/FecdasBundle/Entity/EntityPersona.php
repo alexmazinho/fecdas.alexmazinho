@@ -144,6 +144,99 @@ class EntityPersona {
 	}
 	
     /**
+     * Get nom i cognoms "COGNOMS, nom
+     *
+     * @return string
+     */
+    public function getCognomsNom()
+    {
+    	return strtoupper($this->cognoms) . ', ' . $this->nom;
+    }
+
+    /**
+     * Get nom i cognoms "Nom Cognom1 Cognom2
+     *
+     * @return string
+     */
+    public function getNomCognoms()
+    {
+    	//$fc = mb_strtoupper(mb_substr($str, 0, 1));
+    	//return $fc.mb_substr($str, 1);
+		return $this->nom.' '.mb_strtoupper($this->cognoms, 'UTF-8');
+    }
+    
+    /**
+     * Get adreça completa
+     *
+     * @return string
+     */
+    public function getAdrecaCompleta()
+    {
+    	$strAdreca = "";
+    	if ($this->addradreca != null) $strAdreca .= $this->addradreca . ".";
+    	if ($this->addrcp != null) $strAdreca .= $this->addrcp . " ";
+    	if ($this->addrpob != null) $strAdreca .= $this->addrpob . " ";
+    	if ($this->addrprovincia != null) $strAdreca .= "(". $this->addrprovincia . ") ";
+    	
+    	return  $strAdreca;
+    }
+    
+    /**
+     * 
+     * @return FecdasBundle\Entity\EntityLlicencia
+     */
+    public function getLlicenciaVigent() {
+    	foreach ($this->llicencies as $llicencia) {
+    		if ($llicencia->isVigent() == true) return $llicencia;
+    	} 
+    	return null;
+    }
+    
+    public function getLlicenciesSortedByDate()
+    {
+    	/* Ordenades de última a primera */
+    	$arr = array();
+    	foreach ($this->llicencies as $llicencia) {
+    		if ($llicencia->isValida()) $arr[] = $llicencia;
+    	}
+
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+    		return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
+    	});
+    	return $arr;
+    }
+    
+    public function getLastLlicencia() {
+    	$llicenciesOrdenades = $this->getLlicenciesSortedByDate();
+    	
+    	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
+    	
+    	return null;
+    }
+    
+    /**
+     * Missatges llista assegurats
+     *
+     * @return string
+     */
+    public function getInfoAssegurats($admin = false) {
+    	$txtClub = "";
+    	if ($admin) $txtClub = "(".$this->club->getNom().") ";  
+    	
+    	if ($this->getLlicenciaVigent() != null and $this->getLlicenciaVigent()->getParte() != null)
+    		return  $txtClub . $this->getLlicenciaVigent()->getCategoria()->getDescripcio() . " fins al " . $this->getLlicenciaVigent()->getParte()->getDatacaducitat()->format('d/m/Y');
+    		
+    	
+    	if ($this->getLastLlicencia() != null and $this->getLastLlicencia()->getParte() != null)  
+    		return $txtClub . "Darrera llicència finalitzada en data " . $this->getLastLlicencia()->getParte()->getDatacaducitat()->format('d/m/Y');
+    	
+    	return $txtClub . "Persona sense historial de llicències";
+    }
+
+    /**
      * Get id
      *
      * @return integer 
@@ -594,84 +687,4 @@ class EntityPersona {
     	return $this->web;
     }
     
-    /**
-     * Get nom i cognoms "COGNOMS, nom
-     *
-     * @return string
-     */
-    public function getCognomsNom()
-    {
-    	return strtoupper($this->cognoms) . ', ' . $this->nom;
-    }
-    
-    /**
-     * Get adreça completa
-     *
-     * @return string
-     */
-    public function getAdrecaCompleta()
-    {
-    	$strAdreca = "";
-    	if ($this->addradreca != null) $strAdreca .= $this->addradreca . ".";
-    	if ($this->addrcp != null) $strAdreca .= $this->addrcp . " ";
-    	if ($this->addrpob != null) $strAdreca .= $this->addrpob . " ";
-    	if ($this->addrprovincia != null) $strAdreca .= "(". $this->addrprovincia . ") ";
-    	
-    	return  $strAdreca;
-    }
-    
-    /**
-     * 
-     * @return FecdasBundle\Entity\EntityLlicencia
-     */
-    public function getLlicenciaVigent() {
-    	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->isVigent() == true) return $llicencia;
-    	} 
-    	return null;
-    }
-    
-    public function getLlicenciesSortedByDate()
-    {
-    	/* Ordenades de última a primera */
-    	$arr = array();
-    	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->isValida()) $arr[] = $llicencia;
-    	}
-
-    	usort($arr, function($a, $b) {
-    		if ($a === $b) {
-    			return 0;
-    		}
-    		return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
-    	});
-    	return $arr;
-    }
-    
-    public function getLastLlicencia() {
-    	$llicenciesOrdenades = $this->getLlicenciesSortedByDate();
-    	
-    	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
-    	
-    	return null;
-    }
-    
-    /**
-     * Missatges llista assegurats
-     *
-     * @return string
-     */
-    public function getInfoAssegurats($admin = false) {
-    	$txtClub = "";
-    	if ($admin) $txtClub = "(".$this->club->getNom().") ";  
-    	
-    	if ($this->getLlicenciaVigent() != null and $this->getLlicenciaVigent()->getParte() != null)
-    		return  $txtClub . $this->getLlicenciaVigent()->getCategoria()->getDescripcio() . " fins al " . $this->getLlicenciaVigent()->getParte()->getDatacaducitat()->format('d/m/Y');
-    		
-    	
-    	if ($this->getLastLlicencia() != null and $this->getLastLlicencia()->getParte() != null)  
-    		return $txtClub . "Darrera llicència finalitzada en data " . $this->getLastLlicencia()->getParte()->getDatacaducitat()->format('d/m/Y');
-    	
-    	return $txtClub . "Persona sense historial de llicències";
-    }
 }

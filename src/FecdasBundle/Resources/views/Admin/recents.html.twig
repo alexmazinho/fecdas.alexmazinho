@@ -23,7 +23,7 @@
     <div id="list-forms">
     	<form id="formrecents" action="{{ path('FecdasBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
     		<div class="row">
-				<div class="col-md-4">
+				<div class="col-md-3">
 				  	<div class="form-group">
 				    	{{ form_label(form.clubs, 'Filtre per club', { 'label_attr': {'class': 'sr-only'} }) }}
 						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
@@ -47,24 +47,23 @@
 				<div class="col-md-2">
 					<div class="checkbox-inline">
 				    	<label>
-				      		{{ form_widget(form.nopagat) }} Només no pagats
+				      		{{ form_widget(form.nopagat) }} No pagades
 				    	</label>
 					</div>
 				</div>
 				<div class="col-md-2">
 					<div class="checkbox-inline">
 				    	<label>
-				      		{{ form_widget(form.nosincro) }} Només no sincronitzats
+				      		{{ form_widget(form.noimpres) }} No impreses
 				    	</label>
 					</div>
 				</div>
-
 			</div>
 	   	</form>
     </div>
     <!--  <div id="list-header" class="clearfix"> -->
     <br/>
-    <div id="list-recents" class="clearfix">
+    <div id="list-recents">
     	<div class="table-header">	
 	   		<div id="list-header">
 		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.id') }}
@@ -79,9 +78,7 @@
 		   				<span class="listheader-icon {% if partes.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentstipus" class="col-listheader listheader-noorder">Tipus<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentspreu" class="col-listheader listheader-noorder">Preu<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentspagat" class="col-listheader listheader-noorder">Pagat<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentdadespagat" class="col-listheader listheader-noorder">comanda/rebut<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentsfactura" class="col-listheader listheader-noorder">Facturat<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsinfo" class="col-listheader listheader-noorder">Informació<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 		</div>
@@ -100,28 +97,16 @@
 		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
 		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }} ({{ parte.numLlicencies }})</div>
 		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
-		   			<div class="data-detall-cell parterecents-pagat">
-					{% if parte.datapagament is null %}&nbsp; {% else %} 
-					<time datetime="{{ parte.datapagament|date('c') }}">{{ parte.datapagament|date('d/m/y') }}</time>				
-					{% endif %}
-		   			</div>
-		   			<div class="data-detall-cell parterecents-dadespagat">
-		   				{% if parte.rebut is not null %}
-		   					{{ parte.rebut.dadespagament }} {{ parte.rebut.estat }}
-		   				{% endif %}
-		   			</div>
-		   			<div class="data-detall-cell parterecents-factura">{{ parte.infoLlistat }}
-		   			</div>
+		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|raw }}</div>
 		   			<div class="data-detall-cell parterecents-actions">
-		   			{% if parte.pendent != true  %}
-		   			<a class="parterecents-action-sincro" href="{{ path('FecdasBundle_sincroaccess', sortparams|merge(partes.params|merge({ 'id': parte.id }))) }}">
-		   				<img src="{{ asset('images/icon-access.png') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
-		   			{% else %}
-		   			<a class="parterecents-action-pagament" id="confirmar-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}">
-		   				<img src="{{ asset('images/icon-euro.png') }}" alt="Confirmar pagament" title="Confirmar pagament" width="23px"></a>
+		   			{% if parte.pendent == true  %}
+			   			<a class="parterecents-action-pagament link" id="confirmar-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" alt="Confirmar pagament" title="Confirmar pagament">
+			   				<i class="fa fa-euro red"></i></a>
 		   			{% endif %}
-		   			<a class="parterecents-action-view" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}">
-		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure" title="Veure" width="23px"></a>
+		   				<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
+		   					<i class="fa fa-print green"></i></a>
+		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
+		   					<i class="fa fa-search blue"></i></a>
 					</div>
 		   		</li>
 		   	{% endfor %}
@@ -129,10 +114,9 @@
 		</div>
 		{% if partes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(partes, null, sortparams) }}</div>{% endif %}
    	{% else %}
-        	<div class="sms-notice">Cap comunicació</div>
+        <div class="sms-notice">Cap comunicació</div>
     {% endif %}
     </div>
-    
 {% endblock %}
 
 {% block javascripts %}
@@ -166,7 +150,7 @@ $(document).ready(function(){
 		// Recarrega consulta afegint la dades del formulari
 		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
 	});
-	$('#form_nosincro').change(function () {
+	$('#form_noimpres').change(function () {
 		// Recarrega consulta afegint la dades del formulari
 		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
 	});

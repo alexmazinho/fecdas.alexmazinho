@@ -318,7 +318,7 @@ html>body #left-menu a:hover {
     { line-height: 1.2em; font-size: 28px; margin-bottom: 10px; margin-top: 5px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }
 #main-col header { line-height: 1.5em; margin-bottom: 20px;  /*width:770px*/ }
 #main-col header .nav-stacked { max-width: 300px; }
-#main-col header a {
+#main-col header h1 a {
 	font-size: 0.8em;
 	text-decoration: none;
 	color:#1240A0;

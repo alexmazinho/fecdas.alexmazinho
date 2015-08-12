@@ -10,6 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use FecdasBundle\Classes\TcpdfBridge;
 use FecdasBundle\Entity\EntityLlicencia;
 
+include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
+
 class PDFController extends BaseController {
 	const TITOL_ARMES = "INFORMACIÓ IMPORTANT PER ALS PESCADORS SUBMARINS";
 	const TEXT_ARMES = '<p>La FECDAS informa que:</p>
@@ -1091,33 +1093,18 @@ class PDFController extends BaseController {
 				$x += 41;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				
-				
 				/* Tipus de llicència
 				 * Taula TipoParte LL_L1 + LL_L1 + LL_L3 */
-				$titolsPlastic = array();
-				$anyLlicencia = $datacaduca->format('Y');
-				$titolsPlastic[1] = "LLICÈNCIA FEDERATIVA\nTIPUS A (HABILITADA)\n".$anyLlicencia;
-				$titolsPlastic[2] = "ASSEGURANÇA\nTIPUS B\n".$anyLlicencia;
-				$titolsPlastic[4] = "LLICÈNCIA FEDERATIVA\nTIPUS C (HABILITADA)\n".($anyLlicencia-1)."-".$anyLlicencia;	
-				$titolsPlastic[5] = "LLICÈNCIA FEDERATIVA\nTIPUS A (HABILITADA)\n".$anyLlicencia;
-				$titolsPlastic[6] = "LLICÈNCIA FEDERATIVA\nTIPUS B\n".$anyLlicencia;
-				$titolsPlastic[7] = "LLICÈNCIA FEDERATIVA\nTIPUS E (HABILITADA)\n(365 dies)";	
-				$titolsPlastic[8] = "LLICÈNCIA FEDERATIVA\nTIPUS F (ASSEGURANÇA)\n(365 dies)";
-				$titolsPlastic[9] = "LLICÈNCIA FEDERATIVA\nTIPUS G (ASSEGURANÇA)\nCURS ESCOLAR";
-				$titolsPlastic[10] = "ASSEGURANÇA\nTIPUS B\n(365 dies)";
-				$titolsPlastic[11] = "ASSEGURANÇA\nUN DIA";
-				$titolsPlastic[12] = "LLICÈNCIA FEDERATIVA\nTIPUS G 2n (ASSEGURANÇA)\n".($anyLlicencia-1)."-".$anyLlicencia;
+				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);
 
-				if (isset($titolsPlastic[$llicencia->getParte()->getTipus()->getId()])) {
-					$pdf->SetFont('helvetica', 'B', 9.5, '', true);
-					$pdf->SetTextColor(230, 230, 230); // Gris
-					$y = $y_ini + 24;
-					$x = $x_ini + 62;
+				$pdf->SetFont('helvetica', 'B', 9.5, '', true);
+				$pdf->SetTextColor(230, 230, 230); // Gris
+				$y = $y_ini + 24;
+				$x = $x_ini + 62;
 
-					$pdf->SetY($y);
-					$pdf->SetX($x);
-					$pdf->MultiCell($height,$width,$titolsPlastic[$llicencia->getParte()->getTipus()->getId()],0,'C',1);
-				}
+				$pdf->SetY($y);
+				$pdf->SetX($x);
+				$pdf->MultiCell($height,$width,$titolPlastic,0,'C',1);
 				
 				
 				// Alex 20/12/2014 Afegir texte legal llicències tipus F
@@ -1153,4 +1140,181 @@ class PDFController extends BaseController {
 		}
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
+
+
+	public function imprimirparteAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$parteid = $request->query->get("id");
+	
+		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+	
+		if ($parte != null) {
+			$llicenciesSorted = $parte->getLlicenciesSortedByName();
+
+			// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm
+			// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+			$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
+			$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
+				
+			$pdf->init(array('author' => 'FECDAS',
+						'title' => 'Llicència FECDAS' . date("Y")));
+
+			$pdf->setPrintFooter(false);
+			$pdf->setPrintHeader(false);
+				
+			// zoom - layout - mode
+			$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
+			$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+			$pdf->SetMargins(5, 5, 5);
+			$pdf->SetAutoPageBreak 	(true, 5);
+			$pdf->SetFont('dejavusans', 'B', 6, '', true);
+			$pdf->SetTextColor(255, 255, 255); 
+
+			$width = 86; //Original
+			$height = 54; //Original
+			
+			foreach ($llicenciesSorted as $llicencia) {
+
+				$persona = $llicencia->getPersona();
+				if ( $persona == null) continue;				
+				// Add a page
+				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+
+				$y = $pdf->getY() + 10;
+	
+	 			$pdf->setVisibility('screen'); // or screen
+				$pdf->Rect(0, 0, $width, $height, 'DF', array(), array(220, 220, 200));
+				
+				$pdf->setVisibility('all');
+	
+				$pdf->SetX(5);
+				$pdf->SetY($y);
+				$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+				$y += 5;	
+
+				$pdf->SetY($y);
+				$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
+				$y += 5;
+
+				$pdf->SetY($y);
+				$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
+				$y += 5;
+				
+				$pdf->SetY($y);
+				$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
+				$y += 5;
+				
+				$pdf->SetY($y);
+				$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+				$y += 5;
+				
+				$pdf->SetY($y);
+				$pdf->Cell(0, 0, $parte->getDatacaducitat('printparte')->format('d/m/Y'), 0, 1, 'L');
+
+				
+				// get current vertical position
+/*				$y_ini = $pdf->getY();
+				$x_ini = $pdf->getX();
+				
+				$y = $y_ini;
+				$x = $x_ini;
+
+				$x += 45;
+				$y += 10;
+				
+				$width = 86; //Original
+				$height = 54; //Original
+				
+				// set color for text and font
+				$pdf->SetTextColor(10, 10, 10); // Gris
+				//$pdf->SetFillColor(0, 0, 0); //
+				$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
+				
+				$x = $x_ini + 54.2;
+				$y = $y_ini + 38.6; // 39.2
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getNomCognoms(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 62.5;
+				$y = $y_ini + 42.4;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 65;
+				$y = $y_ini + 46.1;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 63.6;
+				$y = $y_ini + 49.9;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+			
+				$x = $x_ini + 56;
+				$y = $y_ini + 53.7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
+				
+				$x = $x_ini + 60;
+				$y = $y_ini + 57.5;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
+				
+				//$datacaduca = $llicencia->getParte()->getDataalta();
+				// Caducat 30 dies des de data impressió
+				$datacaduca = $parte->getDatacaducitat('printparte');
+				$x += 41;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				
+				// Tipus de llicència
+				// Taula TipoParte LL_L1 + LL_L1 + LL_L3 
+				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);
+				
+				$pdf->SetFont('helvetica', 'B', 9.5, '', true);
+				$pdf->SetTextColor(20, 20, 20); // Gris
+				$y = $y_ini + 24;
+				$x = $x_ini + 62;
+				
+				$pdf->SetY($y);
+				$pdf->SetX($x);
+				$pdf->MultiCell($height,$width,$titolPlastic,0,'C',1);
+				*/
+			}
+			// reset pointer to the last page
+			$pdf->lastPage();
+
+			$current = $this->getCurrentDate();
+				
+			$parte->setDatamodificacio($current);
+			//$parte->setImpres($current);
+					
+			$em->flush();
+	
+			$this->logEntryAuth('IMPRES PARTE', $parteid);
+			
+			// Close and output PDF document
+			$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));
+			$response->headers->set('Content-Type', 'application/pdf');
+			return $response;
+				
+		} else {
+			$this->logEntryAuth('IMPRES PARTE ERROR', $parteid);
+		}
+	
+		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
+	}
+	
+	private function getTitolPlastic($parte, $datacaduca = null) {
+		if ($parte == null) return '';
+		$anyLlicencia = $parte->getDataalta()->format('Y');
+		if ($datacaduca == null) $datacaduca = $parte->getDatacaducitat('titolPlastic');
+		$anyFinalLlicencia = $datacaduca->format('Y');
+		$tipus = $parte->getTipus();
+	
+		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
+	
+		$titolPlastic = str_replace("__DESDE__", $anyLlicencia, $titolPlastic);
+		$titolPlastic = str_replace("__FINS__", $anyFinalLlicencia, $titolPlastic);
+	
+		return $titolPlastic;
+	}
+	
 }

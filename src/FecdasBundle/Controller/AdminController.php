@@ -53,10 +53,10 @@ class AdminController extends BaseController {
 		// Cerca
 		$currentBaixa = false; // Inclou Baixes
 		if ($request->query->has('baixa') && $request->query->get('baixa') == 1) $currentBaixa = true;
-		$currentNoSincro = true;// No sincro
-		if ($request->query->has('nosincro') && $request->query->get('nosincro') == 0) $currentNoSincro = false;
 		$currentNoPagat = true;// No pagats
 		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 0) $currentNoPagat = false;
+		$currentNoImpres = false;// No impres
+		if ($request->query->has('noimpres') && $request->query->get('noimpres') == 1) $currentNoImpres = true;
 
 		
 		//$currentClub = null;
@@ -91,7 +91,7 @@ class AdminController extends BaseController {
 				
 			}*/
 			$this->logEntryAuth('ADMIN PARTES POST', "club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] .
-					" pagament: " . $currentNoPagat . " baixa: " . $currentBaixa . $currentNoSincro . " sync: " . $currentNoSincro );
+					" pagament: " . $currentNoPagat . " baixa: " . $currentBaixa );
 		} else {
 			$this->logEntryAuth('ADMIN PARTES');
 		}
@@ -117,13 +117,14 @@ class AdminController extends BaseController {
 					'required'  => false,
 					'data' => $currentNoPagat,
 				));
+		$formBuilder->add('noimpres', 'checkbox', array(
+					'required'  => false,
+					'data' => $currentNoImpres,
+				));
+		error_log("==========================> ".$currentNoImpres."-".$currentNoPagat);		
 		$formBuilder->add('baixa', 'checkbox', array(
     				'required'  => false,
 					'data' => $currentBaixa,
-				));
-		$formBuilder->add('nosincro', 'checkbox', array(
-    				'required'  => false,
-					'data' => $currentNoSincro,
 				));
 		$form = $formBuilder->getForm();
 		
@@ -138,9 +139,10 @@ class AdminController extends BaseController {
 				
 		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($currentNoPagat == true) $strQuery .= " AND (p.rebut IS NULL OR (p.rebut IS NOT NULL AND r.dataanulacio IS NOT NULL)) ";
+		if ($currentNoImpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) ";
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
-		if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
+		//if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
 
 		$strQuery .= " ORDER BY ".$sort; 
 
@@ -161,9 +163,10 @@ class AdminController extends BaseController {
 		if ($currentClub != null) $partesrecents->setParam('clubs',$currentClub->getCodi());
 		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $partesrecents->setParam('estat',$currentEstat);
 		if ($currentBaixa == true) $partesrecents->setParam('baixa',true);
-		if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
+		//if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
 		if ($currentNoPagat == false) $partesrecents->setParam('nopagat',false);
-		
+		if ($currentNoImpres == true) $partesrecents->setParam('noimpres',true);
+				
 		return $this->render('FecdasBundle:Admin:recents.html.twig', 
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'partes' => $partesrecents,
 						'sortparams' => array('sort' => $sort,'direction' => $direction)

@@ -148,7 +148,7 @@ input[type="password"] {
 
 input[type="search"]  { 
 	/*background: #EFEFEF url(../images/icon-lupa.png) no-repeat right center;*/
-	background: #fafafa url(../images/icon-lupa.png) no-repeat right center;
+	/*background: #fafafa url(../images/icon-lupa.png) no-repeat right center;*/
 	min-height: 26px;
     padding: 1px 24px 1px 2px;
 }
@@ -339,6 +339,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .link i.fa { 
 	padding: 4px;
 	border-radius: 50%;
+	text-align: center;
+	min-width: 20px;
 	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-moz-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-ms-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
@@ -867,6 +869,12 @@ ul.detalls li .alert { margin: 10px 0; }
 
 .nav > li > a { padding: 15px; }
 
+.navbar-default .nav .dropdown-menu > li.separator  {
+	border-bottom: 1px solid #e5e5e5; 
+}
+
+.dropdown-menu .divider { height: 2px; background-color: #2281CF; background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%); }
+
 .navbar-default .nav > li > a, .navbar-default .nav .dropdown-menu > li > a  {  color: #1240a0; } 
 
 .navbar-default .nav > li > a:hover,
@@ -951,19 +959,19 @@ ul.detalls li .alert { margin: 10px 0; }
 #header-asseguratcompacte { width: 40%; }
 #header-asseguratdni {	width: 11%;  }
 #header-asseguratnom {	width: 10%; text-align: left;}
-#header-asseguratcognoms {	width: 13%;text-align: left;}
-#header-asseguratnaixement { width: 9%;text-align: center; }
+#header-asseguratcognoms {	width: 10%;text-align: left;}
+#header-asseguratnaixement { width: 8%;text-align: center; }
 #header-assegurattipusdesc { width: 25%;text-align: left; }
-#header-asseguratactions { width: 8%;text-align: right; }
+#header-asseguratactions { width: 12%;text-align: right; }
 
 .assegurat-id {	display:none}
 .assegurat-compacte { width: 40%; }
 .assegurat-dni { width: 11%;  }
 .assegurat-nom { width: 10%; text-align: left; }
-.assegurat-cognoms { width: 14%; text-align:left;}
+.assegurat-cognoms { width: 10%; text-align:left;}
 .assegurat-naixement { width: 8%; text-align:center;}
 .assegurat-tipusdesc { width: 25%; text-align:left; }
-.assegurat-actions { width: 8%; text-align: right;   }
+.assegurat-actions { width: 12%; text-align: right;   }
 
 /*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
@@ -1032,16 +1040,16 @@ ul.detalls li .alert { margin: 10px 0; }
 .data-detall-historic { display:inline }
 
 
-
+/*
 input#form_nom,
 input#form_cognoms {
 	width: 224px;
-	width: 220px\9;  /* IE less 9 hack*/
+	width: 220px\9;  / * IE less 9 hack* /
 }
 
 input#form_dni {
 	width: 124px;
-}
+}*/
 
 
 #progressbar {
@@ -1094,17 +1102,22 @@ input#form_dni {
 	display: inline;
 }
 
-.buttons-top .link i.fa { 
-	font-size: 1.4em;
-    height: 30px;
+.buttons-top .link, .buttons-top-bootstrap .link { display: table-cell;} 
+
+.buttons-top .link i.fa,
+.buttons-top-bootstrap .link i.fa { 
+	font-size: 2em;
+    height: 40px;
     text-align: center;
-    width: 30px;
-    padding: 5px;
+    width: 40px;
+    padding: 7px 0 0;
 }
 
 .buttons-top-nous {
 	bottom: 20px;
 }
+
+.buttons-top-bootstrap { margin-top: 10px; }
 
 #formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
 	float:left;
@@ -1711,9 +1724,7 @@ select#parte_persona_addrnacionalitat {
 .sms-info { text-align: justify; color: #555555; line-height: 20px; margin-top: 30px;}
 
 .sms-header-info {     
-	display: inline-block;
-    padding: 10px 0 5px;
-    width: 100%; 
+    padding-bottom: 15px; 
     color: #2281CF;
     font-size: 1.1em;
     font-weight: bold;
@@ -2243,7 +2254,7 @@ table.jqplot-table-legend {
 
 
 #list-recents, #formrecents {
-	width: 1060px;
+	/*width: 1060px;*/
 	
 }
 
@@ -2259,30 +2270,24 @@ li.parte-pendent-sincro .parterecents-actions {
 	background-color: #ffffff;
 }
 
-#header-parterecentsid { width: 4%; }
+#header-parterecentsid { width: 6%; }
 #header-parterecentsentrada {	width: 7%; }
-#header-parterecentsrel { width: 4%; text-align:right;}
+#header-parterecentsrel { width: 6%; text-align:right;}
 #header-parterecentsdata {	width: 7%; }
-#header-parterecentsclub {	width: 10%; text-align:left;}
-#header-parterecentstipus {	width: 8%;}
+#header-parterecentsclub {	width: 15%; text-align:left;}
+#header-parterecentstipus {	width: 10%;}
 #header-parterecentspreu {	width: 7%; text-align:right;}
-#header-parterecentspagat {	width: 7%; }
-#header-parterecentdadespagat {	width: 15%;  }
-
-#header-parterecentsfactura { width: 16%; text-align: left;}
+#header-parterecentsinfo { width: 27%; text-align: left;}
 #header-parterecentsactions { width: 10%;}
 
-.parterecents-id { width: 4%; }
+.parterecents-id { width: 6%; }
 .parterecents-entrada { width: 7%;  }
-.parterecents-rel { width: 4%; text-align:right;}
+.parterecents-rel { width: 6%; text-align:right;}
 .parterecents-data { width: 7%;  }
-.parterecents-club { width: 10%; text-align:left; font-size: 0.9em;}
-.parterecents-tipus { width: 9%; }
+.parterecents-club { width: 15%; text-align:left; font-size: 0.9em;}
+.parterecents-tipus { width: 10%; }
 .parterecents-preu { width: 7%; text-align:right;}
-.parterecents-pagat { width: 7%; }
-.parterecents-dadespagat { width: 15%; }
-
-.parterecents-factura {	width: 17%; text-align:left;}
+.parterecents-info {	width: 27%; text-align:left;}
 .parterecents-actions { width: 10%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/

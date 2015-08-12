@@ -29,6 +29,11 @@ class EntityParteType {
 	protected $descripcio;
 	
 	/**
+	 * @ORM\Column(type="string", length=100)
+	 */
+	protected $titol;
+	
+	/**
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $es365;
@@ -126,6 +131,26 @@ class EntityParteType {
         return $this->descripcio;
     }
 
+    /**
+     * Set titol
+     *
+     * @param string $titol
+     */
+    public function setTitol($titol)
+    {
+    	$this->titol = $titol;
+    }
+    
+    /**
+     * Get titol
+     *
+     * @return string
+     */
+    public function getTitol()
+    {
+    	return $this->titol;
+    }
+    
     /**
      * Set es365
      *

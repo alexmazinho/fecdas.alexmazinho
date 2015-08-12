@@ -111,8 +111,11 @@
 		params.push( {'name':'estat','value': $('#form_estat').val()} );
 		params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
 		params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
-		params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
-
+		params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
+		
+		//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
+		
+		
 		llistaPaginationAndSort(url, params);
 	};
 
@@ -142,8 +145,8 @@
     	    		$.get(url, params,
     	    		function(data, textStatus) {
     	    	        $('#progressbar').hide();
-    	    	        console.log(data);	
-    	    			//location.reload();
+    	    	        	
+    	    			location.reload();
     	    		}).fail( function(xhr, status, error) {
     	   			 // xhr.status + " " + xhr.statusText, status, error
 	    	   			//var sms = smsResultAjax('KO', xhr.responseText);

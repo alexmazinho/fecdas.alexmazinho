@@ -81,7 +81,7 @@
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tramitació <span class="caret"></span></a>
 		          <ul class="dropdown-menu" role="menu">
-		          	<li id="menu-parte"><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
+		          	<li id="menu-parte" class="separator"><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
 					<li id="menu-import"><a href="{{ path('FecdasBundle_importcsv') }}">Importació de llicències</a></li>
 					<li class="divider"></li>
 					<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
@@ -112,14 +112,14 @@
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Facturació <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			          	<li id="menu-admsaldos"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">Saldos clubs</a></li>
-			          	<li id="menu-admingresos"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
+			          	<li id="menu-admsaldos" class="separator"><a href="{{ path('FecdasBundle_clubs', { 'sort': 'c.nom', 'direction':'asc' }) }}">Saldos clubs</a></li>
+			          	<li id="menu-admingresos" class="separator"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
 			          	<li id="menu-admrebut"><a href="{{ path('FecdasBundle_nourebut') }}">Nou ingrès/rebut</a></li>
 			          	<li class="divider"></li>
-			          	<li id="menu-admproductes"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
+			          	<li id="menu-admproductes" class="separator"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
 			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
 			          	<li class="divider"></li>
-			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Llistat de comandes</a></li>
+			          	<li id="menu-admcomandes" class="separator"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Llistat de comandes</a></li>
 			          	<li id="menu-admcomanda"><a href="{{ path('FecdasBundle_novacomanda') }}">Nova comanda</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admtraspas"><a href="{{ path('FecdasBundle_traspascomptabilitat') }}">Enviar comptabilitat</a></li>

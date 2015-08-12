@@ -10,7 +10,7 @@ if (!defined('K_PATH_IMAGES')) {
 */
 include_once (__DIR__.'/../../../vendor/tcpdf/tcpdf.php');
 
-//error_log(__DIR__.'/../../../vendor/tcpdf/tcpdf.php');
+//error_log(__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
 
 
 class TcpdfBridge extends \TCPDF {

@@ -10,50 +10,74 @@
 {% block title %}Aplicació gestió FECDAS. Relació d'assegurats del Club{% endblock %}
 
 {% block body %}
-	<header>
-        <h1>Relació d'assegurats</h1>
-    </header>
-
-   	<form id="form_assegurats" action="{{ path('FecdasBundle_assegurats') }}" method="post" {{ form_enctype(form) }}  class="appform">
-   		<div class="form-row">
-   			{% if admin == true %} 
-   			<div id="formassegurats-tots" class="form-left">
-				{{ form_label(form.tots, '(Admins.) Qualsevol club', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.tots, { 'attr': {'class': 'formcheckbox-right'} }) }}
+   	<form id="form_assegurats" action="{{ path('FecdasBundle_assegurats') }}" class="appform" method="post" {{ form_enctype(form) }}>
+		<header>
+			<div class="row">
+				<div class="col-md-8"><h1>Relació d'assegurats</h1></div>
+    		    <div class="col-md-4 col-last-right">
+					{% if persones.getTotalItemCount <= 3000 %}
+						<div class="buttons-top-bootstrap">
+							<div class="button-top"><a class="link" href="{{ path('FecdasBundle_asseguratstopdf', persones.params) }}" alt="Descarregar les llistes" 
+								title="Descarregar les llistes">
+								<i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
+							<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_asseguratstopdf', persones.params|merge({ 'print': 1 })) }}" alt="Descarregar les llistes" 
+								title="Descarregar les llistes">
+								<i class="fa fa-print fa-1x blue"></i></a></div>
+						</div> 
+					{% endif %}
+				</div>
 			</div>
-			{% endif %}		
-			<div id="formassegurats-vigent" class="form-left">
-				{{ form_label(form.vigent, 'Només mostrar les llicències vigents', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.vigent, { 'attr': {'class': 'formcheckbox-right'} }) }}
+   		</header>
+   		<div class="row">
+			{% if admin == true %}
+			<div class="col-md-3">
+				<div class="checkbox">
+			    	<label>
+			      		{{ form_widget(form.tots) }} (Admins.) Qualsevol club
+			    	</label>
+				</div>
 			</div>
-			{% if persones.getTotalItemCount <= 3000 %}
-			<div class="buttons-top">
-				<div class="button-top"><a href="{{ path('FecdasBundle_asseguratstopdf', persones.params) }}">
-					<img src="{{ asset('images/icon-pdf.png') }}" alt="Descarregar les llistes" 
-					title="Descarregar les llistes" width="40px"></a></div> 
-				<div class="button-top"><a class="print-link" target="_blank" href="{{ path('FecdasBundle_asseguratstopdf', persones.params|merge({ 'print': 1 })) }}">
-					<img src="{{ asset('images/icon-print.png') }}" alt="Descarregar les llistes" 
-					title="Descarregar les llistes" width="40px"></a></div>
-			</div> 
-			{% endif %}	
+			{% endif %}
+			<div class="col-md-5">
+				<div class="checkbox">
+			    	<label>
+			      		{{ form_widget(form.vigent) }} Només mostrar les llicències vigents
+			    	</label>
+				</div>
+			</div>
 		</div>
-   		<div class="form-row clearfix">
-			<div id="formassegurats-dni" class="form-left">
-				{{ form_label(form.dni, 'DNI/NIE', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-				{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
-			</div> 
-   			<div id="formassegurats-nom" class="form-left">
-				{{ form_label(form.nom, 'Nom', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-				{{ form_widget(form.nom, { 'attr': {'class': 'forminput-inside'} }) }}
-			</div> 
-        	<div id="formassegurats-cognoms" class="form-left">
-				{{ form_label(form.cognoms, 'Cognoms', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-				{{ form_widget(form.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
-			</div> 
-			<div id="formassegurats-submit" class="form-right">	
-				<input type="submit" class="forminput-inside" value="Cerca" name="formassegurats-button-search"/>
-			</div> 
-   		</div>
+   		<div class="row">
+			<div class="col-md-2">
+			  	<div class="form-group">
+			  		<div class="input-group">
+				    	{{ form_label(form.dni, 'DNI/NIE', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.dni, { 'attr': {'class': 'form-control','placeholder':'DNI/NIE' } }) }}
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+			  	<div class="form-group">
+			  		<div class="input-group">
+				    	{{ form_label(form.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.nom, { 'attr': {'class': 'form-control', 'placeholder':'Nom' } }) }}
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+			  	<div class="form-group">
+			  		<div class="input-group">
+				    	{{ form_label(form.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.cognoms, { 'attr': {'class': 'form-control', 'placeholder':'Cognoms' } }) }}
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2 col-last-right">
+				<button id="formassegurats-submit"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-search blue"></i> cerca</button>
+			</div>
+		</div>
     </form>
 
     {% for flashMessage in app.session.flashbag.get('error-notice') %}
@@ -90,43 +114,39 @@
 				   		<div class="data-detall-cell assegurat-cognoms col-noresponsive">{{ persona.cognoms }}</div>
 				   		<div class="data-detall-cell assegurat-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell assegurat-tipusdesc">
-				   			<a class="llicencia-historial" href="{{ path('FecdasBundle_historialLlicencies', { 'id': persona.id }) }}" title="Historial llicències">
-				   			<img src="{{ asset('images/icon-historial.png') }}" alt="Historial llicències" title="Historial llicències" width="23px">
-				   			<span>{{ persona.getInfoAssegurats(admin) }}</span>
+				   			<a class="llicencia-historial" href="{{ path('FecdasBundle_historialLlicencies', { 'id': persona.id }) }}"  alt="Historial llicències" title="Historial llicències">
+				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoAssegurats(admin) }}</span>
 			   				</a>
 						</div>
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
 							<div class="data-detall-cell assegurat-actions">
-							{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
-							<a class="action-cell llicencia-imprimir" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}">
-								<img src="{{ asset('images/icon-license.png') }}" alt="Imprimir llicència" title="Imprimir llicència" width="23px"></a>
-							{% else %}
-							<div class="action-cell"></div>
-							{% endif %}
-							{% if persona.llicenciaVigent.parte.allowRenovar %}
-							<a class="action-cell llicencia-renovar" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}">
-			   					<img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llicència" title="Renovar llicència" width="23px"></a>
-			   				{% endif %}
-			   				<a class="action-cell parte-action-view" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}">
-			   					<img src="{{ asset('images/icon-view.png') }}" alt="Veure llicència" title="Veure llicència" width="23px"></a>
-							<a class="action-cell assegurats-openmodal" href="{{ path('FecdasBundle_persona') }}" name="modal">
-			   					<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
+								{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
+									<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
+										<i class="fa fa-newspaper-o fa-1x orange"></i></a>
+								{% endif %}
+								{% if persona.llicenciaVigent.parte.allowRenovar %}
+									<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
+					   					<i class="fa fa-retweet fa-1x green"></i></a>
+				   				{% endif %}
+				   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
+				   					<i class="fa fa-search fa-1x blue"></i></a>
+								<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
+				   					<i class="fa fa-user fa-1x red"></i></a>
 			   				</div>
 			   			{% else %}
-			   			
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
 				   				<div class="data-detall-cell assegurat-actions">
-			   					<a class="llicencia-renovar" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}">
-			   						<img src="{{ asset('images/icon-renovar.png') }}" alt="Renovar llicència" title="Renovar llicència" width="23px"></a>
-			   					<a class="parte-action-view" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}">
-			   						<img src="{{ asset('images/icon-view.png') }}" alt="Veure llicència" title="Veure llicència" width="23px"></a>
-				   				<a class="assegurats-openmodal" href="{{ path('FecdasBundle_persona') }}" name="modal">
-			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
+			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
+			   						<i class="fa fa-retweet fa-1x green"></i></a>
+			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
+			   						<i class="fa fa-search fa-1x blue"></i></a>
+				   				<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
+			   						<i class="fa fa-user fa-1x red"></i></a>
 			   					</div>
 			   				{% else %}
 			   					<div class="data-detall-cell assegurat-actions">
-			   					<a class="assegurats-openmodal" href="{{ path('FecdasBundle_persona') }}" name="modal">
-			   						<img src="{{ asset('images/icon-edit-user.png') }}" alt="Editar dades federat" title="Editar dades federat" width="23px"></a>
+			   					<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
+			   						<i class="fa fa-user fa-1x red"></i></a>
 			   					</div>
 			   				{% endif %}	
 				   		{% endif %}		

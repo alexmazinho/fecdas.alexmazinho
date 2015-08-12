@@ -97,7 +97,7 @@
 			   			<i class="fa fa-history orange"></i></a>
 			   		</div>
 			   		<div class="data-detall-cell parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
-			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat }}</div>
+			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat|raw }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}
 		   				<a class="parte-action-renew link" href="{{ path('FecdasBundle_renovar', { 'id': parte.id }) }}" alt="Renovar" title="Renovar"><i class="fa fa-retweet green"></i></a>

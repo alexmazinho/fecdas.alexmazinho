@@ -11,54 +11,60 @@
 {% block title %}Aplicació gestió FECDAS. Gestió de llistes d'assegurats{% endblock %}
 
 {% block body %}
-    <header>
-        <h1><a href="{{ path('FecdasBundle_partes') }}">Llistes d'assegurats</a> > Llicències</h1>
-    </header>
-   
 	<form id="formparte" action="{{ path('FecdasBundle_parte') }}" method="post" {{ form_enctype(form) }}  class="appform">
+		<header>
+			<div class="row">
+				<div class="col-md-8"><h1><a href="{{ path('FecdasBundle_partes') }}">Llistes d'assegurats</a> > Llicències</h1></div>
+    		    <div class="col-md-4 col-last-right">
+					<div class="buttons-top-bootstrap" {% if ((parte.esnova == true) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
+						{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
+						<!-- No Pagat -->
+			        	<div id="parte-pagament" class="button-top">	
+			        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
+			        			<i class="fa fa-credit-card fa-1x blue"></i></a>
+						</div>
+						{% endif %}	
+						<div id="parte-to-pdf" class="button-top">
+							<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
+								<i class="fa fa-file-text-o fa-1x orange"></i></a>
+						</div>
+						<!-- només factures enviades a comptabilitat -->
+						{% if parte.facturaComptabilitzada == true %} 
+							<div id="factura-to-pdf" class="button-top">
+								<a class="link" href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
+									<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							</div>
+						{% else %}
+							<div id="albara-to-pdf" class="button-top">
+								<a class="link" href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
+									<i class="fa fa-list fa-1x red"></i></a>
+							</div>
+						{% endif %}
+						{% if parte.comandaPagada %} 
+							<div id="rebut-to-pdf" class="button-top">
+								<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
+									<i class="fa fa-file-text fa-1x green"></i></a>
+							</div>
+						{% endif %}
+						
+					</div>	
+    		    </div>
+				<div id="formparte-id">
+					{{ form_widget(form.id) }}
+				</div>
+			</div>
+		{% if parte.infoParte != '' %}
+			<div class="row">
+				<div class="col-md-12"><span class="sms-header-info">{{ parte.infoParte }}</span></div>
+			</div>
+		{% endif %}
+	    </header>
+
 		{%  if form_errors(form) is not empty %}
-			<div class="sms-notice">{{ form_errors(form)  }}</div>
+			<div class="row">
+				<div class="col-md-12"><span class="sms-notice">{{ form_errors(form)  }}</span></div>
+			</div>
 		{% endif %}	
-		
-		<div id="formparte-id">
-			{{ form_widget(form.id) }}
-		</div>
-		
-		<div class="form-row clearfix">
-			<div class="sms-header-info">{{ parte.infoParte }}</div>
-			<div class="buttons-top" {% if ((parte.esnova == true) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-				{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
-				<!-- No Pagat -->
-	        	<div id="parte-pagament" class="button-top">	
-	        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
-	        			<i class="fa fa-credit-card fa-1x blue"></i></a>
-				</div>
-				{% endif %}	
-				<div id="parte-to-pdf" class="button-top">
-					<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
-						<i class="fa fa-file-text-o fa-1x orange"></i></a>
-				</div>
-				<!-- només factures enviades a comptabilitat -->
-				{% if parte.facturaComptabilitzada == true %} 
-					<div id="factura-to-pdf" class="button-top">
-						<a class="link" href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
-							<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-					</div>
-				{% else %}
-					<div id="albara-to-pdf" class="button-top">
-						<a class="link" href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
-							<i class="fa fa-list fa-1x red"></i></a>
-					</div>
-				{% endif %}
-				{% if parte.comandaPagada %} 
-					<div id="rebut-to-pdf" class="button-top">
-						<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
-							<i class="fa fa-file-text fa-1x green"></i></a>
-					</div>
-				{% endif %}
-				
-			</div>	
-		</div>
 
 		<div class="row">
 			 <div class="col-md-1">

@@ -88,26 +88,29 @@
 			  </div>
   			  <div class="col-md-2">
 				<div class="form-group">
-					<label>Data Pagament</label>
-					<div id="formparte-datapagament" class="input-group" >
-		  				{% if parte.datapagament is not null %}
+		  			{% if parte.datapagament is not null %}
+						<label>Data Pagament</label>
+						<div id="formparte-datapagament" class="input-group" >
 			  				<span class="input-group-addon required"></span>
-							{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-						{% else %}
-							{% if admin == true and parte.datapagament is null and parte.esnova != true  %}
-								<button type="button" id="formparte-button-pagat" class="btn btn-default btn-lg" 
-									data-href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></button>
-				  			{% endif %}
-			  			{% endif %}		
-					</div>
+							{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
+						</div>
+					{% else %}
+						{% if admin == true and parte.esnova != true %}
+							<label>Pagament</label>
+							<div id="formparte-pagament" class="input-group" >
+								<a id="confirmar-pagament" class="btn btn-default btn-lg" 
+									href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></a>
+							</div>
+				  		{% endif %}
+			  		{% endif %}		
 				</div>
 			  </div>
   			  <div class="col-md-1 col-last-right">
 			  {% if parte.esnova != true and parte.isAllowEdit == true %}		
 					<label>&nbsp;</label>
-					<button type="button" id="formparte-novallicencia" class="btn btn-default btn-lg" 
+					<a id="formparte-novallicencia" class="btn btn-default btn-lg" 
 					{% if parte.esnova == true  %} style="display:none;" {% endif %}
-						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-plus"></i></button>
+						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-plus"></i></a>
 						 
 			  {% endif %}	
 		   	  </div>

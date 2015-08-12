@@ -994,8 +994,8 @@
 		});
     	
     	$("select#parte_llicencies_persona_select").change(function(e) {
-			if (e.val == "") $('#formllicencia-openmodal').html('nou assegurat <img src=\"/images/icon_add.png\">');
-			else $('#formllicencia-openmodal').html('modifica assegurat <img src=\"/images/icon_add.png\">');
+			if (e.val == "") $('#formllicencia-openmodal').html('nou assegurat <i class="fa fa-users"></i>');
+			else $('#formllicencia-openmodal').html('modifica assegurat <i class="fa fa-user"></i>');
 		});
     	
     	showPersonClickLlicencia();

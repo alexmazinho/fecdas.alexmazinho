@@ -14,15 +14,12 @@
 			{# form_errors(llicencia.persona) #}
 		</div>
 		{% if llicenciadades.parte.allowEdit == true %} 
-		
-		
-		
 		<div class="form-left">
 			<label>&nbsp;</label>
 			<button type="button" id="formllicencia-openmodal" class="btn btn-default btn-lg" name="modal" 
 				href="{{ path('FecdasBundle_persona') }}">
-				{% if llicenciadades.persona is not null %}	modifica assegurat 
-				{% else %} nou assegurat {% endif %}<i class="fa fa-user-plus"></i></button>
+				{% if llicenciadades.persona is not null %}	modifica assegurat <i class="fa fa-user"></i> 
+				{% else %} nou assegurat <i class="fa fa-users"></i>{% endif %}</button>
 		</div>
 		{% endif %} 
 		<div id="formllicencia-categoria" class="form-left">
@@ -31,7 +28,7 @@
 		</div> 
 		<div id="formllicencia-datacaducitat" class="form-left data-field">
 			{{ form_label(llicencia.datacaducitatshow, 'Data de caducitat', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-			{{ form_widget(llicencia.datacaducitatshow, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
+			{{ form_widget(llicencia.datacaducitatshow, { 'attr': {'class': 'form-control form-control-center formfield-outside formdate-calendar'} }) }}
 			{{ form_widget(llicencia.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 		</div> 
 	</div>

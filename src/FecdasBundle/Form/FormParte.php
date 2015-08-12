@@ -61,6 +61,19 @@ class FormParte extends AbstractType {
 						'read_only' => true,
 						'data'		=> $parte->getAny()
 				));
+
+				if ($parte->getRebut() != null) {
+					$form->add('datapagament', 'date', array(
+							'widget' 	=> 'single_text',
+							'format' 	=> 'dd/MM/yyyy',
+							'disabled' 	=> true,
+							'data'		=> $parte->getRebut()->getDatapagament(),
+							'mapped' 	=> false,
+					));
+				} else {
+					$form->add('datapagament', 'hidden', array());
+				}
+				
 				
 			}
 		});
@@ -76,13 +89,6 @@ class FormParte extends AbstractType {
 				'format' => 'dd/MM/yyyy HH:mm',
 		));
 		
-		$builder->add('datapagament', 'date', array(
-				'widget' => 'single_text', 
-				'format' => 'dd/MM/yyyy', 
-				'years' => range(1990, 2020), 
-				'disabled' => true,
-				'mapped'  => false,
-		));
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

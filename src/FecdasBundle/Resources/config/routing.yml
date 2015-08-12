@@ -391,6 +391,12 @@ FecdasBundle_jsonclubs:
     requirements:
         _method:  GET
 
+FecdasBundle_jsontipuspagaments:
+    pattern:  /jsontipuspagaments
+    defaults: { _controller: "FecdasBundle:Facturacio:jsontipuspagaments" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_editarfactura:
     pattern:  /editarfactura
     defaults: { _controller: "FecdasBundle:Facturacio:editarfactura" }

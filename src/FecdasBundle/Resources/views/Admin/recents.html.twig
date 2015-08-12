@@ -22,25 +22,44 @@
     
     <div id="list-forms">
     	<form id="formrecents" action="{{ path('FecdasBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
-      		<div id="formrecents-club" class="form-left">
-				{{ form_label(form.clubs, 'Filtre per club... ', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-				{{ form_widget(form.clubs, { 'attr': {'class': 'forminput-inside ', 'style': 'width:100%'} }) }}
-			</div> 
-      		<div id="formrecents-estat" class="form-left">
-				{{ form_widget(form.estat, { 'attr': {'class': 'forminput-outside '} }) }}
-			</div> 
-      		<div id="formrecents-baixa" class="form-left">
-      			{{ form_label(form.baixa, 'Incloure baixes', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.baixa, { 'attr': {'class': 'formcheckbox-right'} }) }}
-			</div> 
-			<div id="formrecents-pagament" class="form-left">
-				{{ form_label(form.nopagat, 'Només no pagats', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.nopagat, { 'attr': {'class': 'formcheckbox-right'} }) }}
-			</div> 
-      		<div id="formrecents-sincro" class="form-left">
-      			{{ form_label(form.nosincro, 'Només no sincronitzats', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.nosincro, { 'attr': {'class': 'formcheckbox-right'} }) }}
-			</div> 
+    		<div class="row">
+				<div class="col-md-4">
+				  	<div class="form-group">
+				    	{{ form_label(form.clubs, 'Filtre per club', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+				<div class="col-md-3">
+				    <div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon">Estat</div>
+							{{ form_widget(form.estat, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="col-md-2">
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.baixa) }} Incloure baixes
+				    	</label>
+					</div>
+				</div>
+				<div class="col-md-2">
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.nopagat) }} Només no pagats
+				    	</label>
+					</div>
+				</div>
+				<div class="col-md-2">
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.nosincro) }} Només no sincronitzats
+				    	</label>
+					</div>
+				</div>
+
+			</div>
 	   	</form>
     </div>
     <!--  <div id="list-header" class="clearfix"> -->
@@ -98,7 +117,7 @@
 		   			<a class="parterecents-action-sincro" href="{{ path('FecdasBundle_sincroaccess', sortparams|merge(partes.params|merge({ 'id': parte.id }))) }}">
 		   				<img src="{{ asset('images/icon-access.png') }}" alt="Tornar sincronitzar ACCESS" title="Tornar sincronitzar ACCESS" width="23px"></a>
 		   			{% else %}
-		   			<a class="parterecents-action-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}">
+		   			<a class="parterecents-action-pagament" id="confirmar-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}">
 		   				<img src="{{ asset('images/icon-euro.png') }}" alt="Confirmar pagament" title="Confirmar pagament" width="23px"></a>
 		   			{% endif %}
 		   			<a class="parterecents-action-view" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}">

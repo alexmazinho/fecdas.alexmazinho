@@ -321,7 +321,7 @@ html[xmlns] .clearfix {
 
 label { color: #555555; font-weight: normal; }
 
-button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } 
+button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } 
 
 #left-menu { display:none; }
 
@@ -606,20 +606,20 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
  .comanda-detall-form .data-detall-cell .alert { right: initial; bottom: initial; left: 10px; top:20px; } 
 
 .data-detall-cell input.form-control { font-size: 0.9em; padding: 6px 2px; }
-.data-detall-cell textarea.form-control { font-size: 0.8em; padding: 10px 6px 0 6px; line-height: 0.6; }
+.data-detall-cell textarea.form-control { font-size: 0.8em; padding: 10px 6px 0 6px; line-height: 1; }
 .data-detall-cell .form-control .select2-chosen { font-size: 0.9em; }
 
 .comanda-detall-form-header .col-id {  }
-.comanda-detall-form-header .col-listheader.col-producte { width: 20%; text-align: left; width: 250px;  }
-.comanda-detall-form-header .col-listheader.col-unitats { width: 7%; text-align: center; width: 70px; }
-.comanda-detall-form-header .col-listheader.col-descompte { width: 10%; text-align: center; font-size: 0.9em;width: 80px;  }
-.comanda-detall-form-header .col-listheader.col-ivaunitat { width: 10%; text-align: center; width: 80px; }
-.comanda-detall-form-header .col-listheader.col-preuunitat { width: 7%; text-align: center; width: 70px;  }
-.comanda-detall-form-header .col-listheader.col-totalnet { width: 9%; text-align: center; width: 70px;  }
-.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; width: 70px; }
-.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; width: 120px; }
-.comanda-detall-form-header .col-listheader.col-comentaris { width: 13%; text-align: left; width: auto; }
-.comanda-detall-form-header .col-listheader.col-actions  { width: 3%; width: 30px; }
+.comanda-detall-form-header .col-listheader.col-producte { width: 20%; text-align: left; min-width: 200px;  }
+.comanda-detall-form-header .col-listheader.col-unitats { width: 7%; text-align: center; min-width: 60px; }
+.comanda-detall-form-header .col-listheader.col-descompte { width: 10%; text-align: center; font-size: 0.9em; min-width: 80px;  }
+.comanda-detall-form-header .col-listheader.col-ivaunitat { width: 10%; text-align: center; min-width: 60px; }
+.comanda-detall-form-header .col-listheader.col-preuunitat { width: 7%; text-align: center; min-width: 50px;  }
+.comanda-detall-form-header .col-listheader.col-totalnet { width: 9%; text-align: center; min-width: 50px;  }
+.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; min-width: 50px; }
+.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; min-width: 120px; }
+.comanda-detall-form-header .col-listheader.col-comentaris { width: 13%; text-align: left; min-width: 150px; }
+.comanda-detall-form-header .col-listheader.col-actions  { width: 3%; min-width: 30px; }
 
 .comanda-detall-form .col-id {  }
 .col-seq {  
@@ -630,19 +630,21 @@ button.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     top: 15px;
     text-align: left;
 }
-.comanda-detall-form .data-detall-cell.col-producte { width: 20%; font-size: 0.9em; text-align: left; width: 250px; }
-.comanda-detall-form .data-detall-cell.col-unitats { width: 7%; width: 70px; }
-.comanda-detall-form .data-detall-cell.col-descompte { width: 10%; width: 80px; }
+
+.comanda-detall-form .data-detall-cell { font-size: 13px; }
+.comanda-detall-form .data-detall-cell.col-producte { width: 20%; font-size: 0.9em; text-align: left; min-width: 200px; }
+.comanda-detall-form .data-detall-cell.col-unitats { width: 7%; min-width: 50px; }
+.comanda-detall-form .data-detall-cell.col-descompte { width: 10%; min-width: 60px; }
 .comanda-detall-form .data-detall-cell.col-descompte .input-group-addon { width: auto; padding: 6px 3px; }
-.comanda-detall-form .data-detall-cell.col-ivaunitat { width: 10%; width: 80px; }
+.comanda-detall-form .data-detall-cell.col-ivaunitat { width: 10%; min-width: 60px; }
 .comanda-detall-form .data-detall-cell.col-ivaunitat .input-group-addon { width: auto; padding: 6px 3px; }
-.comanda-detall-form .data-detall-cell.col-preuunitat { width: 7%; width: 70px; }
-.comanda-detall-form .data-detall-cell.col-totalnet { width: 9%;  width: 70px; }
-.comanda-detall-form .data-detall-cell.col-totaliva { width: 9%;  width: 70px; }
-.comanda-detall-form .data-detall-cell.col-total { width: 11%; text-align: center; width: 120px; }
+.comanda-detall-form .data-detall-cell.col-preuunitat { width: 7%; min-width: 50px; }
+.comanda-detall-form .data-detall-cell.col-totalnet { width: 9%;  min-width: 50px; }
+.comanda-detall-form .data-detall-cell.col-totaliva { width: 9%;  min-width: 50px; }
+.comanda-detall-form .data-detall-cell.col-total { width: 11%; text-align: center; min-width: 120px; }
 .comanda-detall-form .data-detall-cell.col-total input.form-control { font-size: 1em; font-style:italic; color: #1240a0; } 
-.comanda-detall-form .data-detall-cell.col-comentaris { width: auto; }
-.comanda-detall-form .data-detall-cell.col-comentaris textarea { width: 100%; max-width: 270px;  text-align: left; }
+.comanda-detall-form .data-detall-cell.col-comentaris { width: 13%; min-width: 150px; }
+.comanda-detall-form .data-detall-cell.col-comentaris textarea { width: 100%; max-width: 150px;  text-align: left;  }
 .comanda-detall-form .data-detall-cell.col-actions { width: 3%; text-align: right;  width: 30px;  }
 
 .comanda-detall-form .col-actions .fa  { font-size: 1.2em; }
@@ -824,7 +826,8 @@ ul.detalls li .alert { margin: 10px 0; }
 }
 
 .table-scroll, .table-noscroll {
-	display: inline-block;
+	/*display: inline-block;*/
+	display: table;
 	max-height: 450px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -2242,14 +2245,6 @@ table.jqplot-table-legend {
 #list-recents, #formrecents {
 	width: 1060px;
 	
-}
-
-#formrecents-club {
-	width: 25%;
-}
-
-#formrecents-baixa,#formrecents-sincro  {
-	margin-top: 7px;
 }
 
 li.parte-pendent-sincro {

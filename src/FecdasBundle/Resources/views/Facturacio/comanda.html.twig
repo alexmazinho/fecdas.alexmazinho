@@ -175,26 +175,28 @@
 				</h3>
 			</div>
 			<div class="col-md-12">
-				<ul class="detalls-header">
-					<li class="detall-form-header">
+				<div class="table-header">	
+				<!-- <ul class="detalls-header">
+					<li class="detall-form-header"> -->
 						<div class="comanda-detall-form-header list-header">
-						<div class="col-id hidden">Id</div>
-						<div class="col-listheader col-producte">Producte</div>
-						<div class="col-listheader col-unitats">Uds.</div>
-						<div class="col-listheader col-preuunitat">Preu</div>
-						<div class="col-listheader col-descompte">Descompte</div>
-						<div class="col-listheader col-ivaunitat">IVA</div>
-						<div class="col-listheader col-totalnet">T. net</div>
-						<div class="col-listheader col-totaliva">T. IVA</div>
-						<div class="col-listheader col-total">Total</div>
-						<div class="col-listheader col-comentaris">Comentaris</div>
-						<div class="col-listheader col-actions">&nbsp;</div>
+							<div class="col-id hidden">Id</div>
+							<div class="col-listheader col-producte">Producte</div>
+							<div class="col-listheader col-unitats">Uds.</div>
+							<div class="col-listheader col-preuunitat">Preu</div>
+							<div class="col-listheader col-descompte">Descompte</div>
+							<div class="col-listheader col-ivaunitat">IVA</div>
+							<div class="col-listheader col-totalnet">T. net</div>
+							<div class="col-listheader col-totaliva">T. IVA</div>
+							<div class="col-listheader col-total">Total</div>
+							<div class="col-listheader col-comentaris">Comentaris</div>
+							<div class="col-listheader col-actions">&nbsp;</div>
 						</div>
-					 </li>
-				 </ul>
-			</div>
-			<div class="col-md-12">
-				 <ul class="detalls">
+				<!-- </li>
+				 </ul> -->
+				 </div>
+				 <div class="table-scroll">
+		   			<ul id="list-data">
+				 <!-- <ul class="detalls"> -->
 					{% set detall = form.detalls.vars.prototype %}
 					{% set id = -1 %}
 					{% set fila = 0 %}
@@ -210,7 +212,7 @@
 							{% endif %}
 						{% endfor %}	
 					{% endif %}
-				 </ul>
+				 </ul> 
 			</div>				 
 		</div>
 		

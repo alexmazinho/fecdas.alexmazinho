@@ -93,7 +93,8 @@ class EntityRebut {
 	
 		$this->id = 0;
 		$this->dataentrada = new \DateTime();
-	
+		$this->datamodificacio = new \DateTime();
+		
 		// Hack per permetre múltiples constructors
 		$a = func_get_args();
 		$i = func_num_args();

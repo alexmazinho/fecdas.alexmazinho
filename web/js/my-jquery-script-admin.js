@@ -15,12 +15,13 @@
 				window.location = window.location.pathname; 
 			}); // Canvi de rol
 		});
-	}
+	};
 	
 	selectRecentsClub = function() {
 		$("select#form_clubs").select2({
 			minimumInputLength: 2,
-			allowClear: true
+			allowClear: true,
+			placeholder: "Filtre per club... ",
 		});
 		
 		// Remove label on Select
@@ -66,7 +67,7 @@
 				//}
 			} 
 		});
-	}
+	};
 	
 	//Cercador de clubs
 	init_cercaclub_JSON = function(elem_sel, placeholder_txt, url) {
@@ -101,7 +102,7 @@
 		        callback(data);
 			} 
 		});
-	}
+	};
 	
 	
 	recentsReload = function(url) {
@@ -113,18 +114,12 @@
 		params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
 
 		llistaPaginationAndSort(url, params);
-	}
+	};
 
 	
 	confirmarPartePagat = function() {
-		// Click des de Partes
-		$('#formparte-button-pagat').click(function(e) {
-			e.preventDefault();
-			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-		});
-		
-		// Click des de Recents
-		$('.parterecents-action-pagament').click(function(e) {
+		// Click des de Parte o Recents
+		$('#confirmar-pagament').click(function(e) {
 			e.preventDefault();
 			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
 		});
@@ -137,14 +132,27 @@
           	buttons : {
             	"Confirmar" : function() {
     	        	$(this).dialog("close");
-    	        	
-    	    		var params = { 	datapagat: $( "#datepicker" ).val(), 
-    	    						estatpagat: $( "#pagatestat" ).val(),
-    	    						dadespagat: $( "#pagatdades" ).val(),
-    	    						comentaripagat: $( "#pagatcomentari" ).val() };
+
+    	        	$('#progressbar').show();  // Rellotge
+        	
+    	    		var params = { 	datapagat: $( "#datapagament" ).val(), 
+    	    						estatpagat: $( "#tipuspagament" ).val(),
+    	    						dadespagat: $( "#dadespagament" ).val(),
+    	    						comentaripagat: $( "#comentaripagament" ).val() };
     	    		$.get(url, params,
     	    		function(data, textStatus) {
-    	    			location.reload();
+    	    	        $('#progressbar').hide();
+    	    	        console.log(data);	
+    	    			//location.reload();
+    	    		}).fail( function(xhr, status, error) {
+    	   			 // xhr.status + " " + xhr.statusText, status, error
+	    	   			//var sms = smsResultAjax('KO', xhr.responseText);
+	    	   			 
+	    	   			$('#progressbar').hide();  // Rellotge
+	    	   		    	
+	    	   			//$('#parte_tipus').val('');
+	    	   			 
+	    	   			//$('#formparte-llicencia').html(sms);
     	    		});
     	        },
 	            "Cancel·lar" : function() {
@@ -153,32 +161,39 @@
 	            }
 	        },
 	        title: titol,
-	        height: 450,
+	        //height: 450,
 	        width: 350,
 	        zIndex:	350
 	    });
 		
-	    $("#dialeg").html("<p>Indica la data <input type='text' id='datepicker' disabled='disabled'/></p>");
-	    $("#dialeg").append("<p>Raó del pagament <select type='text' id='pagatestat' required='required'>" +
-	    					"<option selected='selected' value='TRANS WEB'>Transferència rebuda</option>" +
-	    					"<option value='METALLIC WEB'>Pagament en metàlic</option>" +
-						"<option value='PENDENT OK'>Sincronitzar sense pagament</option>" +
-	    					"<option value='TPV CORRECCIO'>Correcció errada TPV</option></select></p>");
-	    $("#dialeg").append("<p>Número de comanda TPV o rebut <input type='text' id='pagatdades' required='required'/></p>");
-	    $("#dialeg").append("<p>Comentari<textarea id='pagatcomentari' required='required'/></p>");
+	    $("#dialeg").html("<p>Indica la data <input type='text' id='datapagament' disabled='disabled'/></p>");
+	    $("#dialeg").append("<p>Raó del pagament <select type='text' id='tipuspagament' required='required'></select></p>");
+	    $("#dialeg").append("<p>Dades opcionals. Núm. comanda TPV, etc... <input type='text' id='dadespagament' required='required'/></p>");
+	    $("#dialeg").append("<p>Comentaris<textarea id='pagatcomentari' required='required'/></p>");
 	    
-	    $( "#datepicker" ).datepicker({
+	    $( "#datapagament" ).datepicker({
             showOn: "button",
             buttonImage: "/images/icon-calendar.gif",
             buttonImageOnly: true,
             dateFormat: 'dd/mm/yy'
         });
 	    
-	    $( "#datepicker" ).datepicker( "setDate", new Date() );
-		    
+	    $( "#datapagament" ).datepicker( "setDate", new Date() );
+
+		$.get( "/jsontipuspagaments" , function( data ) {
+			  var tipusPagament = JSON.parse( JSON.stringify(data), function (k, v) {
+				    return v; 
+			  });
+			  
+			  var htmlOpcio = ''; 
+			  $.each(tipusPagament, function(i, item) {
+			       htmlOpcio = "<option value='"+i+"'>"+item+"</option>";
+			       $('#tipuspagament').append( htmlOpcio );
+			  });
+		});
+
 	    $("#dialeg").dialog("open");
 	};
-	
 	
 	clubCanviEstat = function() {
 		$('.clubs-action-upd').click(function(e) {
@@ -243,7 +258,7 @@
 		params.push( {'name':'estat','value': $('#form_estat').val()} );
 
 		llistaPaginationAndSort(url, params);
-	}
+	};
 
 	
 	varisAdminPeticioDuplicat = function() {

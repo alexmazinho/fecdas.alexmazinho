@@ -180,24 +180,13 @@ class AdminController extends BaseController {
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 		
 		if ($parte != null) {
-			// Actualitzar data pagament
-			if ($request->query->get('estatpagat', '') != 'PENDENT OK') {
-				// Algun tipus de pagament
-				$datapagat = \DateTime::createFromFormat('d/m/Y', $request->query->get('datapagat'));
-				/*$parte->setDatapagament($datapagat);
-				$parte->setEstatpagament($request->query->get('estatpagat'));
-				if ($request->query->get('dadespagat') != '') $parte->setDadespagament($request->query->get('dadespagat'));
-				if ($request->query->get('comentaripagat') != '') $parte->setComentari($request->query->get('comentaripagat'));*/
+			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_CASH);
+			$dataAux = $request->query->get('datapagament', '');
+			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();
+			$dadesPagament = $request->query->get('dadespagament', '');
+			$comentariPagament = $request->query->get('comentaripagament', 'Confirmació manual');
 				
-				$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH; // ??
-				$this->crearRebut($datapagat, $tipusPagament, $parte, $request->query->get('dadespagat'), $request->query->get('comentaripagat'));
-				
-			}
-			$parte->setPendent(false);
-			if ($parte->getIdparteAccess() == null) {
-				//$parte->setImportpagament($parte->getPreuTotalIVA());  // Pagament sense sincronitzar si actualitza import pagament
-				$parte->setDatamodificacio($this->getCurrentDate()); // Només activa sincro si té preu indicat. La resta no sincronitzen el pagament s'envia per Gestor 
-			}
+			$this->crearRebut($dataPagament, $tipusPagament, $parte, $dadesPagament, $comentariPagament);
 			
 			$em->flush();
 

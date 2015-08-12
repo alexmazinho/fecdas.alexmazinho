@@ -790,24 +790,13 @@ class FacturacioController extends BaseController {
 						
 						$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
 						$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
-						if (!$comandaPagat && ($strDatapagament != '' || $tipusPagament != '')) {
-							
-							if ($strDatapagament != '' && $tipusPagament == '') {
-								$form->get('tipuspagament')->addError(new FormError('Escollir un valor'));
-								throw new \Exception('Cal indicar com s\'ha pagat la comanda'  );
-							}
-							if ($strDatapagament == '' && $tipusPagament != '') {
-								$form->get('datapagament')->addError(new FormError('Indicar una data'));
-								throw new \Exception('Cal indicar quan s\'ha pagat la comanda'  );
-							}
-							
+						if (!$comandaPagat) {
 							// Nou pagament, crear rebut
 							$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
 							$this->crearRebut($datapagament, $tipusPagament, $comanda);
 						} 
 					
-						if (!$comanda->esNova())  $comanda->setDatamodificacio(new \DateTime());
-						else $comanda->setNum($maxNumComanda); // Per si canvia
+						if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
 					}
 					// Generar nova factura si s'ha enviat a comptabilitat. Revisar anulacions etc..
 					// Desvincular rebut si escau

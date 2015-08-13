@@ -2262,8 +2262,12 @@ li.parte-pendent-sincro {
 	color: #b8316a;
 }
 
-li.parte-pendent {
+li.parte-per-imprimir {
 	color: #2281CF;
+}
+
+li.parte-pendent {
+	color: #5cb85c;
 }
 
 li.parte-pendent-sincro .parterecents-actions {

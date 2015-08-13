@@ -53,8 +53,8 @@ class AdminController extends BaseController {
 		// Cerca
 		$currentBaixa = false; // Inclou Baixes
 		if ($request->query->has('baixa') && $request->query->get('baixa') == 1) $currentBaixa = true;
-		$currentNoPagat = true;// No pagats
-		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 0) $currentNoPagat = false;
+		$currentNoPagat = false;// No pagats
+		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 1) $currentNoPagat = true;
 		$currentNoImpres = false;// No impres
 		if ($request->query->has('noimpres') && $request->query->get('noimpres') == 1) $currentNoImpres = true;
 
@@ -121,7 +121,6 @@ class AdminController extends BaseController {
 					'required'  => false,
 					'data' => $currentNoImpres,
 				));
-		error_log("==========================> ".$currentNoImpres."-".$currentNoPagat);		
 		$formBuilder->add('baixa', 'checkbox', array(
     				'required'  => false,
 					'data' => $currentBaixa,
@@ -164,7 +163,7 @@ class AdminController extends BaseController {
 		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $partesrecents->setParam('estat',$currentEstat);
 		if ($currentBaixa == true) $partesrecents->setParam('baixa',true);
 		//if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
-		if ($currentNoPagat == false) $partesrecents->setParam('nopagat',false);
+		if ($currentNoPagat == true) $partesrecents->setParam('nopagat',true);
 		if ($currentNoImpres == true) $partesrecents->setParam('noimpres',true);
 				
 		return $this->render('FecdasBundle:Admin:recents.html.twig', 

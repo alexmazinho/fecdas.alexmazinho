@@ -87,7 +87,7 @@
 		   	<ol id="list-data">
 			{% for parte in partes %}
 		   		<li class="data-detall 
-		   		{% if parte.pendentsincronitzar == true  %} parte-pendent-sincro {% endif %}
+		   		{% if parte.impres == false  %} parte-per-imprimir {% endif %}
 				{% if parte.pendent == true  %} parte-pendent {% endif %}
 		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
 			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
@@ -101,12 +101,12 @@
 		   			<div class="data-detall-cell parterecents-actions">
 		   			{% if parte.pendent == true  %}
 			   			<a class="parterecents-action-pagament link" id="confirmar-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" alt="Confirmar pagament" title="Confirmar pagament">
-			   				<i class="fa fa-euro red"></i></a>
+			   				<i class="fa fa-euro green"></i></a>
 		   			{% endif %}
 		   				<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
-		   					<i class="fa fa-print green"></i></a>
+		   					<i class="fa fa-print blue"></i></a>
 		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
-		   					<i class="fa fa-search blue"></i></a>
+		   					<i class="fa fa-search orange"></i></a>
 					</div>
 		   		</li>
 		   	{% endfor %}

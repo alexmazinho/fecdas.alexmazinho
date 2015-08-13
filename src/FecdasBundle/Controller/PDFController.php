@@ -1170,13 +1170,30 @@ class PDFController extends BaseController {
 			$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
 			$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 			$pdf->SetMargins(5, 5, 5);
-			$pdf->SetAutoPageBreak 	(true, 5);
-			$pdf->SetFont('dejavusans', 'B', 6, '', true);
+			$pdf->SetAutoPageBreak 	(false, 5);
 			$pdf->SetTextColor(255, 255, 255); 
-
+			
 			$width = 86; //Original
 			$height = 54; //Original
 			
+			// Posicions
+			$xTit = 0;
+			$yTit =	12;		
+			$xNom = 10;
+			$yNom =	28;		
+			$xDni = 18;
+			$yDni =	32;		
+			$xCat = 20.5;
+			$yCat =	35.5;		
+			$xNai = 19.5;
+			$yNai =	39.5;		
+			$xClu = 12;
+			$yClu =	43;		
+			$xTlf = 15;
+			$yTlf =	47.2;		
+			$xCad = 57;
+			$yCad =	47;		
+								
 			foreach ($llicenciesSorted as $llicencia) {
 
 				$persona = $llicencia->getPersona();
@@ -1184,99 +1201,49 @@ class PDFController extends BaseController {
 				// Add a page
 				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 
-				$y = $pdf->getY() + 10;
+				error_log($width.'x'.$height);
 	
-	 			$pdf->setVisibility('screen'); // or screen
-				$pdf->Rect(0, 0, $width, $height, 'DF', array(), array(220, 220, 200));
+	 			$pdf->setVisibility('view'); // or screen
+
+	 			$pdf->Image('images/federativa-cara.jpg', 0, 0, 
+						$width, $height, 'jpg', '', '', false, 150, 
+						'', false, false, 0, false, false, false);
+				
+	 			//$pdf->Rect(0, 0, $width, $height, 'DF', array(), array(220, 220, 200));
 				
 				$pdf->setVisibility('all');
-	
-				$pdf->SetX(5);
-				$pdf->SetY($y);
-				$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
-				$y += 5;	
 
-				$pdf->SetY($y);
-				$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
-				$y += 5;
-
-				$pdf->SetY($y);
-				$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-				$y += 5;
-				
-				$pdf->SetY($y);
-				$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
-				$y += 5;
-				
-				$pdf->SetY($y);
-				$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
-				$y += 5;
-				
-				$pdf->SetY($y);
-				$pdf->Cell(0, 0, $parte->getDatacaducitat('printparte')->format('d/m/Y'), 0, 1, 'L');
-
-				
-				// get current vertical position
-/*				$y_ini = $pdf->getY();
-				$x_ini = $pdf->getX();
-				
-				$y = $y_ini;
-				$x = $x_ini;
-
-				$x += 45;
-				$y += 10;
-				
-				$width = 86; //Original
-				$height = 54; //Original
-				
-				// set color for text and font
-				$pdf->SetTextColor(10, 10, 10); // Gris
-				//$pdf->SetFillColor(0, 0, 0); //
-				$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
-				
-				$x = $x_ini + 54.2;
-				$y = $y_ini + 38.6; // 39.2
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getNomCognoms(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 62.5;
-				$y = $y_ini + 42.4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 65;
-				$y = $y_ini + 46.1;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 63.6;
-				$y = $y_ini + 49.9;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
-			
-				$x = $x_ini + 56;
-				$y = $y_ini + 53.7;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 60;
-				$y = $y_ini + 57.5;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
-				
-				//$datacaduca = $llicencia->getParte()->getDataalta();
-				// Caducat 30 dies des de data impressió
 				$datacaduca = $parte->getDatacaducitat('printparte');
-				$x += 41;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
-				
-				// Tipus de llicència
-				// Taula TipoParte LL_L1 + LL_L1 + LL_L3 
 				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);
+
+				$pdf->SetFont('helvetica', 'B', 10, '', true);
 				
-				$pdf->SetFont('helvetica', 'B', 9.5, '', true);
-				$pdf->SetTextColor(20, 20, 20); // Gris
-				$y = $y_ini + 24;
-				$x = $x_ini + 62;
+				$pdf->SetXY($xTit, $yTit);
+				$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
+
+				$pdf->SetFont('dejavusans', 'B', 6, '', true);
+
+				$pdf->SetXY($xNom, $yNom);
+				$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+
+				$pdf->SetXY($xDni, $yDni);
+				$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
+
+				$pdf->SetXY($xCat, $yCat);
+				$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
 				
-				$pdf->SetY($y);
-				$pdf->SetX($x);
-				$pdf->MultiCell($height,$width,$titolPlastic,0,'C',1);
-				*/
+				$pdf->SetXY($xNai, $yNai);
+				$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
+				
+				$pdf->SetXY($xClu, $yClu);
+				$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+
+				$pdf->SetXY($xTlf, $yTlf);
+				$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
+				
+				$pdf->SetXY($xCad, $yCad);
+				$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
+
 			}
 			// reset pointer to the last page
 			$pdf->lastPage();

@@ -4,36 +4,53 @@
 {% block title %}Aplicació gestió FECDAS. Gestió de clubs i usuaris{% endblock %}
 
 {% block body %}
-    <header>
-        <h1>Gestió de clubs i usuaris</h1>
-    </header>
-   
-	{% for flashMessage in app.session.flashbag.get('error-notice') %}
-	    <div class="sms-notice">
-			{{ flashMessage }}
-  		</div>	
-	{% endfor %}
 	<form id="formclub" action="{{ path('FecdasBundle_club') }}" method="post" {{ form_enctype(form) }}  class="appform">
-		{% if admin == true %} 
-		<div class="form-row clearfix">
-			{% if form.nouclub is defined %}  {{ form_widget(form.nouclub) }} {% endif %}
-			<div id="formclub-codi"  class="form-left">
-				{{ form_label(form.codi, 'Codi', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.codi, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-tipus"  class="form-left">
-				{{ form_label(form.tipus, 'Tipus', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div id="formclub-activat"  class="form-left">
-				<div id="formclub-forceupdate">
-					{{ form_label(form.activat, 'Accés actiu', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-					{{ form_widget(form.activat, { 'attr': {'class': 'formcheckbox-right'} }) }}
+	    <header>
+			<div class="row">
+				<div class="col-md-8"><h1>Gestió de clubs i usuaris</h1></div>
+    		    <div class="col-md-4 col-last-right">
+    		    	<div class="buttons-top-bootstrap">
+						<div class="button-top"><a class="link formclub-save" href="javascript:void(0);" alt="Desar dades" 
+							title="Desar dades"><i class="fa fa-save fa-1x green"></i></a></div> 
+						<div class="button-top"><a id="formclub-nou" class="link" target="_blank" href="javascript:void(0);" alt="Nou club" 
+							title="Nou club"><i class="fa fa-plus-circle fa-1x blue"></i></a></div>
+					</div> 
 				</div>
 			</div>
-			<div id="formclub-nouclub" class="form-right">
-				<div class="textaccio">
-					<a id="formclub-nou" href="javascript:void(0);">Nou club<img src="{{ asset('images/icon_add.png') }}"></a>
+	    </header>
+   
+		{% for flashMessage in app.session.flashbag.get('error-notice') %}
+   		<div class="row">
+		    <div class="sms-notice">
+				{{ flashMessage }}
+	  		</div>	
+		</div>
+		{% endfor %}
+
+   		<div class="row">
+		{% if admin == true %}
+			{% if form.nouclub is defined %}  {{ form_widget(form.nouclub) }} {% endif %}
+			<div class="col-md-2">
+			  	<div class="form-group">
+			  		<div class="input-group">
+						<span class="input-group-addon">Club</span>
+						{{ form_widget(form.codi, { 'attr': {'class': 'form-control','placeholder':'Codi' } }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="form-group">
+					<div class="input-group" >
+			  			<span class="input-group-addon required">Tipus</span>
+						{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="checkbox">
+			    	<label>
+			      		{{ form_widget(form.activat) }} Accés actiu
+			    	</label>
 				</div>
 			</div>
 		</div>
@@ -51,87 +68,157 @@
 				{% endif %}
 			</ul>
 			<div id="formclub-dades-tab1" class="formclub-tab">		
-				<div class="form-row clearfix">
-					<div id="formclub-nom"  class="form-left">
-						{{ form_label(form.nom, 'Nom*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.nom, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-cif"  class="form-left">
-						{{ form_label(form.cif, 'CIF*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.cif, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-telefon"  class="form-left">
-						{{ form_label(form.telefon, 'Telèfon', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.telefon, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-fax"  class="form-left">
-						{{ form_label(form.fax, 'Fax', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.fax, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-mobil"  class="form-left">
-						{{ form_label(form.mobil, 'Mòbil', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.mobil, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-mail"  class="form-left">
-						{{ form_label(form.mail, 'Mail*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.mail, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-web"  class="form-left">
-						{{ form_label(form.web, 'Web', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.web, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-				</div>
-		        <div class="form-row form-row-bottom clearfix">
-		        	<div class="textaccio">
-		        		<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
-		        	</div>
-				</div>
-	        </div>
-	        <div id="formclub-dades-tab2" class="formclub-tab">
-	        	<div class="form-row clearfix">
-					<div id="formclub-addrpob"  class="form-left">
-						{{ form_label(form.addrpob, 'Població', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addrpob, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-addrcp"  class="form-left">
-						{{ form_label(form.addrcp, 'CP', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addrcp, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-addrprovincia"  class="form-left">
-						{{ form_label(form.addrprovincia, 'Provincia', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addrprovincia, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-addradreca"  class="form-left">
-						{{ form_label(form.addradreca, 'Adreça', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addradreca, { 'attr': {'class': 'formfield-outside'} }) }}
-					</div>
-					<div id="formclub-copiar" class="form-right">
-						<div class="textaccio">
-							<a id="formclub-copiaradreca" href="javascript:void(0);">Copiar<img src="{{ asset('images/icon_down16.png') }}"></a>
+				<div class="row">
+					<div class="col-md-5">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Nom*</span>
+								{{ form_label(form.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.nom, { 'attr': {'class': 'form-control','placeholder':'Nom *' } }) }}
+							</div>
 						</div>
 					</div>
-		        </div>
-	        	<div class="form-row clearfix">
-					<div id="formclub-addrpobcorreu"  class="form-left">
-						{{ form_label(form.addrpobcorreu, 'Població (Adreça de Correu)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addrpobcorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">CIF*</span>
+								{{ form_label(form.cif, 'CIF', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.cif, { 'attr': {'class': 'form-control','placeholder':'CIF *' } }) }}
+							</div>
+						</div>
 					</div>
-					<div id="formclub-addrcpcorreu"  class="form-left">
-						{{ form_label(form.addrcpcorreu, 'CP', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addrcpcorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					<div class="col-md-4">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Correu*</span>
+								{{ form_label(form.mail, 'Correu', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.mail, { 'attr': {'class': 'form-control','placeholder':'Correu *' } }) }}
+							</div>
+						</div>
 					</div>
-					<div id="formclub-addrprovinciacorreu"  class="form-left">
-						{{ form_label(form.addrprovinciacorreu, 'Provincia', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addrprovinciacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon"><span class="fa fa-phone-square fa-1x"></span></span>
+								{{ form_label(form.telefon, 'Telèfon', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.telefon, { 'attr': {'class': 'form-control','placeholder':'Telèfon' } }) }}
+							</div>
+						</div>
 					</div>
-					<div id="formclub-addradrecacorreu"  class="form-left">
-						{{ form_label(form.addradrecacorreu, 'Adreça', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.addradrecacorreu, { 'attr': {'class': 'formfield-outside'} }) }}
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon"><span class="fa fa-mobile fa-1x"></span></span>
+								{{ form_label(form.mobil, 'Mòbil', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.mobil, { 'attr': {'class': 'form-control','placeholder':'Mòbil' } }) }}
+							</div>
+						</div>
 					</div>
-		        </div>
-		        <div class="form-row form-row-bottom clearfix">
-	       			<div class="textaccio">
-						<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon"><span class="fa fa-fax fa-1x"></span></span>
+								{{ form_label(form.fax, 'Fax', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.fax, { 'attr': {'class': 'form-control','placeholder':'Fax' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">www</span>
+								{{ form_label(form.web, 'Web', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.web, { 'attr': {'class': 'form-control','placeholder':'Web' } }) }}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Adreça fiscal</h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Adreça</span>
+								{{ form_label(form.addradreca, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addradreca, { 'attr': {'class': 'form-control','placeholder':'Adreça' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Pob.</span>
+								{{ form_label(form.addrpob, 'Població', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addrpob, { 'attr': {'class': 'form-control','placeholder':'Població' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-2">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">CP</span>
+								{{ form_label(form.addrcp, 'CP', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addrcp, { 'attr': {'class': 'form-control','placeholder':'CP' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<div class="input-group" >
+								<span class="input-group-addon required">Prov.</span>
+					  			{{ form_label(form.addrprovincia, 'Província', { 'label_attr': {'class': 'sr-only'} }) }}
+					  			{{ form_widget(form.addrprovincia, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-1">
+						<a id="formclub-copiaradreca" href="javascript:void(0);" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-down fa-1x blue"></i></a>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Adreça correu</h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Adreça</span>
+								{{ form_label(form.addradrecacorreu, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addradrecacorreu, { 'attr': {'class': 'form-control','placeholder':'Adreça' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Pob.</span>
+								{{ form_label(form.addrpobcorreu, 'Població', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addrpobcorreu, { 'attr': {'class': 'form-control','placeholder':'Població' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-2">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">CP</span>
+								{{ form_label(form.addrcpcorreu, 'CP', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addrcpcorreu, { 'attr': {'class': 'form-control','placeholder':'CP' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<div class="input-group" >
+					  			<span class="input-group-addon required">Prov.</span>
+								{{ form_widget(form.addrprovinciacorreu, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
 					</div>
 				</div>
 	        </div>
@@ -140,11 +227,6 @@
 	        	<div id="formclub-club_tipusparte" >
 						{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 						{{ form_widget(form.tipusparte, { 'attr': {'class': 'formfield-outside'} }) }}
-				</div>
-	        	<div class="form-row form-row-bottom clearfix">
-	       			<div class="textaccio">
-						<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
-					</div>
 				</div>
 	        </div>
 	        <div id="formclub-dades-tab4" class="formclub-tab" >
@@ -210,11 +292,6 @@
 							{{ form_widget(form.saldoclub, { 'attr': {'class': 'formfield-right'} }) }}
 					</div>
 				</div>
-				<div class="form-row form-row-bottom clearfix">
-	       			<div class="textaccio">
-						<a class="formclub-save" href="javascript:void(0);">Desar dades<img src="{{ asset('images/icon-save.png') }}"></a>
-					</div>
-				</div>
 	        </div>
 	        <div id="formclub-dades-tab5" class="formclub-tab" {% if form.nouclub is defined %}  style="display:none" {% endif %} >
 	        	<a id="formclub-usuarinou" href="{{ path('FecdasBundle_usuariclub') }}" style="display:none"></a>
@@ -242,9 +319,8 @@
 						{{ form_widget(form.randompwd, { 'attr': {'class': 'formfield-outside'}}) }}
 					</div> 
 					<div id="formuserclub-random"  class="form-left">
-						<label class="formlabel-outside required">Auto</label>
-						<a id="formuserclub-random" href="#">
-						<img src="{{ asset('images/icon-wizard.png') }}"></a>
+						<label class="formlabel-outside required">&nbsp;</label>
+						<a id="formuserclub-random" href="#" class="btn btn-default"><i class="fa fa-random fa-1x orange"></i> automàtic</a>
 					</div>
 					<div id="formuserclub-forceupdate" class="form-left">
 						{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
@@ -253,14 +329,14 @@
 				</div>
 				<div class="form-row form-row-bottom clearfix">
 	       			<div class="textaccio">
-						<a id="formuserclub-add" href="javascript:void(0);" name="add-userclub">Confirmar usuari<img src="{{ asset('images/icon_down16.png') }}"></a>
+						<a id="formuserclub-add" class="btn btn-default" href="javascript:void(0);" name="add-userclub"><i class="fa fa-chevron-circle-down fa-1x blue"></i> Confirmar usuari</a>
 					</div>
 				</div>
 	        </div>
 	       	{% endif %}
         </div>
 				
-		<div id="formclub-rest">	{{ form_rest(form) }}</div>
+		<div id="formclub-rest">{{ form_rest(form) }}</div>
     </form>
 
 	<div id="llista-usuarisclub">

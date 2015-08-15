@@ -37,8 +37,8 @@
 					</div>
 					<div class="data-detall-cell userclub-actions">
 					{% if admin == true %}
-						<a class="label-remove-userclub" href="javascript:void(0);" onclick="removedUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-trash.png') }}" alt="Esborrar usuari" title="Esborrar usuari" width="23px"></a>
-						<a class="label-resetpwd-userclub" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.user }}');"><img src="{{ asset('images/icon-wizard.png') }}" alt="Reiniciar Password" title="Reiniciar Password" width="20px"></a>
+						<a class="label-remove-userclub link" href="javascript:void(0);" onclick="removedUserClick('{{ userclub.user }}');" alt="Esborrar usuari" title="Esborrar usuari"><i class="fa fa-trash fa-1x red"></i></a>
+						<a class="label-resetpwd-userclub link" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.user }}');" alt="Reiniciar Password" title="Reiniciar Password"><i class="fa fa-random fa-1x orange"></i></a>
 					{% endif %}
 					</div>
 				</li>

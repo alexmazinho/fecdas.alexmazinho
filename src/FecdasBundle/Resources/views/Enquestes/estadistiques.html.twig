@@ -16,8 +16,8 @@
    
    	<div id="tabs-enquestes">
 		<ul>
-			<li><a href="{{ path('FecdasBundle_estadistiquestab1') }}">Resultats globals</a></li>
-			<li><a href="{{ path('FecdasBundle_estadistiquestab2', { 'preguntaid': pselected }) }}">Evolució per pregunta</a></li>
+			<li id="resultats-globals"><a href="{{ path('FecdasBundle_estadistiquestab1') }}">Resultats globals</a></li>
+			<li id="evolucio-pregunta"><a href="{{ path('FecdasBundle_estadistiquestab2', { 'preguntaid': pselected }) }}">Evolució per pregunta</a></li>
 		</ul>
    	</div>
 
@@ -43,16 +43,41 @@
 	<script type="text/javascript">
 	
 	$(document).ready(function() {
-		setMenuActive("menu-admenquestes");
+		setMenuActive("menu-admestadistiques");
 		
 		$("#menu-adm").click();
 	
 		$(function() {
 			var tabactive = {{ tab }};
-			$( "#tabs-enquestes" ).tabs({ active: tabactive });
+			$( "#tabs-enquestes" ).tabs({ 
+				active: tabactive,
+				load: function( event, ui ) {
+					// Tab 1
+					if (ui.panel.selector == "#ui-tabs-1") createPlotResGlobal(); 
+
+					// Tab 2
+					if (ui.panel.selector == "#ui-tabs-2") {
+						console.log( $('#ui-tabs-2').html() );
+						
+						createPlotEvolucio(); 
+						
+						$( "#preguntes-selectable" ).selectable({
+							selected: function( event, ui ) {
+								var preguntaid = $(ui.selected).find(".pregunta-id").html();
+				
+								location = location.pathname + "?preguntaid="+preguntaid+"&tab=1";
+							},
+							selecting: function(event, ui) { 
+							     if ($(".ui-selected, .ui-selecting").length > 1) {
+							       $(ui.selecting).removeClass("ui-selecting");
+							     }
+							}
+						});
+					}
+				}
+			});
 		});
-	
-		
+
 	});
 
 </script>

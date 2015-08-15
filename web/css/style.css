@@ -1431,6 +1431,7 @@ select#parte_renovar_tipus { width: 240px; }
 #formclub-addradreca, #formclub-addradrecacorreu { width: 28%; }
 
 
+/*
 input#club_nom { width: 350px; }
 input#club_telefon { width: 116px; }
 input#club_fax { width: 116px; }
@@ -1443,7 +1444,7 @@ select#club_tipusparte {
 	width: 350px;
 	height: 130px;
 }
-
+*/
 #formclub-dades-tab4 input,
 #formclub-dades-tab4 select { display: inline; }
 

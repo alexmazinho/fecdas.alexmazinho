@@ -10,17 +10,18 @@
 {% block title %}Aplicació gestió FECDAS. Informació dels clubs{% endblock %}
 
 {% block body %}
-	<header>
-        <h1>Situació dels clubs</h1>
-    </header>
-
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-        <div class="sms-notice">
-  			{{ flashMessage }}
-  		</div>	
-	{% endfor %}
-    
     <div id="list-forms">
+		<header>
+	        <h1>Situació dels clubs</h1>
+	    </header>
+
+	    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+			<div class="row">
+		        <div class="sms-notice">
+		  			{{ flashMessage }}
+		  		</div>	
+			</div>
+	  	{% endfor %}
     	<form id="formclubs" action="{{ path('FecdasBundle_clubs') }}" method="post" {{ form_enctype(form) }}  class="appform">
     		<div id="formclubs-estat" class="form-left">
 				{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}

@@ -13,17 +13,19 @@
 {% block title %}Aplicació gestió FECDAS. Llista de comunicacions del club{% endblock %}
 
 {% block body %}
-	<header>
-        <h1>Llistes de comunicacions</h1>
-    </header>
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
-        
     <div id="partes-main">
     	<form id="form_partes" action="{{ path('FecdasBundle_partes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+			<header>
+		        <h1>Llistes de comunicacions</h1>
+		    </header>
+		    {% for flashMessage in app.session.flashbag.get('error-notice') %}
+    		<div class="row">
+			    <div class="sms-notice">
+					{{ flashMessage }}
+			  	</div>
+			</div>	
+			{% endfor %}
+
     		<div class="row">
 	    		<div class="col-md-2">
 					<div class="form-group">

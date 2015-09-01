@@ -23,6 +23,15 @@ class FormClub extends AbstractType {
 					'mapped' => false,
 				));
 			}
+		
+			$builder->add('clubs', 'genemu_jqueryselect2_entity', array(
+				'class' 	=> 'FecdasBundle:EntityClub',
+				'choice_label' => 'nom',
+				'label' 	=> 'Filtre per club: ',
+				'mapped' 	=> false,
+				'required'  => false 
+			));
+		
 			
 			$builder->add('codi', 'text', array(
 					'required'  => true,

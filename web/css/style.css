@@ -1393,9 +1393,7 @@ select#parte_renovar_tipus { width: 240px; }
 /********************************************* Clubs i users ****************************************************/
 
 #tabs-club {
-	width: 100%;
 	background: none repeat scroll 0 0 transparent;
-	padding: 0 0 50px;
 	margin-bottom: 10px;
 }
 
@@ -1439,12 +1437,12 @@ input#club_mobil { width: 116px; }
 input#club_cif { width: 116px; }
 input#club_mail { width: 298px; }
 input#club_web { width: 298px; }
-
+*/
 select#club_tipusparte {
-	width: 350px;
+	/*width: 350px;*/
 	height: 130px;
 }
-*/
+
 #formclub-dades-tab4 input,
 #formclub-dades-tab4 select { display: inline; }
 

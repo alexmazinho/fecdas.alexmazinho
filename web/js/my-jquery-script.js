@@ -365,11 +365,11 @@
 	    	modal: true,
 	    	resizable: false,
 	    	width: dwidth,
-	    	height: dheight,
+	    	height: (dheight !== undefined?dheight:"auto"),
 	    	title: titol
     	});
 		
-		$("#dialeg").html("<div class='dialeg-jerror'><img width='40' src='/images/icon-remove.png'><span class='jerror-sms'>"+strError+"</span></div>");
+		$("#dialeg").html("<div class='dialeg-jerror'><i class='fa fa-remove fa-1x red'></i><span class='jerror-sms'>"+strError+"</span></div>");
 	};
 	
 	dialegInfo = function(titol, strInfo, dwidth, dheight) {
@@ -377,11 +377,11 @@
 	    	modal: true,
 	    	resizable: false,
 	    	width: dwidth,
-	    	height: dheight,
+	    	height: (dheight !== undefined?dheight:"auto"),
 	    	title: titol
     	});
 		
-		$("#dialeg").html("<div class='dialeg-jinfo'><img width='40' src='/images/icon-ok.png'><span class='jinfo-sms'>"+strInfo+"</span></div>");
+		$("#dialeg").html("<div class='dialeg-jinfo'><i class='fa fa-check fa-1x green'></i><span class='jinfo-sms'>"+strInfo+"</span></div>");
 	};
 
 	
@@ -1511,24 +1511,26 @@
 			//Cancel the link behavior
 	    	
 	        e.preventDefault();
+	        
+	        var url = $(this).attr("href");
+	        
 	        if ($("#club_user").val() == "") {
-	        	alert("cal indicar el mail de l'usuari");
+	        	dialegError("Error", "cal indicar el mail de l'usuari", 400);
 				return false;
 	        } else {
 	        	if( !isValidEmailAddress( $("#club_user").val() ) ) {
-	        		alert("El mail no té un format correcte");
+		        	dialegError("Error", "El mail no té un format correcte", 400);
 					return false;
 	        	}
 	        }
 	        if ($("#club_pwd_first").val() == "" || $("#club_pwd_second").val() == "") {
-	        	alert("cal indicar la clau l'usuari");
+	        	dialegError("Error", "cal indicar la clau l'usuari", 400);
 				return false;
 	        }
 	        if ($("#club_pwd_first").val() != $("#club_pwd_second").val()) {
-	        	alert("Les claus no coincideixen");
+	        	dialegError("Error", "Les claus no coincideixen", 400);
 				return false;
 	        }
-	        var url = $("#formclub-usuarinou").attr("href");
 			
 			var params = $('#formclub').serializeArray();
 			
@@ -1541,7 +1543,7 @@
 	
 	resetPwdUserClick = function(struser) {
 		
-        var url = $("#formclub-usuarinou").attr("href");
+        var url = $("#formuserclub-add").attr("href");
 		var params = { 	action: 'resetpwd', user: struser };
 		$.get(url, params,
 		function(data, textStatus) {
@@ -1551,7 +1553,7 @@
 	
 	removedUserClick = function(struser) {
 		
-        var url = $("#formclub-usuarinou").attr("href");
+        var url = $("#formuserclub-add").attr("href");
 		var params = { 	action: 'remove', user: struser };
 		$.get(url, params,
 		function(data, textStatus) {
@@ -1566,9 +1568,8 @@
 	    .click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
-	        $('#formuserclub-pwd').hide(); 
-	        $('#formuserclub-pwdrepeat').hide();
-	        $('#formuserclub-randompwd').show();
+	        $('.form-user-password-manual').hide();
+	        $('.form-user-password-random').show();
 	        var password = randomPassword(8);
 	        $('#club_randompwd').val(password);
 	        $('#club_pwd_first').val(password);

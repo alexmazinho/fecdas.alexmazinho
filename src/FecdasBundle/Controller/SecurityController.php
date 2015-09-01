@@ -273,15 +273,18 @@ class SecurityController extends BaseController
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
     	
     	$club  = $this->getCurrentClub();
-    	
+		$tab	= 0;    	
     	$nouclub = false;
-    
+
+		$em = $this->getDoctrine()->getManager();
+	    
    		if ($request->getMethod() == 'POST') {
    			/* Alta o modificació de clubs */
    			$formdata = $request->request->get('club');
    			if (isset($formdata['nouclub'])) {
    				$nouclub = true;
    				$club = new EntityClub();
+				
    			} else {
 				// Codi del club read_only
    				$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($formdata['codi']);
@@ -297,8 +300,6 @@ class SecurityController extends BaseController
    				$strErrorLog = "";
    				$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
    				
-   				$em = $this->getDoctrine()->getManager();
-
    				/* Validacions dades obligatories*/
    				if ($club->getCodi() == "" || $club->getNom() == "" ||
    						$club->getCif() == "" || $club->getMail() == "") {
@@ -371,9 +372,14 @@ class SecurityController extends BaseController
    			if ($this->isCurrentAdmin() != true) {
    				$this->logEntryAuth('CLUB VIEW OK',	'club : ' . $club->getCodi());
    			} else {
+   				if ($request->query->has('action') and $request->query->get('action') == "adduser") {
+					$tab = 3;
+				}
+
    				if ($request->query->has('action') and $request->query->get('action') == "nouclub") {
     				$club = new EntityClub();
     				$nouclub = true;
+					
     				$this->logEntryAuth('CLUB NEW VIEW', 'club : ' . $club->getCodi());
     			} else {
     				if ($request->query->has('codiclub')) {
@@ -391,11 +397,12 @@ class SecurityController extends BaseController
    		
    		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
+   		if ($club->getCodi() != '') $form->get('clubs')->setData($club);
    		$form->get('saldoclub')->setData($club->getSaldoweb());
    		$form->get('totalllicenciesweb')->setData($club->getTotalLlicenciesWeb());
 
     	return $this->render('FecdasBundle:Security:club.html.twig', 
-    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab)));
     }
     
     public function usuariclubAction(Request $request) {

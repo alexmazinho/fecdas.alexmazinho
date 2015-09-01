@@ -30,6 +30,12 @@
    		<div class="row">
 		{% if admin == true %}
 			{% if form.nouclub is defined %}  {{ form_widget(form.nouclub) }} {% endif %}
+			<div class="col-md-3">
+			  	<div class="form-group">
+			    	{{ form_label(form.clubs, 'Escollir club', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+				</div>
+			</div>
 			<div class="col-md-2">
 			  	<div class="form-group">
 			  		<div class="input-group">
@@ -57,8 +63,7 @@
 		{% endif %}
 		<div id="tabs-club">
 			<ul>
-				<li><a href="#formclub-dades-tab1">Dades del club</a></li>
-				<li><a href="#formclub-dades-tab2">Adreces</a></li>
+				<li><a href="#formclub-dades-tab1">Dades</a></li>
 				{% if admin == true %} 
 				<li><a href="#formclub-dades-tab3">Llicències admeses</a></li>
 				<li><a href="#formclub-dades-tab4">Saldos</a></li>
@@ -68,6 +73,11 @@
 				{% endif %}
 			</ul>
 			<div id="formclub-dades-tab1" class="formclub-tab">		
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Dades del club</h4>
+					</div>
+				</div>
 				<div class="row">
 					<div class="col-md-5">
 			  			<div class="form-group">
@@ -224,9 +234,16 @@
 	        </div>
 	        {% if admin == true %} 
 	        <div id="formclub-dades-tab3" class="formclub-tab" >
-	        	<div id="formclub-club_tipusparte" >
-						{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.tipusparte, { 'attr': {'class': 'formfield-outside'} }) }}
+				<div class="row">
+					<div class="col-md-9">
+						<div class="form-group">
+							{{ form_label(form.tipusparte, 'Licències admeses (Manté CTRL per seleccionar vàries)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+							<div class="input-group" >
+					  			<span class="input-group-addon required"></span>
+								{{ form_widget(form.tipusparte, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+					</div>
 				</div>
 	        </div>
 	        <div id="formclub-dades-tab4" class="formclub-tab" >
@@ -294,42 +311,71 @@
 				</div>
 	        </div>
 	        <div id="formclub-dades-tab5" class="formclub-tab" {% if form.nouclub is defined %}  style="display:none" {% endif %} >
-	        	<a id="formclub-usuarinou" href="{{ path('FecdasBundle_usuariclub') }}" style="display:none"></a>
-				<div class="form-row clearfix">
-					<div id="formuserclub-user"  class="form-left">
-						{{ form_label(form.user, 'Usuari*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.user, { 'attr': {'class': 'formfield-outside', 'autocomplete': 'off'}}) }}
+				<div class="row">
+					<div class="col-md-3">
+						<div class="form-group">
+							{{ form_label(form.user, 'User', { 'label_attr': {'class': ''} }) }}
+							<div class="input-group" >
+								<span class="input-group-addon input-group-addon-icon"><span class="fa fa-user fa-1x"></span></span>
+								{{ form_widget(form.user, { 'attr': {'class': 'form-control','placeholder':'Nom d\'usuari' } }) }}
+							</div>
+						</div>
 					</div>
-					<div id="formuserclub-role"  class="form-left">
-						{{ form_label(form.role, 'Rol*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.role, { 'attr': {'class': 'formfield-outside'}}) }}
-					</div>
-				</div>
-				<div class="form-row clearfix">
-					<div id="formuserclub-pwd" class="form-left">
-						{{ form_label(form.pwd.first, 'Nova paraula clau*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.pwd.first, { 'attr': {'class': 'formfield-outside'}}) }}
-					</div> 
-					<div id="formuserclub-pwdrepeat" class="form-left">
-						{{ form_label(form.pwd.second, 'Repeteix la paraula clau*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.pwd.second, { 'attr': {'class': 'formfield-outside'}}) }}
-					</div> 
-					<div id="formuserclub-randompwd" class="form-left" style="display:none">
-						{{ form_label(form.randompwd, 'Paraula clau generada*', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-						{{ form_widget(form.randompwd, { 'attr': {'class': 'formfield-outside'}}) }}
-					</div> 
-					<div id="formuserclub-random"  class="form-left">
-						<label class="formlabel-outside required">&nbsp;</label>
-						<a id="formuserclub-random" href="#" class="btn btn-default"><i class="fa fa-random fa-1x orange"></i> automàtic</a>
-					</div>
-					<div id="formuserclub-forceupdate" class="form-left">
-						{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-						{{ form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) }}
+					<div class="col-md-2">
+						<div class="form-group">
+							{{ form_label(form.role, 'Rol *', { 'label_attr': {'class': ''} }) }}
+							<div class="input-group" >
+								<span class="input-group-addon input-group-addon-icon"></span>
+								{{ form_widget(form.role, { 'attr': {'class': 'form-control' } }) }}
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="form-row form-row-bottom clearfix">
-	       			<div class="textaccio">
-						<a id="formuserclub-add" class="btn btn-default" href="javascript:void(0);" name="add-userclub"><i class="fa fa-chevron-circle-down fa-1x blue"></i> Confirmar usuari</a>
+				<div class="row">
+					<div class="col-md-3 form-user-password-manual">
+						<div class="form-group">
+							{{ form_label(form.pwd.first, 'Paraula clau *', { 'label_attr': {'class': ''} }) }}
+							<div class="input-group" >
+								<span class="input-group-addon input-group-addon-icon"><i class="fa fa-secret fa-1x"></i></span>
+								{{ form_widget(form.pwd.first, { 'attr': {'class': 'form-control','placeholder':'Nova clau' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 form-user-password-manual">
+						<div class="form-group">
+							{{ form_label(form.pwd.second, 'Repetir paraula clau *', { 'label_attr': {'class': ''} }) }}
+							<div class="input-group" >
+								<span class="input-group-addon input-group-addon-icon"><i class="fa fa-secret fa-1x"></i></span>
+								{{ form_widget(form.pwd.second, { 'attr': {'class': 'form-control','placeholder':'Repetir clau' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 form-user-password-random" style="display:none">
+						<div class="form-group" >
+							{{ form_label(form.randompwd, 'Paraula clau generada', { 'label_attr': {'class': ''} }) }}
+							<div class="input-group" >
+								<span class="input-group-addon input-group-addon-icon"><i class="fa fa-secret fa-1x"></i></span>
+								{{ form_widget(form.randompwd, { 'attr': {'class': 'form-control','placeholder':'Paraula clau generada' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group" >
+							<label class="">&nbsp;</label>
+							<div class="input-group" >
+								<a id="formuserclub-random" href="javascript:void(0);" class="btn btn-default"><i class="fa fa-random fa-1x orange"></i> automàtic</a>
+								<div class="checkbox-inline">
+							    	<label>{{ form_widget(form.forceupdate) }} Obliga a actualitzar	</label>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group" >
+							<a id="formuserclub-add" class="btn btn-default" href="{{ path('FecdasBundle_usuariclub') }}" name="add-userclub"><i class="fa fa-chevron-circle-down fa-1x blue"></i> Confirmar usuari</a>
+						</div>
 					</div>
 				</div>
 	        </div>
@@ -351,33 +397,48 @@
 
 <script type="text/javascript">
 
-$(document).ready(function(){
-	setMenuActive("menu-admclubs");
+	$(document).ready(function(){
+		setMenuActive("menu-admclubs");
+		
+		$("#menu-adm").click();
 	
-	$("#menu-adm").click();
+		$(function() {
+			var tabactive = {{ tab }};
+			$( "#tabs-club" ).tabs({
+				active: tabactive 
+			});
+		});
+		
+		reloadClub();
+	
+		saveClub();
+		
+		copiarAdrecaClub();
+		
+		nouClub();
+	
+		addUserClick();
+	
+		randomPwdClick();
+	
+		var tableScroll = $('.table-scroll');
+		if (tableScroll.hasOverflowY()) {
+			$('.table-scroll').css({"width":"101.5%"});
+		}
 
-	$(function() {
-		$( "#tabs-club" ).tabs();
+		$("select#club_clubs").select2({
+			minimumInputLength: 2,
+			allowClear: false,
+			placeholder: "Escollir club... ",
+		});
+		
+		// Remove label on Select
+		$("select#club_clubs").change(function(e) {
+			var url = "{{ path('FecdasBundle_club') }}";
+			window.location = url+'?codiclub='+$(this).val();
+		});
+		
 	});
-	
-	reloadClub();
-
-	saveClub();
-	
-	copiarAdrecaClub();
-	
-	nouClub();
-
-	addUserClick();
-
-	randomPwdClick();
-
-	var tableScroll = $('.table-scroll');
-	if (tableScroll.hasOverflowY()) {
-		$('.table-scroll').css({"width":"101.5%"});
-	}
-	
-});
 
 </script>
 

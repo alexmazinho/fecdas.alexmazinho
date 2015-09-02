@@ -472,6 +472,31 @@ class EntityProducte {
     }
 
     /**
+     * Get preu amb IVA d'una unitat del producte
+     *
+     * @return decimal
+     */
+    public function getPreuTotalUnitat($any)
+    {
+    	$preu = $this->getPreu($any);
+		
+		return ($preu == null? 0: $preu->getPreu() * ( 1 + $preu->getIva()));
+
+    }
+
+	/**
+     * Is disponible
+     *
+     * @return boolean 
+     */
+    public function disponible()
+    {
+    	if ($this->stockable == false) return true; 
+        
+        return $this->stock > 0;
+    }
+
+    /**
      * Add preu
      *
      * @param \FecdasBundle\Entity\EntityPreu $preu

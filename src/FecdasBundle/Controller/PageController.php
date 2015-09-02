@@ -2,12 +2,11 @@
 namespace FecdasBundle\Controller;
 
 use FecdasBundle\Classes\CSVReader;
-use FecdasBundle\Classes\Funcions;
 
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ORM\EntityRepository;
+
 
 //use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -25,12 +24,9 @@ use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPayment;
-use FecdasBundle\Entity\EntityUser;
-use FecdasBundle\Entity\EntityClub;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityCarnet;
 use FecdasBundle\Entity\EntityImatge; 
-use FecdasBundle\Entity\EntityFactura; 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 

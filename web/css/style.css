@@ -509,6 +509,35 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 #historic-preus .table-scroll {  max-height: 150px; }
 
+/*************** FECDAS NOU graella productes ****************/
+
+.total-productes-grid {
+	color: #1240a0;
+    font-size: 1.2em;
+    text-align: right;
+    font-weight: bold; 
+}
+
+.grid-productes-header { margin-bottom: 20px;  }
+
+.graella-item { border: 1px solid #007FFF; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+
+.graella-item h4 { font-weight: bold; text-align: left; color: #000000; }
+
+.graella-item h4 .graella-item-preu { float: right; font-size: 1.1em; color: #1240a0; }
+
+.graella-item h5 { color: #555555;  }
+
+.graella-item-esgotat { background-color: #333333; border: 1px solid #555555; }
+
+.graella-item-with-min { font-style: italic; color: #a94442; font-size: 0.9em; }
+ 
+.graella-item-add { text-align: right; display: block; margin-top: 10px;  padding-top: 10px; border-top: 1px solid #eeeeee; }
+
+.graella-item-add a, .graella-item-add input { display: inline; vertical-align: middle; }
+.graella-item-add a { font-size: 1.7em; }
+.graella-item-add input { max-width: 50px; }
+
 /*************** FECDAS NOU preu ****************/
 
 #header-preuid { display:none; }

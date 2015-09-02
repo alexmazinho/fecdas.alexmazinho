@@ -1,0 +1,105 @@
+{# src/Fecdas/productesBundle/Resources/views/Facturacio/productes.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block javascriptshead %}
+ 	
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Graella de {{ title }} {% endblock %}
+
+{% block body %}
+	<header>
+        <h1>{{ title }}</h1>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+        
+    <div id="productes-main">
+    
+   		<div class="row grid-productes-header">
+			<div class="col-md-8 col-xs-6">
+				<form id="form_productes" action="{{ path('FecdasBundle_nouproducte') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+				  	<div class="form-group">
+				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+			   	</form>
+			</div>
+    	    <div class="col-md-4  col-xs-6 col-last-right">
+					<div class="buttons-top-bootstrap">
+						<h3 class="button-top total-productes-grid">Total productes: {{ productes|length }}</h3>
+					</div>	
+   		    </div>
+		</div>
+    
+	    <div class="grid-productes">	
+		    <div class="row">
+		    	{% for producte in productes %}
+		    		<div class="col-md-2 col-sm-3 col-xs-6">
+						<div class="graella-item {% if producte.disponible == false %} graella-item-esgotat {% endif %} ">
+							<h4>{{ producte.abreviatura }}<span class="graella-item-preu">{{ producte.getPreuTotalUnitat("now"|date('Y'))|number_format(2, ',', '.') }} €</span></h4>
+							<h5>{{ producte.descripcio }}</h5>
+							{% if producte.minim != null %}<div class="graella-item-with-min">Quantitat mínima: {{ producte.minim }}</div> {% endif %}
+							<p class="graella-item-add">
+								<input class="producte-action-add-uds form-control form-control-center" type="number" value="1">
+								<a class="producte-action-add-cart link" href="{{ path('FecdasBundle_afegircistella', { 'id': producte.id }) }}" alt="Afegir a la cistella" title="Afegir a la cistella"><i class="fa fa-cart-plus green"></i></a>
+							</p>
+						</div>
+					</div>
+					{% if loop.index % 6 == 0 %} <div class="clearfix visible-md-block visible-lg-block"></div> {%  endif %}
+					{% if loop.index % 4 == 0 %} <div class="clearfix visible-sm-block"></div> {%  endif %}
+					{% if loop.index % 2 == 0 %} <div class="clearfix visible-xs-block"></div> {%  endif %}
+			   	{% else %}
+	    			<div class="sms-notice">No hi ha productes per mostrar</div>
+				{% endfor %}
+			</div>	  	
+		</div>
+			    
+	</div>
+    <div id="dialeg-edicio-producte" class="finestra-overlay"></div>
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+ 	
+	<script type="text/javascript">
+	
+	
+	
+	filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
+		
+		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
+	}
+	
+	$(document).ready(function(){
+		setMenuActive("menu-admproductes");
+		
+		$("#form_tipus").change(function() {
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$("#form_cerca").change(function() {
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$( '#form_baixes' ).change(function(e) {
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+		});
+		
+		// Producte
+		init_cercaproducte_JSON('#form_cerca', 'Filtre descripció del producte', "{{  path('FecdasBundle_jsonproductes') }}");
+	});
+	
+	</script>
+
+
+{% endblock %}
+

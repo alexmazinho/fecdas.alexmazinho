@@ -331,6 +331,12 @@ FecdasBundle_productes:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_graellaproductes:
+    pattern:  /graellaproductes
+    defaults: { _controller: "FecdasBundle:Facturacio:graellaproductes" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_editarproducte:
     pattern:  /editarproducte
     defaults: { _controller: "FecdasBundle:Facturacio:editarproducte" }
@@ -361,9 +367,15 @@ FecdasBundle_comandes:
     requirements:
         _method:  GET
 
-FecdasBundle_novacomanda:
-    pattern:  /novacomanda
-    defaults: { _controller: "FecdasBundle:Facturacio:novacomanda" }
+FecdasBundle_cistella:
+    pattern:  /cistella
+    defaults: { _controller: "FecdasBundle:Facturacio:cistella" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_afegircistella:
+    pattern:  /afegircistella
+    defaults: { _controller: "FecdasBundle:Facturacio:afegircistella" }
     requirements:
         _method:  GET
 

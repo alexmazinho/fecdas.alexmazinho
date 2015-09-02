@@ -10,20 +10,12 @@
 	{{ parent() }}
 {% endblock %}
 
-{% block title %}Aplicació gestió FECDAS. Edició comanda{% endblock %}
+{% block title %}Aplicació gestió FECDAS. La teva cistella {% endblock %}
 
 {% block body %}
     <header>
-        <h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Comanda</h1>
+        <h1> La teva cistella</h1>
     </header>
-     <div class="form-row clearfix">
-		<div class="buttons-top buttons-top-nous">
-			<div id="comanda-to-pdf" class="button-top">
-				<a href="{{ path('FecdasBundle_albaratopdf', { 'id': comanda.id}) }}" alt="PDF Albarà" title="PDF Albarà">
-						<i class="fa fa-file-pdf-o fa-2x red"></i></a>
-			</div>
-		</div>	
-	</div>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
 	<form id="formcomanda" action="{{ path('FecdasBundle_editarcomanda') }}" method="post" {{ form_enctype(form) }}  class="appform">

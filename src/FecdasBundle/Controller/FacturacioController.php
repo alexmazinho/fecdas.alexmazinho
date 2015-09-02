@@ -367,7 +367,7 @@ class FacturacioController extends BaseController {
 			
 			$linia++;
 			// Apunt caixa
-			$compte = $rebut->getTipuspagament();
+			$compte = BaseController::getComptePagament($rebut->getTipuspagament());
 			
 			$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
 			$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
@@ -579,12 +579,15 @@ class FacturacioController extends BaseController {
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		if (!$this->isCurrentAdmin()) {  // Users normals només consulten comandes pròpies 
+			$club = $this->getCurrentClub();
+			$codi = $club->getCodi(); 
+		}	
+		else $codi = $request->query->get('cerca', ''); // Admin filtra club
 	
 		$this->logEntryAuth('VIEW COMANDES', $this->get('session')->get('username'));
 		
-		$codi = $request->query->get('cerca', '');
+		
 		$nf = $request->query->get('numfactura', '');
 		
 		$arrayFact = explode("/", $nf);
@@ -641,16 +644,13 @@ class FacturacioController extends BaseController {
 				));
 	}
 	
-	public function novacomandaAction(Request $request) {
-		// Creació d'una nova comanda
+	public function cistellaAction(Request $request) {
+		// Recupera la cookie amb els productes del carrito
 	
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	
-		$this->logEntryAuth('COMANDA NOVA',	'');
+		$this->logEntryAuth('CISTELLA CONSULTA',	'');
 
 		$em = $this->getDoctrine()->getManager();
 		
@@ -665,7 +665,7 @@ class FacturacioController extends BaseController {
 		
 		$form = $this->createForm(new FormComanda(), $comanda);
 		
-		return $this->render('FecdasBundle:Facturacio:comanda.html.twig',
+		return $this->render('FecdasBundle:Facturacio:cistella.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'comanda' => $comanda)));
 	}
 	
@@ -871,7 +871,6 @@ class FacturacioController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 	}
 	
-	
 	public function productesAction(Request $request) {
 		// Llista de productes i edició massiva
 
@@ -935,6 +934,47 @@ class FacturacioController extends BaseController {
 						'productes' => $productes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
+	
+	public function graellaproductesAction(Request $request) {
+		// Graella de productes per afegir a la cistella
+
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+
+		$idproducte = $request->query->get('cerca', 0);
+
+		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
+		
+		$tipus = $request->query->get('tipus', 0);
+		
+		$sort = $request->query->get('sort', 'p.descripcio');
+		$direction = $request->query->get('direction', 'asc');
+		
+		if ($idproducte > 0) {
+			$tipus = 0;
+		}	
+
+		$query = $this->consultaProductes($idproducte, $tipus, false, $sort, $direction);
+			
+		$productes = $query->getResult();
+		
+		foreach ($productes as $k => $producte) {
+			// No mostrar preus a 0
+			if ($producte->getCurrentPreu() <= 0) unset($productes[$k]);  	
+		}
+			
+		$formBuilder = $this->createFormBuilder()
+			->add('cerca', 'hidden', array(
+				'data' => ($idproducte>0?$idproducte:"")
+		));
+			
+		return $this->render('FecdasBundle:Facturacio:graellaproductes.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+						'title' => BaseController::getTipusProducte($tipus),
+						'productes' => $productes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
+						));
+	}
+	
 	
 	public function editarproducteAction(Request $request) {
 		// Formulari d'edició d'un producte
@@ -1253,7 +1293,7 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
-	protected function consultaProductes($idproducte, $tipus, $baixes, $strOrderBY = 'p.description' , $direction = 'asc' ) {
+	protected function consultaProductes($idproducte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
 		$em = $this->getDoctrine()->getManager();
 	
 		if ($idproducte > 0) {

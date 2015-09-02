@@ -12,13 +12,13 @@
 
 {% block body %}
 	<header>
-        <h1>Llistat de comandes</h1>
+        <h1>Comandes</h1>
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
         
     <div id="comandes-main">
 	    <div id="list-forms">
-	    	<form id="form_comandes" action="{{ path('FecdasBundle_novacomanda') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+	    	<form id="form_comandes" action="{{ path('FecdasBundle_cistella') }}" method="GET" {{ form_enctype(form) }}  class="appform">
 		    	<div class="row">
 				  <div class="col-md-4">
 				  	<div class="form-group">
@@ -48,9 +48,6 @@
 					      {{ form_widget(form.baixes) }} Mostrar baixes
 					    </label>
 					  </div>
-				  </div>
-				  <div class="col-md-2 col-last-right">
-						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
 				  </div>
 				</div>
 		   	</form>
@@ -162,7 +159,7 @@
 	}
 	
 	$(document).ready(function(){
-		setMenuActive("menu-admcomandes");
+		setMenuActive("menu-comandes");
 		
 		$("#form_cerca").change(function() {
 			filtreLlistacomandes($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numfactura" ).val(), $( "#form_numrebut" ).val() );
@@ -180,8 +177,10 @@
 			filtreLlistacomandes($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numfactura" ).val(), $( "#form_numrebut" ).val() );
 		});
 		
-		// Comanda
-		init_cercaclub_JSON('#form_cerca', 'Filtrar per nom del club', "{{  path('FecdasBundle_jsonclubs') }}");
+		// Comanda filtre clubs disponible per admin's
+		{% if admin == true  %} 
+			init_cercaclub_JSON('#form_cerca', 'Filtrar per nom del club', "{{  path('FecdasBundle_jsonclubs') }}");
+		{% endif %}
 	});
 	
 	</script>

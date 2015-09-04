@@ -1,0 +1,32 @@
+<div class="alert alert-success">
+
+	{%  if app.session.has('cart') == true  %}
+	
+		{% set cart = app.session.get('cart', {'productes' : {}, 'total' : 0}) %}
+		
+		<h3 class=""><i class="fa fa-shopping-cart"></i> comanda pendent de confirmar</h3>
+		<ul>
+			{% set total = 0 %}
+			{% for idProducte, item in cart.productes  %}
+		   		
+		   		<li>
+		   			<span>{{ item.unitats }}</span>
+		   			<span> x {{ item.abreviatura }} - {{ item.descripcio }} ({{ item.import|number_format(2, ',', '.') }} €/u)</span>
+		   			<span>
+		   				<a class="producte-action-remove-cart link" href="{{ path('FecdasBundle_treurecistella', { 'id': idProducte, 'tipus' : tipus }) }}" alt="Treure de la cistella" title="Treure de la cistella"><i class="fa fa-remove red"></i></a>
+		   			</span>
+		   		</li>
+		   		{% set total = total + (item.import * item.unitats) %}
+			{% endfor %}
+			<li class="cistella-summary">
+				<span>&nbsp;</span><span class="blue">Total: {{ total|number_format(2, ',', '.') }} €</span><span>&nbsp;</span>
+	   		</li>
+		</ul>
+		<a class="anular-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'anular',  'tipus' : tipus }) }}">cancel·lar la comanda <i class="fa fa-trash red"></i></a>
+		<a class="desar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'desar',  'tipus' : tipus }) }}">només confirmar comanda <i class="fa fa-check blue"></i></a>
+		<a class="pagar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">confirmar i pagar comanda <i class="fa fa-credit-card green"></i></a>
+						
+	{% else %}
+		<p class=""><i class="fa fa-shopping-cart"></i> No hi ha cap producte a la cistella</p>
+	{% endif %}
+</div>

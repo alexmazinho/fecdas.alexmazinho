@@ -9,9 +9,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use FecdasBundle\Form\FormProducte;
@@ -23,10 +20,6 @@ use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormComanda;
 use FecdasBundle\Entity\EntityComanda;
 use FecdasBundle\Entity\EntityPreu;
-use FecdasBundle\Form\FormComandaDetall;
-use FecdasBundle\Entity\EntityComandaDetall;
-use FecdasBundle\Entity\EntityDuplicat;
-use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityComptabilitat;
 
@@ -520,7 +513,7 @@ class FacturacioController extends BaseController {
 		
 				$em->flush();
 		
-				$this->get('session')->getFlashBag()->add('info-notice',	'La factura s\'ha desat correctament');
+				$this->get('session')->getFlashBag()->add('sms-notice',	'La factura s\'ha desat correctament');
 					
 				$this->logEntryAuth('FACTURA SUBMIT',	'factura : ' . $factura->getId().' '.$factura->getNumFactura());
 				// Ok, retorn form sms ok
@@ -643,32 +636,192 @@ class FacturacioController extends BaseController {
 						'comandes' => $comandes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 				));
 	}
+
+	public function graellaproductesAction(Request $request) {
+		// Graella de productes per afegir a la cistella
+
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+
+		$this->logEntryAuth('VIEW GRAELLA PRODUCTES', $this->get('session')->get('username'));
+		
+		$tipus = $request->query->get('tipus', 0);
+		$sort = $request->query->get('sort', 'p.descripcio');
+		$direction = $request->query->get('direction', 'asc');
+		
+		$productes = array();
+		
+		if ($tipus > 0) {
+			$query = $this->consultaProductes(0, $tipus, false, $sort, $direction);
+		
+			$productes = $query->getResult();
+		}
+		
+		foreach ($productes as $k => $producte) {
+			// No mostrar preus a 0
+			if ($producte->getCurrentPreu() <= 0) unset($productes[$k]);  	
+		}
+			
+		$formBuilder = $this->createFormBuilder()
+			->add('cerca', 'search', array( ) )
+			->add('tipus', 'hidden', array(
+				'data' => $tipus));
+			
+		return $this->render('FecdasBundle:Facturacio:graellaproductes.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+						'title' => BaseController::getTipusProducte($tipus),
+						'productes' => $productes,  
+						'tipus' => $tipus,
+						'sortparams' => array('sort' => $sort,'direction' => $direction))
+						));
+	}
 	
-	public function cistellaAction(Request $request) {
+	public function tramitarcistellaAction(Request $request) {
 		// Recupera la cookie amb els productes del carrito
 	
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		$this->logEntryAuth('CISTELLA CONSULTA',	'');
+		$action = $request->query->get('action', '');
+		$tipus = $request->query->get('tipus', 0);
+		
+		$this->logEntryAuth('CISTELLA TRAMITAR', 'action => '.$action);
 
-		$em = $this->getDoctrine()->getManager();
+		try {
+			$em = $this->getDoctrine()->getManager();
+					
+			if ($action == 'desar' || $action == 'pagar') {
+				// Comanda nova. Crear factura
+				$current = $this->getCurrentDate();
+				
+				$factura = $this->crearFactura($current);
+				
+				$comanda = $this->crearComanda($factura, $current);
+				
+				// Recollir cistella de la sessió
+				$session = $this->get('session');
+				
+				$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
+				
+				foreach ($cart['productes'] as $id => $info) {
+					
+					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
+					
+					$anotacions = $info['unitats'].'x'.$info['descripcio'];
 		
-		// Comanda nova. Crear factura
-		$current = $this->getCurrentDate();
+					$detall = $this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
+				}
+				
+				if (count($cart['productes']) == 0) $detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
+			
+				// Validacions comuns i anotacions stock
+				$this->tramitarComanda($comanda);
+			
+				$em ->flush(); 
+			}
+			
+			if ($action == 'anular' || $action == 'desar' || $action == 'pagar') { // Totes borren sessió
+				// Esborrar comanda de la sessió
+				$session = $this->get('session');
+				
+				$session->remove('cart');
+			}	
+			
+			switch ($action) {
+			    case 'pagar':
+			        // Obrir TPV
+			        
+			        break;
+			    case 'desar':
+			        // Recordatori pagament
+					$this->get('session')->getFlashBag()->add('sms-notice',	'La comanda s\'ha desat correctament'); 
+					
+					$this->get('session')->getFlashBag()->add('sms-notice',	BaseController::RECORDATORI_PAGAMENT);
+					
+			        break;
+			    case 'anular':
+					// Missatge 
+					$this->get('session')->getFlashBag()->add('sms-notice',	'Comanda anul·lada');	
+			        break;
+			}
+			
+		} catch (\Exception $e) {
+				// Ko, mostra form amb errors
+			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+		}
 		
-		$factura = $this->crearFactura($current);
-		
-		$comanda = $this->crearComanda($factura, $current);
-		
-		$detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
-		
-		$form = $this->createForm(new FormComanda(), $comanda);
-		
-		return $this->render('FecdasBundle:Facturacio:cistella.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'comanda' => $comanda)));
+		return $this->redirect($this->generateUrl('FecdasBundle_graellaproductes', array( 'tipus' => $tipus)));
 	}
+
+	public function afegircistellaAction(Request $request) {
+		// Afegir producte a la cistella (desada temporalment en cookie)
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
+		$producte = null;
+		$idProducte = $request->query->get('id', 0);
+		$unitats = $request->query->get('unitats', 1);
+		$tipus = $request->query->get('tipus', 0);
+		
+		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
+		
+		if ($producte != null) {
+			// Recollir cistella de la sessió
+			$session = $this->get('session');
+			
+			$import = $unitats * $producte->getPreuTotalUnitat(date('Y'));
+			
+			$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
+			
+			if ( !isset( $cart['productes'][$idProducte] ) ) {
+				$cart['productes'][$idProducte] = array(
+						'abreviatura' 	=> $producte->getAbreviatura(),
+						'descripcio' 	=> $producte->getDescripcio(),
+						'unitats' 		=> $unitats,
+						'import' 		=> $import
+				);
+			} else {
+				$cart['productes'][$idProducte]['unitats'] += $unitats;
+			}
+			//$cart['total'] += $import;
+			
+			$session->set('cart', $cart);
+			
+		}
+		
+		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', array('tipus' => $tipus));
+		
+	}
+
+	public function treurecistellaAction(Request $request) {
+		// Afegir producte a la cistella (desada temporalment en cookie)
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$producte = null;
+		$idProducte = $request->query->get('id', 0);
+		$tipus = $request->query->get('tipus', 0);
+		
+		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
+		
+		if ($producte != null) {
+			// Recollir cistella de la sessió
+			$session = $this->get('session');
+
+			$cart = $session->get('cart', array('productes' => array(), 'total' => 0)); // Crear cistella buida per defecte
+			
+			/*if ( isset( $cart['productes'][$idProducte] ) ) {
+				$cart['total'] -= $cart['productes'][$idProducte]['unitats'] * $cart['productes'][$idProducte]['import'];
+			}*/
+			unset( $cart['productes'][$idProducte] );
+			
+			$session->set('cart', $cart);
+			
+		}
+		
+		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', array('tipus' => $tipus));
+		
+	}
 
 	public function editarcomandaAction(Request $request) {
 		// Edició d'una nova comanda existent
@@ -732,71 +885,28 @@ class FacturacioController extends BaseController {
 			try {
 				$form->handleRequest($request);
 				if ($form->isValid()) {
-					if ($comanda->getClub() == null) {
-						$form->get('club')->addError(new FormError('Falta el club'));
-						throw new \Exception('Cal escollir un club ' );
-					}
-					
-					if ($comanda->getNumDetalls() <= 0) {
-						throw new \Exception('La comanda ha de tenir algún producte'  );
-					}
-					
-					if ($comanda->getTotalDetalls() == 0) {
-						throw new \Exception('L\'import de la comanda ha de ser diferent de 0'  );
-					}
 					
 					if ($comandaOriginalBaixa == false &&
 						$comanda->esBaixa()) {
 						// Baixa nova	
 						$comanda->baixa();
+						
+						
 					} else {
 						
-						// remove the relationship between the tag and the Task
-						foreach ($originalDetalls as $detall) {
-							if (false === $comanda->getDetalls()->contains($detall)) {
-								if (!$comanda->detallsEditables()) 
-									throw new \Exception('No es poden editar els detalls d\'aquest tipus de comandes');
-								
-								$this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
-							}
-							if ($detall->getIvaunitat() > 0) $detall->setIvaunitat($detall->getIvaunitat()/100); 
-						}
-						
-						// Nous detalls i validació
-						
-						$formdetalls = $form->get('detalls');
-						
-						foreach ($comanda->getDetalls() as $detall) {
-							if (false === $originalDetalls->contains($detall)) {
-								if (!$comanda->detallsEditables())
-									throw new \Exception('No es poden editar els detalls d\'aquest tipus de comandes');
-										
-								$em->persist($detall);
-							}
-							$detall->setDatamodificacio(new \DateTime());
-							
-							if ($detall->getProducte() == null) {
-								$camp = $this->cercarCampColleccio($formdetalls, $detall, 'producte');
-								if ($camp != null) $camp->addError(new FormError('Escollir producte'));
-								throw new \Exception('Cal escollir algun producte de la llista'  );
-							}
-							
-							if ($detall->getUnitats() == 0) {
-								$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
-								if ($camp != null) $camp->addError(new FormError('?'));
-								throw new \Exception('Cal afegir mínim una unitat del producte'  );
-							}
-						}
-						
+						// Validacions comuns i anotacions stock
+						$this->tramitarComanda($comanda, $originalDetalls, $form);
+
+						// Si nou pagament, crear rebut
 						$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
 						$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
 						if (!$comandaPagat) {
-							// Nou pagament, crear rebut
 							$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
 							$this->crearRebut($datapagament, $tipusPagament, $comanda);
 						} 
-					
+
 						if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
+						
 					}
 					// Generar nova factura si s'ha enviat a comptabilitat. Revisar anulacions etc..
 					// Desvincular rebut si escau
@@ -808,7 +918,7 @@ class FacturacioController extends BaseController {
 		
 				$em->flush();
 		
-				$this->get('session')->getFlashBag()->add('info-notice',	'La comanda s\'ha desat correctament');
+				$this->get('session')->getFlashBag()->add('sms-notice',	'La comanda s\'ha desat correctament');
 				 
 				$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $comanda->getId().' '.$comanda->getInfoComanda());
 				// Ok, retorn form sms ok
@@ -823,18 +933,6 @@ class FacturacioController extends BaseController {
 		
 		return $this->render('FecdasBundle:Facturacio:comanda.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'comanda' => $comanda)));
-	}
-	
-	private function cercarCampColleccio($colleccio, $data, $camp) {
-		foreach ($colleccio as $fill) {
-			if ($fill->getData() === $data)  {
-				$camps = $fill->all();
-				
-				if (isset($camps[$camp])) return $camps[$camp];
-				else return null;
-			}
-		}
-		return null;		
 	}
 	
 	public function baixacomandaAction(Request $request) {
@@ -867,7 +965,7 @@ class FacturacioController extends BaseController {
 		$em->flush();
 	
 		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId());
-		$this->get('session')->getFlashBag()->add('info-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
+		$this->get('session')->getFlashBag()->add('sms-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
 		return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 	}
 	
@@ -934,47 +1032,6 @@ class FacturacioController extends BaseController {
 						'productes' => $productes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
-	
-	public function graellaproductesAction(Request $request) {
-		// Graella de productes per afegir a la cistella
-
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-
-		$idproducte = $request->query->get('cerca', 0);
-
-		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
-		
-		$tipus = $request->query->get('tipus', 0);
-		
-		$sort = $request->query->get('sort', 'p.descripcio');
-		$direction = $request->query->get('direction', 'asc');
-		
-		if ($idproducte > 0) {
-			$tipus = 0;
-		}	
-
-		$query = $this->consultaProductes($idproducte, $tipus, false, $sort, $direction);
-			
-		$productes = $query->getResult();
-		
-		foreach ($productes as $k => $producte) {
-			// No mostrar preus a 0
-			if ($producte->getCurrentPreu() <= 0) unset($productes[$k]);  	
-		}
-			
-		$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'hidden', array(
-				'data' => ($idproducte>0?$idproducte:"")
-		));
-			
-		return $this->render('FecdasBundle:Facturacio:graellaproductes.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
-						'title' => BaseController::getTipusProducte($tipus),
-						'productes' => $productes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
-						));
-	}
-	
 	
 	public function editarproducteAction(Request $request) {
 		// Formulari d'edició d'un producte
@@ -1100,7 +1157,7 @@ class FacturacioController extends BaseController {
 
     			$em->flush();
     			 
-    			$this->get('session')->getFlashBag()->add('info-notice',	'El producte s\'ha desat correctament');
+    			$this->get('session')->getFlashBag()->add('sms-notice',	'El producte s\'ha desat correctament');
     			
     			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
     			// Ok, retorn form sms ok
@@ -1168,7 +1225,7 @@ class FacturacioController extends BaseController {
 		$em->flush();
 	
 		$this->logEntryAuth('BAIXA PRODUCTE OK', 'producte: '.$producte->getId());
-		$this->get('session')->getFlashBag()->add('info-notice', 'Producte '.$producte->getDescripcio().' donat de baixa ');
+		$this->get('session')->getFlashBag()->add('sms-notice', 'Producte '.$producte->getDescripcio().' donat de baixa ');
 		return $this->redirect($this->generateUrl('FecdasBundle_productes'));
 	}
 	
@@ -1213,7 +1270,7 @@ class FacturacioController extends BaseController {
 		return $response;
 		
 		
-		/*$this->get('session')->getFlashBag()->add('info-notice', 'Preu esborrat correctament ');
+		/*$this->get('session')->getFlashBag()->add('sms-notice', 'Preu esborrat correctament ');
 		return $this->redirect($this->generateUrl('FecdasBundle_producte', array('id' => $producte->getId())));*/
 	}
 	
@@ -1457,7 +1514,7 @@ class FacturacioController extends BaseController {
 		
 				$em->flush();
 		
-				$this->get('session')->getFlashBag()->add('info-notice','El rebut s\'ha desat correctament');
+				$this->get('session')->getFlashBag()->add('sms-notice','El rebut s\'ha desat correctament');
 							 
 				$this->logEntryAuth('REBUT SUBMIT',	'rebut : ' . $rebut->getId().' '.$rebut->getComentari());
 				// Ok, retorn form sms ok

@@ -90,7 +90,7 @@
 		        <li class="dropdown">
 			        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Comandes <span class="caret"></span></a>
 			        <ul class="dropdown-menu" role="menu">
-   			          	<li id="menu-admcomanda"><a href="{{ path('FecdasBundle_cistella') }}"><i class="fa fa-shopping-cart"></i>  Cistella (0)</a></li>
+   			          	<li id="menu-comanda"><a href="{{ path('FecdasBundle_graellaproductes') }}"><i class="fa fa-shopping-cart"></i>  Cistella ( {{ cartItems }} )</a></li>
 						<li class="divider"></li>
 			          	<li id="menu-kits" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':3 }) }}">Kits</a></li>
 			          	<li id="menu-merchandising" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':4 }) }}">Merchandising</a></li>
@@ -140,6 +140,8 @@
 			          	<li class="divider"></li>
 			          	<li id="menu-admproductes" class="separator"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
 			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
+			          	<li class="divider"></li>
+			          	<li id="menu-comandes" class="separator"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admtraspas"><a href="{{ path('FecdasBundle_traspascomptabilitat') }}">Enviar comptabilitat</a></li>
 			          </ul>

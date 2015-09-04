@@ -207,7 +207,7 @@ class EntityFactura {
 	/**
 	 * @param \FecdasBundle\Entity\EntityComanda $comanda
 	 */
-	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
+	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda = null) {
 		$this->comanda = $comanda;
 	}
 	

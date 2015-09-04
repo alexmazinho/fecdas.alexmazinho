@@ -113,16 +113,12 @@
 {% block javascripts %}
 
 	{{ parent() }}
- 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
- 	
 	<script type="text/javascript">
-	
-	
 	
 	filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
 		
 		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
-	}
+	}; 
 	
 	$(document).ready(function(){
 		setMenuActive("menu-admproductes");

@@ -386,16 +386,13 @@
 
 	
 	dialegConfirmacio = function(strHtml, titol, h, w, callbackok, callbackko) {
-		if ( h === undefined ) h = 'auto'; 
-		if ( w === undefined ) w = 300;
-
 		$( '#dialeg' ).html(strHtml);
 		
 		$( '#dialeg' ).dialog({
 			 resizable: false,
 			 title: titol,
-			 height: h,
-			 width: w,
+			 height: (h !== undefined?h:"auto"),
+			 width:  (w !== undefined?w:300),
 			 modal: true,
 			 buttons: {
 			 	"Continuar": function() {
@@ -737,6 +734,31 @@
 	    });
 	};
 	
+	showMask = function() {
+        // Show mask before overlay
+        //Get the screen height and width
+		var maskHeight = $(document).height();
+        var maskWidth = $(window).width();
+        //Set height and width to mask to fill up the whole screen
+        $('.mask').css({'width':maskWidth,'height':maskHeight});
+        //transition effect    
+        $('.mask').fadeTo("slow",0.6); 
+	};
+
+	hideMask = function() {
+        //transition effect    
+        $('.mask').fadeOut("slow"); 
+	};
+
+	obrirMascaraBlock = function(block) {
+		$(block).prepend('<div class="block-mask"><div><span class="fa fa-spinner fa-spin fa-2x green"></span></div></div>');
+		$(block).css({'min-height':'200px'});
+		$('.block-mask').fadeTo("slow",1); 
+	};
+
+	tancarMascaraBlock = function(block) {
+		$('.block-mask').remove();
+	};
 	
 	showPersonModal = function(id, url, origenLlicencia) {
         // Show mask before overlay
@@ -1178,10 +1200,12 @@
 	    });
 	};
 
-	partePagamentButton = function() {
-		$('#formparte-payment').click(function(e) {
+	tramitarPagamentButton = function(selector, sms) {
+		
+		$( selector ).click(function(e) {
 			e.preventDefault();
-			var url = $(this).attr("data-href");
+			
+			var url = $(this).attr("href");
 			$("#dialeg").dialog({
 	          	buttons : {
 	            	"Continuar" : function() {
@@ -1195,20 +1219,12 @@
 		            }
 		        },
 		        title: "Abans de continuar...",
-		        height: 350,
+		        height: 'auto',
 		        width: 550,
 		        zIndex:	350
 		    });
 		
-		    $("#dialeg").html("<div class='sms-pagament'><p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, " +
-		    		"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p>" +
-		    		"<p>2100 0900 95 0211628657</p>" +
-		    		"<p>I rebrà al seu club les llicències i la factura.</p>" +
-		    		"<p>Si vol realitzar el pagament ara, ho pot fer</p>" +
-		    		"<ul><li>Amb targeta de crèdit o dèbit</li>" +
-		    		"<li>Amb un compte de \'La Caixa\'</li>" +
-		    		"<li>Mitjançant transferència des d'una altra entitat</li></ul>" +
-		    		"<p>Gràcies</p></div>");
+		    $("#dialeg").html( sms );
 		    
 		    $("#dialeg").dialog("open");
 		});

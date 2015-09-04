@@ -511,24 +511,41 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 /*************** FECDAS NOU graella productes ****************/
 
+.cistella-resum ul { margin-bottom: 20px;  }
+
+.cistella-resum ul li { display: table-row; }
+
+.cistella-resum ul li span { display: table-cell; padding-right: 5px; }
+
+.cistella-resum .cistella-summary  { text-align: right; font-size: 1.2em; font-weight: bold; padding: 10px 0; margin-top: 10px;  }
+
+.cistella-resum .cistella-summary span { padding: 10px 5px; /*border-top: 1px solid #cccccc;*/ }
+
 .total-productes-grid {
 	color: #1240a0;
     font-size: 1.2em;
     text-align: right;
-    font-weight: bold; 
+    font-style: italic; 
 }
 
-.grid-productes-header { margin-bottom: 20px;  }
+#productes-main { }
+.grid-productes { width: 100% !important;  position: relative; }
 
-.graella-item { border: 1px solid #007FFF; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+.grid-productes-header { margin-bottom: 20px; position: relative;  }
+
+.grid-productes-header h3 { position: absolute; right: 0; bottom: 0; }
+
+.graella-item > div { border: 1px solid #007FFF; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
 
 .graella-item h4 { font-weight: bold; text-align: left; color: #000000; }
 
-.graella-item h4 .graella-item-preu { float: right; font-size: 1.1em; color: #1240a0; }
+.graella-item h4 .graella-item-preu { float: right; /*font-size: 1.1em;*/ color: #1240a0; }
 
 .graella-item h5 { color: #555555;  }
 
-.graella-item-esgotat { background-color: #333333; border: 1px solid #555555; }
+.graella-item-hide  { display:none; }
+
+.graella-item-esgotat > div  { background-color: #333333; border: 1px solid #555555; }
 
 .graella-item-with-min { font-style: italic; color: #a94442; font-size: 0.9em; }
  
@@ -536,7 +553,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .graella-item-add a, .graella-item-add input { display: inline; vertical-align: middle; }
 .graella-item-add a { font-size: 1.7em; }
-.graella-item-add input { max-width: 50px; }
+.graella-item-add input { max-width: 70px; }
 
 /*************** FECDAS NOU preu ****************/
 
@@ -1148,10 +1165,6 @@ input#form_dni {
 
 .buttons-top-bootstrap { margin-top: 10px; }
 
-#formparte-print, #formparte-payment, #formparte-delete, #formparte-factura {
-	float:left;
-	padding-left: 5px;
-}
 
 #formparte-rest { display: none; }
 
@@ -1962,7 +1975,7 @@ p.info-bold {
 .duplicat-extra { width: 16%; text-align: left; }
 .duplicat-actions { width: auto; text-align: right; font-size: 1.2em; }
 
-#dialeg { height: auto; }
+#dialeg { height: auto !important; }
 
 #dialeg .dialeg-titol {
 	border-bottom: 1px solid #000000;
@@ -2464,6 +2477,29 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 .col-responsive {  display: none; }
+
+.block-mask {
+	background-color:#FFFFFF;
+	display: block;
+	position:absolute;
+  	left: 0;
+  	top: 0;
+  	width: 100%;
+  	height: 100%;
+  	display:none;
+  	z-index:2000;
+}
+
+.block-mask > div {
+	display: block;
+    height: 14px;
+    margin: 75px auto;
+    /*position: relative;*/
+    width: 14px;
+}
+
+.block-mask > div .fa {  }
+
 
 /* Z-index of #mask must lower than #boxes .window */
 .mask {

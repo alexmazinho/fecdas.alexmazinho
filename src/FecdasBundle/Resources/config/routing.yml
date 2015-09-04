@@ -367,15 +367,21 @@ FecdasBundle_comandes:
     requirements:
         _method:  GET
 
-FecdasBundle_cistella:
-    pattern:  /cistella
-    defaults: { _controller: "FecdasBundle:Facturacio:cistella" }
+FecdasBundle_tramitarcistella:
+    pattern:  /tramitarcistella
+    defaults: { _controller: "FecdasBundle:Facturacio:tramitarcistella" }
     requirements:
         _method:  GET
 
 FecdasBundle_afegircistella:
     pattern:  /afegircistella
     defaults: { _controller: "FecdasBundle:Facturacio:afegircistella" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_treurecistella:
+    pattern:  /treurecistella
+    defaults: { _controller: "FecdasBundle:Facturacio:treurecistella" }
     requirements:
         _method:  GET
 

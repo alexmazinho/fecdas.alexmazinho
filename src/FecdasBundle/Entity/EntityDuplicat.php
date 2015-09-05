@@ -82,6 +82,48 @@ class EntityDuplicat extends EntityComanda {
 	}
 	
 	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getOrigenPagament()
+	{
+		return BaseController::PAGAMENT_DUPLICAT;	
+	}			
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getDescripcioPagament()
+	{
+		return 'Pagament a FECDAS, petició de duplicat del club ' . $this->club->getCodi() . 
+				' per a '. $this->getPersona()->getNomCognoms() .' en data ' . 
+				$this->getDatapeticio()->format('d/m/Y');	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getBackURLPagament()
+	{
+		return 'FecdasBundle_duplicats'; 	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getBackTextPagament()
+	{
+		return 'Petició de duplicats'; 	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getMenuActiuPagament()
+	{
+		return 'menu-duplicats';	
+	}			
+
+	
+	/**
 	 * @return integer
 	 */
 	public function getId() {
@@ -198,28 +240,6 @@ class EntityDuplicat extends EntityComanda {
 	public function getFoto()
 	{
 		return $this->foto;
-	}
-	
-	
-	/**
-	 * Array amb el detall de la factura de la petició de duplicat
-	 *
-	 * @return string
-	 */
-	public function getDetallFactura() {
-		$detallfactura = array();
-		$iva = 0;
-		$codi = $this->getCarnet()->getCodisortida();
-		$preu = $this->getCarnet()->getPreu();
-		$detallfactura[$codi]['codi'] = $codi;
-		$detallfactura[$codi]['desc'] = $this->getTextCarnet(false).". <b>".$this->getPersona()->getCognomsNom()."</b>";
-		$detallfactura[$codi]['quant'] = 1;
-		$detallfactura[$codi]['preuunitat'] = $preu;
-		$detallfactura[$codi]['preusiva'] = $preu;
-		$detallfactura[$codi]['iva'] = $preu*$iva/100;
-		$detallfactura[$codi]['totaldetall'] = $detallfactura[$codi]['preusiva'] + $detallfactura[$codi]['iva'];
-		
-		return $detallfactura;
 	}
 	
 	/**

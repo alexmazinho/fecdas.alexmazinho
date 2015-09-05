@@ -20,46 +20,50 @@
 	    <div id="list-forms">
 	    	<form id="form_comandes" action="{{ path('FecdasBundle_comandes') }}" method="GET" {{ form_enctype(form) }}  class="appform">
 		    	<div class="row">
-				  <div class="col-md-4">
+				  <div class="col-md-3 col-xs-5">
+				  	<div class="form-group">
+				    	<div class="input-group">
+					    	<span class="input-group-addon"># Factura</span>
+							{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				  </div>
+				  <div class="col-md-3 col-xs-5">
+				  	<div class="form-group">
+				    	<div class="input-group">
+					    	<span class="input-group-addon"># Rebut</span>
+							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				  </div>
+				  {% if admin == true %}
+				  <div class="col-md-4  col-xs-8">
 				  	<div class="form-group">
 				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				  </div>
-				  <div class="col-md-2">
-				  	<div class="form-group">
-				    	<div class="input-group">
-					    	<span class="input-group-addon">Factura</span>
-							{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				  </div>
-				  <div class="col-md-2">
-				  	<div class="form-group">
-				    	<div class="input-group">
-					    	<span class="input-group-addon">Rebut</span>
-							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				  </div>
-				  <div class="col-md-2">
+				  <div class="col-md-2  col-xs-4">
 					  <div class="checkbox-inline">
 					    <label>
 					      {{ form_widget(form.baixes) }} Mostrar baixes
 					    </label>
 					  </div>
 				  </div>
+				  {% endif %}
 				</div>
 		   	</form>
 	    </div>
 	    <div class="table-header">	
-		   	<div id="list-header">
+		   	<div id="list-header" class="{% if admin == true  %}list-header-adm{% endif %}">
 				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">Estat</div>
 		   		<div id="header-comanda-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Num.', 'c.num') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		{% if admin == true  %}	
 		   		<div id="header-comanda-club" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Club', 'c.club') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('c.club') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		{% endif %}
 		   		<div id="header-comanda-items" class="col-listheader collistheader-noorder">items</div>
 		   		<div id="header-comanda-total" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Total', 'c.total') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('c.total') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
@@ -70,31 +74,44 @@
 		   		<div id="header-comanda-rebut" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Rebut', 'r.datapagament,r.num') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('r.datapagament,r.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-comanda-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
-		   		<div id="header-comanda-compta" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Enviat\nCompta.', 'c.comptabilitat') }}
-		   			<span class="listheader-icon {% if comandes.isSorted('c.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ comandes.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   		{% if admin == true  %}
+			   		<div id="header-comanda-compta" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Enviat\nCompta.', 'c.comptabilitat') }}
+			   			<span class="listheader-icon {% if comandes.isSorted('c.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		{% endif %}
+		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder">&nbsp;</div>
 		   	</div>
 	   	</div>
 		{% if comandes|length > 0 %}
 		<div class="table-scroll">
-		   	<ol id="list-data">
+		   	<ol id="list-data" class="{% if admin == true  %}list-data-adm{% endif %}">
 			{% for comanda in comandes %} 
 		   		<li class="data-detall {% if comanda.esBaixa %} data-detall-fosc {% endif %}">
 		   			<div class="data-detall-cell comanda-id hidden">{{ comanda.id }}</div>
 		   			<div class="data-detall-cell comanda-estat">{{ comanda.estat }}</div>
 		   			<div class="data-detall-cell comanda-num">{{ comanda.numcomanda }}</div>
-		   			<div class="data-detall-cell comanda-club">{{ comanda.club.nom }}</div>
+		   			{% if admin == true  %}	
+		   				<div class="data-detall-cell comanda-club">
+		   					<a href="/club?codiclub={{ comanda.club.codi }}" title="Veure dades del club" alt="Veure dades del club">{{ comanda.club.nom }}</a>
+		   					
+		   				</div>
+		   			{% endif %}
 		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
 		   			<div class="data-detall-cell comanda-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
-		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/y') }}</div>
 		   			<div class="data-detall-cell comanda-factura">
-		   				{% if  comanda.factura is not null  %}
+						{% if admin == true %}
+			   				{% if  comanda.factura is not null and comanda.factura.esBaixa != true  %}
 							<a class="editar-factura link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
 								{{ comanda.numfactura }}</a>
-						{% else %}
-							<a class="crear-factura link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
-								<i class="fa fa-plus-circle fa-1x blue"></i></a>
+							{% else %}
+								<a class="crear-factura link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+									<i class="fa fa-plus-circle fa-1x blue"></i></a>
+							{% endif %}
 						{% endif %}		
+		   				{% if  comanda.factura is not null and comanda.factura.esBaixa != true  %}
+	   						<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': comanda.id}) }}" alt="PDF Factura" title="PDF Factura">
+								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+						{% endif %}
 					</div>
 		   			<div class="data-detall-cell comanda-rebut">
 		   				{% if comanda.rebut is not null %}
@@ -106,31 +123,21 @@
 						{% endif %}	
 						
 					</div>
-		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.comentaris }}</div>
-		   			<div class="data-detall-cell comanda-compta">{% if  comanda.comptabilitat is not null %}{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
+		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|raw }}</div>
+		   			{% if admin == true  %}<div class="data-detall-cell comanda-compta">{% if  comanda.comptabilitat is not null %}{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>{% endif %}
 		   			<div class="data-detall-cell comanda-actions">
-		   				<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil text-info blue"></i></a>			
-						{% if not comanda.esBaixa %}
-							{% if comanda.factura is not null and comanda.factura.esBaixa != true  %}
-			   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': comanda.id}) }}" alt="PDF Factura" title="PDF Factura">
-									<i class="fa fa-file-text-o fa-1x green"></i></a>
-							{% else %}
-				   				<a class="comanda-action-albara link" href="{{ path('FecdasBundle_albaratopdf', { 'id': comanda.id}) }}" alt="PDF Albarà" title="PDF Albarà">
-									<i class="fa fa-list fa-1x green"></i></a>
-							{% endif %}
-							{% if comanda.comandaPagada != true  %}
-								<i class="fa fa-list transparent"></i>
-							{% else %}
-				   				<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': comanda.rebut.id}) }}" alt="PDF Rebut" title="PDF Rebut">
-									<i class="fa fa-list fa-1x orange"></i></a>
-							{% endif %}
-			   				<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa">
-		   						<i class="fa fa-trash-o text-danger red"></i></a>
-		   				{% else %}
-			   				<i class="fa fa-file-text-o transparent"></i>
-			   				<i class="fa fa-list transparent"></i>
-			   				<i class="fa fa-trash-o transparent"></i>
-		   				{% endif %}
+						{% if comanda.comandaPagada == true  %}
+			   				<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': comanda.rebut.id}) }}" alt="PDF Rebut" title="PDF Rebut">
+								<i class="fa fa-list fa-1x orange"></i></a>
+						{% endif %}
+						{% if admin == true  %}
+							<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar">
+								<i class="fa fa-pencil text-info blue"></i></a>
+							{% if not comanda.esBaixa %}			   				
+								<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa">
+			   						<i class="fa fa-trash-o text-danger red"></i></a>
+			   				{% endif %}
+	   					{% endif %}
 		   			</div>
 		   		</li>
 		   		{% endfor %}
@@ -159,7 +166,12 @@
 	}
 	
 	$(document).ready(function(){
+
+		{% if admin == true  %}
+		setMenuActive("menu-admcomandes");
+		{% else %}
 		setMenuActive("menu-comandes");
+		{% endif %}
 		
 		$("#form_cerca").change(function() {
 			filtreLlistacomandes($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numfactura" ).val(), $( "#form_numrebut" ).val() );

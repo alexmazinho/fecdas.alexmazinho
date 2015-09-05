@@ -99,7 +99,7 @@
 									<i class="fa fa-file-text-o fa-1x blue"></i></a>
 							{% endif %}
 							{% if duplicat.datapagament is null %} 
-								<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentpeticio', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
+								<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
 									<i class="fa fa-euro fa-1x green"></i></a>
 							{%  else %}
 								<i class="fa fa-euro fa-1x transparent"></i>

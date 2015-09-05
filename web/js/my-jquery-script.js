@@ -398,14 +398,14 @@
 			 	"Continuar": function() {
 			 		$( this ).dialog( "close" );
 			 		//$( this ).dialog( "destroy" );
-			 		$( '#dialeg' ).html('');
 			 		callbackok();
+			 		$( '#dialeg' ).html('');
 			 	},
 			 	"Cancel·lar": function() {
 			 		$( this ).dialog( "close" );
 			 		//$( this ).dialog( "destroy" );
-			 		$( '#dialeg' ).html('');
 			 		callbackko();
+			 		$( '#dialeg' ).html('');
 			 	}
 			 }
 		});

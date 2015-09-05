@@ -44,7 +44,14 @@ Examples
 	}
 }
 
+@media only screen and (max-width: 1400px) {
+	.nav > li > a { padding: 15px 10px;  }
+	.navbar-default .navbar-text { display:none; }
+}
+
 @media only screen and (max-width: 1200px) {
+	.nav > li > a { padding: 10px 5px; }
+
 	.logo img { width: 90px; }
 	
 	.title { padding-left: 110px; }
@@ -59,7 +66,7 @@ Examples
 }
 
 @media only screen and (max-width: 959px) {
-	.nav > li > a { padding: 15px 10px; }
+	.nav > li > a { padding: 10px 5px; font-size: 0.9em; }
 	.navbar-text { display: none; }
 	.title { font-size: 17px; line-height: 1.1; }
 	.title i { font-size: 15px; }

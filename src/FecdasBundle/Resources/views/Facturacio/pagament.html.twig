@@ -1,7 +1,7 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block title %}Aplicació gestió FECDAS. {{ titol }} {% endblock %}
+{% block title %}Aplicació gestió FECDAS. Pagament {{ comanda.origenpagament }} {% endblock %}
 
 {% form_theme formpayment _self %}
 
@@ -11,7 +11,7 @@
 
 {% block body %}
 	<header>
-        <h1><a href="{{ backurl }}">{{ backtext }}</a> > {{ titol }}</h1>
+        <h1><a href="{{ backurl }}">{{ comanda.backTextPagament }}</a> > Pagament {{ comanda.origenpagament }} </h1>
     </header>
 
     {% for flashMessage in app.session.flashbag.get('error-notice') %}
@@ -23,6 +23,7 @@
     <div id="fact-header">
 	   	<div id="fact-dadesclub">
     		<ol class="fact-summary-table table-noscroll">
+    			{% set club = comanda.club %}
 	   			<li class="data-detall">
 	   				<div class="data-detall-cell fact-titol">Club</div>
 	   				<div id="fact-club" class="data-detall-cell">{{ club.nom }}</div>
@@ -86,7 +87,7 @@
 		   	<div id="header-factdetallquantitat" class="col-listheader">Quantitat</div>
 		   	<div id="header-factdetallpreuunitat" class="col-listheader">Preu<br/>Unitat</div>
 		   	<div id="header-factdetallpreusiva" class="col-listheader">Preu<br/>Total</div>
-		   	<div id="header-factdetalliva" class="col-listheader">I.V.A.<br/>({{ iva }}%)</div>
+		   	<div id="header-factdetalliva" class="col-listheader">I.V.A.</div>
 		   	<div id="header-factdetallpreutotal" class="col-listheader">Total</div>
    		</div>
    	</div>
@@ -96,25 +97,25 @@
 			{% for lineadetall in detall %}
 		   		<li class="data-detall">
 			   		<div class="data-detall-cell factdetall-codi">{{ lineadetall.codi }}</div>
-			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.desc|raw }}</div>
-			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.quant }}</div>
+			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.producte|raw }}</div>
+			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.total }}</div>
 			   		<div class="data-detall-cell factdetall-preuunitat">{{ lineadetall.preuunitat|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-preusiva">{{ lineadetall.preusiva|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ lineadetall.iva|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-preutotal">{{ lineadetall.totaldetall|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-preusiva">{{ (lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ (lineadetall.ivaunitat*lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-preutotal">{{ lineadetall.import|number_format(2, '.', ',') }} €</div>
 		   		</li>
 	   		{% endfor %}
 	   		</ol>
 	   		<ol id="list-data">
 	   			<li id="factdetall-totals" class="data-detall">
 	   				<div class="data-detall-cell factdetall-tab"></div>
-			   		<div class="data-detall-cell factdetall-totalparcial">{{ totals.totalparcial|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ totals.iva|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-total">{{ totals.total|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-totalparcial">{{ comanda.totalDetalls|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ comanda.totalIVADetalls|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-total">{{ comanda.totalDetalls|number_format(2, '.', ',') }} €</div>
 			   	</li>	
 			</ol>
 		</div>
-		{%  if (iva == 0) %}
+		{%  if (comanda.totalIVADetalls == 0) %}
 		<div class="sms-footer">Exempt d'I.V.A. segons la llei 49/2002</div>
 		{% endif %}
   	 {% endif %}
@@ -128,7 +129,7 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-	setMenuActive("{{ menuactive }}");
+	setMenuActive("{{ comanda.menuActiuPagament }}");
 	
     $('#formpayment').submit(function() {
     	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');

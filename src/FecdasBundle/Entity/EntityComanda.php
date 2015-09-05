@@ -314,8 +314,47 @@ class EntityComanda {
 		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getDatapagament():null);
 	}
 	
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getOrigenPagament()
+	{
+		return BaseController::PAGAMENT_ALTRES;	
+	}
 	
-	
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getDescripcioPagament()
+	{
+		return 'Pagament a FECDAS, comanda del club ' . $this->club->getCodi() . 
+				' en data ' . $this->getDataentrada()->format('d/m/Y');	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getBackURLPagament()
+	{
+		return 'FecdasBundle_comandes'; 	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getBackTextPagament()
+	{
+		return 'Llistat de comandes'; 	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getMenuActiuPagament()
+	{
+		return 'menu-comanda';	
+	}			
+
 	/**
 	 * @return integer
 	 */
@@ -395,8 +434,6 @@ class EntityComanda {
 				
 				$codi = $d->getProducte()->getCodi();
 				
-				error_log("***>".$d->getIvaunitat());
-				
 				if (isset($acumulades[$codi])) {
 					$acumulades[$codi]['total'] += $d->getUnitats();
 					$acumulades[$codi]['import'] += $d->getTotal();
@@ -468,6 +505,28 @@ class EntityComanda {
 	}
 
 	/**
+	 * Get total suma dels detalls sense IVA
+	 *
+	 * @return double
+	 */
+	public function getTotalNetDetalls()
+	{
+		$total = 0;
+		foreach ($this->detalls as $d) $total += $d->getTotalNet();
+		return $total;
+	}
+
+	/**
+	 * Get total suma dels detalls sense IVA
+	 *
+	 * @return double
+	 */
+	public function getTotalIVADetalls()
+	{
+		return round($this->getTotalDetalls() - $this->getTotalNetDetalls(), 2); 	
+	}
+
+	/**
 	 * Get total dels detalls no baixa
 	 *
 	 * @return double
@@ -477,6 +536,20 @@ class EntityComanda {
 		$total = 0;
 		foreach ($this->detalls as $d) if (!$d->esBaixa()) $total ++;
 		return $total;
+	}
+
+	/**
+	 * Get info llistat 
+	 *
+	 * @return string
+	 */
+	public function getInfoLlistat()
+	{
+		$info = $this->comentaris;
+		foreach ($this->detalls as $d) {
+			if (!$d->esBaixa()) $info .= '<br/>'. $d->getAnotacions();
+		}
+		return $info;
 	}
 	
     /**

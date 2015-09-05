@@ -163,8 +163,6 @@ class PDFController extends BaseController {
 		foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
 			if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
 			
-			error_log("===>".$lineafactura['ivaunitat']);
-			
 			$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 			$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
 			

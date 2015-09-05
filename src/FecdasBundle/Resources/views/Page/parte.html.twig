@@ -20,7 +20,7 @@
 						{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
 						<!-- No Pagat -->
 			        	<div class="button-top">	
-			        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagament', { 'id': parte.id}) }}" alt="Pagament" title="Pagament">
+			        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': parte.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
 			        			<i class="fa fa-credit-card fa-1x blue"></i></a>
 						</div>
 						{% endif %}	

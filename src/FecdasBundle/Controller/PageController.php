@@ -876,7 +876,7 @@ class PageController extends BaseController {
 		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('parte')) { 
-				$response = $this->forward('FecdasBundle:Page:pagament');  // Pagament continuar
+				$response = $this->forward('FecdasBundle:Facturacio:pagament');  // Pagament continuar
 				return $response;
 			}
 			// Nou parte des de Partes
@@ -1518,90 +1518,6 @@ class PageController extends BaseController {
 		
 		return $this->render('FecdasBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView()))); 
 	} 
-	
-	public function pagamentpeticioAction(Request $request) {
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-	
-		$duplicatid = 0;
-		if ($request->query->has('id')) {
-			$duplicatid = $request->query->get('id');
-			$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
-	
-			if ($duplicat != null  && $duplicat->getPagament() == null) {
-				$club = $duplicat->getClub();
-				// Get factura detall
-				$detallfactura = $duplicat->getDetallFactura();
-				// Get factura totals
-				$totalfactura = $this->getTotalsFactura($detallfactura);
-	
-				$desc = 'Pagament a FECDAS ' . $duplicat->getTextCarnet(false) . ", del club "  . $club->getCodi() . ' en data ' . $duplicat->getDatapeticio()->format('d/m/Y');
-				$payment = new EntityPayment($duplicatid, $this->get('kernel')->getEnvironment(),
-						$totalfactura['total'], $desc, $club->getNom(), self::PAGAMENT_DUPLICAT);
-				
-				$formpayment = $this->createForm(new FormPayment(), $payment);
-	
-				$this->logEntryAuth('PAG. DUPLI VIEW', $duplicatid);
-	
-				return $this->render('FecdasBundle:Page:pagament.html.twig',
-						$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(),
-								'titol' => 'Pagament petició de duplicat', 'payment' => $payment, 'club' => $club,
-								'iva' => 0, 'detall' => $detallfactura, 'totals' => $totalfactura,
-								'backurl' => $this->generateUrl('FecdasBundle_duplicats'), 'backtext' => 'Duplicats',
-								'menuactive' => 'menu-duplicats'
-						)));
-			}
-		}
-	
-		/* Error */
-		$this->logEntryAuth('PAG. DUPLI KO', $duplicatid);
-		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut accedir al pagament, poseu-vos en contacte amb la Federació' );
-		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	}
-	
-	
-	public function pagamentAction(Request $request) {
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-
-		
-		$parteid = 0;
-		if ($request->query->has('id')) {
-			$parteid = $request->query->get('id');
-			$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
-		
-			if ($parte != null  && $parte->getDatapagament() == null) {
-
-				// Get factura detall
-				$detallfactura = $parte->getDetallFactura();
-				// Get factura totals
-				$totalfactura = $this->getTotalsFactura($detallfactura);
-				
-				$desc = 'Pagament a FECDAS, llista d\'assegurats del club ' . $parte->getClub()->getCodi() . ' en data ' . $parte->getDataalta()->format('d/m/Y');
-				$payment = new EntityPayment($parteid, $this->get('kernel')->getEnvironment(),
-						$totalfactura['total'], $desc, $parte->getClub()->getNom(), self::PAGAMENT_LLICENCIES);
-				$formpayment = $this->createForm(new FormPayment(), $payment);
-				
-				$this->logEntryAuth('PAGAMENT VIEW', $parteid);
-				
-				return $this->render('FecdasBundle:Page:pagament.html.twig',
-						$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(),
-								'titol' => 'Pagament de llicències', 'payment' => $payment, 'club' => $parte->getClub(),
-								'iva' => $parte->getTipus()->getIva(), 'detall' => $detallfactura, 'totals' => $totalfactura,
-								'backurl' => $this->generateUrl('FecdasBundle_parte', array('id' => $parteid )), 
-								'backtext' => 'Llista de llicències', 'menuactive' => 'menu-partes'
-						)));
-			}
-		}
-		
-		/* Error */
-		$this->logEntryAuth('PAGAMENT KO', $parteid);
-		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut accedir al pagament, poseu-vos en contacte amb la Federació' );
-		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	}
 	
 	public function notificacioOkAction(Request $request) {
 		// Resposta TPV on-line, genera resposta usuaris correcte

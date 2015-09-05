@@ -53,8 +53,17 @@
 							<h5>{{ producte.descripcio }}</h5>
 						{% if producte.minim != null %}<div class="graella-item-with-min">Quantitat mínima: {{ producte.minim }}</div> {% endif %}
 						<p class="graella-item-add">
-							<input class="producte-action-add-uds form-control form-control-center" type="number" value="{% if producte.minim == null %}1{% else %}{{ producte.minim }}{% endif %}">
-							<a class="producte-action-add-cart link" href="{{ path('FecdasBundle_afegircistella', { 'id': producte.id, 'tipus' : tipus }) }}" alt="Afegir a la cistella" title="Afegir a la cistella"><i class="fa fa-cart-plus green"></i></a>
+							{% if producte.disponible == true %} 
+								{% set min = 1 %}
+								{% if producte.minim != null %}{% set min = producte.minim %}{% endif %}
+								{% set max = 0 %}
+								{% if producte.stockable == 1 and producte.stock != null %}{% set max = producte.stock %}{% endif %}
+								<input class="producte-action-add-uds form-control form-control-center" type="number"  
+									value="{{ min }}" data-min="{{ min }}" data-max="{{ max }}">
+								<a class="producte-action-add-cart link" href="{{ path('FecdasBundle_afegircistella', { 'id': producte.id, 'tipus' : tipus }) }}" alt="Afegir a la cistella" title="Afegir a la cistella"><i class="fa fa-cart-plus green"></i></a>
+							{% else %}
+								<i class="fa fa-remove red"></i> esgotat
+							{% endif %}
 						</p>
 					</div>
 				</div>
@@ -77,25 +86,27 @@
  	
 	<script type="text/javascript">
 
-	var strHtml = "<div class='sms-pagament'><p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, "+ 
-	"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p> "+ 
+	var strHtml = "<div class='sms-pagament'><p>Per pagar la comanda "+
+	" pot fer la transferència en qualsevol moment al número de compte:</p> "+ 
 	"<p>2100 0900 95 0211628657</p> "+
-	"<p>I rebrà al seu club les llicències i la factura.</p> "+
-	"<p>Si vol realitzar el pagament ara, ho pot fer</p> "+
 	"<ul><li>Amb targeta de crèdit o dèbit</li> "+
 	"<li>Amb un compte de \'La Caixa\'</li> "+
 	"<li>Mitjançant transferència des d\'una altra entitat</li></ul> "+
-	"<p>Gràcies</p></div>";
+	"<p>Gràcies</p>"+
+	"<div class='form-group'>"+
+    "<label for='comanda_comentaris'>Comentaris</label>"+
+	"<div id='formcomanda-comentaris'>"+
+	"	<textarea class='form-control' rows='3' name='comanda[comentaris]' id='comanda_comentaris'></textarea>"+
+	"</div></div></div>";
 	
 	$(document).ready(function(){
 		
-		$( ".cistella-resum" ).on( "click", ".pagar-cistella", function(e) {
+		$( ".cistella-resum" ).on( "click", ".desar-cistella, .pagar-cistella", function(e) {
 			e.preventDefault();	
-			
 			var url = $(this).attr("href");
 			
 			dialegConfirmacio(strHtml, "Abans de continuar...", 0, 550, function() {
-	        	window.location = url;
+	        	window.location = url+'&comentaris='+$('#comanda_comentaris').val();
 	        }, function() {} );
 		});
 
@@ -112,6 +123,23 @@
 					
 			}); 
 		});
+
+		$( ".grid-productes" ).on( "change", ".producte-action-add-uds", function(e) {
+			//e.preventDefault();			
+			
+			var unitats = $(this).val()*1;
+			var max = $(this).attr('data-max')*1;
+			var min = $(this).attr('data-min')*1;
+			
+			if (max > 0 && unitats > max) {
+				$(this).val(max);
+			} else {
+				if (unitats < min) {
+					$(this).val(min);
+				}
+			}
+		});
+
 		
 		$( ".cistella-resum" ).on( "click", ".producte-action-remove-cart", function(e) {
 			e.preventDefault();			

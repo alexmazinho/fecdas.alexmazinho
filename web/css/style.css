@@ -511,7 +511,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 /*************** FECDAS NOU graella productes ****************/
 
-.cistella-resum ul { margin-bottom: 20px;  }
+.cistella-resum ul { margin-bottom: 20px; color: #444444; }
 
 .cistella-resum ul li { display: table-row; }
 
@@ -545,11 +545,12 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .graella-item-hide  { display:none; }
 
-.graella-item-esgotat > div  { background-color: #333333; border: 1px solid #555555; }
+.graella-item-esgotat > div  { opacity: 0.5; background-color: #cccccc; border: 1px solid #555555; }
 
 .graella-item-with-min { font-style: italic; color: #a94442; font-size: 0.9em; }
  
 .graella-item-add { text-align: right; display: block; margin-top: 10px;  padding-top: 10px; border-top: 1px solid #eeeeee; }
+.graella-item-esgotat .graella-item-add { text-align: center; }
 
 .graella-item-add a, .graella-item-add input { display: inline; vertical-align: middle; }
 .graella-item-add a { font-size: 1.7em; }
@@ -573,28 +574,49 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 /*************** FECDAS NOU comandes ****************/
 
 #header-comanda-estat  { width: 5%; text-align: left; }
-#header-comanda-num { width: 8%; text-align: left; }
-#header-comanda-club { width: 10%; text-align: left;  }
+#header-comanda-num { width: 10%; text-align: left; }
 #header-comanda-items { width: 5%; text-align: center; }
-#header-comanda-total { width: 7%; text-align: right; }
-#header-comanda-data { width: 7%; text-align: center; }
-#header-comanda-factura { width: 7%; text-align: center; }
-#header-comanda-rebut { width: 8%; text-align: center; }
-#header-comanda-comentaris { width: 18%; text-align: left; }
-#header-comanda-compta { width: 8%; text-align: right; }
-#header-comanda-actions { width: 12%; text-align: right; }
+#header-comanda-total { width: 10%; text-align: right; }
+#header-comanda-data { width: 10%; text-align: center; }
+#header-comanda-factura { width: 10%; text-align: center; }
+#header-comanda-rebut { width: 10%; text-align: center; }
+#header-comanda-comentaris { width: 25%; text-align: left; }
+#header-comanda-actions { width: 10%; text-align: right; }
 
 .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
-.data-detall-cell.comanda-num { width: 8%; text-align: left; }
-.data-detall-cell.comanda-club { width: 10%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-num { width: 10%; text-align: left; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
-.data-detall-cell.comanda-total { width: 7%; text-align: right; }
-.data-detall-cell.comanda-data { width: 7%; text-align: center; }
-.data-detall-cell.comanda-factura { width: 7%; text-align: center; }
-.data-detall-cell.comanda-rebut { width: 8%; text-align: center; }
-.data-detall-cell.comanda-comentaris { width: 18%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.comanda-compta { width: 8%; text-align: right; }
-.data-detall-cell.comanda-actions { width: 12%; text-align: right; font-size: 1.2em; }
+.data-detall-cell.comanda-total { width: 10%; text-align: right; }
+.data-detall-cell.comanda-data { width: 10%; text-align: center; }
+.data-detall-cell.comanda-factura { width: 10%; text-align: center; }
+.data-detall-cell.comanda-rebut { width: 10%; text-align: center; }
+.data-detall-cell.comanda-comentaris { width: 25%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
+
+.list-header-adm #header-comanda-estat  { width: 5%; text-align: left; }
+.list-header-adm #header-comanda-num { width: 7%; text-align: left; }
+.list-header-adm #header-comanda-club { width: 10%; text-align: left;  }
+.list-header-adm #header-comanda-items { width: 5%; text-align: center; }
+.list-header-adm #header-comanda-total { width: 7%; text-align: right; }
+.list-header-adm #header-comanda-data { width: 7%; text-align: center; }
+.list-header-adm #header-comanda-factura { width: 10%; text-align: center; }
+.list-header-adm #header-comanda-rebut { width: 8%; text-align: center; }
+.list-header-adm #header-comanda-comentaris { width: 19%; text-align: left; }
+.list-header-adm #header-comanda-compta { width: 8%; text-align: right; }
+.list-header-adm #header-comanda-actions { width: 10%; text-align: right; }
+
+.list-data-adm .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
+.list-data-adm .data-detall-cell.comanda-num { width: 7%; text-align: left; }
+.list-data-adm .data-detall-cell.comanda-club { width: 10%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-items { width: 5%; text-align: center; }
+.list-data-adm .data-detall-cell.comanda-total { width: 7%; text-align: right; }
+.list-data-adm .data-detall-cell.comanda-data { width: 7%; text-align: center; }
+.list-data-adm .data-detall-cell.comanda-factura { width: 10%; text-align: center; }
+.list-data-adm .data-detall-cell.comanda-rebut { width: 8%; text-align: center; }
+.list-data-adm .data-detall-cell.comanda-comentaris { width: 19%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-compta { width: 8%; text-align: right; }
+.list-data-adm .data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
+
 
 /*************** FECDAS NOU comanda ****************/
 

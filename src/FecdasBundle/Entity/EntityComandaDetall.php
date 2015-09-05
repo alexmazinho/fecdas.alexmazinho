@@ -104,11 +104,11 @@ class EntityComandaDetall {
 	
 	
 	/**
-	 * Get total
+	 * Get total net
 	 *
 	 * @return double
 	 */
-	public function getTotal()
+	public function getTotalNet()
 	{
 		if ($this->producte == null) return 0;	
 		
@@ -117,9 +117,19 @@ class EntityComandaDetall {
 		/*$preu 	= $this->producte->getCurrentPreu();
 		$iva 	= $this->producte->getCurrentIva();*/
 		
-		return $this->preuunitat * $this->unitats * (1 + $this->ivaunitat) * (1 - $this->descomptedetall);
+		return $this->preuunitat * $this->unitats * (1 - $this->descomptedetall);
 	}
 	
+	/**
+	 * Get total
+	 *
+	 * @return double
+	 */
+	public function getTotal()
+	{
+		return $this->getTotalNet()*(1 + $this->ivaunitat);	
+	}
+
 	/**
 	 * Get id
 	 *

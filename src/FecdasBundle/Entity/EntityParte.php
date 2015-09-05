@@ -153,6 +153,66 @@ class EntityParte extends EntityComanda {
 		return BaseController::PREFIX_ALBARA_LLICENCIES;
 	}
 	
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getOrigenPagament()
+	{
+		return BaseController::PAGAMENT_LLICENCIES;	
+	}			
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getDescripcioPagament()
+	{
+		return 'Pagament a FECDAS, llista d\'assegurats del club ' . $this->club->getCodi() . 
+				' en data ' . $this->getDataalta()->format('d/m/Y');	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getBackURLPagament()
+	{
+		return 'FecdasBundle_partes'; 	
+	}			
+
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getBackTextPagament()
+	{
+		return 'Llistat de llicències'; 	
+	}			
+	/**
+	 * Get dades TPV. Sobreescriptura
+	 */
+	public function getMenuActiuPagament()
+	{
+		return 'menu-parte';	
+	}			
+	
+	/**
+	 * Sobreescrit per afegir els 10 primers noms per als prodectes/llicències del parte
+	 *
+	 * @return string
+	 */
+	public function getDetallsAcumulats()
+	{
+		$acumulades = parent::getDetallsAcumulats();	
+
+ 	  	foreach ($this->llicencies as $llicencia) {
+    		if (!$llicencia->esBaixa()) {
+    			$producte = $llicencia->getCategoria()->getProducte();		
+    			
+				$acumulades[$producte->getCodi()]['producte'] .= '<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms();  
+			}
+    	}
+
+		return $acumulades;
+	}
+	
+	
     /**
      * Get any
      *
@@ -502,7 +562,7 @@ class EntityParte extends EntityComanda {
     	
     	if ($this->pendent) return "Pendent confirmació pagament";
 
-    	if ($this->isVigent() == false) return "Aquesta llista encara no està vigent";
+    	if ($this->isVigent() == false && $this->isPassat() == false) return "Aquesta llista encara no està vigent";
     	
     	if ($this->isPassat() == true) $textInfo .= "Validesa de les llicències finalitzada";
     	 

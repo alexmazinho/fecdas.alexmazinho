@@ -19,6 +19,8 @@ use FecdasBundle\Form\FormRebut;
 use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormComanda;
 use FecdasBundle\Entity\EntityComanda;
+use FecdasBundle\Form\FormPayment;
+use FecdasBundle\Entity\EntityPayment;
 use FecdasBundle\Entity\EntityPreu;
 use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityComptabilitat;
@@ -684,27 +686,28 @@ class FacturacioController extends BaseController {
 	
 		$action = $request->query->get('action', '');
 		$tipus = $request->query->get('tipus', 0);
+		$comentaris = $request->query->get('comentaris', '');
 		
 		$this->logEntryAuth('CISTELLA TRAMITAR', 'action => '.$action);
 
 		try {
 			$em = $this->getDoctrine()->getManager();
-					
+			error_log("1");		
 			if ($action == 'desar' || $action == 'pagar') {
 				// Comanda nova. Crear factura
 				$current = $this->getCurrentDate();
 				
 				$factura = $this->crearFactura($current);
 				
-				$comanda = $this->crearComanda($factura, $current);
-				
+				$comanda = $this->crearComanda($factura, $current, $comentaris);
+				error_log("2");
 				// Recollir cistella de la sessió
 				$session = $this->get('session');
 				
 				$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
 				
 				foreach ($cart['productes'] as $id => $info) {
-					
+					error_log("3");	
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
 					
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
@@ -715,6 +718,7 @@ class FacturacioController extends BaseController {
 				if (count($cart['productes']) == 0) $detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
 			
 				// Validacions comuns i anotacions stock
+				error_log("4");
 				$this->tramitarComanda($comanda);
 			
 				$em ->flush(); 
@@ -735,8 +739,6 @@ class FacturacioController extends BaseController {
 			    case 'desar':
 			        // Recordatori pagament
 					$this->get('session')->getFlashBag()->add('sms-notice',	'La comanda s\'ha desat correctament'); 
-					
-					$this->get('session')->getFlashBag()->add('sms-notice',	BaseController::RECORDATORI_PAGAMENT);
 					
 			        break;
 			    case 'anular':
@@ -765,11 +767,11 @@ class FacturacioController extends BaseController {
 		
 		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
 		
-		if ($producte != null) {
+		if ($producte != null && $unitats > 0) {
 			// Recollir cistella de la sessió
 			$session = $this->get('session');
 			
-			$import = $unitats * $producte->getPreuTotalUnitat(date('Y'));
+			$import = $producte->getPreuTotalUnitat(date('Y'));
 			
 			$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
 			
@@ -785,6 +787,12 @@ class FacturacioController extends BaseController {
 			}
 			//$cart['total'] += $import;
 			
+			if ($cart['productes'][$idProducte]['unitats'] <= 0) {
+				// Afegir unitats < 0
+				unset( $cart['productes'][$idProducte] );	
+				if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');
+			}
+						
 			$session->set('cart', $cart);
 			
 		}
@@ -815,8 +823,8 @@ class FacturacioController extends BaseController {
 			}*/
 			unset( $cart['productes'][$idProducte] );
 			
-			$session->set('cart', $cart);
-			
+			if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');  			
+			else $session->set('cart', $cart);
 		}
 		
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', array('tipus' => $tipus));
@@ -968,6 +976,46 @@ class FacturacioController extends BaseController {
 		$this->get('session')->getFlashBag()->add('sms-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
 		return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 	}
+	
+	public function pagamentcomandaAction(Request $request) {
+	
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		
+		$comandaid = 0;
+		if ($request->query->has('id')) {
+			$comandaid = $request->query->get('id');
+			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaid);
+		
+			if ($comanda != null  && $comanda->comandaPagada() != true) {
+				$club = $comanda->getClub();
+				$origen = $comanda->getOrigenPagament();
+				$desc = $comanda->getDescripcioPagament();
+				
+				// Get factura detall
+				$detallfactura = $comanda->getDetallsAcumulats(); 
+				
+				$payment = new EntityPayment($comandaid, $this->get('kernel')->getEnvironment(),
+							$comanda->getTotalDetalls(), $desc, $club->getNom(), $origen);
+				$formpayment = $this->createForm(new FormPayment(), $payment);
+				
+				$this->logEntryAuth('PAGAMENT VIEW', $comandaid);
+				
+				return $this->render('FecdasBundle:Facturacio:pagament.html.twig',
+						$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(),
+								'comanda' => $comanda, 'payment' => $payment, 
+								'detall' => $detallfactura,
+								'backurl' => $this->generateUrl($comanda->getBackURLPagament())
+						)));
+			}
+		}
+		
+		/* Error */
+		$this->logEntryAuth('PAGAMENT KO', $parteid);
+		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut accedir al pagament, poseu-vos en contacte amb la Federació' );
+		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	}
+	
 	
 	public function productesAction(Request $request) {
 		// Llista de productes i edició massiva

@@ -166,8 +166,7 @@ class PageController extends BaseController {
 					$tipusparte = $form->get('tipus')->getData();
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
 					
-					$factura = $this->crearFactura($dataalta);
-					$parte = $this->crearComandaParte($factura, $dataalta, $tipusparte);
+					$parte = $this->crearComandaParte($dataalta, $tipusparte);
 
 					/* id 4 - Competició --> és la única que es pot fer */
 					/* id 9 i 12 - Tecnocampus també es pot fer */
@@ -194,6 +193,8 @@ class PageController extends BaseController {
 					$temppath = $file->getPath()."/".$file->getFileName();
 					
 					$this->importFileCSVData($temppath, $parte);					
+
+					$factura = $this->crearFactura($dataalta, $parte);
 					
 					$this->get('session')->getFlashBag()->add('error-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
 					
@@ -258,11 +259,12 @@ class PageController extends BaseController {
 				
 			$tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find($tipusparte);
 			
-			$factura = $this->crearFactura($dataalta);
-			
-			$parte = $this->crearComandaParte($factura, $dataalta, $tipus);
+			$parte = $this->crearComandaParte($dataalta, $tipus);
 			
 			$this->importFileCSVData($temppath, $parte, true);
+			
+			$factura = $this->crearFactura($dataalta, $parte);
+			
 			$em->flush();
 			
 			$this->get('session')->getFlashBag()->add('error-notice',"Llicències enviades correctament");
@@ -742,12 +744,14 @@ class PageController extends BaseController {
 			$dataalta->add(new \DateInterval('P1D')); // Add 1
 		}
 
-		$factura = $this->crearFactura($dataalta);
-		$parte = $this->crearComandaParte($factura, $dataalta, $partearenovar->getTipus(), $partearenovar->getComentaris());
+		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $partearenovar->getComentaris());
 		
 		// Clone llicències
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
-	
+
+		// Crear factura
+		$factura = $this->crearFactura($dataalta, $parte);
+			
 		$form = $this->createForm(new FormParteRenew(), $parte);
 		
 		$form->get('cloneid')->setData($parteid); 
@@ -876,7 +880,7 @@ class PageController extends BaseController {
 		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('parte')) { 
-				$response = $this->forward('FecdasBundle:Facturacio:pagament');  // Pagament continuar
+				$response = $this->forward('FecdasBundle:Facturacio:pagamentcomanda');  // Pagament continuar
 				return $response;
 			}
 			// Nou parte des de Partes
@@ -896,8 +900,8 @@ class PageController extends BaseController {
 			
 			$this->logEntryAuth('PARTE NEW', $parteid);
 			
-			$factura = $this->crearFactura($dataalta);
-			$parte = $this->crearComandaParte($factura, $dataalta);
+			$parte = $this->crearComandaParte($dataalta);
+			$factura = $this->crearFactura($dataalta, $parte);
 		}
 		
 		$form = $this->createForm(new FormParte(), $parte);
@@ -974,9 +978,9 @@ class PageController extends BaseController {
 					$tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find($tipusid);
 						
 					// Crear parte nou per poder carregar llista
-					$factura = $this->crearFactura($partedataalta);
+					$parte = $this->crearComandaParte($partedataalta, $tipus);
 					
-					$parte = $this->crearComandaParte($factura, $partedataalta, $tipus);
+					$factura = $this->crearFactura($partedataalta, $parte);
 				} else {
 					$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($id);
 	
@@ -988,7 +992,7 @@ class PageController extends BaseController {
 				$em->persist($llicencia);
 				
 				$parte->addLlicencia($llicencia);
-				
+
 			} else {
 				// Cercar llicència a actualitzar
 				$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($lid);
@@ -1518,179 +1522,6 @@ class PageController extends BaseController {
 		
 		return $this->render('FecdasBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView()))); 
 	} 
-	
-	public function notificacioOkAction(Request $request) {
-		// Resposta TPV on-line, genera resposta usuaris correcte
-		return $this->notificacioOnLine($request);
-	}
-	
-	public function notificacioKoAction(Request $request) {
-		// Resposta TPV on-line, genera resposta usuaris incorrecte		
-		return $this->notificacioOnLine($request);
-	}
-	
-	
-	public function notificacioOnLine(Request $request) {
-	
-		$tpvresponse = $this->tpvResponse($request->query);
-
-		$result = 'KO';
-		$url = $this->generateUrl('FecdasBundle_homepage');
-		if ($tpvresponse['itemId'] > 0) {
-			if ($tpvresponse['pendent'] == true) $result = 'PEND';
-			else $result = 'OK';
-			
-			if ($tpvresponse['source'] = self::PAGAMENT_LLICENCIES)
-				$url = $this->generateUrl('FecdasBundle_parte', array('id'=> $tpvresponse['itemId']));
-			if ($tpvresponse['source'] = self::PAGAMENT_DUPLICAT)
-				$url = $this->generateUrl('FecdasBundle_duplicats');
-		}
-		$this->logEntryAuth('TPV NOTIFICA '. $result, $tpvresponse['logEntry']);
-		
-		return $this->render('FecdasBundle:Page:notificacio.html.twig',
-				array('result' => $result, 'itemId' => $tpvresponse['itemId'], 'url' => $url) );
-	}
-	
-	
-	public function notificacioAction(Request $request) {
-		// Crida asincrona des de TPV. Actualització dades pagament del parte
-
-		$tpvresponse = $this->tpvResponse($request->request);
-		
-		if ($request->getMethod() == 'POST') {
-			if ($tpvresponse['Ds_Response'] == 0) {
-				// Ok
-				$updOK = $this->actualitzarPagament($tpvresponse['itemId'], $tpvresponse['source'], $tpvresponse['Ds_Order']);
-			
-				if ($updOK == true) $this->logEntryAuth('TPV OK', $tpvresponse['logEntry']);
-				else $this->logEntryAuth('TPV KO', $tpvresponse['logEntry']);
-			} else {
-				if ($tpvresponse['pendent'] == true) {
-					// Pendent, enviar mail 
-					$subject = ":: TPV. Pagament pendent de confirmació ::";
-					$bccmails = array();
-					$tomails = array(self::MAIL_ADMINTEST);
-						
-					$body = "<h1>Parte pendent</h1>";
-					$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
-					$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-					
-					
-					$this->logEntryAuth('TPV PEND', $tpvresponse['logEntry']);
-				} else {
-					// Altres. Error
-					$this->logEntryAuth('TPV ERROR', $tpvresponse['logEntry']);
-				}
-			}
-		} else {
-			$this->logEntryAuth('TPV NO POST', $tpvresponse['logEntry']);
-			
-			$subject = ":: Incidència configuració TPV ::";
-			$bccmails = array();
-			$tomails = array(self::MAIL_ADMINTEST);
-			
-			$body = "<h1>TPV NO POST</h1>";
-			$body .= "<h2>URL de notificación ha de ser: http://www.fecdasgestio.cat/notificacio</h2>";
-			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-			
-		}
-		return new Response("");
-	}
-	
-	private function actualitzarPagament($itemId, $source, $ordre) {
-		
-		if ($source == self::PAGAMENT_LLICENCIES) {
-			$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($itemId);
-			
-			if ($parte != null) {
-				$em = $this->getDoctrine()->getManager();
-				// Actualitzar dades pagament
-				$parte->setEstatPagament("TPV OK");
-				$parte->setPendent(false);
-				
-				
-				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $parte, $ordre);
-				$parte->setDatamodificacio($this->getCurrentDate());
-			
-				$em->flush();
-				return true;
-			}
-		}
-
-		if ($source == self::PAGAMENT_DUPLICAT) {
-			
-			$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($itemId);
-			
-			if ($duplicat != null) {
-				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $duplicat, $ordre);
-				$duplicat->setDatamodificacio($this->getCurrentDate());
-				
-				$em->flush();
-				return true;
-			}
-		}
-
-		// Origen desconegut	
-		return false;
-	}
-	
-	private function tpvResponse($tpvdata) {
-	
-		$tpvresponse = array('itemId' => 0, 'environment' => '', 'source' => '',
-				'Ds_Response' => '', 'Ds_Order' => 0, 'Ds_Date' => '', 'Ds_Hour' => '',
-				'Ds_PayMethod' => '', 'logEntry' => '', 'pendent' => false);
-		if ($tpvdata->has('Ds_MerchantData') and $tpvdata->get('Ds_MerchantData') != '') {
-			$dades = $tpvdata->get('Ds_MerchantData');
-			$dades_array = explode(";", $dades);
-				
-			$tpvresponse['itemId'] = $dades_array[0];
-			$tpvresponse['source'] = $dades_array[1];  /* Origen del pagament. Partes, duplicats */
-			$tpvresponse['environment'] = $dades_array[2];
-		}
-	
-		if ($tpvdata->has('Ds_Response')) $tpvresponse['Ds_Response'] = $tpvdata->get('Ds_Response');
-		if ($tpvdata->has('Ds_Order')) $tpvresponse['Ds_Order'] = $tpvdata->get('Ds_Order');
-		if ($tpvdata->has('Ds_Date')) $tpvresponse['Ds_Date'] = $tpvdata->get('Ds_Date');
-		if ($tpvdata->has('Ds_Hour')) $tpvresponse['Ds_Hour'] = $tpvdata->get('Ds_Hour');
-		if ($tpvdata->has('Ds_PayMethod')) $tpvresponse['Ds_PayMethod'] = $tpvdata->get('Ds_PayMethod');
-	
-		if (($tpvresponse['Ds_Response'] == '0930' or $tpvresponse['Ds_Response'] == '9930') and $tpvdata->get('Ds_PayMethod') == 'R') {
-			$tpvresponse['pendent'] = true;
-		}
-		
-		$tpvresponse['logEntry'] = $tpvresponse['itemId'] . "-" . $tpvresponse['source'] . "-" . 
-				$tpvresponse['Ds_Response'] . "-" . $tpvresponse['environment'] . "-" . $tpvresponse['Ds_Date'] . "-" .
-				$tpvresponse['Ds_Hour'] . "-" . $tpvresponse['Ds_Order'] . "-" . $tpvresponse['Ds_PayMethod'];
-	
-		return $tpvresponse;
-	}
-	
-	public function notificacioTestAction(Request $request) {
-	
-		$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text');
-		$formBuilder->add('Ds_MerchantData', 'text', array('required' => false));
-		$formBuilder->add('Ds_Date', 'text');
-		$formBuilder->add('Ds_Hour', 'text');
-		$formBuilder->add('Ds_Order', 'text');
-		$formBuilder->add('Ds_PayMethod', 'text', array('required' => false));
-		$formBuilder->add('accio', 'choice', array(
-				'choices'   => array($this->generateUrl('FecdasBundle_notificacio') => 'FecdasBundle_notificacio',
-						$this->generateUrl('FecdasBundle_notificacioOk') => 'FecdasBundle_notificacioOk',
-						$this->generateUrl('FecdasBundle_notificacioKo') => 'FecdasBundle_notificacioKo'),
-				'required'  => true,
-		));
-	
-		$form = $formBuilder->getForm();
-		$form->get('Ds_Response')->setData(0);
-		$form->get('Ds_MerchantData')->setData("4;".self::PAGAMENT_DUPLICAT.";dev");
-		$form->get('Ds_Date')->setData(date('d/m/Y'));
-		$form->get('Ds_Hour')->setData(date('h:i'));
-		$form->get('Ds_Order')->setData(date('Ymdhi'));
-		$form->get('Ds_PayMethod')->setData('');
-	
-		return $this->render('FecdasBundle:Page:notificacioTest.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
-	}
 	
 	private function allowEdit(EntityParte $parte) {
 		return (boolean) ($parte->getDatapagament() == null); // Allow edition

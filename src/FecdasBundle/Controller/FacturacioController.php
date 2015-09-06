@@ -692,22 +692,18 @@ class FacturacioController extends BaseController {
 
 		try {
 			$em = $this->getDoctrine()->getManager();
-			error_log("1");		
+	
 			if ($action == 'desar' || $action == 'pagar') {
 				// Comanda nova. Crear factura
 				$current = $this->getCurrentDate();
 				
-				$factura = $this->crearFactura($current);
-				
-				$comanda = $this->crearComanda($factura, $current, $comentaris);
-				error_log("2");
+				$comanda = $this->crearComanda($current, $comentaris);
 				// Recollir cistella de la sessió
 				$session = $this->get('session');
 				
 				$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
 				
 				foreach ($cart['productes'] as $id => $info) {
-					error_log("3");	
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
 					
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
@@ -718,8 +714,9 @@ class FacturacioController extends BaseController {
 				if (count($cart['productes']) == 0) $detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
 			
 				// Validacions comuns i anotacions stock
-				error_log("4");
 				$this->tramitarComanda($comanda);
+
+				$factura = $this->crearFactura($current, $comanda);
 			
 				$em ->flush(); 
 			}
@@ -872,11 +869,12 @@ class FacturacioController extends BaseController {
 				// Comanda nova. Crear factura
 				$current = $this->getCurrentDate();
 				
-				$factura = $this->crearFactura($current);
-
-				$comanda = $this->crearComanda($factura, $current);
+				$comanda = $this->crearComanda($current);
 				
 				$detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
+			
+				$factura = $this->crearFactura($current, $comanda);
+
 			} else {
 				// Create an ArrayCollection of the current detalls
 				foreach ($comanda->getDetalls() as $detall) {
@@ -1454,33 +1452,6 @@ class FacturacioController extends BaseController {
 		return $query;
 	}
 	
-	public function nourebutAction(Request $request) {
-		// Formulari de creació d'un producte
-		$this->get('session')->getFlashBag()->clear();
-		 
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-			/* De moment administradors */
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_home'));
-				 
-		$this->logEntryAuth('REBUT NOU','');
-				 
-		$comandaid = $request->query->get('comanda', 0);
-		
-		$comanda = null;
-		if ($comandaid > 0) $comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaid);
-		
-		$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH;
-		$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament, $comanda);
-				 
-		$form = $this->createForm(new FormRebut(), $rebut);
-				 
-		return $this->render('FecdasBundle:Facturacio:rebut.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
-	}
-	
 	public function editarrebutAction(Request $request) {
 		// Formulari d'edició d'un rebut
 		//$this->get('session')->getFlashBag()->clear();
@@ -1629,7 +1600,195 @@ class FacturacioController extends BaseController {
 			
 		return $query;
 	}
+
+	public function notificacioOkAction(Request $request) {
+		// Resposta TPV on-line, genera resposta usuaris correcte
+		return $this->notificacioOnLine($request);
+	}
 	
+	public function notificacioKoAction(Request $request) {
+		// Resposta TPV on-line, genera resposta usuaris incorrecte		
+		return $this->notificacioOnLine($request);
+	}
+	
+	public function notificacioOnLine(Request $request) {
+	
+		$tpvresponse = $this->tpvResponse($request->query);
+
+		$result = 'KO';
+		$url = $this->generateUrl('FecdasBundle_homepage');
+		if ($tpvresponse['itemId'] > 0) {
+			if ($tpvresponse['pendent'] == true) $result = 'PEND';
+			else $result = 'OK';
+			
+			if ($tpvresponse['source'] = BaseController::PAGAMENT_LLICENCIES)
+				$url = $this->generateUrl('FecdasBundle_parte', array('id'=> $tpvresponse['itemId']));
+			if ($tpvresponse['source'] = BaseController::PAGAMENT_DUPLICAT)
+				$url = $this->generateUrl('FecdasBundle_duplicats');
+			if ($tpvresponse['source'] = BaseController::PAGAMENT_ALTRES)
+				$url = $this->generateUrl('FecdasBundle_comandes');
+		}
+		$this->logEntryAuth('TPV NOTIFICA '. $result, $tpvresponse['logEntry']);
+		
+		return $this->render('FecdasBundle:Facturacio:notificacio.html.twig',
+				array('result' => $result, 'itemId' => $tpvresponse['itemId'], 'url' => $url) );
+	}
+	
+	public function notificacioAction(Request $request) {
+		// Crida asincrona des de TPV. Actualització dades pagament del parte
+
+		try {
+			$tpvresponse = $this->tpvResponse($request->request);
+			
+			if ($request->getMethod() != 'POST')
+				throw new \Exception('Error configuració TPV, la URL de notificación ha de ser: http://www.fecdasgestio.cat/notificacio');
+			
+			if (!isset($tpvresponse['Ds_Response']))
+				throw new \Exception('Error resposta TPV. Manca Ds_Response');
+
+			if (!isset($tpvresponse['Ds_Order']))
+				throw new \Exception('Error resposta TPV. Manca Ds_Order');
+
+			if ($tpvresponse['Ds_Response'] == 0) {
+				// Ok
+				$id = !isset($tpvresponse['itemId'])?0:$tpvresponse['itemId'];
+				$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
+					
+				if ($comanda == null) 
+						throw new \Exception('Error actualitzar comanda TPV. id: '.$id);
+				
+				// Afegir rebut
+				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $comanda, $tpvresponse['Ds_Order']);
+					
+				$em = $this->getDoctrine()->getManager();
+				$em->flush();
+				
+				$this->logEntryAuth('TPV OK', $tpvresponse['logEntry']);
+				
+				return new Response('');
+			} 
+			
+			if ($tpvresponse['pendent'] == true) {
+				// Pendent, enviar mail 
+				$subject = ":: TPV. Pagament pendent de confirmació ::";
+				$bccmails = array();
+				$tomails = array(self::MAIL_ADMINTEST);
+						
+				$body = "<h1>Parte pendent</h1>";
+				$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
+				$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+					
+				$this->logEntryAuth('TPV PEND', $tpvresponse['logEntry']);
+					
+				return new Response('');
+			}
+			
+			throw new \Exception('Error desconegut TPV');
+			
+		} catch (Exception $e) {
+			
+			$this->logEntryAuth('TPV ERROR', $e->getMessage().'('.$tpvresponse['logEntry'].')');
+				
+			$subject = ':: Incidència TPV ::';
+			$bccmails = array();
+			$tomails = array(self::MAIL_ADMINTEST);
+				
+			$body = '<h1>Error TPV</h1>';
+			$body .= '<h2>Missatge: '.$e->getMessage().'</h2>';
+			$body .= '<p>Dades: '.$tpvresponse['logEntry'].'</p>';
+			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+		}
+		
+		return new Response("");
+	}
+
+	public function confirmapagamentAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$comandaId = $request->query->get('id',0);
+		$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
+		if ($comanda != null) {
+
+			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_CASH);
+			$dataAux = $request->query->get('datapagament', '');
+			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();
+			$dadesPagament = $request->query->get('dadespagament', '');
+			$comentariPagament = $request->query->get('comentaripagament', 'Confirmació manual');
+			$this->crearRebut($dataPagament, $tipusPagament, $comanda, $dadesPagament, $comentariPagament);
+			$em->flush();
+
+			$this->logEntryAuth('CONFIRMAR PAGAMENT OK', $comandaId);
+				
+			return new Response("ok");
+		}
+		
+		$this->logEntryAuth('CONFIRMAR PAGAMENT KO', $comandaId);
+
+		return new Response("ko");
+	}
+
+	private function tpvResponse($tpvdata) {
+	
+		$tpvresponse = array('itemId' => 0, 'environment' => '', 'source' => '',
+				'Ds_Response' => '', 'Ds_Order' => 0, 'Ds_Date' => '', 'Ds_Hour' => '',
+				'Ds_PayMethod' => '', 'logEntry' => '', 'pendent' => false);
+		if ($tpvdata->has('Ds_MerchantData') and $tpvdata->get('Ds_MerchantData') != '') {
+			$dades = $tpvdata->get('Ds_MerchantData');
+			$dades_array = explode(";", $dades);
+				
+			$tpvresponse['itemId'] = $dades_array[0];
+			$tpvresponse['source'] = $dades_array[1];  /* Origen del pagament. Partes, duplicats */
+			$tpvresponse['environment'] = $dades_array[2];
+		}
+	
+		if ($tpvdata->has('Ds_Response')) $tpvresponse['Ds_Response'] = $tpvdata->get('Ds_Response');
+		if ($tpvdata->has('Ds_Order')) $tpvresponse['Ds_Order'] = $tpvdata->get('Ds_Order');
+		if ($tpvdata->has('Ds_Date')) $tpvresponse['Ds_Date'] = $tpvdata->get('Ds_Date');
+		if ($tpvdata->has('Ds_Hour')) $tpvresponse['Ds_Hour'] = $tpvdata->get('Ds_Hour');
+		if ($tpvdata->has('Ds_PayMethod')) $tpvresponse['Ds_PayMethod'] = $tpvdata->get('Ds_PayMethod');
+	
+		if (($tpvresponse['Ds_Response'] == '0930' or $tpvresponse['Ds_Response'] == '9930') and $tpvdata->get('Ds_PayMethod') == 'R') {
+			$tpvresponse['pendent'] = true;
+		}
+		
+		$tpvresponse['logEntry'] = $tpvresponse['itemId'] . "-" . $tpvresponse['source'] . "-" . 
+				$tpvresponse['Ds_Response'] . "-" . $tpvresponse['environment'] . "-" . $tpvresponse['Ds_Date'] . "-" .
+				$tpvresponse['Ds_Hour'] . "-" . $tpvresponse['Ds_Order'] . "-" . $tpvresponse['Ds_PayMethod'];
+	
+		return $tpvresponse;
+	}
+	
+	public function notificacioTestAction(Request $request) {
+		// http://www.fecdas.dev/notificaciotest
+		$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text');
+		$formBuilder->add('Ds_MerchantData', 'text', array('required' => false));
+		$formBuilder->add('Ds_Date', 'text');
+		$formBuilder->add('Ds_Hour', 'text');
+		$formBuilder->add('Ds_Order', 'text');
+		$formBuilder->add('Ds_PayMethod', 'text', array('required' => false));
+		$formBuilder->add('accio', 'choice', array(
+				'choices'   => array($this->generateUrl('FecdasBundle_notificacio') => 'FecdasBundle_notificacio',
+						$this->generateUrl('FecdasBundle_notificacioOk') => 'FecdasBundle_notificacioOk',
+						$this->generateUrl('FecdasBundle_notificacioKo') => 'FecdasBundle_notificacioKo'),
+				'required'  => true,
+		));
+	
+		$form = $formBuilder->getForm();
+		$form->get('Ds_Response')->setData(0);
+		$form->get('Ds_MerchantData')->setData('4;'.self::PAGAMENT_DUPLICAT.';dev');
+		$form->get('Ds_Date')->setData(date('d/m/Y'));
+		$form->get('Ds_Hour')->setData(date('h:i'));
+		$form->get('Ds_Order')->setData(date('Ymdhi'));
+		$form->get('Ds_PayMethod')->setData('');
+	
+		return $this->render('FecdasBundle:Facturacio:notificacioTest.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
+	}
+	
+		
 	/********************************************************************************************************************/
 	/************************************ INICI SCRIPTS CARREGA *********************************************************/
 	/********************************************************************************************************************/

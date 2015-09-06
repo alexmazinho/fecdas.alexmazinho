@@ -78,12 +78,6 @@ FecdasBundle_canviestatclub:
     requirements:
         _method:  GET
 
-FecdasBundle_confirmapagament:
-    pattern:  /confirmapagament
-    defaults: { _controller: "FecdasBundle:Admin:confirmapagament" }
-    requirements:
-        _method:  GET
-
 FecdasBundle_sincroaccess:
     pattern:  /sincroaccess
     defaults: { _controller: "FecdasBundle:Admin:sincroaccess" }
@@ -161,31 +155,6 @@ FecdasBundle_confirmcsv:
     defaults: { _controller: "FecdasBundle:Page:confirmcsv" }
     requirements:
         _method:  GET
-
-FecdasBundle_notificaciotest:
-    pattern:  /notificaciotest
-    defaults: { _controller: "FecdasBundle:Page:notificaciotest" }
-    requirements:
-        _method:  GET|POST
-
-
-FecdasBundle_notificacio:
-    pattern:  /notificacio
-    defaults: { _controller: "FecdasBundle:Page:notificacio" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_notificacioOk:
-    pattern:  /notificacioOk
-    defaults: { _controller: "FecdasBundle:Page:notificacioOk" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_notificacioKo:
-    pattern:  /notificacioKo
-    defaults: { _controller: "FecdasBundle:Page:notificacioKo" }
-    requirements:
-        _method:  GET|POST
 
 FecdasBundle_llicencia:
     pattern:  /llicencia
@@ -472,6 +441,36 @@ FecdasBundle_fitxercomptabilitat:
 FecdasBundle_downloadassentaments:
     pattern:  /fitxers/assentaments/{filename}
     defaults: { _controller: "FecdasBundle:Facturacio:downloadassentaments" }
+
+FecdasBundle_confirmapagament:
+    pattern:  /confirmapagament
+    defaults: { _controller: "FecdasBundle:Facturacio:confirmapagament" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_notificacio:
+    pattern:  /notificacio
+    defaults: { _controller: "FecdasBundle:Facturacio:notificacio" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_notificacioOk:
+    pattern:  /notificacioOk
+    defaults: { _controller: "FecdasBundle:Facturacio:notificacioOk" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_notificacioKo:
+    pattern:  /notificacioKo
+    defaults: { _controller: "FecdasBundle:Facturacio:notificacioKo" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_notificaciotest:
+    pattern:  /notificaciotest
+    defaults: { _controller: "FecdasBundle:Facturacio:notificaciotest" }
+    requirements:
+        _method:  GET|POST
 
 # ---------------------------------------------------------------------------
 # ---------------------  SCRIPTS COMANDES -----------------------------------

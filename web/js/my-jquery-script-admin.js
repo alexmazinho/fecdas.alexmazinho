@@ -119,15 +119,6 @@
 		llistaPaginationAndSort(url, params);
 	};
 
-	
-	confirmarPartePagat = function() {
-		// Click des de Parte o Recents
-		$('#confirmar-pagament').click(function(e) {
-			e.preventDefault();
-			confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-		});
-	};
-	
 	confirmarPagament = function(url, titol) {
 		$("#dialeg").dialog({
 			autoOpen: false,
@@ -135,7 +126,7 @@
           	buttons : {
             	"Confirmar" : function() {
     	        	$(this).dialog("close");
-
+    	        	console.log(url);	
     	        	$('#progressbar').show();  // Rellotge
         	
     	    		var params = { 	datapagat: $( "#datapagament" ).val(), 
@@ -144,13 +135,12 @@
     	    						comentaripagat: $( "#comentaripagament" ).val() };
     	    		$.get(url, params,
     	    		function(data, textStatus) {
-    	    	        $('#progressbar').hide();
+    	    			$('#progressbar').hide();
     	    	        	
     	    			location.reload();
     	    		}).fail( function(xhr, status, error) {
     	   			 // xhr.status + " " + xhr.statusText, status, error
 	    	   			//var sms = smsResultAjax('KO', xhr.responseText);
-	    	   			 
 	    	   			$('#progressbar').hide();  // Rellotge
 	    	   		    	
 	    	   			//$('#parte_tipus').val('');
@@ -164,7 +154,7 @@
 	            }
 	        },
 	        title: titol,
-	        //height: 450,
+	        height: 'auto',
 	        width: 350,
 	        zIndex:	350
 	    });
@@ -176,8 +166,9 @@
 	    
 	    $( "#datapagament" ).datepicker({
             showOn: "button",
-            buttonImage: "/images/icon-calendar.gif",
-            buttonImageOnly: true,
+            //buttonImage: "/images/icon-calendar.gif",
+            buttonText: "<i class='fa fa-calendar fa-1x blue'></i>",
+            //buttonImageOnly: true,
             dateFormat: 'dd/mm/yy'
         });
 	    

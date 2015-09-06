@@ -92,10 +92,10 @@
 						<li class="divider"></li>
 			          	<li id="menu-kits" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':3 }) }}">Kits</a></li>
 			          	<li id="menu-merchandising" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':4 }) }}">Merchandising</a></li>
-			          	<li id="menu-cursos" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':5 }) }}">Cursos</a></li>
+			          	<li id="menu-cursos"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':5 }) }}">Cursos</a></li>
 			          	<!-- <li id="menu-altres"><a href="{# path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) #}">Miscel·lània</a></li> -->
 			          	<li class="divider"></li>
-			          	<li id="menu-comandes" class="separator"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
+			          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
  		            </ul>
 		        </li>
 		        <li class="dropdown">
@@ -140,7 +140,7 @@
 			          	<li id="menu-admproductes" class="separator"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
 			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
 			          	<li class="divider"></li>
-			          	<li id="menu-admcomandes" class="separator"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
+			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admtraspas"><a href="{{ path('FecdasBundle_traspascomptabilitat') }}">Enviar comptabilitat</a></li>
 			          </ul>

@@ -78,7 +78,9 @@
 			   		<div id="header-comanda-compta" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Enviat\nCompta.', 'c.comptabilitat') }}
 			   			<span class="listheader-icon {% if comandes.isSorted('c.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		{% endif %}
-		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder">&nbsp;</div>
+		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder">
+		   			{% if admin == true  %}&nbsp;{% else %}Pagament<br/>On-line{% endif %}
+		   		</div>
 		   	</div>
 	   	</div>
 		{% if comandes|length > 0 %}
@@ -101,35 +103,39 @@
 		   			<div class="data-detall-cell comanda-factura">
 						{% if admin == true %}
 			   				{% if  comanda.factura is not null and comanda.factura.esBaixa != true  %}
-							<a class="editar-factura link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
-								{{ comanda.numfactura }}</a>
+								<a class="editar-factura link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
+									{{ comanda.numfactura }}</a>
 							{% else %}
-								<a class="crear-factura link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
+								<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
 									<i class="fa fa-plus-circle fa-1x blue"></i></a>
 							{% endif %}
-						{% endif %}		
-		   				{% if  comanda.factura is not null and comanda.factura.esBaixa != true  %}
-	   						<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': comanda.id}) }}" alt="PDF Factura" title="PDF Factura">
-								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+						{% else %}
+			   				{% if  comanda.factura is not null and comanda.factura.esBaixa != true  %}
+		   						<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': comanda.factura.id}) }}" alt="PDF Factura" title="PDF Factura">{{ comanda.numfactura }}
+									<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							{% endif %}
 						{% endif %}
 					</div>
 		   			<div class="data-detall-cell comanda-rebut">
-		   				{% if comanda.rebut is not null %}
-							<a class="editar-rebut link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}"  title="Editar rebut" alt="Editar rebut">
-								{{ comanda.numrebut }}</a>
+						{% if admin == true %}
+			   				{% if comanda.comandaPagada == true %}
+								<a class="editar-rebut link" href="{{ path('FecdasBundle_editarrebut', {'id': comanda.rebut.id }) }}"  title="Editar rebut" alt="Editar rebut">
+									{{ comanda.numrebut }}</a>
+							{% else %}
+								<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': comanda.id }) }}" alt="Confirmar pagament" title="Confirmar pagament">
+									<i class="fa fa-euro green"></i></a>
+							{% endif %}
 						{% else %}
-							<a class="crear-rebut link" href="{{ path('FecdasBundle_nourebut', {'comanda': comanda.id }) }}" title="Crear rebut" alt="Crear rebut">
-								<i class="fa fa-plus-circle fa-1x blue"></i></a>
-						{% endif %}	
+							{% if comanda.comandaPagada == true %}
+								<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': comanda.rebut.id}) }}" alt="PDF Rebut" title="PDF Rebut">{{ comanda.numrebut }}
+									<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							{% endif %}	
+						{% endif %}
 						
 					</div>
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|raw }}</div>
 		   			{% if admin == true  %}<div class="data-detall-cell comanda-compta">{% if  comanda.comptabilitat is not null %}{{ comanda.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>{% endif %}
 		   			<div class="data-detall-cell comanda-actions">
-						{% if comanda.comandaPagada == true  %}
-			   				<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': comanda.rebut.id}) }}" alt="PDF Rebut" title="PDF Rebut">
-								<i class="fa fa-list fa-1x orange"></i></a>
-						{% endif %}
 						{% if admin == true  %}
 							<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar">
 								<i class="fa fa-pencil text-info blue"></i></a>
@@ -137,10 +143,15 @@
 								<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa">
 			   						<i class="fa fa-trash-o text-danger red"></i></a>
 			   				{% endif %}
+			   			{% else %}
+							{% if comanda.comandaPagada != true  %}
+				        		<a class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': comanda.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
+				        			<i class="fa fa-credit-card fa-1x green"></i></a>
+							{% endif %}
 	   					{% endif %}
 		   			</div>
 		   		</li>
-		   		{% endfor %}
+		   		{% endfor %} 
 			</ol>
 		</div>
 		{% if comandes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(comandes, null, sortparams) }}</div>{% endif %}
@@ -164,13 +175,19 @@
 		
 		window.location = "{{ path('FecdasBundle_comandes', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes+"&numfactura="+numfactura+"&numrebut="+numrebut;
 	}
-	
+
 	$(document).ready(function(){
 
 		{% if admin == true  %}
-		setMenuActive("menu-admcomandes");
+			setMenuActive("menu-admcomandes");
+
+			$('.confirmar-pagament').click(function(e) {
+				e.preventDefault();
+				confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+			});
+
 		{% else %}
-		setMenuActive("menu-comandes");
+			setMenuActive("menu-comandes");
 		{% endif %}
 		
 		$("#form_cerca").change(function() {

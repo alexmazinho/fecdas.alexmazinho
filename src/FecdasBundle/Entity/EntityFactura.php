@@ -92,12 +92,13 @@ class EntityFactura {
 	}
 	
 	
-	public function __constructParams($datafactura, $num, $import = 0, $concepte = '') {
+	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '') {
 	
 		$this->datafactura = $datafactura;
 		$this->num = $num;
 		$this->import = $import;
 		$this->concepte = $concepte;
+		$this->comanda = $comanda;
 	}
 	
 

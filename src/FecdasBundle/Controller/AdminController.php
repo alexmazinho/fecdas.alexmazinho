@@ -172,36 +172,6 @@ class AdminController extends BaseController {
 				)));
 	}
 	
-	public function confirmapagamentAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		$parteid = $request->query->get('id');
-		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
-		
-		if ($parte != null) {
-			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_CASH);
-			$dataAux = $request->query->get('datapagament', '');
-			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();
-			$dadesPagament = $request->query->get('dadespagament', '');
-			$comentariPagament = $request->query->get('comentaripagament', 'Confirmació manual');
-				
-			$this->crearRebut($dataPagament, $tipusPagament, $parte, $dadesPagament, $comentariPagament);
-			
-			$em->flush();
-
-			$this->logEntryAuth('CONFIRMAR PAGAMENT OK', $parteid);
-				
-			return new Response("ok");
-		}
-		
-		$this->logEntryAuth('CONFIRMAR PAGAMENT KO', $parteid);
-
-		return new Response("ko");
-	}
-	
 	public function sincroaccessAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));

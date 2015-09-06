@@ -100,8 +100,8 @@
 		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|raw }}</div>
 		   			<div class="data-detall-cell parterecents-actions">
 		   			{% if parte.pendent == true  %}
-			   			<a class="parterecents-action-pagament link" id="confirmar-pagament" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" alt="Confirmar pagament" title="Confirmar pagament">
-			   				<i class="fa fa-euro green"></i></a>
+		   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
+		   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   			{% endif %}
 		   				<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
 		   					<i class="fa fa-print blue"></i></a>
@@ -130,7 +130,10 @@ $(document).ready(function(){
 
 	$("#menu-adm").click();
 
-	confirmarPartePagat();
+	$('.confirmar-pagament').click(function(e) {
+		e.preventDefault();
+		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+	});
 	
 	selectRecentsClub();
 

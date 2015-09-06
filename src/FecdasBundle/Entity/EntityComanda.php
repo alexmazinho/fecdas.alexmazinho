@@ -113,12 +113,6 @@ class EntityComanda {
 	public function __constructParams($num, $factura = null, $club = null, $comentaris = '') {
 	
 		$this->num = $num;
-		
-		if ($factura != null && $this->factura != null && $this->factura->getId() != $factura->getId()) {
-			$this->factura->setComandaoriginal($this);
-			$this->factura->setIdanulacio($factura->getId());
-		}
-		
 		$this->factura = $factura;
 		$this->club = $club;
 		$this->comentaris = ($comentaris==''?null:$comentaris);
@@ -301,7 +295,7 @@ class EntityComanda {
 	 */
 	public function getImportpagament()
 	{
-		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getImport():null);
+		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getImport():0);
 	}
 	
 	/**

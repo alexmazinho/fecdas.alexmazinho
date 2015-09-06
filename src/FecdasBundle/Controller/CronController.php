@@ -279,8 +279,7 @@ class CronController extends BaseController {
 			$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 		}
 		/* Crear el nou parte */
-		$factura = $this->crearFactura($dataalta);
-		$parte = $this->crearComandaParte($factura, $dataalta, $llicenciaarenovar->getParte()->getTipus());
+		$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus());
 
 		// Afegir llicència		
 		$cloneLlicencia = clone $llicenciaarenovar;
@@ -289,6 +288,9 @@ class CronController extends BaseController {
 		$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
 		
 		$parte->addLlicencia($cloneLlicencia);
+
+	    // Crear factura
+		$factura = $this->crearFactura($dataalta, $parte);
 		
 		/* Preparar formulari */
 		$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);

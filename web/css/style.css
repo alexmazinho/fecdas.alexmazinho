@@ -218,6 +218,9 @@ input[disabled="disabled"]
 	padding: 0 0 10px;
 }
 
+#dialeg #datapagament { width: 120px; text-align: center; }
+#dialeg button.ui-datepicker-trigger { padding: 2px 10px; }
+
 #dialeg .dialeg-jerror, #dialeg .dialeg-jinfo { height:100%; width: 100%;  font-size: 18px; }
 #dialeg .dialeg-jerror img, #dialeg .dialeg-jinfo img { vertical-align:middle; }
 #dialeg .dialeg-jerror .jerror-sms, #dialeg .dialeg-jinfo .jinfo-sms  { display: inline-block; vertical-align:middle; padding: 0 0 0 20px; color: #333333;  }
@@ -341,6 +344,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 	border-radius: 50%;
 	text-align: center;
 	min-width: 20px;
+	min-height: 20px;
 	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-moz-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-ms-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
@@ -574,9 +578,9 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 /*************** FECDAS NOU comandes ****************/
 
 #header-comanda-estat  { width: 5%; text-align: left; }
-#header-comanda-num { width: 10%; text-align: left; }
+#header-comanda-num { width: 8%; text-align: left; }
 #header-comanda-items { width: 5%; text-align: center; }
-#header-comanda-total { width: 10%; text-align: right; }
+#header-comanda-total { width: 8%; text-align: right; }
 #header-comanda-data { width: 10%; text-align: center; }
 #header-comanda-factura { width: 10%; text-align: center; }
 #header-comanda-rebut { width: 10%; text-align: center; }
@@ -584,12 +588,12 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-comanda-actions { width: 10%; text-align: right; }
 
 .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
-.data-detall-cell.comanda-num { width: 10%; text-align: left; }
+.data-detall-cell.comanda-num { width: 8%; text-align: left; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
-.data-detall-cell.comanda-total { width: 10%; text-align: right; }
+.data-detall-cell.comanda-total { width: 8%; text-align: right; }
 .data-detall-cell.comanda-data { width: 10%; text-align: center; }
-.data-detall-cell.comanda-factura { width: 10%; text-align: center; }
-.data-detall-cell.comanda-rebut { width: 10%; text-align: center; }
+.data-detall-cell.comanda-factura { width: 12%; text-align: center; }
+.data-detall-cell.comanda-rebut { width: 12%; text-align: center; }
 .data-detall-cell.comanda-comentaris { width: 25%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
 
@@ -2330,7 +2334,7 @@ li.parte-per-imprimir {
 }
 
 li.parte-pendent {
-	color: #5cb85c;
+	color: #a94442;
 }
 
 li.parte-pendent-sincro .parterecents-actions {

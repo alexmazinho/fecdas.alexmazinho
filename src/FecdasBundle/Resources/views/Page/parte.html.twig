@@ -104,7 +104,7 @@
 						{% if admin == true and parte.esnova != true %}
 							<label>Pagament</label>
 							<div id="formparte-pagament" class="input-group" >
-								<a id="confirmar-pagament" class="btn btn-default btn-lg" 
+								<a class="confirmar-pagament btn btn-default btn-lg" 
 									href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></a>
 							</div>
 				  		{% endif %}
@@ -188,7 +188,10 @@ $(document).ready(function() {
 	
 	removeLlicenciaClick();
 
-	confirmarPartePagat();
+	$('.confirmar-pagament').click(function(e) {
+		e.preventDefault();
+		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+	});
 
 	//var recordatori = "{# constant('FecdasBundle\\Controller\\BaseController::RECORDATORI_PAGAMENT')|raw #}";
 	tramitarPagamentButton("#formparte-payment", "<div class='sms-pagament'><p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, "+ 

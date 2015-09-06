@@ -52,15 +52,18 @@ class PDFController extends BaseController {
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
+
 		$reqId = 0;
 		if ($request->query->has('id')) {
 			$reqId = $request->query->get('id');
-			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($reqId);
+			$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($reqId);
 		
-			if ($comanda != null && $comanda->getFactura() != null) {
+			if ($factura != null) {
+				if ($factura->getComanda()->facturaComptabilitzada() != true)
+					return new Response('encara no es pot imprimir la factura');
 				
-				$response = $this->facturatopdf($comanda);
+				
+				$response = $this->facturatopdf($factura);
 				
 				$this->logEntryAuth('PRINT FACTURA OK', $reqId);
 				
@@ -73,9 +76,9 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	private function facturatopdf($comanda) {
+	private function facturatopdf($factura) {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		$factura = $comanda->getFactura();
+		$comanda = $factura->getComanda();
 		$club = $comanda->getClub();
 		
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -96,8 +99,7 @@ class PDFController extends BaseController {
 		$x = $x_ini;
 		
 		$pdf->SetFont('dejavusans', '', 16, '', true);
-		if ($comanda->facturaComptabilitzada() == false) $text = '<b>FACTURA PROVISIONAL PENDENT COMPTABILITZAR</b>';
-		else $text = '<b>FACTURA</b>';
+		$text = '<b>FACTURA</b>';
 		
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
 		$pdf->Ln(5);

@@ -98,6 +98,7 @@ class FormRebut extends AbstractType {
 				'input' 		=> 'datetime',
 				'empty_value' 	=> false,
 				'format' 		=> 'dd/MM/yyyy',
+				'disabled' 	=> true,
 		));
 		
 		$builder->add ( 'import', 'number', array (

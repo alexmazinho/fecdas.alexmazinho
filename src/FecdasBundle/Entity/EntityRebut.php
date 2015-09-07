@@ -133,11 +133,13 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutLlarg()
 	{
-		$concepte = 'REBUT '.$this->getNumRebut().'.';
+		if ($this->esAnulacio()) return 'REBUT ANUL·LACIO: '.$this->getNumRebut().'. FACTURA ANUL·LACIO: '.$comanda->getFactura()->getNumFactura();	
+			
+		$concepte = 'REBUT: '.$this->getNumRebut().'.';
 			
 		if (count($this->comandes) == 0) return $concepte.' INGRES '.$this->getClub()->getNom();  // Ingrés a compte
 		
-		if (count($this->comandes) == 1) {
+		if ($this->getNumFactures() == 1) {
 			$comanda = $this->comandes[0];
 			return $concepte.' FACTURA: '.$comanda->getFactura()->getNumFactura();	
 		}
@@ -151,10 +153,13 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutCurt()
 	{
+		if ($this->esAnulacio()) return 'FACTURA ANUL·LACIO: '.$comanda->getFactura()->getNumFactura();		
+			
 		if (count($this->comandes) == 0) return "REBUT: ".$this->getNumRebut();  // Ingrés a compte
 		
-		if (count($this->comandes) == 1) {
+		if ($this->getNumFactures() == 1) {
 			$comanda = $this->comandes[0];
+			
 			return 'FACTURA: '.$comanda->getFactura()->getNumFactura();	
 		}
 		return 'FACTURES: '.$this->getLlistaNumsFactures();
@@ -167,6 +172,8 @@ class EntityRebut {
 	 */
 	public function getLlistaNumsFactures()
 	{
+		if ($this->esAnulacio()) return $comandaanulacio->getFactura()->getNumFactura();
+			
 		$concepte = '';
 		foreach ($this->comandes as $comanda) {
 			$concepte .= $comanda->getFactura()->getNumFactura().', '; 	
@@ -175,7 +182,22 @@ class EntityRebut {
 		
 	}
 
-	
+	/**
+	 * Get # factures 
+	 *
+	 * @return string
+	 */
+	public function getNumFactures()
+	{
+		if ($this->esAnulacio()) return 1;
+			
+		$total = 0;
+		foreach ($this->comandes as $comanda) {
+			$total += $comanda->getNumFactures(); 	
+		}
+		
+		return $total;		
+	}
 	/**
 	 * Rebut format amb any  XXXXX/20XX
 	 *

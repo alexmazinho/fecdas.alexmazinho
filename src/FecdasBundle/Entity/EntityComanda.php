@@ -244,6 +244,39 @@ class EntityComanda {
 	}
 	
 	/**
+	 * Get nums factures totes 
+	 *
+	 * @return string
+	 */
+	public function getLlistaNumsFactures()
+	{
+		$concepte = '';
+		if ($this->comandaConsolidada() == true &&
+			$this->factura != null) $concepte = $this->factura->getNumFactura();
+		
+		foreach ($this->facturesanulacions as $factura) {
+			$concepte .= $factura->getNumFactura().', '; 	
+		}
+		return substr($concepte, 0, -2);
+		
+	}
+
+	/**
+	 * Get # factures 
+	 *
+	 * @return string
+	 */
+	public function getNumFactures()
+	{
+		$total = 0;
+		if ($this->factura != null) $total++;
+		
+		$total += count($this->facturesanulacions);
+		
+		return $total;		
+	}
+	
+	/**
 	 * Get prefix albarà comú.
 	 * A sobrecarregar pels fills
 	 * 

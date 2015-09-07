@@ -348,7 +348,7 @@ class PDFController extends BaseController {
 			$pdf->writeHTML($tbl, false, false, false, false, '');
 			
 		} else {
-			if (count($comandes) == 1) { // Rebut per import íntegre de comanda
+			if ($rebut->getNumFactures() == 1) { // Rebut per import íntegre de comanda
 
 				$tbl = '<h4>'.'Liquidació FACTURA :'.$rebut->getLlistaNumsFactures().', corresponent a la comanda:</h4>';
 			

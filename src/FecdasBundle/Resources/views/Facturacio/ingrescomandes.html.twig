@@ -1,15 +1,14 @@
 
 	    <div class="table-header">	
 		   	<div id="list-header" class="list-data-adm">
-				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
-		   		<div id="header-comanda-num" class="col-listheader collistheader-noorder">Num</div>
-		   		<div id="header-comanda-club" class="col-listheader collistheader-noorder">Club</div>
-		   		<div id="header-comanda-items" class="col-listheader collistheader-noorder">items</div>
-		   		<div id="header-comanda-total" class="col-listheader collistheader-noorder">Total</div>
-		   		<div id="header-comanda-data" class="col-listheader collistheader-noorder">Data</div>
-		   		<div id="header-comanda-factura" class="col-listheader collistheader-noorder">Factura</div>
-		   		<div id="header-comanda-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
-		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder">Escollir</div>
+				<div id="header-candidata-id" class="col-listheader hidden">&nbsp;</div>
+		   		<div id="header-candidata-num" class="col-listheader collistheader-noorder">Num</div>
+				<div id="header-candidata-data" class="col-listheader collistheader-noorder">Data</div>
+		   		<div id="header-candidata-items" class="col-listheader collistheader-noorder">items</div>
+		   		<div id="header-candidata-factura" class="col-listheader collistheader-noorder">Factura</div>
+		   		<div id="header-candidata-total" class="col-listheader collistheader-noorder">Total</div>
+		   		<div id="header-candidata-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
+		   		<div id="header-candidata-actions" class="col-listheader collistheader-noorder">Escollir</div>
 		   	</div>
 	   	</div>
 		{% if comandes|length > 0 %}
@@ -17,31 +16,26 @@
 		   	<ol id="list-data" class="list-data-adm">
 			{% for comanda in comandes %} 
 		   		<li class="data-detall">
-		   			<div class="data-detall-cell comanda-id hidden">{{ comanda.id }}</div>
-		   			<div class="data-detall-cell comanda-num">{{ comanda.numcomanda }}</div>
-	   				<div class="data-detall-cell comanda-club">
-	   					<a href="/club?codiclub={{ comanda.club.codi }}" title="Veure dades del club" alt="Veure dades del club">{{ comanda.club.nom }}</a>
-	   				</div>
-		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
-		   			<div class="data-detall-cell comanda-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
-		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/y') }}</div>
-		   			<div class="data-detall-cell comanda-factura">
+		   			<div class="data-detall-cell candidata-id hidden">{{ comanda.id }}</div>
+		   			<div class="data-detall-cell candidata-num">{{ comanda.numcomanda }}</div>
+		   			<div class="data-detall-cell candidata-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell candidata-items">{{ comanda.numdetalls }}</div>
+		   			<div class="data-detall-cell candidata-factura">
 		   				{% if comanda.comandaConsolidada == true and comanda.factura != null %}
 		   					{% set factura = comanda.factura %}
-	   						<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
-	   							{{ factura.numfactura }}
-								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+	   						{{ comanda.factura.numfactura }}
 			   			{% endif %}
 		   				{% for factura in comanda.facturesanulacions %} 
-		   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+		   					<a class="candidata-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
 		   						<span class="red">(-){{ factura.numfactura }}</span>
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% endfor %}
 					</div>
-		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|raw }}</div>
-		   			<div class="data-detall-cell comanda-actions">
-						<a class="comanda-action-select link" href="javascript.void();" alt="Escollir comanda" title="Escollir comanda">
-								<i class="fa fa-close text-info red"></i></a>
+		   			<div class="data-detall-cell candidata-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell candidata-comentaris">{{ comanda.infoLlistat|raw }}</div>
+		   			<div class="data-detall-cell candidata-actions">
+						<a class="candidata-action-select link" href="javascript.void();" data-total="{{ comanda.totalDetalls }}" alt="Escollir comanda" title="Escollir comanda">
+								<i class="fa fa-close fa-shown red"></i><i class="fa fa-check fa-hidden green"></i></a>
 		   			</div>
 		   		</li>
 		   		{% endfor %} 

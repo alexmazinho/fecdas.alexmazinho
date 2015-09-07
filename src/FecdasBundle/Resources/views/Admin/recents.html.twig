@@ -104,7 +104,7 @@
 		   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   			{% endif %}
 		   				<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
-		   					<i class="fa fa-print blue"></i></a>
+		   					<i class="fa fa-credit-card blue"></i></a>
 		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
 		   					<i class="fa fa-search orange"></i></a>
 					</div>
@@ -164,6 +164,22 @@ $(document).ready(function(){
 	if (tableScroll.hasOverflowY()) {
 		$('.table-scroll').css({"width":"101.5%"});
 	}
+
+	$('.parterecents-action-print').click(function(e) {
+		//e.preventDefault();
+
+		/*	
+		dialegConfirmacio('Això es una prova', "test...", 0, 550, 
+		function() {
+        	console.log('si');
+        }, 
+        function() {
+        	console.log('no');
+        });*/
+	});
+
+	
+	
 });
 
 </script>

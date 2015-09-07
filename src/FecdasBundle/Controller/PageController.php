@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 
 use FecdasBundle\Form\FormContact;
-use FecdasBundle\Form\FormPayment;
 use FecdasBundle\Form\FormParte;
 use FecdasBundle\Form\FormPersona;
 use FecdasBundle\Form\FormLlicencia;
@@ -23,7 +22,6 @@ use FecdasBundle\Entity\EntityContact;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityLlicencia;
-use FecdasBundle\Entity\EntityPayment;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityCarnet;
 use FecdasBundle\Entity\EntityImatge; 
@@ -93,8 +91,6 @@ class PageController extends BaseController {
 		/* Form importcsv */
 		$currentClub = $this->getCurrentClub();
 		$dataalta = $this->getCurrentDate('now');
-		$currentMonth = $dataalta->format('m');
-		$currentDay = $dataalta->format('d');
 		$factura = null;
 		$parte = null;
 		
@@ -110,8 +106,6 @@ class PageController extends BaseController {
 					else {
 						$dataalta->setTime($this->getCurrentDate()->format('H'), $this->getCurrentDate()->format('i') + 20);// Add 20 minutes
 					}
-					$currentMonth = $dataalta->format('m');
-					$currentDay = $dataalta->format('d');
 				}
 				if (isset($formdata['tipus'])) {
 					$tipusparte = $em->getRepository('FecdasBundle:EntityParteType')->find($formdata['tipus']);
@@ -120,7 +114,7 @@ class PageController extends BaseController {
 			//$dataalta->add(new \DateInterval('PT1200S')); // Add 20 minutes
 		}
 		
-		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $currentDay, $currentMonth);
+		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataalta);
 		
 		$atributs = array('accept' => '.csv');
 		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
@@ -1018,9 +1012,7 @@ class PageController extends BaseController {
 				
 				if ($requestParams['action'] == 'remove') {
 					// Errors generen excepció
-					$this->validaRemoveLlicencia($parte);
-					
-					$this->removeParteDetall($parte, $llicencia);
+					$this->tramitaRemoveLlicencia($parte, $llicencia);
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 					
@@ -1052,14 +1044,13 @@ class PageController extends BaseController {
 					
 				}
 
-				// Generar nova factura si s'ha enviat a comptabilitat. Revisar anulacions etc..
-				// Desvincular rebut si escau
-				$this->actualitzarFacturaRebut($this->getCurrentDate(), $parte);
-				
 				$em->flush();
+
+				error_log('tramitaRemoveLlicencia log');
 
 				$this->logEntryAuth('LLICENCIA '.$requestParams['action'].' OK', 'Parte:' . $parte->getId() . ' llicencia: ' . $llicencia->getId());
 				
+				error_log('tramitaRemoveLlicencia render');
 				$response = $this->render('FecdasBundle:Page:partellistallicencies.html.twig',
 						array('parte' => $parte, 'admin' =>$this->isCurrentAdmin()));
 				
@@ -1105,19 +1096,14 @@ class PageController extends BaseController {
 		return $response;
 	}
 	
-	private function validaRemoveLlicencia($parte) {
-		// No admin
-		if (!$this->isCurrentAdmin()) throw new \Exception('Contacteu amb la Federació per anul·lar les llicències');
+	private function tramitaRemoveLlicencia($parte, $llicencia) {
+		// Només admin o clubs DIFE
+		if (!$this->isCurrentAdmin() &&
+			$parte->getClub()->controlCredit() == false) throw new \Exception('Contacteu amb la Federació per anul·lar les llicències');
 
-		// Compte si deixem esborrar als clubs cal activar següents validacions
+		$this->removeParteDetall($parte, $llicencia);
 		
-		// Comprovació Pagat
-		//if ($parte->comandaPagada() == true) throw new \Exception('No es poden esborrar llicències que ja estan pagades');
-		
-		// Comprovació comptabilitzat
-		//if ($parte->estaComptabilitzada() == true) throw new \Exception('La llista està facturada. Contacteu amb la Federació per anul·lar les llicències');
-		
-
+		/// !!!!! CREAR FACTURA NEGATIVA i SI PAGADA REBUT NEGATIUS ....
 	}
 	
 	private function validaParteLlicencia($parte, $llicencia) {
@@ -1556,8 +1542,11 @@ class PageController extends BaseController {
 	public function gettipuspartesAction(Request $request) {
 		$day = $request->get('day');
 		$month = $request->get('month');
+		$month = $request->get('year');
 		
-		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $day, $month);
+		$dataconsulta = \DateTime::createFromFormat('d/m/Y', $day.'/'.$month.'/'.$year );
+		
+		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataconsulta);
 		
 		$tipuspermesos = "";
 		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus

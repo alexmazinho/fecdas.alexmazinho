@@ -26,7 +26,7 @@ class FormParte extends AbstractType {
 				$tipusparte = $parte->getTipus();
 				$dataalta = $parte->getDataalta();
 				if ($dataalta == null) $dataalta = new \DateTime();
-				$llistatipus = BaseController::getLlistaTipusParte($parte->getClub(), $dataalta->format('d'), $dataalta->format('m'));
+				$llistatipus = BaseController::getLlistaTipusParte($parte->getClub(), $dataalta);
 				
 				if ($parte->esNova() && $parte->isAllowEdit()) {
 					// Mostra només la llista dels permesos

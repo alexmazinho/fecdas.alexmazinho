@@ -1818,7 +1818,7 @@
 	    	// Update select tipus parte	
 			var url = $('#formcsv-tipus').data('ajax-route');
 			var currentDate = $( "#form_dataalta" ).datepicker( "getDate" );
-			var params = { 	day: currentDate.getDate(), month: currentDate.getMonth()+1 };
+			var params = { 	day: currentDate.getDate(), month: currentDate.getMonth()+1, year: currentDate.getFullYear()  };
 			$.get(url,	params,
 			function(data) {
 				$('select#form_tipus').html(data); 

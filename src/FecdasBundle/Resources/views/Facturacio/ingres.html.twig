@@ -30,7 +30,7 @@
 	<form id="formrebut" action="{{ path('FecdasBundle_editarrebut') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
 			{{ form_widget(form.id) }}{{ form_widget(form.num) }}
-			 <div class="col-md-3">
+			 <div class="col-md-5">
 			 	<div class="form-group">
 					<label>Club</label>
 					<div id="formrebut-club"  class="">
@@ -53,14 +53,6 @@
 						{{ form_widget(form.import, { 'attr': {'class': 'form-control form-control-center'} }) }}
 						<span class="input-group-addon"><i class="fa fa-euro"></i></span>
 					</div>{{ form_errors(form.import)  }}
-				</div>
-			 </div>
-			 <div class="col-md-5">
-			 	<div class="form-group">
-					{{ form_label(form.comptabilitat, 'Codi comptabilitat') }}
-					<div id="formrebut-comptabilitat"  class="">
-						{{ form_widget(form.comptabilitat, { 'attr': {'class': 'form-control form-control-left'} }) }}
-					</div>{{ form_errors(form.comptabilitat)  }}
 				</div>
 			 </div>
 			 <div class="col-md-3">
@@ -91,32 +83,22 @@
 				</div>
 			 </div>
 
-			 <div class="col-md-3 col-md-offset-1">
-				<div class="form-group">
-					{{ form_label(form.dataanulacio, 'Data d\'anul·lació') }}
-					<div id="formrebut-dataanulacio" class="input-group">
-		  				<span class="input-group-addon">Anul·lat</span>
-						{{ form_widget(form.dataanulacio, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
-						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-					</div>{{ form_errors(form.dataanulacio)  }}
-				</div>
-			 </div>
-			 <div class="col-md-6">
+			 <!-- <div class="col-md-6">
 			  	<div class="form-group">
-			    	{{ form_label(form.comanda, 'Comanda') }}
+			    	{# form_label(form.comanda, 'Comanda') #}
 			    	<div class="label-actions accions-comanda">
-					{% if rebut.comanda is null %}
+					{# if rebut.comanda is null #}
 						<i class="fa fa-search fa-1x grey"></i>
-					{% else %}
-						<a id="editar-comanda" class="link" href="{{ path('FecdasBundle_editarcomanda', {'id': rebut.comanda.id }) }}"  title="Editar comanda" alt="Editar comanda">
+					{# else %}
+						<a id="editar-comanda" class="link" href="{# path('FecdasBundle_editarcomanda', {'id': rebut.comanda.id }) #}"  title="Editar comanda" alt="Editar comanda">
 							<i class="fa fa-search fa-1x blue"></i></a>
-					{% endif %}
+					{# endif %}
 					</div>
 			    	<div id="formrebut-comanda">
-						{{ form_widget(form.comanda, { 'attr': {'class': 'form-control form-control-left'} }) }}
+						{# form_widget(form.comanda, { 'attr': {'class': 'form-control form-control-left'} }) #}
 					</div>
 				</div>
-			 </div>
+			 </div> -->
 			 <div class="col-md-6">
 			 	<div class="form-group">
 			 		{{ form_label(form.comentari, 'Comentari') }}
@@ -125,8 +107,9 @@
 					</div>
 				</div>{{ form_errors(form.comentari)  }}
 			 </div> 
-			 <div class="col-md-2">
+			 <div class="col-md-3">
 				<button type="submit" id="formrebut-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
+			 	<button type="submit" id="formrebut-automatic" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Automàtic</button>
 			 </div>
 		</div>
 		
@@ -134,8 +117,12 @@
 		
 		<div id="error" class="sms-notice" style="display:none"> </div>
 		
-		<div class="row"></div>
     </form>
+
+	<div id="llista-candidates">
+		{% include "FecdasBundle:Facturacio:ingrescomandes.html.twig" %}
+	</div>
+
 
 {% endblock %}
 
@@ -156,21 +143,25 @@
 				allowClear: true,
 			});
 
-			$("select#rebut_comanda").select2({
+			$("select#rebut_club").change( function() {
+				location.reload();
+			});
+			
+			/*$("select#rebut_comanda").select2({
 				minimumInputLength: 2,
 				allowClear: true,
-			});
+			});*/
 
-			$("select#rebut_comanda").change( function() {
+			/*$("select#rebut_comanda").change( function() {
 				var id = $(this).val();
 				
 
-				var url = "{{ path('FecdasBundle_editarcomanda', {'id': '__COMANDA__' }) }}";
+				var url = "{# path('FecdasBundle_editarcomanda', {'id': '__COMANDA__' }) #}";
 				url = url.replace("__COMANDA__", id);
 
 				$('.accions-comanda').html("<a id='editar-comanda' class='link' href='"+url+"' title='Editar comanda' alt=Editar comanda'> \
 											<i class='fa fa-search fa-1x blue'></i></a>");
-			}); 
+			}); */
 			
 			var current = new Date();
 			
@@ -187,16 +178,6 @@
 				''
 			);
 
-			initDateTimePicker ( 
-				$( '#rebut_dataanulacio' ), 
-				mindate, 
-				current, 
-				current, 
-				'dataanulacio-picker', 
-				false,
-				''
-			);
-			
 		});
 		
 	</script>

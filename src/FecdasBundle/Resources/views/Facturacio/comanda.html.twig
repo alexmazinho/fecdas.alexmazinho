@@ -13,21 +13,19 @@
 {% block title %}Aplicació gestió FECDAS. Edició comanda{% endblock %}
 
 {% block body %}
-    <header>
-        <h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Comanda</h1>
-    </header>
-     <div class="form-row clearfix">
-		<div class="buttons-top buttons-top-nous">
-			<div id="comanda-save" class="button-top">
-				<a class="link" href="" alt="Desar comanda" title="Desar comanda">
-						<i class="fa fa-save fa-2x fa-fw green"></i></a>
+     <div class="row">
+	     <header>
+	        <div class="col-md-8"><h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Comanda</h1></div>
+	    	<div class="col-md-4  col-last-right">
+				<div class="buttons-top-bootstrap">
+					<div id="comanda-save" class="button-top">
+						<a class="link" href="" alt="Desar comanda" title="Desar comanda">
+							<i class="fa fa-save fa-2x fa-fw green"></i></a>
+						<span class="subtext">desar</span>
+					</div>
+				</div>
 			</div>
-			
-			<div id="comanda-to-pdf" class="button-top">
-				<a class="link" href="{{ path('FecdasBundle_albaratopdf', { 'id': comanda.id}) }}" alt="PDF Albarà" title="PDF Albarà">
-						<i class="fa fa-file-pdf-o fa-2x fa-fw red"></i></a>
-			</div>
-		</div>	
+		</header>	
 	</div>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
@@ -59,43 +57,7 @@
 					</div>{{ form_errors(form.totalsuma)  }}
 				</div>
 			 </div>
-			 <div class="col-md-5">
-			 	<div class="form-group">
-					{{ form_label(form.comptabilitat, 'Codi comptabilitat') }}
-					<div id="formcomanda-comptabilitat"  class="">
-						{{ form_widget(form.comptabilitat, { 'attr': {'class': 'form-control form-control-left'} }) }}
-					</div>{{ form_errors(form.comptabilitat)  }}
-				</div>
-			 </div>
 			
-			 <div class="col-md-2">
-			 	<div class="form-group">
-					{{ form_label(form.numfactura, 'Factura') }}
-					<div class="label-actions">
-					{% if comanda.id > 0 %}
-						{% if  comanda.factura is not null %}
-							{% if  comanda.factura.esBaixa == false %}
-								<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
-									<i class="fa fa-pencil fa-1x blue"></i></a>
-								<a id="factura-to-pdf" class="link" href="{{ path('FecdasBundle_facturatopdf', {'id': comanda.factura.id }) }}"  title="PDF factura" alt="PDF factura">
-									<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-							{% else %}
-								<a id="editar-factura" class="link" href="{{ path('FecdasBundle_editarfactura', {'id': comanda.factura.id }) }}"  title="Editar factura" alt="Editar factura">
-									<i class="fa fa-pencil fa-1x blue"></i></a>
-								<a id="crear-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
-									<i class="fa fa-file-text-o fa-1x blue"></i></a>
-							{% endif %}
-						{% else %}
-							<a id="crear-factura" class="link" href="{{ path('FecdasBundle_novafactura', {'comanda': comanda.id }) }}" title="Crear factura" alt="Crear factura">
-								<i class="fa fa-file-text-o fa-1x blue"></i></a>
-						{% endif %}
-					{% endif %}
-					</div>
-					<div id="formcomanda-factura" class="">
-						{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control form-control-center'} }) }}
-					</div>{{ form_errors(form.numfactura)  }}
-				</div>
-			 </div>
 			 {% if comanda.rebut is null %}
 			 <div class="col-md-3">
 			 	<div class="form-group">
@@ -161,6 +123,33 @@
 					</div>{{ form_errors(form.comentaris)  }}
 				 </div> 
 			 {% endif %}
+		</div>
+		<div class="row">
+			<div class="col-md-12"><h3 class="blue">Factures</h3> </div>
+			{% for factura in comanda.factures %}
+				<div class="col-md-12"> 
+					<ul class="list-factures">
+						<li class="data-detall-cell">&nbsp;</li>
+						<li class="data-detall-cell"><a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+			   				<i class="fa fa-file-pdf-o fa-1x red"></i></a></li>
+						<li class="data-detall-cell">{{ factura.datafactura|date|date('Y-m-d') }}</li>
+						<li class="data-detall-cell"><span {% if factura.esanulacio == true %}class="red"{% endif %}>{{ factura.numfactura }}</span></li>
+			   			<li class="data-detall-cell">{{ factura.import|number_format(2, ',', '.') }} €</li>
+						<li class="data-detall-cell">{{ factura.concepte }}</li>
+					</ul>
+				</div>
+			{% else %}
+				<div class="col-md-12">
+					<div class="alert alert-danger form-alert alert-dismissible">
+						<button data-dismiss="alert" class="close" type="button">
+						<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+						<ul>
+						  	<li><span class="fa fa-exclamation-circle fa-1x"></span> La informació de facturació no es troba disponible</li>
+						</ul>
+					</div>
+				</div>
+			{% endfor %}
+			
 		</div>
 		<div class="row">
 			<div class="col-md-12">
@@ -310,6 +299,12 @@
 		$(document).ready(function(){
 			setMenuActive("menu-admcomanda");
 
+
+			$("select#comanda_club").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+			});
+			
 			var current = new Date();
 			
 			var maxdate = new Date (current.getFullYear(), current.getMonth() + 1, current.getDay());
@@ -335,10 +330,6 @@
 				''
 			);
 			
-			$("select#comanda_club").select2({
-				minimumInputLength: 2,
-				allowClear: true,
-			});
 
 
 			// Afegir detalls

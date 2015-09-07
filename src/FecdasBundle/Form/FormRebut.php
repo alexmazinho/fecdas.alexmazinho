@@ -30,7 +30,7 @@ class FormRebut extends AbstractType {
 						'data'		=> $rebut->getNumRebut()
 				));
 				
-				if ($rebut->getComanda() == null) {
+				/*if ($rebut->getComanda() == null) {
 					$current = date('Y') - 1;
 					$datadesde = \DateTime::createFromFormat('Y-m-d H:i:s', $current."-01-01 00:00:00");
 					
@@ -54,16 +54,16 @@ class FormRebut extends AbstractType {
 							},
 							'choice_label' 	=> 'InfoComanda',
 							'required'  	=> false,);
-					
+					*/
 					/*$options = array(
 						'class' 		=> 'FecdasBundle:EntityComanda',
 						'choice_label' 	=> 'InfoComanda',
 						'required'  	=> false,
 						'mapped'  		=> false,
 						'data'			=> $rebut->getComanda());*/
-				}
+				//}
 									
-				$form->add('comanda', 'entity', $options);
+				/*$form->add('comanda', 'entity', $options);*/
 				
 				$form->add('comptabilitat', 'entity', array(
 						'class' 		=> 'FecdasBundle:EntityComptabilitat',
@@ -81,6 +81,11 @@ class FormRebut extends AbstractType {
 		
 		$builder->add('club', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityClub',
+				'query_builder' => function($repository) {
+						return $repository->createQueryBuilder('c')
+								->orderBy('c.nom', 'ASC')
+								->where('c.activat = 1');
+						}, 
 				'choice_label' 	=> 'nom',
 				'empty_value' 	=> 'Seleccionar Club',
 				'required'  	=> false,
@@ -112,14 +117,6 @@ class FormRebut extends AbstractType {
 		
 		$builder->add('comentari', 'textarea', array(
 				'required' => false,
-		));
-		
-		$builder->add('dataanulacio', 'date', array(
-				'required' 		=> false,
-				'widget' 		=> 'single_text',
-				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
-				'format' 		=> 'dd/MM/yyyy',
 		));
 		
 	}

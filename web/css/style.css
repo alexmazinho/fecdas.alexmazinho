@@ -577,48 +577,46 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 /*************** FECDAS NOU comandes ****************/
 
-#header-comanda-estat  { width: 5%; text-align: left; }
-#header-comanda-num { width: 8%; text-align: left; }
+#header-comanda-estat  { width: 5%; text-align: center; }
+#header-comanda-num { width: 12%; text-align: left; }
 #header-comanda-items { width: 5%; text-align: center; }
-#header-comanda-total { width: 8%; text-align: right; }
-#header-comanda-data { width: 10%; text-align: center; }
-#header-comanda-factura { width: 10%; text-align: center; }
-#header-comanda-rebut { width: 10%; text-align: center; }
-#header-comanda-comentaris { width: 25%; text-align: left; }
+#header-comanda-total { width: 12%; text-align: right; }
+#header-comanda-data { width: 12%; text-align: center; }
+#header-comanda-factura { width: 12%; text-align: center; }
+#header-comanda-rebut { width: 12%; text-align: center; }
+#header-comanda-comentaris { width: 20%; text-align: left; }
 #header-comanda-actions { width: 10%; text-align: right; }
 
 .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
-.data-detall-cell.comanda-num { width: 8%; text-align: left; }
+.data-detall-cell.comanda-num { width: 12%; text-align: left; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
-.data-detall-cell.comanda-total { width: 8%; text-align: right; }
-.data-detall-cell.comanda-data { width: 10%; text-align: center; }
+.data-detall-cell.comanda-total { width: 12%; text-align: right; }
+.data-detall-cell.comanda-data { width: 12%; text-align: center; }
 .data-detall-cell.comanda-factura { width: 12%; text-align: center; }
 .data-detall-cell.comanda-rebut { width: 12%; text-align: center; }
-.data-detall-cell.comanda-comentaris { width: 25%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
 
-.list-header-adm #header-comanda-estat  { width: 5%; text-align: left; }
+.list-header-adm #header-comanda-estat  { width: 5%; text-align: center; }
 .list-header-adm #header-comanda-num { width: 7%; text-align: left; }
-.list-header-adm #header-comanda-club { width: 10%; text-align: left;  }
+.list-header-adm #header-comanda-club { width: 15%; text-align: left;  }
 .list-header-adm #header-comanda-items { width: 5%; text-align: center; }
 .list-header-adm #header-comanda-total { width: 7%; text-align: right; }
 .list-header-adm #header-comanda-data { width: 7%; text-align: center; }
 .list-header-adm #header-comanda-factura { width: 10%; text-align: center; }
-.list-header-adm #header-comanda-rebut { width: 8%; text-align: center; }
-.list-header-adm #header-comanda-comentaris { width: 19%; text-align: left; }
-.list-header-adm #header-comanda-compta { width: 8%; text-align: right; }
+.list-header-adm #header-comanda-rebut { width: 10%; text-align: center; }
+.list-header-adm #header-comanda-comentaris { width: 20%; text-align: left; }
 .list-header-adm #header-comanda-actions { width: 10%; text-align: right; }
 
 .list-data-adm .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
 .list-data-adm .data-detall-cell.comanda-num { width: 7%; text-align: left; }
-.list-data-adm .data-detall-cell.comanda-club { width: 10%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-club { width: 15%; text-align: left; font-size: 0.9em; }
 .list-data-adm .data-detall-cell.comanda-items { width: 5%; text-align: center; }
 .list-data-adm .data-detall-cell.comanda-total { width: 7%; text-align: right; }
 .list-data-adm .data-detall-cell.comanda-data { width: 7%; text-align: center; }
 .list-data-adm .data-detall-cell.comanda-factura { width: 10%; text-align: center; }
-.list-data-adm .data-detall-cell.comanda-rebut { width: 8%; text-align: center; }
-.list-data-adm .data-detall-cell.comanda-comentaris { width: 19%; text-align: left; font-size: 0.9em; }
-.list-data-adm .data-detall-cell.comanda-compta { width: 8%; text-align: right; }
+.list-data-adm .data-detall-cell.comanda-rebut { width: 10%; text-align: center; }
+.list-data-adm .data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
 .list-data-adm .data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
 
 
@@ -644,30 +642,30 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
  } 
 
 
-/*************** FECDAS NOU ingresos ****************/
+/*************** FECDAS NOU ingrés / ingresos ****************/
 
 
-#header-ingres-estat  { width: 5%; text-align: left; }
 #header-ingres-num { width: 10%; text-align: left; }
 #header-ingres-club { width: 15%; text-align: left;  }
-#header-ingres-import { width: 8%; text-align: right; }
-#header-ingres-data { width: 10%; text-align: center; }
-#header-ingres-comanda { width: 10%; text-align: center; }
+#header-ingres-import { width: 10%; text-align: right; }
+#header-ingres-data { width: 12%; text-align: center; }
+#header-ingres-comanda { width: 11%; text-align: center; }
 #header-ingres-comentaris { width: 23%; text-align: left; }
 #header-ingres-compta { width: 10%; text-align: center; }
 #header-ingres-actions { width: 6%; text-align: right; }
 
 
-.data-detall-cell.ingres-estat  { width: 5%; text-align: left; }
 .data-detall-cell.ingres-num { width: 10%; text-align: left; }
 .data-detall-cell.ingres-club { width: 15%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.ingres-import { width: 8%; text-align: right; }
-.data-detall-cell.ingres-data { width: 10%; text-align: center; }
-.data-detall-cell.ingres-comanda { width: 10%; text-align: center; }
+.data-detall-cell.ingres-import { width: 10%; text-align: right; }
+.data-detall-cell.ingres-data { width: 12%; text-align: center; }
+.data-detall-cell.ingres-comanda { width: 11%; text-align: center; }
 .data-detall-cell.ingres-comentaris { width: 23%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.ingres-compta { width: 10%; text-align: center; }
 .data-detall-cell.ingres-actions { width: 6%; text-align: right; font-size: 1.2em; }
  
+ 
+#llista-candidates { margin-top: 20px; }
  
  /*************** FECDAS NOU traspas ****************/
  
@@ -756,6 +754,10 @@ ul.detalls {
 
 ul.detalls li .alert { margin: 10px 0; }
 
+.list-factures { display: table-row; width: 100%; }
+.list-factures li { display: table-cell; }
+.list-factures li.data-detall-cell { border: none; }
+
 /***************** Llistes ******************/
 
 .table-header {
@@ -785,7 +787,7 @@ ul.detalls li .alert { margin: 10px 0; }
 	width: 80%;
 }
 
-#list-header, #summary-header {
+#list-header, #summary-header, .data-detall-header {
     /*background: url("/static/images/white_pixel.gif") repeat-x scroll 0 0 #F0F9FF;*/
     background:  repeat-x scroll 0 0 #F0F9FF;
     border-color: #82CFFA #E7F2FB #96C4EA;
@@ -894,14 +896,18 @@ ul.detalls li .alert { margin: 10px 0; }
     border-width: 1px 0 0;
 }
 
-.data-detall-fosc {
+.data-detall-fosc, .data-detall-fosc a {
 	/*background-color: #F9F9F9;*/
-    color: #999999;
+    color: #999999 !important;
 }
+
+.data-detall-nopagat a { background-color: #a94442; color: #ffffff; }
+
+
 
 .table-scroll, .table-noscroll {
 	/*display: inline-block;*/
-	display: table;
+	/*display: table;*/
 	max-height: 450px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -1170,11 +1176,20 @@ input#form_dni {
     padding: 0 0 5px;
 }
 
-.button-top {
-	display: inline;
+.buttons-top-bootstrap .button-top, .buttons-top-docs .button-top  {
+	display: block;
+	float: right;
+	margin-left: 10px;
+	text-align: center;
 }
+.buttons-top-docs { display: inline-block;  }
+.buttons-top-docs .button-top .col-listheader { font-size: 0.9em; text-transform: uppercase; text-align: center; }
+.buttons-top-docs .button-top a { text-align: center; }
+ 
+.buttons-top .link { display: table-cell;} 
+.buttons-top-bootstrap .link, .buttons-top-bootstrap .subtext { display: block;}
+.buttons-top-bootstrap .subtext { font-size: 0.8em; text-transform: uppercase; color: #1240a0; }
 
-.buttons-top .link, .buttons-top-bootstrap .link { display: table-cell;} 
 
 .buttons-top .link i.fa,
 .buttons-top-bootstrap .link i.fa { 

@@ -41,7 +41,13 @@ class EntityFactura {
 	/**
 	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="factura")
 	 **/
-	protected $comanda;	// FK taula m_comandes
+	protected $comanda;	
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityComanda")
+	 * @ORM\JoinColumn(name="comandaanulacio", referencedColumnName="id")
+	 */
+	protected $comandaanulacio; 
 	
 	/**
 	 * @ORM\Column(type="datetime", nullable=true)
@@ -49,30 +55,15 @@ class EntityFactura {
 	protected $datapagament;
 	
 	/**
+	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat")
+	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
+	 */
+	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
-	
-	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $datamodificacio;
-	
-	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $dataanulacio;
-	
-	/**
-	 * @ORM\Column(type="integer", nullable=true)
-	 */
-	protected $idanulacio;
-	
-	/**
-	 * @ORM\Column(type="integer", nullable=true)
-	 */
-	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
-
 	
 	/**
 	 * Constructor
@@ -86,11 +77,10 @@ class EntityFactura {
 		$a = func_get_args();
 		$i = func_num_args();
 	
-		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+		if ($i > 1 && method_exists($this,$f='__constructParams')){
 			call_user_func_array(array($this,$f),$a);
 		}
 	}
-	
 	
 	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '') {
 	
@@ -100,10 +90,21 @@ class EntityFactura {
 		$this->concepte = $concepte;
 		$this->comanda = $comanda;
 	}
-	
 
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
+	}
+	
+	public function esAnulacio()
+	{
+		return $this->comandaanulacio != null;
+	}
+	
+	public function infoToolTip($admin)
+	{
+		$toolTip = 'Factura '.($this->esAnulacio()?'anul·lació':'');
+		if ($admin == true && $this->comptabilitat != null) $toolTip .= '. Comptabilitat '.$this->comptabilitat->getDataenviament()->format('d/m/Y'); 
+		return $toolTip;
 	}
 	
 	/**
@@ -124,10 +125,6 @@ class EntityFactura {
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datafactura->format("y");
 	}
 	
-	public function esBaixa()
-	{
-		return $this->dataanulacio != null;
-	}
 	/**
 	 * @return integer
 	 */
@@ -213,6 +210,20 @@ class EntityFactura {
 	}
 	
 	/**
+	 * @return comandaanulacio
+	 */
+	public function getComandaanulacio() {
+		return $this->comandaanulacio;
+	}
+	
+	/**
+	 * @param \FecdasBundle\Entity\EntityComanda $comandaanulacio
+	 */
+	public function setComandaanulacio(\FecdasBundle\Entity\EntityComanda $comandaanulacio = null) {
+		$this->comandaanulacio = $comandaanulacio;
+	}
+	
+	/**
 	 * @return datetime
 	 */
 	public function getDatapagament() {
@@ -225,6 +236,29 @@ class EntityFactura {
 	public function setDatapagament($datapagament) {
 		$this->datapagament = $datapagament;
 	}
+	
+	    /**
+     * Set comptabilitat
+     *
+     * @param \FecdasBundle\Entity\EntityComptabilitat $comptabilitat
+     * @return EntityComanda
+     */
+    public function setComptabilitat(\FecdasBundle\Entity\EntityComptabilitat $comptabilitat = null)
+    {
+        $this->comptabilitat = $comptabilitat;
+
+        return $this;
+    }
+
+    /**
+     * Get comptabilitat
+     *
+     * @return \FecdasBundle\Entity\EntityComptabilitat 
+     */
+    public function getComptabilitat()
+    {
+        return $this->comptabilitat;
+    }
 	
 	/**
 	 * @return datetime
@@ -240,66 +274,4 @@ class EntityFactura {
 		$this->dataentrada = $dataentrada;
 	}
 	
-	/**
-	 * Set datamodificacio
-	 *
-	 * @param \DateTime $datamodificacio
-	 */
-	public function setDatamodificacio($datamodificacio)
-	{
-		$this->datamodificacio = $datamodificacio;
-	}
-	
-	/**
-	 * Get datamodificacio
-	 *
-	 * @return \DateTime
-	 */
-	public function getDatamodificacio()
-	{
-		return $this->datamodificacio;
-	}
-	
-	
-	/**
-	 * @return datetime
-	 */
-	public function getDataanulacio() {
-		return $this->dataanulacio;
-	}
-
-	/**
-	 * @param datetime $dataanulacio
-	 */
-	public function setDataanulacio($dataanulacio) {
-		$this->dataanulacio = $dataanulacio;
-	}
-
-	/**
-	 * @return integer
-	 */
-	public function getIdanulacio() {
-		return $this->idanulacio;
-	}
-	
-	/**
-	 * @param integer $id
-	 */
-	public function setIdanulacio($idanulacio) {
-		$this->id = $idanulacio;
-	}
-
-	/**
-	 * @return comandaoriginal
-	 */
-	public function getComandaoriginal() {
-		return $this->comandaoriginal;
-	}
-	
-	/**
-	 * @param int $comandaoriginal
-	 */
-	public function setComandaoriginal($comandaoriginal) {
-		$this->comandaoriginal = $comandaoriginal;
-	}
 }

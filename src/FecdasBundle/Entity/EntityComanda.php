@@ -46,17 +46,21 @@ class EntityComanda {
 	protected $factura;	// FK taula m_factures
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat")
-	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
+	 * @ORM\OneToMany(targetEntity="EntityFactura", mappedBy="comandaanulacio" )
 	 */
-	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
+	protected $facturesanulacions;	// FK taula m_factures
 	
 	/**
-	 * @ORM\OneToOne(targetEntity="EntityRebut", inversedBy="comanda")
+	 * @ORM\ManyToOne(targetEntity="EntityRebut", inversedBy="comandes")
 	 * @ORM\JoinColumn(name="rebut", referencedColumnName="id")
-	 **/
+	 */
 	protected $rebut;	// FK taula m_rebuts
-	
+
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityRebut", mappedBy="comandaanulacio" )
+	 */
+	protected $rebutsanulacions;	// FK taula m_rebuts
+		
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
@@ -95,10 +99,11 @@ class EntityComanda {
 	 */
 	public function __construct()
 	{
-
 		$this->id = 0;
 		$this->dataentrada = new \DateTime();
 		$this->detalls = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->facturesanulacions = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->rebutsanulacions = new \Doctrine\Common\Collections\ArrayCollection();
 	
 		// Hack per permetre múltiples constructors
 		$a = func_get_args();
@@ -131,20 +136,28 @@ class EntityComanda {
 	
 	public function comandaPagada()
 	{
-		return $this->rebut != null && !$this->rebut->esBaixa();
+		return $this->rebut != null;
 	}
 
-	public function estaComptabilitzada()
-	{
-		return $this->comptabilitat != null;
-	}
-	
-	public function facturaComptabilitzada()
-	{
-		return $this->comptabilitat != null && 
-				$this->factura != null &&
-				!$this->factura->esBaixa();
-	}
+	/**
+     * Allow edit. Permetre modificar / Afegir detalls. ==> Fals. Sobreescrit a partes (20 minuts)
+     *
+     * @return boolean
+     */
+    public function isAllowEdit()
+    {
+		return false;
+    }
+
+	/**
+     * Allow edit. True. Sobreescrit a partes (esperar 20 minuts)
+     *
+     * @return boolean
+     */
+    public function comandaConsolidada()
+    {
+		return !$this->isAllowEdit();  // Si no es permet editar es pot mostrar la factura
+    }
 
 	public function detallsEditables()
 	{
@@ -243,51 +256,22 @@ class EntityComanda {
 	
 	public function getEstat()
 	{
-		return $this->databaixa != null?'baixa':'';
+		if ($this->databaixa != null) return 'baixa';
+		return $this->comandaPagada() != true?'pendent':'';
 	}
 	
 	/**
-	 * Num factura o res
+	 * Get factures
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getNumFactura() {
-		if ($this->factura == null) return "";
-		
-		return (!$this->factura->esBaixa()?"":"baixa-").$this->factura->getNumFactura();
+	public function getFactures() {
+		$factures = array();
+		if ($this->factura != null) $factures[] = $this->factura;
+	
+		return array_merge($factures, $this->facturesanulacions->toArray());
 	}
-	
-	/**
-	 * Get datafactura
-	 *
-	 * @return date
-	 */
-	public function getDatafactura()
-	{
-		return ($this->factura != null && !$this->factura->esBaixa()?$this->factura->getDatafactura():null);
-	}
-	
-	/**
-	 * Comprova si la factura es vàlida.
-	 *
-	 * @return boolean
-	 */
-	public function isFacturaValida()
-	{
-		if ($this->factura == null) return false;
-		return abs($this->factura->getImport() - $this->getTotalDetalls() <= 0.01);
-	}
-	
-	
-	/**
-	 * Num rebut o res
-	 *
-	 * @return string
-	 */
-	public function getNumRebut() {
-		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getNumRebut():"");
-	}
-	
+
 	/**
 	 * Get importpagament
 	 *
@@ -295,7 +279,7 @@ class EntityComanda {
 	 */
 	public function getImportpagament()
 	{
-		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getImport():0);
+		return ($this->rebut != null?$this->rebut->getImport():0);
 	}
 	
 	/**
@@ -305,7 +289,7 @@ class EntityComanda {
 	 */
 	public function getDatapagament()
 	{
-		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getDatapagament():null);
+		return ($this->rebut != null?$this->rebut->getDatapagament():null);
 	}
 	
 	/**
@@ -353,7 +337,7 @@ class EntityComanda {
 	 * @return integer
 	 */
 	public function getTipuspagament() {
-		return ($this->rebut != null && !$this->rebut->esBaixa()?$this->rebut->getTipuspagament():null);
+		return ($this->rebut != null?$this->rebut->getTipuspagament():null);
 	}
 	
 	/**
@@ -456,21 +440,8 @@ class EntityComanda {
 	public function getConcepteComanda()
 	{
 		
-		return "COMANDA: ".$this->getNumComanda()." ".$this->getTipusComanda();
+		return $this->getNumComanda()." ".$this->getTipusComanda();
 		
-	}
-	
-	/**
-	 * Get concepte comanda curt
-	 *
-	 * @return string
-	 */
-	public function getConcepteComandaCurt()
-	{
-	
-		if ($this->factura == null) return "COMANDA: ".$this->getNumComanda();
-	
-		return "FACTURA: ".$this->factura->getNumFactura();
 	}
 	
 	/**
@@ -541,7 +512,7 @@ class EntityComanda {
 	{
 		$info = $this->comentaris;
 		foreach ($this->detalls as $d) {
-			if (!$d->esBaixa()) $info .= '<br/>'. $d->getAnotacions();
+			if (!$d->esBaixa()) $info .= ($info!=''?'<br/>':''). $d->getAnotacions();
 		}
 		return $info;
 	}
@@ -709,11 +680,6 @@ class EntityComanda {
      */
     public function setFactura(\FecdasBundle\Entity\EntityFactura $factura = null)
     {
-    	if ($factura != null && $this->factura != null && $this->factura->getId() != $factura->getId()) {
-    		$this->factura->setComandaoriginal($this);
-    		$this->factura->setIdanulacio($factura->getId());
-    	}
-    	
     	$this->factura = $factura;
 
         return $this;
@@ -751,6 +717,60 @@ class EntityComanda {
     {
         return $this->rebut;
     }
+	
+	
+	/**
+     * Add rebutsanulacions
+     *
+     * @param EntityRebut $rebutsanulacions
+     * @return EntityComanda
+     */
+    public function addrebutsanulacions(EntityRebut $rebutanulacio) 
+    {
+    	$this->rebutsanulacions->add($rebutanulacio);
+
+        return $this;
+    }
+
+    /**
+     * Get rebutsanulacions
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getRebutsanulacions()
+    {
+        return $this->rebutsanulacions;
+    }
+
+    /**
+     * Remove rebutsanulacions
+     *
+     * @param EntityRebut $rebutanulacio
+     */
+    public function removeRebutsanulacions(EntityRebut $rebutanulacio)
+    {
+        $this->rebutsanulacions->removeElement($rebutanulacio);
+    }
+
+    /**
+     * Remove all rebutsanulacions
+     *
+     */
+    public function resetRebutsanulacions()
+    {
+    	$this->rebutsanulacions = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    /**
+     * Set rebutsanulacions
+     *
+     * @param \Doctrine\Common\Collections\Collection $rebutsanulacions
+     */
+    public function setRebutsanulacions(\Doctrine\Common\Collections\ArrayCollection $rebutsanulacions)
+    {
+    	$this->rebutsanulacions = $rebutsanulacions;
+    }  
+	
 
     /**
      * Add detall
@@ -803,28 +823,57 @@ class EntityComanda {
     {
     	$this->detalls = $detalls;
     }  
-    
-    
-    /**
-     * Set comptabilitat
+	
+	/**
+     * Add facturesanulacions
      *
-     * @param \FecdasBundle\Entity\EntityComptabilitat $comptabilitat
+     * @param EntityFactura $facturesanulacions
      * @return EntityComanda
      */
-    public function setComptabilitat(\FecdasBundle\Entity\EntityComptabilitat $comptabilitat = null)
+    public function addFacturaanulacio(EntityFactura $facturaanulacio) 
     {
-        $this->comptabilitat = $comptabilitat;
+    	$this->facturesanulacions->add($facturaanulacio);
 
         return $this;
     }
 
     /**
-     * Get comptabilitat
+     * Get facturesanulacions
      *
-     * @return \FecdasBundle\Entity\EntityComptabilitat 
+     * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getComptabilitat()
+    public function getFacturesanulacions()
     {
-        return $this->comptabilitat;
+        return $this->facturesanulacions;
     }
+
+    /**
+     * Remove facturesanulacions
+     *
+     * @param EntityFactura $facturesanulacions
+     */
+    public function removeFacturaanulacio(EntityFactura $facturaanulacio)
+    {
+        $this->facturesanulacions->removeElement($facturaanulacio);
+    }
+
+    /**
+     * Remove all facturesanulacions
+     *
+     */
+    public function resetFacturesanulacions()
+    {
+    	$this->facturesanulacions = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    /**
+     * Set facturesanulacions
+     *
+     * @param \Doctrine\Common\Collections\Collection $facturesanulacions
+     */
+    public function setFacturesanulacions(\Doctrine\Common\Collections\ArrayCollection $facturesanulacions)
+    {
+    	$this->facturesanulacions = $facturesanulacions;
+    }  
+	
 }

@@ -479,16 +479,22 @@ class EntityParte extends EntityComanda {
     }
 
     /**
-     * Allow edit
+     * Allow edit. Permetre modificar / Afegir llicències
+	 * Fins 20 minuts després d'iniciar-la. Vigilar que no s'enviïn a comptabilitat mentre estiguin en aquests 20 minuts
      *
      * @return boolean
      */
     public function isAllowEdit()
     {
-    	$currentdate = new \DateTime();
-    	
-    	return (boolean) $this->comandaPagada() == false && 
-    			$this->dataalta->format('Y-m-d') >= $currentdate->format('Y-m-d');
+		if ($this->comandaPagada() == true) return false; 		
+		
+		$datamaxedicio = clone $this->dataentrada;
+		$datamaxedicio->add(new \DateInterval('PT1200S')); // Add 20 minutes
+		
+		return $datamaxedicio->format('Y-m-d H:i:s') >= date('Y-m-d H:i:s');
+		
+    	/*return (boolean) $this->comandaPagada() == false && 
+    			$this->dataalta->format('Y-m-d') >= $currentdate->format('Y-m-d');*/
     }
     
     /**
@@ -556,31 +562,17 @@ class EntityParte extends EntityComanda {
      */
     public function getInfoLlistat() {
     	// Missatge que es mostra a la llista de partes
-    	$textInfo = "";
+    	$textInfo = parent::getInfoLlistat();
     	
-    	if ($this->esBaixa()) return "Llista anulada";
+    	if ($this->esBaixa()) return $textInfo.'<br/>Llista anul·lada';
     	
-    	if ($this->pendent) return "Pendent confirmació pagament";
+    	if ($this->pendent) return $textInfo.'<br/>Pendent confirmació pagament';
 
-    	if ($this->isVigent() == false && $this->isPassat() == false) return "Aquesta llista encara no està vigent";
+    	if ($this->isVigent() == false && $this->isPassat() == false) return $textInfo.'<br/>Aquesta llista encara no està vigent';
     	
-    	if ($this->isPassat() == true) $textInfo .= "Validesa de les llicències finalitzada";
-    	 
-    	if ($this->getNumFactura() != null && $this->getDatafactura() != null) {
-    		$textInfo .= $textInfo == ""?"":"<br/>";
-    		$textInfo .= "Fra. ". $this->getNumFactura();
-    		$textInfo .= " - ". $this->getDatafactura()->format("d/m/y");
-    	} else {
-    		if ($this->getAny() >= 2013) $textInfo .= "Llicències vigents (Factura pendent)";
-    	}
-    	
-    	if ($this->getNumRebut() != null && $this->getDatapagament() != null) {
-    		$textInfo .= $textInfo == ""?"":"<br/>";
-    		$textInfo .= "Rebut. ". $this->getNumRebut();
-    		$textInfo .= " - ". $this->getDatapagament()->format("d/m/y");
-    	}
-    	
-    	//if ($this->comandaPagada() == true && $this->getRebut()->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $textInfo .=  ". Pagament on-line";
+		if (!$this->comandaConsolidada()) return $textInfo.'<br/>Factura pendent';
+
+		if ($this->isPassat() == true) return $textInfo.'<br/>Validesa de les llicències finalitzada';
 
     	return $textInfo;
     }
@@ -609,9 +601,9 @@ class EntityParte extends EntityComanda {
     {
     	if ($this->web == false) return false;  // No web no permet imprimir
     	
-    	if ($this->club->getEstat()->getCodi() == "DIFE" and $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
+    	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_PAGAMENT_DIFERIT and $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
     	
-    	if ($this->club->getEstat()->getCodi() == "NOTR") return false; // NOTR mai 
+    	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_SENSE_TRAMITACIO) return false; // NOTR mai 
 
     	return $this->comandaPagada();  // La resta poden imprimir si està pagat
     }

@@ -15,37 +15,37 @@
 		<div class="row">
 			<header>
 				<div class="col-md-8"><h1><a href="{{ path('FecdasBundle_partes') }}">Llistes d'assegurats</a> > Llicències</h1></div>
-    		    <div class="col-md-4 col-last-right">
+				 <div class="col-md-4 col-last-right">
 					<div class="buttons-top-bootstrap" {% if ((parte.esnova == true) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
 						{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
 						<!-- No Pagat -->
 			        	<div class="button-top">	
 			        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': parte.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
-			        			<i class="fa fa-credit-card fa-1x blue"></i></a>
+			        			<i class="fa fa-credit-card fa-1x green"></i></a>
+			        		<span class="subtext">pagar</span>
 						</div>
 						{% endif %}	
-						<div id="parte-to-pdf" class="button-top">
-							<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
-								<i class="fa fa-file-text-o fa-1x orange"></i></a>
-						</div>
-						<!-- només factures enviades a comptabilitat -->
-						{% if parte.facturaComptabilitzada == true %} 
-							<div id="factura-to-pdf" class="button-top">
-								<a class="link" href="{{ path('FecdasBundle_facturatopdf', { 'id': parte.id}) }}" alt="Factura" title="Factura">
-									<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-							</div>
-						{% else %}
-							<div id="albara-to-pdf" class="button-top">
-								<a class="link" href="{{ path('FecdasBundle_albaratopdf', { 'id': parte.id}) }}" alt="Albarà" title="Albarà">
-									<i class="fa fa-list fa-1x red"></i></a>
-							</div>
-						{% endif %}
 						{% if parte.comandaPagada %} 
 							<div id="rebut-to-pdf" class="button-top">
 								<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
-									<i class="fa fa-file-text fa-1x green"></i></a>
+									<i class="fa fa-file-text fa-1x blue"></i></a>
+								<span class="subtext">rebuts</span>
 							</div>
 						{% endif %}
+						{% if parte.comandaConsolidada == true %} 
+							<div id="factures-to-pdf" class="button-top">
+							{% for factura in parte.factures %} 
+				   				<a class="factura-to-pdf link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+				   					<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+				   				<span class="subtext">factures</span>
+							{% endfor %}
+							</div>
+						{% endif %}
+						<div id="parte-to-pdf" class="button-top">
+							<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
+								<i class="fa fa-file-text-o fa-1x orange"></i></a>
+							<span class="subtext">llistat</span>
+						</div>
 						
 					</div>	
     		    </div>

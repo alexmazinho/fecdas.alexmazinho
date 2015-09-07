@@ -71,6 +71,20 @@ class EntityParteType {
 		return $this->descripcio;
 	}
 
+	/**
+	 * validar preus any
+	 *
+	 * @return boolean
+	 */
+	public function validarPreusAny($any)
+	{
+		foreach ($this->categories as $categoria) {
+			if ($categoria->getPreuAny($any) == 0) return false;
+		}
+		return true;
+	}
+	
+
     /**
      * Set id
      *

@@ -142,7 +142,11 @@
     	   			 // xhr.status + " " + xhr.statusText, status, error
 	    	   			//var sms = smsResultAjax('KO', xhr.responseText);
 	    	   			$('#progressbar').hide();  // Rellotge
-	    	   		    	
+	    	   		    
+	    	   			var sms = smsResultAjax('KO', xhr.responseText);
+	   			    	
+	    	   			$("#main-col").prepend(sms);
+	    	   			
 	    	   			//$('#parte_tipus').val('');
 	    	   			 
 	    	   			//$('#formparte-llicencia').html(sms);

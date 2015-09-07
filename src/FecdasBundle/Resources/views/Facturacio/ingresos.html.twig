@@ -8,25 +8,25 @@
 	{{ parent() }}
 {% endblock %}
 
-{% block title %}Aplicació gestió FECDAS. Llista d'ingresos a compte {% endblock %}
+{% block title %}Aplicació gestió FECDAS. Llista d'ingresos (a compte) i rebuts {% endblock %}
 
 {% block body %}
 	<header>
-        <h1>Llistat d'ingresos a compte</h1>
+        <h1>Llistat d'ingresos (a compte) i rebuts</h1>
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
         
     <div id="ingresos-main">
 	    <div id="list-forms">
-	    	<form id="form_ingresos" action="{{ path('FecdasBundle_nourebut') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+	    	<form id="form_ingresos" action="{{ path('FecdasBundle_nouingres') }}" method="GET" {{ form_enctype(form) }}  class="appform">
 		    	<div class="row">
-				  <div class="col-md-4">
+				  <div class="col-md-6">
 				  	<div class="form-group">
 				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				  </div>
-				  <div class="col-md-2">
+				  <div class="col-md-3">
 				  	<div class="form-group">
 				    	<div class="input-group">
 					    	<span class="input-group-addon">Rebut</span>
@@ -34,14 +34,7 @@
 						</div>
 					</div>
 				  </div>
-				  <div class="col-md-2">
-					  <div class="checkbox-inline">
-					    <label>
-					      {{ form_widget(form.baixes) }} Mostrar baixes
-					    </label>
-					  </div>
-				  </div>
-				  <div class="col-md-2 col-md-offset-2 col-last-right">
+				  <div class="col-md-2 col-md-offset-1 col-last-right">
 						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
 				  </div>
 				</div>
@@ -50,7 +43,6 @@
 	    <div class="table-header">	
 		   	<div id="list-header">
 				<div id="header-ingres-id" class="col-listheader hidden">&nbsp;</div>
-				<div id="header-ingres-estat" class="col-listheader collistheader-noorder">Estat</div>
 		   		<div id="header-ingres-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Num.', 'r.num') }}
 		   			<span class="listheader-icon {% if ingresos.isSorted('r.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-ingres-club" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Club', 'r.club') }}
@@ -71,28 +63,27 @@
 		<div class="table-scroll">
 		   	<ol id="list-data"> 
 			{% for ingres in ingresos %} 
-		   		<li class="data-detall {% if ingres.esBaixa %} data-detall-fosc {% endif %}">
+		   		<li class="data-detall">
 		   			<div class="data-detall-cell ingres-id hidden">{{ ingres.id }}</div>
-		   			<div class="data-detall-cell ingres-estat">{{ ingres.estat }}</div>
 		   			<div class="data-detall-cell ingres-num">{{ ingres.numrebut }}</div>
 		   			<div class="data-detall-cell ingres-club">{{ ingres.club.nom }}</div>
 		   			<div class="data-detall-cell ingres-import">{{ ingres.import|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell ingres-data">{{ ingres.datapagament|date('d/m/Y') }}</div>
 		   			<div class="data-detall-cell ingres-comanda">
-		   				{% if  ingres.comanda is not null %}
-		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'id': ingres.comanda.id }) }}"  title="Editar comanda" alt="Editar comanda">
-		   					{{ ingres.comanda.numComanda }}</a>	
+		   				{% if ingres.esAnulacio != true %}
+			   				{% for comanda in ingres.comandes %} 
+			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id}) }}" alt="Veure comanda" title="Veure comanda">
+			   						{{ comanda.numComanda }}</a>
+							{% endfor %}
+		   				{% else %}
+		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'id': ingres.comandaanulacio.id }) }}"  title="Veure comanda" alt="Veure comanda">
+			   					<span class="red">{{ ingres.comandaanulacio.numComanda }}</span></a>	
 		   				{% endif %}	
 		   			</div>
 		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
 		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
 		   			<div class="data-detall-cell ingres-actions">
 		   				<a class="ingres-action-edit link" href="{{ path('FecdasBundle_editarrebut', { 'id': ingres.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil blue"></i></a>			
-						{% if not ingres.esBaixa %}
-		   					<a class="ingres-action-baixa link" href="{{ path('FecdasBundle_anularrebut', { 'id': ingres.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o red"></i></a>
-		   				{% else %}
-		   					<i class="fa fa-trash-o transparent"></i>
-		   				{% endif %}
 		   			</div>
 		   		</li>
 		   		{% endfor %}
@@ -115,28 +106,27 @@
 	<script type="text/javascript">
 	
 	
-	filtreLlistaingresos = function(cerca, baixes, numrebut) {
+	filtreLlistaingresos = function(cerca, numrebut) {
 		
-		window.location = "{{ path('FecdasBundle_ingresos', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes+"&numrebut="+numrebut;
+		window.location = "{{ path('FecdasBundle_ingresos', sortparams)|raw }}"+"&cerca="+cerca+"&numrebut="+numrebut;
 	}
 	
 	$(document).ready(function(){
 		setMenuActive("menu-admingresos");
 		
 		$("#form_cerca").change(function() {
-			filtreLlistaingresos($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numrebut" ).val() );
+			filtreLlistaingresos($( "#form_cerca" ).val(), $( "#form_numrebut" ).val() );
 	    });
 
 		$("#form_numrebut").change(function() {
-			filtreLlistaingresos($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numrebut" ).val() );
+			filtreLlistaingresos($( "#form_cerca" ).val(), $( "#form_numrebut" ).val() );
 	    });
 		
-		$( '#form_baixes' ).change(function(e) {
-			filtreLlistaingresos($( "#form_cerca" ).val(), ($(this).is(':checked')?1:0), $( "#form_numrebut" ).val() );
-		});
-		
 		// ingres
-		init_cercaclub_JSON('#form_cerca', 'Filtrar per nom del club', "{{  path('FecdasBundle_jsonclubs') }}");
+		$("select#form_cerca").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+		});
 
 		$('#form_ingresos').submit( function(e){
 			e.preventDefault();

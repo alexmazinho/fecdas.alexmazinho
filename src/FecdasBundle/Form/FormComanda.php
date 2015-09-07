@@ -8,7 +8,6 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use FecdasBundle\Entity\EntityComanda;
-use FecdasBundle\Entity\EntityComandaDetall;
 use FecdasBundle\Controller\BaseController;
 
 class FormComanda extends AbstractType {
@@ -33,19 +32,16 @@ class FormComanda extends AbstractType {
 
 				$form->add('club', 'entity', array(
 						'class' 		=> 'FecdasBundle:EntityClub',
+						'query_builder' => function($repository) {
+								return $repository->createQueryBuilder('c')
+									->orderBy('c.nom', 'ASC')
+									->where('c.activat = 1');
+								}, 
 						'choice_label' 	=> 'nom',
 						'empty_value' 	=> 'Seleccionar Club',
 						'required'  	=> false,
 						'disabled' 		=> !$comanda->esNova(),
 				));
-				
-				$form->add('numfactura', 'text', array(
-						'required' 	=> false,
-						'mapped'	=> false,
-						'disabled' 	=> true,
-						'data'		=> $comanda->getNumFactura()
-				));
-				
 				
 				if ($comanda->getRebut() == null) { // Comanda sense rebut
 					$form->add('numrebut', 'hidden', array(
@@ -68,12 +64,13 @@ class FormComanda extends AbstractType {
 							'empty_value' 	=> ''
 					));
 				} else {
+					$rebut = $comanda->getRebut();
 					$form->add('numrebut', 'text', array(
 							'required' 	=> false,
 							'mapped'	=> false,
 							'disabled' 	=> true,
-							'data'		=> $comanda->getNumRebut()
-					));
+							'data'		=> $rebut!=null?$rebut->getNumRebut():''
+					)); 
 						
 					$form->add('datapagament', 'hidden', array(
 							'required' 		=> false,
@@ -107,19 +104,10 @@ class FormComanda extends AbstractType {
 		
 		$builder->add('id', 'hidden');
 		
-		$builder->add('comptabilitat', 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityComptabilitat',
-				'choice_label' 	=> 'InfoComptabilitat',
-				'empty_value' 	=> 'Pendent d\'enviar a comptabilitat',
-				'required'  	=> false,
-				'disabled' 		=> true,
-		));
-		
 		$builder->add('comentaris', 'textarea', array(
 				'required' 	=> false,
 				'attr' 		=> array('rows' => '1')
 		));
-		
 		
 		$builder->add('databaixa', 'datetime', array(
 				'required' 		=> false,

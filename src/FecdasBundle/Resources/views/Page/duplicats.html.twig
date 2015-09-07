@@ -82,27 +82,11 @@
 			   				{{ duplicat.dataimpressio|date('d/m/y') }}
 			   			{% endif %}
 			   			</div>
-				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
+				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|raw }}</div>
 				   		<div class="data-detall-cell duplicat-actions">
-					   		{% if duplicat.facturaComptabilitzada == true %} 
-								<a class="duplicat-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': duplicat.id}) }}" alt="Factura" title="Factura">
-										<i class="fa fa-file-pdf-o fa-1x orange"></i></a>
-							{% else %}
-								<i class="fa fa-file-pdf-o fa-1x transparent"></i>
-							{% endif %}
-							
-							{% if duplicat.comandaPagada == true %} 
-								<a class="duplicat-albara link" href="{{ path('FecdasBundle_albaratopdf', { 'id': duplicat.id}) }}"  alt="Albarà" title="Albarà">
-									<i class="fa fa-file-text-o fa-1x blue"></i></a>
-							{% else %}
-								<a class="duplicat-albara link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': duplicat.id}) }}"  alt="Rebut" title="Rebut">
-									<i class="fa fa-file-text-o fa-1x blue"></i></a>
-							{% endif %}
-							{% if duplicat.datapagament is null %} 
+							{% if duplicat.comandaPagada != true %} 
 								<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
 									<i class="fa fa-euro fa-1x green"></i></a>
-							{%  else %}
-								<i class="fa fa-euro fa-1x transparent"></i>
 							{% endif %}	
 				   			{% if admin == true %}
 				   				{% if duplicat.factura is not null  %}
@@ -110,6 +94,8 @@
 								{% else %}
 								{% 	 set nf = '' %}
 								{% endif %}
+						   		<a class="veure-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': duplicat.id}) }}" alt="Veure comanda" title="Veure comanda">
+									<i class="fa fa-search fa-1x blue"></i></a>
 		   						<a class="duplicat-esborrar" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Anul·lar petició" title="Anul·lar petició">
 			   						<i class="fa fa-trash-o fa-1x red"></i></a>
 				   			{% endif %}

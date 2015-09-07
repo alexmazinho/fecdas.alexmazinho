@@ -34,9 +34,15 @@ class EntityRebut {
 	protected $import;
 
 	/**
-	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="rebut")
-	 **/
-	protected $comanda;	// FK taula m_comandes
+	 * @ORM\OneToMany(targetEntity="EntityComanda", mappedBy="rebut" )
+	 */
+	protected $comandes;	// FK taula m_comandes
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityComanda", inversedBy="rebutsanulacions")
+	 * @ORM\JoinColumn(name="comandaanulacio", referencedColumnName="id")
+	 */
+	protected $comandaanulacio;	// FK taula m_comandes 
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityClub")
@@ -76,16 +82,6 @@ class EntityRebut {
 	protected $datamodificacio;
 	
 	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $dataanulacio;
-
-	/**
-	 * @ORM\Column(type="integer", nullable=true)
-	 */
-	protected $comandaoriginal; // Sense relació, pot haver-hi moltes
-	
-	/**
 	 * Constructor
 	 */
 	public function __construct()
@@ -110,17 +106,18 @@ class EntityRebut {
 		$this->datapagament = $datapagament;
 		$this->tipuspagament = $tipusPagament;
 		$this->num = $num;
-		$this->comanda = $comanda;
+		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 		if ($comanda == null) { // Ingrés no  associat a cap comanda
 			$this->club = $club;
 			$this->import = $import;
 			$this->comentari = "Ingrés a compte del club ".($this->club!=null?$this->club->getNom():'');
 		} else {  // Pagament d'una comanda
 			$this->club = $comanda->getClub();
-			$this->import = $this->comanda->getTotalDetalls();
-			$this->comentari = "Rebut comanda ".$this->comanda->getNumComanda()." ".$this->comanda->getTipusComanda();
+			$this->import = $comanda->getTotalDetalls();
+			$this->comentari = "Rebut comanda ".$comanda->getNumComanda()." ".$comanda->getTipusComanda();
 
-			$this->comanda->setRebut($this); 
+			$this->addComanda($comanda);
+			$comanda->setRebut($this); 
 		}
 	}
 	
@@ -129,17 +126,6 @@ class EntityRebut {
 		return $this->getId() . "-" . $this->getNum();
 	}
 
-		
-	public function esBaixa()
-	{
-		return $this->dataanulacio != null;
-	}
-	
-	public function getEstat()
-	{
-		return $this->dataanulacio != null?'anul·lat':'';
-	}
-	
 	/**
 	 * Get concepte rebut/ingrés
 	 *
@@ -147,9 +133,15 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutLlarg()
 	{
-		if ($this->comanda == null) return $this->getNumRebut()." INGRES ".$this->getClub()->getNom();  // Ingrés a compte
+		$concepte = 'REBUT '.$this->getNumRebut().'.';
 			
-		return "REBUT ".$this->getNumRebut()." - ".$this->comanda->getConcepteComanda(); 	
+		if (count($this->comandes) == 0) return $concepte.' INGRES '.$this->getClub()->getNom();  // Ingrés a compte
+		
+		if (count($this->comandes) == 1) {
+			$comanda = $this->comandes[0];
+			return $concepte.' FACTURA: '.$comanda->getFactura()->getNumFactura();	
+		}
+		return $concepte. ' FACTURES: '.$this->getLlistaNumsFactures();
 	}
 	
 	/**
@@ -159,12 +151,30 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutCurt()
 	{
-		if ($this->comanda == null) return "REBUT: ".$this->getNumRebut();  // Ingrés a compte
-			
-		if ($this->comanda->getFactura() == null) return "COMANDA: ".$this->comanda->getNumComanda();
+		if (count($this->comandes) == 0) return "REBUT: ".$this->getNumRebut();  // Ingrés a compte
 		
-		return "FACTURA: ".$this->comanda->getFactura()->getNumFactura();
+		if (count($this->comandes) == 1) {
+			$comanda = $this->comandes[0];
+			return 'FACTURA: '.$comanda->getFactura()->getNumFactura();	
+		}
+		return 'FACTURES: '.$this->getLlistaNumsFactures();
 	}
+
+	/**
+	 * Get nums factures totes comandes
+	 *
+	 * @return string
+	 */
+	public function getLlistaNumsFactures()
+	{
+		$concepte = '';
+		foreach ($this->comandes as $comanda) {
+			$concepte .= $comanda->getFactura()->getNumFactura().', '; 	
+		}
+		return substr($concepte, 0, -2);
+		
+	}
+
 	
 	/**
 	 * Rebut format amb any  XXXXX/20XX
@@ -182,6 +192,27 @@ class EntityRebut {
 	 */
 	public function getNumRebutCurt() {
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datapagament->format("y");
+	}
+	
+	public function esAnulacio()
+	{
+		return $this->comandaanulacio != null;
+	}
+	
+	public function infoToolTip($admin)
+	{
+		$toolTip = 'Rebut '.($this->esAnulacio()?'anul·lació':'');
+		if ($admin == true && $this->comptabilitat != null) $toolTip .= '. Comptabilitat '.$this->comptabilitat->getDataenviament()->format('d/m/Y'); 
+		return $toolTip;
+	}
+	
+	/* Diferència entre suma comandes i import rebut */
+	public function getRomanent() {
+		$romanent = $rebut->getImport();
+		foreach ($comandes as $comanda) {
+			$romanent -= $comanda->getTotalDetalls();
+		}
+		return $romanent;		
 	}
 	
 	/**
@@ -241,19 +272,72 @@ class EntityRebut {
 	}
 
 	/**
-	 * @return comanda
+	 * @return comandaanulacio
 	 */
-	public function getComanda() {
-		return $this->comanda;
+	public function getComandaanulacio() {
+		return $this->comandaanulacio;
 	}
 	
 	/**
-	 * @param \FecdasBundle\Entity\EntityComanda $comanda
+	 * @param \FecdasBundle\Entity\EntityComanda $comandaanulacio
 	 */
-	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda) {
-		$this->comanda = $comanda;
+	public function setComandaanulacio(\FecdasBundle\Entity\EntityComanda $comandaanulacio) {
+		$this->comanda = $comandaanulacio;
 	}
-	
+
+	/**
+     * Add comandes
+     *
+     * @param EntityComanda $comandes
+     * @return EntityRebut
+     */
+    public function addComanda(EntityComanda $comanda) 
+    {
+    	$this->comandes->add($comanda);
+
+        return $this;
+    }
+
+    /**
+     * Get comandes
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getComandes()
+    {
+        return $this->comandes;
+    }
+
+    /**
+     * Remove comandes
+     *
+     * @param EntityComanda $comandes
+     */
+    public function removeComanda(EntityComanda $comanda)
+    {
+        $this->comandes->removeElement($comanda);
+    }
+
+    /**
+     * Remove all comandes
+     *
+     */
+    public function resetComandes()
+    {
+    	$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    /**
+     * Set comandes
+     *
+     * @param \Doctrine\Common\Collections\Collection $comandes
+     */
+    public function setComandes(\Doctrine\Common\Collections\ArrayCollection $comandes)
+    {
+    	$this->comandes = $comandes;
+    }  
+
+
 	/**
 	 * Set club
 	 *
@@ -359,13 +443,6 @@ class EntityRebut {
 	}
 	
 	/**
-	 * @return datetime
-	 */
-	public function getDataanulacio() {
-		return $this->dataanulacio;
-	}
-
-	/**
 	 * Set datamodificacio
 	 *
 	 * @param \DateTime $datamodificacio
@@ -383,27 +460,6 @@ class EntityRebut {
 	public function getDatamodificacio()
 	{
 		return $this->datamodificacio;
-	}
-	
-	/**
-	 * @param datetime $dataanulacio
-	 */
-	public function setDataanulacio($dataanulacio) {
-		$this->dataanulacio = $dataanulacio;
-	}
-
-	/**
-	 * @return comandaoriginal
-	 */
-	public function getComandaoriginal() {
-		return $this->comandaoriginal;
-	}
-	
-	/**
-	 * @param int $comandaoriginal
-	 */
-	public function setComandaoriginal($comandaoriginal) {
-		$this->comandaoriginal = $comandaoriginal;
 	}
 	
 }

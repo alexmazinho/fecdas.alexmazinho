@@ -3,25 +3,11 @@ namespace FecdasBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ORM\EntityRepository;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-use FecdasBundle\Form\FormContact;
-use FecdasBundle\Form\FormPayment;
-use FecdasBundle\Form\FormParte;
-use FecdasBundle\Form\FormPersona;
-use FecdasBundle\Form\FormLlicencia;
-use FecdasBundle\Form\FormParteRenew;
-use FecdasBundle\Entity\EntityParteType;
-use FecdasBundle\Entity\EntityContact;
 use FecdasBundle\Entity\EntityParte;
-use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Entity\EntityLlicencia;
-use FecdasBundle\Entity\EntityPayment;
-use FecdasBundle\Entity\EntityUser;
 use FecdasBundle\Entity\EntityClub;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 class AdminController extends BaseController {
@@ -137,8 +123,8 @@ class AdminController extends BaseController {
 		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
 				
 		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
-		if ($currentNoPagat == true) $strQuery .= " AND (p.rebut IS NULL OR (p.rebut IS NOT NULL AND r.dataanulacio IS NOT NULL)) ";
-		if ($currentNoImpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) ";
+		if ($currentNoPagat == true) $strQuery .= " AND p.rebut IS NULL ";
+		if ($currentNoImpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 ";
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
 		//if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
@@ -228,16 +214,16 @@ class AdminController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		switch ($estat) {
-			case 'DIFE':  // Pagament diferit
+			case BaseController::CLUB_PAGAMENT_DIFERIT:  // Pagament diferit
 
 				if ($request->query->get('imprimir') == 'true') $club->setImpressio(true);
 				else $club->setImpressio(false);
 
 				break;
-			case 'IMME':  // Pagament immediat
+			case BaseController::CLUB_PAGAMENT_IMMEDIAT:  // Pagament immediat
 				
 				break;
-			case 'NOTR':  // Sense tramitació
+			case BaseController::CLUB_SENSE_TRAMITACIO:  // Sense tramitació
 				
 				// Enviar notificació mail
 				$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";

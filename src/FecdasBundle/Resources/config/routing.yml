@@ -384,33 +384,15 @@ FecdasBundle_jsontipuspagaments:
     requirements:
         _method:  GET
 
-FecdasBundle_editarfactura:
-    pattern:  /editarfactura
-    defaults: { _controller: "FecdasBundle:Facturacio:editarfactura" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_novafactura:
-    pattern:  /novafactura
-    defaults: { _controller: "FecdasBundle:Facturacio:novafactura" }
-    requirements:
-        _method:  GET
-
 FecdasBundle_editarrebut:
     pattern:  /editarrebut
     defaults: { _controller: "FecdasBundle:Facturacio:editarrebut" }
     requirements:
         _method:  GET|POST
         
-FecdasBundle_nourebut:
-    pattern:  /nourebut
-    defaults: { _controller: "FecdasBundle:Facturacio:nourebut" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_anularrebut:
-    pattern:  /anularrebut
-    defaults: { _controller: "FecdasBundle:Facturacio:anularrebut" }
+FecdasBundle_nouingres:
+    pattern:  /nouingres
+    defaults: { _controller: "FecdasBundle:Facturacio:nouingres" }
     requirements:
         _method:  GET
 

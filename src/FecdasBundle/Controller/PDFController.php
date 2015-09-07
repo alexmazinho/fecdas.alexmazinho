@@ -59,8 +59,7 @@ class PDFController extends BaseController {
 			$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($reqId);
 		
 			if ($factura != null) {
-				if ($factura->getComanda()->facturaComptabilitzada() != true)
-					return new Response('encara no es pot imprimir la factura');
+				if ($factura->getComanda()->comandaConsolidada() != true) return new Response('encara no es pot imprimir la factura');
 				
 				
 				$response = $this->facturatopdf($factura);
@@ -212,8 +211,7 @@ class PDFController extends BaseController {
 		$pdf->SetTextColor(100, 100, 100); // Gris
 		$pdf->SetFont('dejavusans', '', 16, '', true);
 
-		if ($comanda->facturaComptabilitzada() == false) $text = '<b>FACTURA PROVISIONAL PENDENT COMPTABILITZAR';
-		else $text = '<b>FACTURA';
+		$text = '<b>FACTURA';
 
 		if ($comanda->comandaPagada() == true) {
 			$text .= ' PAGADA</b>';
@@ -223,199 +221,15 @@ class PDFController extends BaseController {
 		
 		$pdf->writeHTML($text, true, false, false, false, '');
 
-		if ($comanda->comandaPagada() == true && $comanda->isFacturaValida() == false) {
-			// Ha canviat la factura, mostra avís factura obsoleta
-			$text = 'Aquesta factura ha quedat obsoleta per modificacions posteriors al pagament de la llista.<br/>';
-			$text .= 'Per a obtenir la factura original, poseu-vos en contacte amb la federació.';
-			$pdf->SetFont('dejavusans', '', 14, '', true);
-			$y = $y_ini + 120;
-			$x = $x_ini;
-		
-			//$pdf->writeHTML($text, true, false, false, false, 'L');
-			$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
-		}
-		
-		
-		
 		// reset pointer to the last page
 		$pdf->lastPage();
 			
 		$nomfitxer = "factura_" .  str_replace("/", "-", $factura->getNumfactura()) . "_" . $club->getCodi() . ".pdf";
 		
-		
 		// Close and output PDF document
 		$response = new Response($pdf->Output($nomfitxer, "D"));
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
-	}
-	
-	public function albaratopdfAction(Request $request) {
-		/* Albarà parte */
-		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		$reqId = 0;
-		if ($request->query->has('id')) {
-			$reqId = $request->query->get('id');
-			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($reqId);
-		
-			if ($comanda != null) {
-			
-				$response = $this->albaratopdf($comanda);
-			
-				$this->logEntryAuth('PRINT ALBARA', $reqId);
-			
-				return $response;
-			}
-		}
-		/* Error */
-		$this->logEntryAuth('PRINT ALBARA KO', $reqId);
-		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir l\'albarà, poseu-vos en contacte amb la Federació' );
-		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	}
-	
-	private function albaratopdf($comanda) { 
-		/* Printar albarà */
-		$club = $comanda->getClub();
-		
-		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-					
-		$pdf->init(array('author' => 'FECDAS', 'title' => $comanda->getConcepteComanda())); 
-					
-		$pdf->AddPage();
-	
-		// set color for background
-		$pdf->SetFillColor(255, 255, 255); //Blanc
-		// set color for text
-		$pdf->SetTextColor(0, 0, 0); // Negre
-	
-		$y_ini = $pdf->getY();
-		$x_ini = $pdf->getX();
-	
-		$y = $y_ini;
-		$x = $x_ini;
-	
-		$pdf->SetFont('dejavusans', '', 16, '', true);
-		$text = '<b>ALBARÀ #'. $comanda->getNumComanda() .'#</b>';
-		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
-		$pdf->Ln(5);
-	
-		$pdf->SetFont('dejavusans', '', 10, '', true);
-	
-		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-		$tbl .= '<tr><td width="250"><b>' . $club->getNom() . '</b></td></tr>';
-		$tbl .= '<tr><td>' . $club->getCif() . '</td></tr>';
-		$tbl .= '<tr><td>' . $club->getAddradreca() . '</td></tr>';
-		$tbl .= '<tr><td>' . $club->getAddrcp() . " - " . $club->getAddrpob() . '</td></tr>';
-		$tbl .= '<tr><td>' . $club->getAddrprovincia() . '</td></tr>';
-		$tbl .= '<tr><td>Telf: ' . $club->getTelefon()  . '</td></tr>';
-		$tbl .= '</table>';
-	
-		$pdf->writeHTML($tbl, false, false, false, false, '');
-	
-		$y = $pdf->getY();
-		$pdf->setY($y_ini);
-		$pdf->setX($pdf->getPageWidth() - 82);
-	
-		$pdf->SetFont('dejavusans', '', 8, '', true);
-		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-		$tbl .= '<tr><td width="250" align="right"><b>FEDERACIÓ CATALANA <br/>D\'ACTIVITATS SUBAQUÀTIQUES</b></td></tr>';
-		$tbl .= '<tr><td align="right">Moll de la Vela 1 (Zona Forum)<br/>';
-		$tbl .= '08930 Sant Adrià de Besòs<br/>';
-		$tbl .= 'Tel: 93 356 05 43  Fax: 93 356 30 73<br/>';
-		$tbl .= 'NIF: Q5855006B</td></tr>';
-		$tbl .= '</table>';
-		$pdf->writeHTML($tbl, false, false, false, false, '');
-
-		$pdf->SetFont('dejavusans', '', 10, '', true);
-		$pdf->setY($y - 13); 
-		$pdf->setX($pdf->getPageWidth() - 79);
-					
-		
-		
-		$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
-		$tbl .= '<tr><td width="150" align="right" style="color:#555555;">Comanda número:</td><td width="120" align="left"><b>' . $comanda->getNumComanda() . '</b></td></tr>';
-		$tbl .= '<tr><td align="right" style="color:#555555;">Data:</td><td align="left"><b>' . $comanda->getDataentrada()->format('d/m/Y') . '</b></td></tr>';
-		$tbl .= '</table>';
-		
-		$pdf->writeHTML($tbl, false, false, false, false, '');
-		
-		$pdf->Ln(5);
-		$pdf->setX($x_ini);
-		
-		$pdf->SetFont('dejavusans', '', 8, '', true);
-		
-		$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
-				<tr style="background-color:#CCCCCC; border-color: #000000;">
-				<td width="65" align="center">Referència</td>
-				<td width="215" align="left">Concepte</td>
-				<td width="40" align="center">Uds.</td>
-				<td width="60" align="center">Preu<br/>unitat</td>
-				<td width="70" align="center">Subtotal</td>
-				<td width="40" align="center">IVA</td>
-				<td width="60" align="center">Import<br/>IVA</td>
-				<td width="100" align="right">TOTAL</td>
-				</tr>';
-		
-		$mindetalls = 10;
-		
-		foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
-			$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
-			$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
-				
-			$tbl .= '<tr style="border-bottom: none;">';
-			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
-			$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
-			$tbl .= '</tr>';
-				
-			$mindetalls--;
-		}
-		
-		while ($mindetalls > 0) {
-			$tbl .= '<tr style="border-bottom: none;">';
-			for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
-			$tbl .= '</tr>';
-			$mindetalls--;
-		}
-		
-		$tbl .= '<tr style="background-color:#CCCCCC; ">';
-		$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>TOTAL ALBARÀ:</span></td>';
-		$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
-		$tbl .= '</tr>';
-		
-		$tbl .= '</table>';
-		
-		$pdf->writeHTML($tbl, true, false, false, false, '');
-		
-		
-		$pdf->Ln(5);
-		
-		$pdf->SetTextColor(100, 100, 100); // Gris
-		$pdf->SetFont('dejavusans', '', 16, '', true);
-		
-		if ($comanda->comandaPagada() == true) {
-			$text = '<b>-- ALBARÀ PAGAT --</b>';
-			$pdf->writeHTML($text, true, false, false, false, '');
-		
-		} 
-	
-		// reset pointer to the last page
-		$pdf->lastPage();
-					
-		// Close and output PDF document
-		$response = new Response($pdf->Output("albara_" . $comanda->getNumComanda() . "_" . $club->getCodi() . ".pdf", "D"));
-		$response->headers->set('Content-Type', 'application/pdf');
-		return $response;
-		
 	}
 	
 	public function rebuttopdfAction(Request $request) {
@@ -442,8 +256,6 @@ class PDFController extends BaseController {
 	private function rebuttopdf($rebut) {
 		/* Printar albarà */
 		$club = $rebut->getClub();
-		$comanda = null;
-		if ($rebut->getComanda() != null) $comanda = $rebut->getComanda();
 		
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -519,11 +331,12 @@ class PDFController extends BaseController {
 		$pdf->writeHTML($tbl, false, false, false, false, '');
 		$pdf->Ln(10);
 		
-		if ($comanda == null) {
+		$comandes = $rebut->getComandes(); 
+		if (count($comandes) == 0) {  // Rebut no associat a cap comanda
 			$pdf->SetFont('dejavusans', '', 14, '', true);
 			$pdf->SetTextColor(0, 0, 0);
 			
-			$tbl = '<p><i>'.($rebut->getComentari()==null || $rebut->getComentari() == ''?'Ingrés a compte':$rebut->getComentari()).'</i></p>';
+			$tbl = '<h4><i>'.($rebut->getComentari()==null || $rebut->getComentari() == ''?'Ingrés a compte':$rebut->getComentari()).'</i></h4>';
 			
 			$pdf->writeHTML($tbl, false, false, false, false, '');
 			
@@ -535,63 +348,112 @@ class PDFController extends BaseController {
 			$pdf->writeHTML($tbl, false, false, false, false, '');
 			
 		} else {
-		
-			$pdf->SetFont('dejavusans', '', 8, '', true);
-			$pdf->SetTextColor(0, 0, 0); 	
-			$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
-					<tr style="background-color:#EEEEEE; border-color: #000000;">
-					<td width="65" align="center">Referència</td>
-					<td width="205" align="left">Concepte</td>
-					<td width="40" align="center">Uds.</td>
-					<td width="60" align="center">Preu<br/>unitat</td>
-					<td width="70" align="center">Subtotal</td>
-					<td width="40" align="center">IVA</td>
-					<td width="60" align="center">Import<br/>IVA</td>
-					<td width="100" align="right">TOTAL</td>
-					</tr>';
-		
-			$mindetalls = 10;
-		
-			foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
-				$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
-				$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
-		
-				$tbl .= '<tr style="border-bottom: none;">';
-				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
-				$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
+			if (count($comandes) == 1) { // Rebut per import íntegre de comanda
+
+				$tbl = '<h4>'.'Liquidació FACTURA :'.$rebut->getLlistaNumsFactures().', corresponent a la comanda:</h4>';
+			
+				$pdf->writeHTML($tbl, true, false, false, false, '');
+			
+				$pdf->Ln(20);
+			
+				$pdf->SetFont('dejavusans', '', 8, '', true);
+				$pdf->SetTextColor(0, 0, 0); 	
+					
+				$comanda = $comandes[0]; 
+				$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
+						<tr style="background-color:#EEEEEE; border-color: #000000;">
+						<td width="65" align="center">Referència</td>
+						<td width="205" align="left">Concepte</td>
+						<td width="40" align="center">Uds.</td>
+						<td width="60" align="center">Preu<br/>unitat</td>
+						<td width="70" align="center">Subtotal</td>
+						<td width="40" align="center">IVA</td>
+						<td width="60" align="center">Import<br/>IVA</td>
+						<td width="100" align="right">TOTAL</td>
+						</tr>';
+			
+				$mindetalls = 6;
+			
+				foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
+					$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
+					$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
+			
+					$tbl .= '<tr style="border-bottom: none;">';
+					$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
+					$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
+					$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
+					$tbl .= '</tr>';
+				
+					$mindetalls--;
+				}
+				while ($mindetalls > 0) {
+					$tbl .= '<tr style="border-bottom: none;">';
+					for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
+					$tbl .= '</tr>';
+					$mindetalls--;
+				}
+			
+				$tbl .= '<tr>';
+				$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>IMPORT DEL REBUT:</span></td>';
+				$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($rebut->getImport(), 2, ',', '.') .  ' €</span></td>';
 				$tbl .= '</tr>';
-		
-				$mindetalls--;
+			
+				$tbl .= '</table>';
+				
+				$pdf->writeHTML($tbl, true, false, false, false, '');
+			} else {  
+				// Un rebut vàries comandes
+				$tbl = '<h4>'.'Liquidació FACTURES :'.$rebut->getLlistaNumsFactures().'</h4>';
+				$tbl = '<h4>Corresponents a les comandes:</h4>';
+			
+				$pdf->writeHTML($tbl, true, false, false, false, '');
+			
+				$pdf->Ln(20);
+
+				$pdf->SetFont('dejavusans', '', 8, '', true);
+				$pdf->SetTextColor(0, 0, 0); 	
+
+				$tbl = '';
+				foreach ($comandes as $comanda) {
+					$tbl .= '<p style="padding-left:10px">Num: '.$comanda->getNumComanda().' en data:'.$comanda->getDataentrada()->format('Y-m-d');
+					$tbl .= '<span style="float:right"><b>'.$comanda->getTotalDetalls().'</b></span></p>';
+					$tbl .= '<p style="padding-left:10px">'.$comanda->getInfoLlistat().'</p>';
+					$tbl .= '<p>&nbsp;</p>';
+				}
+				$tbl .= '<p style="padding-left:10px">i un romanent acumulat a favor del club de';
+				$tbl .= '<span style="float:right"><b>'.getRomanent() .'</b></span></p>';
+				$tbl .= '<p>&nbsp;</p>';
+				
+				$pdf->writeHTML($tbl, true, false, false, false, '');
+
+				$pdf->Ln(20);
+			
+				$pdf->SetFont('dejavusans', '', 11, '', true);
+				$pdf->SetTextColor(120, 120, 120); // Gris
+				$tbl = '<p style="border-bottom: 0.2em solid #333333;">&nbsp;</p>';
+				$pdf->writeHTML($tbl, false, false, false, false, '');
+				
 			}
-		
-			while ($mindetalls > 0) {
-				$tbl .= '<tr style="border-bottom: none;">';
-				for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
-				$tbl .= '</tr>';
-				$mindetalls--;
-			}
-		
-			$tbl .= '<tr>';
-			$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>IMPORT DEL REBUT:</span></td>';
-			$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($rebut->getImport(), 2, ',', '.') .  ' €</span></td>';
-			$tbl .= '</tr>';
-		
-			$tbl .= '</table>';
-		
-			$pdf->writeHTML($tbl, true, false, false, false, '');
+			
 		}
 	
-		$pdf->Ln(10);
+		
+		if ($rebut->getComentari()!=null && $rebut->getComentari() != '') {
+			$pdf->Ln(10);
 	
-		$pdf->SetTextColor(100, 100, 100); // Gris
-		$pdf->SetFont('dejavusans', '', 16, '', true);
+			$pdf->SetTextColor(100, 100, 100); // Gris
+			$pdf->SetFont('dejavusans', '', 11, '', true);
+
+			$tbl = '<p>Comentaris: '.$rebut->getComentari().'</p>';
+			$pdf->writeHTML($tbl, false, false, false, false, '');
+		}
+	
 	
 		// reset pointer to the last page
 		$pdf->lastPage();
@@ -1251,11 +1113,12 @@ class PDFController extends BaseController {
 			$current = $this->getCurrentDate();
 				
 			$parte->setDatamodificacio($current);
-			//$parte->setImpres($current);
+			$parte->setImpres(1);
 					
 			$em->flush();
 	
 			$this->logEntryAuth('IMPRES PARTE', $parteid);
+			
 			
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));

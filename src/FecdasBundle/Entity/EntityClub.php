@@ -288,7 +288,7 @@ class EntityClub {
 						else {
 							// 	Sense dades de facturació
 							if ($parte_iter->getDatafactura() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
-							if ($parte_iter->getNumfactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
+							if ($parte_iter->getFactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
 						}
 					}
 				}
@@ -405,8 +405,8 @@ class EntityClub {
 	 * @return string
 	 */
 	public function getInfoLlistat() {
-		if ($this->estat->getCodi() == 'IMME') return "*Les tramitacions tindran validesa quan es confirmi el seu pagament";
-		if ($this->estat->getCodi() == 'NOTR') return "*Per poder fer tràmits en aquest sistema, cal que us poseu en contacte amb la FECDAS";
+		if ($this->estat->getCodi() == BaseController::CLUB_PAGAMENT_IMMEDIAT) return "*Les tramitacions tindran validesa quan es confirmi el seu pagament";
+		if ($this->estat->getCodi() == BaseController::CLUB_SENSE_TRAMITACIO) return "*Per poder fer tràmits en aquest sistema, cal que us poseu en contacte amb la FECDAS";
 		return "";
 	}
 	
@@ -416,7 +416,7 @@ class EntityClub {
 	 * @return boolean
 	 */
 	public function potTramitar() {
-		return $this->estat->getCodi() != 'NOTR';
+		return $this->estat->getCodi() != BaseController::CLUB_SENSE_TRAMITACIO;
 	}
 	
 	/**
@@ -425,7 +425,7 @@ class EntityClub {
 	 * @return boolean
 	 */
 	public function pendentPagament() {
-		return $this->estat->getCodi() != 'DIFE';
+		return $this->estat->getCodi() != BaseController::CLUB_PAGAMENT_DIFERIT;
 	}
 	
 	/**
@@ -434,7 +434,7 @@ class EntityClub {
 	 * @return boolean
 	 */
 	public function controlCredit() {
-		return $this->estat->getCodi() == 'DIFE';
+		return $this->estat->getCodi() == BaseController::CLUB_PAGAMENT_DIFERIT;
 	}
 	
     /**

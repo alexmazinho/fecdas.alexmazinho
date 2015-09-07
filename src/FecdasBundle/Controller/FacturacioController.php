@@ -13,8 +13,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use FecdasBundle\Form\FormProducte;
 use FecdasBundle\Entity\EntityProducte;
-use FecdasBundle\Form\FormFactura;
-use FecdasBundle\Entity\EntityFactura;
 use FecdasBundle\Form\FormRebut;
 use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormComanda;
@@ -63,13 +61,15 @@ class FacturacioController extends BaseController {
 				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'required'		=>	false,
+				//'empty_value' 	=> false,
 				'format' 		=> 'dd/MM/yyyy'))
 			->add('datafins', 'date', array(
 							'disabled' 		=> false,
 							'widget' 		=> 'single_text',
 							'input' 		=> 'datetime',
 							'empty_value' 	=> false,
+							'data'			=> $this->getCurrentDate('now'),
 							'format' 		=> 'dd/MM/yyyy',
 			));
 		
@@ -103,15 +103,23 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		$current = date("d/m/Y");
-		 
-		$inici = $request->query->get('inici', $current);
-		$final = $request->query->get('final', $current);
-		 
-		$datainici = \DateTime::createFromFormat('d/m/Y H:i:s', $inici." 00:00:00");
+		$datamin = $this->getCurrentDate('now');
+		$datamin->sub(new \DateInterval('P60D')); // Substract 2 mesos		
+		
+		$datamax = $this->getCurrentDate('now');
+		$datamax->sub(new \DateInterval('PT1200S')); // Substract 20 minutes
+
+		// Data d'alta màxima 20 minuts endarrera (Partes a mitges) 
+		$inici = $request->query->get('inici', '');
+		$final = $request->query->get('final', date('d/m/Y'));
+		
+		if ($inici == '') $datainici = $datamin; 
+		else $datainici = \DateTime::createFromFormat('d/m/Y H:i:s', $inici." 00:00:00");
+		
 		$datafinal = \DateTime::createFromFormat('d/m/Y H:i:s', $final." 23:59:59");
+		if ($datafinal->format('Y-m-d H:i:s') > $datamax->format('Y-m-d H:i:s')) $datafinal = $datamax;
 		 
-		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.date("Ymd_His").".txt";
+		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".txt";
 	
 		$fs = new Filesystem();
 		try {
@@ -244,7 +252,7 @@ class FacturacioController extends BaseController {
 		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
 		
 		$result = $query->getResult();
-		
+
 		$comandes = $enviament->getComandes();
 		$assentaments = array();
 		foreach ($result as $comanda) {
@@ -260,7 +268,7 @@ class FacturacioController extends BaseController {
 				$numAssenta = str_pad($comanda->getId(), 6, "0", STR_PAD_LEFT);/*str_repeat("0",6);*/
 				
 				$desc = $this->netejarNom($comanda->getConcepteComanda(), false);
-				$conc = $comanda->getConcepteComandaCurt();
+				$conc = 'FRA '.$comanda->getFactura()->getNumFactura();
 				$doc = $comanda->getNumAssentament();
 				$import = $signe.str_pad((number_format($importTotal, 2, '.', '').''), 12, "0", STR_PAD_LEFT);
 				// Apunt club
@@ -294,7 +302,7 @@ class FacturacioController extends BaseController {
 					$linia++;
 				}
 				
-				$comanda->setComptabilitat($enviament);
+				$comanda->getFactura()->setComptabilitat($enviament);
 			} else {
 				$comanda->addComentari("Comanda amb import 0 no s'envia a comptabilitat");
 			}
@@ -316,15 +324,16 @@ class FacturacioController extends BaseController {
 	private function generarAssentamentsRebuts($enviament, $baixes = false) {
 		$em = $this->getDoctrine()->getManager();
 		
-		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r WHERE r.import > 0 AND ";
+		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r WHERE ";
 		
 		if ($baixes == false) {
-			$strQuery .= " (r.datapagament >= :ini AND r.datapagament <= :final) ";
-			$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
+			$strQuery .= " r.import > 0 AND ";
 		} else {
-			$strQuery .= " (r.dataanulacio >= :ini AND r.dataanulacio <= :final) ";
-			$strQuery .= " AND (r.comptabilitat IS NOT NULL) ";  // Enviat a compta
+			$strQuery .= " r.import < 0 AND ";
 		}
+		$strQuery .= " (r.datapagament >= :ini AND r.datapagament <= :final) ";
+		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
+		
 		$strQuery .= " ORDER BY r.datapagament";
 		
 		error_log($enviament->getDatadesde()->format('Y-m-d H:i:s') ."-". $enviament->getDatafins()->format('Y-m-d H:i:s'));
@@ -423,14 +432,11 @@ class FacturacioController extends BaseController {
 			$anyrebut = is_numeric($arrayReb[1])?$arrayReb[1]:0;
 		}
 	
-		$baixes = $request->query->get('baixes', 0);
-		$baixes = ($baixes == 1?true:false);
-	
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'r.datapagament');
 		$direction = $request->query->get('direction', 'desc');
 	
-		$query = $this->consultaIngresos($codi, $numrebut, $anyrebut, $baixes, $sort, $direction);
+		$query = $this->consultaIngresos($codi, $numrebut, $anyrebut, $sort, $direction);
 					
 		$paginator  = $this->get('knp_paginator');
 					
@@ -439,16 +445,23 @@ class FacturacioController extends BaseController {
 				$page,
 				10/*limit per page*/
 		);
-		error_log("==> ".$nr);
+		
 		$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'hidden', array(
-				'data' => $codi	))
+			->add('cerca', 'entity', array(
+					'class' 		=> 'FecdasBundle:EntityClub',
+					'query_builder' => function($repository) {
+							return $repository->createQueryBuilder('c')
+								->orderBy('c.nom', 'ASC')
+								->where('c.activat = 1');
+							}, 
+					'choice_label' 	=> 'nom',
+					'empty_value' 	=> 'Seleccionar Club',
+					'required'  	=> false,
+					'data'			=> $codi
+			))
 			->add('numrebut', 'text', array(
 				'required' => false,
-				'data' => $nr	))
-			->add('baixes', 'checkbox', array(
-				'required' => false,
-				'data' => $baixes
+				'data' => $nr
 		));
 												
 		return $this->render('FecdasBundle:Facturacio:ingresos.html.twig',
@@ -457,117 +470,6 @@ class FacturacioController extends BaseController {
 		));
 	}
 	
-	public function editarfacturaAction(Request $request) {
-		// Edició d'una factura existent
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
-		$em = $this->getDoctrine()->getManager();
-		$factura = null;
-		
-		if ($request->getMethod() != 'POST') {
-			$id = $request->query->get('id', 0);
-		
-			$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($id);
-		
-		} else {
-			$data = $request->request->get('factura');
-			$id = (isset($data['id'])?$data['id']:0);
-		
-			if ($id > 0) $factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($id);
-		}
-
-		if ($factura == null) {
-			// No trobada
-			$this->logEntryAuth('FACTURA EDIT KO',	'Factura : ' . $id);
-			$this->get('session')->getFlashBag()->add('error-notice', 'Factura no trobada ');
-			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
-		}
-		
-		$this->logEntryAuth('FACTURA EDIT',	'Factura : ' . $factura->getId().' '.$factura->getConcepte());
-		
-		$form = $this->createForm(new FormFactura(), $factura);
-		
-		if ($request->getMethod() == 'POST') {
-			try {
-				$form->handleRequest($request);
-				
-				if ($form->isValid()) {
-						
-					if ($factura->getComanda() == null) {
-						$form->get('comanda')->addError(new FormError('Falta la comanda'));
-						throw new \Exception('Cal escollir una comanda ' );
-					}
-					$maxNumFactura = $this->getMaxNumEntity(date('Y'), BaseController::FACTURES) + 1;
-					$factura->setNum($maxNumFactura); // Per si canvia
-						
-					if ($factura->getId() > 0)  $factura->setDatamodificacio(new \DateTime());
-						
-					if ($factura->esBaixa() && $factura->getComanda() != null) {
-						$factura->setComandaoriginal($factura->getComanda()->getId());
-					}
-				} else {
-					throw new \Exception('Dades incorrectes, cal revisar les dades de la factura ' ); //$form->getErrorsAsString()
-				}
-		
-				$em->flush();
-		
-				$this->get('session')->getFlashBag()->add('sms-notice',	'La factura s\'ha desat correctament');
-					
-				$this->logEntryAuth('FACTURA SUBMIT',	'factura : ' . $factura->getId().' '.$factura->getNumFactura());
-				// Ok, retorn form sms ok
-				return $this->redirect($this->generateUrl('FecdasBundle_editarfactura',
-						array( 'id' => $factura->getId() )));
-					
-			} catch (\Exception $e) {
-				// Ko, mostra form amb errors
-				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-			}
-		}
-		
-		return $this->render('FecdasBundle:Facturacio:factura.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'factura' => $factura)));
-	}
-	
-	
-	public function novafacturaAction(Request $request) {
-		// Creació d'una nova factura
-		
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
-		$idcomanda = $request->query->get('comanda', 0);
-		
-		$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($idcomanda);
-		
-		if ($comanda == null) {
-			// No trobada
-			$this->logEntryAuth('FACTURA NOVA KO',	'comanda : ' . $idcomanda);
-			$this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
-			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
-		}
-		
-		$this->logEntryAuth('FACTURA NOVA',	'Per la comanda : ' . $comanda->getId().' '.$comanda->getInfoComanda());
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		// Comanda nova. Crear factura
-		$current = $this->getCurrentDate();
-		
-		$factura = $this->crearFactura($current, $comanda);
-			
-		$form = $this->createForm(new FormFactura(), $factura);
-		
-		return $this->render('FecdasBundle:Facturacio:factura.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'factura' => $factura)));
-	}
-	 
 	public function comandesAction(Request $request) {
 		// Llistat de comandes
 	
@@ -605,13 +507,16 @@ class FacturacioController extends BaseController {
 		
 		$baixes = $request->query->get('baixes', 0);
 		$baixes = ($baixes == 1?true:false);
+
+		$pendents = $request->query->get('pendents', 0);
+		$pendents = ($pendents == 1?true:false);
 		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'c.dataentrada');
 		$direction = $request->query->get('direction', 'desc');
+
+		$query = $this->consultaComandes($codi, $numfactura, $anyfactura, $numrebut, $anyrebut, $baixes, $pendents, $sort, $direction);
 		
-		$query = $this->consultaComandes($codi, $numfactura, $anyfactura, $numrebut, $anyrebut, $baixes, $sort, $direction);
-			
 		$paginator  = $this->get('knp_paginator');
 			
 		$comandes = $paginator->paginate(
@@ -621,15 +526,28 @@ class FacturacioController extends BaseController {
 		);
 		
 		$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'hidden', array(
-				'data' => $codi	))
+			 ->add('cerca', 'entity', array(
+						'class' 		=> 'FecdasBundle:EntityClub',
+						'query_builder' => function($repository) {
+								return $repository->createQueryBuilder('c')
+									->orderBy('c.nom', 'ASC')
+									->where('c.activat = 1');
+								}, 
+						'choice_label' 	=> 'nom',
+						'empty_value' 	=> 'Seleccionar Club',
+						'required'  	=> false,
+				))
 			->add('numfactura', 'text', array(
 				'data' 	=> $nf ))
 			->add('numrebut', 'text', array(
 				'data' => $nr	))
 			->add('baixes', 'checkbox', array(
 				'required' => false,
-				'data' => $baixes
+				'data' => $baixes))
+			->add('pendents', 'checkbox', array(
+				'required' => false,
+				'data' => $pendents
+			
 		));
 		
 			
@@ -895,9 +813,7 @@ class FacturacioController extends BaseController {
 					if ($comandaOriginalBaixa == false &&
 						$comanda->esBaixa()) {
 						// Baixa nova	
-						$comanda->baixa();
-						
-						
+						$this->baixaComanda($comanda);
 					} else {
 						
 						// Validacions comuns i anotacions stock
@@ -914,9 +830,6 @@ class FacturacioController extends BaseController {
 						if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
 						
 					}
-					// Generar nova factura si s'ha enviat a comptabilitat. Revisar anulacions etc..
-					// Desvincular rebut si escau
-					$this->actualitzarFacturaRebut($this->getCurrentDate(), $comanda);
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda ' ); //$form->getErrorsAsString()
@@ -964,9 +877,7 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 		}
 	
-		$comanda->baixa();
-		
-		$this->actualitzarFacturaRebut($this->getCurrentDate(), $comanda);
+		$this->baixaComanda($comanda);
 		
 		$em->flush();
 	
@@ -1420,10 +1331,11 @@ class FacturacioController extends BaseController {
 		return $query;
 	}
 	
-	protected function consultaIngresos($codi, $nr, $ar, $baixes, $strOrderBY = 'r.datapagament', $direction = 'desc' ) {
+	protected function consultaIngresos($codi, $nr, $ar, $strOrderBY = 'r.datapagament', $direction = 'desc' ) {
 		$em = $this->getDoctrine()->getManager();
 	
-		$strQuery = "SELECT r, c FROM FecdasBundle\Entity\EntityRebut r LEFT JOIN r.comanda c ";
+		//$strQuery = "SELECT r, c FROM FecdasBundle\Entity\EntityRebut r LEFT JOIN r.comanda c ";
+		$strQuery = "SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
 		$strQuery .= "WHERE 1 = 1 ";
 		//$strQuery .= "WHERE c IS NULL "; 								// Ingrés no associat a cap comanda
 		if ($codi != '') $strQuery .= " AND r.club = :codi ";
@@ -1435,8 +1347,6 @@ class FacturacioController extends BaseController {
 			$datafinalrebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-12-31 23:59:59");
 			$strQuery .= " AND r.datapagament >= :rini AND r.datapagament <= :rfi ";
 		}
-	
-		if (! $baixes) $strQuery .= " AND r.dataanulacio IS NULL ";
 	
 		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
 		$query = $em->createQuery($strQuery);
@@ -1451,6 +1361,35 @@ class FacturacioController extends BaseController {
 		
 		return $query;
 	}
+	
+	public function nouingresAction(Request $request) {
+		// Introduir un ingrés d'un club
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$this->logEntryAuth('INGRES NOU','');
+		
+		$em = $this->getDoctrine()->getManager();
+
+		// Comandes pendents de pagament. Inicialment al club connectat
+		$club = $this->getCurrentClub(); 
+		$query = $this->consultaComandes($club->getCodi(), 0, 0, 0, 0, false, true);
+		
+		$comandes = $query->getResult(); // Comandes pendents rebut del club
+				
+		// Nou rebut
+		$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
+		$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
+		$rebut->setClub($club);
+		$form = $this->createForm(new FormRebut(), $rebut);
+		
+		return $this->render('FecdasBundle:Facturacio:ingres.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut, 'comandes' =>$comandes)));
+	}
+	 
 	
 	public function editarrebutAction(Request $request) {
 		// Formulari d'edició d'un rebut
@@ -1545,12 +1484,12 @@ class FacturacioController extends BaseController {
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 			}
 		}
-		return $this->render('FecdasBundle:Facturacio:rebut.html.twig',
+		return $this->render('FecdasBundle:Facturacio:ingres.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
 	}
 	
 	
-	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $strOrderBY = 'c.id', $direction = 'desc' ) {
+	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $pendents, $strOrderBY = 'c.id', $direction = 'desc' ) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT c, f, r FROM FecdasBundle\Entity\EntityComanda c LEFT JOIN c.factura f LEFT JOIN c.rebut r ";
@@ -1575,6 +1514,8 @@ class FacturacioController extends BaseController {
 		
 		
 		if (! $baixes) $strQuery .= " AND c.databaixa IS NULL ";
+		
+		if ($pendents) $strQuery .= " AND c.rebut IS NOT NULL ";
 		
 		$pos = strpos($strOrderBY, "r.num");
 		if ($pos !== false) $strQuery .= " AND c.rebut IS NOT NULL ";

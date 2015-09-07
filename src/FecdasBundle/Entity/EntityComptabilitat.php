@@ -38,7 +38,7 @@ class EntityComptabilitat {
 	/**
 	 * @ORM\Column(type="integer")
 	 */
-	protected $comandes;
+	protected $factures;
 	
 	/**
 	 * @ORM\Column(type="integer")
@@ -68,7 +68,7 @@ class EntityComptabilitat {
 	{
 		
 		$this->dataenviament = new \DateTime();
-		$this->comandes = 0;
+		$this->factures = 0;
 		$this->rebuts = 0;
 	
 		// Hack per permetre múltiples constructors
@@ -102,7 +102,7 @@ class EntityComptabilitat {
 	 */
 	public function getApunts()
 	{
-		return $this->comandes + $this->rebuts;
+		return $this->factures + $this->rebuts;
 	}
 	
 	/**
@@ -122,7 +122,7 @@ class EntityComptabilitat {
 	 */
 	public function getTextComptabilitat()
 	{
-		return "  des de ".$this->datadesde->format("d/m/Y"). " fins ".$this->datafins->format("d/m/Y"). " (".$this->comandes." comandes, ".$this->rebuts." rebuts)";
+		return "  des de ".$this->datadesde->format("d/m/Y"). " fins ".$this->datafins->format("d/m/Y"). " (".$this->factures." factures, ".$this->rebuts." rebuts)";
 	}
 	
 	
@@ -288,23 +288,23 @@ class EntityComptabilitat {
     }
 
     /**
-     * Get comandes
+     * Get factures
      *
      * @return integer
      */
-    public function getComandes()
+    public function getFactures()
     {
-        return $this->comandes;
+        return $this->factures;
     }
     
     /**
-     * Set comandes
+     * Set factures
      *
-     * @param integer $comandes
+     * @param integer $factures
      */
-    public function setComandes($comandes)
+    public function setFactures($factures)
     {
-    	$this->comandes = $comandes;
+    	$this->factures = $factures;
     }
     
     /**

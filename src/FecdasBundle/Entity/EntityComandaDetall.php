@@ -28,7 +28,7 @@ class EntityComandaDetall {
 	 * @ORM\ManyToOne(targetEntity="EntityProducte")
 	 * @ORM\JoinColumn(name="producte", referencedColumnName="id")
 	 */
-	protected $producte;
+	protected $producte; // FK taula m_productes
 
 	/**
 	 * @ORM\Column(type="integer")
@@ -64,11 +64,6 @@ class EntityComandaDetall {
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $datamodificacio;
-	
-	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $databaixa;
 	
 	/**
 	 * Constructor
@@ -137,7 +132,7 @@ class EntityComandaDetall {
 	 */
 	public function esBaixa()
 	{
-		return $this->databaixa != null;
+		return $this->getUnitats() <= 0;
 	}
 	
 	
@@ -324,29 +319,6 @@ class EntityComandaDetall {
     }
 
     /**
-     * Set databaixa
-     *
-     * @param \DateTime $databaixa
-     * @return EntityComandaDetall
-     */
-    public function setDatabaixa($databaixa)
-    {
-        $this->databaixa = $databaixa;
-
-        return $this;
-    }
-
-    /**
-     * Get databaixa
-     *
-     * @return \DateTime 
-     */
-    public function getDatabaixa()
-    {
-        return $this->databaixa;
-    }
-
-    /**
      * Set comanda
      *
      * @param \FecdasBundle\Entity\EntityComanda $comanda
@@ -391,5 +363,5 @@ class EntityComandaDetall {
     {
         return $this->producte;
     }
-    
+	
 }

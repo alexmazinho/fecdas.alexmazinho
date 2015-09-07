@@ -80,11 +80,11 @@
 			   			</div>
 		   			</div>
 		   			<div class="data-detall-cell club-actions">
-		   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'DIFE' }) }}">
+		   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_DIFERIT') }) }}">
 		   				<img src="{{ asset('images/icon_green.gif') }}" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" width="23px"></a>
-		   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'IMME' }) }}">
+		   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
 		   				<img src="{{ asset('images/icon_orange.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" width="23px"></a>
-		   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': 'NOTR' }) }}">
+		   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
 		   				<img src="{{ asset('images/icon_red.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Sense tramitació'" width="23px"></a>
 		   			<a class="clubs-action-view" href="{{ path('FecdasBundle_club', { 'codiclub': club.codi }) }}">
 		   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure dades del club" title="Veure dades del club" width="23px"></a>

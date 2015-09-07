@@ -124,6 +124,11 @@ class EntityComanda {
 		
 	}
 	
+	public function __toString() {
+		return $this->id.'';
+	}
+	
+	
 	public function esNova()
 	{
 		return ($this->id == 0);

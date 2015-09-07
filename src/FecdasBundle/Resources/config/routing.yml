@@ -394,7 +394,7 @@ FecdasBundle_nouingres:
     pattern:  /nouingres
     defaults: { _controller: "FecdasBundle:Facturacio:nouingres" }
     requirements:
-        _method:  GET
+        _method:  GET|POST
 
 FecdasBundle_ingresos:
     pattern:  /ingresos

@@ -89,10 +89,7 @@ class EntityParte extends EntityComanda {
 		}
 	}
 	
-	public function __toString() {
-		return $this->getId();
-	}
-	
+
 	public function cloneLlicencies($parteoriginal, $currentDate) {
 		// Get current collection
 		$llicencies = $partearenovar->getLlicencies();

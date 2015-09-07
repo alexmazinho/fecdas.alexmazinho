@@ -1384,7 +1384,50 @@ class FacturacioController extends BaseController {
 		$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
 		$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
 		$rebut->setClub($club);
+		$em->persist($rebut);
+		
 		$form = $this->createForm(new FormRebut(), $rebut);
+		
+		if ($request->getMethod() == 'POST') {
+			//try {
+				$form->handleRequest($request);
+
+				$comandesIds = json_decode($request->request->get('comandesSelected', ''));
+
+				$comandesSeleccionades = array();	
+				foreach ($comandes as $comanda) {
+					if (in_array($comanda->getId(), $comandesIds)) {
+						$comandesSeleccionades[] = $comanda;
+					}
+				}
+
+				if ($form->isValid()) {
+					
+					$maxNumRebut = $this->getMaxNumEntity($rebut->getDataentrada()->format('Y'), BaseController::REBUTS) + 1;
+					
+					$rebut->setNum($maxNumRebut);
+					
+					foreach ($comandesSeleccionades as $comanda) {
+						//error_log('==> id '.$comandaId);
+						$rebut->addComanda($comanda);
+						//$rebut->setDatamodificacio(new \DateTime());
+						$comanda->setDatamodificacio(new \DateTime());
+						$comanda->setRebut($rebut); 
+						if ($comanda->esParte()) $comanda->setPendent(false);
+						
+					}
+					
+					$em->flush();
+					
+				}
+			//} catch (\Exception $e) {
+					
+			//	$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			//}
+			
+			
+		}				
+		
 		
 		return $this->render('FecdasBundle:Facturacio:ingres.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut, 'comandes' =>$comandes)));
@@ -1427,7 +1470,7 @@ class FacturacioController extends BaseController {
 	
 			if ($id > 0) $rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($id);
 			if ($rebut == null) {
-				$tipusPagament = BaseController::TIPUS_PAGAMENT_CASH;
+				$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
 				$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
 			}
 		}

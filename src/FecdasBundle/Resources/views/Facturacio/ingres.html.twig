@@ -1,4 +1,4 @@
-{# src/Fecdas/PartesBundle/Resources/views/Page/rebut.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Facturacio/nouingres.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
 {% form_theme form 'FecdasBundle:Includes:formtheming.html.twig' %}
@@ -19,7 +19,7 @@
     
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
 	
-	<form id="formrebut" action="{{ path('FecdasBundle_editarrebut') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	<form id="formingres" action="{{ path('FecdasBundle_nouingres') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
 			{{ form_widget(form.id) }}{{ form_widget(form.num) }}
 			 <div class="col-md-5">
@@ -75,22 +75,6 @@
 				</div>
 			 </div>
 
-			 <!-- <div class="col-md-6">
-			  	<div class="form-group">
-			    	{# form_label(form.comanda, 'Comanda') #}
-			    	<div class="label-actions accions-comanda">
-					{# if rebut.comanda is null #}
-						<i class="fa fa-search fa-1x grey"></i>
-					{# else %}
-						<a id="editar-comanda" class="link" href="{# path('FecdasBundle_editarcomanda', {'id': rebut.comanda.id }) #}"  title="Editar comanda" alt="Editar comanda">
-							<i class="fa fa-search fa-1x blue"></i></a>
-					{# endif %}
-					</div>
-			    	<div id="formrebut-comanda">
-						{# form_widget(form.comanda, { 'attr': {'class': 'form-control form-control-left'} }) #}
-					</div>
-				</div>
-			 </div> -->
 			 <div class="col-md-7">
 			 	<div class="form-group">
 			 		{{ form_label(form.comentari, 'Comentari') }}
@@ -139,6 +123,39 @@
 			  currency: 'EUR',
 			  minimumFractionDigits: 2,
 		});
+
+		calcularTotalsSeleccionats = function() {
+			var totalSeleccionat = 0;
+			var elems = $(".candidata-action-select.selected").length;
+			if (elems == 0) actualitzarTotals(0);
+			
+			$('.candidata-action-select.selected').each( function(i) {
+				totalSeleccionat += $(this).attr('data-total')*1;
+				if (i >= elems - 1) {
+					var totalIngres = $("input#rebut_import").val()*1;
+					if (totalSeleccionat > totalIngres) {
+						$('.informacio-resultat-ingres span.label').removeClass('label-success').addClass('label-danger'); 
+					} else {
+						$('.informacio-resultat-ingres span.label').removeClass('label-danger').addClass('label-success');
+					}
+						
+					actualitzarTotals(totalSeleccionat);
+				}
+			});
+		};
+
+		actualitzarTotals = function(totalSeleccionat) {
+			$('.import-seleccionat-candidats span').html( formatter.format(totalSeleccionat) );
+			
+			$('.romanent-rebut span').html( formatter.format( ($("input#rebut_import").val()*1) - totalSeleccionat ) );
+
+			if (totalSeleccionat == 0) {
+				$('#llista-candidates .data-detall').removeClass('candidata-selected');
+				$('.candidata-action-select.selected').children('.fa').toggleClass('fa-shown').toggleClass('fa-hidden');
+				$(".candidata-action-select").removeClass('selected');
+			}
+		};
+		
 		$(document).ready(function(){
 			setMenuActive("menu-admrebut");
 
@@ -152,58 +169,71 @@
 			});
 
 			$("input#rebut_import").change( function() {
-				
-
 				// Canviar el valor de l'import ingresat reinicia selecció i valors
-				$('.import-seleccionat-candidats span').html('0,00');
-
-				
-				$('.romanent-rebut span').html( formatter.format($(this).val()) );
-				
+				actualitzarTotals(0);
 			});
 
-			$(".candidata-action-select").not('selected').click( function(e) {
+			$('#formrebut-desar').click(function(e) {
+				e.preventDefault();
+				//$("#formingres").submit(function () {
+
+				var url = $("#formingres").attr("action");
+				var params = $("#formingres").serializeArray();
+
+				var comandes =	$( ".candidata-selected .candidata-id" ).map( function(index, element) {
+					return $(this).html();
+				}).get();
+				
+				params.push( {'name':'comandesSelected','value': JSON.stringify(comandes)} );
+				$.post(url, params, function(data) {
+					window.location = "{{ path('FecdasBundle_ingresos') }}";
+				}).fail( function(xhr, status, error) {
+					 // xhr.status + " " + xhr.statusText, status, error
+					 var sms = smsResultAjax('KO', xhr.responseText);
+					 
+					 $("#llista-candidates").prepend(sms);
+				});
+			});  
+			
+			$("#formrebut-automatic").click( function(e) {
+				actualitzarTotals(0);
+				var totalIngres = $("input#rebut_import").val()*1;
+
+				// Ordenar per import descendent
+				$(".candidata-action-select").sort(function(a,b){
+					return $(b).attr('data-total')*1 - $(a).attr('data-total')*1;					
+				}).each(function() { 
+					var curImport = $(this).attr('data-total')*1;
+					if (curImport <= totalIngres) {
+						totalIngres -= curImport;
+						$(this).click();
+					}
+				});
+			});
+			
+			// Seleccionar comanda
+			$("#llista-candidates").on( "click", ".candidata-action-select:not(.selected)", function(e) {
+				 
+			//$(".candidata-action-select").not('selected').click( function(e) {
 				e.preventDefault();
 
 				$(this).parents('.data-detall').addClass('candidata-selected');
 				$(this).addClass('selected');
 				$(this).children('.fa').toggleClass('fa-shown').toggleClass('fa-hidden');
-				/*$(this).children('fa-close').toggleClass('fa-shown');
-				$(this).children('fa-check').toggleClass('fa-hidden');*/
 
-				var totalSeleccionat = 0;
-				var elems = $(".candidata-action-select.selected").length;
-				console.log('-> '+elems);
-				$('.candidata-action-select.selected').each( function(i) {
-					totalSeleccionat += $(this).attr('data-total')*1;
-					console.log('--> '+i);
-					if (i >= elems - 1) {
-						console.log('---> '+totalSeleccionat);
-
-						$('.import-seleccionat-candidats span').html( formatter.format(totalSeleccionat) );
-						
-						$('.romanent-rebut span').html( formatter.format( ($("input#rebut_import").val()*1) - totalSeleccionat ) );
-					}
-				});
-				
+				calcularTotalsSeleccionats();
 			});
-			
-			
-			/*$("select#rebut_comanda").select2({
-				minimumInputLength: 2,
-				allowClear: true,
-			});*/
+			// Treure de la selecció comanda
+			$("#llista-candidates").on( "click", ".candidata-action-select.selected", function(e) {
+			//$(".candidata-action-select.selected").click( function(e) {
+				e.preventDefault();
 
-			/*$("select#rebut_comanda").change( function() {
-				var id = $(this).val();
-				
+				$(this).parents('.data-detall').removeClass('candidata-selected');
+				$(this).removeClass('selected');
+				$(this).children('.fa').toggleClass('fa-shown').toggleClass('fa-hidden');
 
-				var url = "{# path('FecdasBundle_editarcomanda', {'id': '__COMANDA__' }) #}";
-				url = url.replace("__COMANDA__", id);
-
-				$('.accions-comanda').html("<a id='editar-comanda' class='link' href='"+url+"' title='Editar comanda' alt=Editar comanda'> \
-											<i class='fa fa-search fa-1x blue'></i></a>");
-			}); */
+				calcularTotalsSeleccionats();
+			});
 			
 			var current = new Date();
 			

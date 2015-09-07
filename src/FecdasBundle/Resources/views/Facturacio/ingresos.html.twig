@@ -109,8 +109,8 @@
 	filtreLlistaingresos = function(cerca, numrebut) {
 		
 		window.location = "{{ path('FecdasBundle_ingresos', sortparams)|raw }}"+"&cerca="+cerca+"&numrebut="+numrebut;
-	}
-	
+	};
+
 	$(document).ready(function(){
 		setMenuActive("menu-admingresos");
 		

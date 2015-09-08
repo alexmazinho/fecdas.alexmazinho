@@ -103,11 +103,11 @@ class EntityComandaDetall {
 	 *
 	 * @return double
 	 */
-	public function getTotalNet()
+	public function getTotalNet($baixes = false)
 	{
 		if ($this->producte == null) return 0;	
 		
-		if ($this->esBaixa()) return 0; 
+		if ($this->esBaixa() && $baixes == false) return 0; 
 		
 		/*$preu 	= $this->producte->getCurrentPreu();
 		$iva 	= $this->producte->getCurrentIva();*/
@@ -120,9 +120,27 @@ class EntityComandaDetall {
 	 *
 	 * @return double
 	 */
-	public function getTotal()
+	public function getTotal($baixes = false)
 	{
-		return $this->getTotalNet()*(1 + $this->ivaunitat);	
+		return $this->getTotalNet($baixes)*(1 + $this->ivaunitat);	
+	}
+
+	/**
+	 * Get detalls 
+	 *
+	 * @return array
+	 */
+	public function getDetallsArray($baixes = false)
+	{
+		return array('total' => $this->unitats, 
+					'preuunitat' => $this->preuunitat,
+					'ivaunitat' => $this->ivaunitat,
+					'import' => $this->getTotal($baixes),
+					//'producte' => mb_convert_encoding($this->producte->getDescripcio(), 'UTF-8'),
+					'producte' => $this->producte->getDescripcio(),
+					'codi' => $this->producte->getCodi(),
+		);
+
 	}
 
 	/**

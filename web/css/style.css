@@ -2402,24 +2402,22 @@ li.parte-pendent-sincro .parterecents-actions {
 	background-color: #ffffff;
 }
 
-#header-parterecentsid { width: 6%; }
-#header-parterecentsentrada {	width: 7%; }
-#header-parterecentsrel { width: 6%; text-align:right;}
-#header-parterecentsdata {	width: 7%; }
-#header-parterecentsclub {	width: 15%; text-align:left;}
-#header-parterecentstipus {	width: 10%;}
-#header-parterecentspreu {	width: 7%; text-align:right;}
-#header-parterecentsinfo { width: 27%; text-align: left;}
+#header-parterecentsid { width: 8%; }
+#header-parterecentsentrada {	width: 9%; }
+#header-parterecentsdata {	width: 9%; }
+#header-parterecentsclub {	width: 16%; text-align:left;}
+#header-parterecentstipus {	width: 11%;}
+#header-parterecentspreu {	width: 8%; text-align:right;}
+#header-parterecentsinfo { width: 29%; text-align: left;}
 #header-parterecentsactions { width: 10%;}
 
-.parterecents-id { width: 6%; }
-.parterecents-entrada { width: 7%;  }
-.parterecents-rel { width: 6%; text-align:right;}
-.parterecents-data { width: 7%;  }
-.parterecents-club { width: 15%; text-align:left; font-size: 0.9em;}
-.parterecents-tipus { width: 10%; }
-.parterecents-preu { width: 7%; text-align:right;}
-.parterecents-info {	width: 27%; text-align:left;}
+.parterecents-id { width: 8%; }
+.parterecents-entrada { width: 9%;  }
+.parterecents-data { width: 9%;  }
+.parterecents-club { width: 16%; text-align:left; font-size: 0.9em;}
+.parterecents-tipus { width: 11%; }
+.parterecents-preu { width: 8%; text-align:right;}
+.parterecents-info {	width: 29%; text-align:left;}
 .parterecents-actions { width: 10%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/

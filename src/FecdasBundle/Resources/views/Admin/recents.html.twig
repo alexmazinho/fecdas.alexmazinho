@@ -70,8 +70,6 @@
 		   			<span class="listheader-icon {% if partes.isSorted('p.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentsentrada" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Entrada', 'p.dataentrada') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-parterecentsrel" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Rel', 'p.numrelacio') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.numrelacio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentsdata" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentsclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Club', 'c.nom') }}
@@ -92,7 +90,6 @@
 		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
 			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
-			   		<div class="data-detall-cell parterecents-rel">{{ parte.numrelacio }}</div>
 		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
 		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
 		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }} ({{ parte.numLlicencies }})</div>
@@ -104,7 +101,7 @@
 		   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   			{% endif %}
 		   				<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
-		   					<i class="fa fa-credit-card blue"></i></a>
+		   					<i class="fa fa-print blue"></i></a>
 		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
 		   					<i class="fa fa-search orange"></i></a>
 					</div>

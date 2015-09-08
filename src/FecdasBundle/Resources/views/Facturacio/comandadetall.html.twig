@@ -18,11 +18,9 @@
 				<span class="input-group-addon input-group-addon-icon">€</span></div></div>
 		<div class="data-detall-cell col-comentaris">{{ form_widget(detall.anotacions, { 'attr': {'class': 'form-control'} }) }}</div>
 		<div class="data-detall-cell col-actions">
-			{% if comanda.detallsEditables == true %}
+			{# if comanda.detallsEditables == true #}
 			<a class="baixa-detall link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
-			{% else %}
-			<i class="fa fa-list transparent"></i>
-			{% endif %}
+			{# endif #}
 		</div>
 	</div>
 </li>

@@ -166,7 +166,7 @@ class EntityComanda {
 
 	public function detallsEditables()
 	{
-		return !$this->esParte();
+		return !$this->esParte() && $this->esNova();
 	}
 	
 	public function esParte()
@@ -277,6 +277,38 @@ class EntityComanda {
 		if ($this->factura != null) $total++;
 		
 		$total += count($this->facturesanulacions);
+		
+		return $total;		
+	}
+	
+	/**
+	 * Get nums rebuts totes 
+	 *
+	 * @return string
+	 */
+	public function getLlistaNumsRebuts()
+	{
+		$concepte = '';
+		if ($this->comandaPagada() == true) $concepte = $this->rebut->getNumRebut();
+		
+		foreach ($this->rebutsanulacions as $rebut) {
+			$concepte .= $rebut->getNumRebut().', '; 	
+		}
+		return substr($concepte, 0, -2);
+		
+	}
+
+	/**
+	 * Get # rebuts 
+	 *
+	 * @return string
+	 */
+	public function getNumRebuts()
+	{
+		$total = 0;
+		if ($this->rebut != null) $total++;
+		
+		$total += count($this->rebutsanulacions);
 		
 		return $total;		
 	}
@@ -473,14 +505,7 @@ class EntityComanda {
 					$acumulades[$codi]['import'] += $d->getTotal();
 				}
 				else {
-					$acumulades[$codi] = array(
-						'total' => $d->getUnitats(), 
-						'preuunitat' => $d->getPreuunitat(),
-						'ivaunitat' => $d->getIvaunitat(),
-						'import' => $d->getTotal(),
-						'producte' => $d->getProducte()->getDescripcio(),
-						'codi' => $d->getProducte()->getCodi(),
-					);
+					$acumulades[$codi] = $d->getDetallsArray();
 				}
 			}
 		}

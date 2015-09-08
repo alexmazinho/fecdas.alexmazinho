@@ -99,7 +99,7 @@ class PDFController extends BaseController {
 		$x = $x_ini;
 		
 		$pdf->SetFont('dejavusans', '', 16, '', true);
-		$text = '<b>FACTURA</b>';
+		$text = '<b>FACTURA '.($factura->esAnulacio()?'ANUL·LACIÓ':'').'</b>';
 		
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
 		$pdf->Ln(5);
@@ -162,27 +162,69 @@ class PDFController extends BaseController {
 		$facturaSenseIVA = true;
 		$mindetalls = 10;
 		
-		foreach ($comanda->getDetallsAcumulats(true) as $lineafactura) {
-			if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
-			
-			$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
-			$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
-			
+		
+		$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+		
+		foreach ($detallsArray as $lineafactura) {
+			if ($lineafactura->ivaunitat > 0) $facturaSenseIVA = false;
+				
+			$preuSenseIVA = $lineafactura->total * $lineafactura->preuunitat;
+			$valorIVA = $preuSenseIVA * $lineafactura->ivaunitat;
+				
 			$tbl .= '<tr style="border-bottom: none;">';
-			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->codi.'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura->producte .'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->total .'</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->preuunitat, 2, ',', '.') . '€</td>';
 			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
+			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->ivaunitat*100, 0, ',', '.') . '%</td>';
 			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
 			$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
-			$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
+			$tbl .= number_format($lineafactura->import, 2, ',', '.') . '€</span></td>';
 			$tbl .= '</tr>';
-			
+				
 			$mindetalls--;
 		}
-		
+		/*
+		if ($factura->esAnulacio()) {
+				
+				$tbl .= '<tr style="border-bottom: none;">';
+				$tbl .= '<td style="border-right: 1px solid black;" align="center">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $factura->getConcepte() .'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="center">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
+				$tbl .= number_format($factura->getImport(), 2, ',', '.')  . '€</span></td>';
+				$tbl .= '</tr>';
+				
+				$mindetalls--;
+			
+		} else {
+			
+			foreach ($comanda->getDetallsAcumulats(true) as $lineafactura) {
+				if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
+				
+				$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
+				$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
+				
+				$tbl .= '<tr style="border-bottom: none;">';
+				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['ivaunitat']*100, 0, ',', '.') . '%</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
+				$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
+				$tbl .= '</tr>';
+				
+				$mindetalls--;
+			}
+		}		*/
 		while ($mindetalls > 0) {
 			$tbl .= '<tr style="border-bottom: none;">';
 			for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
@@ -192,7 +234,8 @@ class PDFController extends BaseController {
 		
 		$tbl .= '<tr style="background-color:#CCCCCC; ">';
 		$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>TOTAL FACTURA:</span></td>';
-		$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
+		//$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
+		$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($factura->getImport(), 2, ',', '.') .  ' €</span></td>';
 		$tbl .= '</tr>';
 		
 		$tbl .= '</table>';
@@ -212,14 +255,18 @@ class PDFController extends BaseController {
 		$pdf->SetTextColor(100, 100, 100); // Gris
 		$pdf->SetFont('dejavusans', '', 16, '', true);
 
-		$text = '<b>FACTURA';
-
-		if ($comanda->comandaPagada() == true) {
-			$text .= ' PAGADA</b>';
+		if ($factura->esAnulacio()) {
+			$text = '<b>ANUL·LACIÓ FACTURA ORIGINAL '.$comanda->getFactura()->getNumFactura().'</b>';
 		} else {
-			$text .= ' PENDENT DE PAGAMENT</b>';
+			$text = '<b>FACTURA ';
+	
+			$text .= ($comanda->comandaPagada() == true?'PAGADA':'PENDENT DE PAGAMENT');
+			
+			$text .= ($comanda->getNumRebuts() > 1?', REBUTS ':', REBUT ');
+			
+			$text .= $comanda->getLlistaNumsRebuts();
+			$text .= ' </b>';
 		}
-		
 		$pdf->writeHTML($text, true, false, false, false, '');
 
 		// reset pointer to the last page

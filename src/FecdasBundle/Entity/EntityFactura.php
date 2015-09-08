@@ -39,6 +39,11 @@ class EntityFactura {
 	protected $concepte;
 
 	/**
+	 * @ORM\Column(type="text")
+	 */
+	protected $detalls;
+
+	/**
 	 * @ORM\OneToOne(targetEntity="EntityComanda", mappedBy="factura")
 	 **/
 	protected $comanda;	
@@ -82,13 +87,22 @@ class EntityFactura {
 		}
 	}
 	
-	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '') {
+	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '', $detalls = array()) {
 	
 		$this->datafactura = $datafactura;
 		$this->num = $num;
 		$this->import = $import;
 		$this->concepte = $concepte;
+		$this->detalls = $detalls;
 		$this->comanda = $comanda;
+		if ($comanda != null) {
+			if ($import = 0) $this->import = $comanda->getTotalDetalls();
+			if (trim($concepte) == '') $this->concepte = $comanda->getConcepteComanda();
+			if ($detalls == null || count($detalls) == 0) {
+				$detalls = $comanda->getDetallsAcumulats();
+				$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
+			}
+		}
 	}
 
 	public function __toString() {
@@ -193,6 +207,20 @@ class EntityFactura {
 	 */
 	public function setConcepte($concepte) {
 		$this->concepte = $concepte;
+	}
+
+	/**
+	 * @return text
+	 */
+	public function getDetalls() {
+		return $this->detalls;
+	}
+
+	/**
+	 * @param text $detalls
+	 */
+	public function setDetalls($detalls) {
+		$this->detalls = $detalls;
 	}
 
 	/**

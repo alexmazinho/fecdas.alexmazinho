@@ -97,7 +97,7 @@
 		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
 		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }} ({{ parte.numLlicencies }})</div>
 		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
-		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|raw }}</div>
+		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parterecents-actions">
 		   			{% if parte.pendent == true  %}
 		   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 

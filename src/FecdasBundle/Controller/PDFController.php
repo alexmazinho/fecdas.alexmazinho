@@ -59,10 +59,12 @@ class PDFController extends BaseController {
 			$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->find($reqId);
 		
 			if ($factura != null) {
-				if ($factura->getComanda()->comandaConsolidada() != true) return new Response('encara no es pot imprimir la factura');
+				$comanda = $factura->getComanda();
+				if ($factura->esAnulacio() == true) $comanda = $factura->getComandaAnulacio();
 				
+				if ($comanda->comandaConsolidada() != true) return new Response('encara no es pot imprimir la factura');
 				
-				$response = $this->facturatopdf($factura);
+				$response = $this->facturatopdf($factura, $comanda);
 				
 				$this->logEntryAuth('PRINT FACTURA OK', $reqId);
 				
@@ -75,9 +77,8 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	private function facturatopdf($factura) {
+	private function facturatopdf($factura, $comanda) {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		$comanda = $factura->getComanda();
 		$club = $comanda->getClub();
 		
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -161,7 +162,7 @@ class PDFController extends BaseController {
 		$facturaSenseIVA = true;
 		$mindetalls = 10;
 		
-		foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
+		foreach ($comanda->getDetallsAcumulats(true) as $lineafactura) {
 			if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
 			
 			$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
@@ -297,9 +298,11 @@ class PDFController extends BaseController {
 		$tbl .= '<tr style="border: 0.2em solid #333333;"><td colspan="2" width="250" align="center" style="color:#555555;border: 0.2em solid #555555;">';
 		$tbl .= '<span style="font-weight:bold;font-size:16px;">REBUT</span></td></tr>';
 		$tbl .= '<tr style="border: 0.2em solid #333333;"><td width="125" align="right" style="color:#555555; border: 0.2em solid #333333;">Número:</td>';
-		$tbl .= '<td align="left" style="border: 0.2em solid #333333;"><b>' . $rebut->getNumRebut() . '</b></td></tr>';
+		$tbl .= '<td align="center" style="border: 0.2em solid #333333;"><b>' . $rebut->getNumRebut() . '</b></td></tr>';
 		$tbl .= '<tr style="border: 0.2em solid #333333;"><td align="right" style="color:#555555; border: 0.2em solid #333333;">Data:</td>';
-		$tbl .= '<td align="left" style="border: 0.2em solid #333333;"><b>' . $rebut->getDatapagament()->format('d/m/Y') . '</b></td></tr>';
+		$tbl .= '<td align="center" style="border: 0.2em solid #333333;"><b>' . $rebut->getDatapagament()->format('d/m/Y') . '</b></td></tr>';
+		$tbl .= '<tr style="border: 0.2em solid #333333;"><td align="right" style="color:#555555; border: 0.2em solid #333333;">Import:</td>';
+		$tbl .= '<td align="center" style="border: 0.2em solid #333333;"><b>' . number_format($rebut->getImport(), 2, ',', '.') . '€	</b></td></tr>';
 		$tbl .= '</table>';
 		
 		$pdf->writeHTML($tbl, false, false, false, false, '');
@@ -336,11 +339,13 @@ class PDFController extends BaseController {
 			$pdf->SetFont('dejavusans', '', 14, '', true);
 			$pdf->SetTextColor(0, 0, 0);
 			
-			$tbl = '<h4><i>'.($rebut->getComentari()==null || $rebut->getComentari() == ''?'Ingrés a compte':$rebut->getComentari()).'</i></h4>';
+			$pdf->Ln(20);
+			
+			$tbl = '<h4><i>Ingrés acumulat al saldo del club per valor de: </i><b>'.number_format($rebut->getImport(), 2, ',', '.').' €</b></h4>';
 			
 			$pdf->writeHTML($tbl, false, false, false, false, '');
 			
-			$pdf->Ln(20);
+			$pdf->Ln(40);
 			
 			$pdf->SetFont('dejavusans', '', 11, '', true);
 			$pdf->SetTextColor(120, 120, 120); // Gris
@@ -350,13 +355,13 @@ class PDFController extends BaseController {
 		} else {
 			if ($rebut->getNumFactures() == 1) { // Rebut per import íntegre de comanda
 
-				$tbl = '<h4>'.'Liquidació FACTURA :'.$rebut->getLlistaNumsFactures().', corresponent a la comanda:</h4>';
+				$tbl = '<h4>'.'Liquidació FACTURA: '.$rebut->getLlistaNumsFactures().', corresponent a la comanda:</h4>';
 			
 				$pdf->writeHTML($tbl, true, false, false, false, '');
 			
 				$pdf->Ln(20);
 			
-				$pdf->SetFont('dejavusans', '', 8, '', true);
+				$pdf->SetFont('dejavusans', '', 10, '', true);
 				$pdf->SetTextColor(0, 0, 0); 	
 					
 				$comanda = $comandes[0]; 
@@ -401,7 +406,7 @@ class PDFController extends BaseController {
 			
 				$tbl .= '<tr>';
 				$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>IMPORT DEL REBUT:</span></td>';
-				$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($rebut->getImport(), 2, ',', '.') .  ' €</span></td>';
+				$tbl .= '<td align="right"><span style="font-weight:bold;font-size:14px; padding:0;"><br/>' . number_format($rebut->getImport(), 2, ',', '.') .  ' €</span></td>';
 				$tbl .= '</tr>';
 			
 				$tbl .= '</table>';
@@ -409,30 +414,44 @@ class PDFController extends BaseController {
 				$pdf->writeHTML($tbl, true, false, false, false, '');
 			} else {  
 				// Un rebut vàries comandes
-				$tbl = '<h4>'.'Liquidació FACTURES :'.$rebut->getLlistaNumsFactures().'</h4>';
-				$tbl = '<h4>Corresponents a les comandes:</h4>';
+				$tbl = '<h4>'.'Liquidació FACTURES: '.$rebut->getLlistaNumsFactures().'</h4>';
+				$tbl .= '<h4>Corresponents a les comandes:</h4>';
 			
 				$pdf->writeHTML($tbl, true, false, false, false, '');
 			
-				$pdf->Ln(20);
+				$pdf->Ln(5);
 
-				$pdf->SetFont('dejavusans', '', 8, '', true);
+				$pdf->SetFont('dejavusans', '', 10, '', true);
 				$pdf->SetTextColor(0, 0, 0); 	
 
-				$tbl = '';
+				$tbl = '<table border="1" cellpadding="10" cellspacing="0" style="border: 0.2em solid #333333; border-collapse: collapse;">';
+						
 				foreach ($comandes as $comanda) {
-					$tbl .= '<p style="padding-left:10px">Num: '.$comanda->getNumComanda().' en data:'.$comanda->getDataentrada()->format('Y-m-d');
-					$tbl .= '<span style="float:right"><b>'.$comanda->getTotalDetalls().'</b></span></p>';
-					$tbl .= '<p style="padding-left:10px">'.$comanda->getInfoLlistat().'</p>';
-					$tbl .= '<p>&nbsp;</p>';
+					$tbl .= '<tr style="border-bottom: none;">';
+					$tbl .= '<td align="left"  width="505">';
+					$tbl .= 'Número: '.$comanda->getNumComanda().' en data '.$comanda->getDataentrada()->format('Y-m-d').'</td>';
+					$tbl .= '<td align="right"  width="130">';
+					$tbl .= '<b>'.number_format($comanda->getTotalDetalls(), 2, ',', '.').' €</b></td>';
+					$tbl .= '</tr>';
+					$tbl .= '<tr style="border-bottom: none;">';
+					$tbl .= '<td colspan="2" align="left"> - <i>'.$comanda->getInfoLlistat().'</i></td>';
+					$tbl .= '</tr>';
 				}
-				$tbl .= '<p style="padding-left:10px">i un romanent acumulat a favor del club de';
-				$tbl .= '<span style="float:right"><b>'.getRomanent() .'</b></span></p>';
-				$tbl .= '<p>&nbsp;</p>';
+				$tbl .= '<tr style="border-bottom: none;">';
+				$tbl .= '<td align="left">';
+				$tbl .= 'Amb un romanent acumulat a favor del club de </td>';
+				$tbl .= '<td align="right">';
+				$tbl .= '<b>'.number_format($rebut->getRomanent(), 2, ',', '.').' €</b></td>';
+				$tbl .= '</tr>';
+				$tbl .= '<tr>';
+				$tbl .= '<td align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>IMPORT DEL REBUT:</span></td>';
+				$tbl .= '<td align="right"><span style="font-weight:bold;font-size:14px;"><br/>' . number_format($rebut->getImport(), 2, ',', '.') .  ' €</span></td>';
+				$tbl .= '</tr>';
+				$tbl .= '</table>';
 				
 				$pdf->writeHTML($tbl, true, false, false, false, '');
 
-				$pdf->Ln(20);
+				$pdf->Ln(10);
 			
 				$pdf->SetFont('dejavusans', '', 11, '', true);
 				$pdf->SetTextColor(120, 120, 120); // Gris

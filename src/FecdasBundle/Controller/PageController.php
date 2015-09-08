@@ -1037,8 +1037,7 @@ class PageController extends BaseController {
 					
 					// Comprovació datacaducitat
 					if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
-						error_log("DataCaducitat llicencia incorrecte " . $llicencia->getDatacaducitat()->format('d/m/Y') . " " . $parte->getDataCaducitat($this->getLogMailUserData("updateParte 1 "))->format('d/m/Y') , 0);
-						$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
+							$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
 					}
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 					
@@ -1046,11 +1045,8 @@ class PageController extends BaseController {
 
 				$em->flush();
 
-				error_log('tramitaRemoveLlicencia log');
-
 				$this->logEntryAuth('LLICENCIA '.$requestParams['action'].' OK', 'Parte:' . $parte->getId() . ' llicencia: ' . $llicencia->getId());
 				
-				error_log('tramitaRemoveLlicencia render');
 				$response = $this->render('FecdasBundle:Page:partellistallicencies.html.twig',
 						array('parte' => $parte, 'admin' =>$this->isCurrentAdmin()));
 				

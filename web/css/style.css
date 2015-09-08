@@ -578,24 +578,24 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 /*************** FECDAS NOU comandes ****************/
 
 #header-comanda-estat  { width: 5%; text-align: center; }
-#header-comanda-num { width: 12%; text-align: left; }
+#header-comanda-num { width: 8%; text-align: left; }
 #header-comanda-items { width: 5%; text-align: center; }
-#header-comanda-total { width: 12%; text-align: right; }
+#header-comanda-total { width: 10%; text-align: right; }
 #header-comanda-data { width: 12%; text-align: center; }
 #header-comanda-factura { width: 12%; text-align: center; }
 #header-comanda-rebut { width: 12%; text-align: center; }
-#header-comanda-comentaris { width: 20%; text-align: left; }
-#header-comanda-actions { width: 10%; text-align: right; }
+#header-comanda-comentaris { width: 26%; text-align: left; }
+#header-comanda-actions { width: 10%; text-align: center; }
 
 .data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
-.data-detall-cell.comanda-num { width: 12%; text-align: left; }
+.data-detall-cell.comanda-num { width: 8%; text-align: left; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
-.data-detall-cell.comanda-total { width: 12%; text-align: right; }
+.data-detall-cell.comanda-total { width: 10%; text-align: right; }
 .data-detall-cell.comanda-data { width: 12%; text-align: center; }
 .data-detall-cell.comanda-factura { width: 12%; text-align: center; }
 .data-detall-cell.comanda-rebut { width: 12%; text-align: center; }
-.data-detall-cell.comanda-comentaris { width: 20%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.comanda-actions { width: 10%; text-align: right; font-size: 1.2em; }
+.data-detall-cell.comanda-comentaris { width: 26%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.comanda-actions { width: 10%; text-align: center; font-size: 1.2em; }
 
 .list-header-adm #header-comanda-estat  { width: 5%; text-align: center; }
 .list-header-adm #header-comanda-num { width: 7%; text-align: left; }
@@ -645,24 +645,24 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 /*************** FECDAS NOU ingrés / ingresos ****************/
 
 
-#header-ingres-num { width: 10%; text-align: left; }
+#header-ingres-num { width: 12%; text-align: left; }
 #header-ingres-club { width: 15%; text-align: left;  }
-#header-ingres-import { width: 10%; text-align: right; }
-#header-ingres-data { width: 12%; text-align: center; }
-#header-ingres-comanda { width: 11%; text-align: center; }
-#header-ingres-comentaris { width: 23%; text-align: left; }
-#header-ingres-compta { width: 10%; text-align: center; }
-#header-ingres-actions { width: 6%; text-align: right; }
+#header-ingres-import { width: 8%; text-align: right; }
+#header-ingres-data { width: 9%; text-align: center; }
+#header-ingres-comanda { width: 13%; text-align: center; }
+#header-ingres-romanent { width: 7%; text-align: right; }
+#header-ingres-comentaris { width: 21%; text-align: left; }
+#header-ingres-compta { width: 15%; text-align: center; }
 
 
-.data-detall-cell.ingres-num { width: 10%; text-align: left; }
+.data-detall-cell.ingres-num { width: 12%; text-align: left; }
 .data-detall-cell.ingres-club { width: 15%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.ingres-import { width: 10%; text-align: right; }
-.data-detall-cell.ingres-data { width: 12%; text-align: center; }
-.data-detall-cell.ingres-comanda { width: 11%; text-align: center; }
-.data-detall-cell.ingres-comentaris { width: 23%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.ingres-compta { width: 10%; text-align: center; }
-.data-detall-cell.ingres-actions { width: 6%; text-align: right; font-size: 1.2em; }
+.data-detall-cell.ingres-import { width: 8%; text-align: right; }
+.data-detall-cell.ingres-data { width: 9%; text-align: center; }
+.data-detall-cell.ingres-comanda { width: 13%; text-align: center; font-size: 0.9em; }
+.data-detall-cell.ingres-romanent { width: 7%; text-align: right; }
+.data-detall-cell.ingres-comentaris { width: 21%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.ingres-compta { width: 15%; text-align: center; }
  
  
 #llista-candidates { margin-top: 20px; }
@@ -995,7 +995,7 @@ ul.detalls li .alert { margin: 10px 0; }
 	border-bottom: 1px solid #e5e5e5; 
 }
 
-.dropdown-menu .divider { height: 2px; background-color: #2281CF; background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%); }
+.dropdown-menu .divider { height: 1px; background-color: #2281CF; background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%); }
 
 .navbar-default .nav > li > a, .navbar-default .nav .dropdown-menu > li > a  {  color: #1240a0; } 
 
@@ -1250,6 +1250,8 @@ input#form_dni {
 
 .buttons-top-bootstrap { margin-top: 10px; }
 
+
+.alert span.fa { margin-right: 10px; } 
 
 #formparte-rest { display: none; }
 

@@ -32,7 +32,7 @@
 						{% endfor %}
 					</div>
 		   			<div class="data-detall-cell candidata-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
-		   			<div class="data-detall-cell candidata-comentaris">{{ comanda.infoLlistat|raw }}</div>
+		   			<div class="data-detall-cell candidata-comentaris">{{ comanda.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell candidata-actions">
 						<a class="candidata-action-select link" href="javascript.void();" data-total="{{ comanda.totalDetalls }}" alt="Afegir/Treure comanda" title="Afegir/Treure comanda">
 								<i class="fa fa-close fa-shown red"></i><i class="fa fa-check fa-hidden green"></i></a>

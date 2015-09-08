@@ -112,12 +112,18 @@ class EntityRebut {
 			$this->import = $import;
 			$this->comentari = "Ingrés a compte del club ".($this->club!=null?$this->club->getNom():'');
 		} else {  // Pagament d'una comanda
-			$this->club = $comanda->getClub();
-			$this->import = $comanda->getTotalDetalls();
-			$this->comentari = "Rebut comanda ".$comanda->getNumComanda()." ".$comanda->getTipusComanda();
+			$this->club = ($club != null?$club:$comanda->getClub());
+			$this->import = ($import != null?$import:$comanda->getTotalDetalls());
 
-			$this->addComanda($comanda);
-			$comanda->setRebut($this); 
+			if ($import < 0) {
+				$this->comentari = "Rebut anulació comanda ".$comanda->getNumComanda();	
+				$this->setComandaanulacio($comanda);
+				$comanda->addrebutsanulacions($this);
+			} else {
+				$this->comentari = "Rebut comanda ".$comanda->getNumComanda()." ".$comanda->getTipusComanda();
+				$this->addComanda($comanda);
+				$comanda->setRebut($this);
+			} 
 		}
 	}
 	
@@ -133,7 +139,7 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutLlarg()
 	{
-		if ($this->esAnulacio()) return 'REBUT ANUL·LACIO: '.$this->getNumRebut().'. FACTURA ANUL·LACIO: '.$comanda->getFactura()->getNumFactura();	
+		if ($this->esAnulacio()) return 'REBUT ANUL·LACIO: '.$this->getNumRebut().'. FACTURA ANUL·LACIO: '.$this->comandaanulacio->getFactura()->getNumFactura();	
 			
 		$concepte = 'REBUT: '.$this->getNumRebut().'.';
 			
@@ -153,7 +159,7 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutCurt()
 	{
-		if ($this->esAnulacio()) return 'FACTURA ANUL·LACIO: '.$comanda->getFactura()->getNumFactura();		
+		if ($this->esAnulacio()) return 'FACTURA ANUL·LACIO: '.$this->comandaanulacio->getFactura()->getNumFactura();		
 			
 		if (count($this->comandes) == 0) return "REBUT: ".$this->getNumRebut();  // Ingrés a compte
 		
@@ -172,7 +178,7 @@ class EntityRebut {
 	 */
 	public function getLlistaNumsFactures()
 	{
-		if ($this->esAnulacio()) return $comandaanulacio->getFactura()->getNumFactura();
+		if ($this->esAnulacio()) return $this->comandaanulacio->getFactura()->getNumFactura();
 			
 		$concepte = '';
 		foreach ($this->comandes as $comanda) {
@@ -230,8 +236,8 @@ class EntityRebut {
 	
 	/* Diferència entre suma comandes i import rebut */
 	public function getRomanent() {
-		$romanent = $rebut->getImport();
-		foreach ($comandes as $comanda) {
+		$romanent = $this->getImport();
+		foreach ($this->comandes as $comanda) {
 			$romanent -= $comanda->getTotalDetalls();
 		}
 		return $romanent;		

@@ -44,8 +44,6 @@
 						</div>
 					</div>
 				  </div>
-				</div>
-				<div class="row">
 				  <div class="col-md-2  col-xs-4">
 					  <div class="checkbox">
 					    <label>
@@ -79,9 +77,9 @@
 		   			<span class="listheader-icon {% if comandes.isSorted('c.total') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-comanda-data" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Data', 'c.dataentrada') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('c.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-factura" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Factura', 'f.datafactura,f.num') }}
+		   		<div id="header-comanda-factura" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Factura/es', 'f.datafactura,f.num') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('f.datafactura,f.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-comanda-rebut" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Rebut', 'r.datapagament,r.num') }}
+		   		<div id="header-comanda-rebut" class="col-listheader">{{ knp_pagination_sortable(comandes, 'Rebut/s', 'r.datapagament,r.num') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('r.datapagament,r.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-comanda-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
 		   		<div id="header-comanda-actions" class="col-listheader collistheader-noorder">
@@ -107,7 +105,13 @@
 		   			{% endif %}
 		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
 		   			<div class="data-detall-cell comanda-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
-		   			<div class="data-detall-cell comanda-data">{{ comanda.dataentrada|date('d/m/y') }}</div>
+		   			<div class="data-detall-cell comanda-data">
+		   				{% if admin == true  %}
+		   					{{ comanda.dataentrada|date('d/m/y') }}
+		   				{% else %}
+		   					{{ comanda.dataentrada|date('d/m/Y') }}
+		   				{% endif %}
+		   			</div>
 		   			<div class="data-detall-cell comanda-factura">
 		   				{% if comanda.comandaConsolidada == true and comanda.factura != null %}
 		   					{% set factura = comanda.factura %}
@@ -134,7 +138,7 @@
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% endfor %}
 					</div>
-		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|raw }}</div>
+		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell comanda-actions">
 						{% if admin == true  %}
 							<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar">

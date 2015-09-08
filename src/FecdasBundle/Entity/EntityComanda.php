@@ -230,7 +230,7 @@ class EntityComanda {
 	 */
 	public function addComentari($comentari) {
 		
-		if ($this->comentaris == null || $this->comentaris == "") $this->comentaris = $comentari;
+		if ($this->comentaris == null || $this->comentaris == '') $this->comentaris = $comentari;
 		else {
 			$pos = strpos($this->comentaris, $comentari);
 			if ($pos === false) $this->comentaris = $this->comentaris.PHP_EOL.$comentari;
@@ -280,6 +280,23 @@ class EntityComanda {
 		
 		return $total;		
 	}
+	
+	/**
+	 * Get info llistat 
+	 *
+	 * @return string
+	 */
+	public function getInfoLlistat()
+	{
+		$info = $this->comentaris;
+		if (trim($info) != '' && $this->getNumDetalls()>0) $info .= PHP_EOL;
+		
+		foreach ($this->detalls as $d) {
+			if (!$d->esBaixa()) $info .= $d->getAnotacions().', ';	
+		}
+		return substr($info, 0, -2);
+	}
+	
 	
 	/**
 	 * Get prefix albarà comú.
@@ -441,12 +458,13 @@ class EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getDetallsAcumulats()
+	public function getDetallsAcumulats($baixes = false)
 	{
 		$acumulades = array();
 		
 		foreach ($this->detalls as $d) {
-			if (!$d->esBaixa() && $d->getProducte() != null) {
+			if ( (!$d->esBaixa() || $baixes == true) && 
+					$d->getProducte() != null) {
 				
 				$codi = $d->getProducte()->getCodi();
 				
@@ -541,20 +559,6 @@ class EntityComanda {
 		return $total;
 	}
 
-	/**
-	 * Get info llistat 
-	 *
-	 * @return string
-	 */
-	public function getInfoLlistat()
-	{
-		$info = $this->comentaris;
-		foreach ($this->detalls as $d) {
-			if (!$d->esBaixa()) $info .= ($info!=''?'<br/>':''). $d->getAnotacions();
-		}
-		return $info;
-	}
-	
     /**
      * Get id
      *

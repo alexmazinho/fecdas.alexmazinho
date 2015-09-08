@@ -262,9 +262,9 @@ class EntityDuplicat extends EntityComanda {
 		// Missatge que es mostra a la llista de duplicats
 		$textInfo = parent::getInfoLlistat();
 		 
-		if ($this->esBaixa()) return "<br/>Petició anul·lada " . $this->getDatabaixa()->format("d/m/Y");
+		if ($this->esBaixa()) return PHP_EOL.'Petició anul·lada ' . $this->getDatabaixa()->format("d/m/Y");
 		
-		if ($this->comandaPagada() == true) $textInfo .= "<br/>Petició pagada.";
+		if ($this->comandaPagada() == true) $textInfo .= PHP_EOL.'Petició pagada.';
 			
 		if ($this->observacions != null) $textInfo .= $this->observacions;
 		

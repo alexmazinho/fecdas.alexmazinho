@@ -369,7 +369,9 @@
 	    	title: titol
     	});
 		
-		$("#dialeg").html("<div class='dialeg-jerror'><i class='fa fa-remove fa-1x red'></i><span class='jerror-sms'>"+strError+"</span></div>");
+		$("#dialeg").html("<div class='alert alert-danger'>"+
+				"<ul><li><span class='fa fa-exclamation-circle fa-1x'></span>"+
+				strError+"</li></ul></div>");
 	};
 	
 	dialegInfo = function(titol, strInfo, dwidth, dheight) {
@@ -381,7 +383,9 @@
 	    	title: titol
     	});
 		
-		$("#dialeg").html("<div class='dialeg-jinfo'><i class='fa fa-check fa-1x green'></i><span class='jinfo-sms'>"+strInfo+"</span></div>");
+		$("#dialeg").html("<div class='alert alert-info'>"+
+				"<ul><li><span class='fa fa-exclamation-circle fa-1x'></span>"+
+				strInfo+"</li></ul></div>");
 	};
 
 	
@@ -1131,7 +1135,7 @@
 	        
 	        var url = $("#formllicencia").attr("action");
 			if ($("#parte_llicencies_persona_select").val() == "") {
-				alert("cal seleccionar una persona de la llista d'assegurats");
+				dialegError("Error", "cal seleccionar una persona de la llista d'assegurats", 400);
 				return false;
 			}
 			

@@ -124,13 +124,6 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 	
 		$origen = $form->get('anypreus')->getData(); // Detectar origen, si és selector anys refrescar els valors del preu, iva...
 	
-		//error_log("origen submit data anyspreus  ==> ".$origen);
-		
-		/*if ($origen instanceof Activitat) { // Canvi d'activitat, actualitza camps associats: deutors, facturacions
-			$activitat = $origen;
-	
-			$this->activitatsLoad($event->getForm (), $rebut, $activitat);
-		}*/
 	}
 	
 	

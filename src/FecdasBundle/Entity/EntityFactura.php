@@ -44,7 +44,7 @@ class EntityFactura {
 	protected $comanda;	
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityComanda")
+	 * @ORM\ManyToOne(targetEntity="EntityComanda", inversedBy="facturesanulacions" )
 	 * @ORM\JoinColumn(name="comandaanulacio", referencedColumnName="id")
 	 */
 	protected $comandaanulacio; 

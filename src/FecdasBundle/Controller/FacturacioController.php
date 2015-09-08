@@ -336,8 +336,6 @@ class FacturacioController extends BaseController {
 		
 		$strQuery .= " ORDER BY r.datapagament";
 		
-		error_log($enviament->getDatadesde()->format('Y-m-d H:i:s') ."-". $enviament->getDatafins()->format('Y-m-d H:i:s'));
-		 
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
 		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
@@ -392,7 +390,6 @@ class FacturacioController extends BaseController {
 	//private function downloadFile($fitxer, $path, $desc) {
 	public function downloadassentamentsAction(Request $request, $filename) {
 			
-		error_log($filename);
 		$response = new BinaryFileResponse(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename);
 	
 		$response->setCharset('UTF-8');
@@ -650,6 +647,8 @@ class FacturacioController extends BaseController {
 			    case 'pagar':
 			        // Obrir TPV
 			        
+			        
+			        
 			        break;
 			    case 'desar':
 			        // Recordatori pagament
@@ -661,6 +660,8 @@ class FacturacioController extends BaseController {
 					$this->get('session')->getFlashBag()->add('sms-notice',	'Comanda anul·lada');	
 			        break;
 			}
+			
+			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 			
 		} catch (\Exception $e) {
 				// Ko, mostra form amb errors
@@ -1370,16 +1371,26 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		$this->logEntryAuth('INGRES NOU','');
+		$this->get('session')->getFlashBag()->clear();
+		
+		$this->logEntryAuth('INGRES NOU',$request->getMethod());
 		
 		$em = $this->getDoctrine()->getManager();
 
 		// Comandes pendents de pagament. Inicialment al club connectat
-		$club = $this->getCurrentClub(); 
+		if ($request->getMethod() != 'POST') $codi = $request->query->get('codi', '');
+		else {
+			$formdata = $request->request->get('rebut');
+			$codi = $formdata['club'];
+		}
+			
+		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		if ($club == null) $club = $this->getCurrentClub();
+		 
 		$query = $this->consultaComandes($club->getCodi(), 0, 0, 0, 0, false, true);
 		
 		$comandes = $query->getResult(); // Comandes pendents rebut del club
-				
+		
 		// Nou rebut
 		$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
 		$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
@@ -1389,45 +1400,44 @@ class FacturacioController extends BaseController {
 		$form = $this->createForm(new FormRebut(), $rebut);
 		
 		if ($request->getMethod() == 'POST') {
-			//try {
+			try {
 				$form->handleRequest($request);
 
-				$comandesIds = json_decode($request->request->get('comandesSelected', ''));
-
-				$comandesSeleccionades = array();	
-				foreach ($comandes as $comanda) {
-					if (in_array($comanda->getId(), $comandesIds)) {
-						$comandesSeleccionades[] = $comanda;
-					}
-				}
-
 				if ($form->isValid()) {
-					
 					$maxNumRebut = $this->getMaxNumEntity($rebut->getDataentrada()->format('Y'), BaseController::REBUTS) + 1;
 					
 					$rebut->setNum($maxNumRebut);
+
+					$comandesIds = json_decode($request->request->get('comandesSelected', ''));
+
+					foreach ($comandesIds as $comandaId) {
+						$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
 					
-					foreach ($comandesSeleccionades as $comanda) {
-						//error_log('==> id '.$comandaId);
+						// Comanda de la selecció no trobada
+						if ($comanda == null) throw new \Exception('La comanda '.$comanda->getNumComanda().' no està disponible' );
+					
+						if ($comanda->comandaPagada() == true) throw new \Exception('La comanda '.$comanda->getNumComanda().' ja está pagada' );
+					
 						$rebut->addComanda($comanda);
-						//$rebut->setDatamodificacio(new \DateTime());
 						$comanda->setDatamodificacio(new \DateTime());
 						$comanda->setRebut($rebut); 
 						if ($comanda->esParte()) $comanda->setPendent(false);
-						
 					}
+
+					$this->validIngresosRebuts($form, $rebut);
 					
 					$em->flush();
 					
 				}
-			//} catch (\Exception $e) {
+			} catch (\Exception $e) {
 					
-			//	$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-			//}
-			
-			
+				$response = new Response($e->getMessage());
+				$response->setStatusCode(500);
+				return $response;
+				//$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+				
+			}
 		}				
-		
 		
 		return $this->render('FecdasBundle:Facturacio:ingres.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut, 'comandes' =>$comandes)));
@@ -1489,25 +1499,7 @@ class FacturacioController extends BaseController {
 						if ($rebut->getComanda() != null) $rebut->getComanda()->setRebut($rebut);
 					}
 	
-					if ($rebut->getImport() < 0) {
-						$form->get('import')->addError(new FormError('Valor incorrecte'));
-						throw new \Exception('Cal indicar un import superior a 0' );
-					}
-		
-					if ($rebut->getComanda() != null) {
-						
-						if ($rebut->getDatapagament()->format('Y-m-d') < $rebut->getComanda()->getDataentrada()->format('Y-m-d')) {
-							$form->get('datapagament')->addError(new FormError('Data incorrecte'));
-							throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
-						}
-						
-						if (abs($rebut->getImport() - $rebut->getComanda()->getTotalDetalls()) > 0.01) {
-							error_log("==> ".$rebut->getImport()." ".$rebut->getComanda()->getTotalDetalls()." comanda ".$rebut->getComanda()->getId());
-							
-							$form->get('import')->addError(new FormError('Valor incorrecte'));
-							throw new \Exception('El rebut no coincideix amb l\'import de la comanda ');
-						}
-					}
+					$this->validIngresosRebuts($form, $rebut);
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades del rebut ' ); //$form->getErrorsAsString()
@@ -1531,8 +1523,47 @@ class FacturacioController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
 	}
 	
+	private function validIngresosRebuts($form, $rebut) {
+		
+		if ($rebut->getImport() <= 0) {
+			$form->get('import')->addError(new FormError('Valor incorrecte'));
+				throw new \Exception('Cal indicar un import superior a 0' );
+		}
+		if ($rebut->esAnulacio()) {
+			if ($rebut->getDatapagament()->format('Y-m-d') < $rebut->getComandaAnulacio()->getDataentrada()->format('Y-m-d')) {
+				$form->get('datapagament')->addError(new FormError('Data incorrecte'));
+					throw new \Exception('La data d\'anul·lació ha de ser igual o posterior a la data de la comanda' );
+			}
+			
+		} else {
+			$total = 0; 
+			
+			foreach ($rebut->getComandes() as $comanda) {
+				
+				if ($rebut->getDatapagament()->format('Y-m-d') < $comanda->getDataentrada()->format('Y-m-d')) {
+				$form->get('datapagament')->addError(new FormError('Data incorrecte'));
+					throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
+				}
+				
+				$total += $comanda->getTotalDetalls();		
+			}
+			
+			//if (abs($rebut->getImport() - $rebut->getComanda()->getTotalDetalls()) > 0.01) {
+			if ($total > $rebut->getImport()) {	
+								
+				$form->get('import')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('El total de les comandes supera l\'import de l\'ingrés');
+			}
+				
+		}
+		
+	} 
 	
-	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $pendents, $strOrderBY = 'c.id', $direction = 'desc' ) {
+	
+	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $pendents, $strOrderBY = 'c.dataentrada', $direction = 'desc' ) {
+		
+		error_log("consultaComandes:".$codi.$nf.$af. $nr. $ar. $baixes. $pendents. $strOrderBY.$direction);
+		
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT c, f, r FROM FecdasBundle\Entity\EntityComanda c LEFT JOIN c.factura f LEFT JOIN c.rebut r ";
@@ -1558,7 +1589,7 @@ class FacturacioController extends BaseController {
 		
 		if (! $baixes) $strQuery .= " AND c.databaixa IS NULL ";
 		
-		if ($pendents) $strQuery .= " AND c.rebut IS NOT NULL ";
+		if ($pendents) $strQuery .= " AND c.rebut IS NULL ";
 		
 		$pos = strpos($strOrderBY, "r.num");
 		if ($pos !== false) $strQuery .= " AND c.rebut IS NOT NULL ";
@@ -1923,7 +1954,7 @@ class FacturacioController extends BaseController {
 				 
 				 $partes[] = $parte;
 				 $ipar++;
-				 error_log('fi PARTE '.$parte['id']);
+
 				 $em->clear();
 			}
 			// El darrer parte del dia

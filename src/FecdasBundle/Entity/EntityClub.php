@@ -381,8 +381,6 @@ class EntityClub {
 				$parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') &&
 				$parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d')) {
 	
-				error_log("parte => ".$parte_iter->getId()." 0-".get_class($parte_iter)." 1-"." 2-".($parte_iter->getTipus()==null)." 3-".is_array($parte_iter->getTipus()));
-	
 				if ( $parte_iter->getTipus() != null && 
 					 ( $tipus == 0 || $parte_iter->getTipus()->getId() == $tipus )) {
 					$nlic = $parte_iter->getNumLlicencies();

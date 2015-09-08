@@ -60,7 +60,7 @@
 			    </div>
 			</div> 
 	   	</form>
-	    <div class="sms-header-info clearfix">{{ club.infoLlistat }}</div>
+	    <div class="sms-header-info clearfix">{{ club.infoLlistat|nl2br }}</div>
 	    <div class="table-header">
 			<div id="summary-header">
 				<div id="partes-totals" class="col-listheader">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }} llistes ({{ stat['ltotal']|number_format(0, ',', '.') }} llicències)<br/> 
@@ -99,7 +99,7 @@
 			   			<i class="fa fa-history orange"></i></a>
 			   		</div>
 			   		<div class="data-detall-cell parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
-			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat|raw }}</div>
+			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}
 		   				<a class="parte-action-renew link" href="{{ path('FecdasBundle_renovar', { 'id': parte.id }) }}" alt="Renovar" title="Renovar"><i class="fa fa-retweet green"></i></a>

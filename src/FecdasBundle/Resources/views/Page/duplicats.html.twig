@@ -82,7 +82,7 @@
 			   				{{ duplicat.dataimpressio|date('d/m/y') }}
 			   			{% endif %}
 			   			</div>
-				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|raw }}</div>
+				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</div>
 				   		<div class="data-detall-cell duplicat-actions">
 							{% if duplicat.comandaPagada != true %} 
 								<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
@@ -119,7 +119,7 @@
 				   		{% endif %}
 				   		</div>
 				   		<div class="data-detall-cell duplicat-impressio"></div>
-				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat }}</div>
+				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</div>
 				   		<div class="data-detall-cell duplicat-actions"></div>
 			   		</li>
 			   		{% endif %}

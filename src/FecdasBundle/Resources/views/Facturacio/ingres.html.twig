@@ -165,7 +165,9 @@
 			});
 
 			$("select#rebut_club").change( function() {
-				location.reload();
+				var url = $("#formingres").attr("action");
+				url += '?codi='+$(this).val();
+				document.location = url; 
 			});
 
 			$("input#rebut_import").change( function() {
@@ -186,11 +188,13 @@
 				
 				params.push( {'name':'comandesSelected','value': JSON.stringify(comandes)} );
 				$.post(url, params, function(data) {
+
 					window.location = "{{ path('FecdasBundle_ingresos') }}";
+
 				}).fail( function(xhr, status, error) {
-					 // xhr.status + " " + xhr.statusText, status, error
-					 var sms = smsResultAjax('KO', xhr.responseText);
-					 
+					 // xhr.status + " " + xhr.statusText, xhr.responseText status, error
+					 var sms = smsResultAjax('KO', xhr.responseText );
+					 $("#llista-candidates	.alert").remove();
 					 $("#llista-candidates").prepend(sms);
 				});
 			});  
@@ -204,7 +208,7 @@
 					return $(b).attr('data-total')*1 - $(a).attr('data-total')*1;					
 				}).each(function() { 
 					var curImport = $(this).attr('data-total')*1;
-					if (curImport <= totalIngres) {
+					if (curImport > 0 && curImport <= totalIngres) {
 						totalIngres -= curImport;
 						$(this).click();
 					}

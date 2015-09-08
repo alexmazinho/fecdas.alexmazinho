@@ -194,12 +194,12 @@ class EntityParte extends EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getDetallsAcumulats()
+	public function getDetallsAcumulats($baixes = false)
 	{
 		$acumulades = parent::getDetallsAcumulats();	
 
  	  	foreach ($this->llicencies as $llicencia) {
-    		if (!$llicencia->esBaixa()) {
+    		if (!$llicencia->esBaixa() || $baixes == true) {
     			$producte = $llicencia->getCategoria()->getProducte();		
     			
 				$acumulades[$producte->getCodi()]['producte'] .= '<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms();  
@@ -362,11 +362,11 @@ class EntityParte extends EntityComanda {
     		$headers .= "MIME-Version: 1.0\r\n";
     		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
     		/* Error punyetero. Debug */
-    		if ($source == null) {
+    		/*if ($source == null) {
 	    		error_log("getDataCaducitat amb dataalta null (Origen desconegut)", 1, "alexmazinho@gmail.com",$headers);
     		} else {
     			error_log("getDataCaducitat amb dataalta null (".$source.")", 1, "alexmazinho@gmail.com",$headers);
-    		}
+    		}*/
     		$this->setDataalta(new \DateTime());
     	}
     	
@@ -531,11 +531,6 @@ class EntityParte extends EntityComanda {
     	return  ($this->tipus->getEs365() == 0 and $this->dataalta >= $inianual) or
     		($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);*/
     	   
-    	/* Dataalta <= avui and avui <= Caducitat */
-    	error_log('id=>'.$this->id.' avui => '.$currentdate->format('Y-m-d'));
-    	error_log($this->dataalta->format('Y-m-d') .'=>'.$this->getDataCaducitat("isVigent")->format("Y-m-d"));
-    	
-    	
     	return ( $this->dataalta->format('Y-m-d') <= $currentdate->format('Y-m-d') 
     			&& $currentdate->format('Y-m-d') <= $this->getDataCaducitat("isVigent")->format("Y-m-d"));
     }
@@ -560,16 +555,17 @@ class EntityParte extends EntityComanda {
     public function getInfoLlistat() {
     	// Missatge que es mostra a la llista de partes
     	$textInfo = parent::getInfoLlistat();
+    	if (trim($textInfo) != '') $textInfo .= PHP_EOL;
+		
+    	if ($this->esBaixa()) return $textInfo.'Llista anul·lada';
     	
-    	if ($this->esBaixa()) return $textInfo.'<br/>Llista anul·lada';
-    	
-    	if ($this->pendent) return $textInfo.'<br/>Pendent confirmació pagament';
+    	if ($this->pendent) return $textInfo.'Pendent confirmació pagament';
 
-    	if ($this->isVigent() == false && $this->isPassat() == false) return $textInfo.'<br/>Aquesta llista encara no està vigent';
+    	if ($this->isVigent() == false && $this->isPassat() == false) return $textInfo.'Aquesta llista encara no està vigent';
     	
-		if (!$this->comandaConsolidada()) return $textInfo.'<br/>Factura pendent';
+		if (!$this->comandaConsolidada()) return $textInfo.'Factura pendent';
 
-		if ($this->isPassat() == true) return $textInfo.'<br/>Validesa de les llicències finalitzada';
+		if ($this->isPassat() == true) return $textInfo.'Validesa de les llicències finalitzada';
 
     	return $textInfo;
     }

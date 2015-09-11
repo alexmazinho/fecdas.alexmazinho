@@ -86,7 +86,7 @@
 			{% for parte in partes %}
 		   		<li class="data-detall 
 		   		{% if parte.impres == false  %} parte-per-imprimir {% endif %}
-				{% if parte.pendent == true  %} parte-pendent {% endif %}
+				{% if parte.comandaPagada == false  %} parte-pendent {% endif %}
 		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
 			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
@@ -96,7 +96,7 @@
 		   			<div class="data-detall-cell parterecents-preu">{{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parterecents-actions">
-		   			{% if parte.pendent == true  %}
+		   			{% if parte.comandaPagada == false  %}
 		   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
 		   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   			{% endif %}

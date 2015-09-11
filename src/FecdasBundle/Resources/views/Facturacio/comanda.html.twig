@@ -15,7 +15,7 @@
 {% block body %}
      <div class="row">
 	     <header>
-	        <div class="col-md-8"><h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Comanda</h1></div>
+	        <div class="col-md-8"><h1><a href="{{ path('FecdasBundle_comandes') }}">Llistat de comandes</a> > Comanda {{ comanda.estat }}</h1></div>
 	    	<div class="col-md-4  col-last-right">
 				<div class="buttons-top-bootstrap">
 					<div id="comanda-save" class="button-top">
@@ -58,7 +58,7 @@
 				</div>
 			 </div>
 			
-			 {% if comanda.rebut is null %}
+			 {% if comanda.comandaPagada == false %}
 			 <div class="col-md-3">
 			 	<div class="form-group">
 					{{ form_label(form.numrebut, 'Data pagament') }}
@@ -181,11 +181,12 @@
 				 </ul> -->
 				 </div>
 				 <div class="table-scroll">
-		   			<ul id="list-data">
+		   			<ul id="list-data" class="detalls-comanda">
 				 <!-- <ul class="detalls"> -->
 					{% set detall = form.detalls.vars.prototype %}
 					{% set id = -1 %}
 					{% set fila = 0 %}
+					{% set detallbaixa = false %}
 					{% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}			
 					{% if form.detalls|length == 0 %}
 					<li class="comanda-detall-buida"><div class="alert alert-success" role="alert">La comanda encara no té cap detall</div></li>
@@ -193,7 +194,16 @@
 						{% for key, detall in form.detalls %}
 							{% set id = detall.vars.data.id %}
 							{% set fila = loop.index %}
-							{% if comanda.esBaixa or detall.vars.data.esbaixa == false %}
+							{% set detallbaixa = false %}
+							{% if detall.vars.data.esbaixa == false %}
+								{% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}
+							{% endif %}
+						{% endfor %}
+						{% for key, detall in comanda.detalls %}
+							{% if detall.esbaixa == true %}
+								{% set id = detall.id %}
+								{% set fila = loop.index %}
+								{% set detallbaixa = true %}
 								{% include 'FecdasBundle:Facturacio:comandadetall.html.twig' %}
 							{% endif %}
 						{% endfor %}	
@@ -295,7 +305,7 @@
 		var $collectionHolder;
 		
 		$(document).ready(function(){
-			setMenuActive("menu-admcomanda");
+			setMenuActive("menu-admcomandes");
 
 
 			$("select#comanda_club").select2({
@@ -332,7 +342,7 @@
 
 			// Afegir detalls
 			// Get the ul that holds the collection of tags
-		    $collectionHolder = $('ul.detalls');
+		    $collectionHolder = $('ul.detalls-comanda');
 
 			// Delegat
 		    $collectionHolder.on( "click", ".baixa-detall", function(e) {
@@ -340,9 +350,10 @@
 		        e.preventDefault();
 				
 		        var parentRow = $(this).parents('li.detall-form-row');
-		        // remove the li for the tag form
-		        
-		        parentRow.remove();
+
+		        parentRow.find('.comanda_detalls_unitats').val(0);
+
+		        parentRow.hide();
 	    	});
 			
 			

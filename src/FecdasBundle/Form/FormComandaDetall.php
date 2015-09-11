@@ -76,7 +76,7 @@ class FormComandaDetall extends AbstractType {
 							'required' => true,
 							'scale' 	=> 0,
 							'data'		=> $unitats,
-							'disabled' 	=> $disabledFields,
+							//'disabled' 	=> $disabledFields,
 					));
 					
 					$form->add ( 'descomptedetall', 'integer', array (

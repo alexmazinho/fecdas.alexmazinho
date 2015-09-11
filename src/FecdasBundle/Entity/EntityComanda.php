@@ -201,28 +201,24 @@ class EntityComanda {
 	/**
 	 * Comanda 
 	 * format nou amb any  LXXXXX/20XX
-	 * format antic si comanda <= 2015  LXXXXXX
 	 *
 	 * @return string
 	 */
 	public function getNumComanda() {
-		if ($this->dataentrada->format("Y") <= 2015) return $this->getPrefixAlbara().str_pad($this->id, 6,"0", STR_PAD_LEFT);
 		return $this->getPrefixAlbara().str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
 	}
-	
-	
+
 	/**
 	 * Comanda curt
 	 * format nou amb any  LXXXXX/XX
-	 * format antic si comanda <= 2015
 	 * 
 	 * @return string
 	 */
 	public function getNumComandaCurt() {
-		if ($this->dataentrada->format("Y") <= 2015) return $this->getNumComanda();
 		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("y");
 	}
 	
+		
 	/**
 	 * Adds a comentari
 	 * 
@@ -343,7 +339,7 @@ class EntityComanda {
 	
 	public function getEstat()
 	{
-		if ($this->databaixa != null) return 'baixa';
+		if ($this->esBaixa() == true) return 'baixa';
 		return $this->comandaPagada() != true?'pendent':'';
 	}
 	
@@ -457,7 +453,8 @@ class EntityComanda {
 	public function getDetallComanda($producte)
 	{
 		foreach ($this->detalls as $d) {
-			if (!$d->esBaixa() && $d->getProducte() == $producte) return $d;
+			//if (!$d->esBaixa() && $d->getProducte()->getId() == $producte->getId()) return $d;
+			if ($d->getProducte()->getId() == $producte->getId()) return $d;
 		}
 		return null;
 	}

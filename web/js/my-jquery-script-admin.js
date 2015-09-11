@@ -182,7 +182,9 @@
 			  var tipusPagament = JSON.parse( JSON.stringify(data), function (k, v) {
 				    return v; 
 			  });
-			  
+			  console.log(data.length);
+			  console.log(JSON.stringify(data));
+			  console.log(tipusPagament.length);
 			  var htmlOpcio = ''; 
 			  $.each(tipusPagament, function(i, item) {
 			       htmlOpcio = "<option value='"+i+"'>"+item+"</option>";

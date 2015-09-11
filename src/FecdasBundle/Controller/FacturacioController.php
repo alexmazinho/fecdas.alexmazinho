@@ -29,10 +29,10 @@ class FacturacioController extends BaseController {
 	public function traspascomptabilitatAction(Request $request) {
 		// http://www.fecdasnou.dev/traspascomptabilitat
 		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+			throw new \Exception("Usuari no autenticat");
 	
 		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+			throw new \Exception("Usuari sense privilegis");
 	
 		$page = $request->query->get('page', 1);
 			
@@ -65,12 +65,12 @@ class FacturacioController extends BaseController {
 				//'empty_value' 	=> false,
 				'format' 		=> 'dd/MM/yyyy'))
 			->add('datafins', 'date', array(
-							'disabled' 		=> false,
-							'widget' 		=> 'single_text',
-							'input' 		=> 'datetime',
-							'empty_value' 	=> false,
-							'data'			=> $this->getCurrentDate('now'),
-							'format' 		=> 'dd/MM/yyyy',
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'data'			=> $this->getCurrentDate('now'),
+				'format' 		=> 'dd/MM/yyyy',
 			));
 		
 		return $this->render('FecdasBundle:Facturacio:traspas.html.twig',
@@ -211,17 +211,18 @@ class FacturacioController extends BaseController {
 			02015022710023700025720001  F. 00237/2015  CAT191                                                                               Factura: 00716/2015                     00237/15        0000000105.00D000000000000000  (SALT)
 		 * 
 		 */
-		$apuntsComandesAltes = $this->generarAssentamentsComandes($enviament, false);
+		//$apuntsComandesAltes = $this->generarAssentamentsComandes($enviament, false);
+		//$apuntsComandesBaixes = $this->generarAssentamentsComandes($enviament, true);
+		//$apuntsRebutsAltes	= $this->generarAssentamentsRebuts($enviament, false);
+		//$apuntsRebutsBaixes	= $this->generarAssentamentsRebuts($enviament, true);
+		//$assentaments = array_merge($apuntsComandesAltes, $apuntsComandesBaixes, $apuntsRebutsAltes, $apuntsRebutsBaixes);
+				
+		$apuntsFactures = $this->generarAssentamentsFactures($enviament);
+		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament);
 		
-		$apuntsComandesBaixes = $this->generarAssentamentsComandes($enviament, true);
+		$assentaments = array_merge($apuntsFactures, $apuntsRebuts);
 		
-		$apuntsRebutsAltes	= $this->generarAssentamentsRebuts($enviament, false);
-		
-		$apuntsRebutsBaixes	= $this->generarAssentamentsRebuts($enviament, true);
-		
-		$assentaments = array_merge($apuntsComandesAltes, $apuntsComandesBaixes, $apuntsRebutsAltes, $apuntsRebutsBaixes);
-		
-		return $assentaments;
+		return $assentaments; 
 	}
 
 	/**
@@ -233,18 +234,205 @@ class FacturacioController extends BaseController {
 	 * @param string $baixes
 	 * @return multitype:string
 	 */
-	private function generarAssentamentsComandes($enviament, $baixes = false) {
+	private function generarAssentamentsFactures($enviament) {
+		$em = $this->getDoctrine()->getManager();
+		
+		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		
+		$strQuery .= " WHERE (f.dataentrada >= :ini AND f.dataentrada <= :final) ";
+		$strQuery .= " AND f.import != 0 ";
+		$strQuery .= " AND (f.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
+		$strQuery .= " ORDER BY f.dataentrada";
+		
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
+		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
+		
+		$factures = $query->getResult();
+
+		$totalFactures = 0;	
+		$totalAnulacions = 0;
+		$assentaments = array();
+		foreach ($factures as $factura) {
+			if ($factura->esAnulacio()) {
+				$comanda = $factura->getComandaAnulacio();
+				$totalAnulacions++;	
+			} else {
+				$comanda = $factura->getComanda();
+				$totalFactures++;
+			}	
+				
+			$assentament = $this->assentamentFactura($factura, $comanda);
+			
+			$assentaments = array_merge($assentaments, $assentament);
+		}
+		$enviament->setFactures($totalFactures);
+		//$enviament->setAnulacions($totalAnulacions);
+
+		return $assentaments;
+	} 
+	
+	
+		/**
+	 *  Rebuts	=> Club apunt H  + Caixa corresponent apunt D 		
+	 *	Anular rebut => Club apunt H  + Caixa corresponent apunt D  però import negatiu
+	 *
+	 * @param unknown $datainici
+	 * @param unknown $datafinal
+	 * @param string $baixes
+	 * @return multitype:string
+	 */
+	private function generarAssentamentsRebuts($enviament) {
+		$em = $this->getDoctrine()->getManager();
+		
+		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r WHERE ";
+		$strQuery .= " r.import != 0 AND ";
+		$strQuery .= " (r.dataentrada >= :ini AND r.dataentrada <= :final) ";
+		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
+		$strQuery .= " ORDER BY r.dataentrada";
+		
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
+		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
+		
+		$rebuts = $query->getResult();
+
+		$totalRebuts = 0;
+		$assentaments = array();
+		foreach ($rebuts as $rebut) {
+			if ($rebut->esAnulacio()) {
+				$comanda = $rebut->getComandaAnulacio();
+				
+				//$totalAnulacions++;  No sumen anulacions pq són les mateixes que les de les factures	
+			} else {
+				$comanda = $rebut->getComanda();
+				$totalRebuts++;
+			}	
+				
+			$assentament = $this->assentamentRebut($rebut, $comanda);
+			
+			$assentaments = array_merge($assentaments, $assentament);
+				
+		}
+		$enviament->setRebuts($totalRebuts);
+
+		return $assentaments;
+	} 		
+				
+				
+	private function assentamentRebut($rebut, $comanda) {
+		$assentament = array();
+		$signe = ($rebut->esAnulacio() == false?'0':'-');
+		$linia = 1;
+			
+		$data = $rebut->getDatapagament()->format('Ymd');
+		//$numAssenta = str_pad($rebut->getId(), 6, "0", STR_PAD_LEFT);/*str_repeat("0",6);*/
+		$numAssenta = str_repeat("0",6);
+			
+		// APUNT CLUB
+		$club = $rebut->getClub();	
+		$compte = $club->getCompte();
+		$apuntclub = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT);						// Assentament
+		
+		$desc = $this->netejarNom($rebut->getConcepteRebutLlarg(), false);
+		$apuntclub .= str_pad($compte."", 9, " ", STR_PAD_RIGHT).str_pad($desc, 100, " ", STR_PAD_RIGHT);	// Compte
+		
+		$conc = $this->netejarNom($rebut->getConcepteRebutCurt(), false);
+		$doc = $rebut->getNumRebutCurt();
+		$apuntclub .= str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc;											// Concepte
+		$apuntclub .= str_repeat(" ",4).str_repeat(" ",4);
+		
+		$import = $signe.str_pad((number_format($rebut->getImport(), 2, '.', '').''), 12, "0", STR_PAD_LEFT);
+		$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);										// Import
+
+		$assentament[] = $apuntclub;
+			
+		$linia++;
+		// APUNT CAIXA
+		$compte = BaseController::getComptePagament($rebut->getTipuspagament());
+			
+		$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT);
+		$apunt .= str_pad($compte."", 9, " ", STR_PAD_RIGHT).str_pad($desc, 100, " ", STR_PAD_RIGHT);
+		$apunt .= str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc;
+		$apunt .= str_repeat(" ",4).str_repeat(" ",4);
+		$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
+			
+		$assentament[] = $apunt;
+		
+		return $assentaments;
+	}
+	 
+	private function assentamentFactura($factura, $comanda) {
+		$assentament = array();
+		$signe = ($factura->esAnulacio() == false?'0':'-');
+		$linia = 1;
+		
+		$data = $factura->getDatafactura()->format('Ymd');
+		//$numAssenta = str_pad($factura->getId(), 6, "0", STR_PAD_LEFT);//str_repeat("0",6);
+		$numAssenta = str_repeat("0",6);
+		
+		// APUNT CLUB
+		$club = $comanda->getClub();
+		$compte = $club->getCompte();
+		$apuntclub = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT); 						// Assentament
+		
+		
+		$desc = 'PEDIDO '.$comanda->getNumComanda().' '.$this->netejarNom($club->getNom(), false);
+		$apuntclub .= str_pad($compte."", 9, " ", STR_PAD_RIGHT).str_pad($desc, 100, " ", STR_PAD_RIGHT);	// Compte
+		
+		$conc = $this->netejarNom($factura->getConcepte(), false);
+		$doc = $factura->getNumFactura();
+		$apuntclub .= str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc;												// Concepte
+		$apuntclub .= str_repeat(" ",4).str_repeat(" ",4); 
+		
+		$import = $signe.str_pad((number_format(abs($factura->getImport()), 2, '.', '').''), 12, "0", STR_PAD_LEFT);
+		$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);										// Import
+					
+		// Validar que quadren imports
+		$assentament[] = $apuntclub;
+					
+		$linia++;
+
+		$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+				
+		foreach ($detallsArray as $compte => $d) {
+		// APUNT/S PRODUCTE/S
+			$desc = $d['total']." x ".$this->netejarNom($d['producte'], false);
+					
+			$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT);						// Assentament
+			
+			$apunt .= str_pad($compte."", 9, " ", STR_PAD_RIGHT).str_pad($desc, 100, " ", STR_PAD_RIGHT);	// Compte
+						
+			$apunt .= str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);		// Concepte
+
+			$import = $signe.str_pad((number_format($d['import'], 2, '.', '').''), 12, "0", STR_PAD_LEFT);	
+			$apunt .= $import.BaseController::DEBE.str_repeat("0",15);										// Import
+				
+			$assentament[] = $apunt;
+						
+			$linia++;
+		}
+			
+		$factura->setComptabilitat($enviament);
+		
+		return $assentament;
+	} 
+
+
+	 
+	/*private function generarAssentamentsComandes($enviament, $baixes = false) {
+	
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
 		
-		if ($baixes == false) {
+		//if ($baixes == false) {
 			$strQuery .= " WHERE (c.dataentrada >= :ini AND c.dataentrada <= :final) ";
 			$strQuery .= " AND (c.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
-		} else {
-			$strQuery .= " WHERE (c.databaixa >= :ini AND c.databaixa <= :final) ";
-			$strQuery .= " AND (c.comptabilitat IS NOT NULL) ";  // Enviat a compta
-		}
+		//} else {
+		//	$strQuery .= " WHERE (c.databaixa >= :ini AND c.databaixa <= :final) ";
+		//	$strQuery .= " AND (c.comptabilitat IS NOT NULL) ";  // Enviat a compta
+		//}
 		$strQuery .= " ORDER BY c.dataentrada";
 		
 		$query = $em->createQuery($strQuery);
@@ -256,135 +444,71 @@ class FacturacioController extends BaseController {
 		$comandes = $enviament->getComandes();
 		$assentaments = array();
 		foreach ($result as $comanda) {
-			$importTotal = $comanda->getTotalDetalls();
-			
-			if ($importTotal > 0) {	
-				$comandes++;
-				$linia = 1;
-				$signe = ($baixes == false?'0':'-');
-				
-				$data = $comanda->getDataentrada()->format('Ymd');
-				
-				$numAssenta = str_pad($comanda->getId(), 6, "0", STR_PAD_LEFT);/*str_repeat("0",6);*/
-				
-				$desc = $this->netejarNom($comanda->getConcepteComanda(), false);
-				$conc = 'FRA '.$comanda->getFactura()->getNumFactura();
-				$doc = $comanda->getNumAssentament();
-				$import = $signe.str_pad((number_format($importTotal, 2, '.', '').''), 12, "0", STR_PAD_LEFT);
-				// Apunt club
-				$club = $comanda->getClub();
-				$compte = $club->getCompte();
-				
-				$apuntclub = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
-				$apuntclub .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
-				$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);
-					
-				// Validar que quadren imports
-				$assentaments[] = $apuntclub;
-					
-				$linia++;
-				
-				$detalls = $comanda->getDetallsAcumulats();
-				
-				foreach ($detalls as $compte => $d) {
-					// Apunt/s producte/s
-					
-					$desc = $d['total']." x ".$this->netejarNom($d['producte'], false);
-						
-					$import = $signe.str_pad((number_format($d['import'], 2, '.', '').''), 12, "0", STR_PAD_LEFT);
-					
-					$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
-					$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
-					$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
-					
-					$assentaments[] = $apunt;
-						
-					$linia++;
-				}
-				
-				$comanda->getFactura()->setComptabilitat($enviament);
-			} else {
-				$comanda->addComentari("Comanda amb import 0 no s'envia a comptabilitat");
-			}
+			$assentament = $this->assentamentComanda($comanda);
+			$assentaments = array_merge($assentaments, $assentament);
 		}
-		$enviament->setComandes($comandes);
+		//$enviament->setComandes($comandes);
 
 		return $assentaments;
 	}	
 
-	/**
-	 *  Rebuts	=> Club apunt H  + Caixa corresponent apunt D 		
-	 *	Anular rebut => Club apunt H  + Caixa corresponent apunt D  però import negatiu
-	 *
-	 * @param unknown $datainici
-	 * @param unknown $datafinal
-	 * @param string $baixes
-	 * @return multitype:string
-	 */
-	private function generarAssentamentsRebuts($enviament, $baixes = false) {
-		$em = $this->getDoctrine()->getManager();
+	private function assentamentComanda($comanda) {
+		$assentament = array();
 		
-		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r WHERE ";
-		
-		if ($baixes == false) {
-			$strQuery .= " r.import > 0 AND ";
-		} else {
-			$strQuery .= " r.import < 0 AND ";
-		}
-		$strQuery .= " (r.datapagament >= :ini AND r.datapagament <= :final) ";
-		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
-		
-		$strQuery .= " ORDER BY r.datapagament";
-		
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
-		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
-		
-		$result = $query->getResult();
-
-		$rebuts = $enviament->getRebuts();
-		$assentaments = array();
-		foreach ($result as $rebut) {
-			$rebuts++;
+		$importTotal = $comanda->getTotalDetalls();
+			
+		if ($importTotal > 0) {	
+			$comandes++;
 			$linia = 1;
-			$signe = ($baixes == false?'0':'-');
-			$data = $rebut->getDatapagament()->format('Ymd');
-			
-			$numAssenta = str_pad($rebut->getId(), 6, "0", STR_PAD_LEFT);/*str_repeat("0",6);*/
-			
-			$desc = $this->netejarNom($rebut->getConcepteRebutLlarg(), false);
-			$conc = $rebut->getConcepteRebutCurt();
-			$doc = $rebut->getNumRebutCurt();
-			$import = $signe.str_pad((number_format($rebut->getImport(), 2, '.', '').''), 12, "0", STR_PAD_LEFT);
-			
+			//$signe = ($baixes == false?'0':'-');
+			$signe = '0';
+				
+			$data = $comanda->getDataentrada()->format('Ymd');
+				
+			$numAssenta = str_pad($comanda->getId(), 6, "0", STR_PAD_LEFT);//str_repeat("0",6);
+				
+			$desc = $this->netejarNom($comanda->getConcepteComanda(), false);
+			$conc = 'FRA '.$comanda->getFactura()->getNumFactura();
+			$doc = $comanda->getNumAssentament();
+			$import = $signe.str_pad((number_format($importTotal, 2, '.', '').''), 12, "0", STR_PAD_LEFT);
 			// Apunt club
-			$club = $rebut->getClub();	
+			$club = $comanda->getClub();
 			$compte = $club->getCompte();
-
-			$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
-			$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
-			$apunt .= $import.BaseController::HABER.str_repeat("0",15);
-
-			$assentaments[] = $apunt;
-			
+				
+			$apuntclub = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
+			$apuntclub .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
+			$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);
+					
+			// Validar que quadren imports
+			$assentament[] = $apuntclub;
+					
 			$linia++;
-			// Apunt caixa
-			$compte = BaseController::getComptePagament($rebut->getTipuspagament());
-			
-			$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
-			$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
-			$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
-			
-			$assentaments[] = $apunt;
-			
-			$linia++;
-			$rebut->setComptabilitat($enviament);
+				
+			$detalls = $comanda->getDetallsAcumulats();
+				
+			foreach ($detalls as $compte => $d) {
+			// Apunt/s producte/s
+					
+				$desc = $d['total']." x ".$this->netejarNom($d['producte'], false);
+						
+				$import = $signe.str_pad((number_format($d['import'], 2, '.', '').''), 12, "0", STR_PAD_LEFT);
+					
+				$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
+				$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
+				$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
+				
+				$assentament[] = $apunt;
+						
+				$linia++;
+			}
+				
+			$comanda->getFactura()->setComptabilitat($enviament);
+		} else {
+			$comanda->addComentari("Comanda amb import 0 no s'envia a comptabilitat");
 		}
-		$enviament->setRebuts($rebuts);
-		
-		return $assentaments;
+		return $assentament;
 	}
-	
+	*/
 	
 	
 	//private function downloadFile($fitxer, $path, $desc) {
@@ -759,7 +883,9 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		$comanda = null;
 		$comandaOriginalBaixa = false;
+		$originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
 		$maxNumComanda = $this->getMaxNumEntity(date('Y'), BaseController::COMANDES) + 1;
+		
 		if ($request->getMethod() != 'POST') {
 			$id = $request->query->get('id', 0);
 		
@@ -781,8 +907,6 @@ class FacturacioController extends BaseController {
 		
 			if ($id > 0) $comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
 		
-			$originalDetalls = new ArrayCollection();
-			
 			if ($comanda == null) {
 				
 				// Comanda nova. Crear factura
@@ -797,40 +921,37 @@ class FacturacioController extends BaseController {
 			} else {
 				// Create an ArrayCollection of the current detalls
 				foreach ($comanda->getDetalls() as $detall) {
-					$originalDetalls->add($detall);
+					$originalDetalls->add(clone $detall);
 				}
 			}
 			$comandaOriginalBaixa = $comanda->esBaixa();
 		}
 		
-		$comandaPagat = $comanda->comandaPagada(); // Per detectar nous pagaments 
+		$comandaPagadaOriginal = $comanda->comandaPagada(); // Per detectar nous pagaments 
 		
 		$form = $this->createForm(new FormComanda(), $comanda);
 		if ($request->getMethod() == 'POST') {
 			try {
 				$form->handleRequest($request);
 				if ($form->isValid()) {
+					$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
+					$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
+					$informarPagament = false;
+					if (!$comandaPagadaOriginal && $strDatapagament != '') $informarPagament = true;  
 					
-					if ($comandaOriginalBaixa == false &&
-						$comanda->esBaixa()) {
-						// Baixa nova	
-						$this->baixaComanda($comanda);
-					} else {
-						
-						// Validacions comuns i anotacions stock
-						$this->tramitarComanda($comanda, $originalDetalls, $form);
+					// Validacions comuns i anotacions stock
+					$this->tramitarComanda($comanda, $originalDetalls, $informarPagament, $form);
 
-						// Si nou pagament, crear rebut
-						$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
-						$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
-						if (!$comandaPagat) {
-							$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
-							$this->crearRebut($datapagament, $tipusPagament, $comanda);
-						} 
+					// Si nou pagament, crear rebut
+					$strDatapagament = (isset($data['datapagament']) && $data['datapagament'] != ''?$data['datapagament']:'');
+					$tipusPagament = (isset($data['tipuspagament']) && $data['tipuspagament'] != ''?$data['tipuspagament']:'');
+					if (!$comandaPagadaOriginal && $strDatapagament != '') {
+							
+						$datapagament = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatapagament." 00:00:00");
+						$this->crearRebut($datapagament, $tipusPagament, $comanda);
+					} 
 
-						if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
-						
-					}
+					if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda ' ); //$form->getErrorsAsString()
@@ -840,13 +961,14 @@ class FacturacioController extends BaseController {
 		
 				$this->get('session')->getFlashBag()->add('sms-notice',	'La comanda s\'ha desat correctament');
 				 
-				$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $comanda->getId().' '.$comanda->getInfoComanda());
+				//$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $comanda->getId().' '.$comanda->getInfoComanda());
 				// Ok, retorn form sms ok
 				return $this->redirect($this->generateUrl('FecdasBundle_editarcomanda',
 						array( 'id' => $comanda->getId() )));
 				 
 			} catch (\Exception $e) {
 				// Ko, mostra form amb errors
+				
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 			}
 		}
@@ -877,14 +999,27 @@ class FacturacioController extends BaseController {
 			$this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
 			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 		}
-	
-		$this->baixaComanda($comanda);
 		
+		$data = $this->getCurrentDate();
+		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+		
+		//foreach ($detalls as $detall) {
+		foreach ($comanda->getDetalls() as $detall) {
+			if (!$detall->esBaixa()) $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats(), $maxNumFactura, $maxNumRebut);
+
+			$maxNumFactura++;
+			$maxNumRebut++;
+		}
+		$comanda->setDatamodificacio(new \DateTime());
+		$comanda->setDatabaixa(new \DateTime());
+	
+	
 		$em->flush();
 	
 		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId());
 		$this->get('session')->getFlashBag()->add('sms-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
-		return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
+		return $this->redirect($this->generateUrl('FecdasBundle_comandes', array('baixes' => true)));
 	}
 	
 	public function pagamentcomandaAction(Request $request) {
@@ -1562,8 +1697,6 @@ class FacturacioController extends BaseController {
 	
 	protected function consultaComandes($codi, $nf, $af, $nr, $ar, $baixes, $pendents, $strOrderBY = 'c.dataentrada', $direction = 'desc' ) {
 		
-		error_log("consultaComandes:".$codi.$nf.$af. $nr. $ar. $baixes. $pendents. $strOrderBY.$direction);
-		
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT c, f, r FROM FecdasBundle\Entity\EntityComanda c LEFT JOIN c.factura f LEFT JOIN c.rebut r ";
@@ -1876,6 +2009,18 @@ class FacturacioController extends BaseController {
 		
 		$batchSize = 20;
 		
+		$strQuery = "SELECT * FROM m_clubs c ORDER BY c.codi ";
+		$stmt = $em->getConnection()->prepare($strQuery);
+		$stmt->execute();
+		$aux = $stmt->fetchAll();
+		$i = 0;
+		$clubs = array();
+		while (isset($aux[$i])) {
+			$clubs[ $aux[$i]['compte'] ] = $aux[$i];
+			$i++;
+		}
+		
+		
 		$strQuery = "SELECT p.id, p.importparte, p.dataentradadel, p.databaixadel,";
 		$strQuery .= " p.clubdel, t.descripcio as tdesc, c.categoria as ccat,";
 		$strQuery .= " c.producte as cpro, c.simbol as csim, p.datapagament, p.estatpagament,";
@@ -1898,16 +2043,6 @@ class FacturacioController extends BaseController {
 		//$partesAbans2015 = $stmt->fetchAll();
 		
 		
-		$strQuery = "SELECT * FROM m_clubs c ORDER BY c.codi ";
-		$stmt = $em->getConnection()->prepare($strQuery);
-		$stmt->execute();
-		$aux = $stmt->fetchAll();
-		$i = 0;
-		$clubs = array();
-		while (isset($aux[$i])) {
-			$clubs[ $aux[$i]['compte'] ] = $aux[$i];
-			$i++;
-		}
 		
 		
 		//echo "Total partes: " . count($partesAbans2015) . PHP_EOL;
@@ -1991,7 +2126,7 @@ class FacturacioController extends BaseController {
 		$strQuery .= " p.clubdel, t.descripcio as tdesc, c.categoria as ccat,";
 		$strQuery .= " c.producte as cpro, c.simbol as csim, p.datapagament, p.estatpagament,";
 		$strQuery .= " p.dadespagament, p.importpagament,	p.comentari, p.datafacturacio, p.numfactura, ";
-		$strQuery .= " e.preu, e.iva ";
+		$strQuery .= " e.preu, e.iva, ";
 		$strQuery .= " COUNT(l.id) as total FROM m_partes p LEFT JOIN m_llicencies l ON p.id = l.parte ";
 		$strQuery .= " INNER JOIN m_tipusparte t ON p.tipus = t.id ";
 		$strQuery .= " INNER JOIN m_categories c ON c.tipusparte = t.id ";
@@ -2056,9 +2191,9 @@ class FacturacioController extends BaseController {
 			 /****************************   PARTES i DUPLICATS  ********************************/
 			 /***********************************************************************************/
 			
-			error_log('Primer DUPLI '.$duplicats2015[0]['datapeticio']);
+			if (count($duplicats2015) > 0) error_log('Primer DUPLI '.$duplicats2015[0]['datapeticio']);
 			error_log('Primer PARTE '.$partes2015[0]['dataentradadel']);
-			echo 'Primer DUPLI '.$duplicats2015[0]['datapeticio'].'<br/>';
+			if (count($duplicats2015) > 0) 'Primer DUPLI '.$duplicats2015[0]['datapeticio'].'<br/>';
 			echo 'Primer PARTE '.$partes2015[0]['dataentradadel'].'<br/>';
 			
 			$year = 2014;
@@ -2171,7 +2306,7 @@ class FacturacioController extends BaseController {
 	
 		$strQuery = "SELECT * FROM apunts_2015 a ";
 		//$strQuery .= " ORDER BY a.data, a.num, a.dh ";
-		$strQuery .= " ORDER BY a.id ";
+		$strQuery .= " ORDER BY a.num ";
 	
 		$stmt = $em->getConnection()->prepare($strQuery);
 		$stmt->execute();
@@ -2273,63 +2408,26 @@ class FacturacioController extends BaseController {
 						
 				}
 				
-				$facturaAux = $altres['D'][0]['concepte'];	// FW:00063/2015 o Factura: 00076/2015 o Fra. 2541/2015
-				$pos = strpos($facturaAux, 'Factura');
-				if ($pos === false) {
-					$pos = strpos($facturaAux, 'Fra');
-					if ($pos === false) $numFactura = substr($facturaAux, 3, 5);
-					else $numFactura = substr($facturaAux, 5, 4);
-				}
-				else $numFactura = substr($facturaAux, 9, 5);
-				
-				if (!is_numeric($numFactura)) {
-					error_log("ERROR 5 Número de factura no numèrica=> ".$id." ".$num." ".$compteD." => ".$facturaAux);
-					echo "ERROR 5 Número de factura no numèrica=> ".$id." ".$num." ".$compteD." => ".$facturaAux."<br/>";
-					return;
-				}
-				
-				$rebutAux = $altres['D'][0]['document'];		// 00010/15
-				$numRebut = substr($rebutAux, 0, 5);
-				
-				$numRebut = $numRebut * 1;  // Number
-				
-				$import = $altres['D'][0]['importapunt'];
-				
-				if (!isset( $clubs[$compteH])) {
-					error_log("ERROR 7 Club pagador no existeix=> ".$num." ".$compteH);
-					echo "ERROR 7 Club pagador no existeix=> ".$num." ".$compteH."<br/>";
-					return;
-				}
-			
-				$statement = $em->getConnection()->executeQuery("SELECT * FROM m_factures WHERE num = ".($numFactura*1));
-				$factExistent = $statement->fetch();
-				
-				if ($factExistent == null) {
-					error_log("ERROR 9 Factura no trobada => ".$id." ".$num." ".$compteD." ".($numFactura*1));
-					echo "ERROR 9 Factura no trobada => ".$id." ".$num." ".$compteD." ".($numFactura*1)."<br/>";
-					echo "ERROR 9 Factura ".($numFactura*1)." no trobada => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom'] .")<br/>";
-					return;
-				}
-				
-				
-				// Count no funciona bé
-				$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
-				
-				$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
-				$comanda = $statement->fetch();
-				
-				if ($comanda == null) {
-					error_log("ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD. " ".$numFactura);
-					echo "ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD. " ".$numFactura."<br/>";
-					return;
-				}
-				
-				$statement = $em->getConnection()->executeQuery("SELECT * FROM m_partes WHERE numfactura = '".$numFactura."/2015'");
-				$parte = $statement->fetch();
-				
+				$concepteAux = $altres['D'][0]['concepte'];	// FW:00063/2015 o Factura: 00076/2015 o Fra. 2541/2015 o FW:00510/2015 o F. 1456/2014
+				$ingres = true; 
+				$numFactura = 'NA';
+
 				$datapagament = $data;
 				$dataentrada = $data; 
 				$dadespagament = null;
+				$comentari = str_replace("'","''", $altres['D'][0]['concepte']);
+
+				$rebutAux = $altres['D'][0]['document'];		// 00010/15
+				$numRebut = substr($rebutAux, 0, 5);
+						
+				$numRebut = $numRebut * 1;  // Number
+				$import = $altres['D'][0]['importapunt'];
+
+				if (!isset( $clubs[$compteH])) {
+					error_log("WARNING - REBUTS/INGRESOS 7 Club pagador no existeix=> (4310162, 4310164, 4310172, 4310191)  ".$num." ".$compteH);
+					echo "WARNING - REBUTS/INGRESOS 7 Club pagador no existeix=> (4310162, 4310164, 4310172, 4310191)  ".$num." ".$compteH."<br/>";
+					return;
+				}
 				
 				$tipuspagament = null;
 				switch ($compteD) {
@@ -2348,74 +2446,125 @@ class FacturacioController extends BaseController {
 						error_log("ERROR 7 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD);
 						echo "ERROR 7 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD."<br/>";
 						return;
-							
+										
 						break;
 				}
 				
+				$numFactures = $this->extraerFactures(strtolower($concepteAux), 'R');
 				
-				if ($parte != null && $tipuspagament == BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA) {
-					
-					if ($parte['estatpagament'] == 'TPV OK' || $parte['estatpagament'] == 'TPV CORRECCIO')  $tipuspagament = BaseController::TIPUS_PAGAMENT_TPV;
-					
-					/*
-					if ($parte['estatpagament'] == 'TPV OK' || $parte['estatpagament'] == 'TPV CORRECCIO')  $tipuspagament = BaseController::TIPUS_PAGAMENT_TPV;
-					if ($parte['estatpagament'] == 'METALLIC GES' || $parte['estatpagament'] == 'METALLIC WEB')  $tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
-					if ($parte['estatpagament'] == 'TRANS WEB') $tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
-					if ($parte['estatpagament'] == 'TRANS GES') $tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
-					*/
-					$dataentrada = $parte['dataentradadel'];
-					if ($parte['datapagament'] != null && $parte['datapagament'] != '') {
-						$datapagament = $parte['datapagament'];
-						$dadespagament = $parte['dadespagament'];
+				if ($numFactures != null) {
+					// Ok, trobadaes 
+				
+					$comandesIdPerActualitzar = array();
+										
+					foreach ($numFactures as  $numFactura) {
+						
+						$statement = $em->getConnection()->executeQuery("SELECT * FROM m_factures WHERE num = ".($numFactura*1));
+						$factExistent = $statement->fetch();
+							
+						if ($factExistent == null) {
+							error_log("ERROR 9 Factura no trobada => ".$id." ".$num." ".$compteD." ".($numFactura*1));
+							echo "ERROR 9 Factura -".($numFactura)."- no trobada, concepte =>".$concepteAux."<= => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom'] .")<br/>";
+							return;
+						} else {
+							// Count no funciona bé
+							//$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
+								
+							$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
+							$comanda = $statement->fetch();
+								
+							if ($comanda == null) {
+								error_log("ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD. " ".$numFactura);
+								echo "ERROR 11 Comanda no trobada => ".$id." ".$num." ".$compteD. " ".$numFactura."<br/>";
+								return;
+							}
+								
+						}
+						
+						/*$statement = $em->getConnection()->executeQuery("SELECT * FROM m_partes WHERE numfactura = '".$numFactura."/2015'");
+						$parte = $statement->fetch();
+							
+						if ($parte != null && $tipuspagament == BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA) {
+								
+							if ($parte['estatpagament'] == 'TPV OK' || $parte['estatpagament'] == 'TPV CORRECCIO')  $tipuspagament = BaseController::TIPUS_PAGAMENT_TPV;
+								
+								
+								if ($parte['estatpagament'] == 'TPV OK' || $parte['estatpagament'] == 'TPV CORRECCIO')  $tipuspagament = BaseController::TIPUS_PAGAMENT_TPV;
+								if ($parte['estatpagament'] == 'METALLIC GES' || $parte['estatpagament'] == 'METALLIC WEB')  $tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
+								if ($parte['estatpagament'] == 'TRANS WEB') $tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
+								if ($parte['estatpagament'] == 'TRANS GES') $tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
+								
+								//$dataentrada = $parte['dataentradadel'];
+
+								if ($parte['datapagament'] != null && $parte['datapagament'] != '') {
+									$datapagament = $parte['datapagament'];
+									$dadespagament = $parte['dadespagament'];
+								}
+								
+							//}
+							// Insertar/Actualitzar rebut
+						
+						}	*/
+						
+						$comandesIdPerActualitzar[] = $comanda['id'];
 					}
 					
+					$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
+					$query .= "('".$datapagament."',".$numRebut.",".$import;
+					$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
+					$query .= ",'".$clubs[$compteH]['codi']."')";
+					$em->getConnection()->exec( $query );
+					$rebutId = $em->getConnection()->lastInsertId();
+					
+					foreach ($comandesIdPerActualitzar as  $comandaId) {	
+							
+						$query = "UPDATE m_comandes SET rebut = ".$rebutId." WHERE id = ". $comandaId;
+		
+						$em->getConnection()->exec( $query );
+					}
+				} else {
+					// cercar ingrés
+					
+					$concepteAux = strtolower( $altres['D'][0]['concepte'] );	// 	Ingres a compte saldo Club
+					$pos = strpos($concepteAux, 'ingres');
+					if ($pos === false) {
+						$pos = strpos($concepteAux, 'compte');
+						if ($pos === false) {
+							$pos = strpos($concepteAux, 'liquida');
+							if ($pos === false) {
+								error_log("WARNING 5 no detectat ni factura ni ingrés => ".$id." ".$num." ".$compteD." => ".$concepteAux);
+								echo "WARNING 5 no detectat ni factura ni ingrés => ".$id." ".$num." ".$compteD." => ".$concepteAux."<br/>";
+								//return;
+							}
+						} 
+					}
+					
+					$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
+					$query .= "('".$datapagament."',".$numRebut.",".$import;
+					$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
+					$query .= ",'".$clubs[$compteH]['codi']."')";
+					$em->getConnection()->exec( $query );
 				}
-				
-				
-				// Insertar/Actualitzar rebut
-				
-				$comentari = "Rebut comanda ".$comanda['num']." ".str_replace("'","''",$comanda['comentaris']);
-				
-				$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
-				$query .= "('".$datapagament."',".$numRebut.",".$import;
-				$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
-				$query .= ",'".$clubs[$compteH]['codi']."')";
-				
-				//$maxnums['maxnumrebut']++;
-					
-				$em->getConnection()->exec( $query );
-				
-				$rebutId = $em->getConnection()->lastInsertId();
-				
-				$query = "UPDATE m_comandes SET rebut = ".$rebutId." WHERE id = ". $comanda['id'];
-				
-				//$maxnums['maxnumrebut']++;
-					
-				$em->getConnection()->exec( $query );
-				
 				$em->getConnection()->commit();
 				$em->getConnection()->beginTransaction(); // suspend auto-commit
-				
+					
 			}
 			
 			if ($compteD >= 4310000 && $compteD <= 4310999) {
 				// Deutor club, Factura 
 				if (!isset( $clubs[$compteD])) {
-					error_log("ERROR 15 Club deutor no existeix=> ".$id." ".$num." ".$compteD);
-					echo "ERROR 15 Club deutor no existeix=> ".$id." ".$num." ".$compteD."<br/>";
+					error_log("WARNING - COMANDES 15 Club deutor no existeix=> (4310162, 4310164, 4310172, 4310191) ".$id." ".$num." ".$compteD);
+					echo "WARNING - COMANDES 15 Club deutor no existeix=> (4310162, 4310164, 4310172, 4310191) ".$id." ".$num." ".$compteD."<br/>";
 					return;
 				}
 				
 				$club = $clubs[$compteD];
-				
-				$facturaAux = $altres['D'][0]['concepte'];	// W-F0063_ 10636110MAS 1AFC_  o F0019_1AFC_
-				$pos = strpos($facturaAux, 'W-F');
-				if ($pos === false) $numFactura = substr($facturaAux, 1, 4);
-				else $numFactura = substr($facturaAux, 3, 4);
+				$concepteAux = $altres['D'][0]['concepte'];
+				$numFactura = $this->extraerFactures($concepteAux, 'F');
 				
 				if (!is_numeric($numFactura)) {
-					error_log("ERROR 16 Número de factura no numèrica=> ".$id." ".$num." ".$compteD);
-					echo "ERROR 16 Número de factura no numèrica=> ".$id." ".$num." ".$compteD."<br/>";
+					error_log("ERROR 16 Número de factura no numèrica=> ".$numFactura."(".$id." ".$num." ".$compteD.")");
+					echo "ERROR 16 Número de factura no numèrica=> ".$numFactura."(".$id." ".$num." ".$compteD.")<br/>";
 					return;
 				}
 				
@@ -2448,24 +2597,26 @@ class FacturacioController extends BaseController {
 					$importDetalls += $altres['H'][$i]['importapunt'];
 				}
 				
-				if ($import != $importDetalls)  {
-					
-					error_log("ERROR 20 suma detalls incorrecte=> ".$id." ".$num." ".$compteH." ".$import." <> ".$importDetalls." => ".count($altres['H']));
-					echo "ERROR 20 suma detalls incorrecte=> ".$id." ".$num." ".$compteH." ".$import." <> ".$importDetalls." => ".count($altres['H'])."<br/>";
+				if (abs($import - $importDetalls) > 0.01)  {
+					 
+					error_log("ERROR 20 suma detalls incorrecte=> D ".$altres['D'][0]['num']." - ".$altres['D'][0]['concepte']." ==> H ".json_encode($altres['H']));
+					echo "ERROR 20 suma detalls incorrecte=> D ".$altres['D'][0]['num']." - ".$altres['D'][0]['concepte']."(".$import.")".
+							" ==> H ".json_encode($altres['H'])."(".$importDetalls.")"."<br/>";
 					//return;
 				}
 			
 				if ($tipusAnterior <= 0 || $tipusAnterior >= 6)  error_log("ERROR 22 tipus producte desconegut => ".$id." ".$num." ".$compteH);
 				
+				// Dupluicats 7590002 7590000 7590004 7090000
 				
-				if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_LLICENCIES &&
-					$tipusAnterior != BaseController::TIPUS_PRODUCTE_DUPLICATS) {
+				
+				if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_LLICENCIES) {
 					// Insertar factura
 					$textComanda = 'Comanda '.BaseController::getTipusProducte($tipusAnterior);
 					
-					$query = "INSERT INTO m_factures (datafactura, num, import, concepte, dataentrada, datapagament) VALUES ";
+					$query = "INSERT INTO m_factures (datafactura, num, import, concepte, dataentrada, comptabilitat) VALUES ";
 					$query .= "('".$data."',".$numFactura.",".$import.",'"."Factura - ".$textComanda."'";
-					$query .= ",'".$data."',NULL)";
+					$query .= ",'".$data."', 1)";
 					
 					$em->getConnection()->exec( $query );
 					
@@ -2476,45 +2627,50 @@ class FacturacioController extends BaseController {
 					//error_log("1=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>");
 					//echo "1=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";
 					
-					// Insertar comanda
-					$query = "INSERT INTO m_comandes (comptabilitat, comentaris, dataentrada, databaixa, club, num, rebut,factura, tipus) VALUES ";
-					$query .= "(1, '".$textComanda."', '".$data."'";
-					$query .= ",NULL,'".$club['codi']."',".$maxnums['maxnumcomanda'];
-					$query .= ", ".($rebutId==0?"NULL":$rebutId).", ".($facturaId==0?"NULL":$facturaId).",'A')";
 					
-					$maxnums['maxnumcomanda']++;
-					
-					$em->getConnection()->exec( $query );
-					
-					$comandaId = $em->getConnection()->lastInsertId();
-					
-					for ($i = 0; $i < count($altres['H']); $i++) {
-						// Insertar detall
-						$compteH = $altres['H'][$i]['compte'];
-						$producte = $productes[$compteH];
-						$import = $altres['H'][$i]['importapunt'];
-						$total = $producte['preu']==0 ? 1 : round($altres['H'][$i]['importapunt']/$producte['preu']);
-						$anota = $total.'x'.str_replace("'","''",$producte['descripcio']);
-					
-						$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada, databaixa) VALUES ";
-						$query .= "(".$comandaId.",".$producte['id'].",".$total.",".round($import/$total,2).",".($producte['iva']!=null?$producte['iva']:"NULL").", 0, '".$anota."',";
-						$query .= "'".$data."',NULL)"; 
-					
+					if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_DUPLICATS) {
+						// Insertar comanda
+						$query = "INSERT INTO m_comandes (comentaris, dataentrada, databaixa, club, num, rebut,factura, tipuscomanda) VALUES ";
+						$query .= "('".$textComanda."', '".$data."'";
+						$query .= ",NULL,'".$club['codi']."',".$maxnums['maxnumcomanda'];
+						$query .= ", ".($rebutId==0?"NULL":$rebutId).", ".($facturaId==0?"NULL":$facturaId).",'A')";
+						
+						$maxnums['maxnumcomanda']++;
+						
 						$em->getConnection()->exec( $query );
-					}
-					
-					/*
-					$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
-					$query .= "('".$datapagament."',".$numRebut.",".$import;
-					$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
-					$query .= ",'".$clubs[$compteH]['codi']."')";*/
-					
-					//error_log("2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>");
-					//echo "2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";
-					if ($flush) {
-						$em->getConnection()->commit();
-						$em->getConnection()->beginTransaction(); // suspend auto-commit
-						$em->clear();
+						
+						$comandaId = $em->getConnection()->lastInsertId();
+						
+						for ($i = 0; $i < count($altres['H']); $i++) {
+							// Insertar detall
+							$compteH = $altres['H'][$i]['compte'];
+							$producte = $productes[$compteH];
+							$import = $altres['H'][$i]['importapunt'];
+							$total = $producte['preu']==0 ? 1 : round($altres['H'][$i]['importapunt']/$producte['preu']);
+							$anota = $total.'x'.str_replace("'","''",$producte['descripcio']);
+							
+							$preuunitat = ($total == 0?$import:round($import/$total,2));
+						
+							$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
+							$query .= "(".$comandaId.",".$producte['id'].",".$total.",".$preuunitat.",".($producte['iva']!=null?$producte['iva']:"NULL").", 0, '".$anota."',";
+							$query .= "'".$data."')"; 
+						
+							$em->getConnection()->exec( $query );
+						}
+						
+						/*
+						$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club) VALUES ";
+						$query .= "('".$datapagament."',".$numRebut.",".$import;
+						$query .= ", ".($dadespagament==null?"NULL":"'".$dadespagament."'").",".$tipuspagament.",'".$comentari."','".$dataentrada."'";
+						$query .= ",'".$clubs[$compteH]['codi']."')";*/
+						
+						//error_log("2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>");
+						//echo "2=====================================> ".$maxnums['maxnumcomanda']." ".$id." ".$num." ".$compteH."<br/>";
+						if ($flush) {
+							$em->getConnection()->commit();
+							$em->getConnection()->beginTransaction(); // suspend auto-commit
+							$em->clear();
+						}
 					}
 				}
 			}
@@ -2526,6 +2682,54 @@ class FacturacioController extends BaseController {
 		
 	}
 	
+	private function extraerFactures($concepte, $tipus) {
+		$numFactura = 'NA';
+		if ($tipus == 'R') { // Rebut				
+			$pos = strpos($concepte, 'factura');
+			if ($pos === false) {
+				$pos = strpos($concepte, 'fra');
+				if ($pos === false) {
+					$pos = strpos($concepte, 'fw');
+					if ($pos === false) $numFactura = substr($concepte, 3, 4);  // F. 1234/2014
+					else $numFactura = substr($concepte, 3, 5);
+				}
+				else $numFactura = substr($concepte, 5, 4);
+			}
+			else $numFactura = substr($concepte, 9, 5);
+			
+			if (is_numeric($numFactura)) return array( $numFactura );  // Trobada
+				
+			// factura: 1234-1388-1448/2015
+			$concepte = str_replace('factura:', '', $concepte);
+			$concepte = str_replace('factura', '', $concepte);
+			$concepte = str_replace('fra.', '', $concepte);
+			$concepte = str_replace('fra', '', $concepte);
+			$concepte = str_replace('/2015', '', $concepte);
+			$concepte = str_replace('/', '', $concepte);
+			$concepte = str_replace('/201', '', $concepte);
+			$concepte = str_replace('- 150´-', '', $concepte);
+			
+			$testArrayFactures = explode("-", trim($concepte));
+			
+			foreach ($testArrayFactures as $key => $numFactura) {
+				if (!is_numeric( trim($numFactura) )) return null;
+			}
+			return $testArrayFactures;
+				
+		}
+			
+		// SELECT * FROM `apunts_2015` WHERE `compte` BETWEEN 4310000 AND 4310999 AND dh = 'D'
+		// W-F0063_ 10636110MAS 1AFC_  o F0019_1AFC_
+		if ($tipus == 'F') { // Factura
+			$pos = strpos($concepte, 'W-F');
+			if ($pos === false) $numFactura = substr($concepte, 1, 4);
+			else $numFactura = substr($concepte, 3, 4);
+		}				
+		return trim($numFactura);
+	}
+				
+	
+	
 	private function insertComandaDuplicat($clubs, $duplicat, &$maxnums, $flush = false) {
 	
 		$em = $this->getDoctrine()->getManager();
@@ -2536,15 +2740,15 @@ class FacturacioController extends BaseController {
 		$desc = str_replace("'","''",$duplicat['pdescripcio']);
 		$observa = str_replace("'","''",$duplicat['observacions']);
 	
-		$query = "INSERT INTO m_comandes (id, comptabilitat, comentaris, dataentrada, databaixa, club, num, tipus) VALUES ";
-		$query .= "(".$duplicat['id'].", 1, '".$desc."','".$duplicat['datapeticio']."'";
+		$query = "INSERT INTO m_comandes (id, comentaris, dataentrada, databaixa, club, num, tipuscomanda) VALUES ";
+		$query .= "(".$duplicat['id'].", '".$desc."','".$duplicat['datapeticio']."'";
 		$query .= ",".($duplicat['databaixadel']==null?"NULL":"'".$duplicat['databaixadel']."'").",'".$duplicat['clubdel']."',".$maxnums['maxnumcomanda'].",'D')";
 	
 		$em->getConnection()->exec( $query );
 	
-		$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada, databaixa) VALUES ";
+		$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
 		$query .= "(".$duplicat['id'].",".$duplicat['pid'].", 1,".$preu.",".($iva!=null?$iva:"NULL").", 0, ".($duplicat['observacions']==null?"NULL":"'".$observa."'").",";
-		$query .= "'".$duplicat['datapeticio']."',".($duplicat['databaixadel']==null?"NULL":"'".$duplicat['databaixadel']."'").")";
+		$query .= "'".$duplicat['datapeticio']."')";
 	
 		$maxnums['maxnumcomanda']++;
 
@@ -2561,7 +2765,7 @@ class FacturacioController extends BaseController {
 	
 		if (isset($partes[0])) {
 			$parte = $partes[0];
-			$desc = str_replace("'","''",$parte['tdesc']);
+			$desc = $parte['total'].'x'.str_replace("'","''",$parte['tdesc']);
 			$rebutId = 0;
 			$facturaId = 0;
 				
@@ -2597,11 +2801,9 @@ class FacturacioController extends BaseController {
 				
 				$factArray = explode("/",$parte['numfactura']);
 	
-				$query = "INSERT INTO m_factures (datafactura, num, import, concepte, dataentrada, datapagament) VALUES ";
+				$query = "INSERT INTO m_factures (datafactura, num, import, concepte, dataentrada, comptabilitat) VALUES ";
 				$query .= "('".$parte['datafacturacio']."',".$factArray[0].",".$parte['importparte'].",'".$textLlista."'";
-				$query .= ",'".$parte['dataentradadel']."',".($parte['datapagament']==null?"NULL":"'".$parte['datapagament']."'").")";
-	
-				//error_log($query);
+				$query .= ",'".$parte['dataentradadel']."', 1)";
 	
 				$em->getConnection()->exec( $query );
 	
@@ -2610,9 +2812,10 @@ class FacturacioController extends BaseController {
 				$em->getConnection()->beginTransaction(); // suspend auto-commit
 			}
 				
-			$query = "INSERT INTO m_comandes (id, comptabilitat, comentaris, dataentrada, databaixa, club, num, rebut,factura, tipus) VALUES ";
-			$query .= "(".$parte['id'].", 1, '".$desc."', '".$parte['dataentradadel']."'";
-			$query .= ",".($parte['databaixadel']==null?"NULL":"'".$parte['databaixadel']."'").",'".$parte['clubdel']."',".$maxnums['maxnumcomanda'];
+			$query = "INSERT INTO m_comandes (id, comentaris, dataentrada, databaixa, club, num, rebut,factura, tipuscomanda) VALUES ";
+			$query .= "(".$parte['id'].", '".$desc."', '".$parte['dataentradadel']."'";
+			//$query .= ",".($parte['databaixadel']==null?"NULL":"'".$parte['databaixadel']."'").",'".$parte['clubdel']."',".$maxnums['maxnumcomanda'];
+			$query .= ",".($parte['databaixadel']==null?"NULL":"'".$parte['databaixadel']."'").",'".$parte['clubdel']."',".$parte['id'];
 			$query .= ", ".($rebutId==0?"NULL":$rebutId).", ".($facturaId==0?"NULL":$facturaId).",'P')";
 	
 			$em->getConnection()->exec( $query );
@@ -2623,9 +2826,9 @@ class FacturacioController extends BaseController {
 				$preu 	= (isset($parte['preu'])?$parte['preu']:0);
 				$iva	= (isset($parte['iva'])?$parte['iva']:0);
 				
-				$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada, databaixa) VALUES ";
+				$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
 				$query .= "(".$parte['id'].",".$parte['cpro'].",".$total.", ".$preu.", ".($iva > 0?$iva:"NULL") .", 0, '".$anota."',";
-				$query .= "'".$parte['dataentradadel']."',".($parte['databaixadel']==null?"NULL":"'".$parte['databaixadel']."'").")";
+				$query .= "'".$parte['dataentradadel']."')";
 			
 				$em->getConnection()->exec( $query );
 			}

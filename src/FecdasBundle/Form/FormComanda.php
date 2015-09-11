@@ -86,8 +86,8 @@ class FormComanda extends AbstractType {
 				$form->add('detalls', 'collection', array(
 						'type' 			=> new FormComandaDetall(),
 						'allow_add'    	=> true,
-						'allow_delete' 	=> true,
-						'by_reference' 	=> false,
+						//'allow_delete' 	=> false,
+						//'by_reference' 	=> false,
 						//'data'			=> $comanda->getDetalls()
 				));
 				
@@ -95,7 +95,7 @@ class FormComanda extends AbstractType {
 						'required' 	=> false,
 						'disabled' 	=> true,
 						'mapped' 	=> false,
-						'scale' => 2,
+						'scale' 	=> 2,
 						'data'		=> $comanda->getTotalDetalls()
 				));
 				

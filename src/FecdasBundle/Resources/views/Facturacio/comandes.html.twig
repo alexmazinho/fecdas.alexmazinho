@@ -134,17 +134,21 @@
 			   			{% endif %}
 		   				{% for rebut in comanda.rebutsanulacions %} 
 		   					<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
-		   						<span class="red">(-){{ rebut.numfactura }}</span>
+		   						<span class="red">(-){{ rebut.numrebut }}</span>
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% endfor %}
 					</div>
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell comanda-actions">
 						{% if admin == true  %}
+							{% if comanda.comandaPagada == false  %}
+				   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': comanda.id }) }}" 
+				   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+		   					{% endif %}
 							<a class="comanda-action-edit link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id }) }}" alt="Editar" title="Editar">
 								<i class="fa fa-pencil text-info blue"></i></a>
 							{% if not comanda.esBaixa %}			   				
-								<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id }) }}" alt="Baixa" title="Baixa">
+								<a class="comanda-action-baixa link" href="{{ path('FecdasBundle_baixacomanda', { 'id': comanda.id} ) }}" alt="Baixa" title="Baixa">
 			   						<i class="fa fa-trash-o text-danger red"></i></a>
 			   				{% endif %}
 			   			{% else %}
@@ -220,6 +224,25 @@
 		
 		// Comanda filtre clubs disponible per admin's
 		{% if admin == true  %} 
+
+			$('.comanda-action-baixa').click( function(e) {
+				e.preventDefault();
+	
+				var url = $(this).attr('href');
+				
+				var strHtml = '<p>Segur que vols anul·lar la comanda?</p>';
+				dialegConfirmacio(strHtml, 'Baixa comanda', 'auto', 400, function() { 
+					
+					window.location = url;
+					 
+				}, function() { });
+			});
+		
+			$('.confirmar-pagament').click(function(e) {
+				e.preventDefault();
+				confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+			});
+		    
 			$("select#form_cerca").select2({
 				minimumInputLength: 2,
 				allowClear: true,

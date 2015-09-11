@@ -950,6 +950,8 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->clear();
 			
 		
+		$personaOriginal = null;
+		$categoriaOriginal = null;
 		try {
 			$p = $requestParams['parte'];
 			$l = $requestParams['llicencia'];
@@ -992,6 +994,9 @@ class PageController extends BaseController {
 				$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($lid);
 					
 				if ($llicencia == null) throw new \Exception('No s\'ha trobat la llicència '.$lid);
+				
+				$personaOriginal = clone $llicencia->getPersona();
+				$categoriaOriginal = clone $llicencia->getCategoria();
 					
 				$parte = $llicencia->getParte();
 			}
@@ -1009,6 +1014,8 @@ class PageController extends BaseController {
 			if ($request->getMethod() == 'POST' &&
 				isset($requestParams['action']) && 
 				$requestParams['action'] != 'persona') {
+				
+				if ($parte->comandaConsolidada() == true) throw new \Exception('No es poden fer canvis sobre aquesta llista ');
 				
 				if ($requestParams['action'] == 'remove') {
 					// Errors generen excepció
@@ -1033,7 +1040,20 @@ class PageController extends BaseController {
 
 					$llicencia->setDatamodificacio($this->getCurrentDate());
 					
-					$detall = $this->addParteDetall($parte, $llicencia);
+					if ($lid == 0) {
+						$detall = $this->addParteDetall($parte, $llicencia);
+						if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+					} else {
+						// Canvis de categoria o de federat de la llicència (només en els 20 minuts després d'introduir la llicència)
+						if ( ($personaOriginal != null &&  $personaOriginal->getId() != $llicencia->getPersona()->getId() ) ||  
+							$categoriaOriginal != null && $categoriaOriginal->getId() != $llicencia->getCategoria()->getId() ) {
+								
+								$detall = $this->removeParteDetall($parte, $llicencia);
+								if ($detall == null) throw new \Exception('S\'ha produït un error actualitzant la llicència');
+								$detall = $this->addParteDetall($parte, $llicencia);
+								if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència a la llista');
+						} 
+					}
 					
 					// Comprovació datacaducitat
 					if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
@@ -1099,7 +1119,6 @@ class PageController extends BaseController {
 
 		$this->removeParteDetall($parte, $llicencia);
 		
-		/// !!!!! CREAR FACTURA NEGATIVA i SI PAGADA REBUT NEGATIUS ....
 	}
 	
 	private function validaParteLlicencia($parte, $llicencia) {

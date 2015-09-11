@@ -1,6 +1,8 @@
+{% if detallbaixa == false %}
+
 <li class="{% if id == -1 %}detall-form-row-prototype{% else %}detall-form-row{% endif %}">
 	<div class="comanda-detall-form">
-		<div class="col-id col-seq">{{ form_widget(detall.id) }}</div>
+		<div class="col-id col-seq hidden">{{ form_widget(detall.id) }}</div>
 		<div class="data-detall-cell col-producte">
 			{{ form_widget(detall.producte, { 'attr': {'class': 'form-control form-control-left comanda_detalls_producte'} }) }}{{ form_errors(detall.producte)  }}</div>
 		<div class="data-detall-cell col-unitats">{{ form_widget(detall.unitats, { 'attr': {'class': 'form-control form-control-center comanda_detalls_unitats'} }) }}{{ form_errors(detall.unitats)  }}</div>
@@ -24,3 +26,23 @@
 		</div>
 	</div>
 </li>
+
+{% else %}
+
+<li class="detall-form-row">
+	<div class="comanda-detall-form">
+		<div class="col-id col-seq hidden">{{ detall.id }}</div>
+		<div class="data-detall-cell col-producte">{{ detall.producte.descripcio  }}</div>
+		<div class="data-detall-cell col-unitats">{{ detall.unitatsbaixa  }}</div>
+		<div class="data-detall-cell col-preuunitat">{{ detall.preuunitat|number_format(2, ',', '.') }}€</div>
+		<div class="data-detall-cell col-descompte">{{ detall.descomptedetall }}</div>
+		<div class="data-detall-cell col-ivaunitat">{{ detall.ivaunitat  }}</div>
+		<div class="data-detall-cell col-totalnet">{{ detall.totalnet }}</div>
+		<div class="data-detall-cell col-totaliva">{{ detall.total - detall.totalnet }}</div>
+		<div class="data-detall-cell col-total">{{ detall.total }}</div>
+		<div class="data-detall-cell col-comentaris">{{ detall.anotacions }}</div>
+		<div class="data-detall-cell col-actions"></div>
+	</div>
+</li>
+
+{% endif %}

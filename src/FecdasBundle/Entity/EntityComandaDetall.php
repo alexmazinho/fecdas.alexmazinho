@@ -31,10 +31,15 @@ class EntityComandaDetall {
 	protected $producte; // FK taula m_productes
 
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=false)
 	 */
 	protected $unitats;
 	
+	/**
+	 * @ORM\Column(type="integer", nullable=false)
+	 */
+	protected $unitatsbaixa;
+
 	/**
 	 * @ORM\Column(type="decimal", precision=6, scale=2)
 	 */
@@ -72,6 +77,7 @@ class EntityComandaDetall {
 	{
 		$this->id = 0;
 		$this->unitats = 1;
+		$this->unitatsbaixa = 0;
 		$this->preuunitat = 0;
 		$this->ivaunitat = 0;
 		$this->dataentrada = new \DateTime();
@@ -90,7 +96,7 @@ class EntityComandaDetall {
 	
 		$this->comanda 	= $comanda;
 		$this->producte = $producte;
-		$this->unitats = ($unitats < 1?1:$unitats);
+		$this->unitats =  $unitats;
 		$this->preuunitat = ($producte != null?$producte->getCurrentPreu():0);
 		$this->ivaunitat = ($producte != null?$producte->getCurrentIva():0);
 		$this->descomptedetall = $descomptedetall;
@@ -106,9 +112,8 @@ class EntityComandaDetall {
 	public function getTotalNet($baixes = false)
 	{
 		if ($this->producte == null) return 0;	
-		
-		if ($this->esBaixa() && $baixes == false) return 0; 
-		
+
+		if ($this->esBaixa() == true && $baixes == false) return 0; 
 		/*$preu 	= $this->producte->getCurrentPreu();
 		$iva 	= $this->producte->getCurrentIva();*/
 		
@@ -132,12 +137,14 @@ class EntityComandaDetall {
 	 */
 	public function getDetallsArray($baixes = false)
 	{
-		return array('total' => $this->unitats, 
+		return array('total' => $this->unitats,
+					'totalbaixa' => $this->unitatsbaixa,	 
 					'preuunitat' => $this->preuunitat,
 					'ivaunitat' => $this->ivaunitat,
-					'import' => $this->getTotal($baixes),
+					'import' => round($this->getTotal($baixes), 2),
 					//'producte' => mb_convert_encoding($this->producte->getDescripcio(), 'UTF-8'),
 					'producte' => $this->producte->getDescripcio(),
+					'descompte' => $this->descomptedetall,
 					'codi' => $this->producte->getCodi(),
 		);
 
@@ -178,7 +185,7 @@ class EntityComandaDetall {
     /**
      * Set unitats
      *
-     * @param string $unitats
+     * @param integer $unitats
      * @return EntityComandaDetall
      */
     public function setUnitats($unitats)
@@ -191,13 +198,36 @@ class EntityComandaDetall {
     /**
      * Get unitats
      *
-     * @return string 
+     * @return integer 
      */
     public function getUnitats()
     {
         return $this->unitats;
     }
 
+    /**
+     * Set unitatsbaixa
+     *
+     * @param integer $unitatsbaixa
+     * @return EntityComandaDetall
+     */
+    public function setUnitatsbaixa($unitatsbaixa)
+    {
+        $this->unitatsbaixa = $unitatsbaixa;
+
+        return $this;
+    }
+
+    /**
+     * Get unitatsbaixa
+     *
+     * @return integer 
+     */
+    public function getUnitatsbaixa()
+    {
+        return $this->unitatsbaixa;
+    }
+	
     /**
      * Set preuunitat
      *

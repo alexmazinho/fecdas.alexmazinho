@@ -55,11 +55,6 @@ class EntityFactura {
 	protected $comandaanulacio; 
 	
 	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $datapagament;
-	
-	/**
 	 * @ORM\ManyToOne(targetEntity="EntityComptabilitat")
 	 * @ORM\JoinColumn(name="comptabilitat", referencedColumnName="id")
 	 */
@@ -93,10 +88,10 @@ class EntityFactura {
 		$this->num = $num;
 		$this->import = $import;
 		$this->concepte = $concepte;
-		$this->detalls = $detalls;
+		$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE);
 		$this->comanda = $comanda;
 		if ($comanda != null) {
-			if ($import = 0) $this->import = $comanda->getTotalDetalls();
+			if ($import == 0) $this->import = $comanda->getTotalDetalls();
 			if (trim($concepte) == '') $this->concepte = $comanda->getConcepteComanda();
 			if ($detalls == null || count($detalls) == 0) {
 				$detalls = $comanda->getDetallsAcumulats();
@@ -251,21 +246,7 @@ class EntityFactura {
 		$this->comandaanulacio = $comandaanulacio;
 	}
 	
-	/**
-	 * @return datetime
-	 */
-	public function getDatapagament() {
-		return $this->datapagament;
-	}
-	
-	/**
-	 * @param datetime $datapagament
-	 */
-	public function setDatapagament($datapagament) {
-		$this->datapagament = $datapagament;
-	}
-	
-	    /**
+    /**
      * Set comptabilitat
      *
      * @param \FecdasBundle\Entity\EntityComptabilitat $comptabilitat

@@ -147,63 +147,46 @@ class PDFController extends BaseController {
 		
 		$pdf->SetFont('dejavusans', '', 8, '', true);
 		
-		$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
-				<tr style="background-color:#CCCCCC; border-color: #000000;">
-				<td width="65" align="center">Referència</td>
-				<td width="215" align="left">Concepte</td>
-				<td width="40" align="center">Uds.</td>
-				<td width="60" align="center">Preu<br/>unitat</td>
-				<td width="70" align="center">Subtotal</td>
-				<td width="40" align="center">IVA</td>
-				<td width="60" align="center">Import<br/>IVA</td>
-				<td width="100" align="right">TOTAL</td>
-				</tr>';
+		if ($factura->getDetalls() != null) {
+			$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
+					<tr style="background-color:#CCCCCC; border-color: #000000;">
+					<td width="65" align="center">Referència</td>
+					<td width="215" align="left">Concepte</td>
+					<td width="40" align="center">Uds.</td>
+					<td width="60" align="center">Preu<br/>unitat</td>
+					<td width="70" align="center">Subtotal</td>
+					<td width="40" align="center">IVA</td>
+					<td width="60" align="center">Import<br/>IVA</td>
+					<td width="100" align="right">TOTAL</td>
+					</tr>';
+			
+			$facturaSenseIVA = true;
+			$mindetalls = 10;
 		
-		$facturaSenseIVA = true;
-		$mindetalls = 10;
-		
-		
-		$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
-		
-		foreach ($detallsArray as $lineafactura) {
-			if ($lineafactura->ivaunitat > 0) $facturaSenseIVA = false;
-				
-			$preuSenseIVA = $lineafactura->total * $lineafactura->preuunitat;
-			$valorIVA = $preuSenseIVA * $lineafactura->ivaunitat;
-				
-			$tbl .= '<tr style="border-bottom: none;">';
-			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->codi.'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura->producte .'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->total .'</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->preuunitat, 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->ivaunitat*100, 0, ',', '.') . '%</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
-			$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
-			$tbl .= number_format($lineafactura->import, 2, ',', '.') . '€</span></td>';
-			$tbl .= '</tr>';
-				
-			$mindetalls--;
-		}
-		/*
-		if ($factura->esAnulacio()) {
-				
+			// Sistema nou del 2015.
+			$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+			
+			foreach ($detallsArray as $lineafactura) {
+				if ($lineafactura->ivaunitat > 0) $facturaSenseIVA = false;
+					
+				$preuSenseIVA = $lineafactura->total * $lineafactura->preuunitat;
+				$valorIVA = $preuSenseIVA * $lineafactura->ivaunitat;
+					
 				$tbl .= '<tr style="border-bottom: none;">';
-				$tbl .= '<td style="border-right: 1px solid black;" align="center">--</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $factura->getConcepte() .'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="center">--</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">--</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->codi.'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura->producte .'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->total .'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->preuunitat, 2, ',', '.') . '€</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->ivaunitat*100, 0, ',', '.') . '%</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
 				$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
-				$tbl .= number_format($factura->getImport(), 2, ',', '.')  . '€</span></td>';
+				$tbl .= number_format($lineafactura->import, 2, ',', '.') . '€</span></td>';
 				$tbl .= '</tr>';
-				
+					
 				$mindetalls--;
 			
-		} else {
-			
+				/*	
 			foreach ($comanda->getDetallsAcumulats(true) as $lineafactura) {
 				if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
 				
@@ -224,23 +207,41 @@ class PDFController extends BaseController {
 				
 				$mindetalls--;
 			}
-		}		*/
-		while ($mindetalls > 0) {
-			$tbl .= '<tr style="border-bottom: none;">';
-			for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
+				*/
+			}
+			while ($mindetalls > 0) {
+				$tbl .= '<tr style="border-bottom: none;">';
+				for ($i = 0; $i < 8; $i++) $tbl .= '<td style="border-right: 1px solid black;">&nbsp;</td>';
+				$tbl .= '</tr>';
+				$mindetalls--;
+			}
+			
+			$tbl .= '<tr style="background-color:#CCCCCC; ">';
+			$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>TOTAL FACTURA:</span></td>';
+			//$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
+			$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($factura->getImport(), 2, ',', '.') .  ' €</span></td>';
 			$tbl .= '</tr>';
-			$mindetalls--;
+			
+			$tbl .= '</table>';
+			
+		} else {
+			$pdf->Ln(20);
+			
+			$pdf->SetFont('dejavusans', '', 16, '', true);	
+				
+			$facturaSenseIVA = $comanda->esParte();
+			
+			$tbl = '<table border="1" cellpadding="50" cellspacing="0" style="color:#555555;">';
+			$tbl .= '<tr><td><p style="line-height: 2;"><b>Factura corresponent a la llista de llicències ' . $comanda->getNumComanda();
+			$tbl .= ' amb un import de '.number_format($factura->getImport(), 2, ',', '.') .  ' €</b></p></td></tr>';
+			$tbl .= '</table>';
+			
 		}
 		
-		$tbl .= '<tr style="background-color:#CCCCCC; ">';
-		$tbl .= '<td colspan="7" align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>TOTAL FACTURA:</span></td>';
-		//$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($comanda->getTotalDetalls(), 2, ',', '.') .  ' €</span></td>';
-		$tbl .= '<td align="right"><span style="font-weight:bold;font-size:12px;"><br/>' . number_format($factura->getImport(), 2, ',', '.') .  ' €</span></td>';
-		$tbl .= '</tr>';
+		$pdf->writeHTML($tbl, false, false, false, false, '');
+			
+		$pdf->Ln(20);
 		
-		$tbl .= '</table>';
-		
-		$pdf->writeHTML($tbl, true, false, false, false, '');
 		
 		if ($facturaSenseIVA == 0) {
 			// set color for text
@@ -253,18 +254,23 @@ class PDFController extends BaseController {
 		$pdf->Ln(5);
 		
 		$pdf->SetTextColor(100, 100, 100); // Gris
-		$pdf->SetFont('dejavusans', '', 16, '', true);
+		$pdf->SetFont('dejavusans', '', 14, '', true);
 
 		if ($factura->esAnulacio()) {
 			$text = '<b>ANUL·LACIÓ FACTURA ORIGINAL '.$comanda->getFactura()->getNumFactura().'</b>';
 		} else {
-			$text = '<b>FACTURA ';
-	
-			$text .= ($comanda->comandaPagada() == true?'PAGADA':'PENDENT DE PAGAMENT');
+			$text = '<b>FACTURA CORRESPONENT A LA COMANDA '.$comanda->getNumComanda().'<br/>';
+
+			if ($comanda->comandaPagada() == true) {
+				$text .= 'PAGADA';
+				
+				$text .= ($comanda->getNumRebuts() > 1?', REBUTS ':', REBUT ');
 			
-			$text .= ($comanda->getNumRebuts() > 1?', REBUTS ':', REBUT ');
-			
-			$text .= $comanda->getLlistaNumsRebuts();
+				$text .= $comanda->getLlistaNumsRebuts();
+				
+			} else {
+				$text .= 'PENDENT DE PAGAMENT';
+			}	
 			$text .= ' </b>';
 		}
 		$pdf->writeHTML($text, true, false, false, false, '');
@@ -286,19 +292,22 @@ class PDFController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-			$reqId = 0;
-			if ($request->query->has('id')) {
-				$reqId = $request->query->get('id');
-				$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
-	
-				if ($rebut != null) {
-					$this->rebuttopdf($rebut);
-				}
+		$reqId = 0;
+		if ($request->query->has('id')) {
+			$reqId = $request->query->get('id');
+			$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
+			if ($rebut != null) {
+				$response = $this->rebuttopdf($rebut);
+
+				$this->logEntryAuth('PRINT FACTURA OK', $reqId);
+				
+				return $response;
 			}
-			/* Error */
-			$this->logEntryAuth('PRINT REBUT KO', $reqId);
-			$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir el rebut, poseu-vos en contacte amb la Federació' );
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		}
+		/* Error */
+		$this->logEntryAuth('PRINT REBUT KO', $reqId);
+		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir el rebut, poseu-vos en contacte amb la Federació' );
+		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
 	private function rebuttopdf($rebut) {
@@ -341,9 +350,11 @@ class PDFController extends BaseController {
 		$pdf->setY($y_ini + 5);
 		$pdf->setX($pdf->getPageWidth() - 87);
 	
+	
+		$titol = 'REBUT '.($rebut->esAnulacio()?'ANUL·LACIÓ':'');
 		$tbl = '<table cellpadding="5" cellspacing="0" style="border: 0.3em solid #333333;">';
 		$tbl .= '<tr style="border: 0.2em solid #333333;"><td colspan="2" width="250" align="center" style="color:#555555;border: 0.2em solid #555555;">';
-		$tbl .= '<span style="font-weight:bold;font-size:16px;">REBUT</span></td></tr>';
+		$tbl .= '<span style="font-weight:bold;font-size:16px;">'.$titol.'</span></td></tr>';
 		$tbl .= '<tr style="border: 0.2em solid #333333;"><td width="125" align="right" style="color:#555555; border: 0.2em solid #333333;">Número:</td>';
 		$tbl .= '<td align="center" style="border: 0.2em solid #333333;"><b>' . $rebut->getNumRebut() . '</b></td></tr>';
 		$tbl .= '<tr style="border: 0.2em solid #333333;"><td align="right" style="color:#555555; border: 0.2em solid #333333;">Data:</td>';
@@ -358,9 +369,10 @@ class PDFController extends BaseController {
 		
 		$pdf->Ln(12);
 		
+		$text = ($rebut->esAnulacio()?'Anul·lació de rebut a favor de:':'Ha rebut de:');
 		$pdf->SetFont('dejavusans', '', 11, '', true);
 		$pdf->SetTextColor(60, 60, 60); // Gris
-		$tbl = '<h3 style="border-bottom: 0.2em solid #333333;">Ha rebut de:</h3>';
+		$tbl = '<h3 style="border-bottom: 0.2em solid #333333;">'.$text.'</h3>';
 		$pdf->writeHTML($tbl, false, false, false, false, '');
 		
 		$pdf->Ln(10);
@@ -388,7 +400,7 @@ class PDFController extends BaseController {
 			
 			$pdf->Ln(20);
 			
-			$tbl = '<h4><i>Ingrés acumulat al saldo del club per valor de: </i><b>'.number_format($rebut->getImport(), 2, ',', '.').' €</b></h4>';
+			$tbl = '<h4><i>Ingrés acumulat al saldo del club per valor de: </i><b>'.number_format($rebut->getImport()*(-1), 2, ',', '.').' €</b></h4>';
 			
 			$pdf->writeHTML($tbl, false, false, false, false, '');
 			
@@ -408,14 +420,14 @@ class PDFController extends BaseController {
 			
 				$pdf->Ln(20);
 			
-				$pdf->SetFont('dejavusans', '', 10, '', true);
+				$pdf->SetFont('dejavusans', '', 9, '', true);
 				$pdf->SetTextColor(0, 0, 0); 	
 					
 				$comanda = $comandes[0]; 
 				$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-color: #000000; border-collapse: collapse;">
 						<tr style="background-color:#EEEEEE; border-color: #000000;">
-						<td width="65" align="center">Referència</td>
-						<td width="205" align="left">Concepte</td>
+						<td width="75" align="center">Referència</td>
+						<td width="195" align="left">Concepte</td>
 						<td width="40" align="center">Uds.</td>
 						<td width="60" align="center">Preu<br/>unitat</td>
 						<td width="70" align="center">Subtotal</td>
@@ -551,10 +563,9 @@ class PDFController extends BaseController {
 		if ($this->isCurrentAdmin() && $this->get('request')->query->has('tots') && $this->get('request')->query->get('tots') == 1) $currentTots = true;
 		
 		$this->logEntryAuth('PRINT ASSEGURATS', $club->getCodi()." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
-		error_log("0 TCPDF");
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-		error_log("1 TCPDF");
 		$pdf->init(array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
 				true, $club->getNom());
 			
@@ -668,7 +679,6 @@ class PDFController extends BaseController {
 		// Close and output PDF document
 			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // save as...
 		}
-		error_log("2 TCPDF");
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
 		
@@ -1129,8 +1139,6 @@ class PDFController extends BaseController {
 				// Add a page
 				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 
-				error_log($width.'x'.$height);
-	
 	 			$pdf->setVisibility('view'); // or screen
 
 	 			$pdf->Image('images/federativa-cara.jpg', 0, 0, 

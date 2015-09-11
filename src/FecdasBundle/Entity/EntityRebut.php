@@ -113,7 +113,7 @@ class EntityRebut {
 			$this->comentari = "Ingrés a compte del club ".($this->club!=null?$this->club->getNom():'');
 		} else {  // Pagament d'una comanda
 			$this->club = ($club != null?$club:$comanda->getClub());
-			$this->import = ($import != null?$import:$comanda->getTotalDetalls());
+			$this->import = ($import != 0?$import:$comanda->getTotalDetalls());
 
 			if ($import < 0) {
 				$this->comentari = "Rebut anulació comanda ".$comanda->getNumComanda();	
@@ -182,7 +182,7 @@ class EntityRebut {
 			
 		$concepte = '';
 		foreach ($this->comandes as $comanda) {
-			$concepte .= $comanda->getFactura()->getNumFactura().', '; 	
+			$concepte .= $comanda->getLlistaNumsFactures().', '; 	
 		}
 		return substr($concepte, 0, -2);
 		
@@ -310,7 +310,7 @@ class EntityRebut {
 	 * @param \FecdasBundle\Entity\EntityComanda $comandaanulacio
 	 */
 	public function setComandaanulacio(\FecdasBundle\Entity\EntityComanda $comandaanulacio) {
-		$this->comanda = $comandaanulacio;
+		$this->comandaanulacio = $comandaanulacio;
 	}
 
 	/**

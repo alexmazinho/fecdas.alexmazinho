@@ -32,7 +32,7 @@ class EntityPreu {
 	protected $anypreu;
 	
 	/**
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
+	 * @ORM\Column(type="decimal", precision=8, scale=2)
 	 */
 	protected $preu;
 

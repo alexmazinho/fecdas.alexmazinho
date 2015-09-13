@@ -201,8 +201,16 @@ class EntityParte extends EntityComanda {
  	  	foreach ($this->llicencies as $llicencia) {
     		if (!$llicencia->esBaixa() || $baixes == true) {
     			$producte = $llicencia->getCategoria()->getProducte();		
-    			
-				$acumulades[$producte->getCodi()]['producte'] .= '<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms();  
+    			if (isset($acumulades[$producte->getCodi()])) $acumulades[$producte->getCodi()]['producte'] .= '<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms();  
+				else {
+					error_log('revisar llicencies parte i detall comandes id '.$this->id);
+					$acumulades[$producte->getCodi()] = array('total' => 1,	'totalbaixa' => 0, 'preuunitat' => $producte->getPreu($this->dataalta->format('Y')),
+															'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 'import' => $producte->getPreu($this->dataalta->format('Y')),
+															'producte' => $producte->getDescripcio().'<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms(), 
+															'descompte' => 0, 'codi' => $producte->getCodi(),
+					);
+				}
+				
 			}
     	}
 

@@ -478,6 +478,12 @@ FecdasBundle_migrahistoric:
     requirements:
         _method:  GET
 
+FecdasBundle_updatemigrafactures:
+    pattern:  /updatemigrafactures
+    defaults: { _controller: "FecdasBundle:Facturacio:updatemigrafactures" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_resetcomandes:
     pattern:  /resetcomandes
     defaults: { _controller: "FecdasBundle:Facturacio:resetcomandes" }

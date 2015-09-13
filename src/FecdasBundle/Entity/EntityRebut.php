@@ -29,7 +29,7 @@ class EntityRebut {
 	protected $num;
 	
 	/**
-	 * @ORM\Column(type="decimal", precision=8, scale=2)
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
 	protected $import;
 

@@ -41,7 +41,7 @@ class EntityComandaDetall {
 	protected $unitatsbaixa;
 
 	/**
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
+	 * @ORM\Column(type="decimal", precision=8, scale=2)
 	 */
 	protected $preuunitat;  // Preu aplicat en el moment de fer la comanda
 

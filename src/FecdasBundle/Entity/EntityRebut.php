@@ -159,16 +159,16 @@ class EntityRebut {
 	 */
 	public function getConcepteRebutCurt()
 	{
-		if ($this->esAnulacio()) return 'FACTURA ANUL·LACIO: '.$this->comandaanulacio->getFactura()->getNumFactura();		
+		if ($this->esAnulacio()) return 'Fra. ANUL·LACIO: '.$this->comandaanulacio->getFactura()->getNumFactura();		
 			
-		if (count($this->comandes) == 0) return "REBUT: ".$this->getNumRebut();  // Ingrés a compte
+		if (count($this->comandes) == 0) return "A compte ".$this->getNumRebut();  // Ingrés a compte
 		
 		if ($this->getNumFactures() == 1) {
 			$comanda = $this->comandes[0];
 			
-			return 'FACTURA: '.$comanda->getFactura()->getNumFactura();	
+			return 'Fra. '.$comanda->getFactura()->getNumFactura();	
 		}
-		return 'FACTURES: '.$this->getLlistaNumsFactures();
+		return 'Fra/s. '.$this->getLlistaNumsFactures();
 	}
 
 	/**

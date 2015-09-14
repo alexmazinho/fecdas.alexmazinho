@@ -69,7 +69,7 @@
 			   			<div class="data-detall-cell enviament-id hidden">{{ enviament.id }}</div>
 			   			<div class="data-detall-cell enviament-desc">
 			   				<a href="{{ path('FecdasBundle_downloadassentaments', { 'filename' : enviament.fitxer }) }}" target="_blank">
-			   					{{ enviament.fitxer }}</a>{{ enviament.textComptabilitat  }}
+			   					{{ enviament.fitxer }}</a>{{ enviament.textComptabilitat|nl2br  }}
 			   			</div>
 			   			<div class="data-detall-cell enviament-actions">
 							{% if not enviament.esBaixa %}
@@ -158,7 +158,7 @@
 					    /*var link=document.createElement('a');
 					    link.href=data.filename;
 					    link.text=data;*/
-
+						console.log(data.id+" "+data.filename+ " "+data.text);
 					    fileRow = fileRow.replace("__ID__", data.id);
 					    fileRow = fileRow.replace("__FILE__", data.filename);
 					    fileRow = fileRow.replace("__TEXT__", data.text);
@@ -169,7 +169,7 @@
 					    
 					    /*$(wrapper).find('.enviament-desc').append(link);*/
 					    
-					    $( "#formtraspas #list-data" ).append( wrapper );
+					    $( "#formtraspas #list-data" ).prepend( wrapper );
 
 					    $(wrapper).find('.enviament-desc a').click();
 	  						
@@ -177,7 +177,7 @@
 					 // xhr.status + " " + xhr.statusText, status, error
 					 var sms = smsResultAjax('OK', error);
 					 if (xhr.status != 500) {
-						var sms = smsResultAjax('OK', "Error desconegut: " + error );
+						sms = smsResultAjax('OK', "Error desconegut: " + error );
 					 }
 					
 					 $( "#formtraspas" ).before( sms  );

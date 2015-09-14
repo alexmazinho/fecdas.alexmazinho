@@ -164,7 +164,8 @@ class PDFController extends BaseController {
 			$mindetalls = 10;
 		
 			// Sistema nou del 2015.
-			$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+			//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+			$detallsArray = json_decode($factura->getDetalls(), false, 512);
 			
 			foreach ($detallsArray as $lineafactura) {
 				if ($lineafactura->ivaunitat > 0) $facturaSenseIVA = false;

@@ -88,14 +88,16 @@ class EntityFactura {
 		$this->num = $num;
 		$this->import = $import;
 		$this->concepte = $concepte;
-		$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE);
+		//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE);
+		$this->detalls = json_encode($detalls);
 		$this->comanda = $comanda;
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();
 			if (trim($concepte) == '') $this->concepte = $comanda->getConcepteComanda();
 			if ($detalls == null || count($detalls) == 0) {
 				$detalls = $comanda->getDetallsAcumulats();
-				$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
+				//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
+				$this->detalls = json_encode($detalls); // Desar estat detalls a la factura
 			}
 		}
 	}

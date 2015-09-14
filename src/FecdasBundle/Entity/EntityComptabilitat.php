@@ -122,7 +122,10 @@ class EntityComptabilitat {
 	 */
 	public function getTextComptabilitat()
 	{
-		return "  des de ".$this->datadesde->format("d/m/Y"). " fins ".$this->datafins->format("d/m/Y"). " (".$this->factures." factures, ".$this->rebuts." rebuts)";
+		$text = " ". $this->getInfoComptabilitat();	
+		$text .= "  (des de ".($this->datadesde == null?'--':$this->datadesde->format("d/m/Y"));
+		$text .= " fins ".($this->datafins == null?'':$this->datafins->format("d/m/Y")). ". ".$this->factures." factures, ".$this->rebuts." rebuts)";
+		return $text;
 	}
 	
 	

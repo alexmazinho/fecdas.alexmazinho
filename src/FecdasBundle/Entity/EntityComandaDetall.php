@@ -144,6 +144,7 @@ class EntityComandaDetall {
 					'import' => round($this->getTotal($baixes), 2),
 					//'producte' => mb_convert_encoding($this->producte->getDescripcio(), 'UTF-8'),
 					'producte' => $this->producte->getDescripcio(),
+					'abreviatura' => $this->producte->getAbreviatura(),
 					'descompte' => $this->descomptedetall,
 					'codi' => $this->producte->getCodi(),
 		);

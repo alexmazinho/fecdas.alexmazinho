@@ -1104,13 +1104,22 @@ class FacturacioController extends BaseController {
 		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
 		
+		if ($comanda->esParte()) {
+			$parte = $comanda;
+			
+			foreach ($parte->getLlicencies() as $llicencia) {
+				if (!$llicencia->esBaixa()) $this->removeLlicenciaParte($parte, $llicencia);
+			}
+		}
+
 		//foreach ($detalls as $detall) {
 		foreach ($comanda->getDetalls() as $detall) {
 			if (!$detall->esBaixa()) $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats(), $maxNumFactura, $maxNumRebut);
-
+	
 			$maxNumFactura++;
 			$maxNumRebut++;
 		}
+
 		$comanda->setDatamodificacio(new \DateTime());
 		$comanda->setDatabaixa(new \DateTime());
 	

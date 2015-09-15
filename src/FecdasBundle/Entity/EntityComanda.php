@@ -156,7 +156,7 @@ class EntityComanda {
 
     public function mostrarFactura()
     {
-		return ($this->comandaConsolidada() == true);
+		return ($this->comandaConsolidada() == true && $this->factura != null);
     }
 	
 	/**

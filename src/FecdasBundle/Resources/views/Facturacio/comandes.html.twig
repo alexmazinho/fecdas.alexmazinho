@@ -143,7 +143,7 @@
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell comanda-actions">
 						{% if admin == true  %}
-							{% if comanda.comandaPagada == false  %}
+							{% if comanda.comandaPagada != true and comanda.totalDetalls > 0  %}
 				   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': comanda.id }) }}" 
 				   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   					{% endif %}
@@ -154,7 +154,7 @@
 			   						<i class="fa fa-trash-o text-danger red"></i></a>
 			   				{% endif %}
 			   			{% else %}
-							{% if comanda.comandaPagada != true  %}
+							{% if comanda.comandaPagada != true and comanda.totalDetalls > 0  %}
 				        		<a class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': comanda.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
 				        			<i class="fa fa-credit-card fa-1x green"></i></a>
 							{% endif %}

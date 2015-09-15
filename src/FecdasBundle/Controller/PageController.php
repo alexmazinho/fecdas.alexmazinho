@@ -515,6 +515,10 @@ class PageController extends BaseController {
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		
+		$currentDNI = trim($currentDNI);
+		$currentNom = trim($currentNom);
+		$currentCognoms = trim($currentCognoms);
+		
 		$currentVigent = true;
 		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
 		    
@@ -614,7 +618,7 @@ class PageController extends BaseController {
 
 		if ($request->getMethod() == 'POST') {
 			$formdata = $request->request->get('form');
-			$dni = $formdata['dni'];
+			$dni = trim($formdata['dni']);
 
 			$smsko = 'No hi ha cap llicència vigent per al DNI : ' . $dni;
 			$smsok = 'El DNI : ' . $dni . ', té una llicència vigent fins ';
@@ -1014,8 +1018,6 @@ class PageController extends BaseController {
 				isset($requestParams['action']) && 
 				$requestParams['action'] != 'persona') {
 				
-				if ($parte->comandaConsolidada() == true) throw new \Exception('No es poden fer canvis sobre aquesta llista ');
-				
 				if ($requestParams['action'] == 'remove') {
 					// Errors generen excepció
 					$this->tramitaRemoveLlicencia($parte, $llicencia);
@@ -1023,6 +1025,8 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 					
 				} else {
+					if ($parte->comandaConsolidada() == true) throw new \Exception('No es poden fer canvis sobre aquesta llista ');
+
 					// Update / insert llicència
 					$form = $this->createForm(new FormParte(), $parte);
 					$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
@@ -1047,7 +1051,8 @@ class PageController extends BaseController {
 						if ( ($personaOriginal != null &&  $personaOriginal->getId() != $llicencia->getPersona()->getId() ) ||  
 							$categoriaOriginal != null && $categoriaOriginal->getId() != $llicencia->getCategoria()->getId() ) {
 								
-								$detall = $this->removeParteDetall($parte, $llicencia);
+								
+								$detall = $this->tramitaRemoveLlicencia($parte, $llicencia);
 								if ($detall == null) throw new \Exception('S\'ha produït un error actualitzant la llicència');
 								$detall = $this->addParteDetall($parte, $llicencia);
 								if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència a la llista');
@@ -1113,11 +1118,22 @@ class PageController extends BaseController {
 	
 	private function tramitaRemoveLlicencia($parte, $llicencia) {
 		// Només admin o clubs DIFE
-		if (!$this->isCurrentAdmin() &&
-			$parte->getClub()->controlCredit() == false) throw new \Exception('Contacteu amb la Federació per anul·lar les llicències');
+		/*if (!$this->isCurrentAdmin() &&
+			$parte->getClub()->controlCredit() == false) throw new \Exception('Contacteu amb la Federació per anul·lar les llicències');*/
 
-		$this->removeParteDetall($parte, $llicencia);
+		$producte = ($llicencia != null && $llicencia->getCategoria() != null?$llicencia->getCategoria()->getProducte():null);
+	
+		if ($producte == null || $parte == null) return null;
+
+		$this->removeLlicenciaParte($parte, $llicencia);
+
+		$data = $this->getCurrentDate();
+		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+
+		$detall = $this->removeComandaDetall($parte, $producte, 1, $maxNumFactura, $maxNumRebut);			
 		
+		return $detall;
 	}
 	
 	private function validaParteLlicencia($parte, $llicencia) {

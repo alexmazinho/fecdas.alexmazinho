@@ -113,11 +113,13 @@
 		   				{% endif %}
 		   			</div>
 		   			<div class="data-detall-cell comanda-factura">
-		   				{% if comanda.comandaConsolidada == true and comanda.factura != null %}
+		   				{% if comanda.mostrarFactura == true %}
 		   					{% set factura = comanda.factura %}
 		   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
 		   						{{ factura.numfactura }}
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+						{% else %}
+							<span>en tramitació <i class="fa fa-clock-o fa-1x orange"></i></span>
 			   			{% endif %}
 		   				{% for factura in comanda.facturesanulacions %} 
 		   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">

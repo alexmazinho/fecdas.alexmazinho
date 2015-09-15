@@ -133,6 +133,7 @@ class EntityPersona {
 	protected $llicencies;
 
 	public function __construct($currentDate) {
+		$this->id = 0;
 		$this->setDataentrada($currentDate);
 		$this->web = true;
 		$this->validat = false;

@@ -201,13 +201,21 @@ class EntityParte extends EntityComanda {
  	  	foreach ($this->llicencies as $llicencia) {
     		if (!$llicencia->esBaixa() || $baixes == true) {
     			$producte = $llicencia->getCategoria()->getProducte();		
-    			if (isset($acumulades[$producte->getCodi()])) $acumulades[$producte->getCodi()]['producte'] .= '<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms();  
-				else {
+    			if (isset($acumulades[$producte->getCodi()]) &&
+					isset($acumulades[$producte->getCodi()]['extra'])) {
+    				$acumulades[$producte->getCodi()]['extra'][] = $llicencia->getPersona()->getNomCognoms();  
+				} else {
 					error_log('revisar llicencies parte i detall comandes id '.$this->id);
-					$acumulades[$producte->getCodi()] = array('total' => 1,	'totalbaixa' => 0, 'preuunitat' => $producte->getPreu($this->dataalta->format('Y')),
-															'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 'import' => $producte->getPreu($this->dataalta->format('Y')),
-															'producte' => $producte->getDescripcio().'<br/> -&nbsp;'.$llicencia->getPersona()->getNomCognoms(), 
-															'descompte' => 0, 'codi' => $producte->getCodi(),
+					$acumulades[$producte->getCodi()] = array(
+							'total' => 1,	
+							'totalbaixa' => 0, 
+							'preuunitat' => $producte->getPreu($this->dataalta->format('Y')),
+							'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 
+							'import' => $producte->getPreu($this->dataalta->format('Y')),
+							'producte' => $producte->getDescripcio(),
+							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
+							'abreviatura' => $this->producte->getAbreviatura(), 
+							'descompte' => 0, 'codi' => $producte->getCodi(),
 					);
 				}
 				
@@ -494,14 +502,14 @@ class EntityParte extends EntityComanda {
 		if ($this->comandaPagada() == true) return false; 		
 		
 		$datamaxedicio = clone $this->dataentrada;
-		$datamaxedicio->add(new \DateInterval('PT1200S')); // Add 20 minutes
+		$datamaxedicio->add(BaseController::getIntervalConsolidacio()); // Add 20 minutes
 		
 		return $datamaxedicio->format('Y-m-d H:i:s') >= date('Y-m-d H:i:s');
 		
     	/*return (boolean) $this->comandaPagada() == false && 
     			$this->dataalta->format('Y-m-d') >= $currentdate->format('Y-m-d');*/
     }
-    
+	
     /**
      * Pendent Sincronitzar
      *

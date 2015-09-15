@@ -112,7 +112,7 @@ class EntityComptabilitat {
 	 */
 	public function getInfoComptabilitat()
 	{
-		return $this->dataenviament->format("d/m/Y"). " ".$this->comentaris;
+		return $this->dataenviament->format("d/m/Y H:m:s"). " ".$this->comentaris;
 	}
 	
 	/**

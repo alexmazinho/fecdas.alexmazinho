@@ -168,7 +168,7 @@ class EntityRebut {
 			
 			return 'Fra. '.$comanda->getFactura()->getNumFactura();	
 		}
-		return 'Fra/s. '.$this->getLlistaNumsFactures();
+		return 'Fra/s. '.$this->getLlistaNumsFactures(true);
 	}
 
 	/**
@@ -176,15 +176,15 @@ class EntityRebut {
 	 *
 	 * @return string
 	 */
-	public function getLlistaNumsFactures()
+	public function getLlistaNumsFactures($curt = false)
 	{
 		if ($this->esAnulacio()) return $this->comandaanulacio->getFactura()->getNumFactura();
 			
 		$concepte = '';
 		foreach ($this->comandes as $comanda) {
-			$concepte .= $comanda->getLlistaNumsFactures().', '; 	
+			$concepte .= $comanda->getLlistaNumsFactures($curt).($curt == true?'-':', '); 	
 		}
-		return substr($concepte, 0, -2);
+		return ($curt == true?substr($concepte, 0, -1):substr($concepte, 0, -2));
 		
 	}
 

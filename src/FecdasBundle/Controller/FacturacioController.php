@@ -39,8 +39,35 @@ class FacturacioController extends BaseController {
 			
 		$em = $this->getDoctrine()->getManager();
 		
+		// Obtenir pendents
+		// Factures excepte no consolidades (en tramitació)
+		/*$datamax = $this->getCurrentDate('now');
+		$datamax->sub($this->getIntervalConsolidacio()); // Substract 20 minutes
+		
+		$strQuery = "SELECT COUNT(f.id) FROM FecdasBundle\Entity\EntityFactura f ";
+		$strQuery .= " WHERE f.comptabilitat IS NULL ";
+		$strQuery .= " AND f.import != 0 ";
+		$strQuery .= " AND f.dataentrada <= :max ";
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('max', $datamax->format('Y-m-d H:i:s'));
+		$factures = $query->getSingleScalarResult();			*/
+
+		$facturesArray = $this->consultaFacturesConsolidades(null, $this->getCurrentDate('now'));
+		$factures = count($facturesArray);  
+
+		// Rebuts
+		$rebutsArray = $this->consultaRebutsConsolidats(null, $this->getCurrentDate('now'));
+		$rebuts = count($rebutsArray);
+		/*		
+		$strQuery = "SELECT COUNT(r.id) FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.comptabilitat IS NULL ";
+		$strQuery .= " AND r.import != 0 ";
+		$query = $em->createQuery($strQuery);				
+		$rebuts = $query->getSingleScalarResult();*/				
+		
+		// Històric de traspassos		
 		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComptabilitat c ";
-		$strQuery .= " WHERE c.databaixa IS NULL AND c.fitxer <> '' ";
+		$strQuery .= " WHERE c.fitxer <> '' ";
 		$strQuery .= " ORDER BY c.dataenviament DESC";
 		
 		$query = $em->createQuery($strQuery)->setMaxResults( 1 );
@@ -77,7 +104,7 @@ class FacturacioController extends BaseController {
 		return $this->render('FecdasBundle:Facturacio:traspas.html.twig',
 				$this->getCommonRenderArrayOptions(
 						array('form' 		=> $formBuilder->getForm()->createView(),
-							  'enviaments' 	=> $enviaments
+							  'enviaments' 	=> $enviaments, 'factures' => $factures, 'rebuts' => $rebuts
 						)
 				));
 			
@@ -91,9 +118,49 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		$id = $request->query->get('id', 1);
+		$id = $request->query->get('id', 0);
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$enviament = $this->getDoctrine()->getRepository('FecdasBundle:EntityComptabilitat')->find($id);
+		
+		if ($enviament != null) {
+			// Factures
+			$strQuery = "SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+			$strQuery .= " WHERE f.comptabilitat = :id ";
+						
+			$query = $em->createQuery($strQuery)->setParameter('id', $enviament->getId());
+					
+			$factures = $query->getResult();
 			
-		return new Response("anular".$id);
+			foreach ($factures as $factura) $factura->setComptabilitat(null);
+
+			// Rebuts
+			$strQuery = "SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+			$strQuery .= " WHERE r.comptabilitat = :id ";
+						
+			$query = $em->createQuery($strQuery)->setParameter('id', $enviament->getId());
+					
+			$rebuts = $query->getResult();
+			
+			foreach ($rebuts as $rebut) $rebut->setComptabilitat(null);
+			
+			$enviament->setDatabaixa($this->getCurrentDate());
+			
+			$em->flush();
+			
+			$this->logEntryAuth('TRASPAS BAIXA OK', ' Enviament '.$enviament->getId());
+
+			$this->get('session')->getFlashBag()->add('sms-notice', 
+				'Enviament en data '.$enviament->getDataenviament()->format('Y-m-d H:m:s').' anul·lat correctament ('.
+				$enviament->getFactures().' factures i '.$enviament->getRebuts().' rebuts)');
+		} else {
+			$this->logEntryAuth('TRASPAS BAIXA KO', ' Enviament '.$id);
+			
+			$this->get('session')->getFlashBag()->add('error-notice', 'No s\'ha pogut anul·lar l\'enviament');
+		}  
+			
+		return $this->redirect($this->generateUrl('FecdasBundle_traspascomptabilitat'));
 	}	
 	
 	public function fitxercomptabilitatAction(Request $request) {
@@ -110,7 +177,7 @@ class FacturacioController extends BaseController {
 		$datamin->sub(new \DateInterval('P60D')); // Substract 2 mesos		
 		
 		$datamax = $this->getCurrentDate('now');
-		if ($this->get('kernel')->getEnvironment() != 'dev') $datamax->sub(new \DateInterval('PT1200S')); // Substract 20 minutes
+		$datamax->sub($this->getIntervalConsolidacio()); // Substract 20 minutes
 
 		// Data d'alta màxima 20 minuts endarrera (Partes a mitges) 
 		$inici = $request->query->get('inici', '');
@@ -132,9 +199,7 @@ class FacturacioController extends BaseController {
 			} else {
 				$enviament = new EntityComptabilitat($filename, $datainici, $datafinal);
 				$em->persist($enviament);
-				
 				$assentaments = $this->generarFitxerAssentaments($enviament); // Array
-				 
 				if ($enviament->getApunts() == 0) throw new \Exception("No hi ha assentaments per aquests criteris de cerca ");
 				
 				$fs->dumpFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, implode("\r\n",$assentaments));
@@ -143,20 +208,25 @@ class FacturacioController extends BaseController {
 			}
 		} catch (\Exception $e) {
 			if ($enviament != null) $em->detach($enviament);
-			$this->logEntryAuth('FITXER COMPTA KO',	'Dates : ' . $inici ." - ".$final);
+			//$this->logEntryAuth('FITXER COMPTA KO',	'Dates : ' . $inici ." - ".$final);
 			
 			$response = new Response();
 			//$response->setCharset('ISO-8859-1');
 			$response->setStatusCode(500, mb_convert_encoding($e->getMessage(), 'ISO-8859-1',  'auto'));
 			return $response;
 		}
+		
+		$this->get('session')->getFlashBag()->add('sms-notice', 
+				'Nou enviament en data '.$enviament->getDataenviament()->format('Y-m-d H:m:s').' creat correctament ('.
+				$enviament->getFactures().' factures i '.$enviament->getRebuts().' rebuts)');
+		
 		$this->logEntryAuth('FITXER COMPTA OK',	'Dates : ' . $inici ." - ".$final);
 		
 		//$response = new Response(  $this->generateUrl('FecdasBundle_downloadassentaments', array('filename' => $filename), true));  
 		//$response = $this->downloadFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, $filename, 'Fitxer traspàs assentaments dia '.date("Y-m-d H:i"));
 		//$response->prepare($request);
-		$response = new Response();
-		$response->headers->set('Content-Type', 'application/json');
+		$response = new Response('Ok');
+		/*$response->headers->set('Content-Type', 'application/json');
 		
 		if ($enviament != null) $data = array(
 				'id'=> $enviament->getId(), 
@@ -164,7 +234,7 @@ class FacturacioController extends BaseController {
 				'text' => $enviament->getTextComptabilitat(),
 		);
 		
-		$response->setContent(json_encode($data)); 
+		$response->setContent(json_encode($data));*/ 
 		
 		return $response;
 	}
@@ -223,18 +293,62 @@ class FacturacioController extends BaseController {
 		//$apuntsRebutsAltes	= $this->generarAssentamentsRebuts($enviament, false);
 		//$apuntsRebutsBaixes	= $this->generarAssentamentsRebuts($enviament, true);
 		//$assentaments = array_merge($apuntsComandesAltes, $apuntsComandesBaixes, $apuntsRebutsAltes, $apuntsRebutsBaixes);
-				
 		$apuntsFactures = $this->generarAssentamentsFactures($enviament);
 		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament);
-		
 		$assentaments = array_merge($apuntsFactures, $apuntsRebuts);
-		
 		return $assentaments; 
 	}
 
+
+	private function consultaFacturesConsolidades($desde = null, $fins = null) {
+		$em = $this->getDoctrine()->getManager();
+		
+		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		
+		$strQuery .= " WHERE f.import != 0 ";
+		if ($desde != null) $strQuery .= " AND f.dataentrada >= :ini ";
+		if ($fins != null) $strQuery .= " AND f.dataentrada <= :final ";
+		$strQuery .= " AND (f.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
+		$strQuery .= " ORDER BY f.dataentrada";
+		
+		$query = $em->createQuery($strQuery);
+		if ($desde != null) $query->setParameter('ini', $desde->format('Y-m-d H:i:s'));
+		if ($fins != null) $query->setParameter('final', $fins->format('Y-m-d H:i:s'));
+		
+		$totesFactures = $query->getResult();
+
+		$factures = array();		
+		foreach ($totesFactures as $factura) {
+			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
+			else $comanda = $factura->getComanda();
+
+			if ($comanda != null && $comanda->comandaConsolidada()) $factures[] = $factura;
+		}
+		return $factures;
+	}
+
+	private function consultaRebutsConsolidats($desde = null, $fins = null) {
+		$em = $this->getDoctrine()->getManager();
+		
+		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.import != 0 ";
+		if ($desde != null)  $strQuery .= " AND r.dataentrada >= :ini ";
+		if ($fins != null)  $strQuery .= " AND r.dataentrada <= :final ";
+		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
+		$strQuery .= " ORDER BY r.dataentrada";
+		
+		$query = $em->createQuery($strQuery);
+		if ($desde != null) $query->setParameter('ini', $desde->format('Y-m-d H:i:s'));
+		if ($fins != null)  $query->setParameter('final', $fins->format('Y-m-d H:i:s'));
+
+		$rebuts = $query->getResult();
+		
+		return $rebuts;
+	}
+	
 	/**
-	 * Comandes	  => Club apunt D + Producte corresponent apunt H	
-	 * Anular comanda? => Club apunt D + Producte corresponent apunt H  però els dos amb import negatiu
+	 * Factures	  => Club apunt D + Producte corresponent apunt H	
+	 * Anular factura? => Club apunt D + Producte corresponent apunt H  però els dos amb import negatiu
 	 * 
 	 * @param unknown $datainici
 	 * @param unknown $datafinal
@@ -244,40 +358,27 @@ class FacturacioController extends BaseController {
 	private function generarAssentamentsFactures($enviament) {
 		$em = $this->getDoctrine()->getManager();
 		
-		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		$factures = $this->consultaFacturesConsolidades($enviament->getDatadesde(), $enviament->getDatafins());
 		
-		$strQuery .= " WHERE (f.dataentrada >= :ini AND f.dataentrada <= :final) ";
-		$strQuery .= " AND f.import != 0 ";
-		$strQuery .= " AND (f.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
-		$strQuery .= " ORDER BY f.dataentrada";
-		
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
-		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
-		
-		$factures = $query->getResult();
-
 		$totalFactures = 0;	
 		$totalAnulacions = 0;
 		$assentaments = array();
 		foreach ($factures as $factura) {
 			if ($factura->esAnulacio()) {
 				$comanda = $factura->getComandaAnulacio();
-				$totalAnulacions++;	
+				$totalAnulacions++;
+				$totalFactures++;	
 			} else {
 				$comanda = $factura->getComanda();
 				$totalFactures++;
 			}	
-				
 			$assentament = $this->assentamentFactura($factura, $comanda);
-			
 			$assentaments = array_merge($assentaments, $assentament);
 			
 			$factura->setComptabilitat($enviament);
 		}
 		$enviament->setFactures($totalFactures);
 		//$enviament->setAnulacions($totalAnulacions);
-
 		return $assentaments;
 	} 
 	
@@ -292,149 +393,127 @@ class FacturacioController extends BaseController {
 	 * @return multitype:string
 	 */
 	private function generarAssentamentsRebuts($enviament) {
-		$em = $this->getDoctrine()->getManager();
+		/*$em = $this->getDoctrine()->getManager();
 		
-		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r WHERE ";
-		$strQuery .= " r.import != 0 AND ";
-		$strQuery .= " (r.dataentrada >= :ini AND r.dataentrada <= :final) ";
+		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.import != 0 ";
+		if ($enviament->getDatadesde() != null)  $strQuery .= " AND r.dataentrada >= :ini ";
+		if ($enviament->getDatafins() != null)  $strQuery .= " AND r.dataentrada <= :final ";
 		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
 		$strQuery .= " ORDER BY r.dataentrada";
 		
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
-		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
-		
-		$rebuts = $query->getResult();
+		if ($enviament->getDatadesde() != null) $query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
+		if ($enviament->getDatafins() != null)  $query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
+
+		$rebuts = $query->getResult();*/
+
+		$rebuts = $this->consultaRebutsConsolidats($enviament->getDatadesde(), $enviament->getDatafins());
 
 		$totalRebuts = 0;
 		$assentaments = array();
 		$comandes = array();
 		foreach ($rebuts as $rebut) {
-			if ($rebut->esAnulacio()) {
-				$comandes[] = $rebut->getComandaAnulacio();
-				
-				//$totalAnulacions++;  No sumen anulacions pq són les mateixes que les de les factures	
-			} else {
-				$comandes = $rebut->getComandes();
-				$totalRebuts++;
-			}	
-			
-			foreach ($comandes as $comanda) {
-				$assentament = $this->assentamentRebut($rebut, $comanda);
-				
-				$assentaments = array_merge($assentaments, $assentament);
-			}
+			$assentament = $this->assentamentRebut($rebut);
+			$assentaments = array_merge($assentaments, $assentament);
 			$rebut->setComptabilitat($enviament);
+			$totalRebuts++;
 		}
 		$enviament->setRebuts($totalRebuts);
 
 		return $assentaments;
 	} 		
 				
-				
-	private function assentamentRebut($rebut, $comanda) {
+	private function crearLiniaAssentament($data, $numAssenta, $linia, $compte, $desc, $conc, $doc, $import, $tipus) {
+		$signe = ($import >= 0?'0':'-');
+			
+		$apunt = "0".$data->format('Ymd');
+		$apunt .= substr(str_pad($numAssenta."", 6, "0", STR_PAD_LEFT), 0, 6); 
+		$apunt .= substr(str_pad($linia."", 4, "0", STR_PAD_LEFT), 0, 4); 	
+		$apunt .= substr(str_pad($compte."", 9, " ", STR_PAD_RIGHT), 0, 9);		
+		$apunt .= substr(str_pad($desc, 100, " ", STR_PAD_RIGHT), 0, 100);	
+		$apunt .= substr(str_pad($conc, 40, " ", STR_PAD_RIGHT), 0, 40);;
+		$apunt .= substr(str_pad($doc, "0", STR_PAD_LEFT), 0, 8);
+		$apunt .= str_repeat(" ",4).str_repeat(" ",4);
+		$apunt .= $signe.substr(str_pad((number_format(abs($import), 2, '.', '').''), 12, "0", STR_PAD_LEFT), 0, 12);
+		$apunt .= $tipus.str_repeat("0",15);
+		
+		return $apunt;
+	}
+	
+	private function assentamentRebut($rebut) {
 		$assentament = array();
-		$signe = ($rebut->esAnulacio() == false?'0':'-');
 		$linia = 1;
 			
-		$data = $rebut->getDatapagament()->format('Ymd');
+		$data = $rebut->getDatapagament();
 		//$numAssenta = str_pad($rebut->getId(), 6, "0", STR_PAD_LEFT);/*str_repeat("0",6);*/
-		$numAssenta = str_repeat("0",6);
+		//$numAssenta = str_repeat("0",6);
 			
 		// APUNT CLUB
 		$club = $rebut->getClub();	
 		$compte = $club->getCompte();
-		$apuntclub = "0".$data.$numAssenta.substr(str_pad($linia."", 4, "0", STR_PAD_LEFT), 0, 4); 			// Assentament
-		
+		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té indicat compte comptable");
 		//$desc = $this->netejarNom($rebut->getConcepteRebutLlarg(), false);
 		$desc = $this->netejarNom($club->getNom(), false);
-		$apuntclub .= substr(str_pad($compte."", 9, " ", STR_PAD_RIGHT), 0, 9);
-		$apuntclub .= substr(str_pad($desc, 100, " ", STR_PAD_RIGHT), 0, 100);								// Compte
-		
-		$conc = substr(str_pad($this->netejarNom($rebut->getConcepteRebutCurt(), false), 40, " ", STR_PAD_RIGHT), 0, 40);
-		$doc = substr(str_pad($rebut->getNumRebutCurt(), "0", STR_PAD_LEFT), 0, 8);
-		
-		$apuntclub .= $conc.$doc.str_repeat(" ",4).str_repeat(" ",4);											// Concepte
-		
-		$import = $signe.substr(str_pad((number_format($rebut->getImport(), 2, '.', '').''), 12, "0", STR_PAD_LEFT), 0, 12);
-		$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);										// Import
-
-		$assentament[] = $apuntclub;
+		$conc = mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
+		$doc = $rebut->getNumRebutCurt();
+		$import = $rebut->getImport();
+		$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
 			
 		$linia++;
 		// APUNT CAIXA
 		$compte = BaseController::getComptePagament($rebut->getTipuspagament());
 		$desc = BaseController::getTextComptePagament($rebut->getTipuspagament());
 		
-		$apunt = "0".$data.$numAssenta.substr(str_pad($linia."", 4, "0", STR_PAD_LEFT), 0, 4); 	
-		$apunt .= substr(str_pad($compte."", 9, " ", STR_PAD_RIGHT), 0, 9);
-		$apunt .= substr(str_pad($desc, 100, " ", STR_PAD_RIGHT), 0, 100);	
-		$apunt .= $conc.$doc.str_repeat(" ",4).str_repeat(" ",4);
-		$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
-			
-		$assentament[] = $apunt;
+		$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
 		
 		return $assentament;
 	}
 	 
 	private function assentamentFactura($factura, $comanda) {
 		$assentament = array();
-		$signe = ($factura->esAnulacio() == false?'0':'-');
 		$linia = 1;
 		
-		$data = $factura->getDatafactura()->format('Ymd');
+		$data = $factura->getDatafactura();
 		//$numAssenta = str_pad($factura->getId(), 6, "0", STR_PAD_LEFT);//str_repeat("0",6);
-		$numAssenta = str_repeat("0",6);
+		//$numAssenta = str_repeat("0",6);
 		
 		// APUNT CLUB
 		$club = $comanda->getClub();
 		$compte = $club->getCompte();
-		
-		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té compte comptable assignat"); 
-		
-		$apuntclub = "0".$data.$numAssenta.substr(str_pad($linia."", 4, "0", STR_PAD_LEFT), 0, 4); 						// Assentament
+		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té compte comptable assignat");
 		
 		//$desc = 'PEDIDO '.$comanda->getNumComanda().' '.$this->netejarNom($club->getNom(), false);
 		$desc = $this->netejarNom($club->getNom(), false);
-		$apuntclub .= substr(str_pad($compte."", 9, " ", STR_PAD_RIGHT), 0, 9);
-		$apuntclub .= substr(str_pad($desc, 100, " ", STR_PAD_RIGHT), 0, 100);	// Compte
-		
-		$conc = substr(str_pad($factura->getNumFactura()." (".$this->netejarNom($factura->getConcepte(), false).")", 40, " ", STR_PAD_RIGHT), 0, 40);
-		$doc = substr(str_pad($factura->getNumFacturaCurt(), "0", STR_PAD_LEFT), 0, 8);
-		$apuntclub .= $conc.$doc.str_repeat(" ",4).str_repeat(" ",4); 		// Concepte
-		
-		$import = $signe.substr(str_pad((number_format(abs($factura->getImport()), 2, '.', '').''), 12, "0", STR_PAD_LEFT), 0, 12);
-		$apuntclub .= $import.BaseController::DEBE.str_repeat("0",15);										// Import
+		//$conc = mb_convert_encoding($factura->getNumFactura()." (".$this->netejarNom($factura->getConcepte(), false).")", 'UTF-8',  'auto');
+		$conc = $factura->getNumFactura()." (".utf8_decode($this->netejarNom($factura->getConcepte(), false)).")";
+		$doc = $factura->getNumFacturaCurt();
+		$import = $factura->getImport();
 					
-		// Validar que quadren imports
-		$assentament[] = $apuntclub;
+		$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
 					
 		$linia++;
-
-		//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
-		$detallsArray = json_decode($factura->getDetalls(), false, 512);
+		$importAcumula = 0;
 		$index = 1;
 		$numApunts = count(json_decode($factura->getDetalls(), true)); // Compta en format array
+		//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+		$detallsArray = json_decode($factura->getDetalls(), false, 512);
 		foreach ($detallsArray as $compte => $d) {
 		// APUNT/S PRODUCTE/S
-			$desc = $d->total." x ".$this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
-			$conc = substr(str_pad($doc."(".$index."-".$numApunts.") ".$d->total." x ".$d->producte, 40, " ", STR_PAD_RIGHT), 0, 40); 
-			
-			$apunt = "0".$data.$numAssenta.substr(str_pad($linia."", 4, "0", STR_PAD_LEFT), 0 , 4);			// Assentament
-			
-			$apunt .= substr(str_pad($compte."", 9, " ", STR_PAD_RIGHT), 0, 9);
-			$apunt .= substr(str_pad($desc, 100, " ", STR_PAD_RIGHT), 0, 100);								// Compte
-						
-			$apunt .= $conc.$doc.str_repeat(" ",4).str_repeat(" ",4);		// Concepte de l'apunt
+			$desc = $this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
+			//$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".mb_convert_encoding($d->producte, 'UTF-8',  'auto');						
+			$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".utf8_decode($d->producte);
+			$importDetall = $d->import;	
+			$importAcumula += $importDetall;	
 
-			$import = $signe.substr(str_pad((number_format(abs($d->import), 2, '.', '').''), 12, "0", STR_PAD_LEFT), 0, 12);	
-			$apunt .= $import.BaseController::HABER.str_repeat("0",15);										// Import
-				
-			$assentament[] = $apunt;
+			$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $importDetall, BaseController::HABER);
 						
 			$linia++;
 			$index++;
 		}
+
+		// Validar que quadren imports		
+		if (abs($import - $importAcumula) > 0.01) throw new \Exception("Imports detall de la factura ".$doc." no quadren");
 			
 		return $assentament;
 	} 
@@ -2161,10 +2240,8 @@ class FacturacioController extends BaseController {
 			$comandes = $query->getResult();
 			$total = 0;
 			foreach ($comandes as $comanda) {
-				error_log('c'.$comanda->getId());
 				$factura = $comanda->getFactura();
 				if ($factura != null) {
-					error_log('f'.$factura->getId());	
 					$detalls = $comanda->getDetallsAcumulats();
 					//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
 					$detalls = json_encode($detalls); // Desar estat detalls a la factura

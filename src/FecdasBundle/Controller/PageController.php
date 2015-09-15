@@ -104,14 +104,13 @@ class PageController extends BaseController {
 						$dataalta->setTime(0, 1); // No és el mateix dia 
 					}
 					else {
-						$dataalta->setTime($this->getCurrentDate()->format('H'), $this->getCurrentDate()->format('i') + 20);// Add 20 minutes
+						//$dataalta->setTime($this->getCurrentDate()->format('H'), $this->getCurrentDate()->format('i') + 20);// Add 20 minutes
+						$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
 					}
 				}
 				if (isset($formdata['tipus'])) {
 					$tipusparte = $em->getRepository('FecdasBundle:EntityParteType')->find($formdata['tipus']);
 				}
-		} else {
-			//$dataalta->add(new \DateInterval('PT1200S')); // Add 20 minutes
 		}
 		
 		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataalta);
@@ -890,7 +889,7 @@ class PageController extends BaseController {
 			$this->logEntryAuth('PARTE VIEW', $parteid);
 		} else {
 			$dataalta = $this->getCurrentDate();
-			$dataalta->add(new \DateInterval('PT1200S')); // Add 20 minutes
+			$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
 			
 			$this->logEntryAuth('PARTE NEW', $parteid);
 			
@@ -958,9 +957,9 @@ class PageController extends BaseController {
 
 			$id = is_numeric($p['id']) && $p['id'] > 0?$p['id']:0;
 			$lid = is_numeric($l['id']) && $l['id'] > 0?$l['id']:0;
-			
+
 			if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
-				
+	
 			if ($lid == 0) {
 				// Insert
 				if ($id == 0) {
@@ -1214,118 +1213,112 @@ class PageController extends BaseController {
 		$options['provincies'] = $this->getProvincies();
 		$options['comarques'] = $this->getComarques();
 		$options['nacions'] = $this->getNacions();
+
+		$em = $this->getDoctrine()->getManager();
 		
 		if ($request->getMethod() == 'POST') {
-			$p = $request->request->get('persona', null);
-			if ($p == null) return new Response("dnierror");
-
-			if ($p['id'] != "") {
-				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($p['id']);
-				if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
-				
-			} else {
-				$persona = new EntityPersona($this->getCurrentDate());
-				// Assignar club
-				$persona->setClub($this->getCurrentClub());
-				$options['edit'] = true;
-			}
-
-			$formpersona = $this->createForm(new FormPersona($options), $persona);
-			
-			$formpersona->bind($request);
-		
-			if ($formpersona->isValid()) {
-				if ($persona->getNom() == "" or $persona->getCognoms() == "") {
-					$this->logEntryAuth('PERSONA NEW NOM KO');
-					return new Response("nomerror");
-				}
-				if ($persona->getDni() == "") {
-					$this->logEntryAuth('PERSONA NEW DNI KO');
-					return new Response("dnierror");
-				}
-				
-				$em = $this->getDoctrine()->getManager();
-				$persona->setDatamodificacio($this->getCurrentDate());
-
-				if ($request->request->get('action') == "save") {
-					/* Check persona amb dni no repetida al mateix club */
-					if ($persona->getId() == null) {
-						$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
-						$strQuery .= " WHERE p.dni = :dni ";
-						$strQuery .= " AND p.club = :club ";
-						$strQuery .= " AND p.databaixa IS NULL";
+			try {
+				$p = $request->request->get('persona', null);
+				if ($p == null) throw new \Exception("Dades incorrectes");
+	
+				if ($p['id'] != 0) {
+					$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($p['id']);
+					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 					
-						$query = $em->createQuery($strQuery)
-							->setParameter('dni', $persona->getDni())
-							->setParameter('club', $persona->getClub()->getCodi());
-				
-						$personaexisteix = $query->getResult();
-						
-						if (count($personaexisteix) > 0) {
-							$this->logEntryAuth('PERSONA NEW DUPLI KO', $persona->getDni());
-							return new Response("dnicluberror");
-						}
-					}
-					$persona->setValidat(false);  // No validat, detecció ACCESS
-
-					if ($persona->getId() != null)	{
-						$logaction = "PERSONA UPD OK";
-						$this->get('session')->getFlashBag()->add('error-notice',	"Dades modificades correctament");
-					}
-					else {
-						// Canviar format Nom i COGNOMS
-						$logaction = "PERSONA NEW OK";
-						
-						// Specials chars ñ, à, etc... 
-						$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
-						$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
-						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
-					}
+				} else {
+					$persona = new EntityPersona($this->getCurrentDate());
+					// Assignar club
+					$persona->setClub($this->getCurrentClub());
+					$options['edit'] = true;
 					$em->persist($persona);
-					$em->flush();
-					// Després de flush, noves entitats tenen id
-					$this->logEntryAuth($logaction, $persona->getId());
-		
-					$request->request->set('currentperson', $persona->getId());
-				} else { // Esborrar
-					// Check si persona té alguna llicència associada
-					$llicenciesPersona = $em->getRepository('FecdasBundle:EntityLlicencia')
-					->findBy(array('persona' => $persona->getId(), 'databaixa' => null));
+				}
 
-					if ($llicenciesPersona != null) { 
-						$logaction = "PERSONA DEL KO";
-						$this->get('session')->getFlashBag()->add('error-notice',	"Aquesta persona té llicències i no es pot esborrar");
-						$request->request->set('currentperson', $persona->getId());
-					} else {
-						$logaction = "PERSONA DEL OK";
+				$formpersona = $this->createForm(new FormPersona($options), $persona);
+			
+				$formpersona->bind($request);
+			
+				if ($formpersona->isValid()) {
+					if ($persona->getNom() == "" or $persona->getCognoms() == "") 
+							throw new \Exception("Cal indicar nom i cognoms");
+					
+					if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
+	
+					if (($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
+						($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
+						($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
+					
+					$persona->setDatamodificacio($this->getCurrentDate());
+	
+					$baixaPersona = $request->request->get('action') != 'save';
+					if (!$baixaPersona) {
+						/* Check persona amb dni no repetida al mateix club */
+						if ($persona->getId() == 0) {
+							$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
+							$strQuery .= " WHERE p.dni = :dni ";
+							$strQuery .= " AND p.club = :club ";
+							$strQuery .= " AND p.databaixa IS NULL";
+						
+							$query = $em->createQuery($strQuery)
+								->setParameter('dni', $persona->getDni())
+								->setParameter('club', $persona->getClub()->getCodi());
+					
+							$personaexisteix = $query->getResult();
+							
+							if (count($personaexisteix) > 0) throw new \Exception("Aquest dni ja existeix per aquest club");
+							
+							// Canviar format Nom i COGNOMS
+							// Specials chars ñ, à, etc... 
+							$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
+							$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
+							$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
+						} else {
+							$this->get('session')->getFlashBag()->add('error-notice',	"Dades modificades correctament");
+						}
+						$persona->setValidat(false);  // No validat, detecció ACCESS
+					} else { // Esborrar
+						// Check si persona té alguna llicència associada
+						$llicenciesPersona = $em->getRepository('FecdasBundle:EntityLlicencia')->findBy(array('persona' => $persona->getId(), 'databaixa' => null));
+							
+						if ($llicenciesPersona != null) throw new \Exception("Aquesta persona té llicències i no es pot esborrar"); 
+
 						$persona->setDatamodificacio($this->getCurrentDate());
 						$persona->setDatabaixa($this->getCurrentDate());
-						$em->persist($persona); // Per delete seria remove
+						//$em->persist($persona); // Per delete seria remove
 						$em->flush();
-						$request->request->set('currentperson', 0);
 						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals esborrades correctament");
 					}
-					
-					$this->logEntryAuth($logaction, $persona->getId());
+					$em->flush();
+					// Després de flush, noves entitats tenen id
+					$this->logEntryAuth('PERSONA '.$request->request->get('action'). ' OK', $persona->getId());
+					$request->request->set('action', 'persona');
+				} else {
+					// get a ConstraintViolationList
+					$errors = $this->get('validator')->validate($persona);
+					// iterate on it
+					foreach ($errors as $error) {
+						if ($error->getPropertyPath() == "telefon1") throw new \Exception("El telèfon ".$persona->getTelefon1()." no es un valor vàlid"); 
+						if ($error->getPropertyPath() == "telefon2") throw new \Exception("El telèfon ".$persona->getTelefon2()." no es un valor vàlid");  
+						if ($error->getPropertyPath() == "mail") throw new \Exception("Adreça de correu electrònica incorrecte");
+					}
+					throw new \Exception("Dades invàlides");
 				}
-				$request->request->set('action', 'persona');
-			} else {
-				// get a ConstraintViolationList
-				$errors = $this->get('validator')->validate($persona);
-				// iterate on it
-				foreach ($errors as $error) {
-					if ($error->getPropertyPath() == "telefon1" or 
-						$error->getPropertyPath() == "telefon2") return new Response("telefonerror");
-					if ($error->getPropertyPath() == "mail") return new Response("mailerror");
-				}
-				return new Response("novaliderror");
-			}
 
-			if ($request->request->get('origen') == 'llicencia') { 
-				$response = $this->forward('FecdasBundle:Page:llicencia');
+				if ($request->request->get('origen') == 'llicencia') {
+					if (!$baixaPersona) $request->request->set('currentperson', $persona->getId()); 
+					$response = $this->forward('FecdasBundle:Page:llicencia');
+					return $response;
+				} else {
+					return new Response();
+				}
+			} catch (\Exception $e) {
+				if ($persona->getId() == 0) $em->detach($persona);
+				else 	$em->refresh($persona);
+				 
+				$this->logEntryAuth('PERSONA KO',	$e->getMessage());
+				
+				$response = new Response($e->getMessage());
+				$response->setStatusCode(500);
 				return $response;
-			} else {
-				return new Response();
 			}
 		}
 		

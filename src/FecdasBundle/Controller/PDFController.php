@@ -165,38 +165,23 @@ class PDFController extends BaseController {
 		
 			// Sistema nou del 2015.
 			//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
-			$detallsArray = json_decode($factura->getDetalls(), false, 512);
+			$detallsArray = json_decode($factura->getDetalls(), true);
 			
 			foreach ($detallsArray as $lineafactura) {
-				if ($lineafactura->ivaunitat > 0) $facturaSenseIVA = false;
-					
-				$preuSenseIVA = $lineafactura->total * $lineafactura->preuunitat;
-				$valorIVA = $preuSenseIVA * $lineafactura->ivaunitat;
-					
-				$tbl .= '<tr style="border-bottom: none;">';
-				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->codi.'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura->producte .'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura->total .'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->preuunitat, 2, ',', '.') . '€</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura->ivaunitat*100, 0, ',', '.') . '%</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($valorIVA, 2, ',', '.') . '€</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
-				$tbl .= number_format($lineafactura->import, 2, ',', '.') . '€</span></td>';
-				$tbl .= '</tr>';
-					
-				$mindetalls--;
-			
-				/*	
-			foreach ($comanda->getDetallsAcumulats(true) as $lineafactura) {
 				if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
-				
+					
 				$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 				$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
-				
+					
 				$tbl .= '<tr style="border-bottom: none;">';
 				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['codi'].'</td>';
-				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'] .'</td>';
+				$tbl .= '<td style="border-right: 1px solid black;" align="left">' . $lineafactura['producte'];
+				if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
+					foreach ($lineafactura['extra'] as $extra) {
+						$tbl .= '<br/> -&nbsp;'.$extra;
+					}
+				}
+				$tbl .= '</td>';
 				$tbl .= '<td style="border-right: 1px solid black;" align="center">' . $lineafactura['total'] .'</td>';
 				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($lineafactura['preuunitat'], 2, ',', '.') . '€</td>';
 				$tbl .= '<td style="border-right: 1px solid black;" align="right">' . number_format($preuSenseIVA, 2, ',', '.') . '€</td>';
@@ -205,10 +190,9 @@ class PDFController extends BaseController {
 				$tbl .= '<td style="border-right: 1px solid black;" align="right"><span style="font-weight:bold;">';
 				$tbl .= number_format($lineafactura['import'], 2, ',', '.') . '€</span></td>';
 				$tbl .= '</tr>';
-				
+					
 				$mindetalls--;
-			}
-				*/
+			
 			}
 			while ($mindetalls > 0) {
 				$tbl .= '<tr style="border-bottom: none;">';
@@ -489,12 +473,10 @@ class PDFController extends BaseController {
 				foreach ($comandes as $comanda) {
 					$tbl .= '<tr style="border-bottom: none;">';
 					$tbl .= '<td align="left"  width="505">';
-					$tbl .= 'Número: '.$comanda->getNumComanda().' en data '.$comanda->getDataentrada()->format('Y-m-d').'</td>';
+					$tbl .= 'Número: '.$comanda->getNumComanda().' en data '.$comanda->getDataentrada()->format('Y-m-d').'<br/>';
+					$tbl .= ' - <i>'.$comanda->getInfoLlistat().'</i></td>';
 					$tbl .= '<td align="right"  width="130">';
 					$tbl .= '<b>'.number_format($comanda->getTotalDetalls(), 2, ',', '.').' €</b></td>';
-					$tbl .= '</tr>';
-					$tbl .= '<tr style="border-bottom: none;">';
-					$tbl .= '<td colspan="2" align="left"> - <i>'.$comanda->getInfoLlistat().'</i></td>';
 					$tbl .= '</tr>';
 				}
 				$tbl .= '<tr style="border-bottom: none;">';

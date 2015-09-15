@@ -154,6 +154,11 @@ class EntityComanda {
 		return false;
     }
 
+    public function mostrarFactura()
+    {
+		return ($this->comandaConsolidada() == true);
+    }
+	
 	/**
      * Allow edit. True. Sobreescrit a partes (esperar 20 minuts)
      *
@@ -249,16 +254,16 @@ class EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getLlistaNumsFactures()
+	public function getLlistaNumsFactures($curt = false)
 	{
 		$concepte = '';
 		if ($this->comandaConsolidada() == true &&
-			$this->factura != null) $concepte = $this->factura->getNumFactura();
+			$this->factura != null) $concepte = ($curt == true?$this->factura->getNum().'-':$this->factura->getNumFactura().', ');
 		
 		foreach ($this->facturesanulacions as $factura) {
-			$concepte .= $factura->getNumFactura().', '; 	
+			$concepte .= ($curt == true?$this->factura->getNum().'-':$factura->getNumFactura().', '); 	
 		}
-		return substr($concepte, 0, -2);
+		return ($curt == true?substr($concepte, 0, -1):substr($concepte, 0, -2));
 		
 	}
 
@@ -285,7 +290,7 @@ class EntityComanda {
 	public function getLlistaNumsRebuts()
 	{
 		$concepte = '';
-		if ($this->comandaPagada() == true) $concepte = $this->rebut->getNumRebut();
+		if ($this->comandaPagada() == true) $concepte = $this->rebut->getNumRebut().', ';
 		
 		foreach ($this->rebutsanulacions as $rebut) {
 			$concepte .= $rebut->getNumRebut().', '; 	

@@ -713,7 +713,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
  
  /*************** FECDAS NOU traspas ****************/
  
- .table-scroll.enviaments { max-width: 650px; }
+ .table-scroll.enviaments { /*max-width: 650px;*/ }
  
  .data-detall-cell.enviament-desc  { text-align: left; }
  

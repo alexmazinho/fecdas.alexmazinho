@@ -124,30 +124,39 @@
 		</div>
 		<div class="row">
 			<div class="col-md-12"><h3 class="blue">Factures</h3> </div>
-			{% for factura in comanda.factures %}
-				<div class="col-md-12"> 
-					<ul class="list-factures">
-						<li class="data-detall-cell">&nbsp;</li>
-						<li class="data-detall-cell"><a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
-			   				<i class="fa fa-file-pdf-o fa-1x red"></i></a></li>
-						<li class="data-detall-cell">{{ factura.datafactura|date|date('Y-m-d') }}</li>
-						<li class="data-detall-cell"><span {% if factura.esanulacio == true %}class="red"{% endif %}>{{ factura.numfactura }}</span></li>
-			   			<li class="data-detall-cell">{{ factura.import|number_format(2, ',', '.') }} €</li>
-						<li class="data-detall-cell">{{ factura.concepte }}</li>
-					</ul>
-				</div>
+			{% if comanda.mostrarFactura == true %}
+				{% for factura in comanda.factures %}
+					<div class="col-md-12"> 
+						<ul class="list-factures">
+							<li class="data-detall-cell">&nbsp;</li>
+							<li class="data-detall-cell"><a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+				   				<i class="fa fa-file-pdf-o fa-1x red"></i></a></li>
+							<li class="data-detall-cell">{{ factura.datafactura|date|date('Y-m-d') }}</li>
+							<li class="data-detall-cell"><span {% if factura.esanulacio == true %}class="red"{% endif %}>{{ factura.numfactura }}</span></li>
+				   			<li class="data-detall-cell">{{ factura.import|number_format(2, ',', '.') }} €</li>
+							<li class="data-detall-cell">{{ factura.concepte }}</li>
+						</ul>
+					</div>
+				{% else %}
+					<div class="col-md-12">
+						<div class="alert alert-danger form-alert alert-dismissible">
+							<button data-dismiss="alert" class="close" type="button">
+							<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+							<ul>
+							  	<li><span class="fa fa-exclamation-circle fa-1x"></span> La informació de facturació no es troba disponible</li>
+							</ul>
+						</div>
+					</div>
+				{% endfor %}
 			{% else %}
 				<div class="col-md-12">
-					<div class="alert alert-danger form-alert alert-dismissible">
-						<button data-dismiss="alert" class="close" type="button">
-						<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+					<div class="alert alert-info form-alert">
 						<ul>
-						  	<li><span class="fa fa-exclamation-circle fa-1x"></span> La informació de facturació no es troba disponible</li>
+						  	<li><span class="fa fa-clock-o fa-1x"></span> La comanda està en tramitació</li>
 						</ul>
 					</div>
 				</div>
-			{% endfor %}
-			
+			{% endif %}			
 		</div>
 		<div class="row">
 			<div class="col-md-12">

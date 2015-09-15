@@ -366,7 +366,12 @@
 	    	resizable: false,
 	    	width: dwidth,
 	    	height: (dheight !== undefined?dheight:"auto"),
-	    	title: titol
+	    	title: titol,
+	        buttons: {
+	            Ok: function() {
+	              $( this ).dialog( "close" );
+	            }
+	        }
     	});
 		
 		$("#dialeg").html("<div class='alert alert-danger'>"+
@@ -380,7 +385,12 @@
 	    	resizable: false,
 	    	width: dwidth,
 	    	height: (dheight !== undefined?dheight:"auto"),
-	    	title: titol
+	    	title: titol,
+	        buttons: {
+	            Ok: function() {
+	              $( this ).dialog( "close" );
+	            }
+	        }
     	});
 		
 		$("#dialeg").html("<div class='alert alert-info'>"+
@@ -786,7 +796,7 @@
 			actionsModalOverlay();
 			actionsPersonaForm(origenLlicencia);
 			/* Check estranger */
-			if ($('#parte_persona_id').val() != "") {
+			if ($('#parte_persona_id').val() != 0) {
 				$("#formpersona-estranger").hide();
 			}
 			// Show Div
@@ -859,7 +869,7 @@
 	          	buttons : {
 	            	"Confirmar" : function() {
 	    	        	$(this).dialog("close");
-	    	        	if ($('#parte_persona_id').val() != "") {
+	    	        	if ($('#parte_persona_id').val() != 0) {
 	    	        		// Modificació no valida DNI
 	    	        		submitPerson("save", origenLlicencia);
 	    	        	} else {
@@ -869,7 +879,7 @@
 	    	        		if (error == "") {
 	    	        			submitPerson("save", origenLlicencia);
 	    	        		} else {
-	    	        			alert(error);
+	    	        			dialegError("Error", error, 400, 0);
 	    	        		};
 	    	        	};
 	        	    	return false;  
@@ -916,37 +926,7 @@
 		
 		$.post(url, params,
 		function(data, textStatus) {
-			var error = false;
-			if (data == "nomerror") {
-				$("#error-persona").html("<div class=\"sms-notice\">Cal indicar nom i cognoms</div>");
-				error = true;
-			};
-			if (data == "dnierror") {
-				$("#error-persona").html("<div class=\"sms-notice\">Cal indicar el DNI</div>");
-				error = true;
-			};
-			if (data == "telefonerror") {
-				$("#error-persona").html("<div class=\"sms-notice\">Telèfon incorrecte</div>");
-				error = true;
-			};
-			if (data == "mailerror") {
-				$("#error-persona").html("<div class=\"sms-notice\">Mail incorrecte</div>");
-				error = true;
-			};
-			if (data == "dnicluberror") {
-				$("#error-persona").html("<div class=\"sms-notice\">Aquest dni ja existeix per aquest club</div>");
-				error = true;
-			};
-			if (data == "novaliderror") {
-				$("#error-persona").html("<div class=\"sms-notice\">Dades invàlides</div>");
-				error = true;
-			};
 
-			if (error == true) {
-				$('#edicio-persona').show();
-				return false;
-			}
-			
 			$('.mask').hide();
 			
 			$("#edicio-persona").html("");
@@ -956,7 +936,8 @@
 		}).fail( function(xhr, status, error) {
 			 // xhr.status + " " + xhr.statusText, status, error
 			 var sms = smsResultAjax('KO', xhr.responseText);
- 			 $('#edicio-persona').show();
+ 			 
+			 $('#edicio-persona').show();
 			 
 			 $("#error-persona").html(sms);
 		     

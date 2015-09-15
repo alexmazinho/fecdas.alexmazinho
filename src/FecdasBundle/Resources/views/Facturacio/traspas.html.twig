@@ -21,10 +21,11 @@
 	<form id="formtraspas" action="{{ path('FecdasBundle_fitxercomptabilitat') }}" method="get" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
 			{% if enviaments|length > 0 %}
-			<h4 class="col-md-12">darrer enviament apunts fins a <span class="blue">{{ enviaments[0].datafins|date('d/m/Y') }}</span></h4>
+			<h4 class="col-md-12">Darrer enviament apunts fins a <span class="blue">{{ enviaments[0].datafins|date('d/m/Y H:m:s') }}</span></h4>
 			{% else %}
-			<h4 class="col-md-12">encara no s'ha realitzat cap enviament</h4>
+			<h4 class="col-md-12">Encara no s'ha realitzat cap enviament</h4>
 			{% endif %}
+			<h5 class="col-md-12">Pendents de comptabilitzar: <span class="blue"><b>{{ factures }}</b></span> factures i <span class="blue"><b>{{ rebuts }}</b></span> rebuts</h5>
 			<div class="col-md-3">
 				<div class="form-group">
 					<label></label>
@@ -57,10 +58,10 @@
 		<div id="formtraspas-rest" class="sr-only">{{ form_rest(form) }}</div>
 		
 		<div class="row">
-			<div class="col-md-9">
+			<div class="col-md-9 col-xs-12">
 	    		<h4 class="blue">Històric</h4>
 			</div>
-			 <div class="col-md-9">
+			 <div class="col-md-9 col-xs-12">
 			{% if enviaments|length > 0 %}
 			<div class="table-scroll enviaments">
 			   	<ol id="list-data">
@@ -132,6 +133,19 @@
 				''
 			);
 
+			$('.enviament-action-baixa').click( function(e) {
+				e.preventDefault();
+	
+				var url = $(this).attr('href');
+				
+				var strHtml = '<p>Compte!! Totes les factures i els rebuts d\'aquest enviament es tornaran a traspassar a comptabilitat</p>';
+				strHtml += '<p>Només continuar si és segur que cap dels apunts està carregat a comptabilitat</p>';
+				dialegConfirmacio(strHtml, 'Anul·lar enviament', 'auto', 400, function() { 
+					
+					window.location = url;
+					 
+				}, function() { });
+			});
 
 			// Form submit. Remove prototype
 		    $( "#formtraspas" ).submit(function( event ) {
@@ -143,35 +157,31 @@
 		    	  params.push( {'name':'inici','value':  $("#form_datadesde").val() } );
 		    	  params.push( {'name':'final','value':  $("#form_datafins").val() } );
 		    	  
-		    	  console.log(url);
 		    	  $( ".alert").remove();
 				  $.get(url, params, function(data, textStatus) {
 
+						window.location = "{{ path('FecdasBundle_traspascomptabilitat') }}";
+						/*				  
 					    var fileRow = "<div class='data-detall-cell enviament-id hidden'>__ID__</div>";
 					    fileRow += "<div class='data-detall-cell enviament-desc'><a href='";
-					    fileRow += "{{ path('FecdasBundle_downloadassentaments', { 'filename' : '__FILE__' }) }}";
+					    fileRow += "{# path('FecdasBundle_downloadassentaments', { 'filename' : '__FILE__' }) #}";
 					    fileRow += "' target='_blank'>__FILE__</a>__TEXT__</div>";
 			   			fileRow += "<div class='data-detall-cell enviament-actions'><a class='enviament-action-baixa' href='";
-			   			fileRow += "{{ path('FecdasBundle_anulartraspas', { 'id': '__ID__' }) }}";
+			   			fileRow += "{# path('FecdasBundle_anulartraspas', { 'id': '__ID__' }) #}";
 			   			fileRow += "' alt='Baixa' title='Baixa'><i class='fa fa-trash-o text-danger'></i></a></div>";
 					  
-					    /*var link=document.createElement('a');
-					    link.href=data.filename;
-					    link.text=data;*/
 						console.log(data.id+" "+data.filename+ " "+data.text);
 					    fileRow = fileRow.replace("__ID__", data.id);
-					    fileRow = fileRow.replace("__FILE__", data.filename);
+					    fileRow = fileRow.replace(/"__FILE__"/g, data.filename);
 					    fileRow = fileRow.replace("__TEXT__", data.text);
 
 					    var wrapper= document.createElement('li');
 					    wrapper.setAttribute('class', 'data-detall');
 					    wrapper.innerHTML = fileRow;
 					    
-					    /*$(wrapper).find('.enviament-desc').append(link);*/
-					    
 					    $( "#formtraspas #list-data" ).prepend( wrapper );
-
-					    $(wrapper).find('.enviament-desc a').click();
+						console.log($(wrapper).find('.enviament-desc a').length);
+					    $(wrapper).find('.enviament-desc a').click();*/
 	  						
 				  }).fail( function(xhr, status, error) {
 					 // xhr.status + " " + xhr.statusText, status, error

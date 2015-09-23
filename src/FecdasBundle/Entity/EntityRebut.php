@@ -45,7 +45,7 @@ class EntityRebut {
 	protected $comandaanulacio;	// FK taula m_comandes 
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub")
+	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="ingresos")
 	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
 	 */
 	protected $club;	// FK taula m_clubs
@@ -112,7 +112,8 @@ class EntityRebut {
 			$this->import = $import;
 			$this->comentari = "Ingrés a compte del club ".($this->club!=null?$this->club->getNom():'');
 		} else {  // Pagament d'una comanda
-			$this->club = ($club != null?$club:$comanda->getClub());
+			//$this->club = ($club != null?$club:$comanda->getClub());
+			$this->club = $comanda->getClub();
 			$this->import = ($import != 0?$import:$comanda->getTotalDetalls());
 
 			if ($import < 0) {
@@ -125,12 +126,23 @@ class EntityRebut {
 				$comanda->setRebut($this);
 			} 
 		}
+		
+		if ($this->club != null) $this->club->setTotalpagaments($this->club->getTotalpagaments() + $import); 
 	}
 	
 	
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}
+
+	/**
+     * Is a current year comanda
+     *  
+     * @return boolean
+     */
+    public function isCurrentYear() {
+    	return (date("Y", $this->datapagament->getTimestamp()) == date("Y"));
+    }
 
 	/**
 	 * Get concepte rebut/ingrés

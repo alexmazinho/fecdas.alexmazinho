@@ -1637,8 +1637,9 @@ class FacturacioController extends BaseController {
 		
 		// Nou rebut
 		$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
-		$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
-		$rebut->setClub($club);
+		
+		$rebut = $this->crearIngres($this->getCurrentDate(), $tipuspagament, $club);
+		
 		$em->persist($rebut);
 		
 		$form = $this->createForm(new FormRebut(), $rebut);
@@ -1648,8 +1649,8 @@ class FacturacioController extends BaseController {
 				$form->handleRequest($request);
 
 				if ($form->isValid()) {
-					$maxNumRebut = $this->getMaxNumEntity($rebut->getDataentrada()->format('Y'), BaseController::REBUTS) + 1;
 					
+					$maxNumRebut = $this->getMaxNumEntity($rebut->getDataentrada()->format('Y'), BaseController::REBUTS) + 1;
 					$rebut->setNum($maxNumRebut);
 
 					$comandesIds = json_decode($request->request->get('comandesSelected', ''));
@@ -1669,6 +1670,8 @@ class FacturacioController extends BaseController {
 					}
 
 					$this->validIngresosRebuts($form, $rebut);
+					
+					$club->setTotalpagaments($club->getTotalpagaments() + $rebut->getImport()); 
 					
 					$em->flush();
 					

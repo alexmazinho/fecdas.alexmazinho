@@ -5,7 +5,9 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use FecdasBundle\Classes\FlushHelper;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPersona;
@@ -373,11 +375,20 @@ class CronController extends BaseController {
 	}
 	
 	public function checkclubsAction(Request $request) {
-		/* Revisar diferències saldos gestors
+		/*
+		 * http://www.fecdas.dev/checkclubs?page=1&update=0&club=CATXXX 	=> consulta, club opcional
+		 * http://www.fecdas.dev/checkclubs?page=1&update=1&club=CATXXX 	=> modificar, club opcional
+		 * 
+		 * Revisar diferències saldos calculats
 		 * Detectar si un club de pagament diferit supera el límit 
-		 * Detectar clubs amb partes sense factura */
-		/* Planificar cron diari
+		 * Detectar clubs amb partes sense factura 
+		 * Planificar cron diari
 		 * wget -O - -q http://fecdas.dev/app_dev.php/checkclubs >> checkclubs.txt*/
+		
+		
+		$update = ($request->query->get('update', 0) == 0?false:true);
+		$page = $request->query->get('page', 1);
+		$club = $request->query->get('club', '');
 		
 		$sortida = "<style type='text/css'>";
 		$sortida .= "table	{ border-collapse:collapse; font-family: Arial; font-size: 13px; }";
@@ -386,11 +397,13 @@ class CronController extends BaseController {
 		$sortida .= "td { padding: 5px; color: #555555 }";
 		$sortida .= ".comment { font-style:italic; }";
 		$sortida .= ".codi { display:none }";
-		$sortida .= ".club { width:10%; font-weight: bold; }";
-		$sortida .= ".importclub { width:5%; text-align: right }";
+		$sortida .= ".club { width:170px; }";
+		$sortida .= "td.club { font-weight: bold; }";
+		$sortida .= ".importclub { width:70px; text-align: right; }";
+		$sortida .= ".totalclub { width:50px; text-align: center; }";
+		$sortida .= ".importclub.totalclub { width:90px; text-align: right; }";
 		$sortida .= ".saldo { font-weight: bold; }";
-		$sortida .= ".importerror { background-color: red }";
-		$sortida .= ".incidencies { width:50% }";
+		$sortida .= "td.importerror { width:500px; color:white; background-color: red }";
 		$sortida .= "</style>";
 		
 		$sortida .= "<h1>Informe diari de clubs en data " . $this->getCurrentDate()->format('d/m/Y') .  "</h1>";
@@ -400,8 +413,17 @@ class CronController extends BaseController {
 		$states = explode(";", self::CLUBS_STATES);
 		
 		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.activat = 1";
+		if ($club != '') $strQuery .= " AND c.codi = :club "; 
 		$query = $em->createQuery($strQuery);
-		$clubs = $query->getResult();
+		if ($club != '') $query->setParameter('club', $club);
+
+		//$clubs = $query->getResult();
+		$paginator  = $this->get('knp_paginator');
+		$clubs = $paginator->paginate(
+				$query,
+				$page,
+				50 /*limit per page*/
+		);
 
 		$sortida .= "<h2>Nombre de clubs: " . count($clubs) . "</h2>";
 		$nclubsincidencias = 0;
@@ -409,76 +431,96 @@ class CronController extends BaseController {
 		$sortida .= "<p class='comment'>*Romanent: Deute del club acumulat en anys anteriors. Valors negatius indiquen saldo favorable al club</p>";
 
 		$sortida .= "<table>";
-		$sortida .= "<tr><th class='codi'>Codi</th><th class='club'>Club</th>";
+		
+		$sortida .= "<tr><th class='codi' rowspan='2'>Codi</th>";
+		$sortida .= "<th class='club' rowspan='2'>Club</th>";
+		$sortida .= "<th class='text' colspan='7'>Totals registrats</th>";
+		$sortida .= "<th class='text' colspan='9'>Totals calculats</th>";
+		$sortida .= "<th class='text' rowspan='2'>Incidències</th></tr>";
+		
+		$sortida .= "<tr><th class='importclub'>Llicències</th>";
+		$sortida .= "<th class='importclub'>Duplicats</th>";
+		$sortida .= "<th class='importclub'>Altres (num.)</th>";
+		$sortida .= "<th class='importclub'>Pagaments</th>";
+		$sortida .= "<th class='importclub'>Subven.</th>";
 		$sortida .= "<th class='importclub'>Romanent* ant. ".date('Y')."</th>";
-		$sortida .= "<th class='importclub'>Llicències<br/>GESTOR</th>";
-		$sortida .= "<th class='importclub'>Kits<br/>GESTOR</th>";
-		$sortida .= "<th class='importclub'>Altres<br/>GESTOR</th>";
-		$sortida .= "<th class='importclub'>Pagaments<br/>GESTOR</th>";
-		$sortida .= "<th class='importclub'>Subven.<br/>GESTOR</th>";
-		$sortida .= "<th class='importclub saldo'>Saldo<br/>GESTOR</th>";
-		$sortida .= "<th class='importclub'>Llicències<br/>WEB</th>";
-		$sortida .= "<th class='importclub'>Diferència<br/>Llicències</th>";
-		$sortida .= "<th class='incidencies'>Incidències</th></tr>";
+		$sortida .= "<th class='importclub saldo'>Saldo</th>";
+		$sortida .= "<th class='totalclub'>Comandes</th>";
+		$sortida .= "<th class='totalclub'>Pagades<br/>(web/manual)</th>";
+		$sortida .= "<th class='totalclub'>Partes</th>";
+		$sortida .= "<th class='importclub totalclub'>Llicències<br/>(num.)</th>";
+		$sortida .= "<th class='importclub totalclub'>Duplicats<br/>(num.)</th>";
+		$sortida .= "<th class='importclub totalclub'>Altres<br/>(num.)</th>";
+		$sortida .= "<th class='importclub'>Total comandes</th>";
+		$sortida .= "<th class='importclub'>Total pagaments</th>";
+		$sortida .= "<th class='importclub saldo'>Saldo calculat</th></tr>";
 		
 		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
-		
+		$index = 1;
 		foreach ($clubs as $c => $club_iter) {
 			$incidencies = "";
+			
 			$filaClub = "<tr><td class='codi'>" . $club_iter->getCodi() . "</td>";
-			$filaClub .= "<td>" . $club_iter->getNom() . "</td>";
+			$filaClub .= "<td class='club'>" . $index."-".$club_iter->getNom() . "</td>";
 
-			$dadesClub = $club_iter->getDadesCurrent(true);
-			
-			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getRomanent(), 2, ',', '.') . "€</td>"; // Romanent gestor
-			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències gestor
-			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalkits(), 2, ',', '.') . "€</td>"; // Import Kits gestor
-			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalaltres(), 2, ',', '.') . "€</td>"; // Import altres gestor
-			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalpagaments(), 2, ',', '.') . "€</td>"; // Import pagaments gestor
-			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getAjustsubvencions(), 2, ',', '.') . "€</td>"; // Import ajust per subvencions gestor
-			$filaClub .= "<td class='importclub'>" . number_format($dadesClub['saldogestor'], 2, ',', '.') . "€</td>"; // Saldo gestor
-			$filaClub .= "<td class='importclub'>" . number_format($dadesClub['import'], 2, ',', '.') . "€</td>"; // Import llicències web
-			
-			$difLlicencies = $dadesClub['import'] - $club_iter->getTotalllicencies();
+			$dadesClub = $club_iter->getDadesCurrent(true, $update);
 
-			$classImport = "importclub";
-			if (abs($difLlicencies) > 0.001) {
-				// Valida dades web i gestor
-				$incidencies .= ">> (Incidència) Diferència totals llicències web i gestor " .number_format($difLlicencies, 2, ',', ' ') .  "<br/>";
-				$classImport .= " importerror";
-			}
-			
-			$filaClub .= "<td class='".$classImport."'>" . number_format($difLlicencies, 2, ',', '.') . "€</td>"; // Diferència llicències web - gestor
-			
-			
-			//echo $this->getCurrentDate()->format('Y-m-d') . " > " . $datainiciRevisarSaldos->format('Y-m-d') . "</br>";   
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències valor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalduplicats(), 2, ',', '.') . "€</td>"; // Import Kits valor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalaltres(), 2, ',', '.') . "€</td>"; // Import altres valor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalpagaments(), 2, ',', '.') . "€</td>"; // Import pagaments valor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getAjustsubvencions(), 2, ',', '.') . "€</td>"; // Import ajust per subvencions valor
+			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getRomanent(), 2, ',', '.') . "€</td>"; // Romanent valor
+			$filaClub .= "<td class='importclub saldo'>" . number_format($club_iter->getSaldo(), 2, ',', '.') . "€</td>"; // Saldo valor
+			$filaClub .= "<td class='totalclub'>" . number_format($dadesClub['comandes'], 0, ',', '.') . "</td>"; // total comandes
+			$filaClub .= "<td class='totalclub'>" . number_format($dadesClub['pagats'], 0, ',', '.');
+			$filaClub .= " (".number_format($dadesClub['pagatsweb'], 0, ',', '.')."/".number_format($dadesClub['pagatsmanual'], 0, ',', '.').")</td>"; // total pagades
+			$filaClub .= "<td class='totalclub'>" . number_format($dadesClub['partes'], 0, ',', '.') . "</td>"; // total partes
+			$filaClub .= "<td class='importclub totalclub'>" . number_format($dadesClub['importpartes'], 2, ',', '.')."€";
+			$filaClub .= " (".number_format($dadesClub['llicencies'], 0, ',', '.').")</td>"; // total partes
+			$filaClub .= "<td class='importclub totalclub'>" . number_format($dadesClub['importduplicats'], 2, ',', '.')."€";
+			$filaClub .= " (".number_format($dadesClub['duplicats'], 0, ',', '.').")</td>"; // total partes
+			$filaClub .= "<td class='importclub totalclub'>" . number_format($dadesClub['importaltres'], 2, ',', '.')."€";
+			$filaClub .= " (".number_format($dadesClub['altres'], 0, ',', '.').")</td>"; // total partes
+	
+			$filaClub .= "<td class='importclub'>" . number_format($dadesClub['import'], 2, ',', '.') . "€</td>"; // import comandes								
+			$filaClub .= "<td class='importclub'>" . number_format($dadesClub['pagaments'], 2, ',', '.') . "€</td>"; // pagaments
+			$filaClub .= "<td class='importclub saldo'>" . number_format($dadesClub['saldocalculat'], 2, ',', '.') . "€</td>"; // SAldo calculat
 			
 			if (false) { // Desactivat
-				if ($this->getCurrentDate() >= $datainiciRevisarSaldos and $club_iter->controlCredit()) {
+				if ($club_iter->controlCredit() &&
+					$this->getCurrentDate()->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d')) {
+						
 					if ($club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
 						// Init data notificació
 						$club_iter->setLimitnotificacio(null);
-						$incidencies .= ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit() . "<br/>";
+						$dadesClub['errors'][] = ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit();
 					} else {
-						if ($dadesClub['saldogestor'] > $club_iter->getLimitcredit()) {
+						if ($club_iter->getSaldo() > $club_iter->getLimitcredit()) {
 							// Comprovar si ja s'ha enviat la notificació
 							if ($club_iter->getLimitnotificacio() == null) {
-								$incidencies .= ">> (Notificació) Superat el límit de dèbit, s'envia la notificació al club per correu<br/>";
+								$dadesClub['errors'][] = ">> (Notificació) Superat el límit de dèbit, s'envia la notificació al club per correu";
+								
 								// Enviar notificació mail
 								$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-								if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+								//if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
 									
-								$bccmails = $this->getFacturacioMails();
+								/*$bccmails = $this->getFacturacioMails();
 								$tomails = array($club_iter->getMail());
 								$body = "<p>Benvolgut club ".$club_iter->getNom()."</p>";
 								$body .= "<p>Us fem saber que l'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
-								Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";
+								Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";*/
 									
-								//$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+								$tomails = $this->getFacturacioMails();
+								$body = "<p>Club ".$club_iter->getNom()."</p>";
+								$body .= "<p>L'import de les tramitacions que ha fet a dèbit en aquest sistema ha arribat als límits establerts</p>";
+								$body .= "<p>El saldo actual del club és ".number_format($club_iter->getSaldo(), 2, ',', '.')." €</p>";
+								
+								$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 								
 								$club_iter->setLimitnotificacio($this->getCurrentDate());
 							} else {
-								$incidencies .= ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
+								$dadesClub['errors'][] = ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
 							}
 							// Estat -> sense tramitació 
 							$club_iter->setEstat($estat = $this->getDoctrine()->getRepository('FecdasBundle:EntityClubEstat')->find(self::CLUB_SENSE_TRAMITACIO));
@@ -489,37 +531,19 @@ class CronController extends BaseController {
 				}
 			}
 			
-			// Mirar possibles errors de configuració del club
-			if ($dadesClub['err_config'] != '') {
-				$incidencies .= ">> (Incidència) Errors de configuració <br/>" . $dadesClub['err_config'] . "<br/>";
-			}
-			// Mirar partes amb dades imports / pagaments erronis 
-			if (count($dadesClub['err_imports']) > 0) {
-				$incidencies .= ">> (Incidència) Partes dades amb errors: " . implode(", ", $dadesClub['err_imports']) . "<br/>";
-			}
-			// Mirar partes sense sincronitzar de més d'una setmana
-			if (count($dadesClub['err_sincro']) > 0) {
-				$incidencies .= ">> (Incidència) Partes sense sincronitzar: " . implode(", ", $dadesClub['err_sincro']) . "<br/>";
-			}
-			// Mirar partes sense dades factura de més d'una setmana
-			if (count($dadesClub['err_facturadata']) > 0) {
-				$incidencies .= ">> (Incidència) Núm. relació dels Partes sense data facturació: " . implode(", ", $dadesClub['err_facturadata']) . "<br/>";
-			}
-			if (count($dadesClub['err_facturanum']) > 0) {
-				$incidencies .= ">> (Incidència) Núm. relació dels Partes sense número de factura: " . implode(", ", $dadesClub['err_facturanum']) . "<br/>";
-			}
-			
-			if ($incidencies != "") { // Afegir club a la taula 
-				$filaClub .= "<td>" . $incidencies . "</td></tr>";
-				$sortida .= $filaClub;
+			if (count($dadesClub['errors']) > 0) { // Afegir club a la taula
+				$filaClub .= "<td class='importerror'>" . implode(PHP_EOL, $dadesClub['errors']) . "</td>"; // Errors
 				$nclubsincidencias++;
+			} else {					 
+				$filaClub .= "<td>" . $incidencies . "</td></tr>";
 			}
+			$sortida .= $filaClub;
+			$em->flush();
+			$index++;
 		}
 		$sortida .= "</table>";
 		
 		$sortida = str_replace("-updinci-", $nclubsincidencias, $sortida);
-		
-		$em->flush();
 		
 		$subject = "Informe diari de l'estat dels clubs";
 		$bccmails = array();
@@ -527,11 +551,18 @@ class CronController extends BaseController {
 		$body = $sortida;
 		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 		
-		$this->logEntry(self::MAIL_ADMINLOG, 'CRON CLUBS',
+		/*$this->logEntry(self::MAIL_ADMINLOG, 'CRON CLUBS',
 				$this->get('session')->get('remote_addr'),
-				$request->server->get('HTTP_USER_AGENT'));
+				$request->server->get('HTTP_USER_AGENT'));*/
 		
-		return new Response($sortida);
+		
+		/*return new Response($sortida);*/
+		
+		$helper = new FlushHelper();
+				
+		return new StreamedResponse(function() use ($helper, $sortida) {
+            $helper->out($sortida);
+        });
 	}
 	
 	
@@ -585,7 +616,7 @@ class CronController extends BaseController {
 			$body .= "<div style='display: table-row;border-top:1px solid #eeeeee;'><div style='display: table-cell;height: 20px;'></div>";
 			$body .= "<div style='display: table-cell;'></div></div>";
 			$body .= "<div style='display: table-row;'><div style='display: table-cell; padding-right: 10px'>Saldo total amb la Federació:</div>";
-			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getSaldogestor(), 2, ',', '.') . " €</div></div>";
+			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getSaldo(), 2, ',', '.') . " €</div></div>";
 			$body .= "</div>";
 				
 				

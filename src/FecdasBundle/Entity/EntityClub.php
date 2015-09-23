@@ -124,6 +124,11 @@ class EntityClub {
 	 */
 	protected $comandes;	// Owning side of the relationship
 
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityRebut", mappedBy="club")
+	 */
+	protected $ingresos;	// Owning side of the relationship
+	
 	/*
 	 * @ORM\OneToMany(targetEntity="EntityDuplicat", mappedBy="club")
 	 */
@@ -177,7 +182,7 @@ class EntityClub {
 	/**
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
-	protected $totalkits;
+	protected $totalduplicats;
 	
 	/**
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
@@ -197,11 +202,12 @@ class EntityClub {
 		$this->romanent = 0;
 		$this->totalpagaments = 0;
 		$this->totalllicencies = 0;
-		$this->totalkits = 0;
+		$this->totalduplicats = 0;
 		$this->totalaltres = 0;
 		$this->ajustsubvencions = 0;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->ingresos = new \Doctrine\Common\Collections\ArrayCollection();
 		/*$this->duplicats = new \Doctrine\Common\Collections\ArrayCollection();*/
 		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -230,83 +236,144 @@ class EntityClub {
 	 * @return array
 	 */
 	
-	public function getDadesCurrent($errors = false)
+	public function getDadesCurrent($errors = false, $update = false)
 	{
-		$dades = array();
+		$dades = array('errors' => array());
+		
+		$ncomandes = 0;
 		$npartes = 0;
-		$npartespagatsweb = 0;
+		$nduplicats = 0;
+		$naltres = 0;
+		$npagatsweb = 0;
+		$npagatsmanual = 0;
 		$nllicencies = 0;
-		$nimport = 0;
-		$nimportweb = 0;
-		$nimportsincro = 0;
-		$dades['err_facturadata'] = array();
-		$dades['err_facturanum'] = array();
-		$dades['err_sincro'] = array();
-		$dades['err_imports'] = array();
-		$dades['err_config'] = '';
-		foreach($this->comandes as $parte_iter) {
-			if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null && $parte_iter->isCurrentYear()) {
-				/* Només mirar sincronitzats */
-				$auxImportParte = $parte_iter->getPreuTotalIVA();
-				$npartes++;
-				$nimport += $auxImportParte;
-				$nllicencies +=  $parte_iter->getNumLlicencies();
-				if ($parte_iter->comandaPagada() &&
-					$parte_iter->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&
-					$parte_iter->getImportPagament() != null) {
-						$nimportweb += $parte_iter->getImportPagament();
-						$npartespagatsweb++;
-				}
-				if ($parte_iter->getIdparteAccess() != null) $nimportsincro += $auxImportParte;
-				if ($errors){
-					// Varis, validacions imports i dades pagaments
-					// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
-					// Error si import calculat és null
-					// Error si no coincideix import calculat del parte i import pagament
-					$rebut = $parte_iter->getRebut();
-	
-					if ($rebut != null) {
-						if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV &&	$rebut->getImport() == 0) {
-							$dades['err_imports'][] = "(Pagament TPV incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
-						}
-						if ($parte_iter->getTotalDetalls() == null)
-							$dades['err_imports'][] = "(import incorrecte) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
-						else {
-							if ($rebut->getImport() != $parte_iter->getTotalDetalls())
-								$dades['err_imports'][] = "(imports no coincidents) " . $parte_iter->getId() . " - " . $parte_iter->getDataalta()->format('d/m/Y');
-						}
-						if ($parte_iter->getTotalDetalls() != null && $parte_iter->getTotalDetalls() != $auxImportParte)
-							$dades['err_imports'][] = "(imports enviat al gestor incorrecte) " . $parte_iter->getId()
-							. " - Web " .$auxImportParte . " >> Gestor ".$parte_iter->getTotalDetalls();
+		$totalpagaments = 0;
+		$totalimport = 0;
+		$totalimportpartes = 0;
+		$totalimportduplicats = 0;
+		$totalimportaltres = 0;
+		
+		if ($errors == true) {
+			/* Afegir errors de configuració */
+			if (count($this->tipusparte) == 0) $dades['errors'][] = "Aquest club no té cap tipus de parte activat per tramitar</br>";
+			if (count($this->usuaris) == 0) $dades['errors'][] = "Aquest club no té cap usuari activat per tramitar</br>";
+		}
+		
+		foreach($this->comandes as $comanda) {
+			if ($comanda->esBaixa() == false && $comanda->isCurrentYear()) {
+				$ncomandes++;
+				$importComanda = $comanda->getTotalDetalls();
+				
+				$totalimport += $importComanda;
+				
+				if ($comanda->comandaPagada()) {
+					$rebut = $comanda->getRebut();
+					$importRebut = $rebut->getImport();
+					
+					$importRebutsAnulats = 0;
+					foreach($comanda->getRebutsanulacions() as $anulacio) {
+						$importRebutsAnulats += $anulacio->getImport();
 					}
-	
-					// Només si tenen més d'una setmana
-					$weekAgo = new \DateTime(date("Y-m-d", strtotime("-1 week")));
-					if ($parte_iter->getDataentrada() < $weekAgo) {
-					// No sincronitzats. Afegir relacio
-						if ($parte_iter->getIdparteAccess() == null) $dades['err_sincro'][] = $parte_iter->getDataalta()->format('d/m/Y');
-						else {
-							// 	Sense dades de facturació
-							if ($parte_iter->getDatafactura() == null) $dades['err_facturadata'][] = $parte_iter->getNumrelacio();
-							if ($parte_iter->getFactura() == null) $dades['err_facturanum'][] = $parte_iter->getNumrelacio();
+					
+					if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $npagatsweb++;
+					else $npagatsmanual++;
+					
+					$totalpagaments += $importRebut + $importRebutsAnulats;
+					
+					if ($errors == true){
+						// Varis, validacions imports i dades pagaments
+						// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
+						// Error si import calculat és null
+						// Error si no coincideix import calculat del parte i import pagament
+						
+						if ($importRebut == 0) {
+							$dades['errors'][] = "(Rebut import 0,00 €) Rebut: ".$rebut->getNumRebut()." (Comanda: ".$comanda->getNumComanda().")";
 						}
+						
+						
+						if (abs($importComanda - ($importRebut + $importRebutsAnulats)) > 0.01)
+							$dades['errors'][] = "(Import rebuts <> import comanda) Comanda: ".$comanda->getNumComanda().", diferència ".$importRebut." <> ".$importRebutsAnulats;
+						
+					}
+							
+				}
+				
+				if ($comanda->comandaConsolidada() == true) {
+					$factura = $comanda->getFactura();
+					
+					if ($factura == null) $dades['errors'][] = "(Comanda sense factura) Comanda: ".$comanda->getNumComanda();
+					else {
+						if ($factura->getImport() == 0) 
+							$dades['errors'][] = "(Factura import 0,00 €) Factura:".$factura->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
+					}
+				}
+				
+				if ($comanda->esDuplicat() ) {
+					$nduplicats = 0;
+					$totalimportduplicats += $importComanda;
+				}
+				
+				if ($comanda->esAltre() ) {
+					$naltres = 0;
+					$totalimportaltres += $importComanda;
+				}
+				
+				if ($comanda->esParte() ) {
+					$npartes++;
+					$totalimportpartes += $importComanda;
+					
+					$parte = $comanda;
+
+					$nllicencies +=  $parte->getNumLlicencies();
+					
+					/* Només mirar sincronitzats */
+					$auxImportParte = $parte->getPreuTotalIVA();
+
+					if ($errors == true){
+						// Import parte i import rebuts
+						if ($auxImportParte != $importComanda) 
+							$dades['errors'][] = "(Parte/Comanda imports diferents) Comanda: ".$comanda->getNumComanda()." (".$auxImportParte." <> ".$importComanda.")";
 					}
 				}
 			}
 		}
-		if ($errors) {
-			/* Afegir errors de configuració */
-			if (count($this->tipusparte) == 0) $dades['err_config'] .= "Aquest club no té cap tipus de parte activat per tramitar</br>";
-			if (count($this->usuaris) == 0) $dades['err_config'] .= "Aquest club no té cap usuari activat per tramitar</br>";
-		}
+		
+		$totalpagaments += $this->getTotalIngresos(); // Ingresos no associat a comandes
+		
+		$dades['comandes'] = $ncomandes;
 		$dades['partes'] = $npartes;
-		$dades['pagats'] = $npartespagatsweb;
+		$dades['duplicats'] = $nduplicats;
+		$dades['altres'] = $naltres;
+		$dades['pagatsweb'] = $npagatsweb;
+		$dades['pagatsmanual'] = $npagatsmanual;
+		$dades['pagats'] = $npagatsweb + $npagatsmanual;
 		$dades['llicencies'] = $nllicencies;
-		$dades['import'] = $nimport;  // Total suma preu partes any en curs
-		$dades['importsincro'] = $nimportsincro; // Total suma preu partes sincronitzats any en curs
-		$dades['importweb'] = $nimportweb; // Total suma preu partes pagats per web any en curs
-		$dades['saldo'] = $this->totalpagaments + $this->ajustsubvencions - $this->romanent - $nimport - $this->totalkits - $this->totalaltres;
-		$dades['saldogestor'] = $this->getSaldogestor();
+		
+		$dades['pagaments'] = $totalpagaments;  // Total suma import rebuts any en curs
+		$dades['import'] = $totalimport;  // Total suma preu comandes any en curs
+		$dades['importpartes'] = $totalimportpartes; // Total suma preu partes any en curs
+		$dades['importduplicats'] = $totalimportduplicats; // Total suma preu duplicats any en curs
+		$dades['importaltres'] = $totalimportaltres; // Total suma preu altres any en curs
+		$dades['saldocalculat'] = $totalpagaments + $this->ajustsubvencions - $this->romanent - $totalimport;
+		 
+		 
+		$saldoDif = abs($dades['saldocalculat'] - $this->getSaldo()); 
+		 
+		if ($saldoDif > 0.01 && $update == true) {
+			$this->totalpagaments = $totalpagaments;
+			$this->totalllicencies = $totalimportpartes;
+			$this->totalduplicats = $totalimportduplicats;
+			$this->totalaltres = $totalimportaltres;
+			
+			$saldoDif = 0;
+		} 
+		 
+		if ($errors == true){
+			// Saldos no quadren
+			if ($saldoDif > 0.01) {
+				$dades['errors'][] = "(Saldo calculat <> saldo club) Diferència: ".$saldoDif." (".$dades['saldocalculat']." <> ".$this->getSaldo().")";
+			}
+		}
 		 
 		return $dades;
 	}
@@ -316,8 +383,8 @@ class EntityClub {
 	 *
 	 * @return decimal
 	 */
-	public function getSaldogestor() {
-		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->totalllicencies - $this->totalkits - $this->totalaltres, 2);
+	public function getSaldo() {
+		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
 	}
 	
 	/**
@@ -326,14 +393,29 @@ class EntityClub {
 	 * @return decimal
 	 */
 	public function getTotalLlicenciesWeb() {
-		$nimport = 0;
-		foreach($this->comandes as $parte_iter) {
+		$totalimport = 0;
+		foreach($this->comandes as $comanda) {
+			$parte_iter = $comanda;
 			if ($parte_iter->esParte() && !$parte_iter->esBaixa() && $parte_iter->isCurrentYear()) {
-				$nimport += $parte_iter->getPreuTotalIVA();
+				$totalimport += $parte_iter->getTotalDetalls();
 			}
 		}
 		 
-		return round($nimport, 2);
+		return round($totalimport, 2);
+	}
+	
+	/**
+	 * Retorna l'import dels ingresos no associats a cap comanda
+	 *
+	 * @return decimal
+	 */
+	public function getTotalIngresos() {
+		$totalimport = 0;
+		foreach($this->ingresos as $ingres) {
+			if ($ingres->isCurrentYear()) $totalimport += $ingres->getImport();
+		}
+		 
+		return round($totalimport, 2);
 	}
 	
 	/**
@@ -342,7 +424,7 @@ class EntityClub {
 	 * @return decimal
 	 */
 	public function getSaldoweb() {
-		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->getTotalLlicenciesWeb() - $this->totalkits - $this->totalaltres, 2);
+		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->getTotalLlicenciesWeb() - $this->totalduplicats - $this->totalaltres, 2);
 	}
 	
 	/**
@@ -361,8 +443,8 @@ class EntityClub {
 		$stat['vigents'] = 0;	// Partes vigents
 		$stat['lvigents'] = 0;	// llicències vigents
 		 
-		foreach($this->comandes as $parte_iter) {
-	
+		foreach($this->comandes as $comanda) {
+			$parte_iter = $comanda;
 			/*if ($parte_iter->esParte() && $parte_iter->getDatabaixa() == null and
 			 $parte_iter->getDataalta()->format('Y-m-d') >= $desde->format('Y-m-d') and
 			 $parte_iter->getDataalta()->format('Y-m-d') <= $fins->format('Y-m-d') and
@@ -875,7 +957,7 @@ class EntityClub {
     /**
      * Add comanda
      *
-     * @param FecdasBundle\Entity\EntityParte $comanda
+     * @param FecdasBundle\Entity\EntityComanda $comanda
      */
     public function addEntityComanda(\FecdasBundle\Entity\EntityComanda $comanda)
     {
@@ -896,6 +978,44 @@ class EntityClub {
     	}
     }
     
+	
+	
+	   /**
+     * Get ingresos
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getIngresos()
+    {
+    	return $this->ingresos;
+    }
+    
+    /**
+     * Add ingrés
+     *
+     * @param FecdasBundle\Entity\EntityRebut $ingres
+     */
+    public function addEntityRebut(\FecdasBundle\Entity\EntityRebut $ingres)
+    {
+    	$rebut->setClub($this);
+    	$this->ingresos->add($ingres);
+    }
+    
+    /**
+     * Set ingresos
+     * 
+     * @param \Doctrine\Common\Collections\ArrayCollection $ingresos
+     */
+    public function setIngresos(\Doctrine\Common\Collections\ArrayCollection $ingresos)
+    {
+    	$this->ingresos = $ingresos;
+    	foreach ($ingresos as $ingres) {
+    		$ingres->setClub($this);
+    	}
+    }
+    
+	
+	
     /**
      * Get duplicats
      *
@@ -1093,23 +1213,23 @@ class EntityClub {
     }
 
     /**
-     * Set totalkits
+     * Set totalduplicats
      *
-     * @param decimal $totalkits
+     * @param decimal $totalduplicats
      */
-    public function setTotalkits($totalkits)
+    public function setTotalduplicats($totalduplicats)
     {
-    	$this->totalkits = $totalkits;
+    	$this->totalduplicats = $totalduplicats;
     }
     
     /**
-     * Get totalkits
+     * Get totalduplicats
      *
      * @return decimal
      */
-    public function getTotalkits()
+    public function getTotalduplicats()
     {
-    	return $this->totalkits;
+    	return $this->totalduplicats;
     }
     
     /**

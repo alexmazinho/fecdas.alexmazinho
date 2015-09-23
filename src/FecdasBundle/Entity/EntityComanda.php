@@ -189,6 +189,15 @@ class EntityComanda {
 		return !$this->esDuplicat() && !$this->esParte();
 	}
 
+	/**
+     * Is a current year comanda
+     *  
+     * @return boolean
+     */
+    public function isCurrentYear() {
+    	return (date("Y", $this->dataentrada->getTimestamp()) == date("Y"));
+    }
+
 	/* Per sobreescriure als fills */
 	public function baixa()
 	{

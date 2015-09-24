@@ -1572,14 +1572,9 @@ select#club_tipusparte {
 	height: 130px;
 }
 
-#formclub-dades-tab4 input,
-#formclub-dades-tab4 select { display: inline; }
-
-#formclub-dades-tab4 .formfield-right {
-	width: 70px;
-	text-align: right;
+#formclub-dades-tab4 .formlabel-left {
+	width: 50%;
 }
-
 
 #formclub-dades-tab4 .colleft { width: 40%; vertical-align: top; display: inline-block; padding-right: 10px;}
 #formclub-dades-tab4 .colmiddle { width: 27%; font-size: 0.9em; vertical-align: top; display: inline-block; padding-right: 10px;}
@@ -1591,15 +1586,6 @@ select#club_tipusparte {
 	display: table-row;
 }
 
-#formclub-dades-tab4 #formclub-dummy .formfield-right,
-#formclub-dades-tab4 #formclub-dummy .formfield-left {
-	width:auto;
-}
-
-
-#formclub-dades-tab4 #club_estat { width: 180px; text-align: left;}
-#formclub-dades-tab4 #club_limitcredit { width:100px;  }
-#formclub-dades-tab4 #club_limitnotificacio { width:100px; text-align: center; }
 #formclub-dades-tab4 #formclub-saldoclub label,
 #formclub-dades-tab4 #formclub-saldoclub input { font-weight: bold }
 

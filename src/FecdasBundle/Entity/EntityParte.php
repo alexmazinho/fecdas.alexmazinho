@@ -114,6 +114,14 @@ class EntityParte extends EntityComanda {
 		return true;
 	}
 	
+	/**
+	 * Reescriptura
+	 */
+	protected function updateClubSaldoTipusComanda($import) {
+		$this->club->setTotalllicencies($this->club->getTotalllicencies() + $import);
+	}
+	
+	
 	public function baixa()
 	{
 		parent::baixa(); // Baixa detalls comanda

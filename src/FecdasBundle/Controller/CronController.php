@@ -605,7 +605,7 @@ class CronController extends BaseController {
 			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Despesa total en llicències durant l'any actual:</div>";
 			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . " €</div></div>";
 			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Despesa total en kits durant l'any actual:</div>";
-			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalkits(), 2, ',', '.') . " €</div></div>";
+			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalduplitas(), 2, ',', '.') . " €</div></div>";
 			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Altres despeses durant l'any actual:</div>";
 			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalaltres(), 2, ',', '.') . " €</div></div>";
 			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Pagaments realitzats durant l'any actual:</div>";

@@ -190,6 +190,23 @@ class EntityComanda {
 	}
 
 	/**
+	 * Actualitza saldos club. Reescriptura updateClubSaldoTipusComanda
+	 * 
+	 */
+	public function updateClubSaldos($import) {
+		if ($this->club == null) return false;
+		
+		$this->updateClubSaldoTipusComanda($import);
+		$this->club->addEntityComanda($this);
+		
+		return true; 
+	}
+
+	protected function updateClubSaldoTipusComanda($import) {
+		$this->club->setTotalaltres($this->club->getTotalaltres() + $import);
+	}
+
+	/**
      * Is a current year comanda
      *  
      * @return boolean

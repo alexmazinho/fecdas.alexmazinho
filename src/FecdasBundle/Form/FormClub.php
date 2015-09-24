@@ -60,8 +60,9 @@ class FormClub extends AbstractType {
 					'required'  => false,
 			));
 			
-			$builder->add('limitcredit', 'money', array(
+			$builder->add('limitcredit', 'number', array(
 					'grouping' => true,
+					'precision' => 2
 			));
 			
 			$builder->add('limitnotificacio', 'datetime', array(
@@ -75,7 +76,7 @@ class FormClub extends AbstractType {
 			$builder->add('limitnotificacio', 'text', array(
 					'read_only'  => true,
 			));*/
-
+			
 		}
 		
 		$builder->add('nom', 'text');
@@ -191,47 +192,52 @@ class FormClub extends AbstractType {
 				'mapped' => false,
 		));
 		
+		$builder->add('compte', 'text', array(
+				'required'  => true,
+		));
 		
-		$builder->add('romanent', 'money', array(
+		$builder->add('romanent', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
+				'precision' => 2
 		));
 			
-		$builder->add('totalpagaments', 'money', array(
+		$builder->add('totalpagaments', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
+				'precision' => 2
 		));
 		
-		$builder->add('totalllicencies', 'money', array(
+		$builder->add('totalllicencies', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
+				'precision' => 2
 		));
 		
-		$builder->add('totalllicenciesweb', 'money', array(
+		$builder->add('totalduplicats', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'mapped' => false,
-		));
-			
-		$builder->add('totalkits', 'money', array(
-				'read_only'  => true,
-				'grouping' => true,
+				'precision' => 2
 		));
 		
-		$builder->add('totalaltres', 'money', array(
+		$builder->add('totalaltres', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
+				'precision' => 2
 		));
 		
-		$builder->add('ajustsubvencions', 'money', array(
+		$builder->add('ajustsubvencions', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
+				'precision' => 2
 		));
-		$builder->add('saldoclub', 'money', array(
+		$builder->add('saldoclub', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'mapped' => false,
+				'precision' => 2,
+				'mapped' => false
 		));
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

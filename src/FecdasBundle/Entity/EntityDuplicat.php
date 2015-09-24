@@ -71,6 +71,15 @@ class EntityDuplicat extends EntityComanda {
 	{
 		return true;
 	}
+	
+	/**
+	 * Reescriptura
+	 */
+	protected function updateClubSaldoTipusComanda($import) {
+		$this->club->setTotalduplicats($this->club->getTotalduplicats() + $import);
+	}
+	
+	
 	/**
 	 * Get prefix albarà duplicats. Sobreescriptura
 	 *

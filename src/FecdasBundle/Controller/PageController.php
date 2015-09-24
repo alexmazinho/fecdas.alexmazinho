@@ -475,7 +475,7 @@ class PageController extends BaseController {
 		
 		/* Recollir estadístiques */
 		$stat = $club->getDadesDesde( $tipus, $desde, $fins );
-		$stat['saldo'] = $club->getSaldoweb();
+		$stat['saldo'] = $club->getSaldo();
 		
 		return $this->render('FecdasBundle:Page:partes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
@@ -1198,7 +1198,7 @@ class PageController extends BaseController {
 			$parte->getClub()->controlCredit() == true) {
 			// Comprovació de saldos clubs DIFE
 /***************  SALDOS ENCARA NO ************************************************************************************************************************/					
-			/*if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldoweb() + $parte->getClub()->getLimitcredit()) {
+			/*if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldo() + $parte->getClub()->getLimitcredit()) {
 					throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
 					Per poder fer noves gestions, cal que contacteu amb la FECDAS');
 			}*/

@@ -259,6 +259,7 @@ class EntityClub {
 			if (count($this->usuaris) == 0) $dades['errors'][] = "Aquest club no té cap usuari activat per tramitar</br>";
 		}
 		
+		
 		foreach($this->comandes as $comanda) {
 			if ($comanda->esBaixa() == false && $comanda->isCurrentYear()) {
 				$ncomandes++;
@@ -268,34 +269,27 @@ class EntityClub {
 				
 				if ($comanda->comandaPagada()) {
 					$rebut = $comanda->getRebut();
-					$importRebut = $rebut->getImport();
 					
-					$importRebutsAnulats = 0;
+					$importRebut = $rebut->getImport();
+						
+					/*$importRebutsAnulats = 0;
 					foreach($comanda->getRebutsanulacions() as $anulacio) {
 						$importRebutsAnulats += $anulacio->getImport();
-					}
-					
+					}*/
+						
 					if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $npagatsweb++;
 					else $npagatsmanual++;
-					
-					$totalpagaments += $importRebut + $importRebutsAnulats;
-					
+						
 					if ($errors == true){
 						// Varis, validacions imports i dades pagaments
 						// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
 						// Error si import calculat és null
 						// Error si no coincideix import calculat del parte i import pagament
-						
+							
 						if ($importRebut == 0) {
 							$dades['errors'][] = "(Rebut import 0,00 €) Rebut: ".$rebut->getNumRebut()." (Comanda: ".$comanda->getNumComanda().")";
 						}
-						
-						
-						if (abs($importComanda - ($importRebut + $importRebutsAnulats)) > 0.01)
-							$dades['errors'][] = "(Import rebuts <> import comanda) Comanda: ".$comanda->getNumComanda().", diferència ".$importRebut." <> ".$importRebutsAnulats;
-						
 					}
-							
 				}
 				
 				if ($comanda->comandaConsolidada() == true) {
@@ -338,7 +332,11 @@ class EntityClub {
 			}
 		}
 		
+		error_log(' => ingresos '.$totalpagaments.' + '.$this->getTotalIngresos());
+		
 		$totalpagaments += $this->getTotalIngresos(); // Ingresos no associat a comandes
+		
+		error_log(' => final '.$totalpagaments);
 		
 		$dades['comandes'] = $ncomandes;
 		$dades['partes'] = $npartes;
@@ -388,23 +386,6 @@ class EntityClub {
 	}
 	
 	/**
-	 * Retorna l'import de les llicències del web de l'any actual
-	 *
-	 * @return decimal
-	 */
-	public function getTotalLlicenciesWeb() {
-		$totalimport = 0;
-		foreach($this->comandes as $comanda) {
-			$parte_iter = $comanda;
-			if ($parte_iter->esParte() && !$parte_iter->esBaixa() && $parte_iter->isCurrentYear()) {
-				$totalimport += $parte_iter->getTotalDetalls();
-			}
-		}
-		 
-		return round($totalimport, 2);
-	}
-	
-	/**
 	 * Retorna l'import dels ingresos no associats a cap comanda
 	 *
 	 * @return decimal
@@ -416,15 +397,6 @@ class EntityClub {
 		}
 		 
 		return round($totalimport, 2);
-	}
-	
-	/**
-	 * Retorna el saldo del club amb les dades actualitzades del web (llicencies) i del gestor
-	 *
-	 * @return decimal
-	 */
-	public function getSaldoweb() {
-		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->getTotalLlicenciesWeb() - $this->totalduplicats - $this->totalaltres, 2);
 	}
 	
 	/**

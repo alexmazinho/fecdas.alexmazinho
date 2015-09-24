@@ -127,7 +127,10 @@ class EntityRebut {
 			} 
 		}
 		
-		if ($this->club != null) $this->club->setTotalpagaments($this->club->getTotalpagaments() + $import); 
+		if ($this->club != null) {
+			$this->club->setTotalpagaments($this->club->getTotalpagaments() + $import);
+			$this->club->addEntityRebut($rebut);
+		} 
 	}
 	
 	

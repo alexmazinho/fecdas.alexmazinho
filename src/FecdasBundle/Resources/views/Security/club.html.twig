@@ -19,13 +19,7 @@
 			</div>
 	    </header>
    
-		{% for flashMessage in app.session.flashbag.get('error-notice') %}
-   		<div class="row">
-		    <div class="sms-notice">
-				{{ flashMessage }}
-	  		</div>	
-		</div>
-		{% endfor %}
+		{% include 'FecdasBundle:Includes:messages.html.twig' %}
 
    		<div class="row">
 		{% if admin == true %}
@@ -247,66 +241,130 @@
 				</div>
 	        </div>
 	        <div id="formclub-dades-tab4" class="formclub-tab" >
-	        	<div class="colleft">
-		        	<div id="formclub-estat" class="formfield-row">
-							{{ form_label(form.estat, 'Estat:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.estat, { 'attr': {'class': 'formfield-right'} }) }}
+	        	<div class="row">
+					<div class="col-md-4">
+						<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Estat</span>
+					    		{{ form_label(form.estat, 'Estat:', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.estat, { 'attr': {'class': 'form-control'} }) }}
+					    	</div>
+					    </div>
 					</div>
-		        	<div id="formclub-impressio" class="formfield-row">
+					<div class="col-md-4">
+						<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Compte comptable</span>
+					    		{{ form_label(form.compte, 'Compte comptable', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.compte, { 'attr': {'class': 'form-control'} }) }}
+					    	</div>
+					    </div>
+					</div>
+				</div>
+	        	<div class="row">
+					<div class="col-md-4 form-inline">
+			        	<div id="formclub-impressio" class="formfield-row">
 							{{ form_label(form.impressio, 'Impressió llicències:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.impressio, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-		        	<div id="formclub-limitcredit" class="formfield-row">
+							{{ form_widget(form.impressio, { 'attr': {'class': 'checkbox'} }) }}
+						</div>
+						<div id="formclub-limitcredit" class="formfield-row">
 							{{ form_label(form.limitcredit, 'Límit de crèdit:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.limitcredit, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-		        	<div id="formclub-limitnotificacio" class="formfield-row">
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.limitcredit, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+					    </div>
+			        	<div id="formclub-limitnotificacio" class="formfield-row">
 							{{ form_label(form.limitnotificacio, 'Notificació límit superat:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.limitnotificacio, { 'attr': {'class': 'formfield-right'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.limitnotificacio, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-calendar"></i></span>
+							    </div>
+						    </div>
+						</div>
 					</div>
-				</div>
-				<div class="colmiddle">
-		        	<div id="formclub-ajustsubvencions" class="formfield-row">
-							{{ form_label(form.ajustsubvencions, 'Ajust subvencions:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.ajustsubvencions, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-					<div id="formclub-totalllicenciesweb" class="formfield-row">
-							{{ form_label(form.totalllicenciesweb, 'Total llicències:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.totalllicenciesweb, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-					<div id="formclub-totalllicencies" class="formfield-row">
+					<div class="col-md-4 form-inline">
+						<div id="formclub-totalllicencies" class="formfield-row">
 							{{ form_label(form.totalllicencies, 'Total llic. Gestor:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.totalllicencies, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-		        	<div id="formclub-totalkits" class="formfield-row">
-							{{ form_label(form.totalkits, 'Total kits:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.totalkits, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-		        	<div id="formclub-totalaltres" class="formfield-row">
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.totalllicencies, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
+			        	<div id="formclub-totalduplicats" class="formfield-row">
+							{{ form_label(form.totalduplicats, 'Total kits:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.totalduplicats, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
+			        	<div id="formclub-totalaltres" class="formfield-row">
 							{{ form_label(form.totalaltres, 'Total altres:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.totalaltres, { 'attr': {'class': 'formfield-right'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.totalaltres, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
+					</div>
+					<div class="col-md-4 form-inline">
+						<div id="formclub-romanent" class="formfield-row">
+							{{ form_label(form.romanent, 'Romanent:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.romanent, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
+			        	<div id="formclub-ajustsubvencions" class="formfield-row">
+							{{ form_label(form.ajustsubvencions, 'Ajust subvencions:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.ajustsubvencions, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
+			        	<div id="formclub-totalpagaments" class="formfield-row">
+							{{ form_label(form.totalpagaments, 'Total pagaments:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.totalpagaments, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
+			        	<div id="formclub-saldoclub" class="formfield-row">
+							{{ form_label(form.saldoclub, 'Saldo:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+							<div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"></span>
+									{{ form_widget(form.saldoclub, { 'attr': {'class': 'form-control form-control-right'} }) }}
+							    	<span class="input-group-addon input-group-addon-icon"><i class="fa fa-euro"></i></span>
+							    </div>
+						    </div>
+						</div>
 					</div>
 				</div>
-				<div class="colright">
-		        	<div id="formclub-romanent" class="formfield-row">
-							{{ form_label(form.romanent, 'Romanent:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.romanent, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-		        	<div id="formclub-totalpagaments" class="formfield-row">
-							{{ form_label(form.totalpagaments, 'Total pagaments:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.totalpagaments, { 'attr': {'class': 'formfield-right'} }) }}
-					</div>
-					<div id="formclub-dummy" class="formfield-row">
-						<div class="formlabel-left" >&nbsp;</div>
-						<div class="formfield-right">&nbsp;</div>
-					</div>
-					<div id="formclub-dummy" class="formfield-row">
-						<div class="formlabel-left" >&nbsp;</div>
-						<div class="formfield-right">&nbsp;</div>
-					</div>
-		        	<div id="formclub-saldoclub" class="formfield-row">
-							{{ form_label(form.saldoclub, 'Saldo:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-							{{ form_widget(form.saldoclub, { 'attr': {'class': 'formfield-right'} }) }}
+				<div class="row">
+					<div class="col-md-4">
 					</div>
 				</div>
 	        </div>

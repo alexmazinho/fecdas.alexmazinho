@@ -304,6 +304,13 @@ class SecurityController extends BaseController
    					$valida = false;
    				}
 
+   				if ($valida == true) {
+   					if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
+   						$strErrorLog = "El compte comptable ha de tenir longitud 7 i ser numèric";
+   						$valida = false;
+   					}	
+				}
+
    				if ($valida == true && $nouclub) {
    					// Nou club
    					$checkclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($club->getCodi());
@@ -345,7 +352,7 @@ class SecurityController extends BaseController
     										$userclub->getUser() . ' , amb clau ' . $randomPassword);
     					$nouclub = false;
     				} else {
-    					$this->get('session')->getFlashBag()->add('error-notice', 'Dades del club desades correctament ');
+    					$this->get('session')->getFlashBag()->add('sms-notice', 'Dades del club desades correctament ');
     				}
     
     				$em->flush();
@@ -395,8 +402,7 @@ class SecurityController extends BaseController
    		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
    		if ($club->getCodi() != '') $form->get('clubs')->setData($club);
-   		$form->get('saldoclub')->setData($club->getSaldoweb());
-   		$form->get('totalllicenciesweb')->setData($club->getTotalLlicenciesWeb());
+   		$form->get('saldoclub')->setData($club->getSaldo());
 
     	return $this->render('FecdasBundle:Security:club.html.twig', 
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab)));

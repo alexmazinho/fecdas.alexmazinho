@@ -1371,23 +1371,26 @@ class PageController extends BaseController {
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'd.datapeticio');
 		$direction = $request->query->get('direction', 'desc');
-		
 		$currentClub = $this->getCurrentClub()->getCodi();
-		$duplicat = new EntityDuplicat();
+		
+		if ($request->getMethod() != 'POST') $this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub);
+		
+		$duplicat = $this->crearComandaDuplicat();
+		//$duplicat = new EntityDuplicat();
 		$form = $this->createForm(new FormDuplicat(array('club' => $currentClub)), $duplicat);
 		
 		if ($request->getMethod() == 'POST') {
 			$form->submit($request); 
 			if ($form->isValid()) {
 				try {
-					$duplicat->setClub($this->getCurrentClub());
-					$duplicat->setDatapeticio($this->getCurrentDate());
+					//$duplicat->setClub($this->getCurrentClub());
+					//$duplicat->setDatapeticio($this->getCurrentDate());
 					
 					// Carnets llicències sense títol, la resta amb títol corresponent 
-					if ($duplicat->getTitol() == null and $duplicat->getCarnet()->getId() != 1) throw new \Exception('Cal indicar un títol');  
-					if ($duplicat->getTitol() != null and $duplicat->getCarnet()->getId() == 1) throw new \Exception('Dades del títol incorrectes'); 
+					if ($duplicat->getTitol() == null && $duplicat->getCarnet()->getId() != 1) throw new \Exception('Cal indicar un títol');  
+					if ($duplicat->getTitol() != null && $duplicat->getCarnet()->getId() == 1) throw new \Exception('Dades del títol incorrectes'); 
 
-					$em->persist($duplicat);
+					//$em->persist($duplicat);
 					
 					// Comprovar canvis en el nom / cognoms
 					$nom = "";
@@ -1428,8 +1431,7 @@ class PageController extends BaseController {
 						$duplicat->getPersona()->setValidat(false);
 					}
 					
-					/* Crear factura */
-					$factura = $this->crearFactura($this->getCurrentDate(), $duplicat, $duplicat->getTextCarnet(false)." ".$duplicat->getPersona()->getCognomsNom());
+					$detall = $this->addDuplicatDetall($duplicat);
 							
 					$em->flush();
 					
@@ -1453,10 +1455,10 @@ class PageController extends BaseController {
 					
 					$this->logEntryAuth('OK DUPLICAT', 'club ' . $currentClub . ' persona ' . $duplicat->getPersona()->getId());
 					
-					$this->get('session')->getFlashBag()->add('error-notice',"Petició enviada correctament");
+					$this->get('session')->getFlashBag()->add('sms-notice',"Petició enviada correctament");
 					
 				} catch (\Exception $e) {
-					$em->detach($duplicat);
+					if ($duplicat != null) $em->detach($duplicat);
 					
 					$this->logEntryAuth('ERROR DUPLICAT', 'club ' . $currentClub . ' ' .$e->getMessage());
 						
@@ -1473,15 +1475,14 @@ class PageController extends BaseController {
 						$errors .=  "(" . $child->getName() . ")". $this->getErrorMessages($child);
 					}
 				}*/
+				if ($duplicat != null) $em->detach($duplicat);
 				$this->logEntryAuth('INVALID DUPLICAT', 'club ' . $currentClub . ' ' .$form->getErrorsAsString());
 				
 				$this->get('session')->getFlashBag()->add('error-notice',"Dades incorrectes .".$form->getErrorsAsString());
 			}
 
 			/* reenvia pàgina per evitar F5 */
-			return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction)));
-		} else { 
-			$this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub); 
+			return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page)));
 		}
 		
 		$strQuery = "SELECT d, p, c FROM FecdasBundle\Entity\EntityDuplicat d JOIN d.persona p JOIN d.carnet c";
@@ -1514,10 +1515,11 @@ class PageController extends BaseController {
 		if ($this->isAuthenticated() != true || 
 			!$request->query->has('carnet') ||
 			!$request->query->has('persona')) return new Response("");
-		
+
 		$em = $this->getDoctrine()->getManager();
 		
-		$duplicat = new EntityDuplicat();
+		//$duplicat = new EntityDuplicat();
+		$duplicat = $this->crearComandaDuplicat();
 		$carnet = $em->getRepository('FecdasBundle:EntityCarnet')->find($request->query->get('carnet'));
 		$persona = $em->getRepository('FecdasBundle:EntityPersona')->find($request->query->get('persona'));
 		$duplicat->setCarnet($carnet);
@@ -1527,8 +1529,6 @@ class PageController extends BaseController {
 		if ($carnet != null and $carnet->getFoto() == true) $fotocarnet = true;
 			
 		$form = $this->createForm(new FormDuplicat(array('persona' => $persona, 'carnet' => $carnet, 'foto' => $fotocarnet)), $duplicat);   // Només select titols
-
-		$this->logEntryAuth('LOAD DUPLICAT', $request->query->get('persona'));
 		
 		return $this->render('FecdasBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView()))); 
 	} 

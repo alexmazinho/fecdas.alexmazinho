@@ -26,15 +26,12 @@
 		<div id="formduplicats-dades" class="form-row clearfix"></div>
     </form>
 
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
 	<div id="llista-duplicats">
 		<div class="table-header">	
 		   	<div id="list-header">
+		   		<div id="header-duplicat-estat" class="col-listheader collistheader-noorder">Estat</div>
 		   		<div id="header-duplicatid" class="col-listheader">{{ knp_pagination_sortable(duplicats, 'Albarà', 'd.id') }}
 		   			<span class="listheader-icon {% if duplicats.isSorted('d.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-duplicatpeticio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Petició', 'd.datapeticio') }}
@@ -58,6 +55,9 @@
 				{% if admin == true or (admin != true and duplicat.databaixa is null) %}
 					{% if duplicat.databaixa is null %}
 					<li class="data-detall">
+						<div class="data-detall-cell duplicat-estat">
+		   					{% if duplicat.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ duplicat.estat }}{% endif %}
+		   				</div>
 				   		<div class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
@@ -84,25 +84,28 @@
 			   			</div>
 				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</div>
 				   		<div class="data-detall-cell duplicat-actions">
-							{% if duplicat.comandaPagada != true %} 
-								<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
-									<i class="fa fa-euro fa-1x green"></i></a>
-							{% endif %}	
-				   			{% if admin == true %}
-				   				{% if duplicat.factura is not null  %}
-								{% 	 set nf = duplicat.factura.num %}
-								{% else %}
-								{% 	 set nf = '' %}
-								{% endif %}
+					   		{% if admin == true  %}
+								{% if duplicat.comandaPagada != true %} 
+									<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': duplicat.id }) }}" 
+					   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+								{% endif %}	
 						   		<a class="veure-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': duplicat.id}) }}" alt="Veure comanda" title="Veure comanda">
 									<i class="fa fa-search fa-1x blue"></i></a>
-		   						<a class="duplicat-esborrar" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Anul·lar petició" title="Anul·lar petició">
+		   						<a class="duplicat-esborrar link" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Anul·lar petició" title="Anul·lar petició">
 			   						<i class="fa fa-trash-o fa-1x red"></i></a>
+							{% else %}
+								{% if duplicat.comandaPagada != true %} 
+									<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
+										<i class="fa fa-euro fa-1x green"></i></a>
+								{% endif %}	
 				   			{% endif %}
 			   			</div>
 			   		</li>
 					{% else %}
 			   		<li class="data-detall data-detall-fosc">
+			   			<div class="data-detall-cell duplicat-estat">
+		   					{% if duplicat.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ duplicat.estat }}{% endif %}
+		   				</div>
 				   		<div class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</div>
 				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
 				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
@@ -155,6 +158,12 @@ $(document).ready(function(){
 		$('.table-scroll').css({"width":"101.5%"});
 	}
 
+	$('.confirmar-pagament').click(function(e) {
+		e.preventDefault();
+		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+	});
+    
+	
 });
 
 </script>

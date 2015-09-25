@@ -338,13 +338,12 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
 
-.data-detall .data-detall-cell i.fa,
-.link i.fa { 
+.data-detall .data-detall-cell i.fa, .link i.fa { 
 	padding: 4px;
 	border-radius: 50%;
 	text-align: center;
-	min-width: 20px;
-	min-height: 20px;
+	min-width: 22px;
+	min-height: 22px;
 	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-moz-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-ms-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
@@ -2019,14 +2018,15 @@ p.info-bold {
     box-shadow: 0px 0px 2px 2px #7fcff6; /* Chrome 6+, Firefox 4+, IE 9+, iOS 5+, Opera 10.50+ */
 }
 
-#header-duplicatid { width: 8%; }
-#header-duplicatpeticio { width: 8%; }
-#header-duplicatdni { width: 8%; }
-#header-duplicatnom { width: 20%; text-align: left; }
-#header-duplicatcarnet { width: 16%; text-align: left; }
+#header-duplicat-estat { width: 5%; }
+#header-duplicatid { width: 9%; }
+#header-duplicatpeticio { width: 7%; }
+#header-duplicatdni { width: 9%; }
+#header-duplicatnom { width: 18%; text-align: left; }
+#header-duplicatcarnet { width: 14%; text-align: left; }
 #header-duplicatfoto { width: 5%; }
-#header-duplicatimpressio { width: 8%; }
-#header-duplicatextra { width: 16%; text-align: left; }
+#header-duplicatimpressio { width: 7%; }
+#header-duplicatextra { width: 15%; text-align: left; }
 #header-duplicatactions { width: auto; text-align: right; position: relative }
 #header-duplicatactions a:hover { color:#2281CF; text-decoration: none; }
 #header-duplicatactions a,
@@ -2034,18 +2034,20 @@ p.info-bold {
 #header-duplicatactions a:visited
  { position: absolute; right: 20px;font-size: 0.9em; font-style: italic; font-weight: normal; text-decoration: underline; }
 
-.duplicat-id { width: 8%; }
-.duplicat-peticio { width: 8%; }
-.duplicat-dni { width: 8%; }
-.duplicat-nom { width: 20%; text-align: left; }
+.duplicat-estat { width: 5%; }
+.duplicat-id { width: 9%; }
+.duplicat-peticio { width: 7%; }
+.duplicat-dni { width: 9%; }
+.duplicat-nom { width: 18%; text-align: left; }
 .duplicat-nom span { font-style: italic; font-size: 0.8em; }
-.duplicat-carnet { width: 16%; text-align: left; }
+.duplicat-carnet { width: 14%; text-align: left; font-size: 0.9em; }
 .duplicat-foto { width: 5%; }
 .duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
 .duplicat-foto img:hover { border-color: #7fcff6 }
 .duplicat-foto span.noimage-available { text-align: center; }
-.duplicat-impressio { width: 8%; font-size: 1.2em;  }
-.duplicat-extra { width: 16%; text-align: left; }
+.duplicat-impressio { width: 7%; }
+.duplicat-impressio .fa { width: 7%; font-size: 1.2em;  }
+.duplicat-extra { width: 15%; text-align: left; left; font-size: 0.9em; }
 .duplicat-actions { width: auto; text-align: right; font-size: 1.2em; }
 
 #dialeg { height: auto !important; }

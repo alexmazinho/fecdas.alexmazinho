@@ -91,6 +91,7 @@ class EntityFactura {
 		//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE);
 		$this->detalls = json_encode($detalls);
 		$this->comanda = $comanda;
+
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();
 			if (trim($concepte) == '') $this->concepte = $comanda->getConcepteComanda();

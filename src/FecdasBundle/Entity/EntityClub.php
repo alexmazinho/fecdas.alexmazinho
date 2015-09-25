@@ -969,7 +969,7 @@ class EntityClub {
      */
     public function addEntityRebut(\FecdasBundle\Entity\EntityRebut $ingres)
     {
-    	$rebut->setClub($this);
+    	$ingres->setClub($this);
     	$this->ingresos->add($ingres);
     }
     

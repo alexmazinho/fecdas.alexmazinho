@@ -323,9 +323,14 @@ class AdminController extends BaseController {
 		
 		$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
 		
-		if ($duplicat != null) {
-			$duplicat->setDatabaixa($this->getCurrentDate());
-			
+		if ($duplicat != null && $duplicat->getCarnet() != null && $producte = $duplicat->getCarnet()->getProducte() != null) {
+			$producte = $duplicat->getCarnet()->getProducte();
+
+			$data = $this->getCurrentDate();
+			$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+			$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+
+			$detall = $this->removeComandaDetall($duplicat, $producte, 1, $maxNumFactura, $maxNumRebut);	
 			
 			$em->flush();
 		
@@ -351,6 +356,10 @@ class AdminController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 
 		$duplicatid = $request->query->get("id");
+	
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'd.datapeticio');
+		$direction = $request->query->get('direction', 'desc');
 	
 		$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
 	
@@ -381,7 +390,7 @@ class AdminController extends BaseController {
 			
 			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 			
-			$this->get('session')->getFlashBag()->add('error-notice', 'S\'ha enviat un mail al club');
+			$this->get('session')->getFlashBag()->add('sms-notice', 'S\'ha enviat un mail al club');
 				
 			$this->logEntryAuth('PRINT DUPLI OK', 'duplicat ' . $duplicatid);
 		} else {
@@ -390,7 +399,7 @@ class AdminController extends BaseController {
 			$this->logEntryAuth('PRINT DUPLI ERROR', 'duplicat ' . $duplicatid);
 		}
 	
-		return $this->redirect($this->generateUrl('FecdasBundle_duplicats'));
+		return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page)));
 	}
 	
 	public function ajaxclubsnomsAction(Request $request) {

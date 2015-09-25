@@ -58,9 +58,16 @@ class EntityDuplicat extends EntityComanda {
 	
 	
 	public function __construct() {
+		$this->datapeticio = new \DateTime();
+
 		parent::__construct();
 		
-		$this->datapeticio = new \DateTime();
+		$a = func_get_args();
+		$i = func_num_args();
+		
+		if ($i > 1 && method_exists($this,$f='__constructParams')) {
+			call_user_func_array(array($this,$f),$a);
+		}
 	}
 
 	public function __toString() {
@@ -280,5 +287,9 @@ class EntityDuplicat extends EntityComanda {
 		return $textInfo;
 	}
 	
-	
+	public function getComentariDefault()
+    {
+    	$text = $this->getTextCarnet(false)." ".$this->getPersona()->getCognomsNom();
+    	return $text;
+    }
 }

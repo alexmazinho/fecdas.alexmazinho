@@ -1980,12 +1980,12 @@ class FacturacioController extends BaseController {
 			$this->crearRebut($dataPagament, $tipusPagament, $comanda, $dadesPagament, $comentariPagament);
 			$em->flush();
 
-			$this->logEntryAuth('CONFIRMAR PAGAMENT OK', $comandaId);
+			$this->logEntryAuth('CONF. PAGAMENT OK', $comandaId);
 				
 			return new Response("ok");
 		}
 		
-		$this->logEntryAuth('CONFIRMAR PAGAMENT KO', $comandaId);
+		$this->logEntryAuth('CONF. PAGAMENT KO', $comandaId);
 
 		return new Response("ko");
 	}

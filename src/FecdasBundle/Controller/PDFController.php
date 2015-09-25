@@ -379,13 +379,14 @@ class PDFController extends BaseController {
 		$pdf->Ln(10);
 		
 		$comandes = $rebut->getComandes(); 
-		if (count($comandes) == 0) {  // Rebut no associat a cap comanda
+		if (count($comandes) == 0 || $rebut->esAnulacio()) {  // Rebut no associat a cap comanda
 			$pdf->SetFont('dejavusans', '', 14, '', true);
 			$pdf->SetTextColor(0, 0, 0);
 			
 			$pdf->Ln(20);
 			
-			$tbl = '<h4><i>Ingrés acumulat al saldo del club per valor de: </i><b>'.number_format($rebut->getImport()*(-1), 2, ',', '.').' €</b></h4>';
+			if ($rebut->esAnulacio()) $tbl = '<h4><i>Anul·lació rebut, import acumulat al saldo del club per valor de: </i><b>'.number_format($rebut->getImport()*(-1), 2, ',', '.').' €</b></h4>';
+			else $tbl = '<h4><i>Ingrés acumulat al saldo del club per valor de: </i><b>'.number_format($rebut->getImport(), 2, ',', '.').' €</b></h4>';
 			
 			$pdf->writeHTML($tbl, false, false, false, false, '');
 			
@@ -399,7 +400,7 @@ class PDFController extends BaseController {
 		} else {
 			if ($rebut->getNumFactures() == 1) { // Rebut per import íntegre de comanda
 
-				$tbl = '<h4>'.'Liquidació FACTURA: '.$rebut->getLlistaNumsFactures().', corresponent a la comanda:</h4>';
+				$tbl = '<h4>'.'Liquidació FACTURA: '.$rebut->getLlistaNumsFactures().', corresponent a la comanda següent</h4>';
 			
 				$pdf->writeHTML($tbl, true, false, false, false, '');
 			
@@ -423,7 +424,7 @@ class PDFController extends BaseController {
 			
 				$mindetalls = 6;
 			
-				foreach ($comanda->getDetallsAcumulats() as $lineafactura) {
+				foreach ($comanda->getDetallsAcumulats(true) as $lineafactura) {
 					$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 					$valorIVA = $preuSenseIVA * $lineafactura['ivaunitat'];
 			
@@ -479,12 +480,15 @@ class PDFController extends BaseController {
 					$tbl .= '<b>'.number_format($comanda->getTotalDetalls(), 2, ',', '.').' €</b></td>';
 					$tbl .= '</tr>';
 				}
-				$tbl .= '<tr style="border-bottom: none;">';
-				$tbl .= '<td align="left">';
-				$tbl .= 'Amb un romanent acumulat a favor del club de </td>';
-				$tbl .= '<td align="right">';
-				$tbl .= '<b>'.number_format($rebut->getRomanent(), 2, ',', '.').' €</b></td>';
-				$tbl .= '</tr>';
+				
+				if ($rebut->getRomanent() > 0) {
+					$tbl .= '<tr style="border-bottom: none;">';
+					$tbl .= '<td align="left">';
+					$tbl .= 'Amb un romanent acumulat a favor del club de </td>';
+					$tbl .= '<td align="right">';
+					$tbl .= '<b>'.number_format($rebut->getRomanent(), 2, ',', '.').' €</b></td>';
+					$tbl .= '</tr>';
+				}
 				$tbl .= '<tr>';
 				$tbl .= '<td align="right" style="background-color:#EEEEEE; height: 50px;  padding:10px 5px;"><span style="font-size:12px;"><br/>IMPORT DEL REBUT:</span></td>';
 				$tbl .= '<td align="right"><span style="font-weight:bold;font-size:14px;"><br/>' . number_format($rebut->getImport(), 2, ',', '.') .  ' €</span></td>';

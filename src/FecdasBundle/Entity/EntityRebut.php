@@ -116,7 +116,7 @@ class EntityRebut {
 			$this->club = $comanda->getClub();
 			$this->import = ($import != 0?$import:$comanda->getTotalDetalls());
 
-			if ($import < 0) {
+			if ($this->import < 0) {
 				$this->comentari = "Rebut anulació comanda ".$comanda->getNumComanda();	
 				$this->setComandaanulacio($comanda);
 				$comanda->addrebutsanulacions($this);
@@ -126,10 +126,9 @@ class EntityRebut {
 				$comanda->setRebut($this);
 			} 
 		}
-		
 		if ($this->club != null) {
-			$this->club->setTotalpagaments($this->club->getTotalpagaments() + $import);
-			$this->club->addEntityRebut($rebut);
+			$this->club->setTotalpagaments($this->club->getTotalpagaments() + $this->import);
+			$this->club->addEntityRebut($this);
 		} 
 	}
 	

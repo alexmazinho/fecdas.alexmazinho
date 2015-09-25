@@ -117,7 +117,10 @@ class EntityComandaDetall {
 		/*$preu 	= $this->producte->getCurrentPreu();
 		$iva 	= $this->producte->getCurrentIva();*/
 		
-		return $this->preuunitat * $this->unitats * (1 - $this->descomptedetall);
+		$total = $this->unitats;
+		if ($baixes == true) $total += $this->unitatsbaixa;
+	
+		return $this->preuunitat * $total * (1 - $this->descomptedetall);
 	}
 	
 	/**
@@ -137,7 +140,9 @@ class EntityComandaDetall {
 	 */
 	public function getDetallsArray($baixes = false)
 	{
-		return array('total' => $this->unitats,
+		$total = $this->unitats;
+		if ($baixes == true) $total += $this->unitatsbaixa;
+		return array('total' => $total,
 					'totalbaixa' => $this->unitatsbaixa,	 
 					'preuunitat' => $this->preuunitat,
 					'ivaunitat' => $this->ivaunitat,

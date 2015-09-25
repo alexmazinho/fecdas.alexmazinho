@@ -280,14 +280,16 @@ class EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getLlistaNumsFactures($curt = false)
+	public function getLlistaNumsFactures($curt = false, $anulacions = false)
 	{
 		$concepte = '';
 		if ($this->comandaConsolidada() == true &&
 			$this->factura != null) $concepte = ($curt == true?$this->factura->getNum().'-':$this->factura->getNumFactura().', ');
 		
-		foreach ($this->facturesanulacions as $factura) {
-			$concepte .= ($curt == true?$this->factura->getNum().'-':$factura->getNumFactura().', '); 	
+		if ($anulacions == true) {
+			foreach ($this->facturesanulacions as $factura) {
+				$concepte .= ($curt == true?$this->factura->getNum().'-':$factura->getNumFactura().', '); 	
+			}
 		}
 		return ($curt == true?substr($concepte, 0, -1):substr($concepte, 0, -2));
 		
@@ -298,12 +300,12 @@ class EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getNumFactures()
+	public function getNumFactures($anulacions = false)
 	{
 		$total = 0;
 		if ($this->factura != null) $total++;
 		
-		$total += count($this->facturesanulacions);
+		if ($anulacions == true) $total += count($this->facturesanulacions);
 		
 		return $total;		
 	}
@@ -530,10 +532,11 @@ class EntityComanda {
 				
 				if (isset($acumulades[$codi])) {
 					$acumulades[$codi]['total'] += $d->getUnitats();
-					$acumulades[$codi]['import'] += $d->getTotal();
+					if ($baixes == true) $acumulades[$codi]['total'] += $d->getUnitatsbaixa();
+					$acumulades[$codi]['import'] += $d->getTotal($baixes);
 				}
 				else {
-					$acumulades[$codi] = $d->getDetallsArray();
+					$acumulades[$codi] = $d->getDetallsArray($baixes);
 				}
 			}
 		}

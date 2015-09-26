@@ -116,6 +116,7 @@ input[type="submit"]:active, button:active,  .btn-default:active  {
  	
 }
 
+
 input[type="submit"]:hover, button:hover { text-decoration: none; }
 
 input[type="image"] {
@@ -156,6 +157,14 @@ input[type="search"]  {
 input[type="email"] { max-width: 500px; }
 	  
 input[type="submit"]  { line-height: 30px; min-height: 30px; }
+
+input[type="file"]  {
+	position:absolute;z-index:2;top:0;left:0;
+	filter: alpha(opacity=0);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";opacity:0;
+	background-color:transparent;
+	color:transparent;
+}
 
 textarea  { 
 	width: 100%; min-width: 200px; line-height: 30px; padding: 5px; resize: both;
@@ -220,6 +229,7 @@ input[disabled="disabled"]
 
 #dialeg #datapagament { width: 120px; text-align: center; }
 #dialeg button.ui-datepicker-trigger { padding: 2px 10px; }
+#dialeg .ui-datepicker-month, #dialeg .ui-datepicker-month { color: #333333; } 
 
 #dialeg .dialeg-jerror, #dialeg .dialeg-jinfo { height:100%; width: 100%;  font-size: 18px; }
 #dialeg .dialeg-jerror img, #dialeg .dialeg-jinfo img { vertical-align:middle; }
@@ -264,7 +274,7 @@ input#datepicker,
     font-style: italic;
 }
 
-.open-calendar { cursor: pointer; }
+.open-calendar, .input-group-addon-action { cursor: pointer; }
 
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
@@ -359,7 +369,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .link i.fa.red:hover { background-color: #a94442; } 
 .link i.fa.green:hover { background-color: #5cb85c; }
 .link i.fa.orange:hover { background-color: #eea236; } 
-
+.link i.fa.yellow:hover { background-color: #FFFF66; }
 
 .data-detall .data-detall-cell i.fa.transparent:hover { background-color: transparent; color: transparent;  } 
   
@@ -479,6 +489,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .green { color: #5cb85c; }
 .orange { color: #eea236; }
 .gray { color: #cccccc; }
+.yellow { color: #FFD700; }
 .transparent { color: transparent; cursor: default; }
 
 /*************** FECDAS NOU productes ****************/
@@ -1878,8 +1889,6 @@ select#parte_persona_addrnacionalitat {
 #formcsv-main { margin-left: 30px; }
 
 #formcsv-button input { width: 120px }
-
-.prettyFile input { display: none; }
 
 .input-append input { display: inline-block; vertica-align: middle; }
  

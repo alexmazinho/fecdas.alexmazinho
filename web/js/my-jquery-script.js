@@ -1783,7 +1783,7 @@
 	        var path = $(this).val().split('\\');
 	        info     = path[path.length - 1];
 
-	        $(".input-append input").val(info);
+	        $("#upload-file-info").val(info);
 	    });
 
 		$(".input-append").click(function(e) {
@@ -1791,24 +1791,6 @@
 	        // Make as the real input was clicked
 	        $("#form_importfile").click();
 	    });
-	};
-	
-	
-	reloadTipusParte = function() {
-		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
-		$('#form_tipus').val('');
-		
-		/* Canvi Data */
-		$('#form_dataalta').change(function() {
-	    	// Update select tipus parte	
-			var url = $('#formcsv-tipus').data('ajax-route');
-			var currentDate = $( "#form_dataalta" ).datepicker( "getDate" );
-			var params = { 	day: currentDate.getDate(), month: currentDate.getMonth()+1, year: currentDate.getFullYear()  };
-			$.get(url,	params,
-			function(data) {
-				$('select#form_tipus').html(data); 
-			});
-		});
 	};
 	
 })(jQuery);

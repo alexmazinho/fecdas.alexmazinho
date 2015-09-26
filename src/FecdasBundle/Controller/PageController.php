@@ -148,13 +148,14 @@ class PageController extends BaseController {
 
 					$this->logEntryAuth('IMPORT CSV SUBMIT', $file->getFileName());
 					
-					if ($dataalta->format('y') > $this->getCurrentDate()->format('y')) {
+/*					if ($dataalta->format('y') > $this->getCurrentDate()->format('y')) {
 						// Només a partir 10/12 poden fer llicències any següent
 						if ($this->getCurrentDate()->format('m') < self::INICI_TRAMITACIO_ANUAL_MES || 
 								($this->getCurrentDate()->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
 								$this->getCurrentDate()->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) 
 								throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');					
 					}
+ */
 					
 					$tipusparte = $form->get('tipus')->getData();
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
@@ -171,15 +172,17 @@ class PageController extends BaseController {
 					}*/
 					/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 					/* Valida tipus actiu --> és la única que es pot fer */
+/*
 					if ($parte->getTipus()->getActiu() == false) {
 						throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 					}
+*/
 					/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 					
-
+/*					
 					$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
 					if ($errData != "") throw new \Exception($errData);
-					
+*/
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
 						or $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
 					
@@ -189,7 +192,7 @@ class PageController extends BaseController {
 
 					$factura = $this->crearFactura($dataalta, $parte);
 					
-					$this->get('session')->getFlashBag()->add('error-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
+					$this->get('session')->getFlashBag()->add('sms-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
 					
 					$tempname = $this->getCurrentDate()->format('Ymd')."_".$currentClub->getCodi()."_".$file->getFileName();
 					
@@ -260,7 +263,7 @@ class PageController extends BaseController {
 			
 			$em->flush();
 			
-			$this->get('session')->getFlashBag()->add('error-notice',"Llicències enviades correctament");
+			$this->get('session')->getFlashBag()->add('sms-notice',"Llicències enviades correctament");
 			
 			return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
 			
@@ -380,10 +383,19 @@ class PageController extends BaseController {
 			
 			if ($persist == true) $em->persist($llicencia);
 			
+			$llicencia->setDatamodificacio($this->getCurrentDate());
+					
+			$detall = $this->addParteDetall($parte, $llicencia);
+			if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+
+			// Errors generen excepció
+			$this->validaParteLlicencia($parte, $llicencia);
+
+			
+/*
 			if ($this->validaDNIRepetit($parte, $llicencia) == false) {
 				throw new \Exception('Una de les persones ja té una llicència en aquesta llista (DNI: ' . $row['dni'] . ')');
 			}
-
 			$parte->addLlicencia($llicencia);
 
 			if ($this->validaLlicenciaInfantil($llicencia) == false) {
@@ -397,10 +409,11 @@ class PageController extends BaseController {
 				throw new \Exception('Una de les persones ja té una llicència per a l\'any actual en aquest club, en data ' .
 							$parteoverlap->getDataalta()->format('d/m/Y') . ' (DNI: ' . $row['dni'] . ')');
 			}
-		} 
-		
+*/
+ 		} 
+  		
 		if ($fila == 0) throw new \Exception('No s\'ha trobat cap llicència al fitxer');
-		
+		 
 		//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 	}
 	
@@ -1184,7 +1197,7 @@ class PageController extends BaseController {
 			
 		if ($this->validaLlicenciaInfantil($llicencia) == false) throw new \Exception('L\'edat de la persona no correspon amb el tipus de llicència');
 						
-		if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ja té una llicència en aquesta llista');
+		if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ('.$llicencia->getPersona()->getDni().') ja té una llicència en aquesta llista');
 
 		// Comprovar que no hi ha llicències vigents 
 		// Per la pròpia persona

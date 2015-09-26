@@ -20,11 +20,7 @@
 				</div> 
 			</div>
 		</div>
-	    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-	    <div class="sms-notice">
-			{{ flashMessage }}
-	  	</div>	
-		{% endfor %}
+		{% include 'FecdasBundle:Includes:messages.html.twig' %}
 		<div class="table-header">
 			<div id="summary-header">
 				<div id="header-totals" class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}<br/>Aquestes llicències seran vàlides des de 

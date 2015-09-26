@@ -1,10 +1,11 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block javascriptshead %}
- 	{{ parent() }}
- 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
-   	{{ form_javascript(form) }}
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Importar llicències CSV{% endblock %}
@@ -15,39 +16,58 @@
     </header>
 
 	<div class="formcsv-main">
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-	    <div class="sms-notice">
-			{{ flashMessage }}
-  		</div>	
-	{% endfor %}
+    {% include 'FecdasBundle:Includes:messages.html.twig' %}
 		<form id="formcsv-import" action="{{ path('FecdasBundle_importcsv') }}" method="post" {{ form_enctype(form) }}  class="appform">
-			<div class="form-row clearfix">
-				<div id="formcsv-dataalta" class="form-left">
-					<label class="formlabel-outside required">Validesa des de</label>
-					{{ form_widget(form.dataalta, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
-				</div>
-				<div id="formcsv-tipus" class="form-left" data-ajax-route="{{ path('FecdasBundle_gettipuspartes') }}">
-					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.tipus, { 'attr': {'class': 'formfield-outside'} }) }}
-					<img width="21px" id="help-tipusparte" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
-				</div>
-				<div id="formcsv-file" class="form-left prettyFile">
-					<label class="formlabel-outside required">Fitxer de llicències (CSV)</label>
-					{# form_label(form.importfile, 'Fitxer de llicències', { 'label_attr': {'class': 'formlabel-inside'} }) #}
-					{{ form_widget(form.importfile, { 'attr': {'class': 'forminput-inside'} }) }}
-					<div class="input-append formfield-outside">
-	       				<input class="input-large" type="text">
-	       				<div class="textaccio">
-							<a id="browse-file" href="javascript:void(0);">navegar<img width="20" src="{{ asset('images/icon-browse.gif') }}" ></a>
+			<div class="row">
+				<div class="col-md-2">
+					<div class="form-group">
+						{{ form_label(form.dataalta, 'Validesa des de') }}
+						<div id="formcsv-dataalta" class="input-group">
+							<span class="input-group-addon"></span>
+							{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 						</div>
-	    			</div>
+					</div>
 				</div>
-				<div id="formcsv-button" class="form-left parte-submit">	
-					<input type="submit" id="formcsv-button-submit" class="forminput-inside" value="Importar" name="formcsv-button-submit"/>
+				<div class="col-md-3">
+				    <div class="form-group">
+				    	{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats') }}
+						<div id="formcsv-tipus" class="input-group" data-ajax-route="{{ path('FecdasBundle_gettipuspartes') }}">
+							<span id="help-tipusparte" class="input-group-addon input-group-addon-action">
+								<a class="" href="javascript:void(0);">
+  									<i class="fa fa-info-circle fa-lg"></i>
+								</a>
+							</span>
+							{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+			 	</div>
+				
+				<div class="col-md-5">
+					<div class="form-group">
+						{{ form_label(form.importfile, 'Fitxer de llicències (CSV)') }}
+						{{ form_widget(form.importfile, { 'attr': {'class': 'form-control'} }) }}
+						<div class="input-group" style="position:relative;">
+						<span class="input-group-addon">Navegar...</span>
+						<input id="upload-file-info" class="form-control" type="text">
+				        <span class="input-group-addon input-group-addon-action">
+				        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+				        </span>
+				        </div>
+					</div>
 				</div>
+				
+				<div class="col-md-2">
+			 		<div class="form-group">
+						<label>&nbsp;</label>
+						<div class="input-group">
+							<button type="submit" id="formcsv-button-submit" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Importar</button>
+						</div>
+					</div>
+				</div>	
 			</div>
 			
-			 {{ form_rest(form) }}
+			{{ form_rest(form) }}
 	    </form>
 		
 		
@@ -62,46 +82,71 @@
 		<div class="info-resource"><a href="{{ asset('media/exemple.csv')  }}" target="_blank"><img width="30" src="{{ asset('images/icon-csv.png') }}">Fitxer buit amb capcelera</a></div>
 		<div class="info-resource"><a href="{{ asset('media/intruccions_importcsv.pdf')  }}" target="_blank"><img width="30" src="{{ asset('images/icon-pdf.png') }}">Descripció dels camps</a></div></div>
     </div>
+    
+    
 {% endblock %}
 
 {% block javascripts %}
 
-{{ parent() }}
+	{{ parent() }}
 
-<script type="text/javascript">
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
-$(document).ready(function(){
-	setMenuActive("menu-import");
-
-	loadCalendar($( "#form_dataalta" ));
-
-	var curYear = new Date().getFullYear();
-
-	$( "#form_dataalta" ).datepicker( "option", "minDate" , new Date({{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }}) );
-	$( "#form_dataalta" ).datepicker( "option", "maxDate" , new Date({{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }}) );
-
-	prepareFileInput();
+	<script type="text/javascript">
 	
-    reloadTipusParte();
+	$(document).ready(function(){
+		setMenuActive("menu-import");
 	
-	if ($("#form_tipus option").length == 1) {
-		/* Només si hi ha disponible més d'una llicència */
-		$("#help-tipusparte").hide();
-	} else {
-		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
-				<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
-				<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 31/08</p>\
-				<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
-				<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
-				<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
-				<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
-				<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
-				Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
-				No habilitada per competició ni per fer cursos federats.</p>\
-				<p align="left"><b>D</b>: Assegurança per un dia.</p>');
-	};	
+		//loadCalendar($( "#form_dataalta" ));
 	
-});
+		var curYear = new Date().getFullYear();
+	
+		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});
+		var maxdate = new Date ( {{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }});
+	
+		initDateTimePicker ( 
+			$( '#form_dataalta' ), 
+			mindate, 
+			maxdate, 
+			new Date (), 
+			'dataalta-picker', 
+			false,
+			function (selectedDateTime) {
+				$('#form_tipus').val('');
+	
+				var url = $('#formcsv-tipus').data('ajax-route');
+				var currentDate = selectedDateTime;
+				var params = { 	'day': currentDate.getDate(), 'month': currentDate.getMonth()+1, 'year': currentDate.getFullYear()  };
+				$.get(url,	params,
+				function(data) {
+					$('select#form_tipus').html(data); 
+				});
+			}
+		);
+		
+		prepareFileInput();
+		
+	   
+		
+		if ($("#form_tipus option").length == 1) {
+			/* Només si hi ha disponible més d'una llicència */
+			$("#help-tipusparte").hide();
+		} else {
+			helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
+					<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
+					<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 31/08</p>\
+					<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
+					<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
+					<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
+					<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
+					<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
+					Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
+					No habilitada per competició ni per fer cursos federats.</p>\
+					<p align="left"><b>D</b>: Assegurança per un dia.</p>');
+		};	
+		
+	});
 
 </script>
 

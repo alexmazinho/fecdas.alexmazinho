@@ -1643,11 +1643,16 @@ input#formuserclub-randompassword { width: 150px; }
 	padding-left:10px;
 }
 
+#formpersona-nom, #formpersona-cognoms, #formpersona-dni,
+#formpersona-estranger, #formpersona-datanaixement,
+#formpersona-tlf1, #formpersona-tlf2, #formpersona-mail,
+#formpersona-addradreca, #formpersona-addrpob, #formpersona-addrcp, 
+#formpersona-addrprovincia, #formpersona-addrcomarca, #formpersona-addrnacionalitat  { padding-left: 5px; padding-right: 5px; }
+
+#formpersona-sexe {  padding-top: 8px; }
+
+/*
 #persona_sexe label {
-	/*color: #777777; 
-	position: relative; margin-bottom: 7px; 
-	text-align: left; min-width: 30px; vertical-align: top; padding-top: 10px; 
-	display:block;*/
 	padding-left: 3px;
     padding-right: 10px;
 }
@@ -1707,6 +1712,26 @@ select#parte_persona_addrnacionalitat {
 	display: block !important;
 }
 
+input#parte_persona_addrpob {
+	width: 290px;
+}
+
+input#parte_persona_addrcp {
+	width: 70px;
+}
+
+select#parte_persona_addrprovincia {
+	width: 130px;
+}
+
+select#parte_persona_addrcomarca {
+	width: 177px;
+}
+
+select#parte_persona_addrnacionalitat {
+	width: 365px;
+}
+*/
 #adreca-header { display: block; width:100%; position: relative; margin-bottom: 7px; }
 
 #sms-mailpersona { float:right; color: #555555; position:absolute; right: 20px; top: 0;}

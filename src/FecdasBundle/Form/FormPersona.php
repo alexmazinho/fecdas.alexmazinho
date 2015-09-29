@@ -65,13 +65,14 @@ class FormPersona extends AbstractType {
 		$builder->add('addrprovincia', 'choice', array(
 				'choices' => $this->options['provincies'],
 				'preferred_choices' => array('Barcelona','Girona','Tarragona','Lleida' ),
-				'empty_value' => '',
+				'empty_value' => 'Província...',
 				'required'  => false,
 		));
 		
 		$builder->add('addrcomarca', 'choice', array(
 				'choices' => $this->options['comarques'],
-				'empty_value' => '',
+				'preferred_choices' => array(''),
+				'empty_value' => 'Comarca ...',
 				'required'  => false,
 		));
 		
@@ -81,6 +82,10 @@ class FormPersona extends AbstractType {
 				'required'  => false,
 		));
 		
+		$builder->add('estranger', 'checkbox', array(
+    	    'required'  => false,
+    	    'mapped'  => false,
+		));
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

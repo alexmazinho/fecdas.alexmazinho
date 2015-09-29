@@ -148,43 +148,13 @@ class PageController extends BaseController {
 
 					$this->logEntryAuth('IMPORT CSV SUBMIT', $file->getFileName());
 					
-/*					if ($dataalta->format('y') > $this->getCurrentDate()->format('y')) {
-						// Només a partir 10/12 poden fer llicències any següent
-						if ($this->getCurrentDate()->format('m') < self::INICI_TRAMITACIO_ANUAL_MES || 
-								($this->getCurrentDate()->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
-								$this->getCurrentDate()->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) 
-								throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');					
-					}
- */
-					
 					$tipusparte = $form->get('tipus')->getData();
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
 					
 					$parte = $this->crearComandaParte($dataalta, $tipusparte);
 
-					/* id 4 - Competició --> és la única que es pot fer */
-					/* id 9 i 12 - Tecnocampus també es pot fer */
-					/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
-						&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {
-						throw new \Exception('El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
-						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
-						Gràcies per la vostra comprensió.');
-					}*/
-					/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-					/* Valida tipus actiu --> és la única que es pot fer */
-/*
-					if ($parte->getTipus()->getActiu() == false) {
-						throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-					}
-*/
-					/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
-					
-/*					
-					$errData = $this->validaDataLlicencia($parte->getDataalta(), $parte->getTipus());
-					if ($errData != "") throw new \Exception($errData);
-*/
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
-						or $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
+						|| $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
 					
 					$temppath = $file->getPath()."/".$file->getFileName();
 					
@@ -296,122 +266,72 @@ class PageController extends BaseController {
 		
 		implode($reader->getLayout());
 		
-		while($reader->process()) {
-			$fila++;
-			
-			$row = $reader->getRow();
-			//our logic here
-			if(!isset($row['dni']) or $row['dni'] == null or $row['dni'] == "") throw new \Exception('Hi ha una llicència sense dni (fila: ' . $fila . '), o el format és incorrecte');
-						
-			if(!isset($row['categoria']) or $row['categoria'] == null) throw new \Exception('Hi ha una llicència sense categoria (DNI: ' . $row['dni'] . ')');
-			
-			if ($row['categoria'] != 'A' and $row['categoria'] != 'I' and $row['categoria'] != 'T')
-				throw new \Exception('Hi ha una llicència amb una categoria incorrecte, els valors vàlids són A, I, T (DNI: ' . $row['dni'] . ')');
-			
-			$categoria = $em->getRepository('FecdasBundle:EntityCategoria')
-					->findOneBy(array('tipusparte' => $parte->getTipus()->getId(), 'simbol' => $row['categoria']));
-			
-			if ($categoria == null) throw new \Exception('No existeix aquesta categoria per al tipus de llista indicat (DNI: ' . $row['dni'] . ')');
-			
-			/* Gestionar dades personals */
-			$persona = $em->getRepository('FecdasBundle:EntityPersona')->findOneBy(array('dni' => $row['dni'], 'club' => $parte->getClub()->getCodi()));
-
-			if ($persona == null) {
-				/* Noves dades personals. Nom, cognoms, data naixement i sexe obligatoris */
-				if(!isset($row['nom']) or $row['nom'] == null or $row['nom'] == "") throw new \Exception('Manca el nom de la persona en una llicència (DNI: ' . $row['dni'] . ')');
-				if(!isset($row['cognoms']) or $row['cognoms'] == null or $row['cognoms'] == "") throw new \Exception('Manquen els cognoms de la persona en una llicència (DNI: ' . $row['dni'] . ')');
-				if(!isset($row['sexe']) or $row['sexe'] == null) throw new \Exception('Manca indicar el sexe de la persona en una llicència (DNI: ' . $row['dni'] . ')');
-				if(!isset($row['naixement']) or $row['naixement'] == null or $row['naixement'] == "") throw new \Exception('Manca indicar la data de naixement de la persona en una llicència (DNI: ' . $row['dni'] . ')');
-				if(!isset($row['nacionalitat']) or $row['nacionalitat'] == null or $row['nacionalitat'] == "") throw new \Exception('Manca indicar la nacionalitat de la persona en una llicència (DNI: ' . $row['dni'] . ')');
+		try {
+			while($reader->process()) {
+				$fila++;
 				
-				if ($row['sexe'] != 'H' and $row['sexe'] != 'D') 
-					throw new \Exception('Manca indicar correctament el sexe de la persona en una llicència, els valors vàlids són H i D (DNI: ' . $row['dni'] . ')');
+				$row = $reader->getRow();
+				//our logic here
+				$categoria = $em->getRepository('FecdasBundle:EntityCategoria')
+						->findOneBy(array('tipusparte' => $parte->getTipus()->getId(), 'simbol' => $row['categoria']));
 				
-				$nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($row['nacionalitat']);
+				if ($categoria == null) throw new \Exception('No existeix aquesta categoria per al tipus de llista indicat');
 				
-				if ($nacio == null) throw new \Exception('La nacionalitat de la persona és incorrecte (DNI: ' . $row['dni'] . ')');
-				
-				$datanaixement = \DateTime::createFromFormat('Y-m-d', $row['naixement']);
-
-				if ($datanaixement == null) throw new \Exception('La data de naixement de la persona és incorrecte, el format és YYYY-MM-DD (DNI: ' . $row['dni'] . ')');
-				
-				$persona = new EntityPersona($this->getCurrentDate());
-				$persona->setClub($parte->getClub());
-				$persona->setDni($row['dni']);
-
-				$persona->setNom(mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8"));
-				$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
-				
-				
-				$persona->setSexe($row['sexe']);
-				$persona->setDatanaixement($datanaixement);
-				$persona->setAddrnacionalitat($row['nacionalitat']);
-				
-				if (mb_strtoupper($row['estranger'], "utf-8") == 'N') {
-					/* Només validar DNI nacionalitat espanyola */
-					$dnivalidar = $row['dni'];
-					/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
-					if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
+				/* Gestionar dades personals */
+				$persona = $em->getRepository('FecdasBundle:EntityPersona')->findOneBy(array('dni' => $row['dni'], 'club' => $parte->getClub()->getCodi()));
+	
+				if ($persona == null) {
+					$persona = new EntityPersona($this->getCurrentDate());
+					$persona->setClub($parte->getClub());
+					$persona->setDni($row['dni']);
+	
+					$persona->setNom(mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8"));
+					$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
 					
-					if ($this->esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI ' . $dnivalidar . ' d\'una de les persones és incorrecte (fila: ' . $fila . ')');
+					
+					$persona->setSexe($row['sexe']);
+					$persona->setDatanaixement($datanaixement);
+					$persona->setAddrnacionalitat($row['nacionalitat']);
+	
+					if ($persist == true) $em->persist($persona); 
 				}
-				
-				if ($persist == true) $em->persist($persona); 
-				
-			} else {
 				/* Dades personals existents. Nom, cognoms, data naixement i sexe no es modifiquen, la resta s'actualitza segons valors del fitxer */
-			}
-			
-			$persona->setDatamodificacio($this->getCurrentDate());
-			
-			if (isset($row['telefon1']) and $row['telefon1'] != null and $row['telefon1'] != "") $persona->setTelefon1($row['telefon1']);
-			if (isset($row['telefon2']) and $row['telefon2'] != null and $row['telefon2'] != "") $persona->setTelefon2($row['telefon2']);
-			if (isset($row['mail']) and $row['mail'] != null and $row['mail'] != "") $persona->setMail($row['mail']);
-			if (isset($row['adreca']) and $row['adreca'] != null and $row['adreca'] != "") $persona->setAddradreca($row['adreca']);
-			if (isset($row['poblacio']) and $row['poblacio'] != null and $row['poblacio'] != "") $persona->setAddrpob($row['poblacio']);
-			if (isset($row['cp']) and $row['cp'] != null and $row['cp'] != "") $persona->setAddrcp($row['cp']);
-			if (isset($row['provincia']) and $row['provincia'] != null and $row['provincia'] != "") $persona->setAddrprovincia(mb_convert_case($row['provincia'], MB_CASE_TITLE, "utf-8"));
-			if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
-			
-			/* Creació i validació de la llicència */
-			
-			$llicencia = new EntityLlicencia($this->getCurrentDate());
-			$llicencia->setDatamodificacio($this->getCurrentDate());
-			$llicencia->setCategoria($categoria);
-			$llicencia->setPersona($persona);
-			$llicencia->setDatacaducitat($parte->getDatacaducitat($this->getLogMailUserData("importFileCSVData ")));
-			
-			if ($persist == true) $em->persist($llicencia);
-			
-			$llicencia->setDatamodificacio($this->getCurrentDate());
-					
-			$detall = $this->addParteDetall($parte, $llicencia);
-			if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
-
-			// Errors generen excepció
-			$this->validaParteLlicencia($parte, $llicencia);
-
-			
-/*
-			if ($this->validaDNIRepetit($parte, $llicencia) == false) {
-				throw new \Exception('Una de les persones ja té una llicència en aquesta llista (DNI: ' . $row['dni'] . ')');
-			}
-			$parte->addLlicencia($llicencia);
-
-			if ($this->validaLlicenciaInfantil($llicencia) == false) {
-				throw new \Exception('L\'edat d\'una de les persones no correspon amb el tipus de llicència (DNI: ' . $row['dni'] . ')');
-			}
-			
-			$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona());
-			if ($parteoverlap != null) {
-				// Comprovar que no hi ha llicències vigents
-				// Per la pròpia persona
-				throw new \Exception('Una de les persones ja té una llicència per a l\'any actual en aquest club, en data ' .
-							$parteoverlap->getDataalta()->format('d/m/Y') . ' (DNI: ' . $row['dni'] . ')');
-			}
-*/
- 		} 
-  		
+				if (isset($row['telefon1']) and $row['telefon1'] != null and $row['telefon1'] != "") $persona->setTelefon1($row['telefon1']);
+				if (isset($row['telefon2']) and $row['telefon2'] != null and $row['telefon2'] != "") $persona->setTelefon2($row['telefon2']);
+				if (isset($row['mail']) and $row['mail'] != null and $row['mail'] != "") $persona->setMail($row['mail']);
+				if (isset($row['adreca']) and $row['adreca'] != null and $row['adreca'] != "") $persona->setAddradreca($row['adreca']);
+				if (isset($row['poblacio']) and $row['poblacio'] != null and $row['poblacio'] != "") $persona->setAddrpob($row['poblacio']);
+				if (isset($row['cp']) and $row['cp'] != null and $row['cp'] != "") $persona->setAddrcp($row['cp']);
+				if (isset($row['provincia']) and $row['provincia'] != null and $row['provincia'] != "") $persona->setAddrprovincia(mb_convert_case($row['provincia'], MB_CASE_TITLE, "utf-8"));
+				if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
+				
+				$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'N';
+				$this->validarDadesPersona($persona, $estranger);
+				
+				/* Creació i validació de la llicència */
+				$llicencia = new EntityLlicencia($this->getCurrentDate());
+				$llicencia->setDatamodificacio($this->getCurrentDate());
+				$llicencia->setCategoria($categoria);
+				$llicencia->setPersona($persona);
+				$llicencia->setDatacaducitat($parte->getDatacaducitat($this->getLogMailUserData("importFileCSVData ")));
+				
+				if ($persist == true) $em->persist($llicencia);
+				
+				$llicencia->setDatamodificacio($this->getCurrentDate());
+						
+				$detall = $this->addParteDetall($parte, $llicencia);
+				if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+	
+				// Errors generen excepció
+				$this->validaParteLlicencia($parte, $llicencia);
+				
+	 		} 
+  		} catch (\Exception $e) {
+  			if(isset($row['dni'])) throw new \Exception($e->getMessage().' (DNI: ' . $row['dni'] . ')'); // Afegir DNI
+			else throw new \Exception($e->getMessage().' (fila: ' . $fila . ')' ); // Afegir fila 
+		}
+		
+		
 		if ($fila == 0) throw new \Exception('No s\'ha trobat cap llicència al fitxer');
 		 
 		//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
@@ -1195,7 +1115,7 @@ class PageController extends BaseController {
 			throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');
 		}
 			
-		if ($this->validaLlicenciaInfantil($llicencia) == false) throw new \Exception('L\'edat de la persona no correspon amb el tipus de llicència');
+		if ($this->validaLlicenciaInfantil($llicencia) == false) throw new \Exception('L\'edat de la persona ('.$llicencia->getPersona()->getDni().') no correspon amb el tipus de llicència');
 						
 		if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ('.$llicencia->getPersona()->getDni().') ja té una llicència en aquesta llista');
 
@@ -1267,38 +1187,18 @@ class PageController extends BaseController {
 				$formpersona->bind($request);
 			
 				if ($formpersona->isValid()) {
-					if ($persona->getNom() == "" or $persona->getCognoms() == "") 
-							throw new \Exception("Cal indicar nom i cognoms");
-					
-					if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
-	
-					if (($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
-						($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
-						($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
-					
-					$persona->setDatamodificacio($this->getCurrentDate());
-	
+						
 					$baixaPersona = $request->request->get('action') != 'save';
 					if (!$baixaPersona) {
-						/* Check persona amb dni no repetida al mateix club */
-						if ($persona->getId() == 0) {
-							$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
-							$strQuery .= " WHERE p.dni = :dni ";
-							$strQuery .= " AND p.club = :club ";
-							$strQuery .= " AND p.databaixa IS NULL";
+						error_log('=='.json_encode($p).'==');
 						
-							$query = $em->createQuery($strQuery)
-								->setParameter('dni', $persona->getDni())
-								->setParameter('club', $persona->getClub()->getCodi());
-					
-							$personaexisteix = $query->getResult();
-							
-							if (count($personaexisteix) > 0) throw new \Exception("Aquest dni ja existeix per aquest club");
-							
-							// Canviar format Nom i COGNOMS
-							// Specials chars ñ, à, etc... 
-							$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
-							$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
+						$estranger = $p['estranger'];
+						
+						error_log('-'.$estranger.'-');
+						
+						$this->validarDadesPersona($persona, $estranger);
+
+						if ($persona->getId() == 0) {
 							$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
 						} else {
 							$this->get('session')->getFlashBag()->add('error-notice',	"Dades modificades correctament");
@@ -1372,6 +1272,72 @@ class PageController extends BaseController {
 		}
 
 		return new Response("Error personaAction ");
+	}
+	
+	private function validarDadesPersona($persona, $estranger = false) {
+		if ($persona == null || $persona->getClub() == null) throw new \Exception("Les dades no són correctes");
+		
+		$club = $persona->getClub();
+		
+		if ($persona->getNom() == null || $persona->getNom() == "" || 
+			$persona->getCognoms() == null || $persona->getCognoms() == "") throw new \Exception("Cal indicar nom i cognoms");
+		
+		if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
+	
+		if (($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
+			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
+			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
+		
+		
+		if ($persona->getSexe() != BaseController::SEXE_HOME && $persona->getSexe() != BaseController::SEXE_DONA)
+				throw new \Exception('Manca indicar correctament el sexe de la persona ');
+
+		$currentMin = $this->getCurrentDate();
+		$currentMin->sub(new \DateInterval('P'.BaseController::EDAT_MINIMA.'Y')); // -4 anys 
+				
+		if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "" ||
+			$persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
+									
+		
+		$nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($persona->getNacionalitat());
+		
+		if ($nacio == null) $persona->setNacionalitat('ESP');
+
+		
+		if ($estranger == false) {
+			/* Només validar DNI nacionalitat espanyola */
+			$dnivalidar = $persona->getDni();
+			/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
+			if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
+						
+			if ($this->esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte');
+		}
+		
+		/* Check persona amb dni no repetida al mateix club */
+		if ($persona->getId() == 0) {
+			$em = $this->getDoctrine()->getManager();
+			
+			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
+			$strQuery .= " WHERE p.dni = :dni ";
+			$strQuery .= " AND p.club = :club ";
+			$strQuery .= " AND p.databaixa IS NULL";
+						
+			$query = $em->createQuery($strQuery)
+						->setParameter('dni', $persona->getDni())
+						->setParameter('club', $club->getCodi());
+					
+			$personaexisteix = $query->getResult();
+							
+			if (count($personaexisteix) > 0) throw new \Exception("Existeix una altra persona al club amb aquest DNI");
+		}		
+		
+		// Canviar format Nom i COGNOMS
+		// Specials chars ñ, à, etc... 
+		$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
+		$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
+					
+		$persona->setDatamodificacio($this->getCurrentDate());
+		
 	}
 	
 	public function duplicatsAction(Request $request) {

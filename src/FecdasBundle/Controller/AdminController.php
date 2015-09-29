@@ -334,7 +334,7 @@ class AdminController extends BaseController {
 			
 			$em->flush();
 		
-			$this->get('session')->getFlashBag()->add('error-notice', 'Petició de duplicat anulada correctament');
+			$this->get('session')->getFlashBag()->add('sms-notice', 'Petició de duplicat anul·lada correctament');
 			
 			$this->logEntryAuth('ANULA DUPLI OK', 'duplicat ' . $duplicatid);
 		} else {

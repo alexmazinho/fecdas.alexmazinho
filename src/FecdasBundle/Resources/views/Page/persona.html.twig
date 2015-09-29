@@ -1,80 +1,134 @@
-<form id="formpersona" action="{{ path('FecdasBundle_persona') }}" method="post" {{ form_enctype(formpersona) }}  class="modalform appform">
+<form id="formpersona" action="{{ path('FecdasBundle_persona') }}" method="post" {{ form_enctype(formpersona) }}  class="modalform appform container-fluid">
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
 	<h1>Dades personals</h1>
-	<div class="form-row clearfix">
-		<div id="formpersona-nom" class="form-left">
-			{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.nom, { 'attr': {'class': 'forminput-inside'} }) }}
+	<div class="row">
+		{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
+		<div id="formpersona-nom" class="col-md-3  col-xs-3">
+		  	<div class="form-group">
+				{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
+				{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom'} }) }}
+			</div>
+		</div>
+		<div id="formpersona-cognoms"  class="col-md-5  col-xs-5">
+			{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
+			{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'form-control', 'placeholder': 'Cognoms'} }) }}
 		</div> 
-		<div id="formpersona-cognoms" class="form-left">
-			{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'forminput-inside'} }) }}
-		</div> 
-		<div id="formpersona-dni" class="form-left">
-			{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.dni, { 'attr': {'class': 'forminput-inside'} }) }}
-			<img width="21px" id="help-dni" src="{{ asset('images/icon-query.png') }}" style="cursor: pointer;">
-			<div id="formpersona-estranger">
-				<label class="formlabel-lefttocheckbox" for="formpersona-check-estranger">Estranger?</label>
-				<input id="formpersona-check-estranger" class="formcheckbox-right" type="checkbox" value="1">
+		<div id="formpersona-dni" class="col-md-4  col-xs-4">
+	  		<div class="form-group">
+		  		<div class="input-group">
+		  			<span class="input-group-addon"></span>				
+					{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(formpersona.dni, { 'attr': {'class': 'form-control', 'placeholder': 'DNI'} }) }}
+					<span id="help-dni" class="input-group-addon input-group-addon-action">
+						<a class="" href="javascript:void(0);">
+							<i class="fa fa-info-circle fa-lg"></i>
+						</a>
+					</span>
+				</div>
+			</div>			
+		</div>
+	</div>
+	<div class="row">
+		<div id="formpersona-datanaixement" class="col-md-5  col-xs-5">
+		  	<div class="form-group">
+		  		<div  class="input-group">
+			  		<span class="input-group-addon"></span>
+					{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'sr-only'}}) }}
+					{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control', 'placeholder': 'Data de naixement' } }) }}
+					<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+				</div>
+			</div>
+		</div>
+		<div id="formpersona-sexe" class="col-md-3  col-xs-3">
+	  		<label class="radio-inline">
+				{{ form_widget(formpersona.sexe[0]) }} Home
+			</label>
+			<label class="radio-inline">
+				{{ form_widget(formpersona.sexe[1]) }} Dona
+			</label>
+		</div>
+		<div id="formpersona-estranger" class="col-md-4 col-xs-4">
+		  	<div class="checkbox">
+		    	<label>
+		     		{{ form_widget(formpersona.estranger) }} Estranger? 
+		    	</label>
 			</div>
 		</div>
 	</div>
-	<div class="form-row clearfix">
-		<div id="formpersona-datanaixement" class="form-left">
-			{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-			{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'forminput-outside'} }) }}
+	<div class="row">
+		<div id="formpersona-tlf1" class="col-md-3  col-xs-3">
+		  	<div class="form-group">
+		  		<div class="input-group">
+			  		<span class="input-group-addon"><span class="fa fa-phone fa-1x"></span></span>
+					{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon' } }) }}
+					<span class="input-group-addon"></span>
+				</div>
+			</div>
 		</div>
-		<div id="formpersona-sexe" class="form-left">
-			{{ form_label(formpersona.sexe, 'Sexe', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-			{{ form_widget(formpersona.sexe, { 'attr': {'class': 'forminput-outside'} }) }}
+		<div id="formpersona-tlf2" class="col-md-3  col-xs-3">
+		  	<div class="form-group">
+		  		<div class="input-group">
+			  		<span class="input-group-addon"><span class="fa fa-mobile fa-1x"></span></span>
+					{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon'} }) }}
+					<span class="input-group-addon"></span>
+				</div>
+			</div>
 		</div>
-		{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
+		<div id="formpersona-mail"  class="col-md-6  col-xs-6">
+		  	<div class="form-group">
+		  		<div class="input-group">
+			  		<span class="input-group-addon"><span class="fa fa-mail fa-1x"></span></span>
+					{{ form_label(formpersona.mail, 'Adreça electrònica', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(formpersona.mail, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça electrònica'} }) }}
+					<span class="input-group-addon"></span>
+				</div>
+			</div>
+		</div>
 	</div> 
-	<div class="form-row clearfix">
-		<div id="formpersona-tlf1" class="form-left">
-			{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'forminput-inside'} }) }}
-		</div>
-		<div id="formpersona-tlf2" class="form-left">
-			{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'forminput-inside'} }) }}
-		</div>
-		<div id="formpersona-mail" class="form-left">
-			{{ form_label(formpersona.mail, 'Adreça electrònica', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.mail, { 'attr': {'class': 'forminput-inside'} }) }}
-		</div>
-	</div> 
-	<div class="form-row clearfix">
-	 	<div id="adreca-header" >
+	<div class="row">
+	 	<div id="adreca-header" class="col-md-12  col-xs-12">
 			<div><h3>Adreça</h3></div>
 			<div id="sms-mailpersona">* Indica l'adreça de correu per poder rebre notificacions de la Federeació</div>
 		</div>
-		<div id="formpersona-addradreca" class="form-left">
-			{{ form_label(formpersona.addradreca, 'Adreça', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-			{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'forminput-inside'} }) }}
+		<div id="formpersona-addradreca" class="col-md-5  col-xs-5">
+		  	<div class="form-group">
+				{{ form_label(formpersona.addradreca, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
+				{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça'} }) }}
+			</div>
 		</div>
-		<div id="formpersona-addrpob" class="form-left">
-			<label class="formlabel-inside required" for="parte_persona_addrpob">Població</label>
-			{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrpob' }) }}
+		<div id="formpersona-addrpob" class="col-md-5  col-xs-5">
+		  	<div class="form-group">
+				{{ form_label(formpersona.addrpob, 'Població', { 'label_attr': {'class': 'sr-only required'} }) }}
+				{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'form-control', 'placeholder': 'Població'}, 'id': 'parte_persona_addrpob'  }) }}
+			</div>
 		</div>
-		<div id="formpersona-addrcp" class="form-left">
-			<label class="formlabel-inside required" for="parte_persona_addrcp">CP</label>
-			{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcp' }) }}
+		<div id="formpersona-addrcp" class="col-md-2  col-xs-2">
+		  	<div class="form-group">
+				{{ form_label(formpersona.addrcp, 'CP', { 'label_attr': {'class': 'sr-only required'} }) }}
+				{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'form-control', 'placeholder': 'CP'}, 'id': 'parte_persona_addrcp'  }) }}
+			</div>
 		</div>
 	</div> 
-	<div class="form-row clearfix">
-		<div id="formpersona-addrprovincia" class="form-left">
-			<label class="formlabel-inside required" for="parte_persona_addrprovincia">Província</label>
-			{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'forminput-inside'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia' }) }}
+	<div class="row">
+		<div id="formpersona-addrprovincia" class="col-md-4  col-xs-4">
+		  	<div class="form-group">
+				{{ form_label(formpersona.addrprovincia, 'Província', { 'label_attr': {'class': 'sr-only required'} }) }}
+				{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'form-control', 'placeholder': 'Província'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia'  }) }}
+			</div>
 		</div>
-		<div id="formpersona-addrcomarca" class="form-left">
-			<label class="formlabel-inside required" for="parte_persona_addrcomarca">Comarca</label>
-			{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrcomarca' }) }}
+		<div id="formpersona-addrcomarca" class="col-md-6  col-xs-6">
+		  	<div class="form-group">
+				{{ form_label(formpersona.addrcomarca, 'Comarca', { 'label_attr': {'class': 'sr-only required'} }) }}
+				{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'form-control', 'placeholder': 'Comarca'}, 'id': 'parte_persona_addrcomarca'  }) }}
+			</div>
 		</div>
-		<div id="formpersona-addrnacionalitat" class="form-left">
-			<label class="formlabel-inside required" for="parte_persona_addrnacionalitat">Nacionalitat</label>
-			{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'forminput-inside'}, 'id': 'parte_persona_addrnacionalitat' }) }}
+		<div id="formpersona-addrnacionalitat" class="col-md-2  col-xs-2">
+		  	<div class="form-group">
+				{{ form_label(formpersona.addrnacionalitat, 'Nacionalitat', { 'label_attr': {'class': 'sr-only required'} }) }}
+				{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'form-control', 'placeholder': 'Nacionalitat'}, 'id': 'parte_persona_addrnacionalitat'  }) }}
+			</div>
 		</div>
 	</div> 
 	<div class="form-row clearfix">

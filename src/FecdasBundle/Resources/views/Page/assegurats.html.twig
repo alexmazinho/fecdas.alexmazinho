@@ -1,10 +1,11 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block javascriptshead %}
- 	{{ parent() }}
- 	<script src="{{ asset('js/utils/purl.js') }}" type="text/javascript"></script>
-   	{{ form_javascript(form) }}
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Relació d'assegurats del Club{% endblock %}
@@ -122,14 +123,14 @@
 							<div class="data-detall-cell assegurat-actions">
 								{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
 									<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
-										<i class="fa fa-newspaper-o fa-1x orange"></i></a>
+										<i class="fa fa-newspaper-o fa-1x blue"></i></a>
 								{% endif %}
 								{% if persona.llicenciaVigent.parte.allowRenovar %}
 									<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-					   					<i class="fa fa-retweet fa-1x green"></i></a>
+					   					<i class="fa fa-retweet fa-1x orange"></i></a>
 				   				{% endif %}
 				   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
-				   					<i class="fa fa-search fa-1x blue"></i></a>
+				   					<i class="fa fa-search fa-1x green"></i></a>
 								<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
 				   					<i class="fa fa-user fa-1x red"></i></a>
 			   				</div>
@@ -137,9 +138,9 @@
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
 				   				<div class="data-detall-cell assegurat-actions">
 			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-			   						<i class="fa fa-retweet fa-1x green"></i></a>
+			   						<i class="fa fa-retweet fa-1x orange"></i></a>
 			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
-			   						<i class="fa fa-search fa-1x blue"></i></a>
+			   						<i class="fa fa-search fa-1x green"></i></a>
 				   				<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
 			   						<i class="fa fa-user fa-1x red"></i></a>
 			   					</div>
@@ -170,52 +171,59 @@
 
 {{ parent() }}
 
-<script type="text/javascript">
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
-$(document).ready(function(){
-	setMenuActive("menu-assegurats");
+	<script src="{{ asset('js/utils/purl.js') }}" type="text/javascript"></script>
 	
-	helpBubbles("#form_dni", '<p>Indica tot o part del <b>DNI/NIE</b> a cercar</p>');
+	{{ form_javascript(form) }}
 	
-	helpBubbles("#form_nom", '<p>Indica tot o part del <b>NOM</b> a cercar</p>\
-	<p>La cerca no distingeix majúscules o minúscules</p>');
-
-	helpBubbles("#form_cognoms", '<p>Indica tot o part dels <b>COGNOMS</b> a cercar</p>\
-	<p>La cerca no distingeix majúscules o minúscules</p>');
-
-	showPersonClickAssegurats();
-
-	showHistorialLlicencies();
-
-	$('#form_assegurats').submit(function () {
-		// Recarrega consulta afegint la dades del formulari
-		asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
-		return false;
-	});
-
-	$('#form_tots').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+	<script type="text/javascript">
+	
+	$(document).ready(function(){
+		setMenuActive("menu-assegurats");
 		
-	});
-
-	$('#form_vigent').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+		helpBubbles("#form_dni", '<p>Indica tot o part del <b>DNI/NIE</b> a cercar</p>');
 		
+		helpBubbles("#form_nom", '<p>Indica tot o part del <b>NOM</b> a cercar</p>\
+		<p>La cerca no distingeix majúscules o minúscules</p>');
+	
+		helpBubbles("#form_cognoms", '<p>Indica tot o part dels <b>COGNOMS</b> a cercar</p>\
+		<p>La cerca no distingeix majúscules o minúscules</p>');
+	
+		showPersonClickAssegurats();
+	
+		showHistorialLlicencies();
+	
+		$('#form_assegurats').submit(function () {
+			// Recarrega consulta afegint la dades del formulari
+			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+			return false;
+		});
+	
+		$('#form_tots').change(function () {
+			// Recarrega consulta afegint la dades del formulari
+			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+			
+		});
+	
+		$('#form_vigent').change(function () {
+			// Recarrega consulta afegint la dades del formulari
+			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+			
+		});
+		
+		
+		//sortLlista("col-listheader", "list-data");
+		//llistaPaginationAndSort($('#form_assegurats'));
+	
+		var tableScroll = $('.table-scroll');
+		if (tableScroll.hasOverflowY()) {
+			$('.table-scroll').css({"width":"101.5%"});
+		}
 	});
 	
-	
-	//sortLlista("col-listheader", "list-data");
-	//llistaPaginationAndSort($('#form_assegurats'));
-
-	var tableScroll = $('.table-scroll');
-	if (tableScroll.hasOverflowY()) {
-		$('.table-scroll').css({"width":"101.5%"});
-	}
-});
-
-</script>
+	</script>
 
 
 {% endblock %}

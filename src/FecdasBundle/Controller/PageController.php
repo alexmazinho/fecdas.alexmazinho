@@ -288,7 +288,7 @@ class PageController extends BaseController {
 					$persona->setNom(mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8"));
 					$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
 					
-					
+					$datanaixement = \DateTime::createFromFormat('Y-m-d', $row['naixement']);
 					$persona->setSexe($row['sexe']);
 					$persona->setDatanaixement($datanaixement);
 					$persona->setAddrnacionalitat($row['nacionalitat']);
@@ -1190,11 +1190,8 @@ class PageController extends BaseController {
 						
 					$baixaPersona = $request->request->get('action') != 'save';
 					if (!$baixaPersona) {
-						error_log('=='.json_encode($p).'==');
 						
-						$estranger = $p['estranger'];
-						
-						error_log('-'.$estranger.'-');
+						$estranger = ( isset($p['estranger']) && $p['estranger'] == 1 )?true:false;
 						
 						$this->validarDadesPersona($persona, $estranger);
 
@@ -1225,8 +1222,8 @@ class PageController extends BaseController {
 					$errors = $this->get('validator')->validate($persona);
 					// iterate on it
 					foreach ($errors as $error) {
-						if ($error->getPropertyPath() == "telefon1") throw new \Exception("El telèfon ".$persona->getTelefon1()." no es un valor vàlid"); 
-						if ($error->getPropertyPath() == "telefon2") throw new \Exception("El telèfon ".$persona->getTelefon2()." no es un valor vàlid");  
+						if ($error->getPropertyPath() == "telefon1") throw new \Exception("El telèfon ".$persona->getTelefon1()." no és vàlid"); 
+						if ($error->getPropertyPath() == "telefon2") throw new \Exception("El telèfon ".$persona->getTelefon2()." no és vàlid");  
 						if ($error->getPropertyPath() == "mail") throw new \Exception("Adreça de correu electrònica incorrecte");
 					}
 					throw new \Exception("Dades invàlides");
@@ -1297,11 +1294,12 @@ class PageController extends BaseController {
 				
 		if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "" ||
 			$persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
-									
 		
-		$nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($persona->getNacionalitat());
+		$em = $this->getDoctrine()->getManager();							
 		
-		if ($nacio == null) $persona->setNacionalitat('ESP');
+		$nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($persona->getAddrnacionalitat());
+		
+		if ($nacio == null) $persona->setAddrnacionalitat('ESP');
 
 		
 		if ($estranger == false) {
@@ -1315,7 +1313,7 @@ class PageController extends BaseController {
 		
 		/* Check persona amb dni no repetida al mateix club */
 		if ($persona->getId() == 0) {
-			$em = $this->getDoctrine()->getManager();
+			
 			
 			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
 			$strQuery .= " WHERE p.dni = :dni ";
@@ -1582,7 +1580,7 @@ class PageController extends BaseController {
 	}
 	
 	public function ajaxpoblacionsAction(Request $request) {
-		$search = $this->consultaAjaxPoblacions($request->get('term')); 
+		$search = $this->consultaAjaxPoblacions($request->get('term',''), $request->get('tipus','')); 
 		$response = new Response();
 		$response->setContent(json_encode($search));
 		

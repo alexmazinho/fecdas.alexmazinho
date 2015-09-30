@@ -24,8 +24,12 @@ class FormPersona extends AbstractType {
 		$builder->add('cognoms', 'text');
 		$builder->add('dni', 'text', array('read_only' => $readonly,));
 		
-		$builder->add('datanaixement', 'genemu_jquerydate',
-				array('format' => 'dd/MM/yyyy', 'years' => range(1900, date("Y", strtotime('now')))));
+		$builder->add('datanaixement', 'date',	array(
+				'widget' 	=> 'single_text',
+				'format' => 'dd/MM/yyyy', 
+				'years' => range(1900, date("Y", strtotime('now') ) )
+				)
+		);
 		
 		$builder->add('sexe', 'choice', array(
 				'choices'   => array('H' => 'Home', 'M' => 'Dona'),
@@ -65,14 +69,14 @@ class FormPersona extends AbstractType {
 		$builder->add('addrprovincia', 'choice', array(
 				'choices' => $this->options['provincies'],
 				'preferred_choices' => array('Barcelona','Girona','Tarragona','Lleida' ),
-				'empty_value' => 'Província...',
+				//'empty_value' => 'Província...',
 				'required'  => false,
 		));
 		
 		$builder->add('addrcomarca', 'choice', array(
 				'choices' => $this->options['comarques'],
-				'preferred_choices' => array(''),
-				'empty_value' => 'Comarca ...',
+				//'preferred_choices' => array(''),
+				//'empty_value' => 'Comarca ...',
 				'required'  => false,
 		));
 		

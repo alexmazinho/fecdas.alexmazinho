@@ -29,17 +29,17 @@
 		</div>
 	</div>
 	<div class="row">
-		<div id="formpersona-datanaixement" class="col-md-5  col-xs-5">
+		<div id="formpersona-datanaixement" class="col-md-4  col-xs-4">
 		  	<div class="form-group">
 		  		<div  class="input-group">
 			  		<span class="input-group-addon"></span>
 					{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'sr-only'}}) }}
-					{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control', 'placeholder': 'Data de naixement' } }) }}
+					{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'Data de naixement' } }) }}
 					<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 				</div>
 			</div>
 		</div>
-		<div id="formpersona-sexe" class="col-md-3  col-xs-3">
+		<div id="formpersona-sexe" class="col-md-4  col-xs-4">
 	  		<label class="radio-inline">
 				{{ form_widget(formpersona.sexe[0]) }} Home
 			</label>
@@ -47,7 +47,7 @@
 				{{ form_widget(formpersona.sexe[1]) }} Dona
 			</label>
 		</div>
-		<div id="formpersona-estranger" class="col-md-4 col-xs-4">
+		<div id="formpersona-estranger" class="col-md-offset-2 col-md-2 col-xs-offset-2 col-xs-2">
 		  	<div class="checkbox">
 		    	<label>
 		     		{{ form_widget(formpersona.estranger) }} Estranger? 
@@ -92,13 +92,13 @@
 			<div><h3>Adreça</h3></div>
 			<div id="sms-mailpersona">* Indica l'adreça de correu per poder rebre notificacions de la Federeació</div>
 		</div>
-		<div id="formpersona-addradreca" class="col-md-5  col-xs-5">
+		<div id="formpersona-addradreca" class="col-md-6  col-xs-6">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addradreca, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
 				{{ form_widget(formpersona.addradreca, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça'} }) }}
 			</div>
 		</div>
-		<div id="formpersona-addrpob" class="col-md-5  col-xs-5">
+		<div id="formpersona-addrpob" class="col-md-4  col-xs-4">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrpob, 'Població', { 'label_attr': {'class': 'sr-only required'} }) }}
 				{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'form-control', 'placeholder': 'Població'}, 'id': 'parte_persona_addrpob'  }) }}
@@ -112,19 +112,19 @@
 		</div>
 	</div> 
 	<div class="row">
-		<div id="formpersona-addrprovincia" class="col-md-4  col-xs-4">
+		<div id="formpersona-addrprovincia" class="col-md-3  col-xs-3">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrprovincia, 'Província', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'form-control', 'placeholder': 'Província'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia'  }) }}
+				{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'form-control  form-control-center', 'placeholder': 'Província'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia'  }) }}
 			</div>
 		</div>
-		<div id="formpersona-addrcomarca" class="col-md-6  col-xs-6">
+		<div id="formpersona-addrcomarca" class="col-md-3  col-xs-3">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrcomarca, 'Comarca', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'form-control', 'placeholder': 'Comarca'}, 'id': 'parte_persona_addrcomarca'  }) }}
+				{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'form-control  form-control-center', 'placeholder': 'Comarca'}, 'id': 'parte_persona_addrcomarca'  }) }}
 			</div>
 		</div>
-		<div id="formpersona-addrnacionalitat" class="col-md-2  col-xs-2">
+		<div id="formpersona-addrnacionalitat" class="col-md-offset-3 col-md-3 col-xs-offset-3 col-xs-3">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrnacionalitat, 'Nacionalitat', { 'label_attr': {'class': 'sr-only required'} }) }}
 				{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'form-control', 'placeholder': 'Nacionalitat'}, 'id': 'parte_persona_addrnacionalitat'  }) }}

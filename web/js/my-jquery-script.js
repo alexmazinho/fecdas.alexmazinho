@@ -791,10 +791,38 @@
 			
 			$("#edicio-persona").html(data);
 			// Reload DOM events. Add handlers again. Only inside reloaded divs
+			var current = new Date();
+			var mindate = new Date( current.getFullYear() - 100, 1 - 1, 1);
+			var maxdate = new Date ( current.getFullYear() - 4, 1 - 1, 1);
+			initDateTimePicker ( 
+				$( '#persona_datanaixement' ), 
+				mindate, 
+				maxdate, 
+				new Date (), 
+				'datanaixement-picker', 
+				false
+			);
+			
 			formFocus();
 			autocompleters();
 			actionsModalOverlay();
 			actionsPersonaForm(origenLlicencia);
+			
+			$("select#parte_persona_addrprovincia").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: "Província",
+			});
+			$("select#parte_persona_addrcomarca").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: "Comarca",
+			});
+			$("select#parte_persona_addrnacionalitat").select2({
+				minimumInputLength: 1,
+				allowClear: true,
+				placeholder: "ESP",
+			});
 			/* Check estranger */
 			if ($('#parte_persona_id').val() != 0) {
 				$("#formpersona-estranger").hide();
@@ -809,27 +837,46 @@
 		});
 	};
 	
-	autocompleters = function() {
+	autocompletersConfig = function(camp, open) {
+		
 		var route = $("#formpersona-autocompleters").attr("href");
 		var $configs = {
 			source: function(request, response) {
-				var $data = {term: request.term};
+				var $data = { term: request.term, tipus:camp };
 				$.getJSON(route, $data, response);
 			},
-			position: { my : "left bottom", at: "left top", collision: "none" },
+			position: open,
 			appendTo: "#edicio-persona",
 			select: function(event, ui){
 				$("#parte_persona_addrpob").val(ui.item.municipi);
 				$("#parte_persona_addrcp").val(ui.item.cp);	
 				$("#parte_persona_addrcp").trigger("blur.labelFx");
 				$("#parte_persona_addrprovincia").val(ui.item.provincia);
-				$("#parte_persona_addrprovincia").trigger("blur.labelFx");
+				$("select#parte_persona_addrprovincia").select2({
+					minimumInputLength: 2,
+					allowClear: true,
+					placeholder: "Província",
+				});
+				
+				//$("#parte_persona_addrprovincia").trigger("blur.labelFx");
 				$("#parte_persona_addrcomarca").val(ui.item.comarca);
-				$("#parte_persona_addrcomarca").trigger("blur.labelFx");
+				$("select#parte_persona_addrcomarca").select2({
+					minimumInputLength: 2,
+					allowClear: true,
+					placeholder: "Comarca",
+				});
+				//$("#parte_persona_addrcomarca").trigger("blur.labelFx");
 			}
 		};
 
-		$('#parte_persona_addrpob').autocomplete($configs);
+		return $configs;
+	};
+	
+	
+	autocompleters = function() {
+		
+		$('#parte_persona_addrpob').autocomplete(autocompletersConfig('poblacio'),  { my : "left bottom", at: "left top", collision: "none" });
+		$('#parte_persona_addrcp').autocomplete(autocompletersConfig('cp'), { my : "right top", at: "right bottom", collision: "flip" });
 	};
 	
 	actionsPersonaForm = function(origenLlicencia) {
@@ -875,7 +922,7 @@
 	    	        	} else {
 	    	        		/* Alex. Validar nou check estranger */
 	    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());*/
-	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#formpersona-estranger").is(':checked'));
+	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#persona-estranger").is(':checked'));
 	    	        		if (error == "") {
 	    	        			submitPerson("save", origenLlicencia);
 	    	        		} else {
@@ -907,7 +954,7 @@
 		var url = $('#formpersona').attr("action");
 		//var params = $('#formpersona').serializeArray();
 		var params = $('#formpersona').serialize();
-		
+
 		if (origenLlicencia == true) {
 			var part = { 'id' : $("#parte_id").val(), 'dataalta': $("#parte_dataalta").val(), 'tipus': $('#parte_tipus').val() };
 	        var llic = { 'id' : $('#parte_llicencies_id').val() };
@@ -1060,7 +1107,7 @@
 			params += '&'+$.param({ 'llicencia': llic });
 	        
 	        var url = $(this).attr('href');
-	        console.log('a '+url);
+
 	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {

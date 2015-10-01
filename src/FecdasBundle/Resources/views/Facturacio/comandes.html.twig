@@ -155,7 +155,7 @@
 			   				{% endif %}
 			   			{% else %}
 							{% if comanda.comandaPagada != true and comanda.totalDetalls > 0  %}
-				        		<a class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': comanda.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
+				        		<a class="link pagar-comanda" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': comanda.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
 				        			<i class="fa fa-credit-card fa-1x green"></i></a>
 							{% endif %}
 	   					{% endif %}
@@ -203,6 +203,16 @@
 		{% else %}
 			setMenuActive("menu-comandes");
 		{% endif %}
+
+		$( ".pagar-comanda" ).click( function(e) {
+			e.preventDefault();	
+			var url = $(this).attr("href");
+			
+			dialegConfirmacio( pagamentComandaSMS(), "Abans de continuar...", 0, 550, function() {
+	        	window.location = url+'&comentaris='+$('#comanda_comentaris').val();
+	        }, function() {} );
+		});
+
 		
 		$("#form_cerca").change(function() {
 			filtreLlistacomandes();

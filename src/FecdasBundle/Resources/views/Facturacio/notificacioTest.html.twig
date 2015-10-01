@@ -17,15 +17,12 @@
         <h1>Test Notificacions TPV</h1>
     </header>
 	
-    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
+    {% include 'FecdasBundle:Includes:messages.html.twig' %}
         
    	<form id="testform" action="{{ path('FecdasBundle_notificacio') }}" method="post" {{ form_enctype(form) }} class="appform">
    	{{ form_errors(form) }}
 
+	<div class="error-box"></div>
    	<div id="urltest">
    	<div>
 		{{ form_label(form.accio, 'Acció', { 'label_attr': {'class': 'formlabel-outside'} }) }}
@@ -36,7 +33,7 @@
 		{{ form_widget(form.Ds_Response, { 'id': 'Ds_Response', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
 	<div>
-		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (itemId&source&entorn)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (itemId&source(llicencies,duplicat o varis)&entorn)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
 		{{ form_widget(form.Ds_MerchantData, { 'id': 'Ds_MerchantData', 'attr': {'class': 'forminput-outside'} }) }}
 	</div>
    	<div>
@@ -93,7 +90,16 @@
 				function(data, textStatus) {
 					alert("fi post" + data);
 					location.reload();
-				}).fail(function() { alert("Error post"); });
+				}).fail( function(xhr, status, error) {
+					 // xhr.status + " " + xhr.statusText, status, error
+					 
+					 console.log(JSON.stringify(xhr));
+					 
+					 var sms = smsResultAjax('KO', xhr.responseText);
+					 
+					 $(".error-box").html(sms);
+				     
+				});
 			} else {
 				var str = jQuery.param( params );
 				

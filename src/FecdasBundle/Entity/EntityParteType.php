@@ -59,6 +59,12 @@ class EntityParteType {
 	protected $actiu;
 	
 	/**
+	 * @ORM\Column(type="string")
+	 */
+	protected $polissa;
+	
+	
+	/**
 	 * @ORM\OneToMany(targetEntity="EntityCategoria", mappedBy="tipusparte")
 	 */
 	protected $categories;
@@ -265,6 +271,27 @@ class EntityParteType {
     	return $this->actiu;
     }
     
+	/**
+     * Set polissa
+     *
+     * @param string $polissa
+     */
+    public function setPolissa($polissa)
+    {
+        $this->polissa = $polissa;
+    }
+
+    /**
+     * Get polissa
+     *
+     * @return string 
+     */
+    public function getPolissa()
+    {
+        return $this->polissa;
+    }
+	
+	
     /**
      * Add categories
      *

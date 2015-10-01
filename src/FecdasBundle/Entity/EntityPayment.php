@@ -5,7 +5,6 @@ namespace FecdasBundle\Entity;
  * @author alex
  *
  */
-use Symfony\Component\Validator\Constraints\All;
 
 class EntityPayment {
 

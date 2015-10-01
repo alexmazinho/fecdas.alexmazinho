@@ -502,9 +502,10 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-producte-import { width: 7%; text-align: right; }
 #header-producte-iva { width: 7%; text-align: right; }
 #header-producte-total { width: 7%; text-align: right; }
+#header-producte-transport { width: 4%; text-align: center; }
 #header-producte-minim { width: 7%; text-align: center; }
-#header-producte-limit { width: 7%; text-align: center; }
-#header-producte-stock { width: 7%; text-align: center; }
+#header-producte-limit { width: 5%; text-align: center; }
+#header-producte-stock { width: 5%; text-align: center; }
 #header-producte-actions { width: 10%; text-align: right;  color: #3c763d;  }
 	   	
 .data-detall-cell.producte-estat  { width: 6%; text-align: left; }
@@ -515,9 +516,10 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.producte-import { width: 7%; text-align: right; }
 .data-detall-cell.producte-iva { width: 7%; text-align: right; }
 .data-detall-cell.producte-total { width: 7%; text-align: right; font-weight: bold; }
+.data-detall-cell.producte-transport { width: 4%; text-align: center; }
 .data-detall-cell.producte-minim { width: 7%; text-align: center; }
-.data-detall-cell.producte-limit { width: 7%; text-align: center; }
-.data-detall-cell.producte-stock { width: 7%; text-align: center; }
+.data-detall-cell.producte-limit { width: 5%; text-align: center; }
+.data-detall-cell.producte-stock { width: 5%; text-align: center; }
 .data-detall-cell.producte-actions { width: 10%; text-align: right;}
 .data-detall-cell.producte-actions .fa { font-size: 1.2em; }
 

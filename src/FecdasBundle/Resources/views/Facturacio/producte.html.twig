@@ -63,14 +63,14 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-2">
 			 	<div class="form-group">
 				 	<label>
 				 		<div class="checkbox-inline"><h4>{{ form_widget(form.stockable) }} stock</h4></div>
 					 </label>
 				 	<div id="formproducte-stock"  class="">
 				 		<div class="row">
-							 <div class="col-md-4">
+							 <div class="col-md-12">
 								<div class="form-group">
 									<div id="formproducte-minim"  class="input-group ">
 						  				<span class="input-group-addon">Límit</span>
@@ -79,12 +79,32 @@
 									{{ form_errors(form.limitnotifica)  }}
 								</div>
 							 </div>
-							 <div class="col-md-4">
+							 <div class="col-md-12">
 								<div class="form-group">
 									<div id="formproducte-stock"  class="input-group ">
 						  				<span class="input-group-addon">Stock</span>
 										{{ form_widget(form.stock, { 'attr': {'class': 'form-control form-control-center'} }) }}
 									</div>{{ form_errors(form.stock)  }}
+								</div>
+							 </div>
+						</div>
+				 	</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+			 	<div class="form-group">
+				 	<label>
+				 		<div class="checkbox-inline"><h4>{{ form_widget(form.transport) }} transport</h4></div>
+					 </label>
+				 	<div id="formproducte-transport"  class="">
+				 		<div class="row">
+							 <div class="col-md-12">
+								<div class="form-group">
+									{{ form_label(form.canvitarifa, 'Mín. per canvi de tarifa') }}
+									<div id="formproducte-stock"  class="input-group ">
+						  				<span class="input-group-addon"></span>
+										{{ form_widget(form.canvitarifa, { 'attr': {'class': 'form-control form-control-center'} }) }}
+									</div>{{ form_errors(form.canvitarifa)  }}
 								</div>
 							 </div>
 						</div>
@@ -258,6 +278,31 @@
 				}, function() { });
 			});
 
+			$("#producte_stockable").click(function(){
+				var checked = $(this).is(':checked');
+				if (checked) {
+					$('#producte_limitnotifica').removeAttr('disabled'); 
+					$('#producte_stock').removeAttr('disabled'); 
+					$('#producte_limitnotifica').val(1);
+					$('#producte_stock').val(1);				
+				} else {
+					$('#producte_limitnotifica').attr('disabled', 'disabled'); 
+					$('#producte_stock').attr('disabled', 'disabled'); 
+					$('#producte_limitnotifica').val("");
+					$('#producte_stock').val("");				
+				};
+			});
+
+			$("#producte_transport").click(function(){
+				var checked = $(this).is(':checked');
+				if (checked) {
+					$('#producte_canvitarifa').removeAttr('disabled'); 
+					$('#producte_canvitarifa').val(5);
+				} else {
+					$('#producte_canvitarifa').attr('disabled', 'disabled'); 
+					$('#producte_canvitarifa').val("");
+				};
+			});
 			
 		});
 

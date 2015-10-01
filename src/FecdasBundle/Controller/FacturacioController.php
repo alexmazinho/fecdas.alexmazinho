@@ -870,8 +870,7 @@ class FacturacioController extends BaseController {
 			switch ($action) {
 			    case 'pagar':
 			        // Obrir TPV
-			        
-			        
+			        return $this->redirect($this->generateUrl('FecdasBundle_pagamentcomanda', array( 'id' => $comanda->getId())));
 			        
 			        break;
 			    case 'desar':
@@ -919,6 +918,8 @@ class FacturacioController extends BaseController {
 				$cart['productes'][$idProducte] = array(
 						'abreviatura' 	=> $producte->getAbreviatura(),
 						'descripcio' 	=> $producte->getDescripcio(),
+						'transport'		=> $producte->getTransport(),
+						'tarifa'		=> '',
 						'unitats' 		=> $unitats,
 						'import' 		=> $import
 				);
@@ -926,7 +927,16 @@ class FacturacioController extends BaseController {
 				$cart['productes'][$idProducte]['unitats'] += $unitats;
 			}
 			//$cart['total'] += $import;
-			
+
+			$unitats = $cart['productes'][$idProducte]['unitats'];
+			if ($producte->getTransport() == true) {
+				if ($producte->getCanvitarifa() != null && is_numeric($producte->getCanvitarifa()) && $producte->getCanvitarifa() <= $unitats ) {
+					$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT2;
+				} else {
+					$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT1;
+				}
+			}
+						
 			if ($cart['productes'][$idProducte]['unitats'] <= 0) {
 				// Afegir unitats < 0
 				unset( $cart['productes'][$idProducte] );	
@@ -1138,10 +1148,13 @@ class FacturacioController extends BaseController {
 		
 		$comandaid = 0;
 		if ($request->query->has('id')) {
+			$comentaris = $request->query->get('comentaris', '');
 			$comandaid = $request->query->get('id');
 			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaid);
 		
 			if ($comanda != null  && $comanda->comandaPagada() != true) {
+				
+				if ($comentaris != '') $comanda->setComentaris($comentaris);
 				$club = $comanda->getClub();
 				$origen = $comanda->getOrigenPagament();
 				$desc = $comanda->getDescripcioPagament();
@@ -1335,8 +1348,19 @@ class FacturacioController extends BaseController {
     						$form->get('stock')->addError(new FormError('Valor incorrecte'));
     						throw new \Exception('Cal indicar l\'stock disponible ' );
     					}
+    				} else {
+    					$producte->setLimitnotifica(null);
+						$producte->setStock(null);
     				}
     				
+					if ($producte->getTransport() == true) {
+						if ($producte->getCanvitarifa() == null || $producte->getCanvitarifa() < 0) {
+    						$form->get('canvitarifa')->addError(new FormError('Valor incorrecte'));
+    						throw new \Exception('Cal indicar el mínim d\'unitats pel canvi de tarifa de transport ' );
+    					}
+					} else {
+						$producte->setCanvitarifa(null);
+					}
     				
     				$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
     				

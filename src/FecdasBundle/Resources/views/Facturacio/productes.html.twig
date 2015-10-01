@@ -49,7 +49,7 @@
 				</div>
 		   	</form>
 	    </div>
-	    <div class="table-header table-header-scroll">	
+	    <div class="table-header">	
 		   	<div id="list-header">
 				<div id="header-producte-id" class="col-listheader hidden">&nbsp;</div>
 				<div id="header-producte-estat" class="col-listheader collistheader-noorder">Estat</div>
@@ -64,11 +64,12 @@
 		   		<div id="header-producte-import" class="col-listheader collistheader-noorder">Preu</div>
 		   		<div id="header-producte-iva" class="col-listheader collistheader-noorder">IVA</div>
 		   		<div id="header-producte-total" class="col-listheader collistheader-noorder">Total</div>
+		   		<div id="header-producte-transport" class="col-listheader col-listheader-noorder"><i class="fa fa-truck"></i></div>
 		   		<div id="header-producte-minim" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Uds. mín.', 'p.minim') }}
 		   			<span class="listheader-icon {% if productes.isSorted('p.minim') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-producte-limit" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Límit avís', 'p.stockable') }}
+		   		<div id="header-producte-limit" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Avís', 'p.stockable') }}
 		   			<span class="listheader-icon {% if productes.isSorted('p.stockable') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-producte-stock" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'En Stock', 'p.stock') }}
+		   		<div id="header-producte-stock" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Stock', 'p.stock') }}
 		   			<span class="listheader-icon {% if productes.isSorted('p.stock') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-producte-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ productes.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
@@ -87,6 +88,7 @@
 		   			<div class="data-detall-cell producte-import">{{ producte.currentPreu|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell producte-iva">{{ (producte.currentIva*100)|number_format(0, ',', '.') }}%</div>
 		   			<div class="data-detall-cell producte-total">{{ (producte.currentPreu * (1+producte.currentIva))|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell producte-transport">{% if producte.transport == 1 %}<i class="fa fa-check-circle"></i>{% endif %}</div>
 		   			<div class="data-detall-cell producte-minim">{{ producte.minim }}</div>
 		   			<div class="data-detall-cell producte-limit">{{ producte.limitnotifica }}</div>
 		   			<div class="data-detall-cell producte-stock">{{ producte.stock }}</div>

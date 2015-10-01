@@ -94,6 +94,23 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'disabled' 		=> $producte->getStockable() != true
 			));
 			
+			$form->add ('canvitarifa', 'integer', array (
+					'required' 		=> false,
+					'scale' 		=> 0,
+					'disabled' 		=> $producte->getTransport() != true
+			));
+			error_log("stocable => ".$producte->getStockable()."-");
+			$form->add('stockable', 'checkbox', array(
+					'required' 		=> false,
+					'data' 			=> $producte->getStockable() == true
+			));
+			error_log("transport => ".$producte->getTransport()."-");
+			$form->add('transport', 'checkbox', array(
+					'required' 		=> false,
+					'data' 			=> $producte->getTransport() == true
+			));
+		
+			
 			/*$form->add ( 'iva', 'number', array (
 					'required' => true,
 					'mapped' => false,
@@ -145,7 +162,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		
 		$builder->add('descripcio', 'textarea', array(
 				'required' => true,
-				'attr' => array('rows' => '2'),
+				'attr' => array('rows' => '4'),
 		));
 		
 		$builder->add('tipus', 'choice', array(
@@ -157,10 +174,6 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		$builder->add ('minim', 'integer', array (
 				'required' => false,
 				'scale' => 0
-		));
-		
-		$builder->add('stockable', 'checkbox', array(
-				'required' => false,
 		));
 		
 		$builder->add('databaixa', 'datetime', array(

@@ -66,6 +66,16 @@ class EntityProducte {
 	protected $stock;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $transport;
+	
+	/**
+	 * @ORM\Column(type="integer", nullable=true)
+	 */
+	protected $canvitarifa;
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -82,6 +92,7 @@ class EntityProducte {
 	
 	public function __construct() {
 		$this->stockable = false;
+		$this->transport = false;
 		$this->dataentrada = new \DateTime();
 		$this->preus = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -330,6 +341,54 @@ class EntityProducte {
     public function getStock()
     {
         return $this->stock;
+    }
+
+
+    /**
+     * Set transport
+     *
+     * @param boolean $transport
+     * @return EntityProducte
+     */
+    public function setTransport($transport)
+    {
+        $this->transport = $transport;
+
+        return $this;
+    }
+
+    /**
+     * Get transport
+     *
+     * @return boolean 
+     */
+    public function getTransport()
+    {
+        return $this->transport;
+    }
+
+
+    /**
+     * Set canvitarifa
+     *
+     * @param integer $canvitarifa
+     * @return EntityProducte
+     */
+    public function setCanvitarifa($canvitarifa)
+    {
+        $this->canvitarifa = $canvitarifa;
+
+        return $this;
+    }
+
+    /**
+     * Get canvitarifa
+     *
+     * @return integer 
+     */
+    public function getCanvitarifa()
+    {
+        return $this->canvitarifa;
     }
 
     /**

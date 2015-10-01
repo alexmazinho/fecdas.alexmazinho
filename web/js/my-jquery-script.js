@@ -1232,7 +1232,35 @@
 	    });
 	};
 
-	tramitarPagamentButton = function(selector, sms) {
+	pagamentComandaSMS = function() {
+		return "<div class='sms-pagament'><p>Per pagar la comanda "+
+			" pot fer la transferència en qualsevol moment al número de compte:</p> "+ 
+			"<p>2100 0900 95 0211628657</p> "+
+			"<ul><li>Amb targeta de crèdit o dèbit</li> "+
+			"<li>Amb un compte de \'La Caixa\'</li> "+
+			"<li>Mitjançant transferència des d\'una altra entitat</li></ul> "+
+			"<p>Gràcies</p>"+
+			"<div class='form-group'>"+
+		    "<label for='comanda_comentaris'>Comentaris</label>"+
+			"<div id='formcomanda-comentaris'>"+
+			"	<textarea class='form-control' rows='3' name='comanda[comentaris]' id='comanda_comentaris'></textarea>"+
+			"</div></div></div>";
+	};
+	
+	
+	pagamentLlicenciesSMS = function() {
+		return "<div class='sms-pagament'><p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, "+ 
+    		"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p> "+ 
+			"<p>2100 0900 95 0211628657</p> "+
+			"<p>I rebrà al seu club les llicències i la factura.</p> "+
+    		"<p>Si vol realitzar el pagament ara, ho pot fer</p> "+
+    		"<ul><li>Amb targeta de crèdit o dèbit</li> "+
+    		"<li>Amb un compte de \'La Caixa\'</li> "+
+    		"<li>Mitjançant transferència des d\'una altra entitat</li></ul> "+
+    		"<p>Gràcies</p></div>";
+	};
+	
+	tramitarPagamentButton = function(selector) {
 		
 		$( selector ).click(function(e) {
 			e.preventDefault();
@@ -1256,7 +1284,7 @@
 		        zIndex:	350
 		    });
 		
-		    $("#dialeg").html( sms );
+		    $("#dialeg").html( pagamentLlicenciesSMS() );
 		    
 		    $("#dialeg").dialog("open");
 		});

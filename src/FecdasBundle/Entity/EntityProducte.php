@@ -539,7 +539,7 @@ class EntityProducte {
     {
     	$preu = $this->getPreu($any);
 		
-		return ($preu == null? 0: $preu->getPreu() * ( 1 + $preu->getIva()));
+		return ($preu == null? 0: round($preu->getPreu() * ( 1 + $preu->getIva()),2) );
 
     }
 

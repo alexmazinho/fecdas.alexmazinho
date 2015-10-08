@@ -904,50 +904,58 @@ class FacturacioController extends BaseController {
 		$unitats = $request->query->get('unitats', 1);
 		$tipus = $request->query->get('tipus', 0);
 		
-		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
-		
-		if ($producte != null && $unitats > 0) {
-			// Recollir cistella de la sessió
-			$session = $this->get('session');
+		try {
+			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
 			
-			$import = $producte->getPreuTotalUnitat(date('Y'));
-			
-			$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
-			
-			if ( !isset( $cart['productes'][$idProducte] ) ) {
-				$cart['productes'][$idProducte] = array(
-						'abreviatura' 	=> $producte->getAbreviatura(),
-						'descripcio' 	=> $producte->getDescripcio(),
-						'transport'		=> $producte->getTransport(),
-						'tarifa'		=> '',
-						'unitats' 		=> $unitats,
-						'import' 		=> $import
-				);
-			} else {
-				$cart['productes'][$idProducte]['unitats'] += $unitats;
-			}
-			//$cart['total'] += $import;
-
-			$unitats = $cart['productes'][$idProducte]['unitats'];
-			if ($producte->getTransport() == true) {
-				if ($producte->getCanvitarifa() != null && is_numeric($producte->getCanvitarifa()) && $producte->getCanvitarifa() <= $unitats ) {
-					$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT2;
+			if ($producte != null && $unitats > 0) {
+				// Recollir cistella de la sessió
+				$session = $this->get('session');
+				
+				$import = $producte->getPreuTotalUnitat(date('Y'));
+				
+				$cart = $session->get('cart', array('productes' => array(), 'tarifatransport' => 0)); // Crear cistella buida per defecte
+				
+				if ( !isset( $cart['productes'][$idProducte] ) ) {
+					$cart['productes'][$idProducte] = array(
+							'abreviatura' 	=> $producte->getAbreviatura(),
+							'descripcio' 	=> $producte->getDescripcio(),
+							'transport'		=> $producte->getTransport(),
+							'tarifa'		=> 0,
+							'unitats' 		=> $unitats,
+							'import' 		=> $import
+					);
 				} else {
-					$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT1;
+					$cart['productes'][$idProducte]['unitats'] += $unitats;
 				}
+				//$cart['total'] += $import;
+	
+				$unitats = $cart['productes'][$idProducte]['unitats'];
+				if ($producte->getTransport() == true) {
+					if ($producte->getCanvitarifa() != null && is_numeric($producte->getCanvitarifa()) && $producte->getCanvitarifa() <= $unitats ) {
+						$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT2;
+					} else {
+						$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT1;
+					}
+				}
+							
+				if ($cart['productes'][$idProducte]['unitats'] <= 0) {
+					// Afegir unitats < 0
+					unset( $cart['productes'][$idProducte] );	
+					if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');
+				}
+				
+				$form = $this->formulariTransport($cart);		
+				
+				$session->set('cart', $cart);
 			}
-						
-			if ($cart['productes'][$idProducte]['unitats'] <= 0) {
-				// Afegir unitats < 0
-				unset( $cart['productes'][$idProducte] );	
-				if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');
-			}
-						
-			$session->set('cart', $cart);
-			
+		} catch (\Exception $e) {
+			// Ko, mostra form amb errors
+			$response->headers->set('Content-Type', 'application/json');
+			$response->setContent(json_encode( array('result' => 'KO', 'sms' => $e->getMessage()) ));
+			return $response;
 		}
-		
-		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', array('tipus' => $tipus));
+		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
+							array('formtransport' => $form, 'tipus' => $tipus));
 		
 	}
 
@@ -972,13 +980,53 @@ class FacturacioController extends BaseController {
 				$cart['total'] -= $cart['productes'][$idProducte]['unitats'] * $cart['productes'][$idProducte]['import'];
 			}*/
 			unset( $cart['productes'][$idProducte] );
-			
+
 			if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');  			
 			else $session->set('cart', $cart);
 		}
+
+		$form = $this->formulariTransport($cart);
+				
+		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
+						array('formtransport' => $form, 'tipus' => $tipus));
 		
-		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', array('tipus' => $tipus));
+	}
+
+	private function formulariTransport(&$cart) {
+		// Revisar si cal transport
+		$tarifa = 0;
+		$tarifa1 = 0;
+		$tarifa2 = 0;
+		foreach ($cart['productes'] as $id => $info) {
+			if ($info['transport'] == true)	{
+				if ($info['tarifa'] == BaseController::TARIFA_TRANSPORT1) $tarifa1++;
+				if ($info['tarifa'] == BaseController::TARIFA_TRANSPORT2) $tarifa2++;
+			}
+		}
+		if (($tarifa1 + $tarifa2) > 0) {
+			// Algun de tarifa 2 gran o bé més d'un de tarifa 1 petita => tarifa 2 
+			if ($tarifa1 > 1 || $tarifa2 > 0) $tarifa = BaseController::TARIFA_TRANSPORT2;
+			else $tarifa = BaseController::TARIFA_TRANSPORT1;
+				
+			$cart['tarifatransport'] = $tarifa;
+		} else {
+			$cart['tarifatransport'] = 0;
+		}
+				
+		$formBuilder = $this->createFormBuilder()
+			->add('tarifatransport', 'hidden', array(
+				'data' => $tarifa
+		));
 		
+		$formBuilder->add('transport', 'choice', array(
+				'choices'   => array(0 => 'Incloure enviament', 1 => 'Recollir a la federació'),
+				'multiple'  => false,
+				'expanded'  => true,
+				'data' => ($tarifa > 0?1:0)
+		));
+		
+		
+		return $formBuilder->getForm()->createView();
 	}
 
 	public function editarcomandaAction(Request $request) {
@@ -2602,7 +2650,7 @@ class FacturacioController extends BaseController {
 		// SELECT * FROM apunts_2015 WHERE num IN ( 119, 510 ) ORDER BY num, dh
 		$em = $this->getDoctrine()->getManager();
 		
-		$clientsNoMirar = array(4010000, 4310000, 4310149, 4310162, 4310164, 4310172, 4310191, 4700402, 4700400, 4310011, 4010077, 7690001, 7540002, 7090003, 7090011, 7270000, 7780000, 6260000);
+		//$clientsNoMirar = array(4010000, 4310000, 4310149, 4700402, 4700400, 4010077, 7690001, 7540002, 7090003, 7090011, 7270000, 7780000, 6260000);
 		$rebutId = 0;
 		
 		if (count($altres['D']) == 1) {
@@ -2613,15 +2661,19 @@ class FacturacioController extends BaseController {
 			$data = $altres['D'][0]['data'];
 			$anyFactura = substr($data, 0, 4);  // 2015-10-02
 			
-			if (count($altres['H']) == 0) error_log("ERROR 1 CAP 'H' = >".$id." ".$num);
+			if (count($altres['H']) == 0) {
+				error_log("ERROR 1 CAP 'H' = >".$id." ".$num);
+				return;
+			}
 			
-				if ($compteD >= 4310000 && $compteD <= 4310999) {
+			
+			//Mirar Apunts debe entre comptes  4310001 i 4310999 excepte (4310149)
+			
+			if ($compteD >= 4310001 && $compteD <= 4310999 && $compteD != 4310149) {
 				// Deutor club, Factura 
 				if ( !isset( $clubs[$compteD])) {
-					if ( !in_array($compteD, $clientsNoMirar))  {
-						error_log($id." ".$num."WARNING - COMANDES 15 Club deutor no existeix=> (".implode(',', $clientsNoMirar).") ".$compteD);
-						if  ($warning == true) echo $id." ".$num."WARNING - COMANDES 15 Club deutor no existeix=> (".implode(',', $clientsNoMirar).") ".$compteD."<br/>";
-					}
+					error_log($id." ".$num."WARNING - COMANDES 15 Club deutor no existeix=> ".$compteD);
+					if  ($warning == true) echo $id." ".$num."WARNING - COMANDES 15 Club deutor no existeix=> ".$compteD."<br/>";
 					return;
 				}
 				
@@ -2661,9 +2713,9 @@ class FacturacioController extends BaseController {
 						}
 						$tipusAnterior = BaseController::TIPUS_PRODUCTE_ALTRES;
 					}
-					
+						
 					$importDetalls += $altres['H'][$i]['importapunt'];
-					
+						
 					if ($tipusAnterior == BaseController::TIPUS_PRODUCTE_DUPLICATS) $actualCompteDuplicat = $compteH;
 				}
 				
@@ -2702,7 +2754,7 @@ class FacturacioController extends BaseController {
 						} else {
 							error_log($id." ".$num."REVISAR 15 Factura anul·lació llicencies. Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD);
 							echo $id." ".$num."REVISAR 15 Factura anul·lació llicències. Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD."<br/>";
-							return;
+						return;
 						}
 						
 					} else {
@@ -2750,7 +2802,6 @@ class FacturacioController extends BaseController {
 							
 							if (count($result) >= 1) $comandaId = $result[0]->getId(); 
 							else {
-									
 								$comandaId = $this->inserirComandaAmbDetalls($data, $club['codi'], $maxnums, $textComanda, 0, $facturaId, $altres['H'], $productes);
 								
 								error_log($id." ".$num."WARNING REBUTS/INGRESOS 12 Comanda duplicat ".$actualCompteDuplicat." no trobada => ".$compteD." ".$club['codi']." ".$numFactura);
@@ -2778,150 +2829,153 @@ class FacturacioController extends BaseController {
 					}
 				}			
 			}
-			
-			
+		
+		
 			if ($compteD >= 5720000 && $compteD <= 5720005) {
 				// Rebut ingrés, següent compte club
 					
 				// Camp concepte està la factura:  	FW:00063/2015 o Factura: 00076/2015
 				// Camp document està el rebut: 	00010/15
 					
-				if (count($altres['H']) != 1) error_log("ERROR 2 => ".$num);
-				
-				$compteH = $altres['H'][0]['compte'];
-				
-				if ($altres['D'][0]['concepte'] != $altres['H'][0]['concepte'] ||
-					$altres['D'][0]['document'] != $altres['H'][0]['document'] ||
-					$altres['D'][0]['importapunt'] != $altres['H'][0]['importapunt']) {
-						error_log($id." ".$num."ERROR 3 CAP 'H'");
-						echo $id." ".$num."ERROR 3 CAP 'H'<br/>";
-						return;
-						
-				}
-				
-				$concepteAux = $altres['D'][0]['concepte'];	// FW:00063/2015 o Factura: 00076/2015 o Fra. 2541/2015 o FW:00510/2015 o F. 1456/2014
-				$ingres = true; 
-				$numFactura = 'NA';
-
-				$datapagament = $data;
-				$dataentrada = $data; 
-				$dadespagament = null;
-				$comentari = str_replace("'","''", $altres['D'][0]['concepte']);
-
-				$rebutAux = $altres['D'][0]['document'];		// 00010/15
-				$numRebut = substr($rebutAux, 0, 5);
-						
-				$numRebut = $numRebut * 1;  // Number
-				$import = $altres['D'][0]['importapunt'];
-
-				if ( !isset( $clubs[$compteH])) {
-					if ( !in_array($compteH, $clientsNoMirar) ) {
-						error_log($id." ".$num."WARNING REBUTS/INGRESOS - 7 Club pagador no existeix=> (".implode(',', $clientsNoMirar)."-".$compteH);	
-						if  ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 7 Club pagador no existeix=> (".implode(',', $clientsNoMirar)."-".$compteH."<br/>";
-					
-					}
+				if (count($altres['H']) != 1) {
+					error_log("ERROR 2 => ".$num);
 					return;
 				}
 				
-				$tipuspagament = null;
-				switch ($compteD) {
-					case 5700000:  	// CAIXA FEDERACIÓ, PTES.
-						$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
-						break;
-					case 5720001: 	// "LA CAIXA"  LAIETANIA
-						$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
-						break;
-					case 5720003:	// LA CAIXA-SARDENYA
-						$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
-						break;
-					case 5720002:	// LA CAIXA-OF. MALLORCA
-					case 5720004:	// CAIXA CATALUNYA
-					case 5720005:	// POLISSA DE CREDIT
-						error_log($id." ".$num."ERROR REBUTS/INGRESOS 8 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD);
-						echo $id." ".$num."ERROR REBUTS/INGRESOS 8 Tipus de pagament desconegut => ".$compteD."<br/>";
+				$compteH = $altres['H'][0]['compte'];
+				
+				//Mirar Apunts haber a comptes  4310001 i 4310999 excepte (4310149)  => Clubs
+				if ($compteH >= 4310001 && $compteH <= 4310999 && $compteH != 4310149) {
+					
+					if ( !isset( $clubs[$compteH])) {
+						error_log($id." ".$num."WARNING REBUTS/INGRESOS - 7 Club pagador no existeix=> ".$compteH);	
+						if  ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 7 Club pagador no existeix=> ".$compteH."<br/>";
 						return;
-										
-						break;
-				}
-				
-				$numFactures = $this->extraerFactures(strtolower($concepteAux), 'R');
-				
-				if ($numFactures != null) {
-					// Ok, trobadaes 
-				
-					$comandesIdPerActualitzar = array();
-										
-					foreach ($numFactures as  $numFactura) {
-	
-						$pos = strpos(strtolower($concepteAux), '/2014');
-						if ($pos !== false) $anyFactura = 2014; 
-						
-						$factExistent = $this->consultarFactura($numFactura, $anyFactura);
-							
-						if ($factExistent == null) {
-							//error_log("ERROR REBUTS/INGRESOS 9 Factura -".($numFactura)."- no trobada, concepte =>".$concepteAux."<= => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom']);
-							//echo "ERROR REBUTS/INGRESOS 9 Factura -".($numFactura)."- no trobada, concepte =>".$concepteAux."<= => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom'] .")<br/>";
-							
-							// S'ha fet l'ingrés la comanda encara no ha arribat, desar a un array
-							$facturesRebutsPendents[$numFactura] =  array('id' => $id, 'num' => $num, 'compte' => $compteD, 'factura' => $numFactura,
-																		'data' => $data, 'import' => $import, 'concepte' => $concepteAux, 
-																		'rebut' => $numRebut, 'datapagament' => $datapagament, 'tipuspagament' => $tipuspagament,
-																		'club' => $clubs[$compteH]['codi'], 'comandes' => $comandesIdPerActualitzar, 
-																		'comentari' => $comentari, 'dadespagament' => $dadespagament );
-														 	
+					}
+					
+					if ($altres['D'][0]['concepte'] != $altres['H'][0]['concepte'] ||
+						$altres['D'][0]['document'] != $altres['H'][0]['document'] ||
+						$altres['D'][0]['importapunt'] != $altres['H'][0]['importapunt']) {
+							error_log($id." ".$num."ERROR 3 CAP 'H'");
+							echo $id." ".$num."ERROR 3 CAP 'H'<br/>";
 							return;
-						} else {
-							// Count no funciona bé
-							//$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
-										
-							$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
-							$comanda = $statement->fetch();
+					}
+					
+					$concepteAux = $altres['D'][0]['concepte'];	// FW:00063/2015 o Factura: 00076/2015 o Fra. 2541/2015 o FW:00510/2015 o F. 1456/2014
+					$ingres = true; 
+					$numFactura = 'NA';
+	
+					$datapagament = $data;
+					$dataentrada = $data; 
+					$dadespagament = null;
+					$comentari = str_replace("'","''", $altres['D'][0]['concepte']);
+	
+					$rebutAux = $altres['D'][0]['document'];		// 00010/15
+					$numRebut = substr($rebutAux, 0, 5);
+							
+					$numRebut = $numRebut * 1;  // Number
+					$import = $altres['D'][0]['importapunt'];
+	
+					$tipuspagament = null;
+					switch ($compteD) {
+						case 5700000:  	// CAIXA FEDERACIÓ, PTES.
+							$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
+							break;
+						case 5720001: 	// "LA CAIXA"  LAIETANIA
+							$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
+							break;
+						case 5720003:	// LA CAIXA-SARDENYA
+							$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_SARDENYA;
+							break;
+						case 5720002:	// LA CAIXA-OF. MALLORCA
+						case 5720004:	// CAIXA CATALUNYA
+						case 5720005:	// POLISSA DE CREDIT
+							error_log($id." ".$num."ERROR REBUTS/INGRESOS 8 Tipus de pagament desconegut => ".$id." ".$num." ".$compteD);
+							echo $id." ".$num."ERROR REBUTS/INGRESOS 8 Tipus de pagament desconegut => ".$compteD."<br/>";
+							return;
+											
+							break;
+					}
+					
+					$numFactures = $this->extraerFactures(strtolower($concepteAux), 'R');
+					
+					if ($numFactures != null) {
+						// Ok, trobadaes 
+					
+						$comandesIdPerActualitzar = array();
+											
+						foreach ($numFactures as  $numFactura) {
+		
+							$pos = strpos(strtolower($concepteAux), '/2014');
+							if ($pos !== false) $anyFactura = 2014; 
+							
+							$factExistent = $this->consultarFactura($numFactura, $anyFactura);
 								
-							if ($comanda == null) {
-								echo json_encode($factExistent);
-								error_log($id." ".$num."ERROR REBUTS/INGRESOS 11 Comanda no trobada => ".$compteD. " ".$numFactura);
-								echo $id." ".$num."ERROR REBUTS/INGRESOS 11 Comanda no trobada => ".$compteD. " ".$numFactura."<br/>";
+							if ($factExistent == null) {
+								//error_log("ERROR REBUTS/INGRESOS 9 Factura -".($numFactura)."- no trobada, concepte =>".$concepteAux."<= => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom']);
+								//echo "ERROR REBUTS/INGRESOS 9 Factura -".($numFactura)."- no trobada, concepte =>".$concepteAux."<= => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom'] .")<br/>";
+								
+								// S'ha fet l'ingrés la comanda encara no ha arribat, desar a un array
+								$facturesRebutsPendents[$numFactura] =  array('id' => $id, 'num' => $num, 'compte' => $compteD, 'factura' => $numFactura,
+																			'data' => $data, 'import' => $import, 'concepte' => $concepteAux, 
+																			'rebut' => $numRebut, 'datapagament' => $datapagament, 'tipuspagament' => $tipuspagament,
+																			'club' => $clubs[$compteH]['codi'], 'comandes' => $comandesIdPerActualitzar, 
+																			'comentari' => $comentari, 'dadespagament' => $dadespagament );
+															 	
 								return;
+							} else {
+								// Count no funciona bé
+								//$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
+											
+								$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
+								$comanda = $statement->fetch();
+									
+								if ($comanda == null) {
+									echo json_encode($factExistent);
+									error_log($id." ".$num."ERROR REBUTS/INGRESOS 11 Comanda no trobada => ".$compteD. " ".$numFactura);
+									echo $id." ".$num."ERROR REBUTS/INGRESOS 11 Comanda no trobada => ".$compteD. " ".$numFactura."<br/>";
+									return;
+								}
+									
 							}
+							
+							$comandesIdPerActualitzar[] = $comanda['id'];
+						}
+		//return;
+						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
+						
+						foreach ($comandesIdPerActualitzar as  $comandaId) {	
 								
+							$query = "UPDATE m_comandes SET rebut = ".$rebutId." WHERE id = ". $comandaId;
+							$em->getConnection()->exec( $query );
 						}
 						
-						$comandesIdPerActualitzar[] = $comanda['id'];
+					} else {
+						// cercar ingrés
+						
+						$concepteAux = strtolower( $altres['D'][0]['concepte'] );	// 	Ingres a compte saldo Club
+						$pos1 = strpos($concepteAux, 'ingres');
+						$pos2 = strpos($concepteAux, 'ingrés');
+						$pos3 = strpos($concepteAux, 'compte');
+						$pos4 = strpos($concepteAux, 'liquida');
+						
+						if ($pos1 === false &&
+							$pos2 === false &&
+							$pos3 === false &&
+							$pos4 === false) {
+								error_log($id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux);
+								if ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux."<br/>";
+						}
+		//return;
+						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
+						
 					}
-	//return;
-					$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
-					
-					foreach ($comandesIdPerActualitzar as  $comandaId) {	
-							
-						$query = "UPDATE m_comandes SET rebut = ".$rebutId." WHERE id = ". $comandaId;
-						$em->getConnection()->exec( $query );
-					}
-					
-				} else {
-					// cercar ingrés
-					
-					$concepteAux = strtolower( $altres['D'][0]['concepte'] );	// 	Ingres a compte saldo Club
-					$pos1 = strpos($concepteAux, 'ingres');
-					$pos2 = strpos($concepteAux, 'ingrés');
-					$pos3 = strpos($concepteAux, 'compte');
-					$pos4 = strpos($concepteAux, 'liquida');
-					
-					if ($pos1 === false &&
-						$pos2 === false &&
-						$pos3 === false &&
-						$pos4 === false) {
-							error_log($id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux);
-							if ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux."<br/>";
-					}
-	//return;
-					$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
-					
+					$em->getConnection()->commit();
+					$em->getConnection()->beginTransaction(); // suspend auto-commit
+						
 				}
-				$em->getConnection()->commit();
-				$em->getConnection()->beginTransaction(); // suspend auto-commit
-					
-			}
-			
+		
+			}	
 		} else {
 			// Varis o ningún 'D'
 			/*if (count($altres['D']) == 0) error_log("CAP 'D' = >".$altres['H'][0]['num']." -".count($altres['D'])."-|-".count($altres['H'])."- " );
@@ -3116,7 +3170,7 @@ class FacturacioController extends BaseController {
 		$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
 		$query .= "(".$duplicat['id'].",".$duplicat['pid'].", 1,".$preu.",".($iva!=null?$iva:"NULL").", 0, ".($duplicat['observacions']==null?"NULL":"'".$observa."'").",";
 		$query .= "'".$duplicat['datapeticio']."')";
-	
+
 		$maxnums['maxnumcomanda']++;
 
 		$em->getConnection()->exec( $query );

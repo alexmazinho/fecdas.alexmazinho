@@ -344,6 +344,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .checkbox-inline label { margin-bottom: 0; } 
 
+.checkbox-right, .radio-right { margin-left: 0; position: inherit; }
+
 .select2-container { padding: 0; border: none;  height: 100%;}
 
 .select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
@@ -536,6 +538,9 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .cistella-resum .cistella-summary  { text-align: right; font-size: 1.2em; font-weight: bold; padding: 10px 0; margin-top: 10px;  }
 
 .cistella-resum .cistella-summary span { padding: 10px 5px; /*border-top: 1px solid #cccccc;*/ }
+
+
+.cistella-resum .cistella-transport span { text-align: right;}
 
 .total-productes-grid {
 	color: #1240a0;

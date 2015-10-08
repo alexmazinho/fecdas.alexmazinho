@@ -108,6 +108,13 @@
 
 				$('.cistella-resum').html(data);	
 					
+			}).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 console.log(JSON.stringify(xhr));
+				 var sms = smsResultAjax('KO', xhr.responseText);
+	 			 
+				 $('.cistella-resum').html(sms);
+			     
 			}); 
 		});
 
@@ -137,6 +144,13 @@
 
 				$('.cistella-resum').html(data);	
 					
+			}).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 console.log(JSON.stringify(xhr));
+				 var sms = smsResultAjax('KO', xhr.responseText);
+	 			 
+				 $('.cistella-resum').html(sms);
+			     
 			});
 		});
 		

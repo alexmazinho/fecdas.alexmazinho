@@ -2650,7 +2650,6 @@ class FacturacioController extends BaseController {
 		// SELECT * FROM apunts_2015 WHERE num IN ( 119, 510 ) ORDER BY num, dh
 		$em = $this->getDoctrine()->getManager();
 		
-		//$clientsNoMirar = array(4010000, 4310000, 4310149, 4700402, 4700400, 4010077, 7690001, 7540002, 7090003, 7090011, 7270000, 7780000, 6260000);
 		$rebutId = 0;
 		
 		if (count($altres['D']) == 1) {
@@ -3255,7 +3254,7 @@ class FacturacioController extends BaseController {
 			}
 			
 			$maxnums['maxnumcomanda']++;
-			
+			 
 			if ($flush) {
 				$em->getConnection()->commit();
 				$em->getConnection()->beginTransaction(); // suspend auto-commit

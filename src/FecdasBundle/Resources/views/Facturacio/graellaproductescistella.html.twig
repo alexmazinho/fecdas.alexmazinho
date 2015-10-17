@@ -20,30 +20,22 @@
 			{% if cart.tarifatransport > 0 %}
 				<li class="cistella-transport">
 		   			<span>&nbsp;</span>
-		   			<span>
-		   				<div class="radio radio-right">
-		   					<label> incloure enviament ({{ cart.tarifatransport|number_format(2, ',', '.') }} €/u)
-							{{ form_widget(formtransport.tarifatransport[0], { 'attr': {'class': 'radio'} }) }}</label>
-		   				</div>
-		   			</span>
-		   			<span>&nbsp;</span>
+		   			<span><label> incloure enviament ({{ cart.tarifatransport|number_format(2, ',', '.') }} €/u)</label></span>
+		   			<span>{{ form_widget(formtransport.transport[0], { 'attr': {'class': 'radio'} }) }}</span>
 		   		</li>
 		   		{% set total = total + cart.tarifatransport %}
 		   		<li class="cistella-transport">
 		   			<span>&nbsp;</span>
-		   			<span>
-		   				<div class="radio radio-right">
-		   					<label> Recollir a la federació	{{ form_widget(formtransport.tarifatransport[1], { 'attr': {'class': 'radio'} }) }}</label>
-		   				</div>
-		   			</span>
-		   			<span>&nbsp;</span>
+		   			<span><label> Recollir a la federació	</label></span>
+		   			<span>{{ form_widget(formtransport.transport[1], { 'attr': {'class': 'radio'} }) }}</span>
 		   		</li>
 			{% endif %}
 			<li class="cistella-summary">
-				<span>&nbsp;</span><span class="blue">Total: {{ total|number_format(2, ',', '.') }} €</span><span>&nbsp;</span>
+				<span>&nbsp;</span><span class="blue">Total: <i id="totalcomanda">{{ total|number_format(2, ',', '.') }}</i> €</span><span>&nbsp;</span>
 	   		</li>
 		</ul>
-		<input id="tarifa-transport" type="hidden" value="{{ cart.tarifatransport }}">
+		{{ form_widget(formtransport.tarifatransport) }}
+		{{ form_widget(formtransport.importcomanda) }}
 		<a class="anular-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'anular',  'tipus' : tipus  }) }}">cancel·lar la comanda <i class="fa fa-trash red"></i></a>
 		<a class="desar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'desar',  'tipus' : tipus }) }}">només confirmar comanda <i class="fa fa-check blue"></i></a>
 		<a class="pagar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">confirmar i pagar comanda <i class="fa fa-credit-card green"></i></a>

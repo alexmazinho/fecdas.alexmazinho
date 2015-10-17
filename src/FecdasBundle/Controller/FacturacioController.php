@@ -807,14 +807,18 @@ class FacturacioController extends BaseController {
 			->add('cerca', 'search', array( ) )
 			->add('tipus', 'hidden', array(
 				'data' => $tipus));
+		
+		$cart = $this->getSessionCart();
+		$formtransport = $this->formulariTransport($cart);		
 			
 		return $this->render('FecdasBundle:Facturacio:graellaproductes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'title' => BaseController::getTipusProducte($tipus),
 						'productes' => $productes,  
 						'tipus' => $tipus,
-						'sortparams' => array('sort' => $sort,'direction' => $direction))
-						));
+						'sortparams' => array('sort' => $sort,'direction' => $direction),
+						'formtransport' => $formtransport
+						)));
 	}
 	
 	public function tramitarcistellaAction(Request $request) {
@@ -825,6 +829,8 @@ class FacturacioController extends BaseController {
 	
 		$action = $request->query->get('action', '');
 		$tipus = $request->query->get('tipus', 0);
+		$transport = $request->query->get('transport', 1);
+		$transport = ($transport == 1?true:false);
 		$comentaris = $request->query->get('comentaris', '');
 		
 		$this->logEntryAuth('CISTELLA TRAMITAR', 'action => '.$action);
@@ -837,10 +843,8 @@ class FacturacioController extends BaseController {
 				$current = $this->getCurrentDate();
 				
 				$comanda = $this->crearComanda($current, $comentaris);
-				// Recollir cistella de la sessió
-				$session = $this->get('session');
 				
-				$cart = $session->get('cart', array('productes' => array())); // Crear cistella buida per defecte
+				$cart = $this->getSessionCart();
 				
 				foreach ($cart['productes'] as $id => $info) {
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
@@ -848,6 +852,15 @@ class FacturacioController extends BaseController {
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
 		
 					$detall = $this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
+				}
+				
+				if ($transport == true) {
+					$pesComanda = $this->getPesComandaCart($cart);
+					$tarifa = BaseController::getTarifaTransport($pesComanda);
+					
+					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+					$anotacions = $producte->getDescripcio().' '.$pesComanda.'g';	
+					$detall = $this->addComandaDetall($comanda, $producte, 1, 0, $anotacions);		
 				}
 				
 				if (count($cart['productes']) == 0) $detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
@@ -909,18 +922,16 @@ class FacturacioController extends BaseController {
 			
 			if ($producte != null && $unitats > 0) {
 				// Recollir cistella de la sessió
-				$session = $this->get('session');
+				$cart = $this->getSessionCart();				
 				
 				$import = $producte->getPreuTotalUnitat(date('Y'));
-				
-				$cart = $session->get('cart', array('productes' => array(), 'tarifatransport' => 0)); // Crear cistella buida per defecte
 				
 				if ( !isset( $cart['productes'][$idProducte] ) ) {
 					$cart['productes'][$idProducte] = array(
 							'abreviatura' 	=> $producte->getAbreviatura(),
 							'descripcio' 	=> $producte->getDescripcio(),
 							'transport'		=> $producte->getTransport(),
-							'tarifa'		=> 0,
+							'pes'			=> 0,
 							'unitats' 		=> $unitats,
 							'import' 		=> $import
 					);
@@ -930,13 +941,17 @@ class FacturacioController extends BaseController {
 				//$cart['total'] += $import;
 	
 				$unitats = $cart['productes'][$idProducte]['unitats'];
+				
+				if ($producte->getTransport() == true) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes(); 
+				
+				/*
 				if ($producte->getTransport() == true) {
 					if ($producte->getCanvitarifa() != null && is_numeric($producte->getCanvitarifa()) && $producte->getCanvitarifa() <= $unitats ) {
 						$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT2;
 					} else {
 						$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT1;
 					}
-				}
+				}*/
 							
 				if ($cart['productes'][$idProducte]['unitats'] <= 0) {
 					// Afegir unitats < 0
@@ -946,12 +961,15 @@ class FacturacioController extends BaseController {
 				
 				$form = $this->formulariTransport($cart);		
 				
+				$session = $this->get('session');
 				$session->set('cart', $cart);
 			}
 		} catch (\Exception $e) {
 			// Ko, mostra form amb errors
-			$response->headers->set('Content-Type', 'application/json');
-			$response->setContent(json_encode( array('result' => 'KO', 'sms' => $e->getMessage()) ));
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);
+			//$response->headers->set('Content-Type', 'application/json');
+			//$response->setContent(json_encode( array('result' => 'KO', 'sms' => $e->getMessage()) ));
 			return $response;
 		}
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
@@ -971,10 +989,7 @@ class FacturacioController extends BaseController {
 		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
 		
 		if ($producte != null) {
-			// Recollir cistella de la sessió
-			$session = $this->get('session');
-
-			$cart = $session->get('cart', array('productes' => array(), 'total' => 0)); // Crear cistella buida per defecte
+			$cart = $this->getSessionCart();	
 			
 			/*if ( isset( $cart['productes'][$idProducte] ) ) {
 				$cart['total'] -= $cart['productes'][$idProducte]['unitats'] * $cart['productes'][$idProducte]['import'];
@@ -994,37 +1009,25 @@ class FacturacioController extends BaseController {
 
 	private function formulariTransport(&$cart) {
 		// Revisar si cal transport
-		$tarifa = 0;
-		$tarifa1 = 0;
-		$tarifa2 = 0;
-		foreach ($cart['productes'] as $id => $info) {
-			if ($info['transport'] == true)	{
-				if ($info['tarifa'] == BaseController::TARIFA_TRANSPORT1) $tarifa1++;
-				if ($info['tarifa'] == BaseController::TARIFA_TRANSPORT2) $tarifa2++;
-			}
-		}
-		if (($tarifa1 + $tarifa2) > 0) {
-			// Algun de tarifa 2 gran o bé més d'un de tarifa 1 petita => tarifa 2 
-			if ($tarifa1 > 1 || $tarifa2 > 0) $tarifa = BaseController::TARIFA_TRANSPORT2;
-			else $tarifa = BaseController::TARIFA_TRANSPORT1;
-				
-			$cart['tarifatransport'] = $tarifa;
-		} else {
-			$cart['tarifatransport'] = 0;
-		}
+		$pesComanda = $this->getPesComandaCart($cart);
+		$total = $this->getTotalComandaCart($cart);
+		$tarifa = BaseController::getTarifaTransport($pesComanda);
+
+		$cart['tarifatransport'] = $tarifa;
 				
 		$formBuilder = $this->createFormBuilder()
 			->add('tarifatransport', 'hidden', array(
 				'data' => $tarifa
 		));
-		
+		$formBuilder->add('importcomanda', 'hidden', array(
+				'data' => $total
+		));
 		$formBuilder->add('transport', 'choice', array(
 				'choices'   => array(0 => 'Incloure enviament', 1 => 'Recollir a la federació'),
 				'multiple'  => false,
 				'expanded'  => true,
-				'data' => ($tarifa > 0?1:0)
+				'data' 		=> 0 
 		));
-		
 		
 		return $formBuilder->getForm()->createView();
 	}
@@ -1402,12 +1405,12 @@ class FacturacioController extends BaseController {
     				}
     				
 					if ($producte->getTransport() == true) {
-						if ($producte->getCanvitarifa() == null || $producte->getCanvitarifa() < 0) {
-    						$form->get('canvitarifa')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar el mínim d\'unitats pel canvi de tarifa de transport ' );
+						if ($producte->getPes() == null || $producte->getPes() < 0) {
+    						$form->get('pes')->addError(new FormError('Valor incorrecte'));
+    						throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
     					}
 					} else {
-						$producte->setCanvitarifa(null);
+						$producte->setPes(0);
 					}
     				
     				$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
@@ -2126,7 +2129,7 @@ class FacturacioController extends BaseController {
 	/********************************************************************************************************************/
 	
 	public function resetcomandesAction(Request $request) {
-		// http://www.fecdasnou.dev/resetcomandes?id=106313&detall=149012&factura=8380
+		// http://www.fecdas.dev/resetcomandes?id=106313&detall=149012&factura=8380
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -2151,19 +2154,19 @@ class FacturacioController extends BaseController {
 		*/
 		
 	
-		$sql = "DELETE FROM m_comandadetalls WHERE id > ".$detall;
+		$sql = "DELETE FROM m_comandadetalls WHERE id >= ".$detall;
 		$stmt = $em->getConnection()->prepare($sql);
 		$stmt->execute();
 		
-		$sql = "UPDATE m_comandes SET factura = NULL, rebut = NULL WHERE id > ".$id;
+		$sql = "UPDATE m_comandes SET factura = NULL, rebut = NULL WHERE id >= ".$id;
 		$stmt = $em->getConnection()->prepare($sql);
 		$stmt->execute();
 		
-		$sql = "DELETE FROM m_factures WHERE id > ".$factura;
+		$sql = "DELETE FROM m_factures WHERE id >= ".$factura;
 		$stmt = $em->getConnection()->prepare($sql);
 		$stmt->execute();
 		
-		$sql = "DELETE FROM m_comandes WHERE id > ".$id;
+		$sql = "DELETE FROM m_comandes WHERE id >= ".$id;
 		$stmt = $em->getConnection()->prepare($sql);
 		$stmt->execute();
 		
@@ -2176,7 +2179,7 @@ class FacturacioController extends BaseController {
 	}
 	
 	public function migrahistoricAction(Request $request) {
-		// http://www.fecdasnou.dev/migrahistoric?desde=20XX&fins=20XX
+		// http://www.fecdas.dev/migrahistoric?desde=20XX&fins=2014
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -2205,7 +2208,7 @@ class FacturacioController extends BaseController {
 		}
 		
 		
-		$strQuery = "SELECT p.id, p.importparte, p.dataentradadel, p.databaixadel,";
+		$strQuery = "SELECT p.id, p.importparte, p.dataalta, p.dataentradadel, p.databaixadel,";
 		$strQuery .= " p.clubdel, t.descripcio as tdesc, c.categoria as ccat,";
 		$strQuery .= " c.producte as cpro, c.simbol as csim, p.datapagament, p.estatpagament,";
 		$strQuery .= " p.dadespagament, p.importpagament,	p.comentari, p.datafacturacio, p.numfactura, ";
@@ -2271,6 +2274,8 @@ class FacturacioController extends BaseController {
 						
 				 if ($parteid != $parte['id']) {
 				 	// Agrupar partes, poden venir vàries línies seguides segons categoria 'A', 'T' ...
+				 	echo "insert comanda parte => ". $parteid;
+				 	
 				 	$this->insertComandaParte($clubs, $partes, $maxnums, ($maxnums['maxnumcomanda'] % $batchSize) == 0);
 				 	
 				 	$parteid = $parte['id'];
@@ -2294,61 +2299,10 @@ class FacturacioController extends BaseController {
 			
 		return new Response("");
 	}
-	
-	public function updatemigrafacturesAction(Request $request) {
-		// http://www.fecdasnou.dev/updatemigrafactures?id=XXXX
-		// Script de migració. Executar per migrar i desactivar
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
-		$batchSize = 20;
-		$id = $request->query->get('id', 0); // min id
-		try {
-			$em = $this->getDoctrine()->getManager();
-			
-			//$em->getConnection()->beginTransaction(); // suspend auto-commit
-			
-			$repository = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda');
-			
-			$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
-			$strQuery .= " WHERE c.id >= :id ";
-			$strQuery .= " ORDER BY c.id";
-	
-			$query = $em->createQuery($strQuery);
-			$query->setParameter('id', $id);
-	
-			$comandes = $query->getResult();
-			$total = 0;
-			foreach ($comandes as $comanda) {
-				$factura = $comanda->getFactura();
-				if ($factura != null) {
-					$detalls = $comanda->getDetallsAcumulats();
-					//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
-					$detalls = json_encode($detalls); // Desar estat detalls a la factura
-					$factura->setDetalls($detalls);
-				}
-				$total++;
-				if ( ($total % $batchSize) == 0 ) {
-					//$em->getConnection()->commit();
-					$em->flush();
-				}
-									
-			}
-			$em->flush();
-			
-		} catch (Exception $e) {
-			$em->getConnection()->rollback();
-			echo "Problemes durant la transacció : ". $e->getMessage();
-		}
-		return new Response("");
-	}
-	
+
 	public function migracomandesAction(Request $request) {
-		// http://www.fecdasnou.dev/migracomandes?comanda=xx&duplicat=ss
+		// http://www.fecdas.dev/migracomandes?comanda=xx&duplicat=ss
+		// http://www.fecdas.dev/migracomandes?id=xx&&current=2014
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -2361,10 +2315,12 @@ class FacturacioController extends BaseController {
 	
 		$mincomanda = $request->query->get('comanda', 0); // min comanda
 		$minduplicat = $request->query->get('duplicat', 0); // min duplicat
+		$idcomanda = $request->query->get('id', 0); // id única comanda
+		$current = $request->query->get('current', date('Y')); // any
 	
 		$batchSize = 20;
 	
-		$strQuery = "SELECT p.id, p.importparte, p.dataentradadel, p.databaixadel,";
+		$strQuery = "SELECT p.id, p.importparte, p.dataalta, p.dataentradadel, p.databaixadel,";
 		$strQuery .= " p.clubdel, t.descripcio as tdesc, c.categoria as ccat,";
 		$strQuery .= " c.producte as cpro, c.simbol as csim, p.datapagament, p.estatpagament,";
 		$strQuery .= " p.dadespagament, p.importpagament,	p.comentari, p.datafacturacio, p.numfactura, ";
@@ -2374,13 +2330,19 @@ class FacturacioController extends BaseController {
 		$strQuery .= " INNER JOIN m_tipusparte t ON c.tipusparte = t.id ";
 		$strQuery .= " INNER JOIN m_productes o ON c.producte = o.id ";
 		$strQuery .= " INNER JOIN m_preus e ON e.producte = o.id ";
-		$strQuery .= " WHERE e.anypreu = 2015 ";
-		if ($mincomanda > 0) $strQuery .= " AND p.id >= ".$mincomanda." ";
-		$strQuery .= " AND p.dataalta >= '2015-01-01 00:00:00' ";
-		$strQuery .= " GROUP BY p.id, p.importparte, p.dataentradadel, p.databaixadel, p.clubdel, tdesc, ";
+		$strQuery .= " WHERE e.anypreu = ".$current." " ;
+		
+		if ($idcomanda > 0) {
+			$strQuery .= " AND p.id = ".$idcomanda." ";
+		} else {
+			if ($mincomanda > 0) $strQuery .= " AND p.id >= ".$mincomanda." ";
+			$strQuery .= " AND p.dataalta >= '".$current."-01-01 00:00:00' ";
+		}
+		$strQuery .= " GROUP BY p.id, p.importparte, p.dataalta, p.dataentradadel, p.databaixadel, p.clubdel, tdesc, ";
 		$strQuery .= " ccat, cpro, csim, p.datapagament, p.estatpagament, p.dadespagament, p.importpagament, ";
 		$strQuery .= " p.comentari, p.datafacturacio, p.numfactura, e.preu, e.iva";
 		$strQuery .= " ORDER BY p.id, csim ";
+	
 	
 		/*
 		"SELECT p.id, p.importparte, p.dataentradadel, p.databaixadel, p.clubdel, t.descripcio as tdesc, 
@@ -2399,17 +2361,24 @@ class FacturacioController extends BaseController {
 		$stmt->execute();
 		$partes2015 = $stmt->fetchAll();
 	
-		$strQuery = "SELECT d.*,  p.id as pid, p.descripcio as pdescripcio, e.preu as epreu, e.iva as eiva ";
-		$strQuery .= " FROM m_duplicats d  INNER JOIN m_carnets c ON d.carnet = c.id ";
-		$strQuery .= " INNER JOIN m_productes p ON c.producte = p.id ";
-		$strQuery .= " INNER JOIN m_preus e ON e.producte = p.id ";
-		$strQuery .= " WHERE e.anypreu = 2015 ";
-		if ($minduplicat > 0) $strQuery .= " AND d.id >= ".$minduplicat." ";
-		$strQuery .= " ORDER BY d.datapeticio ";
-	
-		$stmt = $em->getConnection()->prepare($strQuery);
-		$stmt->execute();
-		$duplicats2015 = $stmt->fetchAll();
+		
+		if ($idcomanda > 0) {
+			if (count($partes2015) == 0) return new Response("CAP");	
+			
+			$duplicats2015 = array();
+		} else {
+			$strQuery = "SELECT d.*,  p.id as pid, p.descripcio as pdescripcio, e.preu as epreu, e.iva as eiva ";
+			$strQuery .= " FROM m_duplicats d  INNER JOIN m_carnets c ON d.carnet = c.id ";
+			$strQuery .= " INNER JOIN m_productes p ON c.producte = p.id ";
+			$strQuery .= " INNER JOIN m_preus e ON e.producte = p.id ";
+			$strQuery .= " WHERE e.anypreu = 2015 ";
+			if ($minduplicat > 0) $strQuery .= " AND d.id >= ".$minduplicat." ";
+			$strQuery .= " ORDER BY d.datapeticio ";
+		
+			$stmt = $em->getConnection()->prepare($strQuery);
+			$stmt->execute();
+			$duplicats2015 = $stmt->fetchAll();
+		}
 		
 		
 		$strQuery = "SELECT * FROM m_clubs c ORDER BY c.codi ";
@@ -2510,6 +2479,242 @@ class FacturacioController extends BaseController {
 		return new Response("FINAL");
 	}
 	
+	
+	public function updatemigrafacturesAction(Request $request) {
+		// http://www.fecdas.dev/updatemigrafactures?id=
+		// Script de migració. Executar per migrar i desactivar
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$batchSize = 20;
+		$id = $request->query->get('id', 0); // min id
+		try {
+			$em = $this->getDoctrine()->getManager();
+			
+			//$em->getConnection()->beginTransaction(); // suspend auto-commit
+			
+			$repository = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda');
+			
+			$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
+			$strQuery .= " WHERE c.id >= :id ";
+			$strQuery .= " ORDER BY c.id";
+	
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('id', $id);
+	
+			$comandes = $query->getResult();
+			$total = 0;
+			foreach ($comandes as $comanda) {
+				error_log('comanda => '.$comanda->getId());
+				$factura = $comanda->getFactura();
+				if ($factura != null) {
+					$detalls = $comanda->getDetallsAcumulats();
+					//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
+					$detalls = json_encode($detalls); // Desar estat detalls a la factura
+					$factura->setDetalls($detalls);
+				}
+				$total++;
+				if ( ($total % $batchSize) == 0 ) {
+					//$em->getConnection()->commit();
+					$em->flush();
+				}
+									
+			}
+			$em->flush();
+			
+		} catch (Exception $e) {
+			$em->getConnection()->rollback();
+			echo "Problemes durant la transacció : ". $e->getMessage();
+		}
+		return new Response("");
+	}
+	
+	public function migraanulacomandesAction(Request $request) {
+		// http://www.fecdas.dev/migraanulacomandes
+		// Script de migració. Executar per migrar i desactivar
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$strQuery = "SELECT a.id, a.dni, a.dataanulacio, a.codiclub,  ";
+		$strQuery .= " a.dataparte, a.categoria, a.tipusparte, a.factura, a.relacio, e.preu ";
+		$strQuery .= " FROM IMPORT_ANULACIONS a LEFT JOIN m_persones p ON a.dni = p.dni AND a.codiclub = p.club ";
+		$strQuery .= " INNER JOIN m_categories c ON c.tipusparte = a.tipusparte AND c.simbol = a.categoria  ";
+		$strQuery .= " INNER JOIN m_productes o ON c.producte = o.id ";
+		$strQuery .= " INNER JOIN m_preus e ON e.producte = o.id ";
+		$strQuery .= " WHERE e.anypreu = 2015 ";
+		
+		$strQuery .= " ORDER BY a.factura, a.relacio ";
+	
+		$stmt = $em->getConnection()->prepare($strQuery);
+		$stmt->execute();
+		$anulacions2015 = $stmt->fetchAll();
+	
+		echo "Total anul·la: " . count($anulacions2015) . PHP_EOL;
+	
+		echo "Memory usage before: " . (memory_get_usage() / 1024) . " KB" . PHP_EOL."<br/>";
+	
+		$facturanum = '';
+		$relacio = 0;
+		$comanda = null;
+		$detalls = '';
+		$dataanulacio = null;
+		$import = 0;
+		$aficionats = 0;
+		$tecnics = 0;
+		$infantils = 0;
+		$current = date('Y');
+		
+		$em->getConnection()->beginTransaction(); // suspend auto-commit
+		
+		try {
+			foreach ($anulacions2015 as $anulacio) {
+				
+				if ($facturanum == '' ) {
+					$facturanum = $anulacio['factura'];
+					$dataanulacio = \DateTime::createFromFormat('d/m/Y', $anulacio['dataanulacio']);
+					$import = $anulacio['preu'];
+					
+					$aficionats = ($anulacio['categoria']=='A'?1:0);
+					$tecnics = ($anulacio['categoria']=='T'?1:0);
+					$infantils = ($anulacio['categoria']=='I'?1:0);
+					
+					$relacio = $anulacio['relacio'];
+					
+					$query = $em->createQuery("SELECT p FROM FecdasBundle:EntityParte p 
+											WHERE p.numrelacio = :rel AND 
+											p.dataalta >= '2015-01-01 00:00:00' AND
+											p.club = :club AND
+											p.databaixa IS NULL	")->setParameter('rel', $relacio)
+											->setParameter('club', $anulacio['codiclub']);
+					
+					$parte = $query->setMaxResults(1)->getOneOrNullResult();
+					
+					if ($parte == null) {
+						echo "ERROR ANULA 1 comanda no trobada => relacio  ".$relacio."<br/>";
+						return new Response("");
+					}
+				}
+
+				if ($facturanum != $anulacio['factura']) {
+					// Consolidar factura
+					$concepte = 'Anul·lació. ';
+					if ($aficionats > 0) $concepte .= $aficionats.'x Aficionats ';
+					if ($tecnics > 0) $concepte .= $tecnics.'x Tècnics ';
+					if ($infantils > 0) $concepte .= $infantils.'x Infantils ';
+					
+					echo "***********************<br/>";
+					echo "factura  ".$facturanum."<br/>";
+					echo "data  ".$dataanulacio->format('Y-m-d')."<br/>";
+					echo "import  ".$import."<br/>";
+					echo "concepte  ".$concepte."<br/>";
+					echo "detalls  ".$detalls."<br/>";
+					echo "***********************<br/>";
+					echo "<br/>";
+					
+					
+					if ($current < date('Y')) $facturaId = $this->inserirFactura('2014-12-31', str_replace('/2014', '', $facturanum), (-1)*$import, $concepte); // 2014
+					else $facturaId = $this->inserirFactura($dataanulacio->format('Y-m-d'), str_replace('/2015', '', $facturanum), (-1)*$import, $concepte);
+					
+					$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->findOneById($facturaId);
+					
+					$parte->addFacturaanulacio($factura);
+					$factura->setComandaanulacio($parte);
+					$factura->setComanda(null);
+					//$factura->setDetalls(json_encode($detalls));
+					$factura->setDetalls($detalls);
+					
+					// Actualitzar dades
+					$facturanum = $anulacio['factura'];
+					$dataanulacio = \DateTime::createFromFormat('d/m/Y', $anulacio['dataanulacio']);
+					$import = $anulacio['preu'];
+					$aficionats = ($anulacio['categoria']=='A'?1:0);
+					$tecnics = ($anulacio['categoria']=='T'?1:0);
+					$infantils = ($anulacio['categoria']=='I'?1:0);
+				;
+				} else {
+					$import += $anulacio['preu'];
+					$aficionats += ($anulacio['categoria']=='A'?1:0);
+					$tecnics += ($anulacio['categoria']=='T'?1:0);
+					$infantils += ($anulacio['categoria']=='I'?1:0);
+					
+					
+				}
+								
+				if ($relacio != $anulacio['relacio'] ) {
+					$relacio = $anulacio['relacio'];
+					$detalls = '';
+					$current = date('Y');
+					$query = $em->createQuery("SELECT p FROM FecdasBundle:EntityParte p 
+											WHERE p.numrelacio = :rel AND 
+											p.dataalta >= '2015-01-01 00:00:00' AND
+											p.club = :club AND
+											p.databaixa IS NULL	")->setParameter('rel', $relacio)
+											->setParameter('club', $anulacio['codiclub']);
+					
+					$parte = $query->setMaxResults(1)->getOneOrNullResult();
+					if ($parte == null) {
+						// Provar 2014 
+						$query = $em->createQuery("SELECT p FROM FecdasBundle:EntityParte p 
+											WHERE p.numrelacio = :rel AND 
+											p.dataalta >= '2014-01-01 00:00:00' AND
+											p.club = :club AND
+											p.databaixa IS NULL	")->setParameter('rel', $relacio)
+											->setParameter('club', $anulacio['codiclub']);
+					
+						$parte = $query->setMaxResults(1)->getOneOrNullResult();
+						
+						if ($parte == null) {
+							echo "ERROR ANULA 3 comanda no trobada => relacio  ".$relacio."-".$anulacio['codiclub']."<br/>";
+							//return new Response("");
+							continue;
+						} 
+						$current = date('Y')-1;
+					}	
+				
+				}
+				$llicencia = null;
+				//echo '?'. $anulacio['dni']."<br/>";
+				foreach ($parte->getLlicencies() as $llic) {
+					//if (!$llic->esBaixa()) {
+						//echo '=>'. $llic->getPersona()->getDni()."<br/>";
+						if ($llic->getPersona()->getDni() == $anulacio['dni']) $llicencia = $llic;
+					//}
+				}
+				if ($llicencia == null) {
+					echo "ERROR ANULA 4 llicencia no existeix per  ".$anulacio['dni']." relacio ".$relacio."<br/>";
+					return new Response("");
+				}
+				//$detalls = $parte->getDetallsAcumulats(); // sense baixes
+				
+				if ($detalls == '') $detalls = 'baixes: '.$llicencia->getPersona()->getNomCognoms();
+				else $detalls .= ', '.$llicencia->getPersona()->getNomCognoms();
+				
+			}
+			$em->flush();
+			
+			$em->getConnection()->commit();
+			
+		} catch (Exception $e) {
+			$em->getConnection()->rollback();
+			echo "Problemes durant la transacció : ". $e->getMessage();
+		}
+			
+		echo "Memory usage after: " . (memory_get_usage() / 1024) . " KB" . PHP_EOL."<br/>";
+	
+		return new Response("FINAL");
+	}
+	
+	
 	public function migraaltresAction(Request $request) {
 		// http://www.fecdasnou.dev/migraaltres?id=0
 		// Script de migració. Executar per migrar i desactivar
@@ -2595,16 +2800,16 @@ class FacturacioController extends BaseController {
 			$altrenum = 0;
 			$altres = array();
 			$sortir = false;
+			$persist = false;
 			$facturesRebutsPendents = array(); 
 			while (isset($altress2015[$iapu]) && $sortir == false) {
-	
+				
 				$altre = $altress2015[$iapu];
 					
 				if ($altrenum == 0) $altrenum = $altre['num'];
-					
 				if ($altrenum != $altre['num']) {
 					// Agrupar apunts
-					$this->insertComandaAltre($clubs, $productes, $altres, $maxnums, $facturesRebutsPendents, ($maxnums['maxnumcomanda'] % $batchSize) == 0, true);
+					$this->insertComandaAltre($clubs, $productes, $altres, $maxnums, $facturesRebutsPendents, $persist, true);
 						
 					$altrenum = $altre['num'];
 					$altres = array();
@@ -2617,7 +2822,7 @@ class FacturacioController extends BaseController {
 
 			}
 			// La darrera comanda altre del dia
-			if ($altrenum > 0) $this->insertComandaAltre($clubs, $productes, $altres, $maxnums, $facturesRebutsPendents, ($maxnums['maxnumcomanda'] % $batchSize) == 0, true);
+			if ($altrenum > 0) $this->insertComandaAltre($clubs, $productes, $altres, $maxnums, $facturesRebutsPendents, $persist, true);
 			
 			echo "Apunt FINAL ".$iapu."<br/>";
 			
@@ -2642,7 +2847,11 @@ class FacturacioController extends BaseController {
 		return new Response("FINAL");
 	}
 	
-	private function insertComandaAltre($clubs, $productes, $altres, &$maxnums, &$facturesRebutsPendents, $flush = false, $warning = true) {
+		
+	
+	
+	
+	private function insertComandaAltre($clubs, $productes, $altres, &$maxnums, &$facturesRebutsPendents, $persist = false, $warning = true) {
 		
 		// Poden haber vàris 'H' => un club parte llicències Tècnic + Aficionat per exemple
 		// SELECT * FROM apunts_2015 a inner join m_productes p On a.compte = p.codi WHERE 1 ORDER BY data, num, dh
@@ -2651,7 +2860,6 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		$rebutId = 0;
-		
 		if (count($altres['D']) == 1) {
 			// Un debe. Situació normal un club deutor
 			$compteD = $altres['D'][0]['compte']; 
@@ -2659,7 +2867,6 @@ class FacturacioController extends BaseController {
 			$num = $altres['D'][0]['num'];
 			$data = $altres['D'][0]['data'];
 			$anyFactura = substr($data, 0, 4);  // 2015-10-02
-			
 			if (count($altres['H']) == 0) {
 				error_log("ERROR 1 CAP 'H' = >".$id." ".$num);
 				return;
@@ -2703,9 +2910,12 @@ class FacturacioController extends BaseController {
 					}
 						
 					$producte = $productes[$compteH];
-					if ($tipusAnterior == 0 && $producte['tipus'] != 6290900) $tipusAnterior = $producte['tipus'];  // Correus no compta
+					//if ($tipusAnterior == 0 && $producte['tipus'] != 6290900) $tipusAnterior = $producte['tipus'];  // Correus no compta
+					if ($tipusAnterior == 0 && $compteH != 6290900) $tipusAnterior = $producte['tipus'];  // Correus no compta
+					
 
-					if ($producte['tipus'] != $tipusAnterior && $producte['tipus'] != 6290900) {
+					//if ($producte['tipus'] != $tipusAnterior && $producte['tipus'] != 6290900) {
+					if ($producte['tipus'] != $tipusAnterior && $compteH != 6290900) {
 						if ($warning == true) {
 							error_log($id." ".$num."WARNING COMANDA 18 tipus productes barrejats:".$tipusAnterior."=> ".$compteH);
 							echo $id." ".$num."WARNING COMANDA 18 tipus productes barrejats:".$tipusAnterior."=> ".$compteH."<br/>";
@@ -2747,7 +2957,7 @@ class FacturacioController extends BaseController {
 						if ($import > 0) {
 							error_log($id." ".$num."WARNING COMANDA 9 Factura no trobada. Crear factura i comanda nova llicències per factura ".$numFactura." => ".$compteD);
 							if  ($warning == true) echo $id." ".$num."WARNING COMANDA 9 Factura no trobada. Crear factura i comanda nova llicències per factura ".$numFactura." => ".$compteD."<br/>";
-	//return;
+	if ($persist == false) return;
 							$facturaId = $this->inserirFactura($data, $numFactura, $import, "Factura - ".$textComanda);
 							$comandaId = $this->inserirComandaAmbDetalls($data, $club['codi'], $maxnums, $textComanda, 0, $facturaId, $altres['H'], $productes);
 						} else {
@@ -2761,7 +2971,7 @@ class FacturacioController extends BaseController {
 						if ($factExistent['import'] != $import) {
 							error_log($id." ".$num."WARNING COMANDA 10 Factura imports incorrectes. Actualitzar import factura ".$numFactura." => ".$compteD);
 							if  ($warning == true) echo $id." ".$num."WARNING COMANDA 10 Factura imports incorrectes. Actualitzar import factura ".$numFactura." => ".$compteD."<br/>";
-	//return;							
+	if ($persist == false) return;							
 							$query = "UPDATE m_factures SET import = ".$import." WHERE id = ". $facturaId;
 							$em->getConnection()->exec( $query );					
 						}
@@ -2776,7 +2986,7 @@ class FacturacioController extends BaseController {
 					// Validar que existeix el parte. Cal inserir la Factura
 					// Insertar factura
 					if ($import > 0) {
-	//return;
+	if ($persist == false) return;
 						$facturaId = $this->inserirFactura($data, $numFactura, $import, "Factura - ".$textComanda);
 						if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_DUPLICATS) {
 							// Insertar comanda
@@ -2940,7 +3150,7 @@ class FacturacioController extends BaseController {
 							
 							$comandesIdPerActualitzar[] = $comanda['id'];
 						}
-		//return;
+		if ($persist == false) return;
 						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
 						
 						foreach ($comandesIdPerActualitzar as  $comandaId) {	
@@ -2965,7 +3175,7 @@ class FacturacioController extends BaseController {
 								error_log($id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux);
 								if ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux."<br/>";
 						}
-		//return;
+		if ($persist == false) return;
 						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
 						
 					}
@@ -3088,7 +3298,14 @@ class FacturacioController extends BaseController {
 				$pos = strpos($concepte, 'fra');
 				if ($pos === false) {
 					$pos = strpos($concepte, 'fw');
-					if ($pos === false) $numFactura = substr($concepte, 3, 4);  // F. 1234/2014
+					if ($pos === false) {
+						$pos = strpos($concepte, 'Factura: 1117-1115/2015');
+						if ($pos === false) {
+							$numFactura = substr($concepte, 3, 4);  // F. 1234/2014
+						} else {
+							 return array(1117, 1115);
+						}
+					}
 					else $numFactura = substr($concepte, 3, 5);
 				}
 				else $numFactura = substr($concepte, 5, 4);
@@ -3127,16 +3344,19 @@ class FacturacioController extends BaseController {
 					$pos = strpos($concepte, 'pago s/fra. ');
 					if ($pos === false) { 
 						$pos = strpos($concepte, 'retroces pago f.');
-						if ($pos === false) { 
-							$numFactura = substr($concepte, 1, 4);
+						if ($pos === false) {
+							$pos = strpos($concepte, 'F1217_1K3E');
+							if ($pos === false) { 
+								$numFactura = substr($concepte, 1, 4);
+							} else {
+								return 1217;
+							} 
 						}
 						else {
-							echo " per esborrar ".$pos;
 							$numFactura = substr($concepte, $pos, 4);
 						}
 					}
 					else {
-						echo " per esborrar ".$pos;
 						$numFactura = substr($concepte, $pos, 2);
 					}
 				}	
@@ -3221,8 +3441,15 @@ class FacturacioController extends BaseController {
 				
 				$factArray = explode("/",$parte['numfactura']);
 	
+	
+				$datafactura = ($parte['datafacturacio'] == '' || 
+								$parte['datafacturacio'] == null ||
+								substr($parte['datafacturacio'], 0, 4) != substr($parte['dataalta'], 0, 4)?
+								$parte['dataalta']:$parte['datafacturacio']); // canvi d'any agafar dataalta
+				
+	
 				$query = "INSERT INTO m_factures (datafactura, num, import, concepte, dataentrada, comptabilitat) VALUES ";
-				$query .= "('".$parte['datafacturacio']."',".$factArray[0].",".$parte['importparte'].",'".$textLlista."'";
+				$query .= "('".$datafactura."',".$factArray[0].",".$parte['importparte'].",'".$textLlista."'";
 				$query .= ",'".$parte['dataentradadel']."', 1)";
 	
 				$em->getConnection()->exec( $query );
@@ -3240,16 +3467,28 @@ class FacturacioController extends BaseController {
 	
 			$em->getConnection()->exec( $query );
 			
+			$totalComanda = 0;
+			
 			foreach ($partes as $parte) {
 				$total 	= $parte['total'];
 				$anota 	= $total.'x'.$parte['ccat'];
 				$preu 	= (isset($parte['preu'])?$parte['preu']:0);
 				$iva	= (isset($parte['iva'])?$parte['iva']:0);
+
+				$totalComanda += $total * $preu * (1 + $iva);
 				
 				$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
 				$query .= "(".$parte['id'].",".$parte['cpro'].",".$total.", ".$preu.", ".($iva > 0?$iva:"NULL") .", 0, '".$anota."',";
 				$query .= "'".$parte['dataentradadel']."')";
 			
+			
+				$em->getConnection()->exec( $query );
+			}
+			
+			if ($parte['importparte'] == 0) {
+				// Els partes des de gestor tenen a 0 aquest import
+				$query = "UPDATE m_factures SET import = ".$totalComanda." ";
+				$query .= " WHERE id = ".$facturaId.";";
 				$em->getConnection()->exec( $query );
 			}
 			

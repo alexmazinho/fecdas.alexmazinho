@@ -531,7 +531,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .cistella-resum ul { margin-bottom: 20px; color: #444444; }
 
-.cistella-resum ul li { display: table-row; }
+.cistella-resum ul li { display: table-row; line-height: 2.5; }
 
 .cistella-resum ul li span { display: table-cell; padding-right: 5px; }
 
@@ -540,7 +540,11 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .cistella-resum .cistella-summary span { padding: 10px 5px; /*border-top: 1px solid #cccccc;*/ }
 
 
-.cistella-resum .cistella-transport span { text-align: right;}
+.cistella-resum li.cistella-transport { line-height: 1; }
+
+.cistella-resum .cistella-transport span { text-align: right;  vertical-align: top; }
+
+.cistella-resum .cistella-transport input { margin-left: 5px; margin-top: 0;}
 
 .total-productes-grid {
 	color: #1240a0;
@@ -569,6 +573,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .graella-item-esgotat > div  { opacity: 0.5; background-color: #cccccc; border: 1px solid #555555; }
 
 .graella-item-with-min { font-style: italic; color: #a94442; font-size: 0.9em; }
+.graella-item-transport { font-style: normal; color: #1240a0; font-size: 0.9em; }
  
 .graella-item-add { text-align: right; display: block; margin-top: 10px;  padding-top: 10px; border-top: 1px solid #eeeeee; }
 .graella-item-esgotat .graella-item-add { text-align: center; }

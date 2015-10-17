@@ -52,6 +52,7 @@
 						<h4>{{ producte.abreviatura }}<span class="graella-item-preu">{{ producte.getPreuTotalUnitat("now"|date('Y'))|number_format(2, ',', '.') }} €</span></h4>
 							<h5>{{ producte.descripcio }}</h5>
 						{% if producte.minim != null %}<div class="graella-item-with-min">Quantitat mínima: {{ producte.minim }}</div> {% endif %}
+						{% if producte.transport == true %}<div class="graella-item-transport">Transport a partir de {{ constant('FecdasBundle\\Controller\\BaseController::TARIFA_TRANSPORT1') }} €</div> {% endif %}
 						<p class="graella-item-add">
 							{% if producte.disponible == true %} 
 								{% set min = 1 %}
@@ -87,13 +88,16 @@
 	<script type="text/javascript">
 
 	$(document).ready(function(){
+
+		$('#form_transport_1').prop('checked', false); // Recollir
+		$('#form_transport_0').prop('checked', true); // Pagar
 		
 		$( ".cistella-resum" ).on( "click", ".desar-cistella, .pagar-cistella", function(e) {
 			e.preventDefault();	
 			var url = $(this).attr("href");
 			
 			dialegConfirmacio( pagamentComandaSMS(), "Abans de continuar...", 0, 550, function() {
-	        	window.location = url+'&comentaris='+$('#comanda_comentaris').val();
+	        	window.location = url+'&transport='+($('#form_transport_0').is(':checked')?1:0)+'&comentaris='+$('#comanda_comentaris').val();
 	        }, function() {} );
 		});
 
@@ -153,6 +157,20 @@
 			     
 			});
 		});
+
+		$( ".cistella-resum" ).on( "click", "#form_transport_0", function(e) {
+			var total = $('#form_importcomanda').val()*1 + $('#form_tarifatransport').val()*1; 
+			$('#totalcomanda').html(  total.toFixed(2) );
+			
+		});
+		
+		$( ".cistella-resum" ).on( "click", "#form_transport_1", function(e) {
+			//e.preventDefault();			
+			var total = $('#form_importcomanda').val()*1;
+			$('#totalcomanda').html( total.toFixed(2) );
+			
+		});
+		
 		
 		
 		//obrirMascaraBlock('.grid-productes');
@@ -165,7 +183,6 @@
 		});
 
 		$grid.on( 'layoutComplete', function( event, items ) {
-			  //console.log( "==> "+items.length );
 			  tancarMascaraBlock('.grid-productes');
 		});
 

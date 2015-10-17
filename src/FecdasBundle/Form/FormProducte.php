@@ -94,7 +94,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'disabled' 		=> $producte->getStockable() != true
 			));
 			
-			$form->add ('canvitarifa', 'integer', array (
+			$form->add ('pes', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
 					'disabled' 		=> $producte->getTransport() != true

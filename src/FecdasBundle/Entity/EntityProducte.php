@@ -73,7 +73,7 @@ class EntityProducte {
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
 	 */
-	protected $canvitarifa;
+	protected $pes;
 	
 	/**
 	 * @ORM\Column(type="datetime")
@@ -125,7 +125,6 @@ class EntityProducte {
 		 
 		return $preusconsolidated;
 	}
-	
 	
 	/**
      * Get id
@@ -369,26 +368,26 @@ class EntityProducte {
 
 
     /**
-     * Set canvitarifa
+     * Set pes
      *
-     * @param integer $canvitarifa
+     * @param integer $pes
      * @return EntityProducte
      */
-    public function setCanvitarifa($canvitarifa)
+    public function setPes($pes)
     {
-        $this->canvitarifa = $canvitarifa;
+        $this->pes = $pes;
 
         return $this;
     }
 
     /**
-     * Get canvitarifa
+     * Get pes
      *
      * @return integer 
      */
-    public function getCanvitarifa()
+    public function getPes()
     {
-        return $this->canvitarifa;
+        return $this->pes;
     }
 
     /**

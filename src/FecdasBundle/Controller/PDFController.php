@@ -1080,8 +1080,10 @@ class PDFController extends BaseController {
 		if ($parte != null) {
 			$llicenciesSorted = $parte->getLlicenciesSortedByName();
 
-			// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm
+			// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
+			// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
 			// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+			// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
 			$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
 			$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
 				
@@ -1094,9 +1096,11 @@ class PDFController extends BaseController {
 			// zoom - layout - mode
 			$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
 			$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-			$pdf->SetMargins(5, 5, 5);
-			$pdf->SetAutoPageBreak 	(false, 5);
-			$pdf->SetTextColor(255, 255, 255); 
+			$pdf->SetMargins(0, 0, 0);
+			$pdf->SetAutoPageBreak 	(false, 0);
+			//$pdf->SetMargins(0, 0, 0);
+			//$pdf->SetAutoPageBreak 	(false, 0);
+			$pdf->SetTextColor(0, 0, 0); 
 			
 			$width = 86; //Original
 			$height = 54; //Original
@@ -1126,15 +1130,15 @@ class PDFController extends BaseController {
 				// Add a page
 				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 
-	 			$pdf->setVisibility('view'); // or screen
+	 			//$pdf->setVisibility('view'); // or screen
 
-	 			$pdf->Image('images/federativa-cara.jpg', 0, 0, 
+	 			/*$pdf->Image('images/federativa-cara.jpg', 0, 0, 
 						$width, $height, 'jpg', '', '', false, 150, 
-						'', false, false, 0, false, false, false);
+						'', false, false, 0, false, false, false);*/
 				
 	 			//$pdf->Rect(0, 0, $width, $height, 'DF', array(), array(220, 220, 200));
 				
-				$pdf->setVisibility('all');
+				//$pdf->setVisibility('all');
 
 				$datacaduca = $parte->getDatacaducitat('printparte');
 				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);

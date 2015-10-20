@@ -45,9 +45,10 @@ class SecurityController extends BaseController
     						
     				} else {
 	    				/* Manteniment */
-    					/*$this->get('session')->getFlashBag()->add('sms-notice', 'Lloc web en manteniment, espereu una estona si us plau');
-    					return $this->render('FecdasBundle:Security:login.html.twig',
+    					//$this->get('session')->getFlashBag()->add('sms-notice', 'Lloc web en manteniment, espereu una estona si us plau');
+    					/*return $this->render('FecdasBundle:Security:login.html.twig',
     							array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));*/
+    					//return $this->redirect($this->generateUrl('FecdasBundle_login'));		
     					/* Fi Manteniment */
     					
     					// 	Redirect - This is important to prevent users re-posting

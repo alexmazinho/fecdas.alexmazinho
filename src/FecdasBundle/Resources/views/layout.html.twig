@@ -96,7 +96,7 @@
 			          	<li id="menu-altres"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) }}">Altres</a></li>
 			          	<!-- <li id="menu-altres"><a href="{# path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) #}">Miscel·lània</a></li> -->
 			          	<li class="divider"></li>
-			          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
+			          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
  		            </ul>
 		        </li>
 		        <li class="dropdown">
@@ -141,7 +141,7 @@
 			          	<li id="menu-admproductes" class="separator"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
 			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
 			          	<li class="divider"></li>
-			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.id', 'direction':'desc' }) }}">Comandes</a></li>
+			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admtraspas"><a href="{{ path('FecdasBundle_traspascomptabilitat') }}">Enviar comptabilitat</a></li>
 			          </ul>

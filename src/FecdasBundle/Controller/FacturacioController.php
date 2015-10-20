@@ -2020,7 +2020,7 @@ class FacturacioController extends BaseController {
 			
 			throw new \Exception('Error desconegut TPV');
 			
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			
 			$this->logEntryAuth('TPV ERROR', $e->getMessage().'('.$tpvresponse['logEntry'].')');
 				
@@ -2290,7 +2290,7 @@ class FacturacioController extends BaseController {
 			// El darrer parte del dia
 			if ($parteid > 0) $this->insertComandaParte($clubs, $partes, $maxnums, ($maxnums['maxnumcomanda'] % $batchSize) == 0);
 			
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
 		}
@@ -2469,7 +2469,7 @@ class FacturacioController extends BaseController {
 			}
 			
 			$em->getConnection()->commit();
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
 		}
@@ -2489,7 +2489,7 @@ class FacturacioController extends BaseController {
 	
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
+		error_log('Inicia updatemigrafacturesAction');
 		$batchSize = 20;
 		$id = $request->query->get('id', 0); // min id
 		try {
@@ -2500,18 +2500,22 @@ class FacturacioController extends BaseController {
 			$repository = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda');
 			
 			$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
-			$strQuery .= " WHERE c.id >= :id ";
+			$strQuery .= " WHERE c.id >= :id AND c.factura IS NOT NULL ";
 			$strQuery .= " ORDER BY c.id";
 	
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('id', $id);
 	
 			$comandes = $query->getResult();
+			error_log(count($comandes). ' comandes');
 			$total = 0;
 			foreach ($comandes as $comanda) {
 				error_log('comanda => '.$comanda->getId());
 				$factura = $comanda->getFactura();
-				if ($factura != null) {
+				if ($factura != null && ($factura->getDetalls() == 'null' 	|| 
+										$factura->getDetalls() == '' 		||
+										$factura->getDetalls() == null)) {
+					
 					$detalls = $comanda->getDetallsAcumulats();
 					//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
 					$detalls = json_encode($detalls); // Desar estat detalls a la factura
@@ -2525,8 +2529,8 @@ class FacturacioController extends BaseController {
 									
 			}
 			$em->flush();
-			
-		} catch (Exception $e) {
+			error_log('Acaba updatemigrafacturesAction');
+		} catch (\Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
 		}
@@ -2704,7 +2708,7 @@ class FacturacioController extends BaseController {
 			
 			$em->getConnection()->commit();
 			
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
 		}
@@ -2716,7 +2720,7 @@ class FacturacioController extends BaseController {
 	
 	
 	public function migraaltresAction(Request $request) {
-		// http://www.fecdasnou.dev/migraaltres?id=0
+		// http://www.fecdasnou.dev/migraaltres?num=0
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -2727,7 +2731,7 @@ class FacturacioController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		$id = $request->query->get('id', 0); // min id
+		$num = $request->query->get('num', 0); // min num
 		$batchSize = 20;
 	
 		$strQuery = "SELECT p.*, e.preu, e.iva FROM m_productes p LEFT JOIN m_preus e ON e.producte = p.id WHERE e.anypreu = 2015 ORDER BY p.codi ";
@@ -2767,7 +2771,7 @@ class FacturacioController extends BaseController {
 	
 		$strQuery = "SELECT * FROM apunts_2015 a ";
 		//$strQuery .= " ORDER BY a.data, a.num, a.dh ";
-		if ($id > 0) $strQuery .= " WHERE id >= ".$id;
+		if ($num > 0) $strQuery .= " WHERE num >= ".$num;
 		$strQuery .= " ORDER BY a.num ";
 	
 		$stmt = $em->getConnection()->prepare($strQuery);
@@ -2800,12 +2804,12 @@ class FacturacioController extends BaseController {
 			$altrenum = 0;
 			$altres = array();
 			$sortir = false;
-			$persist = false;
+			$persist = true;
 			$facturesRebutsPendents = array(); 
 			while (isset($altress2015[$iapu]) && $sortir == false) {
 				
 				$altre = $altress2015[$iapu];
-					
+				echo '=>'. $altre['num'].'-'.$iapu.'<br/>';	
 				if ($altrenum == 0) $altrenum = $altre['num'];
 				if ($altrenum != $altre['num']) {
 					// Agrupar apunts
@@ -2837,7 +2841,7 @@ class FacturacioController extends BaseController {
 						"<= => id: ".$factura['id'].", anotació: ".$factura['num'].", de compte: ".$factura['compte'].")<br/>";
 			}*/
 			$em->getConnection()->commit();
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$em->getConnection()->rollback();
 			echo "Problemes durant la transacció : ". $e->getMessage();
 		}
@@ -3238,7 +3242,7 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		$comanda = $em->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
 		$detalls = $comanda->getDetallsAcumulats();
-		$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
+		//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
 		$detalls = json_encode($detalls); // Desar estat detalls a la factura
 		
 		$factura = $em->getRepository('FecdasBundle:EntityFactura')->find($facturaId);

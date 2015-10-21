@@ -4,8 +4,8 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/style.css') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/responsive.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css?v=2.0') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/responsive.css?v=2.0') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery.ui.theme.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery-ui.min.css') }}" type="text/css" rel="stylesheet" />
     {% if roleform is defined %}
@@ -184,8 +184,8 @@
  	
 	{{ parent() }}
 
-	<script src="{{ asset('js/my-jquery-script.js') }}" type="text/javascript"></script>	
-    <script src="{{ asset('js/my-jquery-script-admin.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/my-jquery-script.js?v=2.0') }}" type="text/javascript"></script>	
+    <script src="{{ asset('js/my-jquery-script-admin.js?v=2.0') }}" type="text/javascript"></script>
     
     <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
 	<script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>

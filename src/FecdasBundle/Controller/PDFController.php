@@ -1096,8 +1096,8 @@ class PDFController extends BaseController {
 			// zoom - layout - mode
 			$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
 			$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-			$pdf->SetMargins(0, 0, 0);
-			$pdf->SetAutoPageBreak 	(false, 0);
+			$pdf->SetMargins(5, 5, 5);
+			$pdf->SetAutoPageBreak 	(false, 5);
 			//$pdf->SetMargins(0, 0, 0);
 			//$pdf->SetAutoPageBreak 	(false, 0);
 			$pdf->SetTextColor(0, 0, 0); 
@@ -1106,7 +1106,7 @@ class PDFController extends BaseController {
 			$height = 54; //Original
 			
 			// Posicions
-			$xTit = 0;
+			/*$xTit = 0;
 			$yTit =	12;		
 			$xNom = 10;
 			$yNom =	28;		
@@ -1121,7 +1121,23 @@ class PDFController extends BaseController {
 			$xTlf = 15;
 			$yTlf =	47.2;		
 			$xCad = 57;
-			$yCad =	47;		
+			$yCad =	47;*/		
+			$xTit = 0;
+			$yTit =	12;		
+			$xNom = 10;
+			$yNom =	27.4;		
+			$xDni = 18;
+			$yDni =	32.1;		
+			$xCat = 20.5;
+			$yCat =	36.7;		
+			$xNai = 19.5;
+			$yNai =	41.1;		
+			$xClu = 12;
+			$yClu =	45.6;		
+			$xTlf = 15;
+			$yTlf =	50.1;		
+			$xCad = 61;
+			$yCad =	50.1;		
 								
 			foreach ($llicenciesSorted as $llicencia) {
 
@@ -1148,7 +1164,7 @@ class PDFController extends BaseController {
 				$pdf->SetXY($xTit, $yTit);
 				$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
 
-				$pdf->SetFont('dejavusans', 'B', 6, '', true);
+				$pdf->SetFont('dejavusans', 'B', 8);
 
 				$pdf->SetXY($xNom, $yNom);
 				$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');

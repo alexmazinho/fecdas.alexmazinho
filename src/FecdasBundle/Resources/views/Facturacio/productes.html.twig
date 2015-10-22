@@ -24,13 +24,19 @@
 	    <div id="list-forms">
 	    	<form id="form_productes" action="{{ path('FecdasBundle_nouproducte') }}" method="POST" {{ form_enctype(form) }}  class="appform">
 		    	<div class="row">
-				  <div class="col-md-5">
+		    	  <div class="col-md-3">
+				  	<div class="form-group">
+				    	{{ form_label(form.compte, 'Compte', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.compte, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				  </div>
+				  <div class="col-md-3">
 				  	<div class="form-group">
 				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				  </div>
-				  <div class="col-md-3">
+				  <div class="col-md-2">
 				    <div class="form-group">
 				    	{{ form_label(form.tipus, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 						<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
@@ -117,28 +123,35 @@
 	{{ parent() }}
 	<script type="text/javascript">
 	
-	filtreLlistaProductes = function(cerca, tipusprducte, baixes) {
+	filtreLlistaProductes = function(cerca, compte, tipusproducte, baixes) {
 		
-		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusprducte+"&baixes="+baixes;
+		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+cerca+"&tipus="+tipusproducte+"&baixes="+baixes;
 	}; 
 	
 	$(document).ready(function(){
 		setMenuActive("menu-admproductes");
 		
 		$("#form_tipus").change(function() {
-			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_compte" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
 	    });
-	
+
+		$("#form_compte").change(function() {
+			filtreLlistaProductes("", $( "#form_compte" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+		
 		$("#form_cerca").change(function() {
-			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes($( "#form_cerca" ).val(), "", $( "#form_tipus" ).val(), $(this).is(':checked'));
 	    });
 	
 		$( '#form_baixes' ).change(function(e) {
-			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes($( "#form_cerca" ).val(), $( "#form_compte" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
 		});
 		
-		// Producte
-		init_cercaproducte_JSON('#form_cerca', 'Cercar descripció del producte', "{{  path('FecdasBundle_jsonproductes') }}");
+		// Descripcio producte
+		init_cercaproducte_JSON('#form_cerca', 'descripcio', 'Cercar descripció del producte', "{{  path('FecdasBundle_jsonproductes') }}");
+
+		// Compte contable producte
+		init_cercaproducte_JSON('#form_compte', 'compte', 'Compte...', "{{  path('FecdasBundle_jsonproductes') }}");
 	});
 	
 	</script>

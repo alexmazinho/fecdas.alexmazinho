@@ -398,6 +398,26 @@
 				strInfo+"</li></ul></div>");
 	};
 
+	dialegInfoCallback = function(titol, strInfo, dwidth, dheight, callbackko) {
+		$("#dialeg").dialog({
+	    	modal: true,
+	    	resizable: false,
+	    	width: dwidth,
+	    	height: (dheight !== undefined?dheight:"auto"),
+	    	title: titol,
+	        buttons: {
+	            Ok: function() {
+	              $( this ).dialog( "close" );
+	              callbackko();
+	            }
+	        }
+    	});
+		
+		$("#dialeg").html("<div class='alert alert-info'>"+
+				"<ul><li><span class='fa fa-exclamation-circle fa-1x'></span>"+
+				strInfo+"</li></ul></div>");
+	};
+	
 	
 	dialegConfirmacio = function(strHtml, titol, h, w, callbackok, callbackko) {
 		$( '#dialeg' ).html(strHtml);

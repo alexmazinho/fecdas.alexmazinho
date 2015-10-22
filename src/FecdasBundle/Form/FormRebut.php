@@ -30,12 +30,58 @@ class FormRebut extends AbstractType {
 						'data'		=> $rebut->getNumRebut()
 				));
 				
-				$form->add('comptabilitat', 'entity', array(
-						'class' 		=> 'FecdasBundle:EntityComptabilitat',
+				$form->add('comptabilitat', 'text', array(
+						/*'class' 		=> 'FecdasBundle:EntityComptabilitat',
 						'choice_label' 	=> 'InfoComptabilitat',
-						'empty_value' 	=> 'Pendent d\'enviar a comptabilitat',
+						'empty_value' 	=> 'pendent',*/
 						'required'  	=> false,
 						'disabled' 		=> true,
+						'data'		=> (!$rebut->estaComptabilitzat()?'no enviat':$rebut->getComptabilitat()->getInfoComptabilitat()),
+						'mapped'	=> false,
+				));
+				
+				$form->add('dadespagament', 'text', array(
+						'required' 		=> false,
+						'disabled' 		=> $rebut->estaComptabilitzat(),
+				));
+				
+				$form->add('tipuspagament', 'choice', array(
+						'required' 		=> true,
+						'choices' 		=> BaseController::getTipusDePagament(),
+						'empty_value' 	=> '',
+						'disabled' 		=> $rebut->estaComptabilitzat(),
+				));
+				
+				$form->add('comentari', 'textarea', array(
+						'required' => false,
+						'disabled' 		=> $rebut->estaComptabilitzat(),
+				));
+				$form->add('club', 'entity', array(
+						'class' 		=> 'FecdasBundle:EntityClub',
+						'query_builder' => function($repository) {
+								return $repository->createQueryBuilder('c')
+										->orderBy('c.nom', 'ASC')
+										->where('c.activat = 1');
+								}, 
+						'choice_label' 	=> 'nom',
+						'empty_value' 	=> 'Seleccionar Club',
+						'required'  	=> false,
+						'disabled' 		=> $rebut->getId() > 0,
+				));
+				
+				$form->add('datapagament', 'date', array(
+						'required'  	=> true,
+						'widget' 		=> 'single_text',
+						'input' 		=> 'datetime',
+						'empty_value' 	=> false,
+						'format' 		=> 'dd/MM/yyyy',
+						'disabled' 		=> $rebut->getId() > 0,
+				));
+				
+				$form->add ( 'import', 'number', array (
+						'required' 		=> true,
+						'scale' 		=> 2,
+						'disabled' 		=> $rebut->getId() > 0,
 				));
 			}
 		});
@@ -43,47 +89,6 @@ class FormRebut extends AbstractType {
 		$builder->add('id', 'hidden');
 		
 		$builder->add('num', 'hidden');
-		
-		$builder->add('club', 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityClub',
-				'query_builder' => function($repository) {
-						return $repository->createQueryBuilder('c')
-								->orderBy('c.nom', 'ASC')
-								->where('c.activat = 1');
-						}, 
-				'choice_label' 	=> 'nom',
-				'empty_value' 	=> 'Seleccionar Club',
-				'required'  	=> false,
-				'read_only' 	=> true,
-		));
-		
-		$builder->add('datapagament', 'date', array(
-				'required'  	=> true,
-				'widget' 		=> 'single_text',
-				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
-				'format' 		=> 'dd/MM/yyyy',
-				'disabled' 	=> true,
-		));
-		
-		$builder->add ( 'import', 'number', array (
-				'required' 	=> true,
-				'scale' 	=> 2,
-		));
-		
-		$builder->add('dadespagament', 'text', array(
-				'required' => false,
-		));
-		
-		$builder->add('tipuspagament', 'choice', array(
-				'required' 		=> true,
-				'choices' 		=> BaseController::getTipusDePagament(),
-				'empty_value' 	=> ''
-		));
-		
-		$builder->add('comentari', 'textarea', array(
-				'required' => false,
-		));
 		
 	}
 	

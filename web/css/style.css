@@ -674,7 +674,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-ingres-comanda { width: 13%; text-align: center; }
 #header-ingres-romanent { width: 7%; text-align: right; }
 #header-ingres-comentaris { width: 21%; text-align: left; }
-#header-ingres-compta { width: 15%; text-align: center; }
+#header-ingres-compta { width: 10%; text-align: center; }
+#header-ingres-actions { width: 5%; text-align: right; }
 
 
 .data-detall-cell.ingres-num { width: 12%; text-align: left; }
@@ -684,7 +685,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.ingres-comanda { width: 13%; text-align: center; font-size: 0.9em; }
 .data-detall-cell.ingres-romanent { width: 7%; text-align: right; }
 .data-detall-cell.ingres-comentaris { width: 21%; text-align: left; font-size: 0.9em; }
-.data-detall-cell.ingres-compta { width: 15%; text-align: center; }
+.data-detall-cell.ingres-compta { width: 10%; text-align: center; }
+.data-detall-cell.ingres-actions { width: 5%; text-align: right; }
  
  
 #llista-candidates { margin-top: 20px; }
@@ -820,9 +822,9 @@ ul.detalls {
 
 ul.detalls li .alert { margin: 10px 0; }
 
-.list-factures { display: table-row; width: 100%; }
-.list-factures li { display: table-cell; }
-.list-factures li.data-detall-cell { border: none; }
+.list-factures, .list-comandes { display: table-row; width: 100%; }
+.list-factures li, .list-comandes li { display: table-cell; }
+.list-factures li.data-detall-cell, .list-comandes li.data-detall-cell { border: none; }
 
 /***************** Llistes ******************/
 

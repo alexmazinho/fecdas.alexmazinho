@@ -57,6 +57,7 @@
 		   		<div id="header-ingres-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
 		   		<div id="header-ingres-compta" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Enviat\nComptabilitat.', 'r.comptabilitat') }}
 		   			<span class="listheader-icon {% if ingresos.isSorted('r.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-actions" class="col-listheader collistheader-noorder">&nbsp;</div>
 		   	</div>
 	   	</div> 
 		{% if ingresos|length > 0 %} 
@@ -86,6 +87,10 @@
 		   			<div class="data-detall-cell ingres-romanent">{{ ingres.romanent|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
 		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
+		   			<div class="data-detall-cell ingres-actions">
+		   				<a class="comanda-action-edit-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': ingres.id}) }}" 
+		   					alt="{{ ingres.infoToolTip(admin) }}" title="{{ ingres.infoToolTip(admin) }}"><i class="fa fa-pencil text-info blue"></i></a>
+		   			</div>
 		   		</li>
 		   		{% endfor %}
 			</ol>

@@ -130,13 +130,16 @@
 		   			<div class="data-detall-cell comanda-rebut">
 		   				{% if comanda.comandaPagada == true %}
 		   					{% set rebut = comanda.rebut %}
-		   					<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
-		   						{{ rebut.numrebut }}
+		   					<a class="comanda-action-edit-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
+		   						{{ rebut.numrebut }}</a>
+		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 			   			{% endif %}
 		   				{% for rebut in comanda.rebutsanulacions %} 
-		   					<a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
-		   						<span class="red">(-){{ rebut.numrebut }}</span>
+		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
+		   						<span class="red">(-){{ rebut.numrebut }}</span></a>
+		   					
+		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% endfor %}
 					</div>

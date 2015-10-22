@@ -240,11 +240,18 @@ class EntityRebut {
 	{
 		return $this->comandaanulacio != null;
 	}
+
+	public function estaComptabilitzat()
+	{
+		return $this->comptabilitat != null;
+	}
+	
 	
 	public function infoToolTip($admin)
 	{
 		$toolTip = 'Rebut '.($this->esAnulacio()?'anul·lació':'');
-		if ($admin == true && $this->comptabilitat != null) $toolTip .= '. Comptabilitat '.$this->comptabilitat->getDataenviament()->format('d/m/Y'); 
+		$toolTip .= ' - '.number_format($this->import, 2, ',', '.');
+		if ($admin == true && $this->comptabilitat != null) $toolTip .= '. Enviat a comptabilitat '.$this->comptabilitat->getDataenviament()->format('d/m/Y'); 
 		return $toolTip;
 	}
 	

@@ -119,8 +119,25 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
 		$id = $request->query->get('id', 0);
+		$rebutid = $request->query->get('rebut', 0);
 		
 		$em = $this->getDoctrine()->getManager();
+		
+		if ($rebutid > 0) { // Anular un únic rebut
+			$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($rebutid);
+			
+			if ($rebut == null) {
+				$this->logEntryAuth('TRASPAS BAIXA KO', ' Rebut '.$rebutid);
+				throw new \Exception("NO s'ha pogut anul·lar la comptabilitat ");
+			}
+			
+			$rebut->setComptabilitat(null);
+			$em->flush();
+			$this->logEntryAuth('TRASPAS BAIXA OK', ' Rebut '.$rebut->getId());
+			
+			return new Response("Comptabilitat anul·lada correctament");
+			// No seguim
+		}
 		
 		$enviament = $this->getDoctrine()->getRepository('FecdasBundle:EntityComptabilitat')->find($id);
 		
@@ -293,8 +310,9 @@ class FacturacioController extends BaseController {
 		//$apuntsRebutsAltes	= $this->generarAssentamentsRebuts($enviament, false);
 		//$apuntsRebutsBaixes	= $this->generarAssentamentsRebuts($enviament, true);
 		//$assentaments = array_merge($apuntsComandesAltes, $apuntsComandesBaixes, $apuntsRebutsAltes, $apuntsRebutsBaixes);
-		$apuntsFactures = $this->generarAssentamentsFactures($enviament);
-		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament);
+		$num = 0;
+		$apuntsFactures = $this->generarAssentamentsFactures($enviament, $num);
+		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament, $num);
 		$assentaments = array_merge($apuntsFactures, $apuntsRebuts);
 		return $assentaments; 
 	}
@@ -355,7 +373,7 @@ class FacturacioController extends BaseController {
 	 * @param string $baixes
 	 * @return multitype:string
 	 */
-	private function generarAssentamentsFactures($enviament) {
+	private function generarAssentamentsFactures($enviament, &$num) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$factures = $this->consultaFacturesConsolidades($enviament->getDatadesde(), $enviament->getDatafins());
@@ -372,10 +390,11 @@ class FacturacioController extends BaseController {
 				$comanda = $factura->getComanda();
 				$totalFactures++;
 			}	
-			$assentament = $this->assentamentFactura($factura, $comanda);
+			$assentament = $this->assentamentFactura($num, $factura, $comanda);
 			$assentaments = array_merge($assentaments, $assentament);
 			
 			$factura->setComptabilitat($enviament);
+			$num++;
 		}
 		$enviament->setFactures($totalFactures);
 		//$enviament->setAnulacions($totalAnulacions);
@@ -392,7 +411,7 @@ class FacturacioController extends BaseController {
 	 * @param string $baixes
 	 * @return multitype:string
 	 */
-	private function generarAssentamentsRebuts($enviament) {
+	private function generarAssentamentsRebuts($enviament, &$num) {
 		/*$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
@@ -414,10 +433,11 @@ class FacturacioController extends BaseController {
 		$assentaments = array();
 		$comandes = array();
 		foreach ($rebuts as $rebut) {
-			$assentament = $this->assentamentRebut($rebut);
+			$assentament = $this->assentamentRebut($num, $rebut);
 			$assentaments = array_merge($assentaments, $assentament);
 			$rebut->setComptabilitat($enviament);
 			$totalRebuts++;
+			$num++;
 		}
 		$enviament->setRebuts($totalRebuts);
 
@@ -441,7 +461,7 @@ class FacturacioController extends BaseController {
 		return $apunt;
 	}
 	
-	private function assentamentRebut($rebut) {
+	private function assentamentRebut($num, $rebut) {
 		$assentament = array();
 		$linia = 1;
 			
@@ -458,19 +478,19 @@ class FacturacioController extends BaseController {
 		$conc = mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
 		$doc = $rebut->getNumRebutCurt();
 		$import = $rebut->getImport();
-		$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
+		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
 			
 		$linia++;
 		// APUNT CAIXA
 		$compte = BaseController::getComptePagament($rebut->getTipuspagament());
 		$desc = BaseController::getTextComptePagament($rebut->getTipuspagament());
 		
-		$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
 		
 		return $assentament;
 	}
 	 
-	private function assentamentFactura($factura, $comanda) {
+	private function assentamentFactura($num, $factura, $comanda) {
 		$assentament = array();
 		$linia = 1;
 		
@@ -490,7 +510,7 @@ class FacturacioController extends BaseController {
 		$doc = $factura->getNumFacturaCurt();
 		$import = $factura->getImport();
 					
-		$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
 					
 		$linia++;
 		$importAcumula = 0;
@@ -506,7 +526,7 @@ class FacturacioController extends BaseController {
 			$importDetall = $d->import;	
 			$importAcumula += $importDetall;	
 
-			$assentament[] = $this->crearLiniaAssentament($data, 0, $linia, $compte, $desc, $conc, $doc, $importDetall, BaseController::HABER);
+			$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $importDetall, BaseController::HABER);
 						
 			$linia++;
 			$index++;
@@ -787,13 +807,14 @@ class FacturacioController extends BaseController {
 		$this->logEntryAuth('VIEW GRAELLA PRODUCTES', $this->get('session')->get('username'));
 		
 		$tipus = $request->query->get('tipus', 0);
+		$compte = $request->query->get('compte', '');
 		$sort = $request->query->get('sort', 'p.descripcio');
 		$direction = $request->query->get('direction', 'asc');
 		
 		$productes = array();
 		
 		if ($tipus > 0) {
-			$query = $this->consultaProductes(0, $tipus, false, $sort, $direction);
+			$query = $this->consultaProductes(0, $compte, $tipus, false, $sort, $direction);
 		
 			$productes = $query->getResult();
 		}
@@ -816,6 +837,7 @@ class FacturacioController extends BaseController {
 						'title' => BaseController::getTipusProducte($tipus),
 						'productes' => $productes,  
 						'tipus' => $tipus,
+						'compte' => $compte,
 						'sortparams' => array('sort' => $sort,'direction' => $direction),
 						'formtransport' => $formtransport
 						)));
@@ -1250,6 +1272,7 @@ class FacturacioController extends BaseController {
 		
 
 		$tipus = $request->query->get('tipus', 0);
+		$compte = $request->query->get('compte', '');
 		$baixes = $request->query->get('baixes', 0);
 		$baixes = ($baixes == 1?true:false);
 		
@@ -1263,7 +1286,7 @@ class FacturacioController extends BaseController {
 			$page = 1;
 		}	
 
-		$query = $this->consultaProductes($idproducte, $tipus, $baixes, $sort, $direction);
+		$query = $this->consultaProductes($idproducte, $compte, $tipus, $baixes, $sort, $direction);
 			
 		$paginator  = $this->get('knp_paginator');
 			
@@ -1284,6 +1307,11 @@ class FacturacioController extends BaseController {
 				'required'  => false, 
 				'empty_value' => 'Qualsevol...',
 				'data' => $tipus,
+		));
+		
+		$formBuilder
+			->add('compte', 'hidden', array(
+					'data' => $compte,
 		));
 		
 		$formBuilder
@@ -1583,41 +1611,51 @@ class FacturacioController extends BaseController {
 		$response = new Response();
 	
 		$cerca = $request->get('cerca', '');
+		$tipus = $request->get('tipus', 'compte');
 		$id = $request->get('id', 0);
-		
 		$em = $this->getDoctrine()->getManager();
 		
 		if ($id > 0) {
 			$producte = $em->getRepository('FecdasBundle:EntityProducte')->find($id);
-			
+			error_log($id);
 			if ($producte != null) {
 				$response->headers->set('Content-Type', 'application/json');
 				
-				$response->setContent(json_encode(array("id" => $producte->getId(), "text" => $producte->getDescripcio()) ) );
+				if  ($tipus != 'compte') $response->setContent(json_encode(array("id" => $producte->getId(), "text" => $producte->getDescripcio()) ) );
+				else $response->setContent(json_encode(array("id" => $producte->getId(), "text" => $producte->getCodi()."") ) );
 				return $response;
 			}
 		}
 		
 		if ($id == 0 && $cerca == "") {
+			// Res a cercar
 			$response->headers->set('Content-Type', 'application/json');
 			$response->setContent(json_encode(array()));
 			return $response;
 		}
-		
 		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
 		$strQuery .= " WHERE p.databaixa IS NULL ";
-		$strQuery .= " AND p.descripcio LIKE :cerca";
+		if  ($tipus != 'compte') $strQuery .= " AND p.descripcio LIKE :cerca";
+		else $strQuery .= " AND p.codi >= :min AND p.codi <= :max ";
 		$strQuery .= " ORDER BY p.descripcio";  
 	
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('cerca', '%'.$cerca.'%');
-	
+		if  ($tipus != 'compte') $query->setParameter('cerca', '%'.$cerca.'%');
+		else {
+			$max = substr( str_pad( $cerca."", 7, "9", STR_PAD_RIGHT), 0, 7);
+			$min = substr( str_pad( $cerca."", 7, "0", STR_PAD_RIGHT), 0, 7);
+			$query->setParameter('max', $max);
+			$query->setParameter('min', $min);
+			error_log($max);
+			error_log($min);
+		} 
 		
 		$search = array();
 		if ($query != null) {
 			$result = $query->getResult();
 			foreach ($result as $p) {
-				$search[] = array("id" => $p->getId(), "text" => $p->getDescripcio());
+				if  ($tipus != 'compte') $search[] = array("id" => $p->getId(), "text" => $p->getDescripcio());
+				else $search[] = array("id" => $p->getId(), "text" => $p->getCodi()."");
 			}
 		}
 		
@@ -1627,7 +1665,7 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
-	protected function consultaProductes($idproducte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
+	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
 		$em = $this->getDoctrine()->getManager();
 	
 		if ($idproducte > 0) {
@@ -1643,11 +1681,14 @@ class FacturacioController extends BaseController {
 		$strQuery .= "WHERE 1 = 1 ";
 		if (! $baixes) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($tipus > 0) $strQuery .= " AND p.tipus = :tipus";
+		if ($compte != '') $strQuery .= " AND p.compte = :compte";
+		
 		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
 		
 		$query = $em->createQuery($strQuery);
 		
 		if ($tipus > 0) $query->setParameter('tipus', $tipus);
+		if ($compte != '') $query->setParameter('compte', $compte);
 		return $query;
 	}
 	
@@ -1841,7 +1882,7 @@ class FacturacioController extends BaseController {
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 			}
 		}
-		return $this->render('FecdasBundle:Facturacio:ingres.html.twig',
+		return $this->render('FecdasBundle:Facturacio:rebut.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
 	}
 	

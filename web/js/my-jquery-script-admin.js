@@ -32,18 +32,18 @@
 	};
 
 	//Cercador de productes
-	init_cercaproducte_JSON = function(elem_sel, placeholder_txt, url) {
+	init_cercaproducte_JSON = function(elem_sel, tipus, placeholder_txt, url) {
 		
 		/* Inicialitza el control de cerca (input hidden) */
 		$(elem_sel).select2({
-			minimumInputLength: 3,
+			minimumInputLength: 2,
 			allowClear: false,
 			multiple: false,
 			placeholder: placeholder_txt,
 	
 			query: function (query) {
 				var data = { results: [] };
-				var params = { 	'cerca': query.term };
+				var params = { 	'cerca': query.term, 'tipus': tipus };
 				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
 				$.get(url,	params, function(jdata) {
 					data.results = jdata;
@@ -55,7 +55,7 @@
 			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple)
 				//if (element.val() !== undefined && element.val() > 0) {
 					var data = [];
-					var params = { 	'id': element.val() };
+					var params = { 	'id': element.val(), 'tipus': tipus };
 					$.get(url,	params, function(jdata) {
 						//callback(jdata['id']);
 						callback(jdata);

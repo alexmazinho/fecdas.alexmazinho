@@ -503,6 +503,12 @@ FecdasBundle_updatemigrafactures:
     requirements:
         _method:  GET
 
+FecdasBundle_omplirdetallsfactures:
+    pattern:  /omplirdetallsfactures
+    defaults: { _controller: "FecdasBundle:Facturacio:omplirdetallsfactures" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_resetcomandes:
     pattern:  /resetcomandes
     defaults: { _controller: "FecdasBundle:Facturacio:resetcomandes" }

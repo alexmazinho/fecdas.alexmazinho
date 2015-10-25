@@ -1681,7 +1681,7 @@ class FacturacioController extends BaseController {
 		$strQuery .= "WHERE 1 = 1 ";
 		if (! $baixes) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($tipus > 0) $strQuery .= " AND p.tipus = :tipus";
-		if ($compte != '') $strQuery .= " AND p.compte = :compte";
+		if ($compte != '') $strQuery .= " AND p.codi = :compte";
 		
 		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
 		
@@ -2577,6 +2577,66 @@ class FacturacioController extends BaseController {
 		}
 		return new Response("");
 	}
+
+	public function omplirdetallsfacturesAction(Request $request) {
+		// http://www.fecdas.dev/omplirdetallsfactures?current=2015  => Torna a calcular detalls per factures del 2015 amb detalls ''
+		// Script de migració. Executar per migrar i desactivar
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		error_log('Inicia omplirdetallsfacturesAction');
+		$batchSize = 20;
+		$current = $request->query->get('current', date('Y')); 
+		try {
+			$em = $this->getDoctrine()->getManager();
+			
+			$desde = date('Y').'-01-01 00:00:00';
+			$fins = date('Y').'-12-31 23:59:59';
+			
+			$em->getConnection()->beginTransaction(); // suspend auto-commit
+			
+			$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+			$strQuery .= " WHERE f.datafactura >= :desde AND f.datafactura <= :fins AND f.detalls = '' ";
+			$strQuery .= " ORDER BY f.id";
+	
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('desde', $desde);
+			$query->setParameter('fins', $fins);
+	
+			$factures = $query->getResult();
+			error_log(count($factures). ' factures');
+			$total = 0;
+			foreach ($factures as $factura) {
+				
+				if ($factura->esAnulacio()) $comanda = $factura->getComandaanulacio();
+				else $comanda = $factura->getComanda();
+				
+				if ($comanda == null) {
+					echo "factura sense comanda " . $factura->getId(). ' ' .$factura->getNum();
+					
+				} else {
+					$detalls = $comanda->getDetallsAcumulats();
+					//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
+					$detalls = json_encode($detalls); // Desar estat detalls a la factura
+					$factura->setDetalls($detalls);
+					$em->flush();
+				}
+				$total++;
+									
+			}
+			$em->flush();
+			error_log('Acaba omplirdetallsfacturesAction');
+			$em->getConnection()->commit();
+		} catch (\Exception $e) {
+			$em->getConnection()->rollback();
+			echo "Problemes durant la transacció : ". $e->getMessage();
+		}
+		return new Response("");
+	}
 	
 	public function migraanulacomandesAction(Request $request) {
 		// http://www.fecdas.dev/migraanulacomandes
@@ -2773,6 +2833,8 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 	
 		$num = $request->query->get('num', 0); // min num
+		$codi = $request->query->get('codi', 0); // Club
+		
 		$batchSize = 20;
 	
 		$strQuery = "SELECT p.*, e.preu, e.iva FROM m_productes p LEFT JOIN m_preus e ON e.producte = p.id WHERE e.anypreu = 2015 ORDER BY p.codi ";
@@ -2789,18 +2851,25 @@ class FacturacioController extends BaseController {
 			$i++;
 		}
 	
-		$strQuery = "SELECT * FROM m_clubs c ORDER BY c.codi ";
+		$strQuery = " SELECT * FROM m_clubs c ";
+		if ($codi != '') $strQuery .= " WHERE c.codi = '".$codi."'";
+		else $strQuery .= " ORDER BY c.codi ";
 		$stmt = $em->getConnection()->prepare($strQuery);
 		$stmt->execute();
 		$aux = $stmt->fetchAll();
 		$i = 0;
+		$compteClub = '';
 		$clubs = array();
 		while (isset($aux[$i])) {
 			$clubs[ $aux[$i]['compte'] ] = $aux[$i];
+			if ($codi != '' && $aux[$i]['codi'] == $codi) $compteClub = $aux[$i]['compte'];  
 			$i++;
 		}
 	
-	
+		echo '-'.$compteClub.'-';
+		 
+		
+		
 		// Clubs: 4310000 - 4310999
 		// Productes: 6230300  - 7590006  (Llicències 7010000 - 7010025) (Duplicats 7090000, 7590000, 7590002, 7590004)
 	
@@ -2809,15 +2878,41 @@ class FacturacioController extends BaseController {
 		// SELECT num FROM apunts_2015 WHERE (compte >= 4310000 AND compte <= 4310999) OR
 		//			(compte >= 6230300 AND compte < 7010000 AND compte > 7010025 AND compte <= 7590006 AND compte NOT IN (7090000, 7590000, 7590002, 7590004) )
 	
+		if ($compteClub != '') {
+			$strQuery = "SELECT DISTINCT num FROM apunts_2015 a WHERE compte = ".$compteClub;
+			if ($num > 0) $strQuery .= " AND num = ".$num;
+			$strQuery .= " ORDER BY a.num ";
+			$stmt = $em->getConnection()->prepare($strQuery);
+			$stmt->execute();
+			$numapuntsClub = $stmt->fetchAll();
+			
+			if (count($numapuntsClub) == 0) {
+				echo "sense apunts pel compte ".$compteClub;
+				exit;
+			}
+			
+			$apuntsClub = array(); 
+			foreach ($numapuntsClub as $key => $value) {
+				//echo json_encode($value);
+				$apuntsClub[] = $value['num'];
+			}
+				
+			$strQuery = "SELECT * FROM apunts_2015 a WHERE num IN (".implode(", ", $apuntsClub).") ORDER BY a.num";
+			$stmt = $em->getConnection()->prepare($strQuery);
+			$stmt->execute();
+			$altress2015 = $stmt->fetchAll();
+			
+		} else {
+			$strQuery = "SELECT * FROM apunts_2015 a ";
+			//$strQuery .= " ORDER BY a.data, a.num, a.dh ";
+			if ($num > 0) $strQuery .= " WHERE num >= ".$num;
+			$strQuery .= " ORDER BY a.num ";
+		
+			$stmt = $em->getConnection()->prepare($strQuery);
+			$stmt->execute();
+			$altress2015 = $stmt->fetchAll();
 	
-		$strQuery = "SELECT * FROM apunts_2015 a ";
-		//$strQuery .= " ORDER BY a.data, a.num, a.dh ";
-		if ($num > 0) $strQuery .= " WHERE num >= ".$num;
-		$strQuery .= " ORDER BY a.num ";
-	
-		$stmt = $em->getConnection()->prepare($strQuery);
-		$stmt->execute();
-		$altress2015 = $stmt->fetchAll();
+		}
 	
 		echo "Total apunts: " . count($altress2015) . PHP_EOL;
 	
@@ -2944,6 +3039,7 @@ class FacturacioController extends BaseController {
 				$importDetalls = 0;
 				$tipusAnterior = 0;
 				$actualCompteDuplicat = '';
+				$compteH = '';
 				for ($i = 0; $i < count($altres['H']); $i++) {
 				
 					$compteH = $altres['H'][$i]['compte'];
@@ -2979,6 +3075,8 @@ class FacturacioController extends BaseController {
 							" ==> H ".json_encode($altres['H'])."(".$importDetalls.")"."<br/>";
 					return;
 				}
+
+				if ($tipusAnterior == 0 && $compteH == '6290900') $tipusAnterior = BaseController::TIPUS_PRODUCTE_ALTRES; // Assentaments només correu
 			
 				if ($tipusAnterior <= 0 || $tipusAnterior > 6)  {
 					error_log($id." ".$num."ERROR 22 tipus producte desconegut:".$tipusAnterior." => ".$compteH);
@@ -3523,7 +3621,8 @@ class FacturacioController extends BaseController {
 				$totalComanda += $total * $preu * (1 + $iva);
 				
 				$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
-				$query .= "(".$parte['id'].",".$parte['cpro'].",".$total.", ".$preu.", ".($iva > 0?$iva:"NULL") .", 0, '".$anota."',";
+				/*$query .= "(".$parte['id'].",".$parte['cpro'].",".$total.", ".$preu.", ".($iva > 0?$iva:"NULL") .", 0, '".$anota."',";*/
+				$query .= "(".$parte['id'].",".$parte['cpro'].",".$total.", ".$preu.", NULL, 0, '".$anota."',";
 				$query .= "'".$parte['dataentradadel']."')";
 			
 			

@@ -98,7 +98,7 @@
 			   		<a class="llista-llicencies link" href="{{ path('FecdasBundle_llicenciesParte', { 'id': parte.id }) }}" alt="Llicències" title="Llicències">{{ parte.numLlicencies }}
 			   			<i class="fa fa-history orange"></i></a>
 			   		</div>
-			   		<div class="data-detall-cell parte-import">{{ parte.getPreuTotalIVA|number_format(2, ',', '.') }} €</div>
+			   		<div class="data-detall-cell parte-import">{{ parte.getTotalDetalls|number_format(2, ',', '.') }} €</div>
 			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}

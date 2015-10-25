@@ -227,9 +227,9 @@ class PageController extends BaseController {
 			
 			$parte = $this->crearComandaParte($dataalta, $tipus);
 			
-			$this->importFileCSVData($temppath, $parte, true);
-			
 			$factura = $this->crearFactura($dataalta, $parte);
+			
+			$this->importFileCSVData($temppath, $parte, true);
 			
 			$em->flush();
 			
@@ -318,6 +318,7 @@ class PageController extends BaseController {
 				if ($persist == true) $em->persist($llicencia);
 				
 				$llicencia->setDatamodificacio($this->getCurrentDate());
+				$parte->addLlicencia($llicencia);
 						
 				$detall = $this->addParteDetall($parte, $llicencia);
 				if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
@@ -334,7 +335,6 @@ class PageController extends BaseController {
 		
 		if ($fila == 0) throw new \Exception('No s\'ha trobat cap llicència al fitxer');
 		 
-		//$parte->setImportparte($parte->getPreuTotalIVA());  // Canviar preu parte
 	}
 	
 	public function partesAction(Request $request) {
@@ -723,8 +723,6 @@ class PageController extends BaseController {
 				// Marquem com renovat
 				$partearenovar->setRenovat(true);
 				
-				//$parte->setImportparte($parte->getPreuTotalIVA());  // Actualitza preu si escau després de treure llicències
-				
 				$em->persist($parte);
 				$em->flush();
 
@@ -745,47 +743,15 @@ class PageController extends BaseController {
 			/*
 			 * Validacions  de les llicències
 			* */
+			$avisos = '';
 			foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
-				// Comprovar que no hi ha llicències vigents
-				// Per la pròpia persona
-				$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia_iter, $llicencia_iter->getPersona());
-				if ($parteoverlap != null) {
-					$form->get('llicencies')->get($c)->get('renovar')->setData(false);
-					$form->get('llicencies')->get($c)->remove('renovar');
-					
-					$avisos .= "- El Federat " . $llicencia_iter->getPersona()->getNom() . " " . $llicencia_iter->getPersona()->getCognoms();
-					$avisos .= " ja té una llicència vigent en aquest club, en data ";
-					$avisos .= $parteoverlap->getDataalta()->format('d/m/Y') . "<br/>";
-					continue;
-				}
-			
-				if ($this->validaLlicenciaInfantil($llicencia_iter) == false) {
-					$novacategoria = $this->getDoctrine()->getRepository('FecdasBundle:EntityCategoria')
-										->findOneBy(array('tipusparte' => $llicencia_iter->getParte()->getTipus()->getId(), 'simbol' => 'A'));
-					$llicencia_iter->setCategoria($novacategoria);
-					
-					$avisos .= "- El Federat " . $llicencia_iter->getPersona()->getNom() . " " . $llicencia_iter->getPersona()->getCognoms();
-					$avisos .= " ha canviat de categoria infantil a aficionat<br/>";
-					continue;
+				try {
+					$this->validaParteLlicencia($parte, $llicencia_iter);
+				} catch (\Exception $e) {
+					$avisos .= $e->getMessage().PHP_EOL;
 				}
 			}
-			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* id 4 - Competició --> és la única que es pot fer */
-			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
-				$this->get('session')->getFlashBag()->clear();
-				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
-						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
-						Gràcies per la vostra comprensió.');
-			}*/
-			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* Valida tipus actiu --> és la única que es pot fer */
-			if ($parte->getTipus()->getActiu() == false) {
-				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-			}
-			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
-			
-
-			$this->logEntryAuth('RENOVAR VIEW', $parte->getId() . "-" .$avisos);
+			$this->logEntryAuth('RENOVAR VIEW', ' Parte '.$parte->getId().' : ' .$avisos);
 		}
 			
 		return $this->render('FecdasBundle:Page:renovar.html.twig',
@@ -985,10 +951,10 @@ class PageController extends BaseController {
 							$categoriaOriginal != null && $categoriaOriginal->getId() != $llicencia->getCategoria()->getId() ) {
 								
 								
-								$detall = $this->tramitaRemoveLlicencia($parte, $llicencia);
-								if ($detall == null) throw new \Exception('S\'ha produït un error actualitzant la llicència');
-								$detall = $this->addParteDetall($parte, $llicencia);
-								if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència a la llista');
+							$detall = $this->tramitaRemoveLlicencia($parte, $llicencia);
+							if ($detall == null) throw new \Exception('S\'ha produït un error actualitzant la llicència');
+							$detall = $this->addParteDetall($parte, $llicencia);
+							if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència a la llista');
 						} 
 					}
 					
@@ -1058,13 +1024,13 @@ class PageController extends BaseController {
 	
 		if ($producte == null || $parte == null) return null;
 
-		$this->removeLlicenciaParte($parte, $llicencia);
-
 		$data = $this->getCurrentDate();
 		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
 
 		$detall = $this->removeComandaDetall($parte, $producte, 1, $maxNumFactura, $maxNumRebut);			
+
+		$this->removeLlicenciaParte($parte, $llicencia);
 		
 		return $detall;
 	}
@@ -1115,7 +1081,7 @@ class PageController extends BaseController {
 			throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');
 		}
 			
-		if ($this->validaLlicenciaInfantil($llicencia) == false) throw new \Exception('L\'edat de la persona ('.$llicencia->getPersona()->getDni().') no correspon amb el tipus de llicència');
+		if ($this->validaLlicenciaInfantil($parte, $llicencia) == false) throw new \Exception('L\'edat de la persona ('.$llicencia->getPersona()->getDni().') no correspon amb el tipus de llicència');
 						
 		if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ('.$llicencia->getPersona()->getDni().') ja té una llicència en aquesta llista');
 
@@ -1131,7 +1097,7 @@ class PageController extends BaseController {
 			$parte->getClub()->controlCredit() == true) {
 			// Comprovació de saldos clubs DIFE
 /***************  SALDOS ENCARA NO ************************************************************************************************************************/					
-			/*if ($parte->getPreuTotalIVA() > $parte->getClub()->getSaldo() + $parte->getClub()->getLimitcredit()) {
+			/*if ($parte->getPreuTotal() > $parte->getClub()->getSaldo() + $parte->getClub()->getLimitcredit()) {
 					throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
 					Per poder fer noves gestions, cal que contacteu amb la FECDAS');
 			}*/

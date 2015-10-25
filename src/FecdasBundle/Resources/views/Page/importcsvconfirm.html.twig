@@ -16,7 +16,7 @@
 		<div class="form-row clearfix">
 			<div class="form-right">
 				<div class="textaccio">
-					<a id="confirm-csv" href="{{ urlconfirm }}">Confirmar llicències<img width="16" src="{{ asset('images/icon-save.png') }}" ></a>
+					<a id="confirm-csv" class="btn btn-default" href="{{ urlconfirm }}"><i class="fa fa-save"></i> Confirmar llicències</a>
 				</div> 
 			</div>
 		</div>
@@ -26,7 +26,7 @@
 				<div id="header-totals" class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}<br/>Aquestes llicències seran vàlides des de 
 				<time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time> fins a 
 				<time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-			   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getPreuTotalIVA|number_format(2, ',') }} €</div>
+			   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getTotalDetalls|number_format(2, ',') }} €</div>
 			</div>
 		</div>
 		<div class="table-noscroll">

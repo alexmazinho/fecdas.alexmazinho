@@ -369,10 +369,13 @@ class EntityParte extends EntityComanda {
     	return $preu;
     }
     
-    public function getPreuTotalIVA() {
-    	// Retorna el preu total amb IVA de totes les llicències actives del Parte
-    	$iva = ($this->getTipus()!=null?$this->getTipus()->getIVA():0);
-    	$factor = ($iva/100) + 1;
+	public function getPreuTotal($iva = false) {
+		// Retorna el preu total de totes les llicències actives del Parte. Es pot demanar amb IVA
+    	$factor = 1;
+    	if ($iva == true) {
+    		$iva = ($this->getTipus()!=null?$this->getTipus()->getIVA():0);
+    		$factor = ($iva/100) + 1;
+		}
     	return $this->getPreuTotalNet() * $factor;
     }
     
@@ -578,7 +581,10 @@ class EntityParte extends EntityComanda {
      */
     public function getInfoLlistat() {
     	// Missatge que es mostra a la llista de partes
-    	$textInfo = parent::getInfoLlistat();
+    	//$textInfo = parent::getInfoLlistat();
+
+		$textInfo = $this->comentaris.PHP_EOL.($this->tipus != null?$this->tipus->getDescripcio():'');
+		
     	if (trim($textInfo) != '') $textInfo .= PHP_EOL;
 		
     	if ($this->esBaixa()) return $textInfo.'Llista anul·lada';

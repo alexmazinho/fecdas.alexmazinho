@@ -321,7 +321,7 @@ class EntityClub {
 					$nllicencies +=  $parte->getNumLlicencies();
 					
 					/* Només mirar sincronitzats */
-					$auxImportParte = $parte->getPreuTotalIVA();
+					$auxImportParte = $parte->getTotalDetalls();
 
 					if ($errors == true){
 						// Import parte i import rebuts

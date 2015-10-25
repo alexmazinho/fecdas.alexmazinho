@@ -794,7 +794,7 @@ class PDFController extends BaseController {
 				}
 				$tbl .= '<tr><td colspan="2" align="right"><b>Total</b></td>';
 				$tbl .= '<td align="center">' . $parte->getNumLlicencies() . '</td>';
-				$tbl .= '<td align="right">' .  number_format($parte->getPreuTotalIVA(), 2, ',', '.') . '&nbsp;€</td></tr>';
+				$tbl .= '<td align="right">' .  number_format($parte->getPreuTotal(), 2, ',', '.') . '&nbsp;€</td></tr>';
 				$tbl .= '</table>';
 				
 				$pdf->writeHTML($tbl, false, false, false, false, '');

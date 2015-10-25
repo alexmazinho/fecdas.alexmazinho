@@ -15,45 +15,6 @@ use FecdasBundle\Form\FormLlicenciaRenovar;
 
 class CronController extends BaseController {
 
-	public function checkupdatepreuAction(Request $request, $maxid) {
-		return new Response("");  // Funció desactivada
-		
-		
-		if ($this->isCurrentAdmin() != true) return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		/* Update preu partes web */
-		// Actualitzar tots els importparte a 0, per a què no dongui error la sincro
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p ";
-		$strQuery .= "WHERE p.databaixa IS NULL  ";
-		$strQuery .= " AND p.importparte = 0 ";
-		$strQuery .= " AND p.id <= :maxid ";
-		$strQuery .= " AND p.web = 1 ORDER BY p.id ";
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		$query = $em->createQuery($strQuery)->setParameter('maxid', $maxid);
-		$partesweb = $query->getResult();
-		
-		foreach ($partesweb as $parte) {
-			
-			$parte->setImportparte($parte->getPreuTotalIVA());
-			
-			if ($parte->getImportpagament() != null) {
-				if ($parte->getTotalDetalls() != $parte->getImportpagament()) {
-					$this->logEntry(self::MAIL_ADMINLOG, 'UPD PREU ERROR',
-							$request->server->get('REMOTE_ADDR'),
-							$request->server->get('HTTP_USER_AGENT'),
-							$parte->getId() . " . calculat: " . $parte->getTotalDetalls() . "  pagament: " .$parte->getImportpagament());
-				}
-			} 
-		}
-		
-		/* Commit final */
-		$em->flush(); 
-		
-		return new Response("");
-	}
-	
 	public function checkrenovacioAction(Request $request) {
 		// Avís renovació partes: 30 dies, 15 dies i 2 dies
 		/* Planificar cron diari
@@ -271,66 +232,45 @@ class CronController extends BaseController {
 		if ($this->isCurrentAdmin() != true and $llicenciaarenovar->getParte()->getClub()->getCodi() != $currentClub)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
-		/* Si abans data caducitat renovació per tot el periode
-		 * En cas contrari només des d'ara
-		*/
-		$dataalta = $this->getCurrentDate('now');
-		if ($llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 1 ")) > $dataalta) {
-			$dataalta = $llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 2 "));
-			$dataalta->setTime(00, 00);
-			$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
-		}
-		/* Crear el nou parte */
-		$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus());
-
-		// Afegir llicència		
-		$cloneLlicencia = clone $llicenciaarenovar;
-		
-		/* Init camps */
-		$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
-		
-		$parte->addLlicencia($cloneLlicencia);
-
-	    // Crear factura
-		$factura = $this->crearFactura($dataalta, $parte);
-		
-		/* Preparar formulari */
-		$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);
-		
-		$form->get('cloneid')->setData($llicenciaid);  // Posar id
-		$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms
-		$form->get('datacaducitatshow')->setData($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 4 "))); 
-		
 		/*
 		 * Validacions  de les llicències
 		*/
 		try {
-			if ($this->validaLlicenciaInfantil($cloneLlicencia) == false) {
-				// Comprova que no sigui infantil amb llicència aficionat, etc...
-				throw new \Exception('L\'edat d\'una de les persones no correspon amb el tipus de llicència');
+	
+			/* Si abans data caducitat renovació per tot el periode
+			 * En cas contrari només des d'ara
+			*/
+			$dataalta = $this->getCurrentDate('now');
+			if ($llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 1 ")) > $dataalta) {
+				$dataalta = $llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 2 "));
+				$dataalta->setTime(00, 00);
+				$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 			}
-		
-			$parteoverlap = $this->validaPersonaTeLlicenciaVigent($cloneLlicencia, $cloneLlicencia->getPersona());
-			if ($parteoverlap != null) {
-				// Comprovar que no hi ha llicències vigents,per la pròpia persona
-				throw new \Exception('Aquesta persona ja té una llicència al club en aquests periode, en data ' .
-						$parteoverlap->getDataalta()->format('d/m/Y'));
-			}
-
-			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* id 4 - Competició --> és la única que es pot fer */
-			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
-				throw new \Exception('El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment. 
-						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència. 
-						Gràcies per la vostra comprensió.');
-			}*/
-			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* Valida tipus actiu --> és la única que es pot fer */
-			if ($parte->getTipus()->getActiu() == false) {
-				throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-			}
-			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+			/* Crear el nou parte */
+			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus());
+	
+			// Afegir llicència		
+			$cloneLlicencia = clone $llicenciaarenovar;
 			
+			/* Init camps */
+			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
+			
+			$parte->addLlicencia($cloneLlicencia);
+	
+		    // Crear factura
+			$factura = $this->crearFactura($dataalta, $parte);
+			
+			$detall = $this->addParteDetall($parte, $llicencia);
+			if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+			
+			/* Preparar formulari */
+			$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);
+			
+			$form->get('cloneid')->setData($llicenciaid);  // Posar id
+			$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms
+			$form->get('datacaducitatshow')->setData($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 4 "))); 
+		
+			$this->validaParteLlicencia($parte, $cloneLlicencia);
 		
 			if ($request->getMethod() == 'POST') {
 				$form->bind($request);

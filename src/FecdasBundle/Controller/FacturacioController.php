@@ -946,7 +946,7 @@ class FacturacioController extends BaseController {
 				// Recollir cistella de la sessió
 				$cart = $this->getSessionCart();				
 				
-				$import = $producte->getPreuTotalUnitat(date('Y'));
+				$import = $producte->getPreuAny(date('Y'));
 				
 				if ( !isset( $cart['productes'][$idProducte] ) ) {
 					$cart['productes'][$idProducte] = array(
@@ -2588,7 +2588,7 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		error_log('Inicia omplirdetallsfacturesAction');
+		echo 'Inicia omplirdetallsfacturesAction';
 		$batchSize = 20;
 		$current = $request->query->get('current', date('Y')); 
 		try {
@@ -2608,7 +2608,7 @@ class FacturacioController extends BaseController {
 			$query->setParameter('fins', $fins);
 	
 			$factures = $query->getResult();
-			error_log(count($factures). ' factures');
+			echo count($factures). ' factures';
 			$total = 0;
 			foreach ($factures as $factura) {
 				
@@ -2619,6 +2619,7 @@ class FacturacioController extends BaseController {
 					echo "factura sense comanda " . $factura->getId(). ' ' .$factura->getNum();
 					
 				} else {
+					echo "factura actualitzada: ".$factura->getNumFactura();
 					$detalls = $comanda->getDetallsAcumulats();
 					//$detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
 					$detalls = json_encode($detalls); // Desar estat detalls a la factura
@@ -2629,7 +2630,7 @@ class FacturacioController extends BaseController {
 									
 			}
 			$em->flush();
-			error_log('Acaba omplirdetallsfacturesAction');
+			echo 'Acaba omplirdetallsfacturesAction';
 			$em->getConnection()->commit();
 		} catch (\Exception $e) {
 			$em->getConnection()->rollback();

@@ -143,7 +143,7 @@ class EntityCarnet {
 		//return $this->preu;
 		
 		if ($this->producte == null) return 0;
-		return $this->producte->getPreuTotalUnitat(Date('Y'));
+		return $this->producte->getPreuAny(Date('Y'));
 	}
 
 	/**

@@ -35,7 +35,7 @@ class AdminController extends BaseController {
 		$states = explode(";", self::CLUBS_STATES);
 		$defaultEstat = self::TOTS_CLUBS_DEFAULT_STATE; // Tots normal
 		if ($this->get('session')->get('username', '') == self::MAIL_FACTURACIO)  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
-		
+
 		// Cerca
 		$currentBaixa = false; // Inclou Baixes
 		if ($request->query->has('baixa') && $request->query->get('baixa') == 1) $currentBaixa = true;
@@ -43,7 +43,14 @@ class AdminController extends BaseController {
 		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 1) $currentNoPagat = true;
 		$currentNoImpres = false;// No impres
 		if ($request->query->has('noimpres') && $request->query->get('noimpres') == 1) $currentNoImpres = true;
+		$currentCompta = false;// Pendents compta
+		if ($request->query->has('compta') && $request->query->get('compta') == 1) $currentCompta = true;
 
+
+		$currentNumfactura = $request->query->get('numfactura', '');
+		$currentNumrebut = $request->query->get('numrebut', '');
+		$currentAnyfactura = $request->query->get('anyfactura', '');
+		$currentAnyrebut = $request->query->get('anyrebut', '');
 		
 		//$currentClub = null;
 		$currentClub = $em->getRepository('FecdasBundle:EntityClub')->find($request->query->get('clubs', ''));
@@ -77,7 +84,7 @@ class AdminController extends BaseController {
 				
 			}*/
 			$this->logEntryAuth('ADMIN PARTES POST', "club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] .
-					" pagament: " . $currentNoPagat . " baixa: " . $currentBaixa );
+					" factura " .$currentNumfactura . " rebut " .$currentNumrebut . " pagament: " . $currentNoPagat . " baixa: " . $currentBaixa );
 		} else {
 			$this->logEntryAuth('ADMIN PARTES');
 		}
@@ -99,6 +106,27 @@ class AdminController extends BaseController {
 				'data' => $currentEstat
 		));
 		
+		$current = date('Y');
+		$formBuilder->add('numfactura', 'text', array(
+					'required'  => false,
+					'data' => $currentNumfactura,
+				));
+		$formBuilder->add('anyfactura', 'choice', array(
+				'choices'   => array($current => $current, $current-1 => $current-1),
+				'preferred_choices' => array($current),  // Any actual i anterior 
+				'data' => $currentAnyfactura
+		));
+		
+		$formBuilder->add('numrebut', 'text', array(
+					'required'  => false,
+					'data' => $currentNumrebut,
+				));
+		$formBuilder->add('anyrebut', 'choice', array(
+				'choices'   => array($current => $current, $current-1 => $current-1),
+				'preferred_choices' => array($current),  // Any actual i anterior 
+				'data' => $currentAnyrebut
+		));
+		
 		$formBuilder->add('nopagat', 'checkbox', array(
 					'required'  => false,
 					'data' => $currentNoPagat,
@@ -111,20 +139,41 @@ class AdminController extends BaseController {
     				'required'  => false,
 					'data' => $currentBaixa,
 				));
+		$formBuilder->add('compta', 'checkbox', array(
+    				'required'  => false,
+					'data' => $currentCompta,
+				));
 		$form = $formBuilder->getForm();
 		
+		
 		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e LEFT JOIN p.rebut r ";
-		$strQuery .= "WHERE ";
+		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
+		$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
 
+		
+		if ($currentNumrebut == '' && $currentNumfactura == '') {
+			// Dates normals
+			$inianual = $this->getSQLIniciAnual();
+			$ini365 = $this->getSQLInici365();
+		} else {
+			// dates dels anys escollits a les factures / rebuts
+			$inianual = min($currentAnyrebut, $currentAnyfactura).'-01-01 00:00:00';
+			$ini365 = $inianual;
+		
+			if ($currentNumrebut != '') $strQuery .= " AND r.num = :numrebut ";
+			if ($currentNumfactura != '') $strQuery .= " AND f.num = :numfactura ";
+		}
+		
 		if ($currentClub != null) $strQuery .= " AND p.club = '" .$currentClub->getCodi() . "' "	;
 		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
-				
+		
+		
 		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($currentNoPagat == true) $strQuery .= " AND p.rebut IS NULL ";
 		if ($currentNoImpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 ";
+		if ($currentCompta == true) $strQuery .= " AND f.comptabilitat <> 1 ";
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
 		//if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
@@ -132,29 +181,53 @@ class AdminController extends BaseController {
 		$strQuery .= " ORDER BY ".$sort; 
 
 		$query = $em->createQuery($strQuery)
-			->setParameter('ininormal', $this->getSQLIniciAnual())
-			->setParameter('ini365', $this->getSQLInici365());
+			->setParameter('ininormal', $inianual)
+			->setParameter('ini365', $ini365);
 		
-		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$currentEstat]);
+
+		if ($currentNumrebut == '' && $currentNumfactura == '') {
+			// Dates normals
+		} else {
+			// dates dels anys escollits a les factures / rebuts
+			/*if ($currentNumrebut == true) $partesrecents->setParam('numrebut',$currentNumrebut);
+			if ($currentNumfactura == true) $partesrecents->setParam('numfactura',$currentNumfactura);*/
+			if ($currentNumrebut == true) $query->setParameter('numrebut',$currentNumrebut);
+			if ($currentNumfactura == true) $query->setParameter('numfactura',$currentNumfactura);
+		}
+
+		/*if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$currentEstat]);
+	
+		// Paràmetres URL sort i pagination 
+		if ($currentClub != null) $partesrecents->setParam('clubs',$currentClub->getCodi());
+		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $partesrecents->setParam('estat',$currentEstat);
 		
+		if ($currentBaixa == true) $partesrecents->setParam('baixa',true);
+		//if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
+		if ($currentNoPagat == true) $partesrecents->setParam('nopagat',true);
+		if ($currentNoImpres == true) $partesrecents->setParam('noimpres',true);*/
+				
+		$sortparams = array('sort' => $sort,'direction' => $direction, 
+							/*'numrebut' => $currentNumrebut, 'anyrebut' => $currentAnyrebut,
+							'numfactura' => $currentNumfactura, 'anyfactura' => $currentAnyfactura,
+							'estat' => $currentEstat, 'baixa' => true, 'nopagat' => true, 'noimpres' => 'true' */);
+
 		$paginator  = $this->get('knp_paginator');
 		$partesrecents = $paginator->paginate(
 				$query,
 				$page,
 				10 /*limit per page*/
 		);
-	
-		/* Paràmetres URL sort i pagination */
-		if ($currentClub != null) $partesrecents->setParam('clubs',$currentClub->getCodi());
-		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $partesrecents->setParam('estat',$currentEstat);
-		if ($currentBaixa == true) $partesrecents->setParam('baixa',true);
-		//if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
-		if ($currentNoPagat == true) $partesrecents->setParam('nopagat',true);
-		if ($currentNoImpres == true) $partesrecents->setParam('noimpres',true);
-				
+		
+		error_log($strQuery);
+		error_log($inianual . ' '.$ini365);
+		error_log($currentNumrebut . ' '.$currentNumfactura);
+		error_log(count($partesrecents));
+		
+		$partesrecents->setParam('sortparams',$sortparams);
+		
 		return $this->render('FecdasBundle:Admin:recents.html.twig', 
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'partes' => $partesrecents,
-						'sortparams' => array('sort' => $sort,'direction' => $direction)
+						'sortparams' => $sortparams
 				)));
 	}
 	

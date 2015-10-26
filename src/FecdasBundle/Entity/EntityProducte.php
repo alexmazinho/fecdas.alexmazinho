@@ -529,19 +529,6 @@ class EntityProducte {
     	return $preu->getIva();
     }
 
-    /**
-     * Get preu amb IVA d'una unitat del producte
-     *
-     * @return decimal
-     */
-    public function getPreuTotalUnitat($any)
-    {
-    	$preu = $this->getPreu($any);
-		
-		return ($preu == null? 0: round($preu->getPreu() * ( 1 + $preu->getIva()),2) );
-
-    }
-
 	/**
      * Is disponible
      *

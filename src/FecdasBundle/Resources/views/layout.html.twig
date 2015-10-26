@@ -126,9 +126,10 @@
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Llicències <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			          	<li id="menu-admllistes" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc' }) }}">Llistes recents</a></li>
-			          	<li id="menu-admpendents" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc', 'nopagat': 1 }) }}">Pendents pagament</a></li>
-			          	<li id="menu-admperimprimir"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataentrada', 'direction':'desc', 'noimpres': 1 }) }}">Per imprimir</a></li>
+			          	<li id="menu-admllistes" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llistes recents</a></li>
+			          	<li id="menu-admpendents" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc', 'nopagat': 1 }) }}">Pendents pagament</a></li>
+			          	<li id="menu-admperimprimir" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc', 'noimpres': 1 }) }}">Per imprimir</a></li>
+			          	<li id="menu-admperimprimir"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc', 'compta': 1 }) }}">Per enviar a comptabilitat</a></li>
 			          </ul>
 			        </li>	
 			        <li class="dropdown">

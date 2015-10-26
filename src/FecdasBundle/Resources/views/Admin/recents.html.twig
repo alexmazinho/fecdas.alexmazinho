@@ -37,24 +37,43 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-2">
+				<div class="col-md-3">
+				    <div class="form-group form-group-2-inline">
+						<div class="input-group">
+							<div class="input-group-addon input-group-addon-2-inline">Factura</div>
+							{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control form-2-control-inline '} }) }}
+							{{ form_widget(form.anyfactura, { 'attr': {'class': 'form-control form-select form-2-control-inline '} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+				    <div class="form-group form-group-2-inline">
+						<div class="input-group">
+							<div class="input-group-addon">Rebut</div>
+							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control form-2-control-inline '} }) }}
+							{{ form_widget(form.anyrebut, { 'attr': {'class': 'form-control form-select form-2-control-inline '} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
 					<div class="checkbox-inline">
 				    	<label>
 				      		{{ form_widget(form.baixa) }} Incloure baixes
 				    	</label>
 					</div>
-				</div>
-				<div class="col-md-2">
 					<div class="checkbox-inline">
 				    	<label>
 				      		{{ form_widget(form.nopagat) }} No pagades
 				    	</label>
 					</div>
-				</div>
-				<div class="col-md-2">
 					<div class="checkbox-inline">
 				    	<label>
 				      		{{ form_widget(form.noimpres) }} No impreses
+				    	</label>
+					</div>
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.compta) }} Pendent enviar comptabilitat
 				    	</label>
 					</div>
 				</div>
@@ -66,8 +85,10 @@
     <div id="list-recents">
     	<div class="table-header">	
 	   		<div id="list-header">
-		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.id') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.num') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsfactura" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Factura', 'p.factura') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.factura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentsentrada" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Entrada', 'p.dataentrada') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentsdata" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}
@@ -81,7 +102,7 @@
 		   	</div>
 		</div>
 		{% if partes|length > 0 %}
-		<div class="table-scroll">
+		<div class="table-noscroll">
 		   	<ol id="list-data">
 			{% for parte in partes %}
 		   		<li class="data-detall 
@@ -89,6 +110,15 @@
 				{% if parte.comandaPagada == false  %} parte-pendent {% endif %}
 		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
 			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
+			   		<div class="data-detall-cell parterecents-factura">
+			   			{% for factura in parte.factures %}
+			   				
+			   				<a class="comanda-action-factura {% if factura.esanulacio == true %}red{% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+		   						{{ factura.numfactura }}
+								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+			   			
+			   			{% endfor %}
+			   		</div>
 			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
 		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
 		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
@@ -138,6 +168,14 @@ $(document).ready(function(){
 		// Recarrega consulta afegint la dades del formulari
 		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
 	});
+	$('#form_numfactura').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
+	$('#form_numrebut').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
 	$('#form_estat').change(function () {
 		// Recarrega consulta afegint la dades del formulari
 		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
@@ -154,7 +192,10 @@ $(document).ready(function(){
 		// Recarrega consulta afegint la dades del formulari
 		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
 	});
-	
+	$('#form_compta').change(function () {
+		// Recarrega consulta afegint la dades del formulari
+		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+	});
 	//sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

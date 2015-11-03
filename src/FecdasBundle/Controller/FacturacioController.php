@@ -2092,7 +2092,7 @@ class FacturacioController extends BaseController {
 			$dataAux = $request->query->get('datapagament', '');
 			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();
 			$dadesPagament = $request->query->get('dadespagament', '');
-			$comentariPagament = $request->query->get('comentaripagament', 'Confirmació manual');
+			$comentariPagament = $request->query->get('comentaripagament', 'Confirmació del pagament manual');
 			$this->crearRebut($dataPagament, $tipusPagament, $comanda, $dadesPagament, $comentariPagament);
 			$em->flush();
 

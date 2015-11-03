@@ -64,11 +64,14 @@ class PDFController extends BaseController {
 				
 				if ($comanda->comandaConsolidada() != true) return new Response('encara no es pot imprimir la factura');
 				
-				$response = $this->facturatopdf($factura, $comanda);
+				if ($comanda->getClub() != null) {
 				
-				$this->logEntryAuth('PRINT FACTURA OK', $reqId);
-				
-				return $response;
+					$response = $this->facturatopdf($factura, $comanda);
+					
+					$this->logEntryAuth('PRINT FACTURA OK', $reqId);
+					
+					return $response;
+				}
 			}
 		}
 		/* Error */
@@ -82,7 +85,6 @@ class PDFController extends BaseController {
 		$club = $comanda->getClub();
 		
 		// Per veure-ho => acroread 86,3 %
-		
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
 		$pdf->init(array('author' => 'FECDAS', 'title' => $factura->getConcepte()));
@@ -146,7 +148,7 @@ class PDFController extends BaseController {
 		//$pdf->Rect($x_clubinfo, $y_clubinfo, $w_half, $h_clubinfo - 1, 'F', '', array(0, 0, 255) ); // blue
 		//$pdf->Rect($x_factuinfo, $y_factuinfo, $w_half - $offset_factuinfo, $h_factuinfo - 1, 'F', '', array(255, 255, 0) ); // groc
 		//$pdf->Rect($x_taula, $y_taula, $w_half*2, $h_taula - 1, 'F', '', array(0, 255, 255) ); // cyan
-		$pdf->Rect($x_rebut, $y_rebut + 1, $w_half*2, $h_rebut, 'F', '', array(240, 240, 240) ); // cyan
+		//$pdf->Rect($x_rebut, $y_rebut + 1, $w_half*2, $h_rebut, 'F', '', array(240, 240, 240) ); // cyan
 		
 		
 		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
@@ -374,15 +376,17 @@ class PDFController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		$reqId = 0;
-		if ($request->query->has('id')) {
-			$reqId = $request->query->get('id');
-			$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
-			if ($rebut != null) {
-				$response = $this->rebuttopdf($rebut);
-
-				$this->logEntryAuth('PRINT FACTURA OK', $reqId);
+		$reqId = $request->query->get('id', 0);
+		$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
+		if ($rebut != null || $rebut->getClub() == null) {
+			$pdf = $this->rebuttopdf($rebut);
+			
+			if ($pdf != null) {	
+				// Close and output PDF document
+				$response = new Response($pdf->Output("rebut_" . $rebut->getNumRebut() . "_" . $rebut->getClub()->getCodi() . ".pdf", "D"));
+				$response->headers->set('Content-Type', 'application/pdf');
 				
+				$this->logEntryAuth('PRINT REBUT OK', $reqId);
 				return $response;
 			}
 		}
@@ -392,9 +396,199 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	private function rebuttopdf($rebut) {
-		/* Printar albarà */
+	private function rebuttopdf($rebut, $pdf = null) {
+		/* Printar rebut */
 		$club = $rebut->getClub();
+		
+		// Per veure-ho => acroread 86,3 %
+		if ($pdf == null) {
+			// Nou rebut
+			$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+				
+			$pdf->init(array('author' => 'FECDAS', 'title' => $rebut->getConcepteRebutLlarg()));
+				
+			$pdf->setPrintFooter(false);
+			$pdf->setPrintHeader(false);
+			
+			// set image scale factor
+			//$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+			//$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+			$pdf->AddPage();
+			$pdf->setCellPaddings(0,0,0,0);
+			$pdf->SetFont('freesans');	
+			// set color for background
+			$pdf->SetFillColor(255, 255, 255); //Blanc
+			// set color for text
+			$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
+
+			$y_margin = 5; // 18 -> 10
+
+		} else {
+
+			$y_margin = 5 + $pdf->getY(); 
+		}
+		
+		$r_margin = 26;
+		$l_margin = 35; // 26 -> 32
+		
+		//$dim = $pdf->getPageDimensions();  //$dim['w'] = 595.276  $dim['h']
+		//$w_half = $dim['w']/2; // 300 aprox
+		
+		//$w_half = 105 - $l_margin;
+		
+		$y_corp = $y_margin;
+		$x_corp = 12;
+		$ry_corp = 45;
+		$rx_corp = 20;
+		
+		$h_fedelogo = 12;
+		$w_fedelogo = 10;
+		$h_genelogo = 6;
+		$w_genelogo = 16;
+		$h_esportlogo = 6;
+		$w_esportlogo = 13;
+		$w_fedeinfo = 80;
+		$h_fedeinfo = 20;
+		
+		$y_header_row1 = $y_margin; 				// 					Núm: xxx
+		$y_header_row2 = $y_margin + 8;				// Hem rebut: xxxx	NIF: xxxx
+		$x_header_row1 = $l_margin;
+		//$x_header_col2 = $pdf->getPageWidth() - ($r_margin - 20);
+		$x_header_col2 = $l_margin +115;
+		
+		$y_quantitat = $y_header_row2 + 11;
+		$x_quantitat = $l_margin;
+		$x_quantitat_offset = 28;
+		$y_quantitat_offset = -3;
+		$h_quantitat = 15;
+		
+		$y_concepte = $y_quantitat + 20;
+		$x_concepte = $l_margin;
+		$x_concepte_offset = 32;
+		$h_concepte = 35;
+		
+		$y_total = $y_concepte + $h_concepte; 		// Mitjançant
+		$x_total = $l_margin;
+		$y_total_offset_1 = 8; 						// Import
+		$x_total_col2 = $l_margin +85;
+		$y_total_offset_2 = 16; 					// Lloc i data
+		
+		//$pdf->Rect($x_rebut, $y_rebut + 1, $w_half*2, $h_rebut, 'F', '', array(240, 240, 240) ); // cyan
+		
+		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
+		$pdf->SetAutoPageBreak 	(false, 5);
+		$pdf->SetFontSize(7.8);
+		
+		/* LOGOS */		
+		// Start Transformation
+    	$pdf->StartTransform();
+    	// Rotate 90 degrees
+   		$pdf->Rotate(90, $l_margin + $rx_corp , $y_corp + $ry_corp);
+		
+		// file, x, y, w, h, format, link,  alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
+		$pdf->Image('images/fecdaslogopdf.gif', $x_corp, $y_corp, 
+						$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
+						'', false, false, array(''),
+						'LT', false, false);
+		$pdf->Image('images/logo-generalitat.jpg', $x_corp+$w_fedelogo+2, $y_corp, 
+						$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
+						'', false, false, array(''),
+						'CT', false, false);
+		$pdf->Image('images/esport-logo.jpg', $x_corp+$w_fedelogo+4.5, $y_corp+$h_genelogo, 
+						$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
+						'', false, false, array(''),
+						'CB', false, false);
+		
+		/* FEDE INFO */
+		$txt = '<p align="left" style="padding:0;"><span style="font-size:12px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
+		$txt .= '<span style="font-size:6.5px;">Moll de la Vela, 1 (Zona Forum)<br/>';
+		$txt .= '08930 Sant Adrià de Besòs<br/>';
+		$txt .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
+		$txt .= 'Adreça electrònica: info@fecdas.cat<br/>';
+		$txt .= 'www.fecdas.cat<br/>';
+		$txt .= 'NIF: Q5855006B</span></p>';
+		$pdf->writeHTMLCell($w_fedeinfo, $h_fedeinfo, $x_corp+$w_fedelogo+$w_genelogo+10, $y_corp, $txt, '', 1, false, true, 'L', false);
+		
+		
+   		// Stop Transformation
+   		$pdf->StopTransform();
+		
+		$pdf->setFontSpacing(0.5);
+    	//$pdf->setFontStretching(105);
+		
+		/* REBUT INFO */	
+		$txt = '<p align="left" style="padding:0;">Rebut núm.&nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:12px;">'.$rebut->getNumRebut().'</span></p>';
+		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row1, $txt, '', 1, false, true, 'L', false);
+		
+		$txt = '<p align="left" style="padding:0;">Hem rebut de:&nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getNom().'</span></p>';
+		$pdf->writeHTMLCell(0, 0, $x_header_row1, $y_header_row2, $txt, '', 1, false, true, 'L', false);
+		
+		$txt = '<p align="left" style="padding:0;">NIF:&nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getCif().'</span></p>';
+		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row2, $txt, '', 1, false, true, 'L', false);
+		
+		/* REBUT QUANTITAT */	
+		$f = new \NumberFormatter("ca_ES.utf8", \NumberFormatter::SPELLOUT);
+    	$importFloor = floor($rebut->getImport());
+    	$importDec = floor(($rebut->getImport() - $importFloor)*100);
+    	$importTxt = $f->format($importFloor);// . ($importDec < 0.001)?'':' amb '. $f->format($importDec*100);
+    	$importTxt .= ($importDec == 0)?'':' amb '. $f->format($importDec);
+		
+		
+		$txt = '<p align="left">la quantitat de</p>';
+		$pdf->writeHTMLCell(0, 0, $x_quantitat, $y_quantitat, $txt, '', 1, false, true, 'L', false);
+		$txt = '<div style="border: 1px solid #003366;background-color:red"></div>';
+		$pdf->writeHTMLCell(0, $h_quantitat, $x_quantitat + $x_quantitat_offset, $y_quantitat + $y_quantitat_offset, $txt, '', 1, false, true, 'L', false);
+		$txt .= '<p style="color:#000000; font-size:14px; background-color:green">'.$importTxt.'</p>';
+		$pdf->writeHTMLCell(100, 0, $x_quantitat + $x_quantitat_offset + 10, $y_quantitat + $y_quantitat_offset, $txt, '', 1, false, true, 'L', false);
+		
+		/* REBUT CONCEPTE */	
+		$concepte = '';
+		$comandes = $rebut->getComandes(); 
+		if (count($comandes) == 0 || $rebut->esAnulacio()) {  // Rebut no associat a cap comanda
+			if ($rebut->esAnulacio()) $concepte = 'Anul·lació rebut, import acumulat al saldo del club';
+			else $concepte = 'Ingrés acumulat al saldo del club';
+		} else {
+			if ($rebut->getNumFactures() == 1) $concepte = 'Liquidació FACTURA: ';
+			else $concepte = 'Liquidació FACTURES: ';
+			$concepte .= $rebut->getLlistaNumsFactures();
+
+			if ($rebut->getRomanent() > 0) {
+				$concepte .= '<br/>Amb un romanent acumulat a favor del club de ';
+				$concepte .= '<b>'.number_format($rebut->getRomanent(), 2, ',', '.').' €</b>';
+			}
+		}
+	
+		if ($rebut->getComentari()!=null && $rebut->getComentari() != '') 
+				$concepte .= '<br/><i>'.$rebut->getComentari().'</i>';
+		
+		
+		$txt = '<p align="left" style="padding:0;">en concepte de:</p>';
+		$pdf->writeHTMLCell(0, 0, $x_concepte, $y_concepte, $txt, '', 1, false, true, 'L', false);
+		$txt = '<div style="border: 1px solid #003366;">';
+		$txt .= '<p style="color:#000000; font-size:14px; ">'.$concepte.'</p></div>';
+		$pdf->writeHTMLCell(0, $h_concepte, $x_concepte + $x_concepte_offset, $y_concepte, $txt, '', 1, false, true, 'L', false);
+		
+		
+		/* REBUT FOOTER */	
+		$txt = '<p align="left" style="padding:0;">Mitjançant:&nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:14px;">'.BaseController::getTextTipusPagament($rebut->getTipuspagament()) .'</span></p>';
+		$pdf->writeHTMLCell(0, 0, $x_total, $y_total, $txt, '', 1, false, true, 'L', false);
+				
+		$txt = '<p align="left" style="padding:0;">Són:&nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:14px;">'.number_format($rebut->getImport(), 2, ',', '.');
+		$txt .= '</span>&nbsp;&nbsp;&nbsp; Euros</p>';
+		$pdf->writeHTMLCell(0, 0, $x_total + $x_total_col2, $y_total + $y_total_offset_1, $txt, '', 1, false, true, 'L', false);
+		
+		$txt = '<p align="left" style="padding:0;">Sant Adrià del Besòs, &nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:14px;">'.$rebut->getDatapagament()->format('d/m/Y') .'</span></p>';
+		$pdf->writeHTMLCell(0, 0, $x_total, $y_total+$y_total_offset_2, $txt, '', 1, false, true, 'L', false);
+		
+		
+		
+		/*
 		
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -411,11 +605,14 @@ class PDFController extends BaseController {
 		$y_ini = $pdf->getY();
 		$x_ini = $pdf->getX();
 	
-		/*$pdf->SetFont('dejavusans', '', 16, '', true);
-		$text = '<b>REBUT #'. $rebut->getNumRebut() .'#</b>';
-		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
-		$pdf->Ln(5);
-	*/
+		//$pdf->SetFont('dejavusans', '', 16, '', true);
+		//$text = '<b>REBUT #'. $rebut->getNumRebut() .'#</b>';
+		//$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
+		//$pdf->Ln(5);
+	
+		
+		
+		
 		
 		$pdf->setX($x_ini - 1.5);
 		
@@ -617,13 +814,12 @@ class PDFController extends BaseController {
 		}
 	
 	
+		*/
+		  
 		// reset pointer to the last page
 		$pdf->lastPage();
-			
-		// Close and output PDF document
-		$response = new Response($pdf->Output("rebut_" . $rebut->getNumRebut() . "_" . $club->getCodi() . ".pdf", "D"));
-		$response->headers->set('Content-Type', 'application/pdf');
-		return $response;
+		
+		return $pdf;
 	
 	}
 	

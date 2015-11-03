@@ -135,6 +135,7 @@ class PDFController extends BaseController {
 		$y_taula = $y_margin + 64;
 		$x_taula = $l_margin;
 		$h_taula = 145;
+		$y_taula2 = $y_taula + 80;
 		$y_rebut = $y_factuinfo + $h_factuinfo + $h_taula;
 		$x_rebut = $l_margin;
 		$h_rebut = 55;
@@ -142,6 +143,8 @@ class PDFController extends BaseController {
 		$y = $y_clubinfo; //$pdf->getY();
 		$x = $x_clubinfo; //$pdf->getX();
 
+		
+		$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes 
 		
 		//$pdf->Rect($x_logos, $y_logos, $w_half, $h_logos - 1, 'F', '', array(255, 0, 0) );  // red 				
 		//$pdf->Rect($x_fedeinfo, $y_fedeinfo, $w_half+5, $h_fedeinfo - 1, 'F', '', array(0, 255, 0) ); // green
@@ -153,34 +156,38 @@ class PDFController extends BaseController {
 		
 		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
 		$pdf->SetAutoPageBreak 	(false, 15);
-
-		/* LOGOS */		
-		// file, x, y, w, h, format, link alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
-		$pdf->Image('images/fecdaslogopdf.gif', $x_logos, $y_logos, 
+		$pdf->SetFontSize(12);
+		
+		if($showTemplate == true) {
+			/* LOGOS */		
+			// file, x, y, w, h, format, link alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
+			$pdf->Image('images/fecdaslogopdf.gif', $x_logos, $y_logos, 
 						$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
 						'', false, false, array(''),
 						'LT', false, false);
-		$pdf->Image('images/logo-generalitat.jpg', $x_logos+$w_fedelogo+2, $y_logos, 
+			$pdf->Image('images/logo-generalitat.jpg', $x_logos+$w_fedelogo+2, $y_logos, 
 						$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
 						'', false, false, array(''),
 						'CT', false, false);
-		$pdf->Image('images/esport-logo.jpg', $x_logos+$w_fedelogo+4.5, $y_logos+$h_genelogo, 
+			$pdf->Image('images/esport-logo.jpg', $x_logos+$w_fedelogo+4.5, $y_logos+$h_genelogo, 
 						$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
 						'', false, false, array(''),
 						'CB', false, false);
-					
-		/* FEDE INFO */
-		$pdf->SetFontSize(12);
-		$tbl = '<p align="right" style="padding:0;"><span style="font-size:16px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
-		$tbl .= '<span style="font-size:11px;">Moll de la Vela, 1 (Zona Forum)<br/>';
-		$tbl .= '08930 Sant Adrià de Besòs<br/>';
-		$tbl .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
-		$tbl .= 'Adreça electrònica: info@fecdas.cat<br/>';
-		$tbl .= 'www.fecdas.cat<br/>';
-		$tbl .= 'NIF: Q5855006B</span></p>';
-		$pdf->writeHTMLCell($w_half+5, $h_fedeinfo, $x_fedeinfo, $y_fedeinfo, $tbl, '', 1, false, true, 'R', false);
+				
+			/* FEDE INFO */
+			
+			$tbl = '<p align="right" style="padding:0;"><span style="font-size:16px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
+			$tbl .= '<span style="font-size:11px;">Moll de la Vela, 1 (Zona Forum)<br/>';
+			$tbl .= '08930 Sant Adrià de Besòs<br/>';
+			$tbl .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
+			$tbl .= 'Adreça electrònica: info@fecdas.cat<br/>';
+			$tbl .= 'www.fecdas.cat<br/>';
+			$tbl .= 'NIF: Q5855006B</span></p>';
+			$pdf->writeHTMLCell($w_half+5, $h_fedeinfo, $x_fedeinfo, $y_fedeinfo, $tbl, '', 1, false, true, 'R', false);
+		}	
 		
 		/* CLUB INFO */	
+		$pdf->SetTextColor(0, 0, 0); // Negre	
 		$pdf->SetFontSize(16);
 		$text = '<br/><b>FACTURA '.($factura->esAnulacio()?'ANUL·LACIÓ':'').'</b>';
 		
@@ -197,61 +204,65 @@ class PDFController extends BaseController {
 		
 		/* FACTU INFO */	
 		$pdf->SetFontSize(8);
-		$tbl = '<p align="left" style="padding:0;">Factura número:</p><br/>';
-		$tbl .= '<p align="left" style="padding:0;">Data:</p>';
-		$tbl .= '<p align="left" style="padding:0;">NIF:</p>';
-		$pdf->writeHTMLCell($w_half - $offset_factuinfo, 0, $x_factuinfo, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
-
+		if ($showTemplate == true) {
+			$tbl = '<p align="left" style="padding:0; color: #003366;">Factura número:</p><br/>';
+			$tbl .= '<p align="left" style="padding:0; color: #003366;">Data:<br/>';
+			$tbl .= 'NIF:</p>';
+			$pdf->writeHTMLCell($w_half - $offset_factuinfo, 0, $x_factuinfo, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
+		}
+		
 		$tbl  = '<p align="right" style="padding:0;"><b>' . $factura->getNumfactura(). '</p><br/>';
-		$tbl .= '<p align="right" style="padding:0;">' . $factura->getDatafactura()->format('d/m/Y') . '</p>';
-		$tbl .= '<p align="right" style="padding:0;">' . $club->getCif() . '</p>';
+		$tbl .= '<p align="right" style="padding:0;">' . $factura->getDatafactura()->format('d/m/Y') . '<br/>';
+		$tbl .= $club->getCif() . '</p>';
 		$pdf->writeHTMLCell($w_half - $offset_factuinfo-8, 0, $x_factuinfo+8, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
 		
 		/* TAULA DETALL */
 		$pdf->SetFontSize(8);
+		$facturaSenseIVA = true;
 		if ($factura->getDetalls() != null) {
-			$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-					<tr>
-					<td width="96" align="center">REFERÈNCIA</td>
-					<td width="240" align="center">CONCEPTE</td>
-					<td width="58" align="center">QUANT.</td>
-					<td width="81" align="center">PREU</td>
-					<td width="86" align="center">IMPORT</td>
-					</tr>';
 			
-			$facturaSenseIVA = true;
+			if ($showTemplate == true) {	
+				$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+						<tr>
+						<td width="96" align="center" style="border: 1px solid #003366; color:#003366;">REFERÈNCIA</td>
+						<td width="240" align="center" style="border: 1px solid #003366; color:#003366;">CONCEPTE</td>
+						<td width="58" align="center" style="border: 1px solid #003366; color:#003366;">QUANT.</td>
+						<td width="81" align="center" style="border: 1px solid #003366; color:#003366;">PREU</td>
+						<td width="86" align="center" style="border: 1px solid #003366; color:#003366;">IMPORT</td>
+						</tr>';
+				
+				// En blanc
+				$tbl .= '<tr>';
+				$tbl .= '<td style="height: 262px; border: 1px solid #003366;" align="center">&nbsp;</td>';
+				$tbl .= '<td style="border: 1px solid #003366;" align="left">&nbsp;</td>';
+				$tbl .= '<td style="border: 1px solid #003366;" align="center">&nbsp;</td>';
+				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
+				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
+				$tbl .= '</tr>';
 			
-			// En blanc
-			$tbl .= '<tr>';
-			$tbl .= '<td style="height: 262px; border-right: 1px solid #003366;" align="center">&nbsp;</td>';
-			$tbl .= '<td style="border-right: 1px solid #003366;" align="left">&nbsp;</td>';
-			$tbl .= '<td style="border-right: 1px solid #003366;" align="center">&nbsp;</td>';
-			$tbl .= '<td style="border-right: 1px solid #003366;" align="right">&nbsp;</td>';
-			$tbl .= '<td style="border-right: 1px solid #003366;" align="right">&nbsp;</td>';
-			$tbl .= '</tr>';
-		
-			$tbl .= '</table>';
-			
-			$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 2, false, true, 'L', false);
-			
-			$tbl = '<table border="0" cellpadding="2" cellspacing="0" style="border-color: #003366; border-collapse: collapse;">
-					<tr>
-					<td width="96" align="left" style="height: 41px;border-left: 1px solid #003366; border-right: 1px solid #003366; border-bottom: 1px solid #003366;">&nbsp;&nbsp;&nbsp;TOTAL</td>
-					<!-- 240 entre els dos -->
-					<td width="95" align="center" style="border-right: 1px solid #003366; border-bottom: 1px solid #003366;">DTE</td>
-					<td width="145" align="center" style="border-right: 1px solid #003366; border-bottom: 1px solid #003366;">BASE IMP.</td>
-					<!-- 58 + 81 + 86 = 225 entre els dos -->
-					<td width="90" align="center" style="border-right: 1px solid #003366; border-bottom: 1px solid #003366;">IVA</td>
-					<td width="135" align="center" style="border-right: 1px solid #003366; border-bottom: 1px solid #003366;">TOTAL FACTURA</td>
-					</tr>';
-			$tbl .= '<tr><td colspan="4" align="left" style="height: 41px; border-left: 1px solid #003366; border-right: 1px solid #003366; border-bottom: 1px solid #003366;">&nbsp;&nbsp;&nbsp;Altres càrrecs</td>';
-			$tbl .= '<td align="center" style="border-right: 1px solid #003366; border-bottom: 1px solid #003366;">Import</td></tr>';
-			$tbl .= '<tr style="border-bottom: none;"><td colspan="4" style="height: 41px; ">&nbsp;</td>';
-			$tbl .= '<td align="center" style="border: 1px solid #003366;">TOTAL A PAGAR<span style="font-weight:bold;font-size:12px;">&nbsp;</span></td></tr>';
-			$tbl .= '</table>';
-			
-			$y_taula2 = $pdf->getY();
-			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 1, false, true, 'L', false);
+				$tbl .= '</table>';
+				
+				$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 2, false, true, 'L', false);
+				
+				$tbl = '<table border="0" cellpadding="2" cellspacing="0" style="border-color: #003366; border-collapse: collapse; ">
+						<tr>
+						<td width="96" align="left" style="height: 41px;border: 1px solid #003366; color:#003366;">&nbsp;&nbsp;&nbsp;TOTAL</td>
+						<!-- 240 entre els dos -->
+						<td width="95" align="center" style="border: 1px solid #003366; color:#003366;">DTE</td>
+						<td width="145" align="center" style="border: 1px solid #003366; color:#003366;">BASE IMP.</td>
+						<!-- 58 + 81 + 86 = 225 entre els dos -->
+						<td width="90" align="center" style="border: 1px solid #003366; color:#003366;">IVA</td>
+						<td width="135" align="center" style="border: 1px solid #003366; color:#003366;">TOTAL FACTURA</td>
+						</tr>';
+				$tbl .= '<tr><td colspan="4" align="left" style="height: 41px; border: 1px solid #003366; color:#003366;">&nbsp;&nbsp;&nbsp;Altres càrrecs</td>';
+				$tbl .= '<td align="center" style="border: 1px solid #003366; color:#003366;">Import</td></tr>';
+				$tbl .= '<tr style="border-bottom: none;"><td colspan="4" style="height: 41px;">&nbsp;</td>';
+				$tbl .= '<td align="center" style="border: 1px solid #003366; color:#003366;">TOTAL A PAGAR<span style="font-weight:bold;font-size:12px;">&nbsp;</span></td></tr>';
+				$tbl .= '</table>';
+				
+				//$y_taula2 = $pdf->getY();
+				$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 1, false, true, 'L', false);
+			}
 			
 			// Sistema nou del 2015.
 			//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
@@ -287,7 +298,7 @@ class PDFController extends BaseController {
 			$pdf->SetFontSize(12);
 			// PEU 1 TOTAL PARCIAL
 			$pdf->setY($y_taula2+3);
-			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
+			$tbl = '<table border="0" cellpadding="6" cellspacing="0"><tr>
 					<td width="96" align="center">'.number_format($factura->getImport(), 2, ',', '.').' €</td>
 					<td width="95" align="center">--</td>
 					<td width="145" align="center">&nbsp;</td>
@@ -300,7 +311,7 @@ class PDFController extends BaseController {
 			$pdf->SetFontSize(16);
 			// PEU 2 - TOTAL FINAL
 			$pdf->setY($y_taula2+26);
-			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
+			$tbl = '<table border="0" cellpadding="6" cellspacing="0"><tr>
 					<td width="96">&nbsp;</td><td width="95">&nbsp;</td><td width="145">&nbsp;</td><td width="90">&nbsp;</td>
 					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
 					</tr></table>';	
@@ -312,52 +323,39 @@ class PDFController extends BaseController {
 			
 			$pdf->SetFontSize(16);	
 				
-			$facturaSenseIVA = $comanda->esParte();
-			
 			$tbl = '<table border="1" cellpadding="50" cellspacing="0" style="color:#555555;">';
-			$tbl .= '<tr><td><p style="line-height: 2;"><b>Factura corresponent a la llista de llicències ' . $comanda->getNumComanda();
+			$tbl .= '<tr><td><p style="line-height: 2; color:#000000;"><b>Factura corresponent a la llista de llicències ' . $comanda->getNumComanda();
 			$tbl .= ' amb un import de '.number_format($factura->getImport(), 2, ',', '.') .  ' €</b></p></td></tr>';
 			$tbl .= '</table>';
 		
 			$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 1, false, true, 'L', false);
 		}
 		
-		
-		if ($facturaSenseIVA == 0) {
+		if ($facturaSenseIVA == true) {
 			// set color for text
-			$pdf->SetTextColor(0, 76, 153); // Blau més clar
-			$pdf->SetFont('dejavusans', '', 8, '', true);
+			$pdf->SetTextColor(0, 51, 102); // Blau
+			$pdf->SetFont('dejavusans', '', 7.5, '', true);
 			$text = '<p>Factura exempta d\'I.V.A. segons la llei 49/2002</p>';
-			$pdf->writeHTML($text, true, false, false, false, '');
-			//$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
+			$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+26, $text, '', 1, false, true, 'L', false);
 		}
 		
-		$pdf->SetTextColor(0, 51, 102); // Blau
+		$pdf->SetTextColor(0, 0, 0); // Negre
 		$pdf->SetFontSize(8);
 
 		if ($factura->esAnulacio()) {
 			$text = 'ANUL·LACIÓ FACTURA ORIGINAL '.$comanda->getFactura()->getNumFactura().'';
 		} else {
 			$text = 'FACTURA CORRESPONENT A LA COMANDA '.$comanda->getNumComanda().'. ';
-
-			if ($comanda->comandaPagada() == true) {
-				$text .= 'PAGADA';
-				
-				$text .= ($comanda->getNumRebuts() > 1?', REBUTS ':', REBUT ');
-			
-				$text .= $comanda->getLlistaNumsRebuts();
-				
-			} else {
-				$text .= 'PENDENT DE PAGAMENT';
-			}	
-			$text .= '';
 		}
 		
-		$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+28, $text, '', 1, false, true, 'L', false);
+		$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+31, $text, '', 1, false, true, 'L', false);
 
+		
 		/* ESPAI REBUT */	
-		$pdf->writeHTMLCell($w_half*2, $h_rebut, $x_rebut, $y_rebut, '', '', 1, false, true, 'L', false);
-
+		if ($comanda->comandaPagada() == true) {
+			$pdf = $this->rebuttopdf($comanda->getRebut(), $pdf);
+			//$pdf->writeHTMLCell($w_half*2, $h_rebut, $x_rebut, $y_rebut, '', '', 1, false, true, 'L', false);
+		}
 
 		// reset pointer to the last page
 		$pdf->lastPage();
@@ -402,8 +400,11 @@ class PDFController extends BaseController {
 		
 		// Per veure-ho => acroread 86,3 %
 		if ($pdf == null) {
-			// Nou rebut
-			$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+			// Nou rebut format 1/3 de A4 =>  array(  210,  297);
+			// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+			// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
+			$format = array(210, 99);
+			$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
 				
 			$pdf->init(array('author' => 'FECDAS', 'title' => $rebut->getConcepteRebutLlarg()));
 				
@@ -414,18 +415,12 @@ class PDFController extends BaseController {
 			//$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 			//$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 			$pdf->AddPage();
-			$pdf->setCellPaddings(0,0,0,0);
-			$pdf->SetFont('freesans');	
-			// set color for background
-			$pdf->SetFillColor(255, 255, 255); //Blanc
-			// set color for text
-			$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
-
+			
 			$y_margin = 5; // 18 -> 10
 
 		} else {
 
-			$y_margin = 5 + $pdf->getY(); 
+			$y_margin = 15 + $pdf->getY(); 
 		}
 		
 		$r_margin = 26;
@@ -458,74 +453,91 @@ class PDFController extends BaseController {
 		
 		$y_quantitat = $y_header_row2 + 11;
 		$x_quantitat = $l_margin;
-		$x_quantitat_offset = 28;
+		$x_quantitat_offset = 26;
 		$y_quantitat_offset = -3;
-		$h_quantitat = 15;
+		$h_quantitat = 13;
+		$w_quantitat = 122;
 		
-		$y_concepte = $y_quantitat + 20;
+		$y_concepte = $y_quantitat + 16;
 		$x_concepte = $l_margin;
-		$x_concepte_offset = 32;
-		$h_concepte = 35;
+		$x_concepte_offset = 29;
+		$y_concepte_offset = -3;
+		$h_concepte = 22;
+		$w_concepte = 119;
 		
-		$y_total = $y_concepte + $h_concepte; 		// Mitjançant
+		$y_total = $y_concepte + $h_concepte + 3; 		// Mitjançant
 		$x_total = $l_margin;
-		$y_total_offset_1 = 8; 						// Import
-		$x_total_col2 = $l_margin +85;
-		$y_total_offset_2 = 16; 					// Lloc i data
+		$y_total_offset_1 = 6; 						// Import
+		$x_total_col2 = $l_margin +60;
+		$y_total_offset_2 = 10; 					// Lloc i data
 		
 		//$pdf->Rect($x_rebut, $y_rebut + 1, $w_half*2, $h_rebut, 'F', '', array(240, 240, 240) ); // cyan
+		
+		$pdf->setCellPaddings(0,0,0,0);
+		$pdf->SetFont('freesans');	
+		// set color for background
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		// set color for text
+		$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
 		
 		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
 		$pdf->SetAutoPageBreak 	(false, 5);
 		$pdf->SetFontSize(7.8);
 		
-		/* LOGOS */		
-		// Start Transformation
-    	$pdf->StartTransform();
-    	// Rotate 90 degrees
-   		$pdf->Rotate(90, $l_margin + $rx_corp , $y_corp + $ry_corp);
+		$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes 
 		
-		// file, x, y, w, h, format, link,  alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
-		$pdf->Image('images/fecdaslogopdf.gif', $x_corp, $y_corp, 
-						$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
-						'', false, false, array(''),
-						'LT', false, false);
-		$pdf->Image('images/logo-generalitat.jpg', $x_corp+$w_fedelogo+2, $y_corp, 
-						$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
-						'', false, false, array(''),
-						'CT', false, false);
-		$pdf->Image('images/esport-logo.jpg', $x_corp+$w_fedelogo+4.5, $y_corp+$h_genelogo, 
-						$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
-						'', false, false, array(''),
-						'CB', false, false);
+		if ($showTemplate == true) {
+			/* LOGOS */		
+			// Start Transformation
+	    	$pdf->StartTransform();
+	    	// Rotate 90 degrees
+	   		$pdf->Rotate(90, $l_margin + $rx_corp , $y_corp + $ry_corp);
+			
+			// file, x, y, w, h, format, link,  alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
+			$pdf->Image('images/fecdaslogopdf.gif', $x_corp, $y_corp, 
+							$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
+							'', false, false, array(''),
+							'LT', false, false);
+			$pdf->Image('images/logo-generalitat.jpg', $x_corp+$w_fedelogo+2, $y_corp, 
+							$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
+							'', false, false, array(''),
+							'CT', false, false);
+			$pdf->Image('images/esport-logo.jpg', $x_corp+$w_fedelogo+4.5, $y_corp+$h_genelogo, 
+							$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
+							'', false, false, array(''),
+							'CB', false, false);
+			
+			/* FEDE INFO */
+			$txt = '<p align="left" style="padding:0;line-height: 1"><span style="font-size:12px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
+			$txt .= '<span style="font-size:6.5px;">Moll de la Vela, 1 (Zona Forum)<br/>';
+			$txt .= '08930 Sant Adrià de Besòs<br/>';
+			$txt .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
+			$txt .= 'Adreça electrònica: info@fecdas.cat<br/>';
+			$txt .= 'www.fecdas.cat<br/>';
+			$txt .= 'NIF: Q5855006B</span></p>';
+			$pdf->writeHTMLCell($w_fedeinfo, $h_fedeinfo, $x_corp+$w_fedelogo+$w_genelogo+10, $y_corp, $txt, '', 1, false, true, 'L', false);
+			
+			
+	   		// Stop Transformation
+	   		$pdf->StopTransform();
+	   	}
 		
-		/* FEDE INFO */
-		$txt = '<p align="left" style="padding:0;"><span style="font-size:12px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
-		$txt .= '<span style="font-size:6.5px;">Moll de la Vela, 1 (Zona Forum)<br/>';
-		$txt .= '08930 Sant Adrià de Besòs<br/>';
-		$txt .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
-		$txt .= 'Adreça electrònica: info@fecdas.cat<br/>';
-		$txt .= 'www.fecdas.cat<br/>';
-		$txt .= 'NIF: Q5855006B</span></p>';
-		$pdf->writeHTMLCell($w_fedeinfo, $h_fedeinfo, $x_corp+$w_fedelogo+$w_genelogo+10, $y_corp, $txt, '', 1, false, true, 'L', false);
-		
-		
-   		// Stop Transformation
-   		$pdf->StopTransform();
-		
-		$pdf->setFontSpacing(0.5);
+		//$pdf->setFontSpacing(0.5);
     	//$pdf->setFontStretching(105);
 		
 		/* REBUT INFO */	
-		$txt = '<p align="left" style="padding:0;">Rebut núm.&nbsp;&nbsp;&nbsp;';
+		$hideText = '';
+		if ($showTemplate != true) $hideText = 'color:white;'; 
+		
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">Rebut núm.&nbsp;&nbsp;&nbsp;';
 		$txt .= '<span style="color:#000000; font-size:12px;">'.$rebut->getNumRebut().'</span></p>';
 		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row1, $txt, '', 1, false, true, 'L', false);
 		
-		$txt = '<p align="left" style="padding:0;">Hem rebut de:&nbsp;&nbsp;&nbsp;';
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">Hem rebut de:&nbsp;&nbsp;&nbsp;';
 		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getNom().'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_header_row1, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
-		$txt = '<p align="left" style="padding:0;">NIF:&nbsp;&nbsp;&nbsp;';
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">NIF:&nbsp;&nbsp;&nbsp;';
 		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getCif().'</span></p>';
 		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
@@ -535,14 +547,16 @@ class PDFController extends BaseController {
     	$importDec = floor(($rebut->getImport() - $importFloor)*100);
     	$importTxt = $f->format($importFloor);// . ($importDec < 0.001)?'':' amb '. $f->format($importDec*100);
     	$importTxt .= ($importDec == 0)?'':' amb '. $f->format($importDec);
+		$importTxt .= ' Euros';
 		
-		
-		$txt = '<p align="left">la quantitat de</p>';
-		$pdf->writeHTMLCell(0, 0, $x_quantitat, $y_quantitat, $txt, '', 1, false, true, 'L', false);
-		$txt = '<div style="border: 1px solid #003366;background-color:red"></div>';
-		$pdf->writeHTMLCell(0, $h_quantitat, $x_quantitat + $x_quantitat_offset, $y_quantitat + $y_quantitat_offset, $txt, '', 1, false, true, 'L', false);
-		$txt .= '<p style="color:#000000; font-size:14px; background-color:green">'.$importTxt.'</p>';
-		$pdf->writeHTMLCell(100, 0, $x_quantitat + $x_quantitat_offset + 10, $y_quantitat + $y_quantitat_offset, $txt, '', 1, false, true, 'L', false);
+		if ($showTemplate == true) {
+			$txt = '<p align="left">la quantitat de</p>';
+			$pdf->writeHTMLCell(0, 0, $x_quantitat, $y_quantitat, $txt, '', 1, false, true, 'L', false);
+			$pdf->Rect($x_quantitat + $x_quantitat_offset, $y_quantitat + $y_quantitat_offset, $w_quantitat, $h_quantitat, '', 
+					array('LTRB' => array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 51, 102))), '' );
+		}
+		$txt = '<p style="color:#000000; font-size:14px; ">'.ucfirst($importTxt).'</p>';
+		$pdf->writeHTMLCell($w_quantitat-10, 0, $x_quantitat + $x_quantitat_offset + 5, $y_quantitat + $y_quantitat_offset + 2, $txt, '', 1, false, true, 'L', false);
 		
 		/* REBUT CONCEPTE */	
 		$concepte = '';
@@ -564,26 +578,37 @@ class PDFController extends BaseController {
 		if ($rebut->getComentari()!=null && $rebut->getComentari() != '') 
 				$concepte .= '<br/><i>'.$rebut->getComentari().'</i>';
 		
-		
-		$txt = '<p align="left" style="padding:0;">en concepte de:</p>';
-		$pdf->writeHTMLCell(0, 0, $x_concepte, $y_concepte, $txt, '', 1, false, true, 'L', false);
-		$txt = '<div style="border: 1px solid #003366;">';
-		$txt .= '<p style="color:#000000; font-size:14px; ">'.$concepte.'</p></div>';
-		$pdf->writeHTMLCell(0, $h_concepte, $x_concepte + $x_concepte_offset, $y_concepte, $txt, '', 1, false, true, 'L', false);
+		if ($showTemplate == true) {
+			$txt = '<p align="left" style="padding:0;">en concepte de:</p>';
+			$pdf->writeHTMLCell(0, 0, $x_concepte, $y_concepte, $txt, '', 1, false, true, 'L', false);
+			$pdf->Rect($x_concepte + $x_concepte_offset, $y_concepte + $y_concepte_offset, $w_concepte , $h_concepte , '', 
+					array('LTRB' => array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 51, 102))), '' );
+		}
+		$txt = '<p style="color:#000000; font-size:14px; ">'.$concepte.'</p>';
+		$pdf->writeHTMLCell($w_concepte - 10, 0, $x_concepte + $x_concepte_offset + 5, $y_concepte + $y_concepte_offset + 2, $txt, '', 1, false, true, 'L', false);
 		
 		
 		/* REBUT FOOTER */	
-		$txt = '<p align="left" style="padding:0;">Mitjançant:&nbsp;&nbsp;&nbsp;';
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">Mitjançant:&nbsp;&nbsp;&nbsp;';
 		$txt .= '<span style="color:#000000; font-size:14px;">'.BaseController::getTextTipusPagament($rebut->getTipuspagament()) .'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_total, $y_total, $txt, '', 1, false, true, 'L', false);
 				
-		$txt = '<p align="left" style="padding:0;">Són:&nbsp;&nbsp;&nbsp;';
-		$txt .= '<span style="color:#000000; font-size:14px;">'.number_format($rebut->getImport(), 2, ',', '.');
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">Són:</p>';
+		$pdf->writeHTMLCell(10, 0, $x_total + $x_total_col2, $y_total + $y_total_offset_1, $txt, '', 1, false, true, 'L', false);
+		$txt = '<p align="right" style="padding:0;'.$hideText.'"><span style="color:#000000; font-size:14px;">'.number_format($rebut->getImport(), 2, ',', '.');
 		$txt .= '</span>&nbsp;&nbsp;&nbsp; Euros</p>';
-		$pdf->writeHTMLCell(0, 0, $x_total + $x_total_col2, $y_total + $y_total_offset_1, $txt, '', 1, false, true, 'L', false);
+		$pdf->writeHTMLCell(0, 0, $x_total + $x_total_col2+11, $y_total + $y_total_offset_1-2, $txt, '', 1, false, true, 'L', false);
 		
-		$txt = '<p align="left" style="padding:0;">Sant Adrià del Besòs, &nbsp;&nbsp;&nbsp;';
-		$txt .= '<span style="color:#000000; font-size:14px;">'.$rebut->getDatapagament()->format('d/m/Y') .'</span></p>';
+		$oldLocale = setlocale(LC_TIME, 'ca_ES.utf8');
+		$mesData = $rebut->getDatapagament()->format('m');
+		$litDe = 'de ';
+		if ($mesData == 4 || $mesData == 8 || $mesData == 10) $litDe = 'd\'';
+		
+		$dateFormated = utf8_encode( strftime('%A %e '.$litDe.'%B de %Y', $rebut->getDatapagament()->format('U') ) );
+		setlocale(LC_TIME, $oldLocale);
+		
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">Sant Adrià del Besòs, &nbsp;&nbsp;&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:14px;">'. $dateFormated .'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_total, $y_total+$y_total_offset_2, $txt, '', 1, false, true, 'L', false);
 		
 		

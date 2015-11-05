@@ -1,0 +1,176 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/consultaadmin.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block javascriptshead %}
+ 	{{ parent() }}
+
+  	{{ form_javascript(form) }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Consulta dinàmica segons criteris{% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Consulta dinàmica segons criteris</h1>
+    </header>
+
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+    
+    <div id="list-forms">
+    	<form id="formconsultaadmin" action="{{ path('FecdasBundle_consultaadmin') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    		<div class="row">
+				<div class="col-md-4">
+				  	<div class="form-group">
+				    	<label>Filtre per club</label>
+				    	{{ form_label(form.clubs, 'Escollir clubs', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+				<div class="col-md-3">
+				    <div class="form-group">
+				    	{{ form_label(form.tipusparte, 'Tipus de llicències', { 'label_attr': {'class': ''} }) }}
+						{{ form_widget(form.tipusparte, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+				<div class="col-md-5">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+						    	{{ form_label(form.datainici, 'Criteri temporal', { 'label_attr': {'class': ''} }) }}
+								<div id="formconsulta-datainici" class="input-group">
+					  				<span class="input-group-addon">Des de</span>
+									{{ form_widget(form.datainici, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+									<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>&nbsp;</label>
+								<div id="formconsulta-datafinal" class="input-group">
+					  				<span class="input-group-addon">Fins</span>
+									{{ form_widget(form.datafinal, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+									<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+						    <div class="checkbox-inline">
+								<label>
+						      		{{ form_widget(form.intervals) }} per intervals
+						    	</label>
+							</div>
+						</div>
+						<div class="col-md-8">
+							<div class="form-group form-group-2-inline">
+								<div id="radios-intervals" class="input-group input-group-radio">
+									<div class="input-group-addon input-group-addon-2-inline">Interval dates</div>
+									<div class="radio-inline form-2-control-inline">
+								    	<label>
+								      		{{ form_widget(form.intervaldata[0]) }} Mensual
+								    	</label>
+									</div>
+									<div class="radio-inline form-2-control-inline">
+								    	<label>
+								      		{{ form_widget(form.intervaldata[1]) }} Anual
+								    	</label>
+									</div>
+								</div>
+							</div>
+						
+						
+						   
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.nombretotals) }} Acumular totals
+				    	</label>
+					</div>
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.sumatotals) }} Sumar imports
+				    	</label>
+					</div>
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.baixes) }} Només baixes
+				    	</label>
+					</div>
+					<div class="checkbox-inline">
+				    	<label>
+				      		{{ form_widget(form.noves) }} Noves llicències 
+				    	</label>
+					</div>
+				</div>
+			</div>
+	   	</form>
+    </div>
+    <!--  <div id="list-header" class="clearfix"> -->
+    <br/>
+    <div id="list-consultaadmin">
+    	<div class="table-header">	
+	   		<div id="list-header">
+		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(resultat, 'Id', 'l.id') }}
+		   			<span class="listheader-icon {% if resultat.isSorted('l.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span>
+		   		</div>
+		   	</div>
+		</div>
+		{% if resultat|length > 0 %}
+			<div class="table-noscroll">
+			   	<ol id="list-data">
+				{% for dada in resultat %}
+			   		<li class="data-detall"> 
+				   		<div class="data-detall-cell parterecents-id">{{ dada.id }}</div>
+			   		</li>
+			   	{% endfor %}
+				</ol>
+			</div>
+			{% if resultat.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(resultat, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	        <div class="sms-notice">Cap resultat amb aquests criteris</div>
+	    {% endif %}
+	 </div>
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+checkIntervals = function() {
+	var checked = $('#form_intervals').is(':checked');
+	if (checked) {
+		$('#radios-intervals').removeClass('disabled');				
+	} else {
+		$('#radios-intervals').addClass('disabled');	
+	};
+};
+
+$(document).ready(function(){
+
+	setMenuActive("menu-admconsulta");
+
+	$("#menu-adm").click();
+
+	checkIntervals();
+	
+	$("#form_intervals").click(function(){
+		checkIntervals();
+	});
+
+	$("select#form_clubs").select2({
+		placeholder: "Escollir clubs",
+		minimumInputLength: 2,
+		allowClear: true,
+	});
+	
+});
+
+</script>
+
+{% endblock %}
+

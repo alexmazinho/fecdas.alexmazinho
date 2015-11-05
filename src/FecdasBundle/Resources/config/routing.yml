@@ -66,6 +66,12 @@ FecdasBundle_recents:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_consultaadmin:
+    pattern:  /consultaadmin
+    defaults: { _controller: "FecdasBundle:Admin:consultaadmin" }
+    requirements:
+        _method:  GET|POST
+
 FecdasBundle_clubs:
     pattern:  /clubs
     defaults: { _controller: "FecdasBundle:Admin:clubs" }

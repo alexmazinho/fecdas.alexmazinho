@@ -218,11 +218,6 @@ class AdminController extends BaseController {
 				10 /*limit per page*/
 		);
 		
-		error_log($strQuery);
-		error_log($inianual . ' '.$ini365);
-		error_log($currentNumrebut . ' '.$currentNumfactura);
-		error_log(count($partesrecents));
-		
 		$partesrecents->setParam('sortparams',$sortparams);
 		
 		return $this->render('FecdasBundle:Admin:recents.html.twig', 
@@ -230,6 +225,177 @@ class AdminController extends BaseController {
 						'sortparams' => $sortparams
 				)));
 	}
+	
+	public function consultaadminAction(Request $request) {
+	
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+	
+		// GET OPCIONS DE FILTRE
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'p.dataentrada');
+		$direction = $request->query->get('direction', 'asc');
+
+		$clubs = $request->query->get('clubs', array()); // Per defecte sense filtre de clubs
+
+		$tipusparte = $request->query->get('tipusparte', array()); // Per defecte sense filtre de tipus
+
+		$strDatainici = $request->query->get('datainici', '');
+		$datainici = null;
+		if ($strDatainici != '') $datainici = \DateTime::createFromFormat('d/m/y', $strDatainici); 
+		
+		$strDatafinal = $request->query->get('datafinal', '');
+		if ($strDatafinal == '') $datafinal = $this->getCurrentDate();
+		else $datafinal = \DateTime::createFromFormat('d/m/y', $strDatafinal); 
+		
+		$intervals = false;// Per defecte consulta periode
+		if ($request->query->has('intervals') && $request->query->get('intervals') == 1) $intervals = true;
+		
+		$intervaldata = $request->query->get('intervaldata', 'M');
+		
+		$nombretotals = false;
+		if ($request->query->has('nombretotals') && $request->query->get('nombretotals') == 1) $nombretotals = true;
+
+		$sumatotals = false;
+		if ($request->query->has('sumatotals') && $request->query->get('sumatotals') == 1) $sumatotals = true;
+
+		$baixes = false;
+		if ($request->query->has('baixes') && $request->query->get('baixes') == 1) $baixes = true;
+
+		$noves = false;
+		if ($request->query->has('noves') && $request->query->get('noves') == 1) $noves = true;
+
+		
+		if ($request->getMethod() == 'POST') {
+		} else {
+		}
+		
+		
+		// CREAR FORMULARI
+		$formBuilder = $this->createFormBuilder();
+		
+		
+		// Selector múltiple de clubs
+		$formBuilder->add('clubs', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityClub',
+		 		'choice_label' 	=> 'llistaText',
+				'required'  	=> false,
+				'data'			=>  $clubs,
+				'multiple'		=> true));
+		
+		
+		// Selector tipus de llicència
+		$formBuilder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 
+				'choice_label' 	=> 'descripcio', 
+				'multiple' 		=> true, 
+				'required' 		=> false,
+				'data'			=> array($tipusparte),
+				'query_builder' => function($repository) {
+					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
+				})
+		);
+		
+		// Selectors de dates: rang entre dates i per intervals mesos / anys
+		$formBuilder->add('datainici', 'datetime', array(
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
+				'data' 			=> $datainici
+		));
+
+		$formBuilder->add('datafinal', 'datetime', array(
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
+				'data' 			=> $datafinal
+		));
+		
+		$formBuilder->add('intervals', 'checkbox', array(
+    			'required'  => false,
+				'data' => $intervals,
+		));
+		
+		
+		$formBuilder->add('intervaldata', 'choice', array(
+				'choices'   	=> array('M' => 'Mensual', 'A' => 'Anual'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'disabled'		=> $intervals == false,
+				'data' 			=> $intervaldata
+		));
+		
+		// Acumular  totals
+		$formBuilder->add('nombretotals', 'checkbox', array(
+    			'required'  => false,
+				'data' => $nombretotals,
+		));
+		
+		$formBuilder->add('sumatotals', 'checkbox', array(
+    			'required'  => false,
+				'data' => $sumatotals,
+		));
+
+		// Selectors edats: rang entre edats i per intervals: 5, 10, 20
+		
+		// Per categories: infantil, tècnic, aficionat 
+		
+		// Per sexe: Home / Dona
+		
+		// Baixes
+		$formBuilder->add('baixes', 'checkbox', array(
+    			'required'  => false,
+				'data' => $baixes,
+		));
+		
+		// Noves, federats primera vegada
+		$formBuilder->add('noves', 'checkbox', array(
+    			'required'  => false,
+				'data' => $noves,
+		));
+		
+		
+		// Temps des de la darrera llicència
+		$form = $formBuilder->getForm();
+		
+		
+		// PREPARAR CONSULTA
+		// Crear índex taula partes per data entrada
+		$strQuery = "SELECT l FROM FecdasBundle\Entity\EntityLlicencia l JOIN l.parte p JOIN p.tipus t JOIN p.club c ";
+		/*$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
+		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
+		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";*/
+		
+		$strQuery .= " ORDER BY ".$sort; 
+
+		$query = $em->createQuery($strQuery);
+			/*->setParameter('ininormal', $inianual)
+			->setParameter('ini365', $ini365);*/
+		
+		$sortparams = array('sort' => $sort,'direction' => $direction);
+
+		$paginator  = $this->get('knp_paginator');
+		$resultat = $paginator->paginate(
+				$query,
+				$page,
+				10 /*limit per page*/
+		);
+		
+		$resultat->setParam('sortparams',$sortparams);
+		
+		return $this->render('FecdasBundle:Admin:consultaadmin.html.twig', 
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'resultat' => $resultat,
+						'sortparams' => $sortparams
+				)));
+	}
+	
+	
 	
 	public function sincroaccessAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)

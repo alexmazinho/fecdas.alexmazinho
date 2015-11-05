@@ -201,7 +201,9 @@ select option {
 select[disabled="true"],
 select[disabled="disabled"],
 input[disabled="true"],
-input[disabled="disabled"]  
+input[disabled="disabled"],
+.input-group-radio.disabled,
+.input-group-radio.disabled label  
 { 
 	/*background-color: #f0ebe2;*/
     color: #777777; 
@@ -219,6 +221,13 @@ input[disabled="disabled"]
 .form-group-2-inline .form-2-control-inline  { max-width: 45%; }
 .form-group-2-inline .input-group-addon-2-inline { width: auto; }
 
+.input-group-radio { border: 1px solid #ccc; border-radius: 3px; }
+
+.input-group-radio .radio-inline { padding-left: 40px; }
+
+.radio-inline label { margin: 0; }
+
+.input-group-radio .input-group-addon-2-inline { padding-right: 10px !important; border-right: 1px solid #ccc;}
 
 #dialeg p {
 	padding-bottom: 10px;

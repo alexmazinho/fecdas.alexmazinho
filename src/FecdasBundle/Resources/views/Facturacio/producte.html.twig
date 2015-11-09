@@ -74,7 +74,9 @@
 								<div class="form-group">
 									<div id="formproducte-minim"  class="input-group ">
 						  				<span class="input-group-addon">Límit</span>
-										{{ form_widget(form.limitnotifica, { 'attr': {'class': 'form-control form-control-center'} }) }}
+						  				{% set strClass = '' %}
+						  				{% if producte.limitnotifica == null %} {% set strClass = 'disabled' %} {% endif %}
+										{{ form_widget(form.limitnotifica, { 'attr': {'class': 'form-control form-control-center '~strClass } }) }}
 									</div>
 									{{ form_errors(form.limitnotifica)  }}
 								</div>
@@ -83,7 +85,9 @@
 								<div class="form-group">
 									<div id="formproducte-stock"  class="input-group ">
 						  				<span class="input-group-addon">Stock</span>
-										{{ form_widget(form.stock, { 'attr': {'class': 'form-control form-control-center'} }) }}
+						  				{% set strClass = '' %}
+						  				{% if producte.stock == null %} {% set strClass = 'disabled' %} {% endif %}
+										{{ form_widget(form.stock, { 'attr': {'class': 'form-control form-control-center '~strClass } }) }}
 									</div>{{ form_errors(form.stock)  }}
 								</div>
 							 </div>
@@ -103,7 +107,9 @@
 									{{ form_label(form.pes, 'Pes en grams') }}
 									<div id="formproducte-stock"  class="input-group ">
 						  				<span class="input-group-addon"></span>
-										{{ form_widget(form.pes, { 'attr': {'class': 'form-control form-control-center'} }) }}
+						  				{% set strClass = '' %}
+						  				{% if producte.pes == null %} {% set strClass = 'disabled' %} {% endif %}
+										{{ form_widget(form.pes, { 'attr': {'class': 'form-control form-control-center '~strClass } }) }}
 									</div>{{ form_errors(form.pes)  }}
 								</div>
 							 </div>
@@ -281,13 +287,17 @@
 			$("#producte_stockable").click(function(){
 				var checked = $(this).is(':checked');
 				if (checked) {
-					$('#producte_limitnotifica').removeAttr('disabled'); 
-					$('#producte_stock').removeAttr('disabled'); 
+					$('#producte_limitnotifica').removeClass('disabled');
+					$('#producte_limitnotifica').removeAttr('readonly'); 
+					$('#producte_stock').removeClass('disabled');
+					$('#producte_stock').removeAttr('readonly'); 
 					$('#producte_limitnotifica').val(1);
 					$('#producte_stock').val(1);				
 				} else {
-					$('#producte_limitnotifica').attr('disabled', 'disabled'); 
-					$('#producte_stock').attr('disabled', 'disabled'); 
+					$('#producte_limitnotifica').addClass('disabled');
+					$('#producte_limitnotifica').attr('readonly', 'readonly'); 
+					$('#producte_stock').addClass('disabled'); 
+					$('#producte_stock').attr('readonly', 'readonly');
 					$('#producte_limitnotifica').val("");
 					$('#producte_stock').val("");				
 				};
@@ -296,10 +306,12 @@
 			$("#producte_transport").click(function(){
 				var checked = $(this).is(':checked');
 				if (checked) {
-					$('#producte_pes').removeAttr('disabled'); 
+					$('#producte_pes').removeClass('disabled'); 
+					$('#producte_pes').removeAttr('readonly');
 					$('#producte_pes').val(0);
 				} else {
-					$('#producte_pes').attr('disabled', 'disabled'); 
+					$('#producte_pes').addClass('disabled'); 
+					$('#producte_pes').attr('readonly', 'readonly');
 					$('#producte_pes').val("");
 				};
 			});

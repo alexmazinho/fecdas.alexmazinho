@@ -29,7 +29,9 @@ class FormPayment extends AbstractType {
 		$builder->add('titular', 'hidden');
 		$builder->add('fecdas', 'hidden');
 		$builder->add('dades', 'hidden');
+		$builder->add('params', 'hidden');
 		$builder->add('signatura', 'hidden');
+		$builder->add('version', 'hidden');
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

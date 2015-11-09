@@ -1365,7 +1365,7 @@ class FacturacioController extends BaseController {
     			$producte->addPreus($preu);
     		}
     	} else {
-   			/* Alta o modificació de clubs */
+   			/* Alta o modificació de preus */
     		$data = $request->request->get('producte');
     		$id = (isset($data['id'])?$data['id']:0);
     		
@@ -1416,7 +1416,6 @@ class FacturacioController extends BaseController {
     					throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
     				}
     				
-    				
     				if ($producte->getStockable() == true) {
     					if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
     						$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
@@ -1450,6 +1449,7 @@ class FacturacioController extends BaseController {
     					// Crear nou
     					$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
     					$em->persist($preu);
+						$producte->addPreus($preu);
     				} else {
     					$preu->setPreu($importpreu);
     					$preu->setIva($iva);
@@ -1617,7 +1617,6 @@ class FacturacioController extends BaseController {
 		
 		if ($id > 0) {
 			$producte = $em->getRepository('FecdasBundle:EntityProducte')->find($id);
-			error_log($id);
 			if ($producte != null) {
 				$response->headers->set('Content-Type', 'application/json');
 				
@@ -1646,8 +1645,6 @@ class FacturacioController extends BaseController {
 			$min = substr( str_pad( $cerca."", 7, "0", STR_PAD_RIGHT), 0, 7);
 			$query->setParameter('max', $max);
 			$query->setParameter('min', $min);
-			error_log($max);
-			error_log($min);
 		} 
 		
 		$search = array();

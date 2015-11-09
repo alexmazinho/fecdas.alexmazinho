@@ -85,26 +85,29 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 			$form->add ('limitnotifica', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					'disabled' 		=> $producte->getStockable() != true
+					//'disabled' 		=> $producte->getStockable() != true
+					'read_only' 		=> $producte->getStockable() != true
 			));
 			
 			$form->add ('stock', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					'disabled' 		=> $producte->getStockable() != true
+					//'disabled' 	=> $producte->getStockable() != true
+					'read_only' 	=> $producte->getStockable() != true
 			));
 			
 			$form->add ('pes', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					'disabled' 		=> $producte->getTransport() != true
+					//'disabled' 	=> $producte->getTransport() != true
+					'read_only' 	=> $producte->getTransport() != true
 			));
-			error_log("stocable => ".$producte->getStockable()."-");
+			
 			$form->add('stockable', 'checkbox', array(
 					'required' 		=> false,
 					'data' 			=> $producte->getStockable() == true
 			));
-			error_log("transport => ".$producte->getTransport()."-");
+			
 			$form->add('transport', 'checkbox', array(
 					'required' 		=> false,
 					'data' 			=> $producte->getTransport() == true

@@ -129,6 +129,9 @@ input[type="checkbox"] {
 	border: none;
 }*/
 
+input[type="number"] {  padding: 6px 0; }
+
+
 input[type="text"], 
 input[type="email"],
 input[type="search"],
@@ -203,7 +206,10 @@ select[disabled="disabled"],
 input[disabled="true"],
 input[disabled="disabled"],
 .input-group-radio.disabled,
-.input-group-radio.disabled label  
+.input-group-radio.disabled label,
+input.disabled,
+input.disabled label  
+  
 { 
 	/*background-color: #f0ebe2;*/
     color: #777777; 

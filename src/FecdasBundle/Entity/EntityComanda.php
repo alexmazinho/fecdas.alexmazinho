@@ -171,7 +171,7 @@ class EntityComanda {
 
 	public function detallsEditables()
 	{
-		return !$this->esParte() && $this->esNova();
+		return !$this->esParte() && !$this->esDuplicat();
 	}
 	
 	public function esParte()

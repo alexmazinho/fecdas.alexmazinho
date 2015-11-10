@@ -37,14 +37,14 @@ class FormComandaDetall extends AbstractType {
 						$preu = $detall->getPreuunitat();
 						if ($preu == 0 && $producte != null) $preu = $producte->getCurrentPreu(); // Si no té cap preu, afegir el preu del producte
 						$iva = $detall->getIvaunitat();
-						if ($iva == 0 && $producte != null) $iva = $producte->getCurrentIva(); // Si no té cap IVA, afegir el del producte
+						//if ($iva == 0 && $producte != null) $iva = $producte->getCurrentIva(); // Si no té cap IVA, afegir el del producte
 						$unitats = $detall->getUnitats();
 						$descompte = $detall->getDescomptedetall();
 						$total = $detall->getTotal();
 						$comanda = $detall->getComanda();
 						
 						if ($detall != null && $detall->esBaixa()) $disabledFields = true;
-						if ($comanda != null && !$comanda->detallsEditables()) $disabledFields = true;
+						if ($comanda != null && !$comanda->esNova()) $disabledFields = true;
 					}
 					
 					$form->add('producte', 'entity', array(

@@ -569,7 +569,9 @@ class AdminController extends BaseController {
 			$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 			$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
 
-			$detall = $this->removeComandaDetall($duplicat, $producte, 1, $maxNumFactura, $maxNumRebut);	
+			$detallBaixa = $this->removeComandaDetall($duplicat, $producte, 1);	
+			
+			$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $duplicat, $detallBaixa, $maxNumFactura, $maxNumRebut);
 			
 			$em->flush();
 		

@@ -152,7 +152,11 @@
 				<div class="col-md-12">
 					<div class="alert alert-info form-alert">
 						<ul>
+							{% if comanda.factura != null %}
 						  	<li><span class="fa fa-clock-o fa-1x"></span> La comanda està en tramitació</li>
+						  	{% else %}
+						  	<li>Comanda anul·lada abans de consolidar-se. Sense factura</li>
+						  	{% endif %}
 						</ul>
 					</div>
 				</div>
@@ -162,10 +166,12 @@
 			<div class="col-md-12">
 				<h3 class="blue">
 					Detalls de la comanda 
-					{% if comanda.detallsEditables == true %}
+					{% if comanda.esNova == true %}
 						<a class="add-detall pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-1x blue"></i></a> 
 					{% else %}
-						<span class="title-comment">(No es poden editar els detalls de la comandes)</span> 
+						{% if comanda.detallsEditables == false %}
+						<span class="title-comment">(No es poden editar els detalls de la comandes)</span>
+						{% endif %}
 					{% endif %}
 				</h3>
 			</div>

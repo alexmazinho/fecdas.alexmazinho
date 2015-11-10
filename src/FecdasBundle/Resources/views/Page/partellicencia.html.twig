@@ -13,7 +13,7 @@
 			{{ form_widget(llicencia.persona, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_persona_select' }) }}
 			{# form_errors(llicencia.persona) #}
 		</div>
-		{% if llicenciadades.parte.allowEdit == true %} 
+		{% if llicenciadades.parte.allowEdit == true or admin == true %} 
 		<div class="form-left">
 			<label>&nbsp;</label>
 			<button type="button" id="formllicencia-openmodal" class="btn btn-default btn-lg" name="modal" 
@@ -42,7 +42,7 @@
 	</div>
 	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
 	<div class="form-row clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
-		{% if llicenciadades.parte.allowEdit == true %}
+		{% if llicenciadades.parte.allowEdit == true or admin == true%}
 		<div class="llicencia-check seleccionar-tot">
 	 		<label class="formlabel-lefttocheckbox"  for="llicencia_seleccionat-tot">Seleccionar tot</label>
 			<input id="llicencia_seleccionat-tot" class="formcheckbox-right" type="checkbox" name="seleccionar-tot">
@@ -103,7 +103,7 @@
 		{{ form_widget(llicencia.bampolles, { 'attr': {'class': 'formcheckbox-right'} }) }}
 		</div>
 	</div>
-	{% if llicenciadades.parte.allowEdit == true %}
+	{% if llicenciadades.parte.allowEdit == true or admin == true %}
 	<div class="form-row clearfix">
 		<button type="button" id="formllicencia-add" class="btn btn-default btn-lg" name="add-llicencia">confirmar llicència <i class="fa fa-check"></i></button>
 		

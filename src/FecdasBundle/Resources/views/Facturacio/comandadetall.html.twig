@@ -33,7 +33,7 @@
 	<div class="comanda-detall-form">
 		<div class="col-id col-seq hidden">{{ detall.id }}</div>
 		<div class="data-detall-cell col-producte">{{ detall.producte.descripcio  }}</div>
-		<div class="data-detall-cell col-unitats">{{ detall.unitatsbaixa  }}</div>
+		<div class="data-detall-cell col-unitats">(baixa {{ detall.unitatsbaixa  }})</div>
 		<div class="data-detall-cell col-preuunitat">{{ detall.preuunitat|number_format(2, ',', '.') }}€</div>
 		<div class="data-detall-cell col-descompte">{{ detall.descomptedetall }}</div>
 		<div class="data-detall-cell col-ivaunitat">{{ detall.ivaunitat  }}</div>

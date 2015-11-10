@@ -147,6 +147,8 @@ class PDFController extends BaseController {
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
 		$showTemplate = ($this->get('session')->get('username', '') != self::MAIL_FACTURACIO) &&
 						($this->get('session')->get('username', '') != self::MAIL_FACTURACIO2);  
+		$showTemplate = true; // De moment imprimir sense plantilla
+		
 		
 		//$pdf->Rect($x_logos, $y_logos, $w_half, $h_logos - 1, 'F', '', array(255, 0, 0) );  // red 				
 		//$pdf->Rect($x_fedeinfo, $y_fedeinfo, $w_half+5, $h_fedeinfo - 1, 'F', '', array(0, 255, 0) ); // green
@@ -489,6 +491,7 @@ class PDFController extends BaseController {
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
 		$showTemplate = ($this->get('session')->get('username', '') != self::MAIL_FACTURACIO) &&
 						($this->get('session')->get('username', '') != self::MAIL_FACTURACIO2);  
+		$showTemplate = true; // De moment imprimir sense plantilla
 		
 		if ($showTemplate == true) {
 			/* LOGOS */		

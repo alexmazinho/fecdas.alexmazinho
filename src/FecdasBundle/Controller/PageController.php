@@ -320,8 +320,7 @@ class PageController extends BaseController {
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				$parte->addLlicencia($llicencia);
 						
-				$detall = $this->addParteDetall($parte, $llicencia);
-				if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+				$this->addParteDetall($parte, $llicencia);
 	
 				// Errors generen excepció
 				$this->validaParteLlicencia($parte, $llicencia);
@@ -897,8 +896,7 @@ class PageController extends BaseController {
 					
 				if ($llicencia == null) throw new \Exception('No s\'ha trobat la llicència '.$lid);
 				
-				$personaOriginal = clone $llicencia->getPersona();
-				$categoriaOriginal = clone $llicencia->getCategoria();
+				$llicenciaOriginal = clone $llicencia;	
 					
 				$parte = $llicencia->getParte();
 			}
@@ -906,6 +904,7 @@ class PageController extends BaseController {
 			$tipusid = $parte->getTipus()->getId();
 			$partedataalta = $parte->getDataalta();
 	
+			$factura = $parte->getFactura();
 			// Person submitted
 			if ($currentPerson > 0) {
 				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($currentPerson);
@@ -919,13 +918,15 @@ class PageController extends BaseController {
 				
 				if ($requestParams['action'] == 'remove') {
 					// Errors generen excepció
-					$this->tramitaRemoveLlicencia($parte, $llicencia);
+					$data = $this->getCurrentDate();
+					$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+					$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+
+					$this->removeParteDetall($parte, $llicencia, $maxNumFactura, $maxNumRebut);
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 					
 				} else {
-					if ($parte->comandaConsolidada() == true) throw new \Exception('No es poden fer canvis sobre aquesta llista ');
-
 					// Update / insert llicència
 					$form = $this->createForm(new FormParte(), $parte);
 					$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
@@ -943,21 +944,10 @@ class PageController extends BaseController {
 					$llicencia->setDatamodificacio($this->getCurrentDate());
 					
 					if ($lid == 0) {
-						$detall = $this->addParteDetall($parte, $llicencia);
-						if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+						$this->addParteDetall($parte, $llicencia);
 					} else {
-						// Canvis de categoria o de federat de la llicència (només en els 20 minuts després d'introduir la llicència)
-						if ( ($personaOriginal != null &&  $personaOriginal->getId() != $llicencia->getPersona()->getId() ) ||  
-							$categoriaOriginal != null && $categoriaOriginal->getId() != $llicencia->getCategoria()->getId() ) {
-								
-								
-							$detall = $this->tramitaRemoveLlicencia($parte, $llicencia);
-							if ($detall == null) throw new \Exception('S\'ha produït un error actualitzant la llicència');
-							$detall = $this->addParteDetall($parte, $llicencia);
-							if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència a la llista');
-						} 
+						$this->updateParteDetall($parte, $llicencia, $llicenciaOriginal);
 					}
-					
 					// Comprovació datacaducitat
 					if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
 							$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
@@ -980,32 +970,14 @@ class PageController extends BaseController {
 					$formllicencia->get('datacaducitatshow')->setData($formllicencia->get('datacaducitat')->getData());
 	
 					$response = $this->render('FecdasBundle:Page:partellicencia.html.twig',
-							array('llicencia' => $formllicencia->createView(),
+							array('admin' => $this->isCurrentAdmin(),
+									'llicencia' => $formllicencia->createView(),
 									'asseguranca' => $parte->isAsseguranca(),
 									'llicenciadades' => $llicencia));
 			}
 		} catch (\Exception $e) {
-				
-			if ($parte != null) {
-				if ($parte->esNova()) {
-					if ($detall != null) $em->detach($detall);
-					if ($factura != null) $em->detach($factura);
-			
-					$em->detach($parte);
-				}
-				else {
-					if ($detall != null) $em->refresh($detall);
-					if ($factura != null) $em->refresh($factura);
-						
-					$em->refresh($parte);
-				}
-			}
-				
-			if ($llicencia != null) {
-				if ($llicencia->esNova()) $em->detach($llicencia);
-				else $em->refresh($llicencia);
-			}
 
+			$em->clear();
 			$this->logEntryAuth('LLICENCIA KO', ' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
 	
 			$response = new Response($e->getMessage());
@@ -1013,26 +985,6 @@ class PageController extends BaseController {
 		}
 	
 		return $response;
-	}
-	
-	private function tramitaRemoveLlicencia($parte, $llicencia) {
-		// Només admin o clubs DIFE
-		/*if (!$this->isCurrentAdmin() &&
-			$parte->getClub()->controlCredit() == false) throw new \Exception('Contacteu amb la Federació per anul·lar les llicències');*/
-
-		$producte = ($llicencia != null && $llicencia->getCategoria() != null?$llicencia->getCategoria()->getProducte():null);
-	
-		if ($producte == null || $parte == null) return null;
-
-		$data = $this->getCurrentDate();
-		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
-		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-
-		$detall = $this->removeComandaDetall($parte, $producte, 1, $maxNumFactura, $maxNumRebut);			
-
-		$this->removeLlicenciaParte($parte, $llicencia);
-		
-		return $detall;
 	}
 	
 	private function validaParteLlicencia($parte, $llicencia) {

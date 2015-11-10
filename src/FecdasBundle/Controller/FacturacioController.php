@@ -892,7 +892,8 @@ class FacturacioController extends BaseController {
 
 				$factura = $this->crearFactura($current, $comanda);
 			
-				$em ->flush(); 
+				$em ->flush();
+				
 			}
 			
 			if ($action == 'anular' || $action == 'desar' || $action == 'pagar') { // Totes borren sessió
@@ -905,6 +906,18 @@ class FacturacioController extends BaseController {
 			switch ($action) {
 			    case 'pagar':
 			        // Obrir TPV
+			        if ($this->isCurrentAdmin() == true) {
+						$response = $this->redirect($this->generateUrl('FecdasBundle_confirmapagament', array(
+					        'id'  => $comanda->getId(),
+					        'tipuspagament' => $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_CASH),
+					        'datapagament' => $request->query->get('datapagament', ''),
+					        'dadespagament' => $request->query->get('dadespagament', ''),
+					        'comentaripagament' => $request->query->get('comentaripagament', ''),
+					    ))); 
+						
+			        	return $response;
+					}
+					
 			        return $this->redirect($this->generateUrl('FecdasBundle_pagamentcomanda', array( 'id' => $comanda->getId())));
 			        
 			        break;
@@ -995,7 +1008,7 @@ class FacturacioController extends BaseController {
 			return $response;
 		}
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
-							array('formtransport' => $form, 'tipus' => $tipus));
+							array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin())); 
 		
 	}
 
@@ -1025,7 +1038,7 @@ class FacturacioController extends BaseController {
 		$form = $this->formulariTransport($cart);
 				
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
-						array('formtransport' => $form, 'tipus' => $tipus));
+						array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin()));
 		
 	}
 
@@ -1144,16 +1157,12 @@ class FacturacioController extends BaseController {
 		
 				$this->get('session')->getFlashBag()->add('sms-notice',	'La comanda s\'ha desat correctament');
 				 
-				//$this->logEntryAuth('COMANDA SUBMIT',	'producte : ' . $comanda->getId().' '.$comanda->getInfoComanda());
-				// Ok, retorn form sms ok
-				return $this->redirect($this->generateUrl('FecdasBundle_editarcomanda',
-						array( 'id' => $comanda->getId() )));
-				 
 			} catch (\Exception $e) {
 				// Ko, mostra form amb errors
-				
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 			}
+			return $this->redirect($this->generateUrl('FecdasBundle_editarcomanda',
+						array( 'id' => $comanda->getId() )));
 		}
 		
 		return $this->render('FecdasBundle:Facturacio:comanda.html.twig',
@@ -1191,16 +1200,21 @@ class FacturacioController extends BaseController {
 			$parte = $comanda;
 			
 			foreach ($parte->getLlicencies() as $llicencia) {
-				if (!$llicencia->esBaixa()) $this->removeLlicenciaParte($parte, $llicencia);
+				if (!$llicencia->esBaixa()) {
+					$detallBaixa = $this->removeParteDetall($parte, $llicencia, $maxNumFactura, $maxNumRebut);
+				}
 			}
-		}
-
+		} else {
 		//foreach ($detalls as $detall) {
-		foreach ($comanda->getDetalls() as $detall) {
-			if (!$detall->esBaixa()) $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats(), $maxNumFactura, $maxNumRebut);
-	
-			$maxNumFactura++;
-			$maxNumRebut++;
+			foreach ($comanda->getDetalls() as $detall) {
+				if (!$detall->esBaixa()) {
+						
+					$detallBaixa = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
+
+					$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $comanda, $detallBaixa, $maxNumFactura, $maxNumRebut);
+					
+				}
+			}
 		}
 
 		$comanda->setDatamodificacio(new \DateTime());
@@ -1749,7 +1763,7 @@ class FacturacioController extends BaseController {
 		$comandes = $query->getResult(); // Comandes pendents rebut del club
 		
 		// Nou rebut
-		$tipuspagament = BaseController::TIPUS_PAGAMENT_CASH;
+		$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
 		
 		$rebut = $this->crearIngres($this->getCurrentDate(), $tipuspagament, $club);
 		
@@ -2082,14 +2096,16 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		$comandaId = $request->query->get('id',0);
+		
 		$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
 		if ($comanda != null) {
 
-			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_CASH);
+			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA);
+			
 			$dataAux = $request->query->get('datapagament', '');
 			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();
 			$dadesPagament = $request->query->get('dadespagament', '');
-			$comentariPagament = $request->query->get('comentaripagament', 'Confirmació del pagament manual');
+			$comentariPagament = $request->query->get('pagatcomentari', 'Confirmació del pagament manual');
 			$this->crearRebut($dataPagament, $tipusPagament, $comanda, $dadesPagament, $comentariPagament);
 			$em->flush();
 

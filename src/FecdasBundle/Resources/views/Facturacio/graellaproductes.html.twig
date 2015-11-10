@@ -91,6 +91,13 @@
 
 		$('#form_transport_1').prop('checked', false); // Recollir
 		$('#form_transport_0').prop('checked', true); // Pagar
+
+		$( ".cistella-resum" ).on( "click", ".pagar-cistella-admin", function(e) {
+			e.preventDefault();
+			var url = $(this).attr("href")+'&transport='+($('#form_transport_0').is(':checked')?1:0);
+			
+			confirmarPagament(url, "Confirmació de pagament", "{{ path('FecdasBundle_comandes') }}");
+		});
 		
 		$( ".cistella-resum" ).on( "click", ".desar-cistella, .pagar-cistella", function(e) {
 			e.preventDefault();	

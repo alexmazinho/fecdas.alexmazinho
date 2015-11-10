@@ -126,7 +126,7 @@
 		llistaPaginationAndSort(url, params);
 	};
 
-	confirmarPagament = function(url, titol) {
+	confirmarPagament = function(url, titol, urlok) {
 		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true,
@@ -136,15 +136,16 @@
     	        	console.log(url);	
     	        	$('#progressbar').show();  // Rellotge
         	
-    	    		var params = { 	datapagat: $( "#datapagament" ).val(), 
-    	    						estatpagat: $( "#tipuspagament" ).val(),
-    	    						dadespagat: $( "#dadespagament" ).val(),
-    	    						comentaripagat: $( "#comentaripagament" ).val() };
+    	    		var params = { 	datapagament: $( "#datapagament" ).val(), 
+    	    						tipuspagament: $( "#tipuspagament" ).val(),
+    	    						dadespagament: $( "#dadespagament" ).val(),
+    	    						pagatcomentari: $( "#pagatcomentari" ).val() };
     	    		$.get(url, params,
     	    		function(data, textStatus) {
     	    			$('#progressbar').hide();
     	    	        	
-    	    			location.reload();
+    	    			if (urlok !== undefined) window.location = urlok; 
+    	    			else location.reload();
     	    		}).fail( function(xhr, status, error) {
     	   			 // xhr.status + " " + xhr.statusText, status, error
 	    	   			//var sms = smsResultAjax('KO', xhr.responseText);
@@ -189,12 +190,9 @@
 			  var tipusPagament = JSON.parse( JSON.stringify(data), function (k, v) {
 				    return v; 
 			  });
-			  console.log(data.length);
-			  console.log(JSON.stringify(data));
-			  console.log(tipusPagament.length);
 			  var htmlOpcio = ''; 
 			  $.each(tipusPagament, function(i, item) {
-			       htmlOpcio = "<option value='"+i+"'>"+item+"</option>";
+			       htmlOpcio = "<option value='"+i+"' "+(i==3?"selected":"")+">"+item+"</option>";  // Select per defecte trans la Caixa
 			       $('#tipuspagament').append( htmlOpcio );
 			  });
 		});

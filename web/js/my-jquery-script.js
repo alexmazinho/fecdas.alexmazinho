@@ -1032,10 +1032,11 @@
         
         $.get(url, { source_ajax: 'edit-llicencia', parte: part, llicencia: llic},
      	function(data, textStatus) {
-
+        	
         	loadLlicenciaData(data);
 		
         }).fail( function(xhr, status, error) {
+        	
 			 // xhr.status + " " + xhr.statusText, status, error
 			 var sms = smsResultAjax('KO', xhr.responseText);
 			 
@@ -1043,7 +1044,7 @@
 		    	
 			 $('#parte_tipus').val('');
 			 
-			 $('#formparte-llicencia').html(sms);
+			 $('#formparte-llicencia').html(sms).show();
 		     
 		});
 	};

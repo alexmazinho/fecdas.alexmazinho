@@ -260,8 +260,7 @@ class CronController extends BaseController {
 		    // Crear factura
 			$factura = $this->crearFactura($dataalta, $parte);
 			
-			$detall = $this->addParteDetall($parte, $llicencia);
-			if ($detall == null) throw new \Exception('S\'ha produït un error afegint la llicència');
+			$this->addParteDetall($parte, $llicencia);
 			
 			/* Preparar formulari */
 			$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);

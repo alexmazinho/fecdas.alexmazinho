@@ -619,47 +619,47 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 /*************** FECDAS NOU comandes ****************/
 
-#header-comanda-estat  { width: 5%; text-align: center; }
+#header-comanda-estat  { width: 3%; text-align: center; }
 #header-comanda-num { width: 8%; text-align: left; }
 #header-comanda-items { width: 5%; text-align: center; }
 #header-comanda-total { width: 10%; text-align: right; }
 #header-comanda-data { width: 12%; text-align: center; }
-#header-comanda-factura { width: 12%; text-align: center; }
-#header-comanda-rebut { width: 12%; text-align: center; }
+#header-comanda-factura { width: 13%; text-align: center; }
+#header-comanda-rebut { width: 13%; text-align: center; }
 #header-comanda-comentaris { width: 26%; text-align: left; }
 #header-comanda-actions { width: 10%; text-align: center; }
 
-.data-detall-cell.comanda-estat  { width: 5%; text-align: left; }
+.data-detall-cell.comanda-estat  { width: 3%; text-align: left; }
 .data-detall-cell.comanda-num { width: 8%; text-align: left; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
 .data-detall-cell.comanda-total { width: 10%; text-align: right; }
 .data-detall-cell.comanda-data { width: 12%; text-align: center; }
-.data-detall-cell.comanda-factura { width: 12%; text-align: center; }
-.data-detall-cell.comanda-rebut { width: 12%; text-align: center; }
+.data-detall-cell.comanda-factura { width: 13%; text-align: center; }
+.data-detall-cell.comanda-rebut { width: 13%; text-align: center; }
 .data-detall-cell.comanda-comentaris { width: 26%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.comanda-actions { width: 10%; text-align: center; font-size: 1.2em; }
 
-.list-header-adm #header-comanda-estat  { width: 5%; text-align: center; }
-.list-header-adm #header-comanda-num { width: 12%; text-align: left; }
+.list-header-adm #header-comanda-estat  { width: 3%; text-align: center; }
+.list-header-adm #header-comanda-num { width: 11%; text-align: left; }
 .list-header-adm #header-comanda-club { width: 14%; text-align: left;  }
 .list-header-adm #header-comanda-items { width: 5%; text-align: center; }
-.list-header-adm #header-comanda-total { width: 7%; text-align: right; }
-.list-header-adm #header-comanda-data { width: 7%; text-align: center; }
-.list-header-adm #header-comanda-factura { width: 10%; text-align: center; }
-.list-header-adm #header-comanda-rebut { width: 10%; text-align: center; }
+.list-header-adm #header-comanda-total { width: 6%; text-align: right; }
+.list-header-adm #header-comanda-data { width: 6%; text-align: center; }
+.list-header-adm #header-comanda-factura { width: 13%; text-align: center; }
+.list-header-adm #header-comanda-rebut { width: 13%; text-align: center; }
 .list-header-adm #header-comanda-comentaris { width: 18%; text-align: left; }
-.list-header-adm #header-comanda-actions { width: 8%; text-align: right; }
+.list-header-adm #header-comanda-actions { width: 7%; text-align: right; }
 
-.list-data-adm .data-detall-cell.comanda-estat  { width: 5%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-estat  { width: 3%; text-align: left; font-size: 0.9em; }
 .list-data-adm .data-detall-cell.comanda-num { width: 12%; text-align: left; font-size: 0.9em; }
 .list-data-adm .data-detall-cell.comanda-club { width: 14%; text-align: left; font-size: 0.9em; }
 .list-data-adm .data-detall-cell.comanda-items { width: 5%; text-align: center; font-size: 0.9em; }
-.list-data-adm .data-detall-cell.comanda-total { width: 7%; text-align: right; font-size: 0.9em; }
-.list-data-adm .data-detall-cell.comanda-data { width: 7%; text-align: center; font-size: 0.9em; }
-.list-data-adm .data-detall-cell.comanda-factura { width: 10%; text-align: center; font-size: 0.9em; }
-.list-data-adm .data-detall-cell.comanda-rebut { width: 10%; text-align: center; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-total { width: 6%; text-align: right; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-data { width: 6%; text-align: center; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-factura { width: 13%; text-align: center; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.comanda-rebut { width: 13%; text-align: center; font-size: 0.9em; }
 .list-data-adm .data-detall-cell.comanda-comentaris { width: 18%; text-align: left; font-size: 0.85em; }
-.list-data-adm .data-detall-cell.comanda-actions { width: 8%; text-align: right; font-size: 1.2em; }
+.list-data-adm .data-detall-cell.comanda-actions { width: 7%; text-align: right; font-size: 1.2em; }
 
 
 /*************** FECDAS NOU comanda ****************/

@@ -65,7 +65,7 @@
 	    <div class="table-header">	
 		   	<div id="list-header" class="{% if admin == true  %}list-header-adm{% endif %}">
 				<div id="header-comanda-id" class="col-listheader hidden">&nbsp;</div>
-				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">Estat</div>
+				<div id="header-comanda-estat" class="col-listheader collistheader-noorder">&nbsp;</div>
 		   		<div id="header-comanda-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(comandes, 'Num.', 'c.num') }}
 		   			<span class="listheader-icon {% if comandes.isSorted('c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		{% if admin == true  %}	
@@ -115,13 +115,19 @@
 		   			<div class="data-detall-cell comanda-factura">
 		   				{% if comanda.mostrarFactura == true %}
 		   					{% set factura = comanda.factura %}
+		   					{% if factura.comptabilitat == null %} <span class="fa fa-exclamation-triangle fa-1x orange"></span> {% endif %}
 		   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
 		   						{{ factura.numfactura }}
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% else %}
-							<span>en tramitació <i class="fa fa-clock-o fa-1x orange"></i></span>
+							{% if comanda.factura != null %}
+						  	<span>en tramitació <i class="fa fa-clock-o fa-1x orange"></i></span>
+						  	{% else %}
+						  	<span>Anul·lada</span>
+						  	{% endif %}
 			   			{% endif %}
 		   				{% for factura in comanda.facturesanulacions %} 
+							<br/>{% if factura.comptabilitat == null %} <span class="fa fa-exclamation-triangle fa-1x orange"></span> {% endif %}
 		   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
 		   						<span class="red">(-){{ factura.numfactura }}</span>
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
@@ -130,12 +136,15 @@
 		   			<div class="data-detall-cell comanda-rebut">
 		   				{% if comanda.comandaPagada == true %}
 		   					{% set rebut = comanda.rebut %}
+		   					{% if rebut.comptabilitat == null %}<span class="fa fa-exclamation-triangle fa-1x orange"></span>{% endif %}
 		   					<a class="comanda-action-edit-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
 		   						{{ rebut.numrebut }}</a>
 		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 			   			{% endif %}
 		   				{% for rebut in comanda.rebutsanulacions %} 
+							<br/>{% if rebut.comptabilitat == null %}<span class="fa fa-exclamation-triangle fa-1x orange"></span>{% endif %}
+		   				
 		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
 		   						<span class="red">(-){{ rebut.numrebut }}</span></a>
 		   					
@@ -197,11 +206,6 @@
 
 		{% if admin == true  %}
 			setMenuActive("menu-admcomandes");
-
-			$('.confirmar-pagament').click(function(e) {
-				e.preventDefault();
-				confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-			});
 
 		{% else %}
 			setMenuActive("menu-comandes");

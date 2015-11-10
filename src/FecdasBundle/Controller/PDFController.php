@@ -135,7 +135,7 @@ class PDFController extends BaseController {
 		$y_taula = $y_margin + 64;
 		$x_taula = $l_margin;
 		$h_taula = 145;
-		$y_taula2 = $y_taula + 80;
+		$y_taula2 = $y_taula + 78;
 		$y_rebut = $y_factuinfo + $h_factuinfo + $h_taula;
 		$x_rebut = $l_margin;
 		$h_rebut = 55;
@@ -193,9 +193,11 @@ class PDFController extends BaseController {
 		/* CLUB INFO */	
 		$pdf->SetTextColor(0, 0, 0); // Negre	
 		$pdf->SetFontSize(16);
-		$text = '<br/><b>FACTURA '.($factura->esAnulacio()?'ANUL·LACIÓ':'').'</b>';
-		
-		$pdf->writeHTMLCell($w_half, 0, $x_clubinfo, $y_clubinfo, $text, '', 1, false, true, 'L', false);
+		if ($factura->esAnulacio() == true) {
+			$text = '<br/><b>FACTURA ANUL·LACIÓ</b>';
+			
+			$pdf->writeHTMLCell($w_half, 0, $x_clubinfo, $y_clubinfo, $text, '', 1, false, true, 'L', false);
+		}
 		
 		$pdf->SetFontSize(11);
 		$tbl = '<p align="left" style="padding:0;"><b>' . $club->getNom(). '</b><br/>';
@@ -237,7 +239,7 @@ class PDFController extends BaseController {
 				
 				// En blanc
 				$tbl .= '<tr>';
-				$tbl .= '<td style="height: 262px; border: 1px solid #003366;" align="center">&nbsp;</td>';
+				$tbl .= '<td style="height: 257px; border: 1px solid #003366;" align="center">&nbsp;</td>';
 				$tbl .= '<td style="border: 1px solid #003366;" align="left">&nbsp;</td>';
 				$tbl .= '<td style="border: 1px solid #003366;" align="center">&nbsp;</td>';
 				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
@@ -260,7 +262,7 @@ class PDFController extends BaseController {
 						</tr>';
 				$tbl .= '<tr><td colspan="4" align="left" style="height: 41px; border: 1px solid #003366; color:#003366;">&nbsp;&nbsp;&nbsp;Altres càrrecs</td>';
 				$tbl .= '<td align="center" style="border: 1px solid #003366; color:#003366;">Import</td></tr>';
-				$tbl .= '<tr style="border-bottom: none;"><td colspan="4" style="height: 41px;">&nbsp;</td>';
+				$tbl .= '<tr style="border-bottom: none;"><td colspan="4" style="height: 38px;">&nbsp;</td>';
 				$tbl .= '<td align="center" style="border: 1px solid #003366; color:#003366;">TOTAL A PAGAR<span style="font-weight:bold;font-size:12px;">&nbsp;</span></td></tr>';
 				$tbl .= '</table>';
 				
@@ -280,7 +282,8 @@ class PDFController extends BaseController {
 					
 				$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 				
-				$strExtra = '';	
+				$strExtra = '';
+					
 				if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
 					foreach ($lineafactura['extra'] as $extra) {
 						$strExtra .= '<br/> -&nbsp;'.$extra;
@@ -299,10 +302,26 @@ class PDFController extends BaseController {
 				$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
 			
 			}
+
+			// Concepte
+			if ($factura->esAnulacio()) $strConcepte = 'Anul·lació factura '.$comanda->getFactura()->getNumFactura().' '.$comanda->getFactura()->getDatafactura()->format('d/m/Y');
+			else $strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
+			
+			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
+					<td width="96" align="center">&nbsp;</td>
+					<td width="240" align="left">'.$strConcepte.'</td>
+					<td width="58" align="center">&nbsp;</td>
+					<td width="81" align="center">&nbsp;</td>
+					<td width="86" align="center">&nbsp;</td>
+					</tr></table>';	
+				
+			
+			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
+
 			$pdf->SetFontSize(12);
 			// PEU 1 TOTAL PARCIAL
-			$pdf->setY($y_taula2+3);
-			$tbl = '<table border="0" cellpadding="6" cellspacing="0"><tr>
+			$pdf->setY($y_taula2+5);
+			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
 					<td width="96" align="center">'.number_format($factura->getImport(), 2, ',', '.').' €</td>
 					<td width="95" align="center">--</td>
 					<td width="145" align="center">&nbsp;</td>
@@ -315,7 +334,7 @@ class PDFController extends BaseController {
 			$pdf->SetFontSize(16);
 			// PEU 2 - TOTAL FINAL
 			$pdf->setY($y_taula2+26);
-			$tbl = '<table border="0" cellpadding="6" cellspacing="0"><tr>
+			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
 					<td width="96">&nbsp;</td><td width="95">&nbsp;</td><td width="145">&nbsp;</td><td width="90">&nbsp;</td>
 					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
 					</tr></table>';	
@@ -346,11 +365,7 @@ class PDFController extends BaseController {
 		$pdf->SetTextColor(0, 0, 0); // Negre
 		$pdf->SetFontSize(8);
 
-		if ($factura->esAnulacio()) {
-			$text = 'ANUL·LACIÓ FACTURA ORIGINAL '.$comanda->getFactura()->getNumFactura().'';
-		} else {
-			$text = 'FACTURA CORRESPONENT A LA COMANDA '.$comanda->getNumComanda().'. ';
-		}
+		$text = 'Número de compte corrent LA CAIXA 2100-0900-95-0211628657';
 		
 		$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+31, $text, '', 1, false, true, 'L', false);
 
@@ -424,7 +439,7 @@ class PDFController extends BaseController {
 
 		} else {
 
-			$y_margin = 15 + $pdf->getY(); 
+			$y_margin = 14 + $pdf->getY(); 
 		}
 		
 		$r_margin = 26;
@@ -486,7 +501,7 @@ class PDFController extends BaseController {
 		
 		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
 		$pdf->SetAutoPageBreak 	(false, 5);
-		$pdf->SetFontSize(7.8);
+		$pdf->SetFontSize(8.5);
 		
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
 		$showTemplate = ($this->get('session')->get('username', '') != self::MAIL_FACTURACIO) &&
@@ -530,7 +545,7 @@ class PDFController extends BaseController {
 	   	}
 		
 		//$pdf->setFontSpacing(0.5);
-    	//$pdf->setFontStretching(105);
+    	$pdf->setFontStretching(125);
 		
 		/* REBUT INFO */	
 		$hideText = '';
@@ -572,8 +587,8 @@ class PDFController extends BaseController {
 			if ($rebut->esAnulacio()) $concepte = 'Anul·lació rebut, import acumulat al saldo del club';
 			else $concepte = 'Ingrés acumulat al saldo del club';
 		} else {
-			if ($rebut->getNumFactures() == 1) $concepte = 'Liquidació FACTURA: ';
-			else $concepte = 'Liquidació FACTURES: ';
+			if ($rebut->getNumFactures() == 1) $concepte = 'FACTURA: ';
+			else $concepte = 'FACTURES: ';
 			$concepte .= $rebut->getLlistaNumsFactures();
 
 			if ($rebut->getRomanent() > 0) {
@@ -582,8 +597,8 @@ class PDFController extends BaseController {
 			}
 		}
 	
-		if ($rebut->getComentari()!=null && $rebut->getComentari() != '') 
-				$concepte .= '<br/><i>'.$rebut->getComentari().'</i>';
+		/*if ($rebut->getComentari()!=null && $rebut->getComentari() != '') 
+				$concepte .= '<br/><i>'.$rebut->getComentari().'</i>';*/
 		
 		if ($showTemplate == true) {
 			$txt = '<p align="left" style="padding:0;">en concepte de:</p>';

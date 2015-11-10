@@ -942,7 +942,7 @@
 	    	        	} else {
 	    	        		/* Alex. Validar nou check estranger */
 	    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());*/
-	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#persona-estranger").is(':checked'));
+	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#persona_estranger").is(':checked'));
 	    	        		if (error == "") {
 	    	        			submitPerson("save", origenLlicencia);
 	    	        		} else {

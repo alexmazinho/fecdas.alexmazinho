@@ -1447,88 +1447,17 @@ class PDFController extends BaseController {
 			$width = 86; //Original
 			$height = 54; //Original
 			
-			// Posicions
-			/*$xTit = 0;
-			$yTit =	12;		
-			$xNom = 10;
-			$yNom =	28;		
-			$xDni = 18;
-			$yDni =	32;		
-			$xCat = 20.5;
-			$yCat =	35.5;		
-			$xNai = 19.5;
-			$yNai =	39.5;		
-			$xClu = 12;
-			$yClu =	43;		
-			$xTlf = 15;
-			$yTlf =	47.2;		
-			$xCad = 57;
-			$yCad =	47;*/		
-			$xTit = 0;
-			$yTit =	12;		
-			$xNom = 10;
-			$yNom =	27.4;		
-			$xDni = 18;
-			$yDni =	32.1;		
-			$xCat = 20.5;
-			$yCat =	36.7;		
-			$xNai = 19.5;
-			$yNai =	41.1;		
-			$xClu = 12;
-			$yClu =	45.6;		
-			$xTlf = 15;
-			$yTlf =	50.1;		
-			$xCad = 61;
-			$yCad =	50.1;		
-								
 			foreach ($llicenciesSorted as $llicencia) {
-
-				$persona = $llicencia->getPersona();
-				if ( $persona == null) continue;				
+								
 				// Add a page
 				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 
-	 			//$pdf->setVisibility('view'); // or screen
-
-	 			/*$pdf->Image('images/federativa-cara.jpg', 0, 0, 
-						$width, $height, 'jpg', '', '', false, 150, 
-						'', false, false, 0, false, false, false);*/
-				
-	 			//$pdf->Rect(0, 0, $width, $height, 'DF', array(), array(220, 220, 200));
-				
-				//$pdf->setVisibility('all');
-
-				$datacaduca = $parte->getDatacaducitat('printparte');
-				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);
-
-				$pdf->SetFont('helvetica', 'B', 10, '', true);
-				
-				$pdf->SetXY($xTit, $yTit);
-				$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
-
-				$pdf->SetFont('dejavusans', 'B', 8);
-
-				$pdf->SetXY($xNom, $yNom);
-				$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
-
-				$pdf->SetXY($xDni, $yDni);
-				$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
-
-				$pdf->SetXY($xCat, $yCat);
-				$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-				
-				$pdf->SetXY($xNai, $yNai);
-				$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
-				
-				$pdf->SetXY($xClu, $yClu);
-				$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
-
-				$pdf->SetXY($xTlf, $yTlf);
-				$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
-				
-				$pdf->SetXY($xCad, $yCad);
-				$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
-
+				if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $parte, $llicencia);
+				if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+					$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+					//$this->printPlasticGeneral($pdf, $parte, $llicencia);
+					$this->printPlasticTecnocampus($pdf, $parte, $llicencia);
+				}
 			}
 			// reset pointer to the last page
 			$pdf->lastPage();
@@ -1553,6 +1482,166 @@ class PDFController extends BaseController {
 		}
 	
 		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
+	}
+	
+	private function printPlasticTecnocampus($pdf, $parte, $llicencia) {
+		// Posicions
+		$xPol = 0;
+		$yPol =	2;		
+		
+		$xTit = 0;
+		$yTit =	12;		
+		$xNom = 10;
+		$yNom =	27.4;		
+		$xDni = 18+5;
+		$yDni =	32.1;		
+		$xCat = 20.5+6;
+		$yCat =	36.7;		
+		$xNai = 19.5+7;
+		$yNai =	41.1;		
+		$xClu = 12;
+		$yClu =	45.6;		
+		$xTlf = 15+4;
+		$yTlf =	50.1+0.5;		
+		$xCad = 61+7;
+		$yCad =	50.1+0.5;
+		
+		
+		$polissa = $parte->getTipus()->getPolissa();
+		
+		// Dades
+		$pdf->SetFont('helvetica', 'B', 9, '', true);
+		$pdf->setFontStretching(90);		
+		$pdf->SetXY($xPol, $yPol);
+		$pdf->MultiCell(0,0,'Número de pòlissa: '.$polissa,0,'C',false);		
+		
+		$persona = $llicencia->getPersona();
+		if ( $persona == null) return;
+		
+		$datacaduca = $parte->getDatacaducitat('printparte');
+		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
+				
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
+		$pdf->setFontStretching(100);		
+		$pdf->SetXY($xTit, $yTit);
+		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
+
+		$pdf->SetFont('dejavusans', 'B', 8);
+
+		$pdf->SetXY($xNom, $yNom);
+		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+
+		$pdf->SetXY($xDni, $yDni);
+		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
+
+		$pdf->SetXY($xCat, $yCat);
+		$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
+				
+		$pdf->SetXY($xNai, $yNai);
+		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
+				
+		$pdf->SetXY($xClu, $yClu);
+		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+
+		$pdf->SetFont('dejavusans', 'B', 7);
+		$pdf->SetXY($xTlf, $yTlf);
+		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
+				
+		$pdf->SetXY($xCad, $yCad);
+		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
+
+		// Títols
+		$xTit = 0;
+		$yTit =	12;		
+		$y_offset = 0.3;
+		$xCad_tit = 37;
+		$x_titols = 0.5;
+
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
+				
+		$pdf->SetXY($xTit, $yTit);
+		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
+
+		$pdf->SetFont('dejavusans', 'B', 7);
+		//$pdf->setFontSpacing(0.5);
+    	//$pdf->setFontStretching(80);
+
+		$pdf->SetXY($x_titols, $yNom+$y_offset);
+		$pdf->Cell(0, 0, 'Nom:', 0, 1, 'L');
+
+		$pdf->SetXY($x_titols, $yDni+$y_offset);
+		$pdf->Cell(0, 0, 'DNI/Passaport:', 0, 1, 'L');
+
+		$pdf->SetXY($x_titols, $yCat+$y_offset);
+		$pdf->Cell(0, 0, 'Categoria/Nivell:', 0, 1, 'L');
+				
+		$pdf->SetXY($x_titols, $yNai+$y_offset);
+		$pdf->Cell(0, 0, 'Data Naixement:', 0, 1, 'L');
+				
+		$pdf->SetXY($x_titols, $yClu+$y_offset);
+		$pdf->Cell(0, 0, 'Entitat:', 0, 1, 'L');
+
+		$pdf->SetXY($x_titols, $yTlf+$y_offset);
+		$pdf->Cell(0, 0, 'Telf. Entitat:', 0, 1, 'L');
+				
+		$pdf->SetXY($xCad_tit, $yCad+$y_offset);
+		$pdf->Cell(0, 0, 'Vàlida fins/Valid until:', 0, 1, 'L');
+		
+	}
+	
+	private function printPlasticGeneral($pdf, $parte, $llicencia) {
+		// Posicions
+		$xTit = 0;
+		$yTit =	12;		
+		$xNom = 10;
+		$yNom =	27.4;		
+		$xDni = 18;
+		$yDni =	32.1;		
+		$xCat = 20.5;
+		$yCat =	36.7;		
+		$xNai = 19.5;
+		$yNai =	41.1;		
+		$xClu = 12;
+		$yClu =	45.6;		
+		$xTlf = 15;
+		$yTlf =	50.1;		
+		$xCad = 61;
+		$yCad =	50.1;
+		
+		$persona = $llicencia->getPersona();
+		if ( $persona == null) return;
+		
+		$datacaduca = $parte->getDatacaducitat('printparte');
+		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
+
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
+				
+		$pdf->SetXY($xTit, $yTit);
+		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
+
+		$pdf->SetFont('dejavusans', 'B', 8);
+
+		$pdf->SetXY($xNom, $yNom);
+		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+
+		$pdf->SetXY($xDni, $yDni);
+		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
+
+		$pdf->SetXY($xCat, $yCat);
+		$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
+				
+		$pdf->SetXY($xNai, $yNai);
+		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
+				
+		$pdf->SetXY($xClu, $yClu);
+		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+
+		$pdf->SetXY($xTlf, $yTlf);
+		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
+				
+		$pdf->SetXY($xCad, $yCad);
+		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
+		
 	}
 	
 	private function getTitolPlastic($parte, $datacaduca = null) {

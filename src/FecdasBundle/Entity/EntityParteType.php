@@ -59,10 +59,14 @@ class EntityParteType {
 	protected $actiu;
 	
 	/**
-	 * @ORM\Column(type="string")
+	 * @ORM\Column(type="string", length=2)
 	 */
 	protected $polissa;
 	
+	/**
+	 * @ORM\Column(type="string", length=2)
+	 */
+	protected $template;
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityCategoria", mappedBy="tipusparte")
@@ -291,6 +295,25 @@ class EntityParteType {
         return $this->polissa;
     }
 	
+	/**
+     * Set template
+     *
+     * @param string $template
+     */
+    public function setTemplate($template)
+    {
+        $this->template = $template;
+    }
+
+    /**
+     * Get template
+     *
+     * @return string 
+     */
+    public function getTemplate()
+    {
+        return $this->template;
+    }
 	
     /**
      * Add categories

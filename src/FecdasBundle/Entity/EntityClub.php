@@ -194,7 +194,44 @@ class EntityClub {
 	 */
 	protected $ajustsubvencions;
 	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $dataalta;
+
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $databaixa;
+
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $datacreacio;
+		
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $datajunta; // Última
 	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $estatuts;
+	
+	/**
+	 * 
+	 * @ORM\Column(type="string", length=10)
+	 */
+	protected $registre;  // Num registre	
+	
+	/**
+	 * 
+	 * @ORM\Column(type="text")
+	 */
+	protected $carrecs;  // json	
+
+
 	public function __construct() {
 		$this->activat = true;
 		$this->impressio = false;
@@ -1042,7 +1079,7 @@ class EntityClub {
     	$this->tipusparte = $tipusparte;
     }
     
-    
+     
     /**
      * Set estat
      *
@@ -1243,6 +1280,150 @@ class EntityClub {
     {
     	return $this->ajustsubvencions;
     }
+
+
+	/**
+     * Set dataalta
+     *
+     * @param date $dataalta
+     */
+    public function setDataalta($dataalta)
+    {
+        $this->dataalta = $dataalta;
+    }
+
+    /**
+     * Get dataalta
+     *
+     * @return date 
+     */
+    public function getDataalta()
+    {
+        return $this->dataalta;
+    }
+		
+	/**
+     * Set databaixa
+     *
+     * @param date $databaixa
+     */
+    public function setDatabaixa($databaixa)
+    {
+        $this->databaixa = $databaixa;
+    }
+
+    /**
+     * Get databaixa
+     *
+     * @return date 
+     */
+    public function getDatabaixa()
+    {
+        return $this->databaixa;
+    }	
+	
+	/**
+     * Set datacreacio
+     *
+     * @param date $datacreacio
+     */
+    public function setDatacreacio($datacreacio)
+    {
+        $this->datacreacio = $datacreacio;
+    }
+
+    /**
+     * Get datacreacio
+     *
+     * @return date 
+     */
+    public function getDatacreacio()
+    {
+        return $this->datacreacio;
+    }
+	
+	/**
+     * Set datajunta
+     *
+     * @param date $datajunta
+     */
+    public function setDatajunta($datajunta)
+    {
+        $this->datajunta = $datajunta;
+    }
+
+    /**
+     * Get datajunta
+     *
+     * @return date 
+     */
+    public function getDatajunta()
+    {
+        return $this->datajunta;
+    }	
+	
+	 /**
+     * Set estatuts
+     *
+     * @param boolean $estatuts
+     */
+    public function setEstatuts($estatuts)
+    {
+    	$this->estatuts = $estatuts;
+    }
+    
+    /**
+     * Get estatuts
+     *
+     * @return boolean
+     */
+    public function getEstatuts()
+    {
+    	return $this->estatuts;
+    }
+	
+	
+	/**
+     * Set registre
+     *
+     * @param string $registre
+     */
+    public function setRegistre($registre)
+    {
+        $this->registre = $registre;
+    }
+
+    /**
+     * Get registre
+     *
+     * @return string 
+     */
+    public function getRegistre()
+    {
+        return $this->registre;
+    }
+	
+	/**
+     * Set carrecs
+     *
+     * @param string $carrecs
+     */
+    public function setcarrecs($carrecs)
+    {
+        $this->carrecs = $carrecs;
+    }
+
+    /**
+     * Get carrecs
+     *
+     * @return string 
+     */
+    public function getcarrecs()
+    {
+        return $this->carrecs;
+    }
+	
+
 
     /**
      * Add usuaris

@@ -332,7 +332,32 @@ class SecurityController extends BaseController
 		
 		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
-   		
+
+		
+		$carrecs = array();
+		$aux = array();
+		$aux[] = array('id' => 329, 'cid' => 1);
+		$aux[] = array('id' => 517, 'cid' => 2);
+
+		//$club->setCarrecs(json_encode($aux));
+
+		$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+		$jsonCarrecs = 	$aux;
+
+		// echo json_encode($aux); => [{"id":329,"cid":"President"},{"id":517,"cid":"Vicepresident"}] 
+		
+		
+		foreach ($aux as $value) {
+			
+			$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value['id']);
+			$carrecs[] = array(
+					'id' 		=> $value['id'], 
+					'carrec' 	=> BaseController::getCarrec($value['cid']), 
+					'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
+			);
+		}
+		
+		
 		
    		if ($request->getMethod() == 'POST') {
 			try {
@@ -370,7 +395,7 @@ class SecurityController extends BaseController
 						throw new \Exception("El compte comptable ha de tenir longitud 7 i ser numèric");
 					}
 					$checkcompte =  $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->findOneBy(array('compte' => $club->getCompte()));
-					if ($checkcompte != null) {
+					if ($checkcompte != null && $club->getCodi() != $checkcompte->getCodi())  {
 						$tab = 2;
 						throw new \Exception("El compte ".$club->getCompte()." ja existeix per al club " . $checkcompte->getNom());
 					}
@@ -424,7 +449,7 @@ class SecurityController extends BaseController
 	   				$form = $this->createForm(new FormClub($options), $club);
 	   				
 	   				return $this->render('FecdasBundle:Security:club.html.twig',
-	   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
+	   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab, 'carrecs' => $carrecs)));
 	   			}
 			} catch (\Exception $e) {
 				$em->clear();
@@ -434,7 +459,7 @@ class SecurityController extends BaseController
    		}
    		
     	return $this->render('FecdasBundle:Security:club.html.twig', 
-    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab)));
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab, 'carrecs' => $carrecs)));
     }
 
     private function obtenirCodiClub() {

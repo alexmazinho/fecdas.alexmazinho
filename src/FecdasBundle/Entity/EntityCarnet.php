@@ -24,21 +24,6 @@ class EntityCarnet {
 	 **/
 	protected $producte;
 	
-	/*
-	 * @ORM\Column(type="string", length=40)
-	 */
-	/*protected $tipus; <== Passa a ser la descripció del producte */ 
-
-	/*
-	 * @ORM\Column(type="integer")
-	 */
-	/*protected $codisortida;*/
-
-	/*
-	 * @ORM\Column(type="decimal", precision=6, scale=2)
-	 */
-	/*protected $preu;*/
-
 	/**
 	 * @ORM\Column(type="boolean")
 	 */

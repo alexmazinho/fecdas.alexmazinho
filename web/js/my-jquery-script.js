@@ -750,7 +750,7 @@
 	        
 	        var id = $("#parte_llicencies_persona_select").val();
 	        if (id == "") id = 0;
-	        showPersonModal(id, url, true);
+	        showPersonModal(id, url, 'llicencia');
 	    });
 	};
 	
@@ -764,9 +764,24 @@
 	        
 	        var id = $(this).parent().parent().find(".assegurat-id").html(); 
 	        var url = $(this).attr("href");
-	        showPersonModal(id, url, false);
+	        showPersonModal(id, url, 'assegurats');
 	    });
 	};
+	
+	showPersonClickClubs = function() {
+	    //select all the a tag with name equal to modal
+		$('#formclub-openmodal')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
+	        var id = 0;
+	        var url = $(this).attr("href");
+	        showPersonModal(id, url, 'clubs');
+	    });
+	};
+	
 	
 	showMask = function() {
         // Show mask before overlay
@@ -794,7 +809,7 @@
 		$('.block-mask').remove();
 	};
 	
-	showPersonModal = function(id, url, origenLlicencia) {
+	showPersonModal = function(id, url, origen) {
         // Show mask before overlay
         //Get the screen height and width
 		var maskHeight = $(document).height();
@@ -826,7 +841,7 @@
 			formFocus();
 			autocompleters();
 			actionsModalOverlay();
-			actionsPersonaForm(origenLlicencia);
+			actionsPersonaForm(origen);
 			
 			$("select#parte_persona_addrprovincia").select2({
 				minimumInputLength: 2,
@@ -899,7 +914,7 @@
 		$('#parte_persona_addrcp').autocomplete(autocompletersConfig('cp'), { my : "right top", at: "right bottom", collision: "flip" });
 	};
 	
-	actionsPersonaForm = function(origenLlicencia) {
+	actionsPersonaForm = function(origen) {
 		$('#formpersona-button-remove').click(function (e) {
 	        //Cancel the link behavior
 	        e.preventDefault();
@@ -912,7 +927,7 @@
 		              //window.location.href = targetUrl;
 	    	        	$(this).dialog("close");
 	    	        	//$("#formpersona").submit();	 // Submit form
-	    	        	submitPerson("remove", origenLlicencia);
+	    	        	submitPerson("remove", origen);
 	        		},
 	            	"Cancel·lar" : function() {
 	              		$(this).dialog("close");
@@ -938,13 +953,13 @@
 	    	        	$(this).dialog("close");
 	    	        	if ($('#parte_persona_id').val() != 0) {
 	    	        		// Modificació no valida DNI
-	    	        		submitPerson("save", origenLlicencia);
+	    	        		submitPerson("save", origen);
 	    	        	} else {
 	    	        		/* Alex. Validar nou check estranger */
 	    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());*/
 	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#persona_estranger").is(':checked'));
 	    	        		if (error == "") {
-	    	        			submitPerson("save", origenLlicencia);
+	    	        			submitPerson("save", origen);
 	    	        		} else {
 	    	        			dialegError("Error", error, 400, 0);
 	    	        		};
@@ -967,7 +982,7 @@
 	    });   
 	};
 	
-	submitPerson = function(action, origenLlicencia) {
+	submitPerson = function(action, origen) {
 		
 		$('#edicio-persona').hide();
 		
@@ -975,7 +990,7 @@
 		//var params = $('#formpersona').serializeArray();
 		var params = $('#formpersona').serialize();
 
-		if (origenLlicencia == true) {
+		if (origen == 'llicencia') {
 			var part = { 'id' : $("#parte_id").val(), 'dataalta': $("#parte_dataalta").val(), 'tipus': $('#parte_tipus').val() };
 	        var llic = { 'id' : $('#parte_llicencies_id').val() };
 			
@@ -988,7 +1003,7 @@
 		//params.push( {'name':'action','value': action} );
 		//params.push( {'name':'origen','value': (origenLlicencia?'llicencia':'assegurats')} );
 		params += '&'+$.param({'action': action} );
-		params += '&'+$.param({'origen': (origenLlicencia?'llicencia':'assegurats')} );
+		params += '&'+$.param({'origen': origen} );
 
 		
 		$.post(url, params,
@@ -998,7 +1013,7 @@
 			
 			$("#edicio-persona").html("");
 			
-			if (origenLlicencia == true) loadLlicenciaData(data);
+			if (origen == 'llicencia') loadLlicenciaData(data);
 			else location.reload();  
 		}).fail( function(xhr, status, error) {
 			 // xhr.status + " " + xhr.statusText, status, error

@@ -3,6 +3,13 @@
 
 {% block title %}Aplicació gestió FECDAS. Gestió de clubs i usuaris{% endblock %}
 
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
 {% block body %}
 	<form id="formclub" action="{{ path('FecdasBundle_club') }}" method="post" {{ form_enctype(form) }}  class="appform">
 	    <header>
@@ -61,11 +68,137 @@
 				{% if admin == true %} 
 				<li><a href="#formclub-dades-tab3">Llicències admeses</a></li>
 				<li><a href="#formclub-dades-tab4">Saldos</a></li>
+				<li><a href="#formclub-dades-tab5">Dates i càrrecs</a></li>
 				{% if form.nouclub is not defined %} 
-					<li><a href="#formclub-dades-tab5">Nou usuari</a></li>
+					<li><a href="#formclub-dades-tab6">Nou usuari</a></li>
 				{% endif %}
 				{% endif %}
 			</ul>
+			<div id="formclub-dades-tab5" class="formclub-tab">		
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Altres dades</h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Registre</span>
+								{{ form_label(form.registre, 'Número', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.registre, { 'attr': {'class': 'form-control','placeholder':'Número' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-7"><div class="col-md-comment">Número de registre al Consell Català de l'Esport</div></div>
+					<div class="col-md-2 col-last-right">
+						<div class="checkbox">
+					    	<label>{{ form_widget(form.estatuts) }} Estatuts </label>
+						</div>
+			        	
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Alta</span>
+								{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Baixa</span>
+								{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Darrera junta</span>
+								{{ form_widget(form.datajunta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Creació</span>
+								{{ form_widget(form.datacreacio, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Càrrecs junta directiva</h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-5">
+						<div class="row">
+							<div class="col-md-8">
+								<div class="form-group">
+									<div class="input-group" >
+										<span class="input-group-addon required">Càrrec</span>
+							  			{{ form_label(form.carrec, 'Càrrec', { 'label_attr': {'class': 'sr-only'} }) }}
+							  			{{ form_widget(form.carrec, { 'attr': {'class': 'form-control'} }) }}
+									</div>
+								</div>
+							</div>
+							<div class="col-md-10">
+								<div class="form-group">
+									<div class="input-group" >
+										<span class="input-group-addon required">Federat</span>
+							  			{{ form_label(form.addjunta, 'Federat', { 'label_attr': {'class': 'sr-only'} }) }}
+							  			{{ form_widget(form.addjunta, { 'attr': {'class': 'form-control'} }) }}
+									</div>
+								</div>
+							</div>
+							<div class="col-md-2">
+								<a id="formclub-addcarrec" href="javascript:void(0);" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
+								{{ form_widget(form.carrecs) }}
+							</div>
+							<div class="col-md-6">
+								<a id="formclub-openmodal" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_persona') }}" name="modal" type="button">
+									Nova persona  <i class="fa fa-users"></i>
+								</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-7">
+						{% if carrecs|length > 0 %}
+						<div class="table-scroll">
+							<ol id="list-data">
+								{% for carrec in carrecs %}
+								<li class="data-detall">
+									<div class="data-detall-cell userclub-junta-nom">{{ carrec.nom }}</div>
+									<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
+									<div class="data-detall-cell userclub-junta-remove">
+										<a href="javascript:void(0);" class="btn link formclub-removecarrec" title="Esborrar">
+											<i class="fa fa-trash fa-1x red"></i>
+										</a>
+									</div>
+								</li>
+								{% endfor %}
+				   			</ol>
+						</div>
+						{% else %}
+							<div class="alert alert-info form-alert">
+								<span class="fa fa-info-cicle fa-1x"></span>Sense informació de la Junta 
+							</div>
+						{% endif %}
+					</div>
+				</div>
+
+			</div>
 			<div id="formclub-dades-tab1" class="formclub-tab">		
 				<div class="row">
 					<div class="col-md-12">
@@ -368,7 +501,7 @@
 					</div>
 				</div>
 	        </div>
-	        <div id="formclub-dades-tab5" class="formclub-tab" {% if form.nouclub is defined %}  style="display:none" {% endif %} >
+	        <div id="formclub-dades-tab6" class="formclub-tab" {% if form.nouclub is defined %}  style="display:none" {% endif %} >
 				<div class="row">
 					<div class="col-md-3">
 						<div class="form-group">
@@ -446,12 +579,14 @@
 	<div id="llista-usuarisclub">
 	{% include "FecdasBundle:Security:clubllistausers.html.twig" %}
 	</div> 
-     
+    <div id="edicio-persona" class="finestra-overlay"></div> 
 {% endblock %}
 
 {% block javascripts %}
 
 {{ parent() }}
+
+<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
 <script type="text/javascript">
 
@@ -495,7 +630,57 @@
 			var url = "{{ path('FecdasBundle_club') }}";
 			window.location = url+'?codiclub='+$(this).val();
 		});
+
+		$("select#club_addjunta").select2({
+			minimumInputLength: 2,
+			allowClear: false,
+			placeholder: "Cercar federat del club... ",
+		});
+
 		
+		var current = new Date();
+		var maxdate = new Date (current.getFullYear(), current.getMonth() + 1, current.getDay());
+		initDateTimePicker ( // 1950
+			$( '#club_dataalta' ), 
+			new Date (1950, current.getMonth() + 1, current.getDay()), 
+			maxdate, 
+			current, 
+			'dataalta-picker', 
+			false,
+			''
+		);
+
+		initDateTimePicker ( // 1990
+				$( '#club_databaixa' ), 
+				new Date (1990, current.getMonth() + 1, current.getDay()), 
+				maxdate, 
+				current, 
+				'databaixa-picker', 
+				false,
+				''
+		);
+
+		initDateTimePicker ( // 1900 
+				$( '#club_datacreacio' ), 
+				new Date (1900, current.getMonth() + 1, current.getDay()), 
+				maxdate, 
+				current, 
+				'datacreacio-picker', 
+				false,
+				''
+		);
+
+		initDateTimePicker ( // 1980 
+				$( '#club_datajunta' ), 
+				new Date (1980, current.getMonth() + 1, current.getDay()), 
+				maxdate, 
+				current, 
+				'datajunta-picker', 
+				false,
+				''
+		);
+
+		showPersonClickClubs();
 	});
 
 </script>

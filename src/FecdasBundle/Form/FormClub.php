@@ -8,6 +8,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use FecdasBundle\Entity\EntityClub;
+use FecdasBundle\Controller\BaseController;
 
 class FormClub extends AbstractType {
 
@@ -45,6 +46,34 @@ class FormClub extends AbstractType {
 					'mapped' => false,
 					'data'	=> $club->getSaldo()
 				));
+				
+				// Cerca federats club
+				$form->add('addjunta', 'entity', array(
+					'class' => 'FecdasBundle:EntityPersona',
+					'query_builder' => function($repository) use ($club) {
+						return $repository->createQueryBuilder('e')
+							->where('e.club = :codiclub')
+							->andWhere('e.databaixa is null')
+							->orderBy('e.cognoms', 'ASC')
+							->setParameter('codiclub', $club->getCodi());
+						},
+					'choice_label' 	=> 'llistaText',
+					'empty_value' 	=> '',
+					'required'  	=> false,
+					'mapped'		=> false,
+					'property_path' => 'persona',
+					'disabled'		=> $this->options['nou'] == true
+				));
+				
+				$form->add('carrec', 'choice', array(
+					'required' 		=> false,
+					'mapped'		=> false,
+					'choices' 		=> BaseController::getCarrecs(),
+					'empty_value' 	=> 'Escollir càrrec...',
+					'disabled'		=> $this->options['nou'] == true
+				));
+				
+				$form->add('carrecs', 'hidden');
    				
 			}
 		});
@@ -255,6 +284,50 @@ class FormClub extends AbstractType {
 				'grouping' => true,
 				'precision' => 2
 		));
+		
+		// Junta
+		$builder->add('dataalta', 'date', array(
+				'required'  	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> '',
+				'format' 		=> 'dd/MM/yyyy'
+		));
+
+		$builder->add('databaixa', 'date', array(
+				'required'  	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> '',
+				'format' 		=> 'dd/MM/yyyy'
+		));
+
+		$builder->add('datacreacio', 'date', array(
+				'required'  	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> '',
+				'format' 		=> 'dd/MM/yyyy'
+		));
+
+		$builder->add('datajunta', 'date', array(
+				'required'  	=> true,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> '',
+				'format' 		=> 'dd/MM/yyyy'
+		));
+		
+		$builder->add('estatuts', 'checkbox', array(
+				'required'  => false,
+		));
+		
+		$builder->add('registre', 'text', array(
+				'required'  => false,
+		));
+		
+		
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

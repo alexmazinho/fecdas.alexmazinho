@@ -1577,6 +1577,8 @@ select#parte_renovar_tipus { width: 240px; }
 	padding: 10px 15px;
 }
 
+.col-md-comment { /*position: absolute; bottom: -10px;*/ color: #1240a0; font-size: 0.9em; line-height: 2.8; }
+
 #llista-usuarisclub #list-data {
 	max-height: 120px;
 }
@@ -1635,6 +1637,10 @@ select#club_tipusparte {
 
 #formclub-dades-tab4 #formclub-saldoclub label,
 #formclub-dades-tab4 #formclub-saldoclub input { font-weight: bold }
+
+.data-detall-cell.userclub-junta-nom { text-align: left; padding: 2px 6px; }
+.data-detall-cell.userclub-junta-carrec { text-align: left; padding: 2px 6px; }
+.data-detall-cell.userclub-junta-remove { text-align: right; padding: 2px 6px;  } 
 
 
 input#user_club_user { width: 298px; }

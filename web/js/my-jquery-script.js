@@ -845,7 +845,7 @@
 			});
 			/* Check estranger */
 			if ($('#parte_persona_id').val() != 0) {
-				$("#formpersona-estranger").hide();
+				//$("#formpersona-estranger").hide();
 			}
 			// Show Div
 			showModalDiv('#edicio-persona');

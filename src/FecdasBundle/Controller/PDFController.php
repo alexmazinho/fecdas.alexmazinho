@@ -488,7 +488,7 @@ class PDFController extends BaseController {
 		$x_total = $l_margin;
 		$y_total_offset_1 = 6; 						// Import
 		$x_total_col2 = $l_margin +60;
-		$y_total_offset_2 = 10; 					// Lloc i data
+		$y_total_offset_2 = 9; 						// Lloc i data
 		
 		//$pdf->Rect($x_rebut, $y_rebut + 1, $w_half*2, $h_rebut, 'F', '', array(240, 240, 240) ); // cyan
 		
@@ -500,7 +500,7 @@ class PDFController extends BaseController {
 		$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
 		
 		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
-		$pdf->SetAutoPageBreak 	(false, 5);
+		$pdf->SetAutoPageBreak 	(false, 25);
 		$pdf->SetFontSize(8.5);
 		
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
@@ -537,7 +537,7 @@ class PDFController extends BaseController {
 			$txt .= 'Adreça electrònica: info@fecdas.cat<br/>';
 			$txt .= 'www.fecdas.cat<br/>';
 			$txt .= 'NIF: Q5855006B</span></p>';
-			$pdf->writeHTMLCell($w_fedeinfo, $h_fedeinfo, $x_corp+$w_fedelogo+$w_genelogo+10, $y_corp, $txt, '', 1, false, true, 'L', false);
+			$pdf->writeHTMLCell($w_fedeinfo, $h_fedeinfo, $x_corp+$w_fedelogo+$w_genelogo+5, $y_corp, $txt, '', 1, false, true, 'L', false);
 			
 			
 	   		// Stop Transformation
@@ -551,15 +551,15 @@ class PDFController extends BaseController {
 		$hideText = '';
 		if ($showTemplate != true) $hideText = 'color:white;'; 
 		
-		$txt = '<p align="left" style="padding:0;'.$hideText.'">Rebut núm.&nbsp;&nbsp;&nbsp;';
-		$txt .= '<span style="color:#000000; font-size:12px;">'.$rebut->getNumRebut().'</span></p>';
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">Rebut núm.&nbsp;';
+		$txt .= '<span style="color:#000000; font-size:12px;">'.$rebut->getNumRebutCurt().'</span></p>';
 		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row1, $txt, '', 1, false, true, 'L', false);
 		
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">Hem rebut de:&nbsp;&nbsp;&nbsp;';
 		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getNom().'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_header_row1, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
-		$txt = '<p align="left" style="padding:0;'.$hideText.'">NIF:&nbsp;&nbsp;&nbsp;';
+		$txt = '<p align="left" style="padding:0;'.$hideText.'">NIF:&nbsp;';
 		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getCif().'</span></p>';
 		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
@@ -612,14 +612,14 @@ class PDFController extends BaseController {
 		
 		/* REBUT FOOTER */	
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">Mitjançant:&nbsp;&nbsp;&nbsp;';
-		$txt .= '<span style="color:#000000; font-size:14px;">'.BaseController::getTextTipusPagament($rebut->getTipuspagament()) .'</span></p>';
+		$txt .= '<span style="color:#000000; font-size:12px;">'.BaseController::getTextTipusPagament($rebut->getTipuspagament()) .'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_total, $y_total, $txt, '', 1, false, true, 'L', false);
 				
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">Són:</p>';
 		$pdf->writeHTMLCell(10, 0, $x_total + $x_total_col2, $y_total + $y_total_offset_1, $txt, '', 1, false, true, 'L', false);
 		$txt = '<p align="right" style="padding:0;'.$hideText.'"><span style="color:#000000; font-size:14px;">'.number_format($rebut->getImport(), 2, ',', '.');
 		$txt .= '</span>&nbsp;&nbsp;&nbsp; Euros</p>';
-		$pdf->writeHTMLCell(0, 0, $x_total + $x_total_col2+11, $y_total + $y_total_offset_1-2, $txt, '', 1, false, true, 'L', false);
+		$pdf->writeHTMLCell(0, 0, $x_total + $x_total_col2+11, $y_total + $y_total_offset_1 - 1, $txt, '', 1, false, true, 'L', false);
 		
 		$oldLocale = setlocale(LC_TIME, 'ca_ES.utf8');
 		$mesData = $rebut->getDatapagament()->format('m');
@@ -629,8 +629,10 @@ class PDFController extends BaseController {
 		$dateFormated = utf8_encode( strftime('%A %e '.$litDe.'%B de %Y', $rebut->getDatapagament()->format('U') ) );
 		setlocale(LC_TIME, $oldLocale);
 		
+		$pdf->setFontStretching(100);
+		
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">Sant Adrià del Besòs, &nbsp;&nbsp;&nbsp;';
-		$txt .= '<span style="color:#000000; font-size:14px;">'. $dateFormated .'</span></p>';
+		$txt .= '<span style="color:#000000; font-size:12px;">'. $dateFormated .'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_total, $y_total+$y_total_offset_2, $txt, '', 1, false, true, 'L', false);
 		
 		

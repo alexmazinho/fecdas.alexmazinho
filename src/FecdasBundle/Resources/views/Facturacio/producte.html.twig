@@ -266,8 +266,8 @@
 				e.preventDefault();
 
 				var url = $(this).attr('href');
-				var parentRow = $(this).parents('data-detall'); 
-				
+				var parentRow = $(this).parents('li.data-detall'); 
+
 				var strHtml = '<p>Segur que vols esborrar aquest preu?</p>';
 				dialegConfirmacio(strHtml, 'Baixa preu', 'auto', 400, function() { 
 

@@ -18,50 +18,44 @@
     </header>
 	
     {% include 'FecdasBundle:Includes:messages.html.twig' %}
-        
-   	<form id="testform" action="{{ path('FecdasBundle_notificacio') }}" method="post" {{ form_enctype(form) }} class="appform">
-   	{{ form_errors(form) }}
-
-	<div class="error-box"></div>
-   	<div id="urltest">
-   	<div>
-		{{ form_label(form.accio, 'Acció', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.accio, { 'id': 'accio', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
-   	<div>
-		{{ form_label(form.Ds_Response, 'Codi resposta', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.Ds_Response, { 'id': 'Ds_Response', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
-	<div>
-		{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (itemId&source(llicencies,duplicat o varis)&entorn)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.Ds_MerchantData, { 'id': 'Ds_MerchantData', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
-   	<div>
-		{{ form_label(form.Ds_Date, 'Data', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.Ds_Date, { 'id': 'Ds_Date', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
-   	<div>
-		{{ form_label(form.Ds_Hour, 'Hora', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.Ds_Hour, { 'id': 'Ds_Hour', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
-   	<div>
-		{{ form_label(form.Ds_Order, 'Ordre (12 dig)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.Ds_Order, { 'id': 'Ds_Order', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
-   	<div>
-		{{ form_label(form.Ds_PayMethod, 'Mètode (Pot estar buit)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-		{{ form_widget(form.Ds_PayMethod, { 'id': 'Ds_PayMethod', 'attr': {'class': 'forminput-outside'} }) }}
-	</div>
+    <div id="form-notificaciotest">    
+	   	<form id="testform" action="{{ path('FecdasBundle_notificaciotest') }}" method="post" {{ form_enctype(form) }} class="appform">
+	   		{{ form_errors(form) }}
 	
-	
-	{{ form_rest(form) }}
-
-    <div>	
-		<input type="submit" class="forminput-inside" value="Test" />
-	</div>        
-   
-</form> 
-    
+			<div class="error-box"></div>
+		   	
+		   	<div>
+				{{ form_label(form.accio, 'Acció', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.accio, { 'id': 'accio', 'attr': {'class': 'forminput-outside'} }) }}
+			</div>
+		   	<div>
+				{{ form_label(form.Ds_Response, 'Codi resposta', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.Ds_Response, { 'id': 'Ds_Response', 'attr': {'class': 'forminput-outside'} }) }}
+			</div>
+			<div>
+				{{ form_label(form.Ds_MerchantData, 'Dades Mercchant (itemId&source(llicencies,duplicat o varis)&entorn)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.Ds_MerchantData, { 'id': 'Ds_MerchantData', 'attr': {'class': 'forminput-outside'} }) }}
+			</div>
+		   	<div>
+				{{ form_label(form.Ds_Date, 'Data', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.Ds_Date, { 'id': 'Ds_Date', 'attr': {'class': 'forminput-outside'} }) }}
+			</div>
+		   	<div>
+				{{ form_label(form.Ds_Hour, 'Hora', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.Ds_Hour, { 'id': 'Ds_Hour', 'attr': {'class': 'forminput-outside'} }) }}
+			</div>
+		   	<div>
+				{{ form_label(form.Ds_Order, 'Ordre (12 dig)', { 'label_attr': {'class': 'formlabel-outside'} }) }}
+				{{ form_widget(form.Ds_Order, { 'id': 'Ds_Order', 'attr': {'class': 'forminput-outside'} }) }}
+			</div>
+			
+			{{ form_rest(form) }}
+		
+		    <div><input type="submit" class="forminput-inside" value="Crear resposta" /></div>        
+	   
+		</form> 
+    </div>
+    <a href="{{ path('FecdasBundle_notificaciotest') }}">reiniciar</a>
    	
 {% endblock %}
 
@@ -72,88 +66,32 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 
+		
+		
 		$("#testform").submit(function(e) {
+			// Ajax	
 			e.preventDefault();
 
-			var params = new Array();
-			var url = $('#accio').val();
+			var url = $(this).attr('action');
+			
+			$.post(url, $(this).serializeArray(),
+			function(data, textStatus) {
 
-			params.push( {'name':'Ds_Response','value': $('#Ds_Response').val() } );
-			params.push( {'name':'Ds_MerchantData','value': $('#Ds_MerchantData').val()} );
-			params.push( {'name':'Ds_Date','value': $('#Ds_Date').val() } );
-			params.push( {'name':'Ds_Hour','value': $('#Ds_Hour').val() } );
-			params.push( {'name':'Ds_Order','value': $('#Ds_Order').val() } );
-			params.push( {'name':'Ds_PayMethod','value': $('#Ds_PayMethod').val() } );
-
-			if ($('#accio').val() == "/notificacio") {
-				$.post(url, params,
-				function(data, textStatus) {
-					alert("fi post" + data);
-					location.reload();
-				}).fail( function(xhr, status, error) {
-					 // xhr.status + " " + xhr.statusText, status, error
-					 
-					 console.log(JSON.stringify(xhr));
-					 
-					 var sms = smsResultAjax('KO', xhr.responseText);
-					 
-					 $(".error-box").html(sms);
-				     
-				});
-			} else {
-				var str = jQuery.param( params );
+				$('#form-notificaciotest').html(data);
 				
-				var myWindow = window.open(url+'?'+str,'tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
-
-				/*myWindow.onload = function() { 
-					alert("5");
-					$(this).contents().find("#close-notificacio a").click(function(e) {
-						e.preventDefault();
-						alert("82");
-					});
-					$("#close-notificacio a").click(function(e) {
-						e.preventDefault();
-						url = $(this).attr("href");
-						alert("1");
-						window.opener.location.href=url;
-						alert("2");
-						window.close();
-						e.preventDefault();
-						alert("52");
-					});
-				};
-				
-
-				$(myWindow).ready(function() {
-					alert("1");
-					$("#close-notificacio a").click(function(e) {
-						e.preventDefault();
-						url = $(this).attr("href");
-						alert("1");
-						window.opener.location.href=url;
-						alert("2");
-						window.close();
-						alert("32");
-					});
-				});
-				$(myWindow).unload(function() {
-					url = $("#close-notificacio a").attr("href");
-					window.opener.location.href=url;
-					window.close();
-				});*/
-				/*
-				$.get(url, params,
-				function(data, textStatus) {
-			    	myWindow.document.write(data);
-						
-					location.reload();
-				}).fail(function() { alert("Error get"); });*/
-			}
-				
-			return false;
-
+			}).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+					 
+				console.log(JSON.stringify(xhr));
+					 
+				var sms = smsResultAjax('KO', xhr.responseText);
+						 
+				$(".error-box").html(sms);
+					     
+			});
 		});
-
+			
+		//"#responseform"
 		
 	});
 </script>

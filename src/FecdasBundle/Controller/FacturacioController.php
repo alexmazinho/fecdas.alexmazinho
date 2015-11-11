@@ -23,6 +23,7 @@ use FecdasBundle\Entity\EntityPayment;
 use FecdasBundle\Entity\EntityPreu;
 use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityComptabilitat;
+use FecdasBundle\Classes\RedsysAPI;
 
 
 class FacturacioController extends BaseController {
@@ -1900,8 +1901,8 @@ class FacturacioController extends BaseController {
 	private function validIngresosRebuts($form, $rebut) {
 		
 		if ($rebut->getImport() <= 0) {
-			$form->get('import')->addError(new FormError('Valor incorrecte'));
-				throw new \Exception('Cal indicar un import superior a 0' );
+			/*$form->get('import')->addError(new FormError('Valor incorrecte'));
+				throw new \Exception('Cal indicar un import superior a 0' );*/
 		}
 		if ($rebut->esAnulacio()) {
 			if ($rebut->getDatapagament()->format('Y-m-d') < $rebut->getComandaAnulacio()->getDataentrada()->format('Y-m-d')) {
@@ -1912,23 +1913,31 @@ class FacturacioController extends BaseController {
 		} else {
 			$total = 0; 
 			
-			foreach ($rebut->getComandes() as $comanda) {
+			if ($rebut->getImport() <= 0) {
 				
-				if ($rebut->getDatapagament()->format('Y-m-d') < $comanda->getDataentrada()->format('Y-m-d')) {
-				$form->get('datapagament')->addError(new FormError('Data incorrecte'));
-					throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
+				if (count($rebut->getComandes()) > 0) {
+					throw new \Exception('Els abonaments no van a compte de cap comanda' );
 				}
 				
-				$total += $comanda->getTotalDetalls();		
-			}
+			} else {	
 			
-			//if (abs($rebut->getImport() - $rebut->getComanda()->getTotalDetalls()) > 0.01) {
-			if ($total > $rebut->getImport()) {	
-								
-				$form->get('import')->addError(new FormError('Valor incorrecte'));
-					throw new \Exception('El total de les comandes supera l\'import de l\'ingrés');
-			}
+				foreach ($rebut->getComandes() as $comanda) {
+					
+					if ($rebut->getDatapagament()->format('Y-m-d') < $comanda->getDataentrada()->format('Y-m-d')) {
+					$form->get('datapagament')->addError(new FormError('Data incorrecte'));
+						throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
+					}
+					
+					$total += $comanda->getTotalDetalls();		
+				}
 				
+				//if (abs($rebut->getImport() - $rebut->getComanda()->getTotalDetalls()) > 0.01) {
+				if ($total > $rebut->getImport()) {	
+									
+					$form->get('import')->addError(new FormError('Valor incorrecte'));
+						throw new \Exception('El total de les comandes supera l\'import de l\'ingrés');
+				}
+			}
 		}
 		
 	} 
@@ -2000,18 +2009,22 @@ class FacturacioController extends BaseController {
 	
 	public function notificacioOnLine(Request $request) {
 	
+		$url = $this->generateUrl('FecdasBundle_homepage');
+		$error = '';
+		$tpvresponse = array();
 		try {
-			$redsysapi = $this->validaFirmaNotificacio($request->query);
+			$redsysapi = $this->validaFirmaNotificacio($request->query->all());
 			
 			if ($redsysapi == null) throw new \Exception('Error resposta notificació. Signatura invàlida');
 	
 			$tpvresponse = $this->tpvResponse($redsysapi);
 
-		
-			$url = $this->generateUrl('FecdasBundle_homepage');
+			if ($tpvresponse['Ds_Response'] >= '0100' && $tpvresponse['pendent'] != true)  throw new \Exception('Error TPV codi '.$tpvresponse['Ds_Response']);
+
+			$result = 'OK';
+			
 			if ($tpvresponse['itemId'] > 0) {
 				if ($tpvresponse['pendent'] == true) $result = 'PEND';
-				else $result = 'OK';
 				
 				if ($tpvresponse['source'] = BaseController::PAGAMENT_LLICENCIES)
 					$url = $this->generateUrl('FecdasBundle_parte', array('id'=> $tpvresponse['itemId']));
@@ -2020,50 +2033,43 @@ class FacturacioController extends BaseController {
 				if ($tpvresponse['source'] = BaseController::PAGAMENT_ALTRES)
 					$url = $this->generateUrl('FecdasBundle_comandes');
 			}
-			$this->logEntryAuth('TPV NOTIFICA '. $result, $tpvresponse['logEntry']);
-
 		} catch (\Exception $e) {
 			$result = 'KO';
+			$error = $e->getMessage();
 		}
 		
+		$this->logEntryAuth('TPV NOTIFICA '. $result, $error.' '.implode(' - ', $tpvresponse));
+		
 		return $this->render('FecdasBundle:Facturacio:notificacio.html.twig',
-				array('result' => $result, 'itemId' => $tpvresponse['itemId'], 'url' => $url) );
+				array('result' => $result, 'error' => $error, 'url' => $url) );
 	}
 	
 	public function notificacioAction(Request $request) {
 		// Crida asincrona des de TPV. Actualització dades pagament del parte
 
+		$tpvresponse = array();
 		try {
-			$redsysapi = $this->validaFirmaNotificacio($request->request);
+			$redsysapi = $this->validaFirmaNotificacio($request->request->all());
 
 			if ($redsysapi == null) throw new \Exception('Error resposta notificació. Signatura invàlida');
 
 			$tpvresponse = $this->tpvResponse($redsysapi);
 			
-			if ($request->getMethod() != 'POST')
-				throw new \Exception('Error configuració TPV, la URL de notificación ha de ser: http://www.fecdasgestio.cat/notificacio');
-			
-			if (!isset($tpvresponse['Ds_Response']))
-				throw new \Exception('Error resposta TPV. Manca Ds_Response');
-
-			if (!isset($tpvresponse['Ds_Order']))
-				throw new \Exception('Error resposta TPV. Manca Ds_Order');
-
-			if ($tpvresponse['Ds_Response'] == 0) {
+			if ($tpvresponse['Ds_Response'] < '0100') {
 				// Ok
 				$id = !isset($tpvresponse['itemId'])?0:$tpvresponse['itemId'];
 				$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
 					
-				if ($comanda == null) 
-						throw new \Exception('Error actualitzar comanda TPV. id: '.$id);
+				if ($comanda == null) throw new \Exception('Error actualitzar comanda TPV. id: '.$id);
 				
 				// Afegir rebut
-				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $comanda, $tpvresponse['Ds_Order']);
+				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $comanda, $tpvresponse['Ds_Response'].':'.$tpvresponse['Ds_Order']);
 					
 				$em = $this->getDoctrine()->getManager();
+				
 				$em->flush();
 				
-				$this->logEntryAuth('TPV OK', $tpvresponse['logEntry']);
+				$this->logEntryAuth('TPV OK', implode(' - ', $tpvresponse));
 				
 				return new Response('');
 			} 
@@ -2083,11 +2089,13 @@ class FacturacioController extends BaseController {
 				return new Response('');
 			}
 			
-			throw new \Exception('Error desconegut TPV');
+			throw new \Exception('Error TPV codi '.$tpvresponse['Ds_Response']);
 			
 		} catch (\Exception $e) {
 			
-			$this->logEntryAuth('TPV ERROR', $e->getMessage().'('.$tpvresponse['logEntry'].')');
+			$strError = ' ('.implode(' - ', $tpvresponse).')';
+			$this->logEntryAuth('TPV ERROR', $e->getMessage().$strError);
+			
 				
 			$subject = ':: Incidència TPV ::';
 			$bccmails = array();
@@ -2095,11 +2103,13 @@ class FacturacioController extends BaseController {
 				
 			$body = '<h1>Error TPV</h1>';
 			$body .= '<h2>Missatge: '.$e->getMessage().'</h2>';
-			$body .= '<p>Dades: '.$tpvresponse['logEntry'].'</p>';
+			$body .= '<p>Dades: '.$strError.'</p>';
 			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			
+			return new Response($e->getMessage().$strError);
 		}
 		
-		return new Response("");
+		return new Response('');
 	}
 
 	public function confirmapagamentAction(Request $request) {
@@ -2134,6 +2144,8 @@ class FacturacioController extends BaseController {
 
 	private function validaFirmaNotificacio($tpvdata) {
 
+error_log(json_encode($tpvdata));
+
 		$redsysapi = new RedsysAPI();		
 		
 		$version = $tpvdata["Ds_SignatureVersion"];
@@ -2141,80 +2153,128 @@ class FacturacioController extends BaseController {
 		$signaturaRebuda = $tpvdata["Ds_Signature"];
 
 		$decodec = $redsysapi->decodeMerchantParameters($params);	
-
-		$dades = $redsysapi->getParameter("Ds_Data");
-		$dadesArray = explode(";", $dades);
-
-		if (!is_array($dadesArray) || count($dadesArray) != 3) return null;				
+error_log($this->get('kernel')->getEnvironment());
 		
-		$environment = $dadesArray[2];
-		
-		if ($environment == 'dev') $key = BaseController::COMERC_REDSYS_SHA_256_KEY_TEST; 
+		if ($this->get('kernel')->getEnvironment() == 'dev') $key = BaseController::COMERC_REDSYS_SHA_256_KEY_TEST;
 		else $key = BaseController::COMERC_REDSYS_SHA_256_KEY;
 		
-		$signatura = $this->redsysapi->createMerchantSignatureNotif($key, $params);
-		
+		$signatura = $redsysapi->createMerchantSignatureNotif($key, $params);
+error_log($signatura);
+error_log($signaturaRebuda);
 		if ($signatura !== $signaturaRebuda) return null;
-		
+
 		return $redsysapi;
 	}
 
 	private function tpvResponse($redsysapi) {
-	
-	
 		
-	
+		error_log('tpvResponse '.json_encode($redsysapi->vars_pay));
+		
 		$tpvresponse = array('itemId' => 0, 'environment' => '', 'source' => '',
 				'Ds_Response' => '', 'Ds_Order' => 0, 'Ds_Date' => '', 'Ds_Hour' => '',
-				'Ds_PayMethod' => '', 'logEntry' => '', 'pendent' => false);
+				'pendent' => false);
 		
-		$dades = $redsysapi->getParameter("Ds_Data");
-		$dadesArray = explode(";", $dades); // Validades abans
+		$dades = $redsysapi->getParameter("Ds_MerchantData");
+		
+error_log($dades);
+		
+		$dadesArray = explode(";", urldecode($dades));
+
+		if (!is_array($dadesArray) || count($dadesArray) != 3) throw new \Exception('Error TPV dades retornades ');				
+		
+		//$environment = $dadesArray[2];
 		
 		$tpvresponse['itemId'] = $dadesArray[0];
 		$tpvresponse['source'] = $dadesArray[1];  /* Origen del pagament. Partes, duplicats */
 		$tpvresponse['environment'] = $dadesArray[2];
+	
+		$tpvresponse['Ds_Response'] = $redsysapi->getParameter("Ds_Response");	// entre 0000 i 0099 OK, > 100 ERROR
+		$tpvresponse['Ds_Order'] = $redsysapi->getParameter('Ds_Order');
+		$tpvresponse['Ds_Date'] = $redsysapi->getParameter('Ds_Date');	// dd/mm/yyyy
+		$tpvresponse['Ds_Hour'] = $redsysapi->getParameter('Ds_Hour');	//HH:mm
 		
+		try {
+			$tpvresponse['Ds_PayMethod'] = $redsysapi->getParameter('Ds_PayMethod');
+		} catch (\Exception $e) {
+			$tpvresponse['Ds_PayMethod'] = '';
+		}
 	
-		if ($tpvdata->has('Ds_Response')) $tpvresponse['Ds_Response'] = $tpvdata->get('Ds_Response');
-		if ($tpvdata->has('Ds_Order')) $tpvresponse['Ds_Order'] = $tpvdata->get('Ds_Order');
-		if ($tpvdata->has('Ds_Date')) $tpvresponse['Ds_Date'] = $tpvdata->get('Ds_Date');
-		if ($tpvdata->has('Ds_Hour')) $tpvresponse['Ds_Hour'] = $tpvdata->get('Ds_Hour');
-		if ($tpvdata->has('Ds_PayMethod')) $tpvresponse['Ds_PayMethod'] = $tpvdata->get('Ds_PayMethod');
-	
-		if (($tpvresponse['Ds_Response'] == '0930' or $tpvresponse['Ds_Response'] == '9930') and $tpvdata->get('Ds_PayMethod') == 'R') {
+		if (($tpvresponse['Ds_Response'] == '0930' || ($tpvresponse['Ds_Response'] == '9930') && $tpvresponse['Ds_PayMethod'] == 'R')) {
 			$tpvresponse['pendent'] = true;
 		}
 		
-		$tpvresponse['logEntry'] = $tpvresponse['itemId'] . "-" . $tpvresponse['source'] . "-" . 
-				$tpvresponse['Ds_Response'] . "-" . $tpvresponse['environment'] . "-" . $tpvresponse['Ds_Date'] . "-" .
-				$tpvresponse['Ds_Hour'] . "-" . $tpvresponse['Ds_Order'] . "-" . $tpvresponse['Ds_PayMethod'];
-	
 		return $tpvresponse;
 	}
 	
 	public function notificacioTestAction(Request $request) {
 		// http://www.fecdas.dev/notificaciotest
-		$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text');
-		$formBuilder->add('Ds_MerchantData', 'text', array('required' => false));
-		$formBuilder->add('Ds_Date', 'text');
-		$formBuilder->add('Ds_Hour', 'text');
-		$formBuilder->add('Ds_Order', 'text');
-		$formBuilder->add('Ds_PayMethod', 'text', array('required' => false));
-		$formBuilder->add('accio', 'choice', array(
-				'choices'   => array($this->generateUrl('FecdasBundle_notificacio') => 'FecdasBundle_notificacio',
-						$this->generateUrl('FecdasBundle_notificacioOk') => 'FecdasBundle_notificacioOk',
-						$this->generateUrl('FecdasBundle_notificacioKo') => 'FecdasBundle_notificacioKo'),
-				'required'  => true,
-		));
+		if ($request->isXmlHttpRequest()) {
+			// Muntar form per enviar des de ajax amb les dades inicials 			
+			try {
+				
+				if ($request->getMethod() != 'POST') throw new \Exception('Mètode no POST');
+			
+				$formdata = $request->request->get('form');
+				
+				$redsysapi = new RedsysAPI();
+				$redsysapi->setParameter("Ds_Date",$formdata['Ds_Date']);
+				$redsysapi->setParameter("Ds_Hour",$formdata['Ds_Hour']);
+				$redsysapi->setParameter("Ds_Amount",0);
+				$redsysapi->setParameter("Ds_Currency",BaseController::COMERC_REDSYS_CURRENCY);
+				$redsysapi->setParameter("Ds_Order",$formdata['Ds_Order']);
+				$redsysapi->setParameter("Ds_MerchantCode",BaseController::COMERC_REDSYS_FUC);
+				$redsysapi->setParameter("Ds_Terminal",BaseController::COMERC_REDSYS_TERMINAL);
+				$redsysapi->setParameter("Ds_Response",$formdata['Ds_Response']);
+				$redsysapi->setParameter("Ds_MerchantData",$formdata['Ds_MerchantData']);
+				$redsysapi->setParameter("Ds_SecurePayment",1);
+				$redsysapi->setParameter("Ds_TransactionType",BaseController::COMERC_REDSYS_TRANS);
+				$redsysapi->setParameter("Ds_ConsumerLanguage", BaseController::COMERC_REDSYS_LANG);		// Català - 3
+
+				
+				$strResponse = '<div>'.$formdata['accio'].'</div>';
+				if ($formdata['accio'] == $this->generateUrl('FecdasBundle_notificacio')) $method = 'POST';
+				else $method = 'GET';
+				 
+				$paramsResponse = $redsysapi->encodeBase64(json_encode($redsysapi->vars_pay)); 
+				 
+				$strResponse .= '<form id="responseform" action="'.$formdata['accio'].'" method="'.$method.'"  class="appform">';
+		   		$strResponse .= '<p><textarea rows="5" name="Ds_MerchantParameters">'.$paramsResponse.'</textarea></p>';
+		   		$strResponse .= '<p><input type="text" name="Ds_Signature" value="'.$redsysapi->createMerchantSignatureNotif(BaseController::COMERC_REDSYS_SHA_256_KEY_TEST, $paramsResponse).'"></p>';	
+		   		$strResponse .= '<p><input type="text" name="Ds_SignatureVersion" value="'.BaseController::COMERC_REDSYS_SHA_256_VERSION.'"></p>';
+		   		$strResponse .= '<p><input type="submit" class="forminput-inside" value="Test" /></p>';
+		   		$strResponse .= '</form>';
 	
+			
+			} catch (\Exception $e) {
+				$strResponse = 'Error creant form '.$e->getMessage().'<br/>'.json_encode($formdata);
+			}
+	
+			return new Response($strResponse); // ajax
+	
+		} else {
+			// Form inicial de dades
+			//Escollir darrera comanda
+			$strQuery = " SELECT MAX(c.id) FROM FecdasBundle\Entity\EntityComanda c ";
+			$em = $this->getDoctrine()->getManager();
+			$query = $em->createQuery($strQuery);
+			$id = $query->getSingleScalarResult();
+			if ($id == null) $id = 0;
+			
+			$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text', array('data' => 0));
+			$formBuilder->add('Ds_MerchantData', 'text', array('required' => false, 'data' => $id.'%3B'.self::PAGAMENT_LLICENCIES.'%3Bdev'));
+			$formBuilder->add('Ds_Date', 'text', array('data' => date('d/m/Y')));
+			$formBuilder->add('Ds_Hour', 'text', array('data' => date('h:i')));
+			$formBuilder->add('Ds_Order', 'text', array('data' => date('Ymdhi')));
+			
+			$formBuilder->add('accio', 'choice', array(
+					'choices'   => array($this->generateUrl('FecdasBundle_notificacio') => 'FecdasBundle_notificacio',
+							$this->generateUrl('FecdasBundle_notificacioOk') => 'FecdasBundle_notificacioOk',
+							$this->generateUrl('FecdasBundle_notificacioKo') => 'FecdasBundle_notificacioKo'),
+					'required'  => true,
+			));
+		}
+		
 		$form = $formBuilder->getForm();
-		$form->get('Ds_Response')->setData(0);
-		$form->get('Ds_MerchantData')->setData('4;'.self::PAGAMENT_DUPLICAT.';dev');
-		$form->get('Ds_Date')->setData(date('d/m/Y'));
-		$form->get('Ds_Hour')->setData(date('h:i'));
-		$form->get('Ds_Order')->setData(date('Ymdhi'));
-		$form->get('Ds_PayMethod')->setData('');
 	
 		return $this->render('FecdasBundle:Facturacio:notificacioTest.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));

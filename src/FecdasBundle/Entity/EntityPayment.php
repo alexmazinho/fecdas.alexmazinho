@@ -25,6 +25,11 @@ class EntityPayment {
 		 * Parámetros en las URLs : Si
 		 * URL_OK: http://www.fecdasgestio.cat/notificacioOK  (Botó continuar)
 		 * URL_KO: http://www.fecdasgestio.cat/notificacioKO  (Botó cancel o tancar finestra)
+		 * 
+		 * Tarjeta: 4548812049400004
+		 *	Fecha de caducidad: 12/12
+		 *	Código de Seguridad: 123
+		 *	CIP: 123456
 		 */
 		//$total=$preu;
 		$total = round($preu,2);
@@ -81,7 +86,7 @@ class EntityPayment {
 		$this->redsysapi->setParameter("DS_MERCHANT_TITULAR", $titular);										// Nom club
 		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTNAME", BaseController::COMERC_REDSYS_MERCHANTNAME);	// FECDAS
 		$this->redsysapi->setParameter("DS_MERCHANT_CONSUMERLANGUAGE", BaseController::COMERC_REDSYS_LANG);		// Català - 3
-		$this->redsysapi->setParameter("DS_MERCHANT_DATA", $dades);												// Dades per notificació de tornada
+		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTDATA", $dades);												// Dades per notificació de tornada
 		
 	}
 

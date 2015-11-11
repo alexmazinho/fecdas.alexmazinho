@@ -273,119 +273,49 @@ class SecurityController extends BaseController
     	$club  = $this->getCurrentClub();
 		$tab	= 0;    	
     	$nouclub = false;
+		$clubCodi = '';
 
 		$em = $this->getDoctrine()->getManager();
 	    
-   		if ($request->getMethod() == 'POST') {
-   			/* Alta o modificació de clubs */
-   			$formdata = $request->request->get('club');
-   			if (isset($formdata['nouclub'])) {
-   				$nouclub = true;
-   				$club = new EntityClub();
+		if ($request->getMethod() == 'POST') {
+			$formdata = $request->request->get('club');
+	
+	   		if (isset($formdata['nouclub'])) {
+	   			$club = new EntityClub();
+					
+				if (!isset($formdata['codi'])) $codiNou = $this->obtenirCodiClub();
+				else $codiNou = $formdata['codi'];
+					
+				$club->setCodi($codiNou);
 				
-   			} else {
+				$em->persist($club);
+
+				$nouclub = true;				
+	   		} else {
 				// Codi del club read_only
-   				$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($formdata['codi']);
-   			}
-
-   			$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
-   			$form = $this->createForm(new FormClub($options), $club);
-   
-   			$form->handleRequest($request);
-   			
-   			if ($form->isValid()) {
-   				$valida = true;
-   				$strErrorLog = "";
-   				$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
-   				
-   				/* Validacions dades obligatories*/
-   				if ($club->getCodi() == "" || $club->getNom() == "" ||
-   						$club->getCif() == "" || $club->getMail() == "") {
-   					$strErrorLog = "Dades insuficients, cal indicar: codi, nom, cif i mail";
-   					$valida = false;
-   				}
-
-   				if ($valida == true) {
-   					if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
-   						$strErrorLog = "El compte comptable ha de tenir longitud 7 i ser numèric";
-   						$valida = false;
-   					}	
-				}
-
-   				if ($valida == true && $nouclub) {
-   					// Nou club
-   					$checkclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($club->getCodi());
-   					if ($checkclub != null) {
-   						$strErrorLog = 'Aquest codi de club ja existeix';
-   						$valida = false;
-   					}
-   				}
-   					
-   				/* Validacions mail no existeix en altres clubs */
-   				$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($club->getMail());
-   				if ($valida == true && $checkuser != null) {
-   					if  ($nouclub ||
-   						(!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())) {
-   						$strErrorLog = 'Aquest mail ja existeix per un altre club, ' . $club->getMail();
-   						$valida = false;
-   					}
-   				}
-   					
-    			if ($valida == true) {
-    				if ($nouclub) {
-    					// Nou club
-    					$club->setEstat($this->getDoctrine()->getRepository('FecdasBundle:EntityClubEstat')->find(self::CLUB_PAGAMENT_DIFERIT));
-    					$em->persist($club);
-    				
-	    				// Crear el primer usuari de club, amb el mail del club
-    					$userclub = new EntityUser();
-    					$userclub->setUser($club->getMail());
-    					$userclub->setClub($club);
-    					$randomPassword = $this->generateRandomPassword();
-    					$userclub->setPwd(sha1($randomPassword));
-    					$userclub->setRole("user");
-    					$userclub->setForceupdate(true);
-    					$club->addEntityUser($userclub);
-
-    					$em->persist($userclub);
-    					
-    					$this->get('session')->getFlashBag()->add('error-notice', 'Club creat correctament. Nou usuari ' .
-    										$userclub->getUser() . ' , amb clau ' . $randomPassword);
-    					$nouclub = false;
-    				} else {
-    					$this->get('session')->getFlashBag()->add('sms-notice', 'Dades del club desades correctament ');
-    				}
-    
-    				$em->flush();
-    						
-   					$this->logEntryAuth($strACtionLog . 'OK', 'club : ' . $club->getCodi());
-   				} else {
-   					$this->get('session')->getFlashBag()->add('error-notice', $strErrorLog);
-   					$this->logEntryAuth($strACtionLog. 'KO', 'club : ' . $club->getCodi() . ' - ' . $strErrorLog);
-   				}
-   			} else {
-   				// get a ConstraintViolationList
-   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades". $form->getErrorsAsString());
-   				
-   				$club  = $this->getCurrentClub();
-   				$form = $this->createForm(new FormClub($options), $club);
-   				
-   				return $this->render('FecdasBundle:Security:club.html.twig',
-   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
-   			}
-   		} else {
-   			if ($this->isCurrentAdmin() != true) {
+	   			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($formdata['codi']);
+	   		}
+		} else {
+			
+			if ($this->isCurrentAdmin() != true) {
    				$this->logEntryAuth('CLUB VIEW OK',	'club : ' . $club->getCodi());
    			} else {
+   				
    				if ($request->query->has('action') and $request->query->get('action') == "adduser") {
 					$tab = 3;
 				}
-
+				
    				if ($request->query->has('action') and $request->query->get('action') == "nouclub") {
+   					$codiNou = $this->obtenirCodiClub();
+					$this->logEntryAuth('CLUB NEW VIEW', 'club : ' . $codiNou);	
+					
     				$club = new EntityClub();
+					
+					$club->setCodi($codiNou);
+					
+					$em->persist($club);
     				$nouclub = true;
 					
-    				$this->logEntryAuth('CLUB NEW VIEW', 'club : ' . $club->getCodi());
     			} else {
     				if ($request->query->has('codiclub')) {
     					// Edit club, external GET 
@@ -399,15 +329,135 @@ class SecurityController extends BaseController
     			}
    			}
    		}
-   		
-   		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
+		
+		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
    		$form = $this->createForm(new FormClub($options), $club);
-   		if ($club->getCodi() != '') $form->get('clubs')->setData($club);
-   		$form->get('saldoclub')->setData($club->getSaldo());
+   		
+		
+   		if ($request->getMethod() == 'POST') {
+			try {
+	   			/* Alta o modificació de clubs */
+	
+				$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
+				
+				
+				/*$clubCodi = $club->getCodi();
+	
+	   			$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
+	   			$form = $this->createForm(new FormClub($options), $club);*/
+	   
+	   			$form->handleRequest($request);
+	   			
+	   			if ($form->isValid()) {
+	   				/* Validacions dades obligatories*/
+	   				if (trim($club->getNom()) == "") {
+	   					$tab = 0;	
+	   					throw new \Exception("Cal indicar el nom");
+					}
+					
+					if (trim($club->getCif()) == "") {
+						$tab = 0;		
+						throw new \Exception("Cal indicar CIF");
+					}
+					
+					if (trim($club->getMail()) == "") {
+						$tab = 0;	
+						throw new \Exception("Cal indicar un mail");
+					}
+	   				
+					if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
+						$tab = 2;
+						throw new \Exception("El compte comptable ha de tenir longitud 7 i ser numèric");
+					}
+					$checkcompte =  $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->findOneBy(array('compte' => $club->getCompte()));
+					if ($checkcompte != null) {
+						$tab = 2;
+						throw new \Exception("El compte ".$club->getCompte()." ja existeix per al club " . $checkcompte->getNom());
+					}
+	
+	   				/*if ($nouclub) {
+	   					// Nou club
+	   					$checkclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($club->getCodi());
+	   					if ($checkclub != null) throw new \Exception("Aquest codi de club ja existeix");
+	   				}*/
+	   					
+	   				/* Validacions mail no existeix en altres clubs */
+	   				$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($club->getMail());
+	   				if ($checkuser != null) {
+	   					if  ($nouclub || (!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())) {
+	   						$tab = 0;	
+							throw new \Exception("Aquest mail ja existeix per un altre club, " . $club->getMail());
+	   					}
+	   				}
+	   					
+    				if ($nouclub) {
+    					// Nou club
+    					$club->setEstat($this->getDoctrine()->getRepository('FecdasBundle:EntityClubEstat')->find(self::CLUB_PAGAMENT_DIFERIT));
+    					$em->persist($club);
+	    				
+	    				// Crear el primer usuari de club, amb el mail del club
+    					$userclub = new EntityUser();
+    					$userclub->setUser($club->getMail());
+    					$userclub->setClub($club);
+   					
+    					$randomPassword = $this->generateRandomPassword();
+    					$userclub->setPwd(sha1($randomPassword));
+    					$userclub->setRole("user");
+    					$userclub->setForceupdate(true);
+    					$club->addEntityUser($userclub);
 
+    					$em->persist($userclub);
+    					
+    					$this->get('session')->getFlashBag()->add('sms-notice', 'Club creat correctament. Nou usuari ' .
+	    										$userclub->getUser() . ' , amb clau ' . $randomPassword);
+    					
+    				} else {
+    					$this->get('session')->getFlashBag()->add('sms-notice', 'Dades del club desades correctament ');
+    				}
+	    			$em->flush(); // Error
+	   				$this->logEntryAuth($strACtionLog . 'OK', 'club : ' . $club->getCodi());
+	   			} else {
+	   				// get a ConstraintViolationList
+	   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades". $form->getErrorsAsString());
+	   				
+	   				$club  = $this->getCurrentClub();
+	   				$form = $this->createForm(new FormClub($options), $club);
+	   				
+	   				return $this->render('FecdasBundle:Security:club.html.twig',
+	   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club)));
+	   			}
+			} catch (\Exception $e) {
+				$em->clear();
+				$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+				$this->logEntryAuth($strACtionLog. 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());
+			}
+   		}
+   		
     	return $this->render('FecdasBundle:Security:club.html.twig', 
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab)));
     }
+
+    private function obtenirCodiClub() {
+    	$em = $this->getDoctrine()->getManager();
+		
+		$strQuery = " SELECT c.codi FROM FecdasBundle\Entity\EntityClub c ORDER BY c.codi ";
+		$query = $em->createQuery($strQuery);
+		
+		$codis = $query->getArrayResult();
+
+		$indexTest = 0;		
+		foreach ($codis as $codi) {
+			$strTest = 'CAT'.str_pad($indexTest, 3, '0', STR_PAD_LEFT);
+
+			//error_log($indexTest.' '.$codi['codi']. ' '.$strTest);
+
+			if (strtoupper($codi['codi']) > $strTest) return $strTest;
+			
+			$indexTest++;
+		}
+		return 'ERROR';
+    }
+
     
     public function usuariclubAction(Request $request) {
     	//$this->get('session')->getFlashBag()->clear();

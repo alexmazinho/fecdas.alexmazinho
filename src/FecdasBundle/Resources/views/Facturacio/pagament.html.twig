@@ -59,7 +59,7 @@
 	   		</ol>
 	   		
 	   		<form id="formpayment" action="{{ payment.url }}" method="post" {{ form_enctype(formpayment) }}  class="appform">
-	   			{{ form_widget(formpayment.preu, { 'name': 'Ds_Merchant_Amount'} ) }}
+	   			{# form_widget(formpayment.preu, { 'name': 'Ds_Merchant_Amount'} ) }}
 	   			{{ form_widget(formpayment.numordre, { 'name': 'Ds_Merchant_Order'} ) }}
 	   			{{ form_widget(formpayment.codi, { 'name': 'Ds_Merchant_MerchantCode'} ) }}
 	   			{{ form_widget(formpayment.terminal, { 'name': 'Ds_Merchant_Terminal'} ) }}
@@ -71,10 +71,10 @@
 	   			{{ form_widget(formpayment.desc, { 'name': 'Ds_Merchant_ProductDescription'} ) }}
 	   			{{ form_widget(formpayment.titular, { 'name': 'Ds_Merchant_Titular'} ) }}
 	   			{{ form_widget(formpayment.fecdas, { 'name': 'Ds_Merchant_MerchantName'} ) }}
-	   			{{ form_widget(formpayment.dades, { 'name': 'Ds_Merchant_MerchantData'} ) }}
-	   			{{ form_widget(formpayment.params, { 'name': 'Ds_Merchant_MerchantParameters'} ) }}
-	   			{{ form_widget(formpayment.signatura, { 'name': 'Ds_Merchant_MerchantSignature'} ) }}
-	   			{{ form_widget(formpayment.version, { 'name': 'Ds_Merchant_SignatureVersion'} ) }}
+	   			{{ form_widget(formpayment.dades, { 'name': 'Ds_Merchant_MerchantData'} ) #}
+	   			{{ form_widget(formpayment.params, { 'name': 'Ds_MerchantParameters'} ) }}
+	   			{{ form_widget(formpayment.signatura, { 'name': 'Ds_Signature'} ) }}
+	   			{{ form_widget(formpayment.version, { 'name': 'Ds_SignatureVersion'} ) }}
 	   			<div id="formpayment-buttons" class="payment-submit">
 					<input type="submit" id="formpayment-button-payment" class="forminput-inside" value="Confirmar" name="formpayment-button-payment"/>
 				</div> 
@@ -134,6 +134,8 @@ $(document).ready(function() {
 	setMenuActive("{{ comanda.menuActiuPagament }}");
 	
     $('#formpayment').submit(function() {
+    	//event.preventDefault();
+        
     	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
         this.target = 'tpv';
         location.reload(); // Refresca pàgina i ordre TPV

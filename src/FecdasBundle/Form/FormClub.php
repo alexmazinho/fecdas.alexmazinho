@@ -3,7 +3,11 @@ namespace FecdasBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
+use FecdasBundle\Entity\EntityClub;
 
 class FormClub extends AbstractType {
 
@@ -17,25 +21,45 @@ class FormClub extends AbstractType {
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		
-		if ($this->options['admin'] == true) {
+		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
+			$form = $event->getForm();
+			$club = $event->getData();
+			
+			/* Check we're looking at the right data/form */
+			if ($club instanceof EntityClub) {
+				
+				$form->add('clubs', 'genemu_jqueryselect2_entity', array(
+					'class' 	=> 'FecdasBundle:EntityClub',
+					'choice_label' => 'nom',
+					'label' 	=> 'Filtre per club: ',
+					'mapped' 	=> false,
+					'required'  => false,
+					'data'		=> $club
+				));
+				
+				$form->add('saldoclub', 'number', array(
+					'read_only'  => true,
+					'grouping' => true,
+					'precision' => 2,
+					'mapped' => false,
+					'data'	=> $club->getSaldo()
+				));
+   				
+			}
+		});
+		
+		
+		if ($this->options['admin'] == true) { 
 			if ($this->options['nou'] == true) {
 				$builder->add('nouclub', 'hidden', array(
 					'mapped' => false,
 				));
 			}
 		
-			$builder->add('clubs', 'genemu_jqueryselect2_entity', array(
-				'class' 	=> 'FecdasBundle:EntityClub',
-				'choice_label' => 'nom',
-				'label' 	=> 'Filtre per club: ',
-				'mapped' 	=> false,
-				'required'  => false 
-			));
-		
-			
 			$builder->add('codi', 'text', array(
-					'required'  => true,
-					'read_only' => !$this->options['nou']
+				'required'  => true,
+				'read_only' => true
 			));
 			
 			$tipuscluboptions = array('class' => 'FecdasBundle:EntityClubType', 'choice_label' => 'tipus',
@@ -231,13 +255,6 @@ class FormClub extends AbstractType {
 				'grouping' => true,
 				'precision' => 2
 		));
-		$builder->add('saldoclub', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'precision' => 2,
-				'mapped' => false
-		));
-		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

@@ -2000,22 +2000,31 @@ class FacturacioController extends BaseController {
 	
 	public function notificacioOnLine(Request $request) {
 	
-		$tpvresponse = $this->tpvResponse($request->query);
-
-		$result = 'KO';
-		$url = $this->generateUrl('FecdasBundle_homepage');
-		if ($tpvresponse['itemId'] > 0) {
-			if ($tpvresponse['pendent'] == true) $result = 'PEND';
-			else $result = 'OK';
+		try {
+			$redsysapi = $this->validaFirmaNotificacio($request->query);
 			
-			if ($tpvresponse['source'] = BaseController::PAGAMENT_LLICENCIES)
-				$url = $this->generateUrl('FecdasBundle_parte', array('id'=> $tpvresponse['itemId']));
-			if ($tpvresponse['source'] = BaseController::PAGAMENT_DUPLICAT)
-				$url = $this->generateUrl('FecdasBundle_duplicats');
-			if ($tpvresponse['source'] = BaseController::PAGAMENT_ALTRES)
-				$url = $this->generateUrl('FecdasBundle_comandes');
+			if ($redsysapi == null) throw new \Exception('Error resposta notificació. Signatura invàlida');
+	
+			$tpvresponse = $this->tpvResponse($redsysapi);
+
+		
+			$url = $this->generateUrl('FecdasBundle_homepage');
+			if ($tpvresponse['itemId'] > 0) {
+				if ($tpvresponse['pendent'] == true) $result = 'PEND';
+				else $result = 'OK';
+				
+				if ($tpvresponse['source'] = BaseController::PAGAMENT_LLICENCIES)
+					$url = $this->generateUrl('FecdasBundle_parte', array('id'=> $tpvresponse['itemId']));
+				if ($tpvresponse['source'] = BaseController::PAGAMENT_DUPLICAT)
+					$url = $this->generateUrl('FecdasBundle_duplicats');
+				if ($tpvresponse['source'] = BaseController::PAGAMENT_ALTRES)
+					$url = $this->generateUrl('FecdasBundle_comandes');
+			}
+			$this->logEntryAuth('TPV NOTIFICA '. $result, $tpvresponse['logEntry']);
+
+		} catch (\Exception $e) {
+			$result = 'KO';
 		}
-		$this->logEntryAuth('TPV NOTIFICA '. $result, $tpvresponse['logEntry']);
 		
 		return $this->render('FecdasBundle:Facturacio:notificacio.html.twig',
 				array('result' => $result, 'itemId' => $tpvresponse['itemId'], 'url' => $url) );
@@ -2025,7 +2034,11 @@ class FacturacioController extends BaseController {
 		// Crida asincrona des de TPV. Actualització dades pagament del parte
 
 		try {
-			$tpvresponse = $this->tpvResponse($request->request);
+			$redsysapi = $this->validaFirmaNotificacio($request->request);
+
+			if ($redsysapi == null) throw new \Exception('Error resposta notificació. Signatura invàlida');
+
+			$tpvresponse = $this->tpvResponse($redsysapi);
 			
 			if ($request->getMethod() != 'POST')
 				throw new \Exception('Error configuració TPV, la URL de notificación ha de ser: http://www.fecdasgestio.cat/notificacio');
@@ -2119,19 +2132,49 @@ class FacturacioController extends BaseController {
 		return new Response("ko");
 	}
 
-	private function tpvResponse($tpvdata) {
+	private function validaFirmaNotificacio($tpvdata) {
+
+		$redsysapi = new RedsysAPI();		
+		
+		$version = $tpvdata["Ds_SignatureVersion"];
+		$params = $tpvdata["Ds_MerchantParameters"];
+		$signaturaRebuda = $tpvdata["Ds_Signature"];
+
+		$decodec = $redsysapi->decodeMerchantParameters($params);	
+
+		$dades = $redsysapi->getParameter("Ds_Data");
+		$dadesArray = explode(";", $dades);
+
+		if (!is_array($dadesArray) || count($dadesArray) != 3) return null;				
+		
+		$environment = $dadesArray[2];
+		
+		if ($environment == 'dev') $key = BaseController::COMERC_REDSYS_SHA_256_KEY_TEST; 
+		else $key = BaseController::COMERC_REDSYS_SHA_256_KEY;
+		
+		$signatura = $this->redsysapi->createMerchantSignatureNotif($key, $params);
+		
+		if ($signatura !== $signaturaRebuda) return null;
+		
+		return $redsysapi;
+	}
+
+	private function tpvResponse($redsysapi) {
+	
+	
+		
 	
 		$tpvresponse = array('itemId' => 0, 'environment' => '', 'source' => '',
 				'Ds_Response' => '', 'Ds_Order' => 0, 'Ds_Date' => '', 'Ds_Hour' => '',
 				'Ds_PayMethod' => '', 'logEntry' => '', 'pendent' => false);
-		if ($tpvdata->has('Ds_MerchantData') and $tpvdata->get('Ds_MerchantData') != '') {
-			$dades = $tpvdata->get('Ds_MerchantData');
-			$dades_array = explode(";", $dades);
-				
-			$tpvresponse['itemId'] = $dades_array[0];
-			$tpvresponse['source'] = $dades_array[1];  /* Origen del pagament. Partes, duplicats */
-			$tpvresponse['environment'] = $dades_array[2];
-		}
+		
+		$dades = $redsysapi->getParameter("Ds_Data");
+		$dadesArray = explode(";", $dades); // Validades abans
+		
+		$tpvresponse['itemId'] = $dadesArray[0];
+		$tpvresponse['source'] = $dadesArray[1];  /* Origen del pagament. Partes, duplicats */
+		$tpvresponse['environment'] = $dadesArray[2];
+		
 	
 		if ($tpvdata->has('Ds_Response')) $tpvresponse['Ds_Response'] = $tpvdata->get('Ds_Response');
 		if ($tpvdata->has('Ds_Order')) $tpvresponse['Ds_Order'] = $tpvdata->get('Ds_Order');

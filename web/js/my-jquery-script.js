@@ -1581,7 +1581,7 @@
 	       
 	        if ($("#club_tipusparte :selected").length < 1) {
 				alert("Cal permetre alguna llicència");
-				$( "#tabs-club" ).tabs( "option", "active", 2 );
+				$( "#tabs-club" ).tabs( "option", "active", 1 );
 				return false;
 			}
 	        

@@ -33,23 +33,25 @@
 			    </div>
 			</section>
 		</section>
+		<script src="{{ asset('js/jquery.min.js') }}" type="text/javascript"></script>
 		<script type="text/javascript">
 		
 		$(document).ready(function(){
-			alert("2");
+			
 			$("#close-notificacio a").click(function(e) {
-/*				e.preventDefault();
+				e.preventDefault();
 				url = $(this).attr("href");
-				alert("1");
-				window.opener.location.href=url;
-				alert("2");
-				window.close();*/
-				alert("3");
+				
+				window.opener.location=url;
+				console.log(url);
+				window.close();
+				
 			});
 		
 			$(window).unload(function() {
 				url = $("#close-notificacio a").attr("href");
-				window.opener.location.href=url;
+				window.opener.location=url;
+				console.log(url);
 				window.close();
 			});
 			

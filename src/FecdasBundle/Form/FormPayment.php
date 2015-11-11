@@ -16,7 +16,7 @@ class FormPayment extends AbstractType {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		$builder->add('preu', 'hidden');
+		/*$builder->add('preu', 'hidden');
 		$builder->add('numordre', 'hidden');
 		$builder->add('codi', 'hidden');
 		$builder->add('terminal', 'hidden');
@@ -28,10 +28,12 @@ class FormPayment extends AbstractType {
 		$builder->add('desc', 'hidden');
 		$builder->add('titular', 'hidden');
 		$builder->add('fecdas', 'hidden');
-		$builder->add('dades', 'hidden');
+		$builder->add('dades', 'hidden');*/
 		$builder->add('params', 'hidden');
 		$builder->add('signatura', 'hidden');
 		$builder->add('version', 'hidden');
+		
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

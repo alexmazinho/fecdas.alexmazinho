@@ -260,6 +260,19 @@ class SecurityController extends BaseController
     }
     
     
+	public function clubaddjuntaAction(Request $request) {
+		$response = new Response("No s'ha pogut afegir la persona  ");
+    	$response->setStatusCode(500);
+    	return $response;
+	}
+
+	public function clubremovejuntaAction(Request $request) {
+		$response = new Response("No s'ha pogut esborrar la persona  ");
+    	$response->setStatusCode(500);
+    	return $response;
+	}
+
+	
     public function clubAction(Request $request) {
     	$this->get('session')->getFlashBag()->clear();
     	
@@ -405,6 +418,12 @@ class SecurityController extends BaseController
 	   					$checkclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($club->getCodi());
 	   					if ($checkclub != null) throw new \Exception("Aquest codi de club ja existeix");
 	   				}*/
+	   				
+	   				/*if ($club->getActivat() == true && $club->getDatabaixa() != null) {
+	   					$tab = 3;	
+	   					throw new \Exception("Un club donat de baixa no pot estar actiu");
+	   				}*/
+	   				if ($club->getDatabaixa() != null) $club->setActivat(false);
 	   					
 	   				/* Validacions mail no existeix en altres clubs */
 	   				$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($club->getMail());
@@ -441,6 +460,7 @@ class SecurityController extends BaseController
     				}
 	    			$em->flush(); // Error
 	   				$this->logEntryAuth($strACtionLog . 'OK', 'club : ' . $club->getCodi());
+					return $this->redirect($this->generateUrl('FecdasBundle_club', array( 'codi' => $club->getCodi(), 'tab' => $tab )));
 	   			} else {
 	   				// get a ConstraintViolationList
 	   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades". $form->getErrorsAsString());

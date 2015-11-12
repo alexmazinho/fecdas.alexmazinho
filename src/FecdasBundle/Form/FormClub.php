@@ -74,6 +74,11 @@ class FormClub extends AbstractType {
 				));
 				
 				$form->add('carrecs', 'hidden');
+				error_log('activat '.$club->getActivat().'-'.($club->getActivat()?'true':'false').'-');
+				$form->add('activat', 'checkbox', array(
+					'required'  => false,
+					'data'		=> ($club->getActivat()?true:false)
+				));
    				
 			}
 		});
@@ -99,10 +104,6 @@ class FormClub extends AbstractType {
 				
 			$builder->add('tipus', 'entity', $tipuscluboptions);
 			
-			$builder->add('activat', 'checkbox', array(
-					'required'  => false,
-			));
-		
 			$builder->add('estat', 'entity', array('class' => 'FecdasBundle:EntityClubEstat', 'choice_label' => 'descripcio',
 					'query_builder' => function($repository) {
 						return $repository->createQueryBuilder('e')->orderBy('e.codi', 'ASC');

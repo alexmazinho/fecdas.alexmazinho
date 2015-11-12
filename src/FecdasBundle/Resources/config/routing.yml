@@ -48,6 +48,18 @@ FecdasBundle_club:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_clubaddjunta:
+    pattern:  /clubaddjunta
+    defaults: { _controller: "FecdasBundle:Security:clubaddjunta" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_clubremovejunta:
+    pattern:  /clubremovejunta
+    defaults: { _controller: "FecdasBundle:Security:clubremovejunta" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_usuariclub:
     pattern:  /usuariclub
     defaults: { _controller: "FecdasBundle:Security:usuariclub" }

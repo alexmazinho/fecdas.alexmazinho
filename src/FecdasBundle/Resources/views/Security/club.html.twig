@@ -26,7 +26,7 @@
 			</div>
 	    </header>
    
-		{% include 'FecdasBundle:Includes:messages.html.twig' %}
+		<div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
 
    		<div class="row">
 		{% if admin == true %}
@@ -74,131 +74,7 @@
 				{% endif %}
 				{% endif %}
 			</ul>
-			<div id="formclub-dades-tab5" class="formclub-tab">		
-				<div class="row">
-					<div class="col-md-12">
-						<h4 class="blue">Altres dades</h4>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-3">
-			  			<div class="form-group">
-			  				<div class="input-group">
-					    		<span class="input-group-addon input-group-addon-icon">Registre</span>
-								{{ form_label(form.registre, 'Número', { 'label_attr': {'class': 'sr-only'} }) }}
-								{{ form_widget(form.registre, { 'attr': {'class': 'form-control','placeholder':'Número' } }) }}
-							</div>
-						</div>
-					</div>
-					<div class="col-md-7"><div class="col-md-comment">Número de registre al Consell Català de l'Esport</div></div>
-					<div class="col-md-2 col-last-right">
-						<div class="checkbox">
-					    	<label>{{ form_widget(form.estatuts) }} Estatuts </label>
-						</div>
-			        	
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Alta</span>
-								{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Baixa</span>
-								{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Darrera junta</span>
-								{{ form_widget(form.datajunta, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Creació</span>
-								{{ form_widget(form.datacreacio, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-12">
-						<h4 class="blue">Càrrecs junta directiva</h4>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-5">
-						<div class="row">
-							<div class="col-md-8">
-								<div class="form-group">
-									<div class="input-group" >
-										<span class="input-group-addon required">Càrrec</span>
-							  			{{ form_label(form.carrec, 'Càrrec', { 'label_attr': {'class': 'sr-only'} }) }}
-							  			{{ form_widget(form.carrec, { 'attr': {'class': 'form-control'} }) }}
-									</div>
-								</div>
-							</div>
-							<div class="col-md-10">
-								<div class="form-group">
-									<div class="input-group" >
-										<span class="input-group-addon required">Federat</span>
-							  			{{ form_label(form.addjunta, 'Federat', { 'label_attr': {'class': 'sr-only'} }) }}
-							  			{{ form_widget(form.addjunta, { 'attr': {'class': 'form-control'} }) }}
-									</div>
-								</div>
-							</div>
-							<div class="col-md-2">
-								<a id="formclub-addcarrec" href="javascript:void(0);" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
-								{{ form_widget(form.carrecs) }}
-							</div>
-							<div class="col-md-6">
-								<a id="formclub-openmodal" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_persona') }}" name="modal" type="button">
-									Nova persona  <i class="fa fa-users"></i>
-								</a>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-7">
-						{% if carrecs|length > 0 %}
-						<div class="table-scroll">
-							<ol id="list-data">
-								{% for carrec in carrecs %}
-								<li class="data-detall">
-									<div class="data-detall-cell userclub-junta-nom">{{ carrec.nom }}</div>
-									<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
-									<div class="data-detall-cell userclub-junta-remove">
-										<a href="javascript:void(0);" class="btn link formclub-removecarrec" title="Esborrar">
-											<i class="fa fa-trash fa-1x red"></i>
-										</a>
-									</div>
-								</li>
-								{% endfor %}
-				   			</ol>
-						</div>
-						{% else %}
-							<div class="alert alert-info form-alert">
-								<span class="fa fa-info-cicle fa-1x"></span>Sense informació de la Junta 
-							</div>
-						{% endif %}
-					</div>
-				</div>
-
-			</div>
+			
 			<div id="formclub-dades-tab1" class="formclub-tab">		
 				<div class="row">
 					<div class="col-md-12">
@@ -501,6 +377,133 @@
 					</div>
 				</div>
 	        </div>
+<div id="formclub-dades-tab5" class="formclub-tab">		
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Altres dades</h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Registre</span>
+								{{ form_label(form.registre, 'Número', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.registre, { 'attr': {'class': 'form-control','placeholder':'Número' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-7"><div class="col-md-comment">Número de registre al Consell Català de l'Esport</div></div>
+					<div class="col-md-2 col-last-right">
+						<div class="checkbox">
+					    	<label>{{ form_widget(form.estatuts) }} Estatuts </label>
+						</div>
+			        	
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Alta</span>
+								{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Baixa</span>
+								{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Darrera junta</span>
+								{{ form_widget(form.datajunta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+					 	<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">Creació</span>
+								{{ form_widget(form.datacreacio, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<h4 class="blue">Càrrecs junta directiva</h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-5">
+						<div class="row">
+							<div class="col-md-8">
+								<div class="form-group">
+									<div class="input-group" >
+										<span class="input-group-addon required">Càrrec</span>
+							  			{{ form_label(form.carrec, 'Càrrec', { 'label_attr': {'class': 'sr-only'} }) }}
+							  			{{ form_widget(form.carrec, { 'attr': {'class': 'form-control'} }) }}
+									</div>
+								</div>
+							</div>
+							<div class="col-md-10">
+								<div class="form-group">
+									<div class="input-group" >
+										<span class="input-group-addon required">Federat</span>
+							  			{{ form_label(form.addjunta, 'Federat', { 'label_attr': {'class': 'sr-only'} }) }}
+							  			{{ form_widget(form.addjunta, { 'attr': {'class': 'form-control'} }) }}
+									</div>
+								</div>
+							</div>
+							<div class="col-md-2">
+								<a id="formclub-addcarrec" href="{{ path('FecdasBundle_clubaddjunta') }}" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
+								{{ form_widget(form.carrecs) }}
+							</div>
+							<div class="col-md-6">
+								<a id="formclub-openmodal" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_persona') }}" name="modal" type="button">
+									Nova persona  <i class="fa fa-users"></i>
+								</a>
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-md-7">
+						{% if carrecs|length > 0 %}
+						<div class="table-scroll">
+							<ol id="list-data">
+								{% for carrec in carrecs %}
+								<li class="data-detall">
+									<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
+									<div class="data-detall-cell userclub-junta-nom">{{ carrec.nom }}</div>
+									<div class="data-detall-cell userclub-junta-remove">
+										<a href="{{ path('FecdasBundle_clubremovejunta', {'id': carrec.id } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
+											<i class="fa fa-trash fa-1x red"></i>
+										</a>
+									</div>
+								</li>
+								{% endfor %}
+				   			</ol>
+						</div>
+						{% else %}
+							<div class="alert alert-info form-alert">
+								<span class="fa fa-info-cicle fa-1x"></span>Sense informació de la Junta 
+							</div>
+						{% endif %}
+					</div>
+				</div>
+
+			</div>	        
+	        
 	        <div id="formclub-dades-tab6" class="formclub-tab" {% if form.nouclub is defined %}  style="display:none" {% endif %} >
 				<div class="row">
 					<div class="col-md-3">
@@ -681,6 +684,67 @@
 		);
 
 		showPersonClickClubs();
+
+		$(".formclub-removecarrec").click(function(e) {
+			e.preventDefault();
+			var url = $(this).attr("href");  // Inclou id
+
+			$('#progressbar').show();  // Rellotge
+			
+			$.get(url, function(data, textStatus) {
+				$('#progressbar').hide();  // Rellotge
+
+				window.location = url+'?codiclub='+$(this).val();
+					
+	        }).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 var sms = smsResultAjax('KO', xhr.responseText);
+						 
+				 $('#progressbar').hide();  // Rellotge
+						 
+				 $('.block-errors').html(sms);
+			});
+			
+		});
+
+		$("#formclub-addcarrec").click(function(e) {
+			e.preventDefault();
+			var url = $(this).attr("href");  // No inclou id
+
+			if ($('#club_addjunta').val() == '') {
+				dialegError('Error', 'Cal escollir alguna persona', 400, 0);
+				return false;
+			} 
+
+			if ($('#club_carrec').val() == '') {
+				dialegError('Error', 'Cal escollir un càrrec', 400, 0);
+				return false;
+			} 
+
+			var id = $('#club_addjunta').val();
+			var carrec = $('#club_carrec').val();
+
+			url += '?id='+id+'&carrec='+carrec;  
+			
+			$('#progressbar').show();  // Rellotge
+			
+			$.get(url, function(data, textStatus) {
+				$('#progressbar').hide();  // Rellotge
+
+				//http://fecdas.dev/club?codiclub=CAT010
+				window.location = '{{ path('FecdasBundle_club', {'codiclub': club.codi } ) }}';
+					
+	        }).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 var sms = smsResultAjax('KO', xhr.responseText);
+						 
+				 $('#progressbar').hide();  // Rellotge
+						 
+				 $('.block-errors').html(sms);
+			});
+			
+		});
+		
 	});
 
 </script>

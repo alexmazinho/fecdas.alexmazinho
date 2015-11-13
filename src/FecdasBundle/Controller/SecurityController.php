@@ -10,6 +10,7 @@ use FecdasBundle\Form\FormLogin;
 use FecdasBundle\Form\FormUser;
 use FecdasBundle\Form\FormClub;
 use FecdasBundle\Entity\EntityUser;
+use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityClub;
 
 
@@ -354,26 +355,27 @@ class SecurityController extends BaseController
 
 		//$club->setCarrecs(json_encode($aux));
 
-		$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
-		$jsonCarrecs = 	$aux;
-
-		// echo json_encode($aux); => [{"id":329,"cid":"President"},{"id":517,"cid":"Vicepresident"}] 
-		
-		
-		foreach ($aux as $value) {
+		try {
+			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+			//$jsonCarrecs = 	$aux;
+	
+			// echo json_encode($aux); => [{"id":329,"cid":1},{"id":517,"cid":2}] 
 			
-			$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value['id']);
-			$carrecs[] = array(
-					'id' 		=> $value['id'], 
-					'carrec' 	=> BaseController::getCarrec($value['cid']), 
-					'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
-			);
-		}
-		
-		
-		
-   		if ($request->getMethod() == 'POST') {
-			try {
+			
+			foreach ($jsonCarrecs as $value) {
+				
+				$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
+				$carrecs[] = array(
+						'id' 		=> $value->id, 
+						'carrec' 	=> BaseController::getCarrec($value->cid), 
+						'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
+				);
+			}
+			
+			
+			
+	   		if ($request->getMethod() == 'POST') {
+			
 	   			/* Alta o modificació de clubs */
 	
 				$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
@@ -471,12 +473,12 @@ class SecurityController extends BaseController
 	   				return $this->render('FecdasBundle:Security:club.html.twig',
 	   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab, 'carrecs' => $carrecs)));
 	   			}
-			} catch (\Exception $e) {
-				$em->clear();
-				$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
-				$this->logEntryAuth($strACtionLog. 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());
-			}
-   		}
+	   		}
+		} catch (\Exception $e) {
+			$em->clear();
+			$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+			$this->logEntryAuth($strACtionLog. 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());
+		}
    		
     	return $this->render('FecdasBundle:Security:club.html.twig', 
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab, 'carrecs' => $carrecs)));

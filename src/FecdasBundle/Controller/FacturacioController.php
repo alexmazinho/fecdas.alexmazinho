@@ -1745,8 +1745,6 @@ class FacturacioController extends BaseController {
 		
 		$this->get('session')->getFlashBag()->clear();
 		
-		$this->logEntryAuth('INGRES NOU',$request->getMethod());
-		
 		$em = $this->getDoctrine()->getManager();
 
 		// Comandes pendents de pagament. Inicialment al club connectat
@@ -1758,6 +1756,8 @@ class FacturacioController extends BaseController {
 			
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		if ($club == null) $club = $this->getCurrentClub();
+
+		if ($request->getMethod() != 'POST')  $this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi);
 		 
 		$query = $this->consultaComandes($club->getCodi(), 0, 0, 0, 0, false, true);
 		
@@ -1802,7 +1802,7 @@ class FacturacioController extends BaseController {
 					$club->setTotalpagaments($club->getTotalpagaments() + $rebut->getImport()); 
 					
 					$em->flush();
-					
+					$this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi.' => '.$maxNumRebut.' '.$rebut->getImport());
 				}
 			} catch (\Exception $e) {
 					

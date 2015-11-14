@@ -112,7 +112,7 @@ class EntityImatge {
 	{
 		return null === $this->path
 		? null
-		: $this->getUploadRootDir().'/'.$this->path;
+		: $this->getUploadRootDir().$this->path;
 	}
 	
 	public function getWebPath()

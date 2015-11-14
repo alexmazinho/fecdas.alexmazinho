@@ -402,50 +402,50 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Alta</span>
-								{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					<div class="col-md-6">
+						<div class="row">
+							<div class="col-md-6">
+							 	<div class="form-group">
+									<div class="input-group">
+										<span class="input-group-addon">Alta</span>
+										{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+							 	<div class="form-group">
+									<div class="input-group">
+										<span class="input-group-addon">Creació</span>
+										{{ form_widget(form.datacreacio, { 'attr': {'class': 'form-control form-control-center'} }) }}
+										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+							 	<div class="form-group">
+									<div class="input-group">
+										<span class="input-group-addon">Últ. junta</span>
+										{{ form_widget(form.datajunta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+							 	<div class="form-group">
+									<div class="input-group">
+										<span class="input-group-addon">Baixa</span>
+										{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
+										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+									</div>
+								</div>
 							</div>
 						</div>
-					</div>
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Baixa</span>
-								{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						<div class="row">
+							<div class="col-md-12">
+								<h4 class="blue">Càrrecs junta directiva</h4>
 							</div>
 						</div>
-					</div>
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Darrera junta</span>
-								{{ form_widget(form.datajunta, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-3">
-					 	<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon">Creació</span>
-								{{ form_widget(form.datacreacio, { 'attr': {'class': 'form-control form-control-center'} }) }}
-								<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-12">
-						<h4 class="blue">Càrrecs junta directiva</h4>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-5">
 						<div class="row">
 							<div class="col-md-8">
 								<div class="form-group">
@@ -466,7 +466,7 @@
 								</div>
 							</div>
 							<div class="col-md-2">
-								<a id="formclub-addcarrec" href="{{ path('FecdasBundle_clubaddjunta') }}" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
+								<a id="formclub-addcarrec" href="{{ path('FecdasBundle_clubaddjunta', {'codi': club.codi }) }}" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
 								{{ form_widget(form.carrecs) }}
 							</div>
 							<div class="col-md-6">
@@ -477,7 +477,7 @@
 						</div>
 					</div>
 					
-					<div class="col-md-7">
+					<div class="col-md-6">
 						{% if carrecs|length > 0 %}
 						<div class="table-scroll">
 							<ol id="list-data">
@@ -486,7 +486,7 @@
 									<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
 									<div class="data-detall-cell userclub-junta-nom">{{ carrec.nom }}</div>
 									<div class="data-detall-cell userclub-junta-remove">
-										<a href="{{ path('FecdasBundle_clubremovejunta', {'id': carrec.id } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
+										<a href="{{ path('FecdasBundle_clubremovejunta', {'codi': club.codi, 'id': carrec.id } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
 											<i class="fa fa-trash fa-1x red"></i>
 										</a>
 									</div>
@@ -687,15 +687,22 @@
 
 		$(".formclub-removecarrec").click(function(e) {
 			e.preventDefault();
-			var url = $(this).attr("href");  // Inclou id
+			var url = $(this).attr("href");  // Inclou id persona i codi club
 
 			$('#progressbar').show();  // Rellotge
+
+			var rowCarrec =  $(this).parents('.data-detall');
 			
 			$.get(url, function(data, textStatus) {
+
+				rowCarrec.remove();
+
 				$('#progressbar').hide();  // Rellotge
 
-				window.location = url+'?codiclub='+$(this).val();
-					
+				dialegInfoCallback('Càrrec esborrat', data, 400, 0, function() {
+					window.location = '{{ path('FecdasBundle_club') }}'+'?codiclub='+'{{ club.codi }}'+'&tab=3';
+				});
+				
 	        }).fail( function(xhr, status, error) {
 				 // xhr.status + " " + xhr.statusText, status, error
 				 var sms = smsResultAjax('KO', xhr.responseText);
@@ -709,7 +716,7 @@
 
 		$("#formclub-addcarrec").click(function(e) {
 			e.preventDefault();
-			var url = $(this).attr("href");  // No inclou id
+			var url = $(this).attr("href");  // Inclou codi però no inclou id persona
 
 			if ($('#club_addjunta').val() == '') {
 				dialegError('Error', 'Cal escollir alguna persona', 400, 0);
@@ -724,16 +731,19 @@
 			var id = $('#club_addjunta').val();
 			var carrec = $('#club_carrec').val();
 
-			url += '?id='+id+'&carrec='+carrec;  
+			url += '&id='+id+'&carrec='+carrec;  
+
+			
 			
 			$('#progressbar').show();  // Rellotge
 			
 			$.get(url, function(data, textStatus) {
 				$('#progressbar').hide();  // Rellotge
 
-				//http://fecdas.dev/club?codiclub=CAT010
-				window.location = '{{ path('FecdasBundle_club', {'codiclub': club.codi } ) }}';
-					
+				dialegInfoCallback('Junta actualitzada', data, 400, 0, function() {
+					window.location = '{{ path('FecdasBundle_club') }}'+'?codiclub='+'{{ club.codi }}'+'&tab=3';
+				});
+				 
 	        }).fail( function(xhr, status, error) {
 				 // xhr.status + " " + xhr.statusText, status, error
 				 var sms = smsResultAjax('KO', xhr.responseText);

@@ -12,7 +12,7 @@ use FecdasBundle\Controller\BaseController;
 
 class FormClub extends AbstractType {
 
-	protected $options;
+	private $options;
 	
 	public function __construct(array $options = null)
 	{
@@ -21,8 +21,8 @@ class FormClub extends AbstractType {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		
-		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+		$nou = $this->options['nou'];
+		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($nou) {
 			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
 			$form = $event->getForm();
 			$club = $event->getData();
@@ -46,7 +46,7 @@ class FormClub extends AbstractType {
 					'mapped' => false,
 					'data'	=> $club->getSaldo()
 				));
-				
+
 				// Cerca federats club
 				$form->add('addjunta', 'entity', array(
 					'class' => 'FecdasBundle:EntityPersona',
@@ -62,7 +62,7 @@ class FormClub extends AbstractType {
 					'required'  	=> false,
 					'mapped'		=> false,
 					'property_path' => 'persona',
-					'disabled'		=> $this->options['nou'] == true
+					'disabled'		=> $nou == true
 				));
 				
 				$form->add('carrec', 'choice', array(
@@ -70,11 +70,11 @@ class FormClub extends AbstractType {
 					'mapped'		=> false,
 					'choices' 		=> BaseController::getCarrecs(),
 					'empty_value' 	=> 'Escollir càrrec...',
-					'disabled'		=> $this->options['nou'] == true
+					'disabled'		=> $nou == true
 				));
-				
+
 				$form->add('carrecs', 'hidden');
-				error_log('activat '.$club->getActivat().'-'.($club->getActivat()?'true':'false').'-');
+
 				$form->add('activat', 'checkbox', array(
 					'required'  => false,
 					'data'		=> ($club->getActivat()?true:false)

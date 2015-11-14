@@ -33,7 +33,8 @@ class SecurityController extends BaseController
     			$repository = $em->getRepository('FecdasBundle:EntityUser');
     			$user = $repository->findOneByUser($form->getData()->getUser());
     			if (!$user || $user->getDatabaixa() != null || $user->getClub()->getActivat() == false) {
-    				$this->get('session')->getFlashBag()->add('sms-notice', 'Usuari incorrecte!');
+    				if (!$user || $user->getDatabaixa() != null) $this->get('session')->getFlashBag()->add('sms-notice', 'Usuari incorrecte!');
+					else $this->get('session')->getFlashBag()->add('sms-notice', 'Accés desactivat, poseu-vos en contacte amb la Federació');
     				/* Manteniment  */
     				//$this->get('session')->getFlashBag()->add('sms-notice', 'Aplicació en manteniment, disculpeu les molèsties!');
     			} else {
@@ -262,15 +263,116 @@ class SecurityController extends BaseController
     
     
 	public function clubaddjuntaAction(Request $request) {
-		$response = new Response("No s'ha pogut afegir la persona  ");
-    	$response->setStatusCode(500);
-    	return $response;
+		
+		$codi = $request->query->get('codi', '');
+		$id = $request->query->get('id', 0);
+		$carrec = $request->query->get('carrec', 0);
+		
+		try {
+			/* De moment administradors */
+	    	if ($this->isCurrentAdmin() != true) {
+	    		$this->logEntryAuth('ADD JUNTA NO ADMIN',	'club : ' . $codi);
+				throw new \Exception("Acció no permesa, es desarà al registre");
+			}
+			
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+			
+			if ($club == null) {
+	    		$this->logEntryAuth('ADD JUNTA ERROR',	'club no trobat : ' . $codi);
+	    		throw new \Exception("Club no trobat ".$codi);
+			}
+			$personaOk = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($id);
+				
+			if ($personaOk == null) {
+				$this->logEntryAuth('ADD JUNTA ERROR',	'club : ' . $codi.' persona no trobada '.$id);
+	    		throw new \Exception("Persona no trobada ".$id);
+			}
+			
+			$em = $this->getDoctrine()->getManager();	
+			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+	
+			$key = -1; //nou
+			$num = 1;
+			if ($carrec == BaseController::CARREC_VOCAL) { // Vocal, afegir nou
+				foreach ($jsonCarrecs as $value) {
+					if ($value->cid == BaseController::CARREC_VOCAL) $num++;
+				}
+				$jsonCarrecs[] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num);
+				$club->setCarrecs(json_encode($jsonCarrecs));
+				$em->flush();
+				$this->logEntryAuth('ADD JUNTA OK',	'club : ' . $codi.' persona '.$id.' carrec'.$carrec);
+				return new Response("Nou càrrec afegit correctament");
+				
+			} else { // Altres càrrecs, substituir
+				foreach ($jsonCarrecs as $k => $value) {
+					if ($carrec == $value->cid) $key = $k;
+				}
+				// No existeix
+			}
+			
+			if ($key < 0) $jsonCarrecs[] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1); // add
+			else $jsonCarrecs[$key] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1);		// upd
+			$club->setCarrecs(json_encode($jsonCarrecs));
+			$em->flush();
+			$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' persona '.$id.' carrec'.$carrec);
+			
+			return new Response("Junta actualitzada correctament");
+		
+		} catch (\Exception $e) {
+			$response = new Response($e->getMessage());
+	    	$response->setStatusCode(500);
+		}
+		return $response;
 	}
 
 	public function clubremovejuntaAction(Request $request) {
-		$response = new Response("No s'ha pogut esborrar la persona  ");
-    	$response->setStatusCode(500);
-    	return $response;
+		$codi = $request->query->get('codi', '');	
+		$id = $request->query->get('id', 0);
+		
+		try {
+			/* De moment administradors */
+	    	if ($this->isCurrentAdmin() != true) {
+	    		$this->logEntryAuth('DEL JUNTA NO ADMIN',	'club : ' . $codi);
+				throw new \Exception("Acció no permesa, es desarà al registre");
+			}
+			
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+			
+			if ($club == null) {
+	    		$this->logEntryAuth('DEL JUNTA ERROR',	'club no trobat : ' . $codi);
+	    		throw new \Exception("Club no trobat ".$codi);
+			}
+			
+			$em = $this->getDoctrine()->getManager();	
+			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+			
+			$key = -1; 
+			$ncDel = 0;
+			foreach ($jsonCarrecs as $k => $value) {
+				if ($value->id == $id) {
+					$key = $k;
+					if ($value->cid == BaseController::CARREC_VOCAL) $ncDel = $value->nc;
+				}
+				if ($value->cid == BaseController::CARREC_VOCAL && $ncDel > 0 && $value->nc > $ncDel) { // upd nums
+					$jsonCarrecs[$k]->nc = ($value->nc - 1);
+				}
+			}
+			if ($key < 0) {
+				$this->logEntryAuth('DEL JUNTA ERROR',	'No trobat => club : ' . $codi. ' id: '.$id);
+				throw new \Exception("Càrrec no trobat");
+			} 
+			
+			array_splice($jsonCarrecs, $key, 1);  // del
+			$club->setCarrecs(json_encode($jsonCarrecs));
+			$em->flush();
+			$this->logEntryAuth('DEL JUNTA OK',	'club : ' . $codi.' persona '.$id);
+			
+			return new Response("Junta actualitzada correctament");
+		} catch (\Exception $e) {
+			$response = new Response($e->getMessage());
+	    	$response->setStatusCode(500);
+		}
+		return $response;
 	}
 
 	
@@ -285,7 +387,7 @@ class SecurityController extends BaseController
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
     	
     	$club  = $this->getCurrentClub();
-		$tab	= 0;    	
+		$tab	= $id = $request->query->get('tab', 0);;    	
     	$nouclub = false;
 		$clubCodi = '';
 
@@ -345,42 +447,29 @@ class SecurityController extends BaseController
    		}
 		
 		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
-   		$form = $this->createForm(new FormClub($options), $club);
-
 		
+   		$form = $this->createForm(new FormClub($options), $club);
+		
+		/* Alta o modificació de clubs */
+		$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
+
 		$carrecs = array();
-		$aux = array();
-		$aux[] = array('id' => 329, 'cid' => 1);
-		$aux[] = array('id' => 517, 'cid' => 2);
-
-		//$club->setCarrecs(json_encode($aux));
-
+		
 		try {
 			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
-			//$jsonCarrecs = 	$aux;
-	
-			// echo json_encode($aux); => [{"id":329,"cid":1},{"id":517,"cid":2}] 
-			
-			
-			foreach ($jsonCarrecs as $value) {
+
+			foreach ($jsonCarrecs as $key => $value) {
 				
 				$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
-				$carrecs[] = array(
+				$carrecs[$value->cid.$value->nc] = array(
 						'id' 		=> $value->id, 
-						'carrec' 	=> BaseController::getCarrec($value->cid), 
+						'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
 						'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
 				);
 			}
 			
-			
-			
 	   		if ($request->getMethod() == 'POST') {
 			
-	   			/* Alta o modificació de clubs */
-	
-				$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
-				
-				
 				/*$clubCodi = $club->getCodi();
 	
 	   			$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());

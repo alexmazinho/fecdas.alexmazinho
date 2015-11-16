@@ -442,8 +442,8 @@ class AdminController extends BaseController {
 		
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($request->query->get('codiclub'));
 		$estat = $request->query->get('action');
-		$limitcredit = $request->query->get('limitcredit');
-		if ($limitcredit == "") $limitcredit = null;
+		$limitcredit = $request->query->get('limitcredit', 0);
+		//if ($limitcredit == "") $limitcredit = null;
 		
 		if ($club == null) {
 			$this->logEntryAuth('CLUB STATE ERROR', $request->query->get('codiclub'));
@@ -509,6 +509,10 @@ class AdminController extends BaseController {
 		$sort = $request->query->get('sort', 'c.nom');
 		$direction = $request->query->get('direction', 'asc');
 		$currentEstat = $request->query->get('estat', $currentEstat);
+		$codi = $request->query->get('codi', '');
+		
+		
+		if ($codi != '') $currentEstat = BaseController::TOTS_CLUBS_DEFAULT_STATE;
 		
 		if ($request->getMethod() == 'POST') {
 		// Criteris de cerca.Desactivat JQuery 
@@ -524,15 +528,30 @@ class AdminController extends BaseController {
 				'data' => $currentEstat
 		));
 		
+		$formBuilder->add('club', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityClub',
+				'query_builder' => function($repository) {
+						return $repository->createQueryBuilder('c')
+								->orderBy('c.nom', 'ASC')
+								->where('c.activat = 1');
+						}, 
+				'choice_label' 	=> 'nom',
+				'empty_value' 	=> 'Seleccionar Club',
+				'required'  	=> false,
+				//'data' 			=> ,
+		));
+		
 		$form = $formBuilder->getForm();
 	
 		// Crear índex taula partes per data entrada
 		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c JOIN c.estat e ";
 		$strQuery .= " WHERE c.activat = true AND c.codi <> 'CAT000' ";
 		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
+		if ($codi != '') $strQuery .= " AND c.codi = :codi ";
 		$strQuery .= " ORDER BY ". $sort;
 		$query = $em->createQuery($strQuery);
 		if ($currentEstat != 0) $query->setParameter('filtreestat', $states[$currentEstat]);
+		if ($codi != '') $query->setParameter('codi', $codi);
 		
 		$paginator  = $this->get('knp_paginator');
 		$clubs = $paginator->paginate(

@@ -23,17 +23,30 @@
 	  			</div>	
 			{% endfor %}
 		</div>
-		<div class="col-md-12">
-	    	<form id="formclubs" action="{{ path('FecdasBundle_clubs') }}" method="post" {{ form_enctype(form) }}  class="appform">
-	    		<div id="formclubs-estat" class="form-left">
-					{{ form_widget(form.estat, { 'attr': {'class': 'formfield-outside'} }) }}
-				</div> 
-				<div id="formclubs-submit" class="form-right">	
-					<input type="submit" class="forminput-inside" value="Consulta" name="formclubs-button-filter"/>
-				</div> 
-		   	</form>
+	</div>
+	<form id="formclubs" action="{{ path('FecdasBundle_clubs') }}" method="post" {{ form_enctype(form) }}  class="appform">
+		<div class="row">
+			<div class="col-md-5">
+			 	<div class="form-group">
+					<label>Club</label>
+					<div id="formrebut-club"  class="">
+						{{ form_widget(form.club, { 'attr': {'class': 'form-control form-control-left'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+			 	<div class="form-group">
+					<label>Estat</label>
+					<div id="formrebut-club"  class="">
+						{{ form_widget(form.estat, { 'attr': {'class': 'form-control form-control-left'} }) }}
+					</div>
+				</div>
+			</div>
+			<div id="formclubs-submit" class="form-right">	
+				<input type="submit" class="forminput-inside" value="Consulta" name="formclubs-button-filter"/>
+			</div> 
 		</div>
-    </div>
+    </form>
     <div id="list-clubs" class="row">	
     	<div class="col-md-12">
 	    	<div class="table-header">	
@@ -69,7 +82,7 @@
 			   			{{ club.estat.descripcio }}
 			   			{% if club.impressio == 1 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
 			   			</div>
-			   			<div class="data-detall-cell club-limit" data-limit="{{ club.limitcredit|number_format(2, ',', '.') }}">{{ club.limitcredit|number_format(2, ',', '.') }} €</div>
+			   			<div class="data-detall-cell club-limit" data-limit="{{ club.limitcredit }}">{{ club.limitcredit|number_format(2, ',', '.') }} €</div>
 			   			<div class="data-detall-cell club-gessaldos">
 			   				{{ club.saldo|number_format(2, ',', '.') }} €
 				   			<div class="detall-saldos">
@@ -84,14 +97,14 @@
 				   			</div>
 			   			</div>
 			   			<div class="data-detall-cell club-actions">
-			   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_DIFERIT') }) }}">
-			   				<img src="{{ asset('images/icon_green.gif') }}" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" width="23px"></a>
-			   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
-			   				<img src="{{ asset('images/icon_orange.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" width="23px"></a>
-			   			<a class="clubs-action-upd" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
-			   				<img src="{{ asset('images/icon_red.gif') }}" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Sense tramitació'" width="23px"></a>
-			   			<a class="clubs-action-view" href="{{ path('FecdasBundle_club', { 'codiclub': club.codi }) }}">
-			   				<img src="{{ asset('images/icon-view.png') }}" alt="Veure dades del club" title="Veure dades del club" width="23px"></a>
+			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_DIFERIT') }) }}">
+			   				<i class="fa fa-thumbs-up green fa-1x"></i></a>
+			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Sense tramitació'" title="Canviar estat a 'Sense tramitació'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
+			   				<i class="fa fa-credit-card orange fa-1x"></i></a>
+			   			<a class="clubs-action-upd link" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
+			   				<i class="fa fa-thumbs-down red fa-1x"></i></a>
+			   			<a class="clubs-action-view link" alt="Veure dades del club" title="Veure dades del club" href="{{ path('FecdasBundle_club', { 'codiclub': club.codi }) }}">
+			   				<i class="fa fa-search blue fa-1x"></i></a>
 						</div>
 			   		</li>
 			   	{% endfor %}
@@ -121,15 +134,31 @@ $(document).ready(function(){
 
 	$('#form_estat').change(function () {
 		// Recarrega consulta afegint la dades del formulari
-		clubsSaldosReload("{{ path('FecdasBundle_clubs', sortparams)|raw }}");
-		
+		var url = "{{ path('FecdasBundle_clubs', sortparams)|raw }}";
+		url += '&codi='+$("#form_club").val();
+		clubsSaldosReload(url);
 	});
 	
 	$('#formclubs').submit(function () {
 		// Recarrega consulta afegint la dades del formulari
-		clubsSaldosReload("{{ path('FecdasBundle_clubs', sortparams)|raw }}");
+		var url = "{{ path('FecdasBundle_clubs', sortparams)|raw }}";
+		url += '&codi='+$("#form_club").val();
+		clubsSaldosReload(url);
 		return false;
 	});
+
+	$("#form_club").select2({
+		minimumInputLength: 2,
+		allowClear: true,
+	});
+
+	$("#form_club").change( function() {
+		var url = "{{ path('FecdasBundle_clubs', sortparams)|raw }}";
+		url += '&codi='+$("#form_club").val();
+		clubsSaldosReload(url);
+	});
+
+	
 	//sortLlista("col-listheader", "list-data");
 
 	helpBubblesLlista(".club-gessaldos", ".detall-saldos"); 

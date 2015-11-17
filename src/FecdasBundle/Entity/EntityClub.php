@@ -21,7 +21,7 @@ class EntityClub {
 	protected $codi;	// fedeclub, CATXXX
 	
 	/**
-	 * @ORM\Column(type="string", length=30)
+	 * @ORM\Column(type="string", length=100)
 	 * @Assert\NotBlank()
 	 */
 	protected $nom;

@@ -99,9 +99,9 @@
 			   			<div class="data-detall-cell club-actions">
 			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_DIFERIT') }) }}">
 			   				<i class="fa fa-thumbs-up green fa-1x"></i></a>
-			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Sense tramitació'" title="Canviar estat a 'Sense tramitació'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
+			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
 			   				<i class="fa fa-credit-card orange fa-1x"></i></a>
-			   			<a class="clubs-action-upd link" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
+			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Sense tramitació'" title="Canviar estat a 'Sense tramitació'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
 			   				<i class="fa fa-thumbs-down red fa-1x"></i></a>
 			   			<a class="clubs-action-view link" alt="Veure dades del club" title="Veure dades del club" href="{{ path('FecdasBundle_club', { 'codiclub': club.codi }) }}">
 			   				<i class="fa fa-search blue fa-1x"></i></a>

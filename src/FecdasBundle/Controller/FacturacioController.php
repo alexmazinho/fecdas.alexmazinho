@@ -664,6 +664,8 @@ class FacturacioController extends BaseController {
 		$this->logEntryAuth('VIEW INGRESOS', $this->get('session')->get('username'));
 	
 		$codi = $request->query->get('cerca', '');
+		$club = null;
+		if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		$nr = $request->query->get('numrebut', '');
 	
 		$arrayReb = explode("/", $nr);
@@ -699,7 +701,7 @@ class FacturacioController extends BaseController {
 					'choice_label' 	=> 'nom',
 					'empty_value' 	=> 'Seleccionar Club',
 					'required'  	=> false,
-					'data'			=> $codi
+					'data'			=> $club
 			))
 			->add('numrebut', 'text', array(
 				'required' => false,
@@ -722,7 +724,11 @@ class FacturacioController extends BaseController {
 			$club = $this->getCurrentClub();
 			$codi = $club->getCodi(); 
 		}	
-		else $codi = $request->query->get('cerca', ''); // Admin filtra club
+		else {
+			$codi = $request->query->get('cerca', ''); // Admin filtra club
+			$club = null;
+			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
 	
 		$this->logEntryAuth('VIEW COMANDES', $this->get('session')->get('username'));
 		
@@ -778,6 +784,7 @@ class FacturacioController extends BaseController {
 						'choice_label' 	=> 'nom',
 						'empty_value' 	=> 'Seleccionar Club',
 						'required'  	=> false,
+						'data'			=> $club
 				))
 			->add('numfactura', 'text', array(
 				'data' 	=> $nf ))
@@ -1301,7 +1308,7 @@ class FacturacioController extends BaseController {
 			$page = 1;
 		}	
 
-		$query = $this->consultaProductes($idproducte, $compte, $tipus, $baixes, $sort, $direction);
+		$query = $this->consultaProductes($idproducte, $compte, $tipus, true, $sort, $direction);
 			
 		$paginator  = $this->get('knp_paginator');
 			
@@ -1647,10 +1654,10 @@ class FacturacioController extends BaseController {
 			$response->setContent(json_encode(array()));
 			return $response;
 		}
-		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
-		$strQuery .= " WHERE p.databaixa IS NULL ";
-		if  ($tipus != 'compte') $strQuery .= " AND p.descripcio LIKE :cerca";
-		else $strQuery .= " AND p.codi >= :min AND p.codi <= :max ";
+		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityProducte p WHERE ";
+		//$strQuery .= " WHERE p.databaixa IS NULL ";
+		if  ($tipus != 'compte') $strQuery .= " p.descripcio LIKE :cerca";
+		else $strQuery .= " p.codi >= :min AND p.codi <= :max ";
 		$strQuery .= " ORDER BY p.descripcio";  
 	
 		$query = $em->createQuery($strQuery);
@@ -3385,13 +3392,16 @@ error_log($dades);
 								//echo "ERROR REBUTS/INGRESOS 9 Factura -".($numFactura)."- no trobada, concepte =>".$concepteAux."<= => id: ".$id.", anotació: ".$num.", de compte: ".$compteD." a compte: ".$compteH." (".$clubs[$compteH]['nom'] .")<br/>";
 								
 								// S'ha fet l'ingrés la comanda encara no ha arribat, desar a un array
-								$facturesRebutsPendents[$numFactura] =  array('id' => $id, 'num' => $num, 'compte' => $compteD, 'factura' => $numFactura,
+								/*$facturesRebutsPendents[$numFactura] =  array('id' => $id, 'num' => $num, 'compte' => $compteD, 'factura' => $numFactura,
 																			'data' => $data, 'import' => $import, 'concepte' => $concepteAux, 
 																			'rebut' => $numRebut, 'datapagament' => $datapagament, 'tipuspagament' => $tipuspagament,
 																			'club' => $clubs[$compteH]['codi'], 'comandes' => $comandesIdPerActualitzar, 
 																			'comentari' => $comentari, 'dadespagament' => $dadespagament );
 															 	
-								return;
+								return;*/
+								
+								// Ingrés a compte
+								
 							} else {
 								// Count no funciona bé
 								//$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
@@ -3405,10 +3415,10 @@ error_log($dades);
 									echo $id." ".$num."ERROR REBUTS/INGRESOS 11 Comanda no trobada => ".$compteD. " ".$numFactura."<br/>";
 									return;
 								}
-									
+								$comandesIdPerActualitzar[] = $comanda['id'];	
 							}
 							
-							$comandesIdPerActualitzar[] = $comanda['id'];
+							//$comandesIdPerActualitzar[] = $comanda['id'];
 						}
 		if ($persist == false) return;
 						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);

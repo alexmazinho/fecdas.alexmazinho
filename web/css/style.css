@@ -516,10 +516,10 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 /*************** FECDAS NOU productes ****************/
 
-#header-producte-estat { width: 8%; text-align: left; }
+#header-producte-estat { width: 4%; text-align: left; }
 #header-producte-codi { width: 10%; text-align: center; }
 #header-producte-nomcurt  { width: 8%; text-align: center; }
-#header-producte-descripcio { width: 25%; text-align: left;  }
+#header-producte-descripcio { width: 29%; text-align: left;  }
 #header-producte-tipus { width: 7%; text-align: left; }
 #header-producte-import { width: 7%; text-align: right; }
 /*#header-producte-iva { width: 7%; text-align: right; }
@@ -530,10 +530,10 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-producte-stock { width: 6%; text-align: center; }
 #header-producte-actions { width: 10%; text-align: right;  color: #3c763d;  }
 	   	
-.data-detall-cell.producte-estat  { width: 8%; text-align: left; }
+.data-detall-cell.producte-estat  { width: 4%; text-align: left; }
 .data-detall-cell.producte-codi  { width: 10%; text-align: center; }
 .data-detall-cell.producte-nomcurt  { width: 8%; text-align: center; }
-.data-detall-cell.producte-descripcio { width: 25%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.producte-descripcio { width: 29%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.producte-tipus { width: 7%; text-align: left; }
 .data-detall-cell.producte-import { width: 7%; text-align: right; }
 /*.data-detall-cell.producte-iva { width: 7%; text-align: right; }

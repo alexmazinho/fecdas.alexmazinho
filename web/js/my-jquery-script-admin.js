@@ -206,7 +206,8 @@
 			
 			var hrefCanviEstat = $(this).attr('href');
 			var mostrarForm = hrefCanviEstat.indexOf('DIF') >= 0; // Form pagamanet diferit
-			var estat = $(this).find('img').attr('title');
+			//var estat = $(this).find('img').attr('title');
+			var estat = $(this).attr('title');
 			
 			$("#dialeg").dialog({
 	          	buttons : {

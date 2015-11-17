@@ -510,9 +510,12 @@ class AdminController extends BaseController {
 		$direction = $request->query->get('direction', 'asc');
 		$currentEstat = $request->query->get('estat', $currentEstat);
 		$codi = $request->query->get('codi', '');
+		$club = null;
 		
-		
-		if ($codi != '') $currentEstat = BaseController::TOTS_CLUBS_DEFAULT_STATE;
+		if ($codi != '') {
+			$currentEstat = BaseController::TOTS_CLUBS_DEFAULT_STATE;
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
 		
 		if ($request->getMethod() == 'POST') {
 		// Criteris de cerca.Desactivat JQuery 
@@ -538,7 +541,7 @@ class AdminController extends BaseController {
 				'choice_label' 	=> 'nom',
 				'empty_value' 	=> 'Seleccionar Club',
 				'required'  	=> false,
-				//'data' 			=> ,
+				'data' 			=> $club,
 		));
 		
 		$form = $formBuilder->getForm();

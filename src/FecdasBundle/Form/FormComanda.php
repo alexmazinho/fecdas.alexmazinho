@@ -35,7 +35,8 @@ class FormComanda extends AbstractType {
 						'query_builder' => function($repository) {
 								return $repository->createQueryBuilder('c')
 									->orderBy('c.nom', 'ASC')
-									->where('c.activat = 1');
+									->where('c.databaixa IS NULL');
+									//->where('c.activat = 1');
 								}, 
 						'choice_label' 	=> 'nom',
 						'empty_value' 	=> 'Seleccionar Club',

@@ -536,7 +536,8 @@ class AdminController extends BaseController {
 				'query_builder' => function($repository) {
 						return $repository->createQueryBuilder('c')
 								->orderBy('c.nom', 'ASC')
-								->where('c.activat = 1');
+								->where('c.databaixa IS NULL');
+								//->where('c.activat = 1');
 						}, 
 				'choice_label' 	=> 'nom',
 				'empty_value' 	=> 'Seleccionar Club',
@@ -548,7 +549,8 @@ class AdminController extends BaseController {
 	
 		// Crear índex taula partes per data entrada
 		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c JOIN c.estat e ";
-		$strQuery .= " WHERE c.activat = true AND c.codi <> 'CAT000' ";
+		//$strQuery .= " WHERE c.activat = true AND c.codi <> 'CAT000' ";
+		$strQuery .= " WHERE c.databaixa IS NULL AND c.codi <> 'CAT000' ";
 		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
 		if ($codi != '') $strQuery .= " AND c.codi = :codi ";
 		$strQuery .= " ORDER BY ". $sort;

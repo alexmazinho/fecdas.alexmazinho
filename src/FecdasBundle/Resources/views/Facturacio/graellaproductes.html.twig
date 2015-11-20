@@ -139,9 +139,12 @@
 			if (max > 0 && unitats > max) {
 				$(this).val(max);
 			} else {
+
+				{% if admin != true %} 				
 				if (unitats < min) {
 					$(this).val(min);
 				}
+				{% endif %}
 			}
 		});
 

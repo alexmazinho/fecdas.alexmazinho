@@ -275,37 +275,92 @@ class PDFController extends BaseController {
 			$detallsArray = json_decode($factura->getDetalls(), true);
 			
 			$pdf->SetTextColor(0, 0, 0); // Negre	
-			$pdf->setY($y_taula + 10);
+			//$pdf->setY($y_taula + 10);
 			$pdf->SetFontSize(10);
+			
+			// Columnes
+			$w_codi = 27;
+			$x_codi = $x_taula;
+			$x_producte = $x_codi + $w_codi;
+			$w_producte = 68;
+			$x_total = $x_producte + $w_producte;
+			$w_total = 16;
+			$x_preuu = $x_total + $w_total;
+			$w_preuu = 23;
+			$x_import = $x_preuu + $w_preuu;
+			$w_import = 23;
+			$row_h = 5;
+			$row_h_extra_max = 14;
+			$pdf->setY($y_taula + 8);
 			foreach ($detallsArray as $lineafactura) {
 				if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
 					
 				$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 				
-				$strExtra = '';
-					
-				if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
-					foreach ($lineafactura['extra'] as $extra) {
-						$strExtra .= '<br/> -&nbsp;'.$extra;
-					}
-				}	
-					
-				$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
+				/*$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
 					<td width="96" align="center">'.$lineafactura['codi'].'</td>
 					<td width="240" align="left">'.$lineafactura['producte'].$strExtra.'</td>
 					<td width="58" align="center">'.$lineafactura['total'].'</td>
 					<td width="81" align="center">'.number_format($lineafactura['preuunitat'], 2, ',', '.').'€</td>
 					<td width="86" align="center"><span style="font-weight:bold;">'.number_format($lineafactura['import'], 2, ',', '.').'€</span></td>
-					</tr></table>';	
+					</tr></table>';	*/
 				
-			
-				$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
-			
+				// 	$w, $h, $txt, $border = 0, $align = 'J', $fill = false, $ln = 0(dreta) 1 o 2, $x = '', $y = '',
+		  		// $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 0, $valign = 'T', $fitcell = false 
+		  		// $pdf->SetFillColor(100, 100, 100); //Gris
+				
+				$row_y = $pdf->getY() + 1;
+				$pdf->MultiCell($w_codi, $row_h, $lineafactura['codi'], 0, 'C', true, 0, $x_codi, $row_y, 
+								true, 0, false, true, $row_h, 'T', true);
+				$pdf->MultiCell($w_producte - 4, $row_h, $lineafactura['producte'], 0, 'L', true, 0, $x_producte + 2, $row_y, 
+								true, 0, false, true, $row_h, 'T', true);
+				$pdf->MultiCell($w_total, $row_h, $lineafactura['total'], 0, 'C', true, 0, $x_total, $row_y, 
+								true, 0, false, true, $row_h, 'T', true);
+				$pdf->MultiCell($w_preuu, $row_h, number_format($lineafactura['preuunitat'], 2, ',', '.').'€', 0, 'C', true, 0, $x_preuu, $row_y, 
+								true, 0, false, true, $row_h, 'T', true);
+
+				$pdf->SetFont('', 'B');
+				$pdf->MultiCell($w_import, $row_h, number_format($lineafactura['import'], 2, ',', '.').'€', 0, 'C', true, 2, $x_import, $row_y, 
+								true, 0, false, true, $row_h, 'T', true);
+
+				$pdf->SetFont('', '');
+
+				$strExtra = '';
+				if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
+					$strExtra = '';
+					foreach ($lineafactura['extra'] as $extra) {
+						//$strExtra .= '<br/> -&nbsp;'.$extra;
+						$strExtra .= $extra.', ';
+					}
+					if (count($lineafactura['extra']) > 0) $strExtra = substr($strExtra, 0, -2); 
+					$strExtra .= '';
+				}	
+				
+				$row_h_extra = $row_h;
+				
+				if (count($lineafactura['extra']) > 30 || $strExtra == '') {
+					$strExtra = '';
+				} else {
+					if (count($lineafactura['extra']) <= 10) $row_h_extra = 7;	
+					else $row_h_extra = max($row_h_extra_max * count($lineafactura['extra']) / 30, 10);
+				}				
+
+				$row_y = $pdf->getY();
+				$pdf->SetFont('', 'I', 7);
+				$pdf->SetTextColor(100, 100, 100); //Gris
+				
+				$pdf->MultiCell($w_producte - 4, $row_h_extra, $strExtra, 0, 'L', true, 2, $x_producte + 2, $row_y, 
+								true, 0, false, true, $row_h_extra, 'T', true);
+				$pdf->SetTextColor(0, 0, 0); //Negre
+				$pdf->SetFont('', '', 10);				
 			}
 
 			// Concepte
 			if ($factura->esAnulacio()) $strConcepte = 'Anul·lació factura '.$comanda->getFactura()->getNumFactura().' '.$comanda->getFactura()->getDatafactura()->format('d/m/Y');
-			else $strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
+			else {
+				if ($factura->getImport() < 0) $strConcepte = 'Factura anul·lació '.$comanda->getComentaris();
+				else $strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
+			}
 			
 			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
 					<td width="96" align="center">&nbsp;</td>
@@ -315,8 +370,7 @@ class PDFController extends BaseController {
 					<td width="86" align="center">&nbsp;</td>
 					</tr></table>';	
 				
-			
-			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
+			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);		// Màxim y => 150
 
 			$pdf->SetFontSize(12);
 			// PEU 1 TOTAL PARCIAL

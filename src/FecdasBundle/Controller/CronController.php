@@ -351,7 +351,9 @@ class CronController extends BaseController {
 		
 		$states = explode(";", self::CLUBS_STATES);
 		
-		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.activat = 1";
+		//$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.activat = 1";
+		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.databaixa IS NULL";
+		
 		if ($club != '') $strQuery .= " AND c.codi = :club "; 
 		$query = $em->createQuery($strQuery);
 		if ($club != '') $query->setParameter('club', $club);
@@ -524,7 +526,8 @@ class CronController extends BaseController {
 	
 		$states = explode(";", self::CLUBS_STATES);
 	
-		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.activat = 1";
+		//$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.activat = 1";
+		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c WHERE c.databaixa IS NULL";
 		$query = $em->createQuery($strQuery);
 		$clubs = $query->getResult();
 

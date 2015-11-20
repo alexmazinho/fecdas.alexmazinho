@@ -165,7 +165,8 @@ class EntityComandaDetall {
 	 */
 	public function esBaixa()
 	{
-		return $this->getUnitats() <= 0;
+		//return $this->getUnitats() <= 0;
+		return $this->getUnitats() == 0;
 	}
 	
 	

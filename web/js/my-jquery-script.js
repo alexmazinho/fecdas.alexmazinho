@@ -1168,9 +1168,11 @@
 	    	 	        }).fail( function(xhr, status, error) {
 	    					 // xhr.status + " " + xhr.statusText, status, error
 	    					 var sms = smsResultAjax('KO', xhr.responseText);
+
+	    					 $('div.alert').remove();
 	    					 
 	    					 $('#progressbar').hide();  // Rellotge
-	    				    	
+	    				    
 	    				     $("#llista-llicencies").prepend(sms);
 	    				});
 	            	},

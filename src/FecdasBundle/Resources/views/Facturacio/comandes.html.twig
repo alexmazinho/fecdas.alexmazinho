@@ -117,7 +117,8 @@
 		   					{% set factura = comanda.factura %}
 		   					{% if factura.comptabilitat == null %} <span class="fa fa-exclamation-triangle fa-1x orange"></span> {% endif %}
 		   					<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
-		   						{{ factura.numfactura }}
+		   						{% if factura.import < 0 %}<span class="red">(-){{ factura.numfactura }}</span>
+								{% else %}{{ factura.numfactura }}{% endif %}
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% else %}
 							{% if comanda.factura != null %}

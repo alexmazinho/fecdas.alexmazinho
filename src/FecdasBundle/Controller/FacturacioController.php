@@ -453,8 +453,9 @@ class FacturacioController extends BaseController {
 		$apunt .= substr(str_pad($linia."", 4, "0", STR_PAD_LEFT), 0, 4); 	
 		$apunt .= substr(str_pad($compte."", 9, " ", STR_PAD_RIGHT), 0, 9);		
 		$apunt .= substr(str_pad($desc, 100, " ", STR_PAD_RIGHT), 0, 100);	
-		$apunt .= substr(str_pad($conc, 40, " ", STR_PAD_RIGHT), 0, 40);;
-		$apunt .= substr(str_pad($doc, "0", STR_PAD_LEFT), 0, 8);
+		$apunt .= substr(str_pad($conc, 40, " ", STR_PAD_RIGHT), 0, 40);
+		if ($doc != '') $apunt .= substr(str_pad($doc, "0", STR_PAD_LEFT), 0, 8);
+		else $apunt .= str_repeat(" ",8);
 		$apunt .= str_repeat(" ",4).str_repeat(" ",4);
 		$apunt .= $signe.substr(str_pad((number_format(abs($import), 2, '.', '').''), 12, "0", STR_PAD_LEFT), 0, 12);
 		$apunt .= $tipus.str_repeat("0",15);
@@ -511,7 +512,7 @@ class FacturacioController extends BaseController {
 		$doc = $factura->getNumFacturaCurt();
 		$import = $factura->getImport();
 					
-		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $import, BaseController::DEBE);
 					
 		$linia++;
 		$importAcumula = 0;
@@ -527,7 +528,7 @@ class FacturacioController extends BaseController {
 			$importDetall = $d->import;	
 			$importAcumula += $importDetall;	
 
-			$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $importDetall, BaseController::HABER);
+			$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
 						
 			$linia++;
 			$index++;
@@ -696,7 +697,8 @@ class FacturacioController extends BaseController {
 					'query_builder' => function($repository) {
 							return $repository->createQueryBuilder('c')
 								->orderBy('c.nom', 'ASC')
-								->where('c.activat = 1');
+								->where('c.databaixa IS NULL');
+								//->where('c.activat = 1');
 							}, 
 					'choice_label' 	=> 'nom',
 					'empty_value' 	=> 'Seleccionar Club',
@@ -779,7 +781,8 @@ class FacturacioController extends BaseController {
 						'query_builder' => function($repository) {
 								return $repository->createQueryBuilder('c')
 									->orderBy('c.nom', 'ASC')
-									->where('c.activat = 1');
+									->where('c.databaixa IS NULL');
+									//->where('c.activat = 1');
 								}, 
 						'choice_label' 	=> 'nom',
 						'empty_value' 	=> 'Seleccionar Club',
@@ -879,6 +882,9 @@ class FacturacioController extends BaseController {
 				foreach ($cart['productes'] as $id => $info) {
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
 					
+					if ($producte == null) error_log('null');
+					else error_log($producte->getId());
+					
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
 		
 					$detall = $this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
@@ -960,12 +966,16 @@ class FacturacioController extends BaseController {
 		$unitats = $request->query->get('unitats', 1);
 		$tipus = $request->query->get('tipus', 0);
 		
+		// Recollir cistella de la sessió
+		$cart = $this->getSessionCart();				
+		$form = null;
 		try {
 			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
 			
-			if ($producte != null && $unitats > 0) {
-				// Recollir cistella de la sessió
-				$cart = $this->getSessionCart();				
+			//if ($producte != null && $unitats > 0) {
+			if ($producte != null) {
+				
+				if ($unitats <= 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
 				
 				$import = $producte->getPreuAny(date('Y'));
 				
@@ -985,7 +995,7 @@ class FacturacioController extends BaseController {
 	
 				$unitats = $cart['productes'][$idProducte]['unitats'];
 				
-				if ($producte->getTransport() == true) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes(); 
+				if ($producte->getTransport() == true && $unitats > 0) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes(); 
 				
 				/*
 				if ($producte->getTransport() == true) {
@@ -996,7 +1006,7 @@ class FacturacioController extends BaseController {
 					}
 				}*/
 							
-				if ($cart['productes'][$idProducte]['unitats'] <= 0) {
+				if ($cart['productes'][$idProducte]['unitats'] <= 0  && !$this->isCurrentAdmin()) {
 					// Afegir unitats < 0
 					unset( $cart['productes'][$idProducte] );	
 					if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');
@@ -1015,6 +1025,9 @@ class FacturacioController extends BaseController {
 			//$response->setContent(json_encode( array('result' => 'KO', 'sms' => $e->getMessage()) ));
 			return $response;
 		}
+		
+		if ($form == null) $form = $this->formulariTransport($cart);
+		
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
 							array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin())); 
 		
@@ -3074,7 +3087,6 @@ error_log($dades);
 				if ($altrenum != $altre['num']) {
 					// Agrupar apunts
 					$this->insertComandaAltre($clubs, $productes, $altres, $maxnums, $facturesRebutsPendents, $persist, true);
-						
 					$altrenum = $altre['num'];
 					$altres = array();
 				}
@@ -3083,13 +3095,11 @@ error_log($dades);
 				else $altres['H'][] = $altre;
 				$iapu++;
 				if ($iapu > 5000 && $altre['dh'] == 'D') $sortir = true;
-
 			}
 			// La darrera comanda altre del dia
 			if ($altrenum > 0) $this->insertComandaAltre($clubs, $productes, $altres, $maxnums, $facturesRebutsPendents, $persist, true);
 			
 			echo "Apunt FINAL ".$iapu."<br/>";
-			
 			// Mirar factures pendents
 			error_log(str_repeat("=", 40))." ".count($facturesRebutsPendents);
 			echo str_repeat("=", 40)." ".count($facturesRebutsPendents)."<br/>";
@@ -3136,9 +3146,7 @@ error_log($dades);
 				return;
 			}
 			
-			
 			//Mirar Apunts debe entre comptes  4310001 i 4310999 excepte (4310149)
-			
 			if ($compteD >= 4310001 && $compteD <= 4310999 && $compteD != 4310149) {
 				// Deutor club, Factura 
 				if ( !isset( $clubs[$compteD])) {
@@ -3146,7 +3154,6 @@ error_log($dades);
 					if  ($warning == true) echo $id." ".$num."WARNING - COMANDES 15 Club deutor no existeix=> ".$compteD."<br/>";
 					return;
 				}
-				
 				$club = $clubs[$compteD];
 				$concepteAux = $altres['D'][0]['concepte'];
 				$numFactura = $this->extraerFactures(strtolower($concepteAux), 'F');
@@ -3210,9 +3217,15 @@ error_log($dades);
 				}
 				
 				$textComanda = 'COMANDA '.BaseController::getTipusProducte($tipusAnterior).' '.$concepteAux;
+				$textComanda = str_replace("'","''", $textComanda);
 				
 				$facturaId = 0;
 				$comandaId = 0;	
+				
+				if (is_numeric($numFactura) && isset($facturesRebutsPendents[$numFactura*1])) {
+					error_log($id." ".$num."INFO 22 Rebut existent. Associar amb comanda de la factura ".$numFactura." => ".$compteD);
+					echo $id." ".$num."INFO 22 Rebut existent. Associar amb comanda de la factura ".$numFactura." => ".$compteD."<br/>";
+				}
 				
 				switch ($tipusAnterior) {
 				case BaseController::TIPUS_PRODUCTE_LLICENCIES:
@@ -3227,6 +3240,13 @@ error_log($dades);
 	if ($persist == false) return;
 							$facturaId = $this->inserirFactura($data, $numFactura, $import, "Factura - ".$textComanda);
 							$comandaId = $this->inserirComandaAmbDetalls($data, $club['codi'], $maxnums, $textComanda, 0, $facturaId, $altres['H'], $productes);
+							
+							// Revisar si existeix rebut pendent anterior
+							if (is_numeric($numFactura) && isset($facturesRebutsPendents[$numFactura*1])) {
+								$this->updateComandaNumRebut($comandaId, $facturesRebutsPendents[$numFactura*1]);
+								unset($facturesRebutsPendents[$numFactura*1]);
+							}
+							
 						} else {
 							error_log($id." ".$num."REVISAR 15 Factura anul·lació llicencies. Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD);
 							echo $id." ".$num."REVISAR 15 Factura anul·lació llicències. Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD."<br/>";
@@ -3236,11 +3256,14 @@ error_log($dades);
 					} else {
 						// Validar factures import diferent
 						if ($factExistent['import'] != $import) {
-							error_log($id." ".$num."WARNING COMANDA 10 Factura imports incorrectes. Actualitzar import factura ".$numFactura." => ".$compteD);
-							if  ($warning == true) echo $id." ".$num."WARNING COMANDA 10 Factura imports incorrectes. Actualitzar import factura ".$numFactura." => ".$compteD."<br/>";
+							error_log($id." ".$num."ERROR COMANDA 10 Factura imports incorrectes. Actualitzar import factura??? ".$numFactura." => ".$compteD);
+							if  ($warning == true) echo $id." ".$num."ERROR COMANDA 10 Factura imports incorrectes. Actualitzar import factura??? ".$numFactura." => ".$compteD."<br/>";
 	if ($persist == false) return;							
-							$query = "UPDATE m_factures SET import = ".$import." WHERE id = ". $facturaId;
-							$em->getConnection()->exec( $query );					
+							//$query = "UPDATE m_factures SET import = ".$import." WHERE id = ". $facturaId;
+							//$em->getConnection()->exec( $query );					
+						} else {
+							error_log($id." ".$num."INFO 10 Factura existent. No inserida ".$numFactura." => ".$compteD);
+							echo $id." ".$num."INFO 10 Factura existent. No inserida ".$numFactura." => ".$compteD."<br/>";
 						}
 					}
 						
@@ -3251,51 +3274,74 @@ error_log($dades);
 				case BaseController::TIPUS_PRODUCTE_CURSOS:
 				case BaseController::TIPUS_PRODUCTE_ALTRES:
 					// Validar que existeix el parte. Cal inserir la Factura
-					// Insertar factura
-					if ($import > 0) {
-	if ($persist == false) return;
-						$facturaId = $this->inserirFactura($data, $numFactura, $import, "Factura - ".$textComanda);
-						if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_DUPLICATS) {
-							// Insertar comanda
-							$comandaId = $this->inserirComandaAmbDetalls($data, $club['codi'], $maxnums, $textComanda, 0, $facturaId, $altres['H'], $productes);
-						} else {
-							//Buscar la comanda del club encara sense factura
-							$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityDuplicat c INNER JOIN c.detalls d INNER JOIN d.producte p";
-							$strQuery .= " WHERE c.club = :codi ";
-							$strQuery .= " AND c.datapeticio <= :data ";
-							$strQuery .= " AND c.databaixa IS NULL ";
-							$strQuery .= " AND c.factura IS NULL ";
-							$strQuery .= " AND d.unitats = 1 ";
-							$strQuery .= " AND p.codi = :compte ";
-							$strQuery .= " ORDER BY c.datapeticio DESC ";
-						
-							$query = $em->createQuery($strQuery);
-							$query->setParameter('codi', $club['codi']);
-							$query->setParameter('data', $data);
-							$query->setParameter('compte', $actualCompteDuplicat);  
-						
-							$result = $query->getResult();
-							
-							if (count($result) >= 1) $comandaId = $result[0]->getId(); 
-							else {
+					$pos = strpos($concepteAux, '/2014');
+					if ($pos !== false) $anyFactura = 2014; 
+					$factExistent = $this->consultarFactura($numFactura, $anyFactura);
+					if ($factExistent == null) {
+						// Insertar factura
+						if ($import > 0) {
+		if ($persist == false) return;
+							$facturaId = $this->inserirFactura($data, $numFactura, $import, "Factura - ".$textComanda);
+							if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_DUPLICATS) {
+								// Insertar comanda
 								$comandaId = $this->inserirComandaAmbDetalls($data, $club['codi'], $maxnums, $textComanda, 0, $facturaId, $altres['H'], $productes);
 								
-								error_log($id." ".$num."WARNING REBUTS/INGRESOS 12 Comanda duplicat ".$actualCompteDuplicat." no trobada => ".$compteD." ".$club['codi']." ".$numFactura);
-								if ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 12 Comanda duplicat ".$actualCompteDuplicat." no trobada => ".$compteD." ".$club['codi']." ".$numFactura."<br/>";
+								// Revisar si existeix rebut pendent anterior
+								if (is_numeric($numFactura) && isset($facturesRebutsPendents[$numFactura*1])) {
+									$this->updateComandaNumRebut($comandaId, $facturesRebutsPendents[$numFactura*1]);
+									unset($facturesRebutsPendents[$numFactura*1]);
+								}
 								
-								return;
+							} else {
+								//Buscar la comanda del club encara sense factura
+								$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityDuplicat c INNER JOIN c.detalls d INNER JOIN d.producte p";
+								$strQuery .= " WHERE c.club = :codi ";
+								$strQuery .= " AND c.datapeticio <= :data ";
+								$strQuery .= " AND c.databaixa IS NULL ";
+								$strQuery .= " AND c.factura IS NULL ";
+								$strQuery .= " AND d.unitats = 1 ";
+								$strQuery .= " AND p.codi = :compte ";
+								$strQuery .= " ORDER BY c.datapeticio DESC ";
+							
+								$query = $em->createQuery($strQuery);
+								$query->setParameter('codi', $club['codi']);
+								$query->setParameter('data', $data);
+								$query->setParameter('compte', $actualCompteDuplicat);  
+							
+								$result = $query->getResult();
+								
+								if (count($result) >= 1) $comandaId = $result[0]->getId(); 
+								else {
+									$comandaId = $this->inserirComandaAmbDetalls($data, $club['codi'], $maxnums, $textComanda, 0, $facturaId, $altres['H'], $productes);
+									
+									error_log($id." ".$num."WARNING REBUTS/INGRESOS 12 Comanda duplicat ".$actualCompteDuplicat." no trobada => ".$compteD." ".$club['codi']." ".$numFactura);
+									if ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 12 Comanda duplicat ".$actualCompteDuplicat." no trobada => ".$compteD." ".$club['codi']." ".$numFactura."<br/>";
+									
+									return;
+								}
 							}
+						} else {
+							error_log($id." ".$num."REVISAR 17 Factura anul·lació altres. Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD);
+							echo $id." ".$num."REVISAR 17 Factura anul·lació altres.  Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD."<br/>";
+							return;
 						}
+					
 					} else {
-						error_log($id." ".$num."REVISAR 17 Factura anul·lació altres. Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD);
-						echo $id." ".$num."REVISAR 17 Factura anul·lació altres.  Crear factura i afegir a anul·lació ".$numFactura." => ".$compteD."<br/>";
-						return;
+						/*$facturaId = $factExistent['id'];
+						$comanda = $this->consultarComanda($factExistent['id']);			
+						$comandaId = 0;
+						if ($comanda != null) $comandaId = $comanda['id'];	*/
+						
+						error_log($id." ".$num."INFO 17 Factura existent. No inserida ".$numFactura." => ".$compteD);
+						echo $id." ".$num."INFO 17 Factura existent. No inserida ".$numFactura." => ".$compteD."<br/>";
+						
 					}
 
 					break;
 				}
 		
 				if ($facturaId != 0 && $comandaId != 0) {
+if ($persist == false) return;					
 					$this->updateComandaNumFactura($comandaId, $facturaId);	
 				} else {
 					if ($tipusAnterior != BaseController::TIPUS_PRODUCTE_LLICENCIES) {
@@ -3305,30 +3351,24 @@ error_log($dades);
 					}
 				}			
 			}
-		
-		
-			if ($compteD >= 5720000 && $compteD <= 5720005) {
+
+			if ($compteD >= 5700000 && $compteD <= 5720005) {
 				// Rebut ingrés, següent compte club
-					
 				// Camp concepte està la factura:  	FW:00063/2015 o Factura: 00076/2015
 				// Camp document està el rebut: 	00010/15
-					
 				if (count($altres['H']) != 1) {
 					error_log("ERROR 2 => ".$num);
 					return;
 				}
-				
 				$compteH = $altres['H'][0]['compte'];
 				
 				//Mirar Apunts haber a comptes  4310001 i 4310999 excepte (4310149)  => Clubs
 				if ($compteH >= 4310001 && $compteH <= 4310999 && $compteH != 4310149) {
-					
 					if ( !isset( $clubs[$compteH])) {
 						error_log($id." ".$num."WARNING REBUTS/INGRESOS - 7 Club pagador no existeix=> ".$compteH);	
 						if  ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 7 Club pagador no existeix=> ".$compteH."<br/>";
 						return;
 					}
-					
 					if ($altres['D'][0]['concepte'] != $altres['H'][0]['concepte'] ||
 						$altres['D'][0]['document'] != $altres['H'][0]['document'] ||
 						$altres['D'][0]['importapunt'] != $altres['H'][0]['importapunt']) {
@@ -3336,11 +3376,9 @@ error_log($dades);
 							echo $id." ".$num."ERROR 3 CAP 'H'<br/>";
 							return;
 					}
-					
 					$concepteAux = $altres['D'][0]['concepte'];	// FW:00063/2015 o Factura: 00076/2015 o Fra. 2541/2015 o FW:00510/2015 o F. 1456/2014
 					$ingres = true; 
 					$numFactura = 'NA';
-	
 					$datapagament = $data;
 					$dataentrada = $data; 
 					$dadespagament = null;
@@ -3351,7 +3389,6 @@ error_log($dades);
 							
 					$numRebut = $numRebut * 1;  // Number
 					$import = $altres['D'][0]['importapunt'];
-	
 					$tipuspagament = null;
 					switch ($compteD) {
 						case 5700000:  	// CAIXA FEDERACIÓ, PTES.
@@ -3372,16 +3409,15 @@ error_log($dades);
 											
 							break;
 					}
-					
 					$numFactures = $this->extraerFactures(strtolower($concepteAux), 'R');
-					
+
 					if ($numFactures != null) {
 						// Ok, trobadaes 
 					
 						$comandesIdPerActualitzar = array();
+						$numfacturesNoexistents = array();	
 											
 						foreach ($numFactures as  $numFactura) {
-		
 							$pos = strpos(strtolower($concepteAux), '/2014');
 							if ($pos !== false) $anyFactura = 2014; 
 							
@@ -3401,13 +3437,17 @@ error_log($dades);
 								return;*/
 								
 								// Ingrés a compte
+								error_log($id." ".$num."INFO 11 ingrés a compte nou sense factura ".$numFactura." => import ".$import." => ".$compteD);
+								echo $id." ".$num."INFO 11 ingrés a compte nou sense factura  ".$numFactura." => import ".$import." ==> ".$compteD."<br/>";
 								
+								if (is_numeric($numFactura)) $numfacturesNoexistents[] = $numFactura*1;
 							} else {
 								// Count no funciona bé
 								//$em->getConnection()->executeUpdate("UPDATE m_factures SET datapagament = '".$data."' WHERE id = ".$factExistent['id']);
-											
-								$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
-								$comanda = $statement->fetch();
+									
+								$comanda = $this->consultarComanda($factExistent['id']);			
+								//$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$factExistent['id']);
+								//$comanda = $statement->fetch();
 									
 								if ($comanda == null) {
 									echo json_encode($factExistent);
@@ -3416,17 +3456,30 @@ error_log($dades);
 									return;
 								}
 								$comandesIdPerActualitzar[] = $comanda['id'];	
+								
+								error_log($id." ".$num."INFO 12 update rebut comanda ".$comanda['id']." factura ".$numFactura." => import ".$import." => ".$compteD);
+								echo $id." ".$num."INFO 12 update rebut comanda  ".$comanda['id']." factura ".$numFactura." => import ".$import." ==> ".$compteD."<br/>";
 							}
 							
 							//$comandesIdPerActualitzar[] = $comanda['id'];
 						}
-		if ($persist == false) return;
-						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
+
+						$anyRebut = substr($datapagament, 0, 4);
+						$rebutExistent = $this->consultarRebut($numRebut, $anyRebut);
+
+	if ($persist == false) return;	
+						if ($rebutExistent == null) $rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
+						else $rebutId = $rebutExistent['id'];
 						
 						foreach ($comandesIdPerActualitzar as  $comandaId) {	
 								
 							$query = "UPDATE m_comandes SET rebut = ".$rebutId." WHERE id = ". $comandaId;
 							$em->getConnection()->exec( $query );
+						}
+
+						foreach ($numfacturesNoexistents as $num) {
+							// Factures que encara no existeixen. Afegir rebut
+							$facturesRebutsPendents[$num] = $rebutId;
 						}
 						
 					} else {
@@ -3445,9 +3498,15 @@ error_log($dades);
 								error_log($id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux);
 								if ($warning == true) echo $id." ".$num."WARNING REBUTS/INGRESOS 5 no detectat ni factura ni ingrés => ".$compteD." => ".$concepteAux."<br/>";
 						}
+							
+						error_log($id." ".$num."INFO 5 ingrés a compte nou ".$numFactura." => import ".$import." => ".$compteD);
+						echo $id." ".$num."INFO 5 ingrés a compte nou ".$numFactura." => import ".$import." ==> ".$compteD."<br/>";
 		if ($persist == false) return;
-						$rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
+						$anyRebut = substr($datapagament, 0, 4);
+						$rebutExistent = $this->consultarRebut($numRebut, $anyRebut);
 						
+						if ($rebutExistent == null)  $rebutId = $this->inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $clubs[$compteH]['codi'], $dataentrada, $comentari, $dadespagament);
+						else $rebutId = $rebutExistent['id'];
 					}
 					$em->getConnection()->commit();
 					$em->getConnection()->beginTransaction(); // suspend auto-commit
@@ -3459,6 +3518,7 @@ error_log($dades);
 			// Varis o ningún 'D'
 			/*if (count($altres['D']) == 0) error_log("CAP 'D' = >".$altres['H'][0]['num']." -".count($altres['D'])."-|-".count($altres['H'])."- " );
 			else error_log("VARIS = >".$altres['D'][0]['num']." -".count($altres['D'])."-|-".count($altres['H'])."- " );*/
+			echo "Varis o ningún 'D' ".$num."<br/>";	
 		}
 	}
 	
@@ -3469,8 +3529,26 @@ error_log($dades);
 		$factExistent = $statement->fetch();
 		return $factExistent;
 	}
+
+	private function consultarRebut($numRebut, $anyRebut) {
+		$em = $this->getDoctrine()->getManager();
+		$statement = $em->getConnection()->executeQuery("SELECT * FROM m_rebuts WHERE num = ".($numRebut*1)." AND YEAR(datapagament) = ".$anyRebut. " ORDER BY id DESC");
+		$rebutExistent = $statement->fetch();
+		return $rebutExistent;
+	}
+
+	private function consultarComanda($idFactura) {
+		//error_log("****** consultar factura .".$numFactura."/".$anyFactura);
+		$em = $this->getDoctrine()->getManager();
+		$statement = $em->getConnection()->executeQuery("SELECT * FROM m_comandes WHERE factura = ".$idFactura);
+		$comandaExistent = $statement->fetch();
+		return $comandaExistent;
+	}
+	
 	
 	private function inserirFactura($data, $numFactura, $import, $concepte = '') {
+		echo "****************************** inserir factura ".$numFactura." => import ".$import." ==> data ".$data."<br/>";
+		
 		$em = $this->getDoctrine()->getManager();
 		
 		$query = "INSERT INTO m_factures (datafactura, num, import, concepte, dataentrada, comptabilitat) VALUES ";
@@ -3483,13 +3561,15 @@ error_log($dades);
 		
 		$em->getConnection()->commit();
 		$em->getConnection()->beginTransaction(); // suspend auto-commit
-
+		echo "****************************** factura id ".$facturaId."<br/>";
 		//error_log("****** inserir factura .".$numFactura." => ".$facturaId);		
 		return $facturaId;
 		
 	}
 	
 	private function inserirRebut($datapagament, $numRebut, $import, $tipuspagament, $codiClub, $dataentrada, $comentari = '', $dadespagament = null) {
+		echo "****************************** inserir rebut ".$numRebut." => import ".$import." ==> data pagament ".$datapagament."<br/>";	
+			
 		$em = $this->getDoctrine()->getManager();
 		
 		$query = "INSERT INTO m_rebuts (datapagament, num, import, dadespagament, tipuspagament, comentari, dataentrada, club, comptabilitat) VALUES ";
@@ -3501,10 +3581,13 @@ error_log($dades);
 		$rebutId = $em->getConnection()->lastInsertId();
 		
 		//error_log("****** inserir rebut .".$numRebut." => ".$rebutId);
+		echo "****************************** rebut id ".$rebutId."<br/>";
 		return $rebutId; 
 	}
 	
 	private function updateComandaNumFactura($comandaId, $facturaId) {
+		echo "****************************** update comanda id  ".$comandaId." => num factura id ".$facturaId."<br/>";	
+		
 		$em = $this->getDoctrine()->getManager();
 		$comanda = $em->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
 		$detalls = $comanda->getDetallsAcumulats();
@@ -3516,9 +3599,24 @@ error_log($dades);
 		//error_log("****** update comanda .".$comandaId."-".$facturaId);
 		$em->flush();
 	}
+
+	private function updateComandaNumRebut($comandaId, $rebutId) {
+		echo "****************************** update comanda id  ".$comandaId." => num rebut id ".$rebutId."<br/>";	
+		
+		$em = $this->getDoctrine()->getManager();
+		$comanda = $em->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
+		
+		$rebut = $em->getRepository('FecdasBundle:EntityRebut')->find($rebutId);
+		$comanda->setRebut($rebut);
+		//error_log("****** update comanda .".$comandaId."-".$facturaId);
+		$em->flush(); 
+	}
+
 	
 	private function inserirComandaAmbDetalls($data, $codiClub, $maxnums, $descripcio = '', $rebutId = 0, $facturaId = 0, $detalls = array(), $productes) {
 		// Insertar comanda
+		echo "****************************** inserir comanda amb detalls factura id ".$facturaId." => rebut id ".$rebutId." ==> data ".$data."<br/>";
+		
 		$em = $this->getDoctrine()->getManager();
 		
 		$query = "INSERT INTO m_comandes (comentaris, dataentrada, databaixa, club, num, rebut,factura, tipuscomanda) VALUES ";
@@ -3543,8 +3641,9 @@ error_log($dades);
 							
 			$preuunitat = ($total == 0?$import:round($import/$total,2));
 						
+						
 			$query = "INSERT INTO m_comandadetalls (comanda, producte, unitats, preuunitat, ivaunitat, descomptedetall, anotacions, dataentrada) VALUES ";
-			$query .= "(".$comandaId.",".$producte['id'].",".$total.",".$preuunitat.",".($producte['iva']!=null?$producte['iva']:"NULL").", 0, '".$anota."',";
+			$query .= "(".$comandaId.",".$producte['id'].",".$total.",".$preuunitat.",NULL, 0, '".$anota."',";
 			$query .= "'".$data."')"; 
 						
 			$em->getConnection()->exec( $query );
@@ -3557,6 +3656,8 @@ error_log($dades);
 		$em->getConnection()->commit();
 		$em->getConnection()->beginTransaction(); // suspend auto-commit
 		//error_log("****** inserir comanda amb detalls .".$comandaId." => ".count($detalls));
+		
+		echo "****************************** comanda id ".$comandaId."<br/>";
 		return $comandaId;
 	}				
 	
@@ -3607,6 +3708,7 @@ error_log($dades);
 		// SELECT * FROM `apunts_2015` WHERE `compte` BETWEEN 4310000 AND 4310999 AND dh = 'D'
 		// W-F0063_ 10636110MAS 1AFC_  o F0019_1AFC_
 		if ($tipus == 'F') { // Factura
+
 			$pos = strpos($concepte, 'w-f');
 			if ($pos === false) {
 				$pos = strpos($concepte, 'fra');
@@ -3623,7 +3725,7 @@ error_log($dades);
 							} 
 						}
 						else {
-							$numFactura = substr($concepte, $pos, 4);
+							$numFactura = substr($concepte, 16, 4);
 						}
 					}
 					else {

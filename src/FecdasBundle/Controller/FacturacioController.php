@@ -195,7 +195,7 @@ class FacturacioController extends BaseController {
 		$datamin->sub(new \DateInterval('P60D')); // Substract 2 mesos		
 		
 		$datamax = $this->getCurrentDate('now');
-		$datamax->sub($this->getIntervalConsolidacio()); // Substract 20 minutes
+		//$datamax->sub($this->getIntervalConsolidacio()); // Substract 20 minutes
 
 		// Data d'alta màxima 20 minuts endarrera (Partes a mitges) 
 		$inici = $request->query->get('inici', '');
@@ -428,7 +428,10 @@ class FacturacioController extends BaseController {
 
 		$rebuts = $query->getResult();*/
 
-		$rebuts = $this->consultaRebutsConsolidats($enviament->getDatadesde(), $enviament->getDatafins());
+		$datafins = $this->getCurrentDate('now'); // No cal esperar 20 minuts pels rebuts
+		if ($enviament->getDatafins()->format('Y-m-d') < $datafins->format('Y-m-d') ) $datafins = $enviament->getDatafins();
+			
+		$rebuts = $this->consultaRebutsConsolidats($enviament->getDatadesde(), $datafins);
 
 		$totalRebuts = 0;
 		$assentaments = array();
@@ -882,9 +885,6 @@ class FacturacioController extends BaseController {
 				foreach ($cart['productes'] as $id => $info) {
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
 					
-					if ($producte == null) error_log('null');
-					else error_log($producte->getId());
-					
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
 		
 					$detall = $this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
@@ -939,14 +939,15 @@ class FacturacioController extends BaseController {
 			        // Recordatori pagament
 					$this->get('session')->getFlashBag()->add('sms-notice',	'La comanda s\'ha desat correctament'); 
 					
+					return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
+					
 			        break;
 			    case 'anular':
 					// Missatge 
 					$this->get('session')->getFlashBag()->add('sms-notice',	'Comanda anul·lada');	
+					
 			        break;
 			}
-			
-			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 			
 		} catch (\Exception $e) {
 				// Ko, mostra form amb errors
@@ -969,13 +970,27 @@ class FacturacioController extends BaseController {
 		// Recollir cistella de la sessió
 		$cart = $this->getSessionCart();				
 		$form = null;
+
 		try {
 			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
 			
 			//if ($producte != null && $unitats > 0) {
 			if ($producte != null) {
 				
-				if ($unitats <= 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
+				if ($unitats == 0) throw new \Exception("Cal indicar el nombre d'unitats del producte");
+				
+				if ($unitats < 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
+				
+				// Comprovar que tots els detalls siguin d'abonament o normals
+				if (count($cart['productes']) > 0) {
+					$abonament = false;
+					foreach ($cart['productes'] as $info) {
+						if ($info['unitats'] < 0) $abonament = true;
+					}
+					
+					if (($abonament == true && $unitats > 0) ||
+						($abonament == false && $unitats < 0)) throw new \Exception("No es poden barrejar abonaments i comandes normals");
+				}			
 				
 				$import = $producte->getPreuAny(date('Y'));
 				
@@ -1006,16 +1021,20 @@ class FacturacioController extends BaseController {
 					}
 				}*/
 							
-				if ($cart['productes'][$idProducte]['unitats'] <= 0  && !$this->isCurrentAdmin()) {
+				if ($cart['productes'][$idProducte]['unitats'] == 0 ||
+					($cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
 					// Afegir unitats < 0
-					unset( $cart['productes'][$idProducte] );	
-					if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');
+					unset( $cart['productes'][$idProducte] );
 				}
 				
-				$form = $this->formulariTransport($cart);		
-				
-				$session = $this->get('session');
-				$session->set('cart', $cart);
+				if (count($cart['productes']) <= 0) {
+					$this->get('session')->remove('cart');
+				} else {
+					$form = $this->formulariTransport($cart);		
+					
+					$session = $this->get('session');
+					$session->set('cart', $cart);
+				}
 			}
 		} catch (\Exception $e) {
 			// Ko, mostra form amb errors
@@ -2164,8 +2183,6 @@ class FacturacioController extends BaseController {
 
 	private function validaFirmaNotificacio($tpvdata) {
 
-error_log(json_encode($tpvdata));
-
 		$redsysapi = new RedsysAPI();		
 		
 		$version = $tpvdata["Ds_SignatureVersion"];
@@ -2173,14 +2190,12 @@ error_log(json_encode($tpvdata));
 		$signaturaRebuda = $tpvdata["Ds_Signature"];
 
 		$decodec = $redsysapi->decodeMerchantParameters($params);	
-error_log($this->get('kernel')->getEnvironment());
 		
 		if ($this->get('kernel')->getEnvironment() == 'dev') $key = BaseController::COMERC_REDSYS_SHA_256_KEY_TEST;
 		else $key = BaseController::COMERC_REDSYS_SHA_256_KEY;
 		
 		$signatura = $redsysapi->createMerchantSignatureNotif($key, $params);
-error_log($signatura);
-error_log($signaturaRebuda);
+
 		if ($signatura !== $signaturaRebuda) return null;
 
 		return $redsysapi;
@@ -2195,8 +2210,6 @@ error_log($signaturaRebuda);
 				'pendent' => false);
 		
 		$dades = $redsysapi->getParameter("Ds_MerchantData");
-		
-error_log($dades);
 		
 		$dadesArray = explode(";", urldecode($dades));
 

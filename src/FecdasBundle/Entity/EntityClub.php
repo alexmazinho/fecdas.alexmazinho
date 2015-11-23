@@ -369,11 +369,7 @@ class EntityClub {
 			}
 		}
 		
-		error_log(' => ingresos '.$totalpagaments.' + '.$this->getTotalIngresos());
-		
 		$totalpagaments += $this->getTotalIngresos(); // Ingresos no associat a comandes
-		
-		error_log(' => final '.$totalpagaments);
 		
 		$dades['comandes'] = $ncomandes;
 		$dades['partes'] = $npartes;

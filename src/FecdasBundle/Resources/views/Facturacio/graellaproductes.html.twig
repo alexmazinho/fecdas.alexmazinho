@@ -66,6 +66,17 @@
 								<i class="fa fa-remove red"></i> esgotat
 							{% endif %}
 						</p>
+						{% if admin == true %}
+							<div class="graella-item-admin">
+								<p>Admin:<a title="Editar" alt="Editar" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" class="producte-action-edit link"><i class="fa fa-pencil blue"></i></a></p>
+								{% if producte.stockable == 1 and producte.stock != null %}
+									<span class="graella-item-admin-comment">stock {{ producte.stock }}.</span>
+								{% endif %}
+								{% if producte.transport == true %}
+									<span class="graella-item-admin-comment">{{ producte.pes }} gr./u</span>
+								{% endif %}
+							</div>
+						{% endif %}
 					</div>
 				</div>
 				{% if loop.index % 6 == 0 %} <div class="clearfix visible-md-block visible-lg-block"></div> {%  endif %}
@@ -115,16 +126,17 @@
 			var unitats = $(this).prev().val();
 			var url = $(this).attr('href')+'&unitats='+unitats;
 
+			$('.alert-dismissible').remove();
+			
 			$.get(url, function(data) {
 
 				$('.cistella-resum').html(data);	
 					
 			}).fail( function(xhr, status, error) {
 				 // xhr.status + " " + xhr.statusText, status, error
-				 console.log(JSON.stringify(xhr));
 				 var sms = smsResultAjax('KO', xhr.responseText);
-	 			 
-				 $('.cistella-resum').html(sms);
+
+				 $('#productes-main').prepend(sms);
 			     
 			}); 
 		});
@@ -154,6 +166,8 @@
 			
 			var url = $(this).attr('href');
 
+			$('.alert-dismissible').remove();
+			
 			$.get(url, function(data) {
 
 				$('.cistella-resum').html(data);	
@@ -162,8 +176,8 @@
 				 // xhr.status + " " + xhr.statusText, status, error
 				 console.log(JSON.stringify(xhr));
 				 var sms = smsResultAjax('KO', xhr.responseText);
-	 			 
-				 $('.cistella-resum').html(sms);
+
+				 $('#productes-main').prepend(sms);
 			     
 			});
 		});
@@ -224,7 +238,6 @@
 						if ($(this).is(':visible'))  {
 							//$(this).hide('slow');
 						}
-						
 					} 
 
 					i++;

@@ -104,6 +104,7 @@ class EntityRebut {
 	public function __constructParams($datapagament, $tipusPagament, $num, $comanda = null, $club = null, $import = 0) {
 	
 		$this->datapagament = $datapagament;
+		
 		$this->tipuspagament = $tipusPagament;
 		$this->num = $num;
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
@@ -175,7 +176,8 @@ class EntityRebut {
 	{
 		if ($this->esAnulacio()) return 'Fra. ANUL·LACIO: '.$this->comandaanulacio->getFactura()->getNumFactura();		
 			
-		if (count($this->comandes) == 0) return "A compte ".$this->getNumRebut();  // Ingrés a compte
+		//if (count($this->comandes) == 0) return "A compte ".$this->getNumRebut();  // Ingrés a compte
+		if (count($this->comandes) == 0) return $this->comentari;  // Ingrés a compte
 		
 		if ($this->getNumFactures() == 1) {
 			$comanda = $this->comandes[0];
@@ -239,6 +241,11 @@ class EntityRebut {
 	public function esAnulacio()
 	{
 		return $this->comandaanulacio != null;
+	}
+
+	public function esIngres()
+	{
+		return $this->comandaanulacio == null && count($this->comandes) == 0;
 	}
 
 	public function estaComptabilitzat()

@@ -88,6 +88,7 @@
 		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
 		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
 		   			<div class="data-detall-cell ingres-actions">
+						{% if maxnum == ingres.num and ingres.isCurrentYear and ingres.tipuspagament != constant('FecdasBundle\\Controller\\BaseController::TIPUS_PAGAMENT_TPV') %}<a class="comanda-action-remove-rebut link" href="{{ path('FecdasBundle_esborrarultimrebut', { 'rebut': ingres.id }) }}"><i class="fa fa-trash-o red"></i></a>{% endif %}
 		   				<a class="comanda-action-edit-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': ingres.id}) }}" 
 		   					alt="{{ ingres.infoToolTip(admin) }}" title="{{ ingres.infoToolTip(admin) }}"><i class="fa fa-pencil text-info blue"></i></a>
 		   			</div>

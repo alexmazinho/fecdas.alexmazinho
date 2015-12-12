@@ -29,14 +29,27 @@
     	
     	{% if productes|length > 0 %}
    		<div class="grid-productes-header">
-			<form id="form_productes" action="{{ path('FecdasBundle_nouproducte') }}" method="POST" {{ form_enctype(form) }}  class="appform">
-				{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
-			  	<div class="form-group">
-			    	{{ form_label(form.cerca, 'Filtrar per descripció', { 'label_attr': {'class': ''} }) }}
-					{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+			<form id="form_productes" action="{{ path('FecdasBundle_graellaproductes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+				<div class="row">	
+					{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
+					<div class="{% if admin != true %}hidden{% else %}col-md-5 col-xs-12{% endif %}">
+					  	<div class="form-group">
+					    	{{ form_label(form.club, 'Club', { 'label_attr': {'class': ''} }) }}
+							{{ form_widget(form.club, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				    <div class="col-md-5 col-xs-8">
+					  	<div class="form-group">
+					    	{{ form_label(form.cerca, 'Filtrar per descripció', { 'label_attr': {'class': ''} }) }}
+							{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+					<div class="col-md-2 col-xs-4">
+						<label class="required">&nbsp;</label>
+						<p class="total-productes-grid">Total productes: {{ productes|length }}</p>
+					</div>
 				</div>
 		   	</form>
-		   	<h3 class="button-top total-productes-grid">Total productes: {{ productes|length }}</h3>
 		</div>
 	    <div class="row grid-productes">	
     	    <div class="col-md-12 col-last-right">
@@ -105,20 +118,26 @@
 
 		$( ".cistella-resum" ).on( "click", ".pagar-cistella-admin", function(e) {
 			e.preventDefault();
-			var url = $(this).attr("href")+'&transport='+($('#form_transport_0').is(':checked')?1:0);
+			var url = $(this).attr("href")+'&club='+$('#form_club').val()+'&transport='+($('#form_transport_0').is(':checked')?1:0);
 			
 			confirmarPagament(url, "Confirmació de pagament", "{{ path('FecdasBundle_comandes') }}");
 		});
 		
 		$( ".cistella-resum" ).on( "click", ".desar-cistella, .pagar-cistella", function(e) {
 			e.preventDefault();	
-			var url = $(this).attr("href");
+			var url = $(this).attr("href")+'&club='+$('#form_club').val();
 			
 			dialegConfirmacio( pagamentComandaSMS(), "Abans de continuar...", 0, 550, function() {
 	        	window.location = url+'&transport='+($('#form_transport_0').is(':checked')?1:0)+'&comentaris='+$('#comanda_comentaris').val();
 	        }, function() {} );
 		});
 
+		$( ".cistella-resum" ).on( "click", ".anular-cistella", function(e) {
+			e.preventDefault();	
+			var url = $(this).attr("href")+'&club='+$('#form_club').val();
+			window.location = url;
+		});
+		
 		
 		$( ".grid-productes" ).on( "click", ".producte-action-add-cart", function(e) {
 			e.preventDefault();			
@@ -267,6 +286,18 @@
 		setMenuActive("menu-comanda");
 
 		$("#form_cerca").val('');
+
+		// Comanda filtre clubs disponible per admin's
+		{% if admin == true  %} 
+			$("#form_club").change(function() {
+				window.location = $("#form_productes").attr('action')+'?tipus='+$('#form_tipus').val()+'&club='+$(this).val();
+		    });
+		
+			$("select#form_club").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+			});
+		{% endif %}
 	});
 	
 	</script>

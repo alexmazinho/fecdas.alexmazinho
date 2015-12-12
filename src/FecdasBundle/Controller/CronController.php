@@ -144,8 +144,8 @@ class CronController extends BaseController {
 					$sortida .= $body;
 						
 					$this->logEntry('alexmazinho@gmail.com', 'CRON RENEW',
-							$request()->server->get('REMOTE_ADDR'),
-							$request()->server->get('HTTP_USER_AGENT'), 
+							$request->server->get('REMOTE_ADDR'),
+							$request->server->get('HTTP_USER_AGENT'), 
 							'club ' . $parte_iter->getClub()->getNom() . ', llicència ' . $llicencia_iter->getId() . ', dies ' .  $dies);
 				}
 			}

@@ -578,8 +578,6 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .grid-productes-header { margin-bottom: 20px; position: relative;  }
 
-.grid-productes-header h3 { position: absolute; right: 0; bottom: 0; }
-
 .graella-item > div { border: 1px solid #007FFF; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
 
 .graella-item h4 { font-weight: bold; text-align: left; color: #000000; }
@@ -691,25 +689,25 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 
 
 #header-ingres-num { width: 12%; text-align: left; }
-#header-ingres-club { width: 15%; text-align: left;  }
+#header-ingres-club { width: 13%; text-align: left;  }
 #header-ingres-import { width: 8%; text-align: right; }
 #header-ingres-data { width: 9%; text-align: center; }
 #header-ingres-comanda { width: 13%; text-align: center; }
 #header-ingres-romanent { width: 7%; text-align: right; }
 #header-ingres-comentaris { width: 21%; text-align: left; }
 #header-ingres-compta { width: 10%; text-align: center; }
-#header-ingres-actions { width: 5%; text-align: right; }
+#header-ingres-actions { width: 7%; text-align: right; }
 
 
 .data-detall-cell.ingres-num { width: 12%; text-align: left; }
-.data-detall-cell.ingres-club { width: 15%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.ingres-club { width: 13%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.ingres-import { width: 8%; text-align: right; }
 .data-detall-cell.ingres-data { width: 9%; text-align: center; }
 .data-detall-cell.ingres-comanda { width: 13%; text-align: center; font-size: 0.9em; }
 .data-detall-cell.ingres-romanent { width: 7%; text-align: right; }
 .data-detall-cell.ingres-comentaris { width: 21%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.ingres-compta { width: 10%; text-align: center; }
-.data-detall-cell.ingres-actions { width: 5%; text-align: right; }
+.data-detall-cell.ingres-actions { width: 7%; text-align: right; }
  
  
 #llista-candidates { margin-top: 20px; }
@@ -848,6 +846,7 @@ ul.detalls li .alert { margin: 10px 0; }
 .list-factures, .list-comandes { display: table-row; width: 100%; }
 .list-factures li, .list-comandes li { display: table-cell; }
 .list-factures li.data-detall-cell, .list-comandes li.data-detall-cell { border: none; }
+.list-comandes .data-detall-cell { text-align: left; }
 
 /***************** Llistes ******************/
 

@@ -1461,7 +1461,7 @@ class PageController extends BaseController {
 	public function gettipuspartesAction(Request $request) {
 		$day = $request->get('day');
 		$month = $request->get('month');
-		$month = $request->get('year');
+		$year = $request->get('year');
 		
 		$dataconsulta = \DateTime::createFromFormat('d/m/Y', $day.'/'.$month.'/'.$year );
 		

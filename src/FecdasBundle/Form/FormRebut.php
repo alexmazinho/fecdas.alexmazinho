@@ -76,13 +76,13 @@ class FormRebut extends AbstractType {
 						'input' 		=> 'datetime',
 						'empty_value' 	=> false,
 						'format' 		=> 'dd/MM/yyyy',
-						'disabled' 		=> $rebut->getId() > 0,
+						'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
 				));
 				
 				$form->add ( 'import', 'number', array (
 						'required' 		=> true,
 						'scale' 		=> 2,
-						'disabled' 		=> $rebut->getId() > 0,
+						'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
 				));
 			}
 		});

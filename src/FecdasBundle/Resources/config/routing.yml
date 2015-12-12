@@ -432,6 +432,18 @@ FecdasBundle_anulartraspas:
     requirements:
         _method:  GET
 
+FecdasBundle_rebutnegatiu:
+    pattern:  /rebutnegatiu
+    defaults: { _controller: "FecdasBundle:Facturacio:rebutnegatiu" }
+    requirements:
+        _method:  GET
+        
+FecdasBundle_esborrarultimrebut:
+    pattern:  /esborrarultimrebut
+    defaults: { _controller: "FecdasBundle:Facturacio:esborrarultimrebut" }
+    requirements:
+        _method:  GET        
+
 FecdasBundle_fitxercomptabilitat:
     pattern:  /fitxercomptabilitat
     defaults: { _controller: "FecdasBundle:Facturacio:fitxercomptabilitat" }

@@ -84,7 +84,7 @@
 				</div>{{ form_errors(form.comentari)  }}
 			 </div> 
 			 <div class="col-md-3">
-				<button type="submit" id="formrebut-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
+				<button type="button" id="formrebut-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Desar</button>
 			 	<button type="button" id="formrebut-automatic" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Automàtic</button>
 			 </div>
 			 <div class="col-md-9 informacio-resultat-ingres col-last-right">
@@ -128,11 +128,14 @@
 
 		calcularTotalsSeleccionats = function() {
 			var totalSeleccionat = 0;
+			var facturesSeleccionades = '';
 			var elems = $(".candidata-action-select.selected").length;
-			if (elems == 0) actualitzarTotals(0);
+			if (elems == 0) actualitzarTotals(0, '');
 			
 			$('.candidata-action-select.selected').each( function(i) {
 				totalSeleccionat += $(this).attr('data-total')*1;
+				facturesSeleccionades += $(this).attr('data-factura')+' - ';
+				
 				if (i >= elems - 1) {
 					var totalIngres = $("input#rebut_import").val()*1;
 					if (totalSeleccionat > totalIngres) {
@@ -140,13 +143,16 @@
 					} else {
 						$('.informacio-resultat-ingres span.label').removeClass('label-danger').addClass('label-success');
 					}
-						
-					actualitzarTotals(totalSeleccionat);
+
+					actualitzarTotals(totalSeleccionat, facturesSeleccionades);
 				}
 			});
 		};
 
-		actualitzarTotals = function(totalSeleccionat) {
+		actualitzarTotals = function(totalSeleccionat, facturesSeleccionades) {
+			var comentari = "{{ rebut.comentari }}";
+			
+			
 			$('.import-seleccionat-candidats span').html( formatter.format(totalSeleccionat) );
 			
 			$('.romanent-rebut span').html( formatter.format( ($("input#rebut_import").val()*1) - totalSeleccionat ) );
@@ -155,7 +161,13 @@
 				$('#llista-candidates .data-detall').removeClass('candidata-selected');
 				$('.candidata-action-select.selected').children('.fa').toggleClass('fa-shown').toggleClass('fa-hidden');
 				$(".candidata-action-select").removeClass('selected');
+			} else {
+				if (facturesSeleccionades != '') {
+					facturesSeleccionades = facturesSeleccionades.substring(0, facturesSeleccionades.length - 3);	
+					comentari += '\nfactures: '+facturesSeleccionades;
+				}
 			}
+			$("#rebut_comentari").val(comentari); 
 		};
 		
 		$(document).ready(function(){
@@ -174,12 +186,11 @@
 
 			$("input#rebut_import").change( function() {
 				// Canviar el valor de l'import ingresat reinicia selecció i valors
-				actualitzarTotals(0);
+				actualitzarTotals(0, '');
 			});
 
 			$('#formrebut-desar').click(function(e) {
 				e.preventDefault();
-				//$("#formingres").submit(function () {
 
 				var url = $("#formingres").attr("action");
 				var params = $("#formingres").serializeArray();
@@ -191,7 +202,7 @@
 				params.push( {'name':'comandesSelected','value': JSON.stringify(comandes)} );
 				$.post(url, params, function(data) {
 
-					window.location = "{{ path('FecdasBundle_ingresos') }}";
+					window.location = "{{ path('FecdasBundle_ingresos') }}"+"?cerca="+$("select#rebut_club").val();
 
 				}).fail( function(xhr, status, error) {
 					 // xhr.status + " " + xhr.statusText, xhr.responseText status, error
@@ -202,9 +213,13 @@
 			});  
 			
 			$("#formrebut-automatic").click( function(e) {
-				actualitzarTotals(0);
+				actualitzarTotals(0, '');
 				var totalIngres = $("input#rebut_import").val()*1;
 
+				var this_;
+				var parent_ = $('#llista-candidates .table-scroll');
+
+				parent_.scrollTop(0);
 				// Ordenar per import descendent
 				$(".candidata-action-select").sort(function(a,b){
 					return $(b).attr('data-total')*1 - $(a).attr('data-total')*1;					
@@ -213,6 +228,17 @@
 					if (curImport > 0 && curImport <= totalIngres) {
 						totalIngres -= curImport;
 						$(this).click();
+
+						this_ = $(this);
+						
+					}
+				}).promise().done(function() {
+					if (this_ !== undefined && parent_ != undefined) {
+						console.log(this_.offset().top+' '+parent_.offset().top);
+						console.log(this_.position().top+' '+parent_.position().top);
+						parent_.animate({
+							scrollTop: this_.offset().top-parent_.offset().top
+			             }, 800);
 					}
 				});
 			});

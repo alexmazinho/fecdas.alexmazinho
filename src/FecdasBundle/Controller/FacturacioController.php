@@ -341,7 +341,9 @@ class FacturacioController extends BaseController {
 			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
 			else $comanda = $factura->getComanda();
 
-			if ($comanda != null && $comanda->comandaConsolidada()) $factures[] = $factura;
+			if ($comanda != null && $comanda->comandaConsolidada() && 
+				$comanda->getClub() != BaseController::CODI_FECDAS &&
+				$comanda->getClub() != BaseController::CODI_CLUBTEST) $factures[] = $factura; // No s'envia res de la Federació o del club TEST a comptabilitat 
 		}
 		return $factures;
 	}
@@ -354,6 +356,8 @@ class FacturacioController extends BaseController {
 		if ($desde != null)  $strQuery .= " AND r.dataentrada >= :ini ";
 		if ($fins != null)  $strQuery .= " AND r.dataentrada <= :final ";
 		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
+		$strQuery .= " AND (r.club != '".BaseController::CODI_FECDAS."') ";	// No s'envia res de la Federació a comptabilitat
+		$strQuery .= " AND (r.club != '".BaseController::CODI_CLUBTEST."') ";	// No s'envia res del club TEST
 		$strQuery .= " ORDER BY r.dataentrada";
 		
 		$query = $em->createQuery($strQuery);
@@ -712,10 +716,12 @@ class FacturacioController extends BaseController {
 				'required' => false,
 				'data' => $nr
 		));
+			
+		$currentMaxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS);
 												
 		return $this->render('FecdasBundle:Facturacio:ingresos.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-						'ingresos' => $ingresos,  'sortparams' => array('sort' => $sort,'direction' => $direction))
+						'ingresos' => $ingresos, 'maxnum' => $currentMaxNumRebut,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 		));
 	}
 	
@@ -824,10 +830,22 @@ class FacturacioController extends BaseController {
 		$compte = $request->query->get('compte', '');
 		$sort = $request->query->get('sort', 'p.descripcio');
 		$direction = $request->query->get('direction', 'asc');
+		$club = null;
+		
+		if ($this->isCurrentAdmin()) {  // Admins poden escollir el club 
+			$codi = $request->query->get('club', ''); 
+			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+			if ($club != null) $this->get('session')->set('roleclub', $codi);
+		}
+		if ($club == null) $club = $this->getCurrentClub();
 		
 		$productes = array();
 		
 		if ($tipus > 0) {
+			
+			if ($tipus == BaseController::TIPUS_PRODUCTE_LLICENCIES ||
+				$tipus == BaseController::TIPUS_PRODUCTE_DUPLICATS) $sort = 'p.id';
+			
 			$query = $this->consultaProductes(0, $compte, $tipus, false, $sort, $direction);
 		
 			$productes = $query->getResult();
@@ -841,7 +859,20 @@ class FacturacioController extends BaseController {
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'search', array( ) )
 			->add('tipus', 'hidden', array(
-				'data' => $tipus));
+				'data' => $tipus))
+			->add('club', 'entity', array(
+						'class' 		=> 'FecdasBundle:EntityClub',
+						'query_builder' => function($repository) {
+								return $repository->createQueryBuilder('c')
+									->orderBy('c.nom', 'ASC')
+									->where('c.databaixa IS NULL');
+									//->where('c.activat = 1');
+								}, 
+						'choice_label' 	=> 'nom',
+						'empty_value' 	=> 'Seleccionar Club',
+						'required'  	=> false,
+						'data'			=> $club
+				));
 		
 		$cart = $this->getSessionCart();
 		$formtransport = $this->formulariTransport($cart);		
@@ -868,6 +899,13 @@ class FacturacioController extends BaseController {
 		$transport = $request->query->get('transport', 1);
 		$transport = ($transport == 1?true:false);
 		$comentaris = $request->query->get('comentaris', '');
+		$club = null;
+		
+		if ($this->isCurrentAdmin()) {  // Admins poden escollir el club 
+			$codi = $request->query->get('club', ''); 
+			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		if ($club == null) $club = $this->getCurrentClub();
 		
 		$this->logEntryAuth('CISTELLA TRAMITAR', 'action => '.$action);
 
@@ -954,7 +992,7 @@ class FacturacioController extends BaseController {
 			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 		}
 		
-		return $this->redirect($this->generateUrl('FecdasBundle_graellaproductes', array( 'tipus' => $tipus)));
+		return $this->redirect($this->generateUrl('FecdasBundle_graellaproductes', array( 'tipus' => $tipus, 'club' => $club->getCodi())));
 	}
 
 	public function afegircistellaAction(Request $request) {
@@ -1787,8 +1825,10 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 
 		// Comandes pendents de pagament. Inicialment al club connectat
-		if ($request->getMethod() != 'POST') $codi = $request->query->get('codi', '');
-		else {
+		if ($request->getMethod() != 'POST') {
+			$codi = $request->query->get('codi', '');
+			if ($codi != '') $this->get('session')->set('roleclub', $codi);
+		} else {
 			$formdata = $request->request->get('rebut');
 			$codi = $formdata['club'];
 		}
@@ -1800,12 +1840,22 @@ class FacturacioController extends BaseController {
 		 
 		$query = $this->consultaComandes($club->getCodi(), 0, 0, 0, 0, false, true);
 		
-		$comandes = $query->getResult(); // Comandes pendents rebut del club
+		$comandesPendents = $query->getResult(); // Comandes pendents rebut del club
+		
+		$comandes = array(); // Filter comandes amb anul·lacions 
+		foreach ($comandesPendents as $comanda) {
+			if ($comanda->getNumFactures(true) == 1 &&
+				$comanda->getTotalDetalls() > 0) $comandes[] = $comanda;
+			
+			
+		}
 		
 		// Nou rebut
 		$tipuspagament = BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA;
 		
-		$rebut = $this->crearIngres($this->getCurrentDate(), $tipuspagament, $club);
+		$current = $this->getCurrentDate('now');
+		
+		$rebut = $this->crearIngres($current, $tipuspagament, $club);
 		
 		$em->persist($rebut);
 		
@@ -1819,6 +1869,11 @@ class FacturacioController extends BaseController {
 					
 					$maxNumRebut = $this->getMaxNumEntity($rebut->getDataentrada()->format('Y'), BaseController::REBUTS) + 1;
 					$rebut->setNum($maxNumRebut);
+
+					if ($current->format('Y-m-d') == $rebut->getDatapagament()->format('Y-m-d')) {
+						// Update de les hores, el form només gestiona dies i posa les hores a 00:00:00
+						$rebut->setDatapagament($current);
+					}
 
 					$comandesIds = json_decode($request->request->get('comandesSelected', ''));
 
@@ -1842,7 +1897,11 @@ class FacturacioController extends BaseController {
 					
 					$em->flush();
 					$this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi.' => '.$maxNumRebut.' '.$rebut->getImport());
+					// Redirect json
+					$response = new Response("OK");
+					return $response;
 				}
+
 			} catch (\Exception $e) {
 					
 				$response = new Response($e->getMessage());
@@ -1857,6 +1916,69 @@ class FacturacioController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut, 'comandes' =>$comandes)));
 	}
 	 
+	public function esborrarultimrebutAction(Request $request) {
+		// http://www.fecdasnou.dev/esborrarultimrebut?rebut=xxx
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$rebutid = $request->query->get('rebut', 0);
+
+		$em = $this->getDoctrine()->getManager();
+		
+		try {
+			if ($rebutid > 0) { // Esborrar
+				$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($rebutid);
+				
+				if ($rebut == null) {
+					$this->logEntryAuth('REBUT BAIXA KO 1', ' Rebut '.$rebutid);
+					throw new \Exception("NO s'ha pogut esborrar el rebut ");
+				}
+				
+				if ($rebut->estaComptabilitzat() == true) {
+					$this->logEntryAuth('REBUT BAIXA KO 2', ' Rebut '.$rebutid);
+					throw new \Exception("El rebut està enviat a comptabilitat i no es pot esborrar");
+				}
+				
+				$currentMaxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS);
+				
+				if ($currentMaxNumRebut != $rebut->getNum() || !$rebut->isCurrentYear())  {
+					$this->logEntryAuth('REBUT BAIXA KO 3', ' Rebut id '.$rebutid.' num '.$rebut->getNum() .' max '.$currentMaxNumRebut);
+					throw new \Exception("Només es pot esborrar el darrer rebut");
+				}
+				
+				if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV)   {
+					$this->logEntryAuth('REBUT BAIXA KO 4', ' Rebut id '.$rebutid.' num '.$rebut->getNum() .' TPV');
+					throw new \Exception("No es pot esborrar un rebut del TPV");
+				}
+				
+				// Esborrar el rebut de totes les comandes
+				foreach ($rebut->getComandes() as $comanda) $comanda->setRebut(null);	
+	
+				if ($rebut->getComandaanulacio() != null) $rebut->getComandaanulacio()->removeRebutsanulacions($rebut);
+				 			
+				
+				// Actualitzar saldo club
+				$rebut->getClub()->setTotalpagaments($rebut->getClub()->getTotalpagaments() - $rebut->getImport());
+				
+				$em->remove($rebut);
+				$em->flush();
+				$this->logEntryAuth('REBUT BAIXA OK', ' Rebut '.$rebutid);
+				
+				$this->get('session')->getFlashBag()->add('sms-notice', 'Rebut esborrat correctament ');
+				
+				// No seguim
+			}
+		} catch (\Exception $e) {
+			// Ko, mostra form amb errors
+			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+		}
+
+		return $this->redirect($this->generateUrl('FecdasBundle_ingresos'));
+
+	}
 	
 	public function editarrebutAction(Request $request) {
 		// Formulari d'edició d'un rebut
@@ -1872,6 +1994,7 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 				 
 		$rebut = null;
+		$rebutOriginal = null;
 		
 		if ($request->getMethod() != 'POST') {
 			$id = $request->query->get('id', 0);
@@ -1898,8 +2021,12 @@ class FacturacioController extends BaseController {
 				$rebut = $this->crearRebut($this->getCurrentDate(), $tipuspagament);
 			}
 		}
+		$rebutOriginal = clone $rebut;
+		
 		$form = $this->createForm(new FormRebut(), $rebut);
-				 
+		
+		$currentMaxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS);
+		
 		if ($request->getMethod() == 'POST') {
 			try {
 				$form->handleRequest($request);
@@ -1908,12 +2035,15 @@ class FacturacioController extends BaseController {
 	
 					$rebut->setDatamodificacio(new \DateTime());
 					if ($rebut->getId() == 0)  {
-						$maxNumRebut = $this->getMaxNumEntity(date('Y'), BaseController::REBUTS) + 1;
-						$rebut->setNum($maxNumRebut);
+						$currentMaxNumRebut++;
+						$rebut->setNum($currentMaxNumRebut); 
 						if ($rebut->getComanda() != null) $rebut->getComanda()->setRebut($rebut);
 					}
 	
-					$this->validIngresosRebuts($form, $rebut);
+					$this->validIngresosRebuts($form, $rebut, $rebutOriginal);
+		
+					// Actualitzar saldos
+					$rebut->getClub()->setTotalpagaments($rebut->getClub()->getTotalpagaments() - $rebutOriginal->getImport() + $rebut->getImport());
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades del rebut ' ); //$form->getErrorsAsString()
@@ -1931,22 +2061,25 @@ class FacturacioController extends BaseController {
 			} catch (\Exception $e) {
 				// Ko, mostra form amb errors
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+				
+				return $this->redirect($this->generateUrl('FecdasBundle_editarrebut',
+									array( 'id' => $rebut->getId() )));
 			}
 		}
 		return $this->render('FecdasBundle:Facturacio:rebut.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut, 'maxnum' => $currentMaxNumRebut)));
 	}
 	
-	private function validIngresosRebuts($form, $rebut) {
+	private function validIngresosRebuts($form, $rebut, $rebutOriginal = null) {
 		
 		if ($rebut->getImport() <= 0) {
 			/*$form->get('import')->addError(new FormError('Valor incorrecte'));
-				throw new \Exception('Cal indicar un import superior a 0' );*/
+			throw new \Exception('Cal indicar un import superior a 0' );*/
 		}
 		if ($rebut->esAnulacio()) {
 			if ($rebut->getDatapagament()->format('Y-m-d') < $rebut->getComandaAnulacio()->getDataentrada()->format('Y-m-d')) {
 				$form->get('datapagament')->addError(new FormError('Data incorrecte'));
-					throw new \Exception('La data d\'anul·lació ha de ser igual o posterior a la data de la comanda' );
+				throw new \Exception('La data d\'anul·lació ha de ser igual o posterior a la data de la comanda' );
 			}
 			
 		} else {
@@ -1963,7 +2096,7 @@ class FacturacioController extends BaseController {
 				foreach ($rebut->getComandes() as $comanda) {
 					
 					if ($rebut->getDatapagament()->format('Y-m-d') < $comanda->getDataentrada()->format('Y-m-d')) {
-					$form->get('datapagament')->addError(new FormError('Data incorrecte'));
+						$form->get('datapagament')->addError(new FormError('Data incorrecte'));
 						throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
 					}
 					
@@ -1974,9 +2107,36 @@ class FacturacioController extends BaseController {
 				if ($total > $rebut->getImport()) {	
 									
 					$form->get('import')->addError(new FormError('Valor incorrecte'));
-						throw new \Exception('El total de les comandes supera l\'import de l\'ingrés');
+					throw new \Exception('El total de les comandes supera l\'import de l\'ingrés');
 				}
 			}
+
+			// Validacions edició
+			if ($rebutOriginal != null) {
+				if ($rebut->getClub()->getCodi() != $rebutOriginal->getClub()->getCodi()) {
+					$form->get('club')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es pot modificar el club associat al rebut');
+				}
+				
+				if ($rebut->esIngres() && !$rebut->estaComptabilitzat()) {
+					// Els ingresos (no comptabilitzats) es poden editar
+					
+					
+				} else {
+					// La resta de rebuts no poden modificar ni import ni data
+					if ($rebut->getImport() != $rebutOriginal->getImport()) {
+						$form->get('import')->addError(new FormError('Valor incorrecte'));
+						throw new \Exception('No es pot modificar l\'import');
+					}
+					
+					if ($rebut->getDatapagament() != $rebutOriginal->getDatapagament()) {
+						$form->get('datapagament')->addError(new FormError('Valor incorrecte'));
+						throw new \Exception('No es pot modificar la data de pagament');
+					}
+				}
+				
+			}
+
 		}
 		
 	} 
@@ -2226,10 +2386,12 @@ class FacturacioController extends BaseController {
 		$tpvresponse['Ds_Date'] = $redsysapi->getParameter('Ds_Date');	// dd/mm/yyyy
 		$tpvresponse['Ds_Hour'] = $redsysapi->getParameter('Ds_Hour');	//HH:mm
 		
-		try {
-			$tpvresponse['Ds_PayMethod'] = $redsysapi->getParameter('Ds_PayMethod');
-		} catch (\Exception $e) {
-			$tpvresponse['Ds_PayMethod'] = '';
+		if ($tpvresponse['Ds_Response'] == '9930') {
+			try {
+				$tpvresponse['Ds_PayMethod'] = $redsysapi->getParameter('Ds_PayMethod');
+			} catch (\Exception $e) {
+				$tpvresponse['Ds_PayMethod'] = '';
+			}
 		}
 	
 		if (($tpvresponse['Ds_Response'] == '0930' || ($tpvresponse['Ds_Response'] == '9930') && $tpvresponse['Ds_PayMethod'] == 'R')) {
@@ -2729,6 +2891,7 @@ class FacturacioController extends BaseController {
 
 	public function omplirdetallsfacturesAction(Request $request) {
 		// http://www.fecdas.dev/omplirdetallsfactures?current=2015  => Torna a calcular detalls per factures del 2015 amb detalls ''
+		// http://www.fecdas.dev/omplirdetallsfactures?id=XXXX  => Torna a calcular detalls per factures id
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -2740,23 +2903,29 @@ class FacturacioController extends BaseController {
 		echo 'Inicia omplirdetallsfacturesAction';
 		$batchSize = 20;
 		$current = $request->query->get('current', date('Y')); 
+		$id = $request->query->get('id', 0); // min id
 		try {
 			$em = $this->getDoctrine()->getManager();
+
+			$em->getConnection()->beginTransaction(); // suspend auto-commit			
+			if ($id == 0) {
 			
-			$desde = date('Y').'-01-01 00:00:00';
-			$fins = date('Y').'-12-31 23:59:59';
-			
-			$em->getConnection()->beginTransaction(); // suspend auto-commit
-			
-			$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
-			$strQuery .= " WHERE f.datafactura >= :desde AND f.datafactura <= :fins AND f.detalls = '' ";
-			$strQuery .= " ORDER BY f.id";
-	
-			$query = $em->createQuery($strQuery);
-			$query->setParameter('desde', $desde);
-			$query->setParameter('fins', $fins);
-	
-			$factures = $query->getResult();
+				$desde = date('Y').'-01-01 00:00:00';
+				$fins = date('Y').'-12-31 23:59:59';
+				
+				$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+				$strQuery .= " WHERE f.datafactura >= :desde AND f.datafactura <= :fins AND f.detalls = '' ";
+				$strQuery .= " ORDER BY f.id";
+		
+				$query = $em->createQuery($strQuery);
+				$query->setParameter('desde', $desde);
+				$query->setParameter('fins', $fins);
+				$factures = $query->getResult();
+			} else {
+				$factura = $this->getDoctrine()->getRepository('FecdasBundle:EntityFactura')->findOneById($id);
+				$factures = array ( $factura );
+			}
+
 			echo count($factures). ' factures';
 			$total = 0;
 			foreach ($factures as $factura) {

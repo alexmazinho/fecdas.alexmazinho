@@ -356,7 +356,7 @@ class PDFController extends BaseController {
 			}
 
 			// Concepte
-			if ($factura->esAnulacio()) $strConcepte = 'Anul·lació factura '.$comanda->getFactura()->getNumFactura().' '.$comanda->getFactura()->getDatafactura()->format('d/m/Y');
+			if ($factura->esAnulacio()) $strConcepte = 'Anul·lació factura '.$factura->getNumFactura().' '.$factura->getDatafactura()->format('d/m/Y');
 			else {
 				if ($factura->getImport() < 0) $strConcepte = 'Factura anul·lació '.$comanda->getComentaris();
 				else $strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
@@ -372,7 +372,15 @@ class PDFController extends BaseController {
 				
 			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);		// Màxim y => 150
 
-			$pdf->SetFontSize(12);
+			
+			if ($comanda->getComentaris()!=null && $comanda->getComentaris() != '' && $comanda->esAltre()) {  // Mostrar comentari per altres
+				$pdf->SetFont('', 'I', 10);
+				$pdf->MultiCell($w_producte - 4, $row_h, $comanda->getComentaris(), 0, 'L', true, 0, $x_producte + 2, $pdf->getY(), 
+								true, 0, false, true, $row_h, 'T', true);
+			}
+			
+			$pdf->SetFont('', '', 12);
+			//$pdf->SetFontSize(12);
 			// PEU 1 TOTAL PARCIAL
 			$pdf->setY($y_taula2+5);
 			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>

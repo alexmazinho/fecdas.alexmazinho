@@ -265,7 +265,7 @@ class SecurityController extends BaseController
 	public function clubaddjuntaAction(Request $request) {
 		
 		$codi = $request->query->get('codi', '');
-		$id = $request->query->get('id', 0);
+		$id = $request->query->get('id', 0);  
 		$carrec = $request->query->get('carrec', 0);
 		
 		try {
@@ -327,7 +327,7 @@ class SecurityController extends BaseController
 
 	public function clubremovejuntaAction(Request $request) {
 		$codi = $request->query->get('codi', '');	
-		$id = $request->query->get('id', 0);
+		$keyid = $request->query->get('id', 0); // Inclou cid-nc  => carrec id + '-' + número de càrrec
 		
 		try {
 			/* De moment administradors */
@@ -349,7 +349,7 @@ class SecurityController extends BaseController
 			$key = -1; 
 			$ncDel = 0;
 			foreach ($jsonCarrecs as $k => $value) {
-				if ($value->id == $id) {
+				if ($value->cid.'-'.$value->nc == $keyid) {
 					$key = $k;
 					if ($value->cid == BaseController::CARREC_VOCAL) $ncDel = $value->nc;
 				}
@@ -358,14 +358,14 @@ class SecurityController extends BaseController
 				}
 			}
 			if ($key < 0) {
-				$this->logEntryAuth('DEL JUNTA ERROR',	'No trobat => club : ' . $codi. ' id: '.$id);
+				$this->logEntryAuth('DEL JUNTA ERROR',	'No trobat => club : ' . $codi. ' id: '.$keyid);
 				throw new \Exception("Càrrec no trobat");
 			} 
 			
 			array_splice($jsonCarrecs, $key, 1);  // del
 			$club->setCarrecs(json_encode($jsonCarrecs));
 			$em->flush();
-			$this->logEntryAuth('DEL JUNTA OK',	'club : ' . $codi.' persona '.$id);
+			$this->logEntryAuth('DEL JUNTA OK',	'club : ' . $codi.' keyid '.$keyid);
 			
 			return new Response("Junta actualitzada correctament");
 		} catch (\Exception $e) {
@@ -460,12 +460,20 @@ class SecurityController extends BaseController
 
 			foreach ($jsonCarrecs as $key => $value) {
 				
-				$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
-				$carrecs[$value->cid.$value->nc] = array(
-						'id' 		=> $value->id, 
-						'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
-						'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
-				);
+				if ($value->id == 0) {
+					$carrecs[$value->cid."-".$value->nc] = array(
+							'id' 		=> 0, 
+							'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
+							'nom' 	 	=> (isset($value->nom) != true?'desconegut':$value->nom )
+					);
+				} else {
+					$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
+					$carrecs[$value->cid."-".$value->nc] = array(
+							'id' 		=> $value->id, 
+							'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
+							'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
+					);
+				}
 			}
 			
 	   		if ($request->getMethod() == 'POST') {
@@ -551,7 +559,7 @@ class SecurityController extends BaseController
     				}
 	    			$em->flush(); // Error
 	   				$this->logEntryAuth($strACtionLog . 'OK', 'club : ' . $club->getCodi());
-					return $this->redirect($this->generateUrl('FecdasBundle_club', array( 'codi' => $club->getCodi(), 'tab' => $tab )));
+					return $this->redirect($this->generateUrl('FecdasBundle_club', array( 'codiclub' => $club->getCodi(), 'tab' => $tab )));
 	   			} else {
 	   				// get a ConstraintViolationList
 	   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades". $form->getErrorsAsString());

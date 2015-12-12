@@ -95,6 +95,11 @@
 			          	<li id="menu-cursos"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':5 }) }}">Cursos</a></li>
 			          	<li id="menu-altres"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) }}">Altres</a></li>
 			          	<!-- <li id="menu-altres"><a href="{# path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) #}">Miscel·lània</a></li> -->
+						{% if admin == true %}
+						<li class="divider">Admin</li>
+			          	<li id="menu-productes-llicencies"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':1 }) }}">Llicències</a></li>
+			          	<li id="menu-productes-duplicats"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':2 }) }}">Duplicats</a></li>
+			          	{% endif %}
 			          	<li class="divider"></li>
 			          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
  		            </ul>

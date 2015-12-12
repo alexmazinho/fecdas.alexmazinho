@@ -221,13 +221,13 @@ class EntityClub {
 	
 	/**
 	 * 
-	 * @ORM\Column(type="string", length=10)
+	 * @ORM\Column(type="string", length=10, nullable=true)
 	 */
 	protected $registre;  // Num registre	
 	
 	/**
 	 * 
-	 * @ORM\Column(type="text")
+	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $carrecs;  // json	
 

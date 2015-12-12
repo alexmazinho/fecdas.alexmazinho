@@ -481,12 +481,12 @@
 						{% if carrecs|length > 0 %}
 						<div class="table-scroll">
 							<ol id="list-data">
-								{% for carrec in carrecs %}
+								{% for key, carrec in carrecs %}
 								<li class="data-detall">
 									<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
 									<div class="data-detall-cell userclub-junta-nom">{{ carrec.nom }}</div>
 									<div class="data-detall-cell userclub-junta-remove">
-										<a href="{{ path('FecdasBundle_clubremovejunta', {'codi': club.codi, 'id': carrec.id } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
+										<a href="{{ path('FecdasBundle_clubremovejunta', {'codi': club.codi, 'id': key } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
 											<i class="fa fa-trash fa-1x red"></i>
 										</a>
 									</div>

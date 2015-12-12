@@ -1557,52 +1557,69 @@
 	        e.preventDefault();
 	        
 	        if ($("#club_codi").val() == "") {
-	        	alert("cal indicar el codi del club");
+	        	dialegError("Error", "cal indicar el codi del club", 400, 0);
 				return false;
 	        }
 	        if ($("#club_nom").val() == "") {
-	        	alert("cal indicar el nom del club");
+	        	dialegError("Error", "cal indicar el nom del club", 400, 0);
 				return false;
 	        }
 	        if ($("#club_cif").val() == "") {
-	        	alert("cal indicar el cif del club");
+	        	dialegError("Error", "cal indicar el cif del club", 400, 0);
 				return false;
 	        }
+	        console.log($("#club_compte").val());
+	        if ($("#club_compte").val() == "" || isNaN($("#club_compte").val())) {
+	        	dialegError("Error", "cal indicar el compte contable", 400, 0);
+	        	$( "#tabs-club" ).tabs( "option", "active", 2 );
+				return false;
+	        } else {
+	        	console.log($("#club_compte").val().length);
+		        if ($("#club_compte").val().length != 7 ) {
+		        	dialegError("Error", "el compte comptable té un format incorrecte", 400, 0);
+		        	$( "#tabs-club" ).tabs( "option", "active", 2 );
+					return false;
+		        }
+	        }
+	        
 	        if ($("#club_mail").val() == "") {
-	        	alert("cal indicar el mail del club");
+	        	dialegError("Error", "cal indicar el mail del club", 400, 0);
 				return false;
 	        }
 	        if ($("#club_telefon").val() != "" && isNaN($("#club_telefon").val())) {
-	        	alert("El telèfon ha de ser numèric");
+	        	dialegError("Error", "El telèfon ha de ser numèric", 400, 0);
 				return false;
 	        }
 	        if ($("#club_fax").val() != "" && isNaN($("#club_fax").val())) {
-	        	alert("El fax ha de ser numèric");
+	        	dialegError("Error", "El fax ha de ser numèric", 400, 0);
 				return false;
 	        }
 	        if ($("#club_mobil").val() != "" && isNaN($("#club_mobil").val())) {
-	        	alert("El mòbil ha de ser numèric");
+	        	dialegError("Error", "El mòbil ha de ser numèric", 400, 0);
 				return false;
 	        }
 	        if ($("#club_addrcp").val() != "") {
 	        	if (isNaN( $("#club_addrcp").val() ) ) {
-	        		alert("El codi postal ha de ser numèric");
+    	        	dialegError("Error", "El codi postal ha de ser numèric", 400, 0);
 	        		return false;
 	        	} else {
 	        		if ($("#club_addrcp").val().length != 5) {
-		        		alert("El codi postal ha de tenir 5 dígits");
+	    	        	dialegError("Error", "El codi postal ha de tenir 5 dígits", 400, 0);
 		        		return false;
 	        		}
 	        	}
 	        }
 	       
 	        if ($("#club_tipusparte :selected").length < 1) {
-				alert("Cal permetre alguna llicència");
-				$( "#tabs-club" ).tabs( "option", "active", 1 );
-				return false;
+	        	dialegConfirmacio( "El club no té assignat cap tipus de llicència", "Abans de continuar...", 0, 400, function() {
+	        		$('#formclub').submit();
+		        }, function() {
+		        	$( "#tabs-club" ).tabs( "option", "active", 1 );
+		        });
+	        	
+			} else {
+				$('#formclub').submit();
 			}
-	        
-    	    $('#formclub').submit();	
 		});
 	};
 

@@ -2,6 +2,10 @@
 #    pattern:  /fecdas/{name}
 #    defaults: { _controller: FecdasBundle:Default:index }
 
+# ---------------------------------------------------------------------------
+# -----------------------  GENERALS ---------------------------------------
+# ---------------------------------------------------------------------------
+   
 FecdasBundle_homepage:
     pattern:  /
     defaults: { _controller: "FecdasBundle:Page:index" }
@@ -15,111 +19,7 @@ FecdasBundle_contact:
     requirements:
         _scheme:  http
         _method:  GET|POST
-
-FecdasBundle_login:
-    pattern:  /login
-    defaults: { _controller: "FecdasBundle:Security:login" }
-    requirements:
-        _scheme:  https
-        _method:  GET|POST
-
-FecdasBundle_pwdrecovery:
-    pattern:  /pwdrecovery
-    defaults: { _controller: "FecdasBundle:Security:pwdrecovery" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_user:
-    pattern:  /user
-    defaults: { _controller: "FecdasBundle:Security:user" }
-    requirements:
-        _method:  GET|POST
-
-
-FecdasBundle_logout:
-    pattern:  /logout
-    defaults: { _controller: "FecdasBundle:Security:logout" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_club:
-    pattern:  /club
-    defaults: { _controller: "FecdasBundle:Security:club" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_clubaddjunta:
-    pattern:  /clubaddjunta
-    defaults: { _controller: "FecdasBundle:Security:clubaddjunta" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_clubremovejunta:
-    pattern:  /clubremovejunta
-    defaults: { _controller: "FecdasBundle:Security:clubremovejunta" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_usuariclub:
-    pattern:  /usuariclub
-    defaults: { _controller: "FecdasBundle:Security:usuariclub" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_changerole:
-    pattern:  /changerole
-    defaults: { _controller: "FecdasBundle:Admin:changerole" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_recents:
-    pattern:  /recents
-    defaults: { _controller: "FecdasBundle:Admin:recents" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_consultaadmin:
-    pattern:  /consultaadmin
-    defaults: { _controller: "FecdasBundle:Admin:consultaadmin" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_clubs:
-    pattern:  /clubs
-    defaults: { _controller: "FecdasBundle:Admin:clubs" }
-    requirements:
-        _method:  GET|POST
-
-FecdasBundle_canviestatclub:
-    pattern:  /canviestatclub
-    defaults: { _controller: "FecdasBundle:Admin:canviestatclub" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_sincroaccess:
-    pattern:  /sincroaccess
-    defaults: { _controller: "FecdasBundle:Admin:sincroaccess" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_anularpeticio:
-    pattern:  /anularpeticio
-    defaults: { _controller: "FecdasBundle:Admin:anularpeticio" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_imprespeticio:
-    pattern:  /imprespeticio
-    defaults: { _controller: "FecdasBundle:Admin:imprespeticio" }
-    requirements:
-        _method:  GET
-
-FecdasBundle_ajaxclubsnoms:
-    pattern:  /ajaxclubsnoms
-    defaults: { _controller: "FecdasBundle:Admin:ajaxclubsnoms" }
-    requirements:
-        _method:  GET
-
+        
 FecdasBundle_assegurats:
     pattern:  /assegurats
     defaults: { _controller: "FecdasBundle:Page:assegurats" }
@@ -210,6 +110,8 @@ FecdasBundle_duplicatsform:
     requirements:
         _method:  GET
         
+        
+        
 FecdasBundle_licensetopdf:
     pattern:  /license
     defaults: { _controller: "FecdasBundle:PDF:licensetopdf" }
@@ -249,6 +151,12 @@ FecdasBundle_rebuttopdf:
 FecdasBundle_imprimirparte:
     pattern:  /imprimirparte
     defaults: { _controller: "FecdasBundle:PDF:imprimirparte" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_carnettopdf:
+    pattern:  /carnettopdf
+    defaults: { _controller: "FecdasBundle:PDF:carnettopdf" }
     requirements:
         _method:  GET
 
@@ -293,6 +201,127 @@ FecdasBundle_informesaldos:
     defaults: { _controller: "FecdasBundle:Cron:informesaldos" }
     requirements:
         _method:  GET
+
+
+# ---------------------------------------------------------------------------
+# -----------------------  SEGURETAT ------------------------------------
+# ---------------------------------------------------------------------------
+
+FecdasBundle_login:
+    pattern:  /login
+    defaults: { _controller: "FecdasBundle:Security:login" }
+    requirements:
+        _scheme:  https
+        _method:  GET|POST
+
+FecdasBundle_pwdrecovery:
+    pattern:  /pwdrecovery
+    defaults: { _controller: "FecdasBundle:Security:pwdrecovery" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_user:
+    pattern:  /user
+    defaults: { _controller: "FecdasBundle:Security:user" }
+    requirements:
+        _method:  GET|POST
+
+
+FecdasBundle_logout:
+    pattern:  /logout
+    defaults: { _controller: "FecdasBundle:Security:logout" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_club:
+    pattern:  /club
+    defaults: { _controller: "FecdasBundle:Security:club" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_clubaddjunta:
+    pattern:  /clubaddjunta
+    defaults: { _controller: "FecdasBundle:Security:clubaddjunta" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_clubremovejunta:
+    pattern:  /clubremovejunta
+    defaults: { _controller: "FecdasBundle:Security:clubremovejunta" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_usuariclub:
+    pattern:  /usuariclub
+    defaults: { _controller: "FecdasBundle:Security:usuariclub" }
+    requirements:
+        _method:  GET|POST
+
+
+# ---------------------------------------------------------------------------
+# -----------------------  ADMINISTRACIÓ ------------------------------------
+# ---------------------------------------------------------------------------
+   
+
+FecdasBundle_changerole:
+    pattern:  /changerole
+    defaults: { _controller: "FecdasBundle:Admin:changerole" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_recents:
+    pattern:  /recents
+    defaults: { _controller: "FecdasBundle:Admin:recents" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_consultaadmin:
+    pattern:  /consultaadmin
+    defaults: { _controller: "FecdasBundle:Admin:consultaadmin" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_clubs:
+    pattern:  /clubs
+    defaults: { _controller: "FecdasBundle:Admin:clubs" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_canviestatclub:
+    pattern:  /canviestatclub
+    defaults: { _controller: "FecdasBundle:Admin:canviestatclub" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_sincroaccess:
+    pattern:  /sincroaccess
+    defaults: { _controller: "FecdasBundle:Admin:sincroaccess" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_anularpeticio:
+    pattern:  /anularpeticio
+    defaults: { _controller: "FecdasBundle:Admin:anularpeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_imprespeticio:
+    pattern:  /imprespeticio
+    defaults: { _controller: "FecdasBundle:Admin:imprespeticio" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_ajaxclubsnoms:
+    pattern:  /ajaxclubsnoms
+    defaults: { _controller: "FecdasBundle:Admin:ajaxclubsnoms" }
+    requirements:
+        _method:  GET
+        
+FecdasBundle_imprimircarnet:
+    pattern:  /imprimircarnet
+    defaults: { _controller: "FecdasBundle:Admin:imprimircarnet" }
+    requirements:
+        _method:  GET|POST
 
 
 # ---------------------------------------------------------------------------
@@ -393,6 +422,12 @@ FecdasBundle_jsonpreu:
 FecdasBundle_jsonclubs:
     pattern:  /jsonclubs
     defaults: { _controller: "FecdasBundle:Facturacio:jsonclubs" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_jsonpersones:
+    pattern:  /jsonpersones
+    defaults: { _controller: "FecdasBundle:Facturacio:jsonpersones" }
     requirements:
         _method:  GET
 

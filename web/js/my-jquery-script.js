@@ -1905,8 +1905,8 @@
 	
 	/********************************************* import CSV ********************************************************/
 	
-	prepareFileInput = function () {
-		$("#form_importfile").change(function() {
+	prepareFileInput = function (elem) {
+		elem.change(function() {
 	        var info  = '';
 
 	   		// Display filename (without fake path)
@@ -1919,7 +1919,7 @@
 		$(".input-append").click(function(e) {
 	        e.preventDefault();
 	        // Make as the real input was clicked
-	        $("#form_importfile").click();
+	        elem.click();
 	    });
 	};
 	

@@ -104,6 +104,51 @@
 		});
 	};
 	
+	//Cercador de federats
+	init_cercapersones_JSON = function(elem_sel, placeholder_txt, url, callbackform) {
+		
+		/* Inicialitza el control de cerca (input hidden) */
+		$(elem_sel).select2({
+			minimumInputLength: 3,
+			allowClear: true,
+			multiple: false,
+			placeholder: placeholder_txt,
+	
+			query: function (query) {
+				var data = { results: [] };
+				var params = { 	'cerca': query.term };
+				$.get(url,	params, function(jdata) {
+					data.results = jdata;
+					//console.log(JSON.stringify(data.results));
+					
+					query.callback(data);
+				}).fail(function() {
+					query.callback(data);
+				});
+			},
+			initSelection: function(element, callback) {  // value del input ==> carrega per defecte llista de persones. (Retorn del POST per exemple)
+				//if (element.val() !== undefined && element.val() > 0) {
+					var data = [];
+					var params = { 	'id': element.val() };
+					$.get(url,	params, function(jdata) {
+						// Selecció inicial de persona
+						callbackform(jdata);
+						
+						callback(jdata);
+					}).fail(function() {
+						callback(data);
+					});
+					
+			        callback(data);
+				//}
+			} 
+		});
+		
+		$(elem_sel).on("change", function(e) {
+			// Canvi de persona
+			callbackform(e.added);
+		});
+	};
 	
 	recentsReload = function(url) {
 		var params = []; 

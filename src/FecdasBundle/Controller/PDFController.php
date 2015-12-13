@@ -1721,4 +1721,121 @@ class PDFController extends BaseController {
 		return $titolPlastic;
 	}
 	
+	public function carnettopdfAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$dades = $request->query->get('dades', array());
+		$current = $this->getCurrentDate();
+		
+		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
+		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
+					
+		$pdf->init(array('author' => 'FECDAS',
+					'title' => 'Carnet \'Commercial Diving\' ' . date("Y")));
+	
+		$pdf->setPrintFooter(false);
+		$pdf->setPrintHeader(false);
+					
+		// zoom - layout - mode
+		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
+		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+		$pdf->SetMargins(5, 5, 5);
+		$pdf->SetAutoPageBreak 	(false, 5);
+		//$pdf->SetMargins(0, 0, 0);
+		//$pdf->SetAutoPageBreak 	(false, 0);
+		$pdf->SetTextColor(0, 0, 0); 
+				
+		$width = 86; //Original
+		$height = 54; //Original
+
+		// Add a page
+		$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+				
+		$this->printPlasticCarnet($pdf, $dades);
+				
+		// reset pointer to the last page
+		$pdf->lastPage();
+	
+		// Generació del PDF 
+		$this->logEntryAuth('CARNET OK', json_encode($dades));
+				
+		// Close and output PDF document
+		$response = new Response($pdf->Output("carnet_".$dades['nif']."_".$current->format('Y-m-d').".pdf", "D"));
+		$response->headers->set('Content-Type', 'application/pdf');
+		return $response;
+		
+	}
+	
+	private function printPlasticCarnet($pdf, $dades) {
+		// Posicions
+		$wLogo = 10;
+		$hLogo = 0;
+		$xLogo = 74;
+		$yLogo = 2;		
+		$xLogoC = 74;
+		$yLogoC = 14;		
+		$xNom = 10;
+		$yNom =	5;		
+		$xCognoms = 15;
+		$yCognoms =	13;		
+		$xDni = 15;
+		$yDni =	21;		
+		$xEmi = 20;
+		$yEmi =	29;	
+		$xCad = 15;
+		$yCad =	37;
+		$xNum = 25;
+		$yNum =	45;		
+		
+		
+		$pdf->Image('images/fecdaslogopdf.gif', $xLogo, $yLogo, 
+							$wLogo, $hLogo , 'gif', '', 'LT', true, 320, 
+							'', false, false, array(''),
+							'LT', false, false);
+		
+		// Dades
+		$pdf->SetFont('dejavusans', 'B', 7);
+
+		$pdf->SetXY($xNom, $yNom);
+		$pdf->Cell(0, 0, isset($dades['nom'])?$dades['nom']:'', 0, 1, 'L');
+		$pdf->SetXY($xNom, $yNom+3);
+		$pdf->Cell(0, 0, isset($dades['nom'])?$dades['nom']:'', 0, 1, 'L');
+		
+		$pdf->SetXY($xCognoms, $yCognoms);
+		$pdf->Cell(0, 0, isset($dades['cognoms'])?$dades['cognoms']:'', 0, 1, 'L');
+		$pdf->SetXY($xCognoms, $yCognoms+3);
+		$pdf->Cell(0, 0, isset($dades['cognoms'])?$dades['cognoms']:'', 0, 1, 'L');
+
+		$pdf->SetXY($xDni, $yDni);
+		$pdf->Cell(0, 0, isset($dades['nif'])?$dades['nif']:'', 0, 1, 'L');
+
+		$pdf->SetXY($xEmi, $yEmi);
+		$pdf->Cell(0, 0, isset($dades['dataemissio'])?$dades['dataemissio']:'', 0, 1, 'L');
+		$pdf->SetXY($xEmi, $yEmi+3);
+		$pdf->Cell(0, 0, isset($dades['dataemissio'])?$dades['dataemissio']:'', 0, 1, 'L');
+				
+		$pdf->SetXY($xCad, $yCad);
+		$pdf->Cell(0, 0, isset($dades['datacaducitat'])?$dades['datacaducitat']:'', 0, 1, 'L');
+		$pdf->SetXY($xCad, $yCad+3);
+		$pdf->Cell(0, 0, isset($dades['datacaducitat'])?$dades['datacaducitat']:'', 0, 1, 'L');
+				
+		$pdf->SetXY($xNum, $yNum);
+		$pdf->Cell(0, 0, isset($dades['num'])?$dades['num']:'', 0, 1, 'L');
+		$pdf->SetXY($xNum, $yNum+3);
+		$pdf->Cell(0, 0, isset($dades['num'])?$dades['num']:'', 0, 1, 'L');
+		
+		// Logo club
+		
+		$pdf->SetXY($xLogoC, $yLogoC);
+		$pdf->Cell(0, 0, isset($dades['logo'])?$dades['logo']:'', 0, 1, 'L');
+		
+		$logoClubPath = $this->getTempUploadDir().'/'.$dades['logo'];
+		
+		$pdf->Image($logoClubPath, $xLogoC, $yLogoC, 
+							$wLogo, $hLogo , isset($dades['extension'])?$dades['extension']:'jpg', '', 'LT', true, 320, 
+							'', false, false, array(''),
+							'LT', false, false);
+		
+	}
 }

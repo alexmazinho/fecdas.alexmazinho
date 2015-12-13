@@ -21,6 +21,127 @@ class AdminController extends BaseController {
 		return new Response("");
 	}
 	
+	public function imprimircarnetAction(Request $request) {
+		// Formulari per imprimir carnet CMAS
+		 
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		/* De moment administradors */
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+				 
+		$em = $this->getDoctrine()->getManager();
+		
+		$current = $this->getCurrentDate();
+		$emissio = $current; 
+		$caducitat = $this->getCurrentDate();
+		$caducitat->add(new \DateInterval('P1Y'));
+		$formdata = array('nom' => '',	'cognoms' => '', 'federat' => '', 
+							'nif' => '', 'dataemissio' => $current, 'datacaducitat' => $caducitat, 
+							'num' => '', 'logo' => '', 'extension' => '');
+		$form = null;
+		try {
+			
+			if ($request->getMethod() == 'POST') {
+				// Validació del formulari 
+				$formdata = $request->request->get('form');
+				
+				if (!isset($formdata['nom']) || $formdata['nom'] == '') throw new \Exception('Cal indicar el nom ' );
+				
+				if (!isset($formdata['cognoms']) || $formdata['cognoms'] == '') throw new \Exception('Cal indicar els cognoms ' );
+				
+				if (!isset($formdata['nif']) || $formdata['nif'] == '') throw new \Exception('Cal indicar el nif ' );
+				
+				if (!isset($formdata['dataemissio']) || $formdata['dataemissio'] == '') throw new \Exception('Cal indicar la data d\'emissio ' );
+				
+				$emissio = \DateTime::createFromFormat('d/m/Y', $formdata['dataemissio']);
+				
+				if (!isset($formdata['datacaducitat']) || $formdata['datacaducitat'] == '') throw new \Exception('Cal indicar la data de caducitat ' );
+				
+				$caducitat = \DateTime::createFromFormat('d/m/Y', $formdata['datacaducitat']);
+				
+				if (!isset($formdata['num']) || $formdata['num'] == '') throw new \Exception('Cal indicar el número de certificat ' );
+			}	
+				
+			// Crear formulari
+			$formBuilder = $this->createFormBuilder()->add('nom', 'text', array('required' 	=> false, 'data' =>  mb_strtoupper(mb_substr($formdata['nom'], 0, 1)).mb_substr($formdata['nom'], 1)));
+				
+			$formBuilder->add('cognoms', 'text', array('required' => false, 'data' => mb_strtoupper($formdata['cognoms'], 'UTF-8')));
+				
+			$formBuilder->add('federat', 'hidden', array('data' => $formdata['federat']));  // Cerca federat
+				
+			$formBuilder->add('nif', 'text', array('required' => false, 'data' => $formdata['nif']));
+				
+			$formBuilder->add('dataemissio', 'datetime', array(
+							'required' 		=> false,
+							'mapped'		=> false,
+							'widget' 		=> 'single_text',
+							'input' 		=> 'datetime',
+							'empty_value' 	=> false,
+							'format' 		=> 'dd/MM/yyyy',
+							'data'			=> $emissio
+					));	
+				
+			$formBuilder->add('datacaducitat', 'datetime', array(
+							'required' 		=> false,
+							'mapped'		=> false,
+							'widget' 		=> 'single_text',
+							'input' 		=> 'datetime',
+							'empty_value' 	=> false,
+							'format' 		=> 'dd/MM/yyyy',
+							'data'			=> $caducitat
+					));	
+				
+			$formBuilder->add('num', 'text', array('required' => false, 'data' => $formdata['num'])); // Número de certificat
+				
+			$formBuilder->add('logo', 'file', array('required' 	=> false,'attr' => array('accept' => 'image/*')));
+				
+			$form = $formBuilder->getForm();
+			
+			if ($request->getMethod() == 'POST') {	
+				
+				$form->handleRequest($request);
+				 	
+				$logo = $form['logo']->getData();
+				
+				if ($logo == null) throw new \Exception('Cal escollir el logo del club ' );
+				
+				if (!$logo->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $logo->getMaxFilesize());
+				
+				$temppath = $logo->getPath()."/".$logo->getFileName();
+				
+				$tempname = $this->getCurrentDate()->format('Ymd')."_".$formdata['nif']."_".$logo->getClientOriginalName();
+				
+				$extension = $logo->guessExtension();
+				if (!$extension) $extension = 'jpg';// extension cannot be guessed
+				$formdata['extension'] = $extension;
+				
+				/* Copy file for future confirmation */
+				$logo->move($this->getTempUploadDir(), $tempname);
+				/* Generate URL to send CSV confirmation */
+
+				$formdata['logo'] = $tempname;
+					
+				$pathParam = array(); //Specified path param if you have some
+   				$queryParam = array('dades' => $formdata);
+    			$response = $this->forward("FecdasBundle:PDF:carnettopdf", $pathParam, $queryParam);
+				
+				return $response;
+				
+			} else {
+				$this->logEntryAuth('CARNET FORM',	'');
+			}
+		} catch (\Exception $e) {
+				// Ko, mostra form amb errors
+				$this->logEntryAuth('CARNET ERROR',	$e->getMessage());
+				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+		}
+		return $this->render('FecdasBundle:Admin:imprimircarnet.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
+
+	}
+	
 	public function recentsAction(Request $request) {
 	
 		if ($this->isCurrentAdmin() != true)

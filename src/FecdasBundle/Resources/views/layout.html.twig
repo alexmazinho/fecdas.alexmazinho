@@ -4,7 +4,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/style.css?v=2.02') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css?v=2.03') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css?v=2.01') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery.ui.theme.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery-ui.min.css') }}" type="text/css" rel="stylesheet" />
@@ -126,6 +126,8 @@
 			          	<li id="menu-admnouclub" class="separator"><a href="{{ path('FecdasBundle_club', { 'action': 'nouclub' }) }}">Nou club</a></li>
 			          	<li id="menu-admnouusuari" class="separator"><a href="{{ path('FecdasBundle_club', { 'action': 'adduser' }) }}">Afegir usuari</a></li>
 			          	<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">Edició clubs</a></li>
+			          	<li class="divider"></li>
+			          	<li id="menu-admincarnet"><a href="{{ path('FecdasBundle_imprimircarnet') }}">Carnets</a></li>
 			          </ul>
 			        </li>	
 		      		<li class="dropdown">
@@ -191,8 +193,8 @@
  	
 	{{ parent() }}
 
-	<script src="{{ asset('js/my-jquery-script.js?v=2.03') }}" type="text/javascript"></script>	
-    <script src="{{ asset('js/my-jquery-script-admin.js?v=2.02') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/my-jquery-script.js?v=2.04') }}" type="text/javascript"></script>	
+    <script src="{{ asset('js/my-jquery-script-admin.js?v=2.03') }}" type="text/javascript"></script>
     
     <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
 	<script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>

@@ -848,6 +848,7 @@ ul.detalls li .alert { margin: 10px 0; }
 .list-factures li.data-detall-cell, .list-comandes li.data-detall-cell { border: none; }
 .list-comandes .data-detall-cell { text-align: left; }
 
+
 /***************** Llistes ******************/
 
 .table-header {
@@ -1095,7 +1096,6 @@ ul.detalls li .alert { margin: 10px 0; }
 	 width: 100%;
 	 height: 100%;
 }
-
 
 /***************** Fi llistes ******************/
 
@@ -1664,6 +1664,11 @@ input#formuserclub-randompassword { width: 150px; }
 .userclub-actions { width: 10%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/
+
+/***************** Carnet ******************/
+
+/*#formcarnet .row { margin-bottom: 15px; }*/
+
 
 
 /************************************************* Persona  ******************************************************/

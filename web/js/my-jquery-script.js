@@ -1542,6 +1542,7 @@
 	        
 	        $("#club_addrpobcorreu").val( $("#club_addrpob").val() );
 	        $("#club_addrcpcorreu").val( $("#club_addrcp").val() );
+	        $("#club_addrcomarcacorreu").val( $("#club_addrcomarca").val() );
 	        $("#club_addrprovinciacorreu").val( $("#club_addrprovincia").val() );
 	        $("#club_addradrecacorreu").val( $("#club_addradreca").val() );
 	    });

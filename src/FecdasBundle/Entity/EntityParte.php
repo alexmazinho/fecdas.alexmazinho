@@ -222,7 +222,7 @@ class EntityParte extends EntityComanda {
 							'import' => $producte->getPreu($this->dataalta->format('Y')),
 							'producte' => $producte->getDescripcio(),
 							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
-							'abreviatura' => $this->producte->getAbreviatura(), 
+							'abreviatura' => $producte->getAbreviatura(), 
 							'descompte' => 0, 'codi' => $producte->getCodi(),
 					);
 				}

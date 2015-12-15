@@ -37,16 +37,50 @@ class AdminController extends BaseController {
 		$emissio = $current; 
 		$caducitat = $this->getCurrentDate();
 		$caducitat->add(new \DateInterval('P1Y'));
-		$formdata = array('nom' => '',	'cognoms' => '', 'federat' => '', 
+		
+		if ($request->getMethod() == 'POST') $formdata = $request->request->get('form');
+		else $formdata = array('nom' => '',	'cognoms' => '', 'federat' => '', 
 							'nif' => '', 'dataemissio' => $current, 'datacaducitat' => $caducitat, 
 							'num' => '', 'logo' => '', 'extension' => '');
-		$form = null;
-		try {
+		
+		// Crear formulari
+		$formBuilder = $this->createFormBuilder($formdata)->add('nom', 'text', array('required' 	=> false, 'data' =>  mb_strtoupper(mb_substr($formdata['nom'], 0, 1)).mb_substr($formdata['nom'], 1)));
+					
+		$formBuilder->add('cognoms', 'text', array('required' => false, 'data' => mb_strtoupper($formdata['cognoms'], 'UTF-8')));
+					
+		$formBuilder->add('federat', 'hidden', array('data' => $formdata['federat']));  // Cerca federat
+					
+		$formBuilder->add('nif', 'text', array('required' => false, 'data' => $formdata['nif']));
+					
+		$formBuilder->add('dataemissio', 'datetime', array(
+								'required' 		=> false,
+								'mapped'		=> false,
+								'widget' 		=> 'single_text',
+								'input' 		=> 'datetime',
+								'empty_value' 	=> false,
+								'format' 		=> 'dd/MM/yyyy',
+								'data'			=> $emissio
+						));	
+					
+		$formBuilder->add('datacaducitat', 'datetime', array(
+								'required' 		=> false,
+								'mapped'		=> false,
+								'widget' 		=> 'single_text',
+								'input' 		=> 'datetime',
+								'empty_value' 	=> false,
+								'format' 		=> 'dd/MM/yyyy',
+								'data'			=> $caducitat
+						));	
+					
+		$formBuilder->add('num', 'text', array('required' => false, 'data' => $formdata['num'])); // Número de certificat
+					
+		/*$formBuilder->add('logo', 'file', array('required' 	=> false,'attr' => array('accept' => 'image/*')));*/
 			
+		$form = $formBuilder->getForm();
+		
+		try {
 			if ($request->getMethod() == 'POST') {
-				// Validació del formulari 
-				$formdata = $request->request->get('form');
-				
+				// Validació del formulari enviat
 				if (!isset($formdata['nom']) || $formdata['nom'] == '') throw new \Exception('Cal indicar el nom ' );
 				
 				if (!isset($formdata['cognoms']) || $formdata['cognoms'] == '') throw new \Exception('Cal indicar els cognoms ' );
@@ -62,48 +96,10 @@ class AdminController extends BaseController {
 				$caducitat = \DateTime::createFromFormat('d/m/Y', $formdata['datacaducitat']);
 				
 				if (!isset($formdata['num']) || $formdata['num'] == '') throw new \Exception('Cal indicar el número de certificat ' );
-			}	
-				
-			// Crear formulari
-			$formBuilder = $this->createFormBuilder()->add('nom', 'text', array('required' 	=> false, 'data' =>  mb_strtoupper(mb_substr($formdata['nom'], 0, 1)).mb_substr($formdata['nom'], 1)));
-				
-			$formBuilder->add('cognoms', 'text', array('required' => false, 'data' => mb_strtoupper($formdata['cognoms'], 'UTF-8')));
-				
-			$formBuilder->add('federat', 'hidden', array('data' => $formdata['federat']));  // Cerca federat
-				
-			$formBuilder->add('nif', 'text', array('required' => false, 'data' => $formdata['nif']));
-				
-			$formBuilder->add('dataemissio', 'datetime', array(
-							'required' 		=> false,
-							'mapped'		=> false,
-							'widget' 		=> 'single_text',
-							'input' 		=> 'datetime',
-							'empty_value' 	=> false,
-							'format' 		=> 'dd/MM/yyyy',
-							'data'			=> $emissio
-					));	
-				
-			$formBuilder->add('datacaducitat', 'datetime', array(
-							'required' 		=> false,
-							'mapped'		=> false,
-							'widget' 		=> 'single_text',
-							'input' 		=> 'datetime',
-							'empty_value' 	=> false,
-							'format' 		=> 'dd/MM/yyyy',
-							'data'			=> $caducitat
-					));	
-				
-			$formBuilder->add('num', 'text', array('required' => false, 'data' => $formdata['num'])); // Número de certificat
-				
-			$formBuilder->add('logo', 'file', array('required' 	=> false,'attr' => array('accept' => 'image/*')));
-				
-			$form = $formBuilder->getForm();
-			
-			if ($request->getMethod() == 'POST') {	
-				
+
 				$form->handleRequest($request);
 				 	
-				$logo = $form['logo']->getData();
+				/*$logo = $form['logo']->getData();
 				
 				if ($logo == null) throw new \Exception('Cal escollir el logo del club ' );
 				
@@ -117,12 +113,12 @@ class AdminController extends BaseController {
 				if (!$extension) $extension = 'jpg';// extension cannot be guessed
 				$formdata['extension'] = $extension;
 				
-				/* Copy file for future confirmation */
+				// Copy file for future confirmation 
 				$logo->move($this->getTempUploadDir(), $tempname);
-				/* Generate URL to send CSV confirmation */
+				// Generate URL to send CSV confirmation 
 
 				$formdata['logo'] = $tempname;
-					
+				*/	
 				$pathParam = array(); //Specified path param if you have some
    				$queryParam = array('dades' => $formdata);
     			$response = $this->forward("FecdasBundle:PDF:carnettopdf", $pathParam, $queryParam);
@@ -137,6 +133,7 @@ class AdminController extends BaseController {
 				$this->logEntryAuth('CARNET ERROR',	$e->getMessage());
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 		}
+		
 		return $this->render('FecdasBundle:Admin:imprimircarnet.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
 

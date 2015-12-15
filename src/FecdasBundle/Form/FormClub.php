@@ -48,7 +48,7 @@ class FormClub extends AbstractType {
 				));
 
 				// Cerca federats club
-				$form->add('addjunta', 'entity', array(
+				$form->add('federats', 'entity', array(
 					'class' => 'FecdasBundle:EntityPersona',
 					'query_builder' => function($repository) use ($club) {
 						return $repository->createQueryBuilder('e')
@@ -57,7 +57,7 @@ class FormClub extends AbstractType {
 							->orderBy('e.cognoms', 'ASC')
 							->setParameter('codiclub', $club->getCodi());
 						},
-					'choice_label' 	=> 'llistaText',
+					'choice_label' 	=> 'nomCognoms',
 					'empty_value' 	=> '',
 					'required'  	=> false,
 					'mapped'		=> false,
@@ -70,6 +70,12 @@ class FormClub extends AbstractType {
 					'mapped'		=> false,
 					'choices' 		=> BaseController::getCarrecs(),
 					'empty_value' 	=> 'Escollir càrrec...',
+					'disabled'		=> $nou == true
+				));
+
+				$form->add('nommembre', 'text', array(
+					'required'  => false,
+					'mapped'		=> false,
 					'disabled'		=> $nou == true
 				));
 
@@ -163,6 +169,10 @@ class FormClub extends AbstractType {
 				'required'  => false,
 		));
 
+		$builder->add('addrcomarca', 'text', array(
+				'required'  => false,
+		));
+		
 		$builder->add('addrcp', 'text', array(
 				'required'  => false,
 		));
@@ -179,6 +189,10 @@ class FormClub extends AbstractType {
 		));
 		
 		$builder->add('addrpobcorreu', 'text', array(
+				'required'  => false,
+		));
+
+		$builder->add('addrcomarcacorreu', 'text', array(
 				'required'  => false,
 		));
 		

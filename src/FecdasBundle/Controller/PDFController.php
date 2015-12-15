@@ -1751,6 +1751,15 @@ class PDFController extends BaseController {
 
 		// Add a page
 		$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+		
+		// 	Image ($file, $x='', $y='', 
+		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
+		// 			$palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, 
+		//			$hidden=false, $fitonpage=false, $alt=false, $altimgs=array())
+		/*$pdf->Image('images/background_carnet.jpg', 0, 0, 
+							$width, $height, 'jpg', '', 'LT', true, 150, 
+							'', false, false, array(), true,
+							false, false, false, array());*/
 				
 		$this->printPlasticCarnet($pdf, $dades);
 				
@@ -1764,78 +1773,72 @@ class PDFController extends BaseController {
 		$response = new Response($pdf->Output("carnet_".$dades['nif']."_".$current->format('Y-m-d').".pdf", "D"));
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
-		
 	}
 	
 	private function printPlasticCarnet($pdf, $dades) {
 		// Posicions
-		$wLogo = 10;
+		$wLogo = 8;
 		$hLogo = 0;
-		$xLogo = 74;
-		$yLogo = 2;		
-		$xLogoC = 74;
-		$yLogoC = 14;		
-		$xNom = 10;
-		$yNom =	5;		
+		$xLogo = 75;
+		$yLogo = 1;		
+		$xLogoC = 75;
+		$yLogoC = 10;		
+		$xNom = 13;
+		$yNom =	4.4;		
 		$xCognoms = 15;
-		$yCognoms =	13;		
+		$yCognoms =	13.2;		
 		$xDni = 15;
-		$yDni =	21;		
+		$yDni =	22.4;		
 		$xEmi = 20;
 		$yEmi =	29;	
 		$xCad = 15;
-		$yCad =	37;
+		$yCad =	38;
 		$xNum = 25;
-		$yNum =	45;		
+		$yNum =	47;	
+		$gap = 1.6;	
 		
-		
-		$pdf->Image('images/fecdaslogopdf.gif', $xLogo, $yLogo, 
-							$wLogo, $hLogo , 'gif', '', 'LT', true, 320, 
-							'', false, false, array(''),
-							'LT', false, false);
+		// 	Image ($file, $x='', $y='', 
+		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
+		// 			$palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, 
+		//			$hidden=false, $fitonpage=false, $alt=false, $altimgs=array())
+		/*$pdf->Image('images/fecdaslogopdf.gif', $xLogo, $yLogo,
+							$wLogo, $hLogo , 'gif', '', 'CT', false, 300, 
+							'', false, false, array(), 'CT',
+							false, false, false, array());*/
 		
 		// Dades
-		$pdf->SetFont('dejavusans', 'B', 7);
+		$pdf->SetFont('dejavusans', 'B', 8);
 
-		$pdf->SetXY($xNom, $yNom);
-		$pdf->Cell(0, 0, isset($dades['nom'])?$dades['nom']:'', 0, 1, 'L');
-		$pdf->SetXY($xNom, $yNom+3);
+		$pdf->SetXY($xNom, $yNom+$gap);
 		$pdf->Cell(0, 0, isset($dades['nom'])?$dades['nom']:'', 0, 1, 'L');
 		
-		$pdf->SetXY($xCognoms, $yCognoms);
-		$pdf->Cell(0, 0, isset($dades['cognoms'])?$dades['cognoms']:'', 0, 1, 'L');
-		$pdf->SetXY($xCognoms, $yCognoms+3);
+		$pdf->SetXY($xCognoms, $yCognoms+$gap);
 		$pdf->Cell(0, 0, isset($dades['cognoms'])?$dades['cognoms']:'', 0, 1, 'L');
 
 		$pdf->SetXY($xDni, $yDni);
 		$pdf->Cell(0, 0, isset($dades['nif'])?$dades['nif']:'', 0, 1, 'L');
 
-		$pdf->SetXY($xEmi, $yEmi);
-		$pdf->Cell(0, 0, isset($dades['dataemissio'])?$dades['dataemissio']:'', 0, 1, 'L');
-		$pdf->SetXY($xEmi, $yEmi+3);
+		$pdf->SetXY($xEmi, $yEmi+$gap);
 		$pdf->Cell(0, 0, isset($dades['dataemissio'])?$dades['dataemissio']:'', 0, 1, 'L');
 				
-		$pdf->SetXY($xCad, $yCad);
-		$pdf->Cell(0, 0, isset($dades['datacaducitat'])?$dades['datacaducitat']:'', 0, 1, 'L');
-		$pdf->SetXY($xCad, $yCad+3);
+		$pdf->SetXY($xCad, $yCad+$gap);
 		$pdf->Cell(0, 0, isset($dades['datacaducitat'])?$dades['datacaducitat']:'', 0, 1, 'L');
 				
-		$pdf->SetXY($xNum, $yNum);
-		$pdf->Cell(0, 0, isset($dades['num'])?$dades['num']:'', 0, 1, 'L');
-		$pdf->SetXY($xNum, $yNum+3);
+		$pdf->SetXY($xNum, $yNum+$gap);
 		$pdf->Cell(0, 0, isset($dades['num'])?$dades['num']:'', 0, 1, 'L');
 		
 		// Logo club
+		/*$pdf->SetXY($xLogoC, $yLogoC);
+		$logoClubPath = $this->getTempUploadDir().'/'.$dades['logo'];*/
 		
-		$pdf->SetXY($xLogoC, $yLogoC);
-		$pdf->Cell(0, 0, isset($dades['logo'])?$dades['logo']:'', 0, 1, 'L');
-		
-		$logoClubPath = $this->getTempUploadDir().'/'.$dades['logo'];
-		
-		$pdf->Image($logoClubPath, $xLogoC, $yLogoC, 
-							$wLogo, $hLogo , isset($dades['extension'])?$dades['extension']:'jpg', '', 'LT', true, 320, 
-							'', false, false, array(''),
-							'LT', false, false);
+		// 	Image ($file, $x='', $y='', 
+		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
+		// 			$palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, 
+		//			$hidden=false, $fitonpage=false, $alt=false, $altimgs=array())
+		/*$pdf->Image($logoClubPath, $xLogoC, $yLogoC, 
+							$wLogo, $hLogo , isset($dades['extension'])?$dades['extension']:'jpg', '', 'CT', false, 300, 
+							'', false, false, array(), 'CT',
+							false, false, false, array());*/
 		
 	}
 }

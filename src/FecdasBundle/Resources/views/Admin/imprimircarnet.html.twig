@@ -75,11 +75,11 @@
 				</div>
 			 </div>
 		</div>
-		<div class="row">
+		<!-- <div class="row">
 			 <div class="col-md-5">
 				<div class="form-group">
-					{{ form_label(form.logo, 'Imatge del logo del club...') }}
-					{{ form_widget(form.logo, { 'attr': {'class': 'form-control'} }) }}
+					{# form_label(form.logo, 'Imatge del logo del club...') #}
+					{# form_widget(form.logo, { 'attr': {'class': 'form-control'} }) #}
 					<div class="input-group" style="position:relative;">
 						<span class="input-group-addon">Navegar...</span>
 						<input id="upload-file-info" class="form-control" type="text">
@@ -89,7 +89,7 @@
 				    </div>
 				</div>
 			 </div>
-		</div>
+		</div> -->
 		<div class="row">
 			 <div class="col-md-12">
 				<div class="form-group">
@@ -144,7 +144,7 @@
 					''
 			);
 
-			prepareFileInput( $("#form_logo") );
+			//prepareFileInput( $("#form_logo") );
 
 			// Cerca federat
 			init_cercapersones_JSON('#form_federat', 
@@ -155,24 +155,8 @@
 				 						$("#form_nom").val(dades.nom);
 				 						$("#form_cognoms").val(dades.cognoms);
 				 						$("#form_nif").val(dades.dni);
-										console.log( "dades callback "+JSON.stringify(dades) ); 
 									});
 			
-			/*$('#formcarnet').submit( function(){
-				  // Send the form via Ajax
-					return false;
-			});
-			
-			$('#formcarnet-imprimir').click(function(e) {
-				e.preventDefault();
-				var params = $('#formcarnet').serializeArray();
-				
-				$.post($('#formcarnet').attr('action'), params, function(data) {
-					alert(data);
-					//$( ".selector" ).dialog( "destroy" );
-					
-				});
-			});	*/
 			
 		});
 	</script>

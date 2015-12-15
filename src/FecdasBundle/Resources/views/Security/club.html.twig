@@ -19,6 +19,8 @@
     		    	<div class="buttons-top-bootstrap">
 						<div class="button-top"><a class="link formclub-save" href="javascript:void(0);" alt="Desar dades" 
 							title="Desar dades"><i class="fa fa-save fa-1x green"></i></a></div> 
+						<div class="button-top"><a class="link formclub-baixa" href="{{ path('FecdasBundle_baixaclub', { 'club' : club.codi }) }}" alt="Baixa club" 
+							title="Baixa club"><i class="fa fa-trash-o fa-1x red"></i></a></div> 
 						<div class="button-top"><a id="formclub-nou" class="link" target="_blank" href="javascript:void(0);" alt="Nou club" 
 							title="Nou club"><i class="fa fa-plus-circle fa-1x blue"></i></a></div>
 					</div> 
@@ -152,7 +154,7 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-3">
+					<div class="col-md-6">
 			  			<div class="form-group">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">Adreça</span>
@@ -161,12 +163,23 @@
 							</div>
 						</div>
 					</div>
+				</div>
+				<div class="row">
 					<div class="col-md-3">
 			  			<div class="form-group">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">Pob.</span>
 								{{ form_label(form.addrpob, 'Població', { 'label_attr': {'class': 'sr-only'} }) }}
 								{{ form_widget(form.addrpob, { 'attr': {'class': 'form-control','placeholder':'Població' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Comarca</span>
+								{{ form_label(form.addrcomarca, 'Comarca', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addrcomarca, { 'attr': {'class': 'form-control','placeholder':'Comarca' } }) }}
 							</div>
 						</div>
 					</div>
@@ -198,7 +211,7 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-3">
+					<div class="col-md-6">
 			  			<div class="form-group">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">Adreça</span>
@@ -207,12 +220,23 @@
 							</div>
 						</div>
 					</div>
+				</div>
+				<div class="row">
 					<div class="col-md-3">
 			  			<div class="form-group">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">Pob.</span>
 								{{ form_label(form.addrpobcorreu, 'Població', { 'label_attr': {'class': 'sr-only'} }) }}
 								{{ form_widget(form.addrpobcorreu, { 'attr': {'class': 'form-control','placeholder':'Població' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+			  			<div class="form-group">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Comarca</span>
+								{{ form_label(form.addrcomarcacorreu, 'Comarca', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.addrcomarcacorreu, { 'attr': {'class': 'form-control','placeholder':'Comarca' } }) }}
 							</div>
 						</div>
 					</div>
@@ -460,19 +484,23 @@
 								<div class="form-group">
 									<div class="input-group" >
 										<span class="input-group-addon required">Federat</span>
-							  			{{ form_label(form.addjunta, 'Federat', { 'label_attr': {'class': 'sr-only'} }) }}
-							  			{{ form_widget(form.addjunta, { 'attr': {'class': 'form-control'} }) }}
+							  			{{ form_label(form.federats, 'Federat', { 'label_attr': {'class': 'sr-only'} }) }}
+							  			{{ form_widget(form.federats, { 'attr': {'class': 'form-control'} }) }}
+									</div>
+								</div>
+							</div>
+							<div class="col-md-8">
+								<div class="form-group">
+									<div class="input-group" >
+										<span class="input-group-addon required">Nom</span>
+							  			{{ form_label(form.nommembre, 'Nom nou membre', { 'label_attr': {'class': 'sr-only'} }) }}
+							  			{{ form_widget(form.nommembre, { 'attr': {'class': 'form-control'} }) }}
 									</div>
 								</div>
 							</div>
 							<div class="col-md-2">
-								<a id="formclub-addcarrec" href="{{ path('FecdasBundle_clubaddjunta', {'codi': club.codi }) }}" class="btn btn-default" title="Copiar"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
+								<a id="formclub-addcarrec" href="{{ path('FecdasBundle_clubaddjunta', {'codi': club.codi }) }}" class="btn btn-default" title="Afegir"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
 								{{ form_widget(form.carrecs) }}
-							</div>
-							<div class="col-md-6">
-								<a id="formclub-openmodal" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_persona') }}" name="modal" type="button">
-									Nova persona  <i class="fa fa-users"></i>
-								</a>
 							</div>
 						</div>
 					</div>
@@ -484,8 +512,14 @@
 								{% for key, carrec in carrecs %}
 								<li class="data-detall">
 									<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
-									<div class="data-detall-cell userclub-junta-nom">{{ carrec.nom }}</div>
-									<div class="data-detall-cell userclub-junta-remove">
+									<div class="data-detall-cell userclub-junta-nom hidden">{{ carrec.nom }}</div>
+									<div class="data-detall-cell userclub-junta-text">
+										<input id="club_nommembre_{{ key }}" class="form-control" type="text" name="club[nommembre]" value="{{ carrec.nom }}">
+									</div>
+									<div class="data-detall-cell userclub-junta-action">
+										<a href="{{ path('FecdasBundle_clubupdatejunta', {'codi': club.codi, 'id': key } ) }}" data-key="{{ key }}" class="btn link formclub-updatecarrec" title="Actualitzar">
+											<i class="fa fa-save fa-1x green"></i>
+										</a>
 										<a href="{{ path('FecdasBundle_clubremovejunta', {'codi': club.codi, 'id': key } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
 											<i class="fa fa-trash fa-1x red"></i>
 										</a>
@@ -608,6 +642,8 @@
 		reloadClub();
 	
 		saveClub();
+
+		baixaClub( "{{ path('FecdasBundle_club', { 'codiclub' : club.codi }) }}"  );
 		
 		copiarAdrecaClub();
 		
@@ -634,12 +670,18 @@
 			window.location = url+'?codiclub='+$(this).val();
 		});
 
-		$("select#club_addjunta").select2({
+		$("select#club_federats").select2({
 			minimumInputLength: 2,
-			allowClear: false,
+			allowClear: true,
 			placeholder: "Cercar federat del club... ",
 		});
 
+		$("select#club_federats").on("change", function(e) {
+			// Canvi de persona
+			var dades = e.added;
+			// Exemple {"id":"47422","text":"Pere ABADAL GONZALEZ"}
+			$("#club_nommembre").val(dades.text);
+		});
 		
 		var current = new Date();
 		var maxdate = new Date (current.getFullYear(), current.getMonth() + 1, current.getDay());
@@ -692,16 +734,17 @@
 			$('#progressbar').show();  // Rellotge
 
 			var rowCarrec =  $(this).parents('.data-detall');
+
+			$('.block-errors').html('');
 			
 			$.get(url, function(data, textStatus) {
-
+				var sms = smsResultAjax('OK', data);
+					
 				rowCarrec.remove();
 
 				$('#progressbar').hide();  // Rellotge
 
-				dialegInfoCallback('Càrrec esborrat', data, 400, 0, function() {
-					window.location = '{{ path('FecdasBundle_club') }}'+'?codiclub='+'{{ club.codi }}'+'&tab=3';
-				});
+				$('.block-errors').html(sms);
 				
 	        }).fail( function(xhr, status, error) {
 				 // xhr.status + " " + xhr.statusText, status, error
@@ -713,13 +756,48 @@
 			});
 			
 		});
+		
+		$(".formclub-updatecarrec").click(function(e) {
+			e.preventDefault();
+
+			var key = $(this).attr("data-key");
+
+			var url = $(this).attr("href")+'&nommembre='+$('#club_nommembre_'+key).val();  // Inclou id persona i codi club
+
+			$('#progressbar').show();  // Rellotge
+
+			var rowCarrec =  $(this).parents('.data-detall');
+
+			$('.block-errors').html('');
+			
+			$.get(url, function(data, textStatus) {
+				var sms = smsResultAjax('OK', data);
+
+				$('.userclub-junta-nom').html($('#club_nommembre_'+key).val());
+					
+				$('#progressbar').hide();  // Rellotge
+
+				$('.block-errors').html(sms);
+				
+	        }).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 var sms = smsResultAjax('KO', xhr.responseText);
+
+				 $('#club_nommembre_'+key).val($('.userclub-junta-nom').html());
+				 
+				 $('#progressbar').hide();  // Rellotge
+						 
+				 $('.block-errors').html(sms);
+			});
+			
+		});
 
 		$("#formclub-addcarrec").click(function(e) {
 			e.preventDefault();
 			var url = $(this).attr("href");  // Inclou codi però no inclou id persona
 
-			if ($('#club_addjunta').val() == '') {
-				dialegError('Error', 'Cal escollir alguna persona', 400, 0);
+			if ($('#club_nommembre').val() == '') {
+				dialegError('Error', 'Cal escollir algun federat o indicar el nom del nou membre de la junta', 400, 0);
 				return false;
 			} 
 
@@ -728,12 +806,11 @@
 				return false;
 			} 
 
-			var id = $('#club_addjunta').val();
+			var id = $('#club_federats').val();
 			var carrec = $('#club_carrec').val();
+			var nommembre = $('#club_nommembre').val(); 
 
-			url += '&id='+id+'&carrec='+carrec;  
-
-			
+			url += '&id='+id+'&carrec='+carrec+'&nommembre='+nommembre;  
 			
 			$('#progressbar').show();  // Rellotge
 			

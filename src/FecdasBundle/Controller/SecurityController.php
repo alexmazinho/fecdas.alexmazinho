@@ -265,8 +265,10 @@ class SecurityController extends BaseController
 	public function clubaddjuntaAction(Request $request) {
 		
 		$codi = $request->query->get('codi', '');
-		$id = $request->query->get('id', 0);  
-		$carrec = $request->query->get('carrec', 0);
+		$id = $request->query->get('id', 0)*1;   // id del federat 
+		$nommembre = $request->query->get('nommembre', 0);	// nom del membre del club en cas de no ser federat
+		$carrec = $request->query->get('carrec', 0)*1;
+		
 		
 		try {
 			/* De moment administradors */
@@ -281,11 +283,20 @@ class SecurityController extends BaseController
 	    		$this->logEntryAuth('ADD JUNTA ERROR',	'club no trobat : ' . $codi);
 	    		throw new \Exception("Club no trobat ".$codi);
 			}
-			$personaOk = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($id);
-				
-			if ($personaOk == null) {
-				$this->logEntryAuth('ADD JUNTA ERROR',	'club : ' . $codi.' persona no trobada '.$id);
-	    		throw new \Exception("Persona no trobada ".$id);
+
+			if ($id > 0) {			
+				$personaOk = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($id);
+					
+				if ($personaOk == null) {
+					$this->logEntryAuth('ADD JUNTA ERROR',	'club : ' . $codi.' persona no trobada '.$id);
+		    		throw new \Exception("Persona no trobada ".$id);
+				}
+				$nommembre = $personaOk->getNomCognoms();
+			} else {
+				if ($nommembre == '') {
+	    			$this->logEntryAuth('ADD JUNTA ERROR',	'Nom nou membre junta no indicat ');
+	    			throw new \Exception("Cal indicar el nom del nou membre de la junta ");
+				}
 			}
 			
 			$em = $this->getDoctrine()->getManager();	
@@ -297,11 +308,12 @@ class SecurityController extends BaseController
 				foreach ($jsonCarrecs as $value) {
 					if ($value->cid == BaseController::CARREC_VOCAL) $num++;
 				}
-				$jsonCarrecs[] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num);
+				$jsonCarrecs[] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num, 'nom' => $nommembre);
 				$club->setCarrecs(json_encode($jsonCarrecs));
 				$em->flush();
-				$this->logEntryAuth('ADD JUNTA OK',	'club : ' . $codi.' persona '.$id.' carrec'.$carrec);
-				return new Response("Nou càrrec afegit correctament");
+				$this->logEntryAuth('ADD JUNTA OK',	'club : ' . $codi.' persona '.$id.'-'.$nommembre.' carrec'.$carrec);
+				
+				return new Response("Nou vocal actualitzat correctament");
 				
 			} else { // Altres càrrecs, substituir
 				foreach ($jsonCarrecs as $k => $value) {
@@ -310,14 +322,86 @@ class SecurityController extends BaseController
 				// No existeix
 			}
 			
-			if ($key < 0) $jsonCarrecs[] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1); // add
-			else $jsonCarrecs[$key] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1);		// upd
+			if ($key < 0) $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre); // add
+			else $jsonCarrecs[$key] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
+			
+			usort($jsonCarrecs, function($a, $b) {
+	    		if ($a === $b) {
+	    			return 0;
+	    		}
+				
+				if ($a->cid == $b->cid) return ($a->nc < $b->nc? -1:1); 
+				
+	    		return ($a->cid*1 < $b->cid*1? -1:1);
+    		});
+			
 			$club->setCarrecs(json_encode($jsonCarrecs));
 			$em->flush();
-			$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' persona '.$id.' carrec'.$carrec);
+			$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' persona '.$id.'-'.$nommembre.' carrec'.$carrec);
 			
 			return new Response("Junta actualitzada correctament");
 		
+		} catch (\Exception $e) {
+			$response = new Response($e->getMessage());
+	    	$response->setStatusCode(500);
+		}
+		return $response;
+	}
+
+	public function clubupdatejuntaAction(Request $request) {
+		$codi = $request->query->get('codi', '');	
+		$keyid = $request->query->get('id', 0); // Inclou cid-nc  => carrec id + '-' + número de càrrec
+		$nommembre = $request->query->get('nommembre', '');
+		
+		try {
+			/* De moment administradors */
+	    	if ($this->isCurrentAdmin() != true) {
+	    		$this->logEntryAuth('DEL JUNTA NO ADMIN',	'club : ' . $codi);
+				throw new \Exception("Acció no permesa, es desarà al registre");
+			}
+
+			if ($nommembre == '') {
+	    		$this->logEntryAuth('ADD JUNTA ERROR',	'Nom del membre junta no indicat ');
+	    		throw new \Exception("Cal indicar el nom del membre de la junta ");
+			}
+			
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+			
+			if ($club == null) {
+	    		$this->logEntryAuth('UPD JUNTA ERROR',	'club no trobat : ' . $codi);
+	    		throw new \Exception("Club no trobat ".$codi);
+			}
+			
+			$em = $this->getDoctrine()->getManager();	
+			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+			
+			$key = -1; 
+			$ncUpd = 0;
+			foreach ($jsonCarrecs as $k => $value) {
+				if ($value->cid.'-'.$value->nc == $keyid) {
+					$key = $k;
+					if ($value->cid == BaseController::CARREC_VOCAL) {
+						$ncUpd = $value->nc;
+						
+						$jsonCarrecs[$key] = array('id' 	=>	$value->id, 
+													'cid'	=>	$value->cid, 
+													'nc' 	=> $value->nc, 
+													'nom' 	=> $nommembre);		// upd
+						
+						$club->setCarrecs(json_encode($jsonCarrecs));
+						$em->flush();
+						$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' keyid '.$keyid);
+			
+						return new Response("Junta actualitzada correctament");
+					}
+				}
+			}
+			
+			$this->logEntryAuth('UPD JUNTA ERROR',	'No trobat => club : ' . $codi. ' id: '.$keyid);
+			throw new \Exception("Càrrec no trobat");
+			
+			
+			
 		} catch (\Exception $e) {
 			$response = new Response($e->getMessage());
 	    	$response->setStatusCode(500);
@@ -602,7 +686,40 @@ class SecurityController extends BaseController
 		return 'ERROR';
     }
 
+    public function baixaclubAction(Request $request) {
+    	if ($this->isAuthenticated() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
     
+    	/* De moment administradors */
+    	if ($this->isCurrentAdmin() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+    	
+		$codi	= $id = $request->query->get('club', '');    	
+
+		$em = $this->getDoctrine()->getManager();
+	    
+		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		
+		try {
+			$current = $this->getCurrentDate();
+			if ($club == null) throw new \Exception('No s\'ha pogut trobar el club per donar-lo de baixa');
+
+			$club->setActivat(false);
+			$club->setDatabaixa($current);
+			
+			$em->flush(); // Error
+	   		
+			$this->logEntryAuth('BAIXA CLUB OK', 'club : ' . $club->getCodi());
+		
+			$response = new Response('Club donat de baixa en data '.$current->format('d/m/Y'));
+		} catch (\Exception $e) {
+			$response = new Response($e->getMessage());
+	    	$response->setStatusCode(500);
+		}
+
+		return $response;		
+    }
+
     public function usuariclubAction(Request $request) {
     	//$this->get('session')->getFlashBag()->clear();
     

@@ -1640,9 +1640,10 @@ select#club_tipusparte {
 #formclub-dades-tab4 #formclub-saldoclub label,
 #formclub-dades-tab4 #formclub-saldoclub input { font-weight: bold }
 
-.data-detall-cell.userclub-junta-nom { text-align: left; padding: 2px 6px; }
+.data-detall-cell.userclub-junta-nom { display: none; }
+.data-detall-cell.userclub-junta-text { text-align: left; padding: 2px 6px; }
 .data-detall-cell.userclub-junta-carrec { text-align: left; padding: 2px 6px; font-weight: bold; }
-.data-detall-cell.userclub-junta-remove { text-align: right; padding: 2px 6px;  } 
+.data-detall-cell.userclub-junta-action { text-align: right; padding: 2px 6px;  } 
 
 
 input#user_club_user { width: 298px; }

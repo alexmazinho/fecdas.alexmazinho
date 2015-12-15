@@ -447,4 +447,40 @@
 	    $("#dialeg").dialog("open");
 	};
 	
+	
+	baixaClub = function( urlCallback ) {
+		/* baixa club */
+		$('.formclub-baixa')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	    	e.preventDefault();
+	    	
+			var url = $(this).attr('href');
+			
+			var strHtml = '<p>Segur que vols donar de baixa el club?</p>';
+			dialegConfirmacio(strHtml, 'Baixa club', 'auto', 400, function() { 
+
+				$('#progressbar').show();
+				
+				$.get(url, function(data, textStatus) {
+	    	    	$('#progressbar').hide();
+	    	    	
+	    	    	window.location = urlCallback;
+	    	    			
+	    	    }).fail( function(xhr, status, error) {
+	    	   			 // xhr.status + " " + xhr.statusText, status, error
+		    	   			//var sms = smsResultAjax('KO', xhr.responseText);
+		    		$('#progressbar').hide();  // Rellotge
+		    	   		    
+		    		var sms = smsResultAjax('KO', xhr.responseText);
+		   			    	
+		    	   	$("#main-col").prepend(sms);
+   	    		});
+				 
+			}, function() { });
+	    	
+		});
+	};
+	
 })(jQuery);

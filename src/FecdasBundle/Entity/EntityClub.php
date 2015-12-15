@@ -83,6 +83,11 @@ class EntityClub {
 	 * @ORM\Column(type="string", length=5, nullable=true)
 	 */
 	protected $addrcp;
+
+	/**
+	 * @ORM\Column(type="string", length=50, nullable=true)
+	 */
+	protected $addrcomarca;
 	
 	/**
 	 * @ORM\Column(type="string", length=20, nullable=true)
@@ -104,6 +109,11 @@ class EntityClub {
 	 */
 	protected $addrcpcorreu;
 	
+	/**
+	 * @ORM\Column(type="string", length=50, nullable=true)
+	 */
+	protected $addrcomarcacorreu;
+
 	/**
 	 * @ORM\Column(type="string", length=20, nullable=true)
 	 */
@@ -797,7 +807,27 @@ class EntityClub {
     {
         return $this->addrcp;
     }
-
+	
+    /**
+     * Set addrcomarca
+     *
+     * @param string $addrcomarca
+     */
+    public function setAddrcomarca($addrcomarca)
+    {
+    	$this->addrcomarca = $addrcomarca;
+    }
+	
+    /**
+     * Get addrcomarca
+     *
+     * @return string
+     */
+    public function getAddrcomarca()
+    {
+    	return $this->addrcomarca;
+    }
+    
     /**
      * Set addrprovincia
      *
@@ -876,6 +906,26 @@ class EntityClub {
     public function getAddrcpcorreu()
     {
     	return $this->addrcpcorreu;
+    }
+
+    /**
+     * Set addrcomarcacorreu
+     *
+     * @param string $addrcomarcacorreu
+     */
+    public function setAddrcomarcacorreu($addrcomarcacorreu)
+    {
+    	$this->addrcomarcacorreu = $addrcomarcacorreu;
+    }
+	
+    /**
+     * Get addrcomarcacorreu
+     *
+     * @return string
+     */
+    public function getAddrcomarcacorreu()
+    {
+    	return $this->addrcomarcacorreu;
     }
     
     /**

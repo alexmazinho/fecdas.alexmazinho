@@ -239,9 +239,22 @@ FecdasBundle_club:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_baixaclub:
+    pattern:  /baixaclub
+    defaults: { _controller: "FecdasBundle:Security:baixaclub" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_clubaddjunta:
     pattern:  /clubaddjunta
     defaults: { _controller: "FecdasBundle:Security:clubaddjunta" }
+    requirements:
+        _method:  GET
+
+
+FecdasBundle_clubupdatejunta:
+    pattern:  /clubupdatejunta
+    defaults: { _controller: "FecdasBundle:Security:clubupdatejunta" }
     requirements:
         _method:  GET
 

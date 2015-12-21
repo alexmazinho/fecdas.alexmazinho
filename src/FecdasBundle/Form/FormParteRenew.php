@@ -26,18 +26,18 @@ class FormParteRenew extends AbstractType {
 				$dataalta = $parte->getDataalta();
 				if ($dataalta == null) $dataalta = new \DateTime();
 				$llistatipus = BaseController::getLlistaTipusParte($parte->getClub(), $dataalta);
-
+				$tipusparte = $parte->getTipus();
 				
-				$form->add('tipus', 'text',	array(
-							/*'class' => 'FecdasBundle:EntityParteType',
+				$form->add('tipus', 'entity',	array(
+							'class' => 'FecdasBundle:EntityParteType',
 							'query_builder' => function($repository) use ($tipusparte) {
 								return $repository->createQueryBuilder('t')->orderBy('t.id', 'ASC')
 									->where('t.id = :tipusparte')
 									->setParameter('tipusparte', $tipusparte);
 								}, 
-							'choice_label' 	=> 'descripcio', */
-							'read_only' 	=> true,
-							'data'			=> $parte->getTipus()->getDescripcio()
+							'choice_label' 	=> 'descripcio', 
+							'disabled' 		=> true,
+							'data'			=> $parte->getTipus()
 					));
 				
 				$form->add('any', 'text', array(

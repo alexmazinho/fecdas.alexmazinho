@@ -685,76 +685,73 @@ class PageController extends BaseController {
 		
 		$form->get('cloneid')->setData($parteid);
 
-		$avisos = "";
-		if ($request->getMethod() == 'POST') {
-			$form->bind($request);
-
-			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* id 4 - Competició --> és la única que es pot fer */
-			/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4) {
-				$this->get('session')->getFlashBag()->clear();
-				$this->get('session')->getFlashBag()->add('error-notice',	'El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
-						Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
-						Gràcies per la vostra comprensió.');
-			} else {*/
-			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */			
-				/* Valida tipus actiu --> és la única que es pot fer */
-			if ($parte->getTipus()->getActiu() == false) {
-				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-			} else {
-			/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
+		$em = $this->getDoctrine()->getManager();
+		try {
+			$avisos = "";
+			if ($request->getMethod() == 'POST') {
+					
+				$form->bind($request);
 	
-			if ($form->isValid() && $request->request->has('parte_renew')) {
-				$em = $this->getDoctrine()->getManager();
-				
+				if ($parte->getTipus()->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+
+				if (!$form->isValid() || !$request->request->has('parte_renew')) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador'.$form->getErrorsAsString());
+					
 				$p = $request->request->get('parte_renew');
 				$i = 0; 
-				foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+				foreach ($parte->getLlicencies() as $c => $llicencia) {
 					if (!isset($p['llicencies'][$i]['renovar'])) {
 						// Treure llicències que no es volen renovar
-						$parte->removeLlicencia($llicencia_iter);
+						$parte->removeLlicencia($llicencia);
 					} else {
-						$em->persist($llicencia_iter);
+						$em->persist($llicencia);
+						$this->addParteDetall($parte, $llicencia);
 					}
 					$i++;
 				}
-						
+
+				/*
+				 * Validacions  de les llicències
+				 */
+				$avisos = '';
+				foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+					try {
+						$this->validaParteLlicencia($parte, $llicencia_iter);
+					} catch (\Exception $e) {
+						$avisos .= $e->getMessage().'<br/>';
+					}
+				}
+
+				if ($avisos != '') throw new \Exception($avisos);
+				 
+							
 				// Marquem com renovat
 				$partearenovar->setRenovat(true);
-				
+					
 				$em->persist($parte);
 				$em->flush();
-
+	
 				$this->logEntryAuth('RENOVAR OK', $parte->getId());
-				
-				$this->get('session')->getFlashBag()->add('error-notice',	'Llista de llicències enviada correctament');
-						
+					
+				$this->get('session')->getFlashBag()->add('sms-notice',	'Llista de llicències enviada correctament');
+							
 				return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
+			}
+		} catch (\Exception $e) {
 				
-			} else {
-				$this->get('session')->getFlashBag()->add('error-notice',	'Error validant les dades. Contacta amb l\'adminitrador'.$form->getErrorsAsString());
-			}
-			/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-			/* id 4 - Competició --> és la única que es pot fer */
-			}
-			/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-		} else {
-			/*
-			 * Validacions  de les llicències
-			* */
-			$avisos = '';
-			foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
-				try {
-					$this->validaParteLlicencia($parte, $llicencia_iter);
-				} catch (\Exception $e) {
-					$avisos .= $e->getMessage().PHP_EOL;
-				}
-			}
-			$this->logEntryAuth('RENOVAR VIEW', ' Parte '.$parte->getId().' : ' .$avisos);
+			/*foreach ($parte->getLlicencies() as $llicencia)	$em->detach($llicencia);
+			foreach ($parte->getDetalls() as $detall)	$em->detach($detall);
+			$em->detach($parte);
+			$em->detach($factura);*/
+			
+			$em->clear();
+			
+			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			
+			$this->logEntryAuth('RENOVAR KO', ' Parte renovar '.$partearenovar->getId().' '.$e->getMessage());
 		}
 			
 		return $this->render('FecdasBundle:Page:renovar.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'avisos' => $avisos)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte)));
 	}
 
 	public function parteAction(Request $request) {
@@ -1040,7 +1037,7 @@ class PageController extends BaseController {
 		// Comprovar que no hi ha llicències vigents 
 		// Per la pròpia persona
 		$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
-		if ($parteoverlap != null) throw new \Exception('Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
+		if ($parteoverlap != null) throw new \Exception($llicencia->getPersona()->getNomCognoms(). ' - Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
 															$parteoverlap->getDataalta()->format('d/m/Y'));
 
 		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));

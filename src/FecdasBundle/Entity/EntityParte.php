@@ -101,6 +101,7 @@ class EntityParte extends EntityComanda {
 				$cloneLlicencia = clone $llicencia_iter;
 				
 				/* Init camps */
+				$cloneLlicencia->setDatamodificacio($currentDate);
 				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat("cloneLlicencies"));
 				
 				$this->llicencies->add($cloneLlicencia);
@@ -496,9 +497,7 @@ class EntityParte extends EntityComanda {
     		$current = new \DateTime();
     		$interval = $current->diff($this->getDataCaducitat("allowRenovar"));
     		
-			error_log($this->id.' => '.$this->getAny(). ' ' . date("Y") . ' ' .$interval->format('%r%m'));
-			
-			if ($interval->format('%r%m') <= 1 && $interval->format('%r%m') > -6) return true; // Menys d'un mes per caducar menys de 6 mesos que ha caducat
+			if ($interval->format('%r%a') <= 30 && $interval->format('%r%a') > -180) return true; // %r signo %a dias Menys d'un mes per caducar menys de 6 mesos que ha caducat
 			
     		//if ($this->getAny() == (date("Y")-1) and $interval->format('%r%m') <= 1) return true; // Menys d'un mes
     		else return false;

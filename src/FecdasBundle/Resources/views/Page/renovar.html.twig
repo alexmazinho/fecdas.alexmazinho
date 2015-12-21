@@ -58,24 +58,25 @@
 			  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
 		  			</div>
 				</div>
-				{% if avisos != "" %}
-		    	<div class="sms-notice"><b>Avisos</b> <br/><br/>{{ avisos|raw }}</div>
-				{% endif %}
 				<div class="table-header">
 					<div id="list-header">
-					   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
+					   	<div id="header-llicenciapersonaid" class="col-listheader hidden">&nbsp;</div>
+					   	<div id="header-llicenciapersona" class="col-listheader">Persona</div>
+					   	<div id="header-llicenciadni" class="col-listheader">DNI</div>
 					   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
 					   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
 					   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
-			   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
-					   	<div id="header-llicenciaactions" class="col-listheader">Renovar?</div>
+			   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>
+					   	<div id="header-llicenciaactions" class="col-listheader  {% if form.llicencies|length > 6 %} header-llicenciaactions-scroll {% endif %}">Renovar?</div>
 					</div>
 				</div>
 				<div class="table-scroll">
 					<ol id="list-data">
 					{% for llicencia in form.llicencies %}
 						<li class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %}">
-							<div class="data-detall-cell llicencia-personalong">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
+							<div class="data-detall-cell llicencia-personaid hidden">{{  parte.llicencies[loop.index0].persona.id }}</div>
+							<div class="data-detall-cell llicencia-persona">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
+							<div class="data-detall-cell llicencia-dni">{{  parte.llicencies[loop.index0].persona.dni }}</div>
 							<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
 							<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
 							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>

@@ -1322,12 +1322,13 @@ input#form_dni {
 #header-llicenciaactivitats {	width: 20%;  }
 #header-llicenciaactivitatslong {	width: 30%;  }
 #header-llicenciapreu {	width: 6%; text-align: right;  }
-#header-llicenciaenviarllicencia {	width: 7%;  }
+#header-llicenciaenviarllicencia {	width: 7%; text-align: center; }
 #header-llicenciaenviarllicencia img {	
 	bottom: 10px;
     position: relative;
 }
-#header-llicenciaactions { width: 12%; }
+#header-llicenciaactions { width: 10%; }
+.header-llicenciaactions-scroll { width: 12%; }
 
 .llicencia-id {	display:none}
 .llicencia-persona { width: 25%; text-align: left; }
@@ -1337,7 +1338,7 @@ input#form_dni {
 .llicencia-activitats {	width: 20%; font-size: 9px; letter-spacing: 0; }
 .llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { width: 6%; text-align: right;}
-.llicencia-enviarllicencia { width: 7%; letter-spacing:2px}
+.llicencia-enviarllicencia { width: 7%; letter-spacing:2px; text-align: center;}
 .llicencia-no { width: 6%; }
 .llicencia-actions { width: 10%; text-align: center; margin-top: -14px}
 

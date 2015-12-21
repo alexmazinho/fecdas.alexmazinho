@@ -545,51 +545,57 @@ FecdasBundle_dadescompeticio:
         _method:  GET
 
 # ---------------------------------------------------------------------------
-# ---------------------  SCRIPTS COMANDES -----------------------------------
+# ---------------------  SCRIPTS OFFLINE -----------------------------------
 # ----------------------  (PER ESBORRAR) ------------------------------------
 # ---------------------------------------------------------------------------
 
 
+FecdasBundle_updatejunta:
+    pattern:  /updatejunta
+    defaults: { _controller: "FecdasBundle:Offline:updatejunta" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_migracomandes:
     pattern:  /migracomandes
-    defaults: { _controller: "FecdasBundle:Facturacio:migracomandes" }
+    defaults: { _controller: "FecdasBundle:Offline:migracomandes" }
     requirements:
         _method:  GET
 
 FecdasBundle_migraanulacomandes:
     pattern:  /migraanulacomandes
-    defaults: { _controller: "FecdasBundle:Facturacio:migraanulacomandes" }
+    defaults: { _controller: "FecdasBundle:Offline:migraanulacomandes" }
     requirements:
         _method:  GET
 
 
 FecdasBundle_migraaltres:
     pattern:  /migraaltres
-    defaults: { _controller: "FecdasBundle:Facturacio:migraaltres" }
+    defaults: { _controller: "FecdasBundle:Offline:migraaltres" }
     requirements:
         _method:  GET
 
 FecdasBundle_migrahistoric:
     pattern:  /migrahistoric
-    defaults: { _controller: "FecdasBundle:Facturacio:migrahistoric" }
+    defaults: { _controller: "FecdasBundle:Offline:migrahistoric" }
     requirements:
         _method:  GET
 
 FecdasBundle_updatemigrafactures:
     pattern:  /updatemigrafactures
-    defaults: { _controller: "FecdasBundle:Facturacio:updatemigrafactures" }
+    defaults: { _controller: "FecdasBundle:Offline:updatemigrafactures" }
     requirements:
         _method:  GET
 
 FecdasBundle_omplirdetallsfactures:
     pattern:  /omplirdetallsfactures
-    defaults: { _controller: "FecdasBundle:Facturacio:omplirdetallsfactures" }
+    defaults: { _controller: "FecdasBundle:Offline:omplirdetallsfactures" }
     requirements:
         _method:  GET
 
 FecdasBundle_resetcomandes:
     pattern:  /resetcomandes
-    defaults: { _controller: "FecdasBundle:Facturacio:resetcomandes" }
+    defaults: { _controller: "FecdasBundle:Offline:resetcomandes" }
     requirements:
         _method:  GET
 

@@ -654,25 +654,6 @@
 	
 	/*****************************************************************************************************************/
 	
-	reloadParteData = function(selectedDateTime) {
-		/* Canvi Data */
-		if ($.browser.msie) $('#formparte-llicencia').hide(); 
-    	else $('#formparte-llicencia').slideUp('fast');
-
-    	var dataParte = $('#parte_dataalta').datetimepicker('getDate');
-
-    	
-    	// Update select tipus parte	
-		var url = $('#formparte-tipus').data('ajax-route');
-		var params = { day: dataParte.getDate(), month: (dataParte.getMonth()+1) };
-		$.get(url,	params,
-		function(data) {
-			$('select#parte_tipus').html(data); 
-			$('#parte_any').val(dataParte.getFullYear());
-		});
-	};
-	
-	
 	reloadParteTipus = function() {
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
 		//$('#parte_tipus').val('');

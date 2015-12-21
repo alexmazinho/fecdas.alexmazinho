@@ -8,77 +8,94 @@
         <h1>Renovació de llistes d'assegurats</h1>
     </header>
    
+    {% include 'FecdasBundle:Includes:messages.html.twig' %}
+   
 	<form id="formrenovar" action="{{ path('FecdasBundle_renovar') }}" method="post" {{ form_enctype(form) }}  class="appform">
-		{%  if form_errors(form) is not empty %}
-			<div class="sms-notice">{{ form_errors(form)  }}</div>
-		{% endif %}	
-
-		<div class="form-row clearfix">
-			<div id="formparte-any" class="form-left">
-				<label class="formlabel-outside required">Any</label>
-				{{ form_widget(form.any, { 'id': 'parte_any', 'attr': {'class': 'formfield-outside'} }) }}
+		<div class="row">
+			<div class="col-md-1">
+				<div id="formparte-any">
+					<label class="required">Any</label>
+					{{ form_widget(form.any, { 'id': 'parte_any', 'attr': {'class': 'form-control'} }) }}
+				</div>
 			</div>
-			<div id="formparte-tipus" class="form-left">
-				{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-				{{ form_widget(form.tipus, { 'id': 'parte_renovar_tipus', 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-			<div class="form-right">
-				<div class="formlabel-outside required">&nbsp;</div>			
-				<input type="submit" alt="Renovar llista" title="Renovar llista" 
-					 id="formrenovar-button-renovar" class="forminput-inside" value="Renovar" name="formrenovar-button-renovar"/>
-			</div>	
-        </div>
-	    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-	    <div class="sms-notice">
-			{{ flashMessage }}
-	  	</div>	
-		{% endfor %}
-                
-	{% if form.llicencies|length > 0 and form.llicencies|length == parte.numLlicencies %}
-		<div class="table-header" class="clearfix">
-			<div id="summary-header">
-				<div id="header-totals" class="col-listheader"> 
-				Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
-	  			fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-	  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
-  			</div>
-		</div>
-		{% if avisos != "" %}
-    	<div class="sms-notice"><b>Avisos</b> <br/><br/>{{ avisos|raw }}</div>
-		{% endif %}
-		<div class="table-header">
-			<div id="list-header">
-			   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
-			   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
-			   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
-			   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
-	   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
-			   	<div id="header-llicenciaactions" class="col-listheader">Renovar?</div>
-			</div>
-		</div>
-		<div class="table-scroll">
-			<ol id="list-data">
-			{% for llicencia in form.llicencies %}
-				<li class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %}">
-					<div class="data-detall-cell llicencia-personalong">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
-					<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
-					<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
-					<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>
-					<div class="data-detall-cell llicencia-enviarllicencia">		
-					{% if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
+			<div class="col-md-4">
+				<div class="form-group">
+					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats') }}
+					<div id="formparte-tipus" class="input-group">
+					  	<span class="input-group-addon">Tipus</span>
+						{{ form_widget(form.tipus, { 'id': 'parte_renovar_tipus', 'attr': {'class': 'form-control'} }) }}
 					</div>
-					{% if llicencia.renovar is defined %}
-					<div class="data-detall-cell llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>
-					{% else %}
-					<div class="data-detall-cell llicencia-no">No</div>
-					{% endif %}
-	  			</li>
-		   	{% endfor %}
-			</ol>
+				</div>
+			</div>
+			
+			<div class="col-md-3">
+				<div class="form-group">
+					{{ form_label(form.dataalta, 'Validesa') }}
+					<div id="formparte-dataalta" class="input-group">
+		  				<span class="input-group-addon">Des de</span>
+						{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="form-right">
+					<div class="required">&nbsp;</div>			
+					<input type="submit" alt="Renovar llista" title="Renovar llista" 
+						 id="formrenovar-button-renovar" class="btn" value="Renovar" name="formrenovar-button-renovar"/>
+				</div>	
+			</div>  
+        </div>
+
+		<div class="row">
+			<div class="col-md-12">                
+			{% if form.llicencies|length > 0 and form.llicencies|length == parte.numLlicencies %}
+				<div class="table-header" class="clearfix">
+					<div id="summary-header">
+						<div id="header-totals" class="col-listheader"> 
+						Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
+			  			fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
+			  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
+		  			</div>
+				</div>
+				{% if avisos != "" %}
+		    	<div class="sms-notice"><b>Avisos</b> <br/><br/>{{ avisos|raw }}</div>
+				{% endif %}
+				<div class="table-header">
+					<div id="list-header">
+					   	<div id="header-llicenciapersonalong" class="col-listheader">Llicències</div>
+					   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
+					   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
+					   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
+			   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><img src="{{ asset('images/icon_sobre.png') }}" alt="Rebre llicència per correu" title="Rebre llicència per correu" width="30px"></div>
+					   	<div id="header-llicenciaactions" class="col-listheader">Renovar?</div>
+					</div>
+				</div>
+				<div class="table-scroll">
+					<ol id="list-data">
+					{% for llicencia in form.llicencies %}
+						<li class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %}">
+							<div class="data-detall-cell llicencia-personalong">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
+							<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
+							<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
+							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>
+							<div class="data-detall-cell llicencia-enviarllicencia">		
+							{% if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
+							</div>
+							{% if llicencia.renovar is defined %}
+							<div class="data-detall-cell llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>
+							{% else %}
+							<div class="data-detall-cell llicencia-no">No</div>
+							{% endif %}
+			  			</li>
+				   	{% endfor %}
+					</ol>
+				</div>
+			{% else %}
+				<div class="sms-notice">No hi ha llicències en aquesta llistats d'assegurats</div>
+			{% endif %}
+			</div>
 		</div>
-{% else %}
-		<div class="sms-notice">No hi ha llicències en aquesta llistats d'assegurats</div>
-{% endif %}
         <div id="formrenovar-rest" style="display:none">
 			<div class="formparte-id">{{ form_widget(form.id) }}</div>
 			<div class="formparte-id">{{ form_widget(form.cloneid) }}</div>

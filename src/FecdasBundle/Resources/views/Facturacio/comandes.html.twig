@@ -19,16 +19,26 @@
     <div id="comandes-main">
 	    <div id="list-forms">
 	    	<form id="form_comandes" action="{{ path('FecdasBundle_comandes') }}" method="GET" {{ form_enctype(form) }}  class="appform">
-		    	<div class="row">
-				  {% if admin == true %}
-					  <div class="col-md-6  col-xs-8">
+				{% if admin == true %}
+				<div class="row">
+					  <div class="col-md-6  col-xs-12">
 					  	<div class="form-group">
 					    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 							{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					  </div>
-				   {% endif %}
-				  <div class="col-md-3 col-xs-5">
+				</div>
+				{% endif %}
+				<div class="row">
+				  <div class="col-md-3 col-xs-4">
+				  	<div class="form-group">
+				    	<div class="input-group">
+					    	<span class="input-group-addon"># Comanda</span>
+							{{ form_widget(form.numcomanda, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				  </div>				   
+				  <div class="col-md-3 col-xs-4">
 				  	<div class="form-group">
 				    	<div class="input-group">
 					    	<span class="input-group-addon"># Factura</span>
@@ -36,7 +46,7 @@
 						</div>
 					</div>
 				  </div>
-				  <div class="col-md-3 col-xs-5">
+				  <div class="col-md-3 col-xs-4">
 				  	<div class="form-group">
 				    	<div class="input-group">
 					    	<span class="input-group-addon"># Rebut</span>
@@ -44,14 +54,14 @@
 						</div>
 					</div>
 				  </div>
-				  <div class="col-md-2  col-xs-4">
+				  <div class="col-md-1  col-xs-4">
 					  <div class="checkbox">
 					    <label>
 					      {{ form_widget(form.baixes) }} Mostrar baixes
 					    </label>
 					  </div>
 				  </div>
-				  <div class="col-md-2  col-xs-4">
+				  <div class="col-md-1  col-xs-4">
 					  <div class="checkbox">
 					    <label>
 					      {{ form_widget(form.pendents) }} Pendents pagament
@@ -199,8 +209,9 @@
 		var baixes = ($( '#form_baixes' ).is(':checked')?1:0);
 		var pendents = ($( '#form_pendents' ).is(':checked')?1:0)
 		var numfactura = $( "#form_numfactura" ).val();
-		var numrebut = $( "#form_numrebut" ).val(); 
-		window.location = "{{ path('FecdasBundle_comandes', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes+"&numfactura="+numfactura+"&numrebut="+numrebut+"&pendents="+pendents;
+		var numrebut = $( "#form_numrebut" ).val();
+		var numcomanda = $( "#form_numcomanda" ).val();  
+		window.location = "{{ path('FecdasBundle_comandes', sortparams)|raw }}"+"&cerca="+cerca+"&baixes="+baixes+"&numcomanda="+numcomanda+"&numfactura="+numfactura+"&numrebut="+numrebut+"&pendents="+pendents;
 	}
 
 	$(document).ready(function(){
@@ -233,7 +244,11 @@
 		$("#form_numrebut").change(function() {
 			filtreLlistacomandes();
 	    });
-		
+
+		$("#form_numcomanda").change(function() {
+			filtreLlistacomandes();
+	    });
+	    
 		$( '#form_baixes' ).change(function(e) {
 			filtreLlistacomandes();
 		});
@@ -266,6 +281,7 @@
 			$("select#form_cerca").select2({
 				minimumInputLength: 2,
 				allowClear: true,
+				placeholder: 'Seleccionar Club'
 			});
 		{% endif %}
 	});

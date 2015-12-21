@@ -323,7 +323,7 @@ class SecurityController extends BaseController
 			}
 			
 			if ($key < 0) $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre); // add
-			else $jsonCarrecs[$key] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
+			else $jsonCarrecs[$key] = (object)  array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
 			
 			usort($jsonCarrecs, function($a, $b) {
 	    		if ($a === $b) {
@@ -378,22 +378,20 @@ class SecurityController extends BaseController
 			$key = -1; 
 			$ncUpd = 0;
 			foreach ($jsonCarrecs as $k => $value) {
+				error_log($nommembre.' => '.$value->cid.'-'.$value->nc.' => '.$keyid);	
 				if ($value->cid.'-'.$value->nc == $keyid) {
 					$key = $k;
-					if ($value->cid == BaseController::CARREC_VOCAL) {
-						$ncUpd = $value->nc;
 						
-						$jsonCarrecs[$key] = array('id' 	=>	$value->id, 
-													'cid'	=>	$value->cid, 
-													'nc' 	=> $value->nc, 
-													'nom' 	=> $nommembre);		// upd
+					$jsonCarrecs[$key] = array('id' 	=>	$value->id, 
+												'cid'	=>	$value->cid, 
+												'nc' 	=> $value->nc, 
+												'nom' 	=> $nommembre);		// upd
 						
-						$club->setCarrecs(json_encode($jsonCarrecs));
-						$em->flush();
-						$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' keyid '.$keyid);
-			
-						return new Response("Junta actualitzada correctament");
-					}
+					$club->setCarrecs(json_encode($jsonCarrecs));
+					$em->flush();
+					$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' keyid '.$keyid);
+		
+					return new Response("Junta actualitzada correctament");
 				}
 			}
 			
@@ -544,7 +542,7 @@ class SecurityController extends BaseController
 
 			foreach ($jsonCarrecs as $key => $value) {
 				
-				if ($value->id == 0) {
+				if ($value->id == 0 || $value->id != '') {
 					$carrecs[$value->cid."-".$value->nc] = array(
 							'id' 		=> 0, 
 							'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 

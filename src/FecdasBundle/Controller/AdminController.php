@@ -658,7 +658,7 @@ class AdminController extends BaseController {
 								//->where('c.activat = 1');
 						}, 
 				'choice_label' 	=> 'nom',
-				'empty_value' 	=> 'Seleccionar Club',
+				'empty_value' 	=> 'Seleccionar club',
 				'required'  	=> false,
 				'data' 			=> $club,
 		));

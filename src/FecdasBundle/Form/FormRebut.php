@@ -65,8 +65,9 @@ class FormRebut extends AbstractType {
 										//->where('c.activat = 1');
 								}, 
 						'choice_label' 	=> 'nom',
-						'empty_value' 	=> 'Seleccionar Club',
+						'empty_value' 	=> 'Seleccionar club',  
 						'required'  	=> false,
+						'data'			=> $rebut->getClub(),
 						'disabled' 		=> $rebut->getId() > 0,
 				));
 				

@@ -68,7 +68,8 @@
 
 <div class="table-header">
 	<div id="list-header">
-		<div id="header-llicenciaparteid" class="col-listheader">{{ parte.id }}</div> 
+		<div id="header-llicenciaparteid" class="col-listheader">{{ parte.id }}</div>
+		<div id="header-llicenciaparteindex  hidden" class="col-listheader">#</div>  
 		<!-- recull parte id, per informar input parte_id quan es fa l'alta de la 
 		primera llicència que crea el parte. Veure my-jquery-scripts / addLlicenciaClick -->
 	   	<div id="header-llicenciapersona" class="col-listheader">Llicències<span class="listheader-order"></span></div>
@@ -87,6 +88,7 @@
 			{% if llicencia.persona.nom is defined %}
 				<li class="data-detall">
 	  				<div class="data-detall-cell llicencia-id">{{ llicencia.id }}</div>
+	  				<div class="data-detall-cell llicencia-index hidden">{{ loop.index }}</div>
 					<div class="data-detall-cell llicencia-persona">{{ llicencia.persona.cognomsNom }}</div>
 					<div class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</div>
 					<div class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</div>

@@ -92,7 +92,7 @@ class EntityParte extends EntityComanda {
 
 	public function cloneLlicencies($parteoriginal, $currentDate) {
 		// Get current collection
-		$llicencies = $partearenovar->getLlicencies();
+		$llicencies = $parteoriginal->getLlicencies();
 	
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
@@ -496,7 +496,11 @@ class EntityParte extends EntityComanda {
     		$current = new \DateTime();
     		$interval = $current->diff($this->getDataCaducitat("allowRenovar"));
     		
-    		if ($this->getAny() == (date("Y")-1) and $interval->format('%r%m') <= 1) return true; // Menys d'un mes
+			error_log($this->id.' => '.$this->getAny(). ' ' . date("Y") . ' ' .$interval->format('%r%m'));
+			
+			if ($interval->format('%r%m') <= 1 && $interval->format('%r%m') > -6) return true; // Menys d'un mes per caducar menys de 6 mesos que ha caducat
+			
+    		//if ($this->getAny() == (date("Y")-1) and $interval->format('%r%m') <= 1) return true; // Menys d'un mes
     		else return false;
     	}
     	return false;

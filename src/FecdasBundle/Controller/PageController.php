@@ -343,7 +343,7 @@ class PageController extends BaseController {
 
 		$club = $this->getCurrentClub();
 		
-		$desdeDefault = "01/01/".(date("Y") - 1);
+		$desdeDefault = "01/01/".(date("Y"));
 		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault));
 		
 		$finsDefault = "31/12/".(date("Y"));
@@ -683,7 +683,7 @@ class PageController extends BaseController {
 			
 		$form = $this->createForm(new FormParteRenew(), $parte);
 		
-		$form->get('cloneid')->setData($parteid); 
+		$form->get('cloneid')->setData($parteid);
 
 		$avisos = "";
 		if ($request->getMethod() == 'POST') {

@@ -35,10 +35,10 @@
 						{% if parte.comandaConsolidada == true %} 
 							<div id="factures-to-pdf" class="button-top">
 							{% for factura in parte.factures %} 
-				   				<a class="factura-to-pdf link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+				   				<a class="factura-to-pdf {% if factura.esanulacio %} factura-anulacio {% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
 				   					<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-				   				<span class="subtext">factures</span>
 							{% endfor %}
+								<span class="subtext">factures</span>
 							</div>
 						{% endif %}
 						<div id="parte-to-pdf" class="button-top">
@@ -177,7 +177,18 @@ $(document).ready(function() {
 			'dataalta-picker', 
 			true,
 			function (selectedDateTime) {
-				reloadParteData(selectedDateTime);
+				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
+				
+				if ($.browser.msie) $('#formparte-llicencia').hide(); 
+		    	else $('#formparte-llicencia').slideUp('fast');
+
+		    	// Update select tipus parte	
+				var params = { day: selectedDateTime.getDate(), month: (selectedDateTime.getMonth()+1), year: selectedDateTime.getFullYear()  };
+				$.get(url,	params,
+				function(data) {
+					$('select#parte_tipus').html(data); 
+					$('#parte_any').val(selectedDateTime.getFullYear());
+				});
 			}
 		);
 	{% endif %} 

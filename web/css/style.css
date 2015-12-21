@@ -1280,7 +1280,7 @@ input#form_dni {
 .buttons-top-docs .button-top a { text-align: center; }
  
 .buttons-top .link { display: table-cell;} 
-.buttons-top-bootstrap .link, .buttons-top-bootstrap .subtext { display: block;}
+.buttons-top-bootstrap .link, .buttons-top-bootstrap .subtext { /*display: block; */ }
 .buttons-top-bootstrap .subtext { font-size: 0.8em; text-transform: uppercase; color: #1240a0; }
 
 
@@ -1292,6 +1292,16 @@ input#form_dni {
     width: 40px;
     padding: 7px 0 0;
 }
+
+.buttons-top .link.factura-anulacio i.fa,
+.buttons-top-bootstrap .link.factura-anulacio i.fa { 
+	font-size: 1.3em;
+    height: 20px;
+    text-align: center;
+    width: 20px;
+    padding: 4px 0 0;
+}
+
 
 .buttons-top-nous {
 	bottom: 20px;
@@ -1311,13 +1321,13 @@ input#form_dni {
 #header-llicenciacategoria {	width: 10%;  }
 #header-llicenciaactivitats {	width: 20%;  }
 #header-llicenciaactivitatslong {	width: 30%;  }
-#header-llicenciapreu {	width: 6%;  }
+#header-llicenciapreu {	width: 6%; text-align: right;  }
 #header-llicenciaenviarllicencia {	width: 7%;  }
 #header-llicenciaenviarllicencia img {	
 	bottom: 10px;
     position: relative;
 }
-#header-llicenciaactions { width: 10%; }
+#header-llicenciaactions { width: 12%; }
 
 .llicencia-id {	display:none}
 .llicencia-persona { width: 25%; text-align: left; }
@@ -1329,7 +1339,7 @@ input#form_dni {
 .llicencia-preu { width: 6%; text-align: right;}
 .llicencia-enviarllicencia { width: 7%; letter-spacing:2px}
 .llicencia-no { width: 6%; }
-.llicencia-actions { width: 10%; text-align: right; margin-top: -14px}
+.llicencia-actions { width: 10%; text-align: center; margin-top: -14px}
 
 .parte-llicencia, .club-usuari {
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
@@ -1561,10 +1571,10 @@ select#parte_renovar_tipus { width: 240px; }
     width: 280px;
 }
 
-#formrenovar {
+/*#formrenovar {
 	max-width: 690px;
 	width: auto;
-}
+}*/
 
 /******************************************** Renovació llicència Fi *************************************************/
 

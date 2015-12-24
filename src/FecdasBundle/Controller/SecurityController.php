@@ -378,7 +378,7 @@ class SecurityController extends BaseController
 			$key = -1; 
 			$ncUpd = 0;
 			foreach ($jsonCarrecs as $k => $value) {
-				error_log($nommembre.' => '.$value->cid.'-'.$value->nc.' => '.$keyid);	
+
 				if ($value->cid.'-'.$value->nc == $keyid) {
 					$key = $k;
 						

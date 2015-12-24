@@ -223,13 +223,14 @@ input.disabled label
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#efefef', GradientType=0 );
 }
 
+.radio-inline-options { display: inline; font-style: italic; padding: 5px; margin: 0 10px; border: 1px solid #2281cf;  color: #2281cf;}
 
 .form-group-2-inline .form-2-control-inline  { max-width: 45%; }
 .form-group-2-inline .input-group-addon-2-inline { width: auto; }
 
 .input-group-radio { border: 1px solid #ccc; border-radius: 3px; }
 
-.input-group-radio .radio-inline { padding-left: 40px; }
+.input-group-radio .radio-inline { padding: 10px 10px 10px 40px; }
 
 .radio-inline label { margin: 0; }
 
@@ -1802,6 +1803,58 @@ select#parte_persona_addrnacionalitat {
 
 
 /************************************************* Persona Fin  ******************************************************/
+
+
+/************************************************* Consulta Admin  ******************************************************/
+
+#list-consultaadmin { 
+	overflow-x: scroll;
+	border-color: #82CFFA #E7F2FB #96C4EA;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+}
+
+#list-consultaadmin table { table-layout: fixed; }
+
+#list-consultaadmin table tr.header { padding: 0 0 10px; }
+
+.th-listheader {
+    border-bottom: 1px solid #96c4ea;
+    border-top: 1px solid #82cffa;
+    color: #2281cf;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 6px;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+
+	line-height: 21px;
+	height: 50px;
+    background:  repeat-x scroll 0 0 #F0F9FF;
+    border-color: #82CFFA #E7F2FB #96C4EA;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+    
+}
+
+#list-consultaadmin .th-listheader a {
+    color: #2281cf;
+}
+
+#list-consultaadmin table tr td.data-detall-cell { font-size: 0.9em; }
+
+#list-consultaadmin table tr td.data-detall-cell, 
+#list-consultaadmin .th-listheader { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+.data-detall-cell-left { text-align: left; }
+.data-detall-cell-right { text-align: right; }
+
+
+/************************************************* Consulta Admin Fin ******************************************************/
 
 /************************************************* Factures  ******************************************************/
 

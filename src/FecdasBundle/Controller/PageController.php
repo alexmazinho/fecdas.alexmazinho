@@ -153,14 +153,14 @@ class PageController extends BaseController {
 					
 					$parte = $this->crearComandaParte($dataalta, $tipusparte);
 
+					$factura = $this->crearFactura($dataalta, $parte);
+
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
 						|| $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
 					
 					$temppath = $file->getPath()."/".$file->getFileName();
 					
 					$this->importFileCSVData($temppath, $parte);					
-
-					$factura = $this->crearFactura($dataalta, $parte);
 					
 					$this->get('session')->getFlashBag()->add('sms-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
 					
@@ -280,6 +280,7 @@ class PageController extends BaseController {
 				/* Gestionar dades personals */
 				$persona = $em->getRepository('FecdasBundle:EntityPersona')->findOneBy(array('dni' => $row['dni'], 'club' => $parte->getClub()->getCodi()));
 	
+	
 				if ($persona == null) {
 					$persona = new EntityPersona($this->getCurrentDate());
 					$persona->setClub($parte->getClub());
@@ -295,6 +296,7 @@ class PageController extends BaseController {
 	
 					if ($persist == true) $em->persist($persona); 
 				}
+			
 				/* Dades personals existents. Nom, cognoms, data naixement i sexe no es modifiquen, la resta s'actualitza segons valors del fitxer */
 				if (isset($row['telefon1']) and $row['telefon1'] != null and $row['telefon1'] != "") $persona->setTelefon1($row['telefon1']);
 				if (isset($row['telefon2']) and $row['telefon2'] != null and $row['telefon2'] != "") $persona->setTelefon2($row['telefon2']);
@@ -307,7 +309,7 @@ class PageController extends BaseController {
 				
 				$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'N';
 				$this->validarDadesPersona($persona, $estranger);
-				
+			
 				/* Creació i validació de la llicència */
 				$llicencia = new EntityLlicencia($this->getCurrentDate());
 				$llicencia->setDatamodificacio($this->getCurrentDate());
@@ -316,12 +318,12 @@ class PageController extends BaseController {
 				$llicencia->setDatacaducitat($parte->getDatacaducitat($this->getLogMailUserData("importFileCSVData ")));
 				
 				if ($persist == true) $em->persist($llicencia);
-				
+		
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				$parte->addLlicencia($llicencia);
-						
+							
 				$this->addParteDetall($parte, $llicencia);
-	
+		
 				// Errors generen excepció
 				$this->validaParteLlicencia($parte, $llicencia);
 				
@@ -1196,7 +1198,8 @@ class PageController extends BaseController {
 		
 		if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
 	
-		if (($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
+		if ($persona->getId() == 0 &&
+			($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
 			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
 			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
 		
@@ -1223,7 +1226,7 @@ class PageController extends BaseController {
 			/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
 			if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
 						
-			if ($this->esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte');
+			if (BaseController::esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte');
 		}
 		
 		/* Check persona amb dni no repetida al mateix club */

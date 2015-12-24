@@ -3,6 +3,7 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -235,6 +236,32 @@ class EntityPersona {
     		return $txtClub . "Darrera llicència finalitzada en data " . $this->getLastLlicencia()->getParte()->getDatacaducitat()->format('d/m/Y');
     	
     	return $txtClub . "Persona sense historial de llicències";
+    }
+
+	/**
+     * És estranger?
+     *
+     * @return boolean
+     */
+	public function esEstranger() {
+		$dniCheck = $this->dni;
+		/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
+		if ( substr ($dniCheck, 0, 1) == 'P' || substr ($dniCheck, 0, 1) == 'M' ) $dniCheck = substr ($dniCheck, 1,  strlen($dniCheck) - 1);
+						
+		return BaseController::esDNIvalid($dniCheck) != true;
+	}
+
+	/**
+     * Get edat
+     *
+     * @return integer 
+     */
+    public function getEdat()
+    {
+        $current = new \DateTime();
+    	$interval = $current->diff($this->datanaixement);	
+			
+        return $interval->format('%y');
     }
 
     /**

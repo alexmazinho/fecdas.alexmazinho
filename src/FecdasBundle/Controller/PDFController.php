@@ -1489,68 +1489,43 @@ class PDFController extends BaseController {
 	}
 
 
-	public function imprimirparteAction(Request $request) {
+	public function imprimirpendentsAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		$em = $this->getDoctrine()->getManager();
+		$partes = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->findByImpres(0);
+	
+		if (count($partes) > 0) {
+			
+			$pdf = $this->printPartes( $partes );
+			
+			$current = $this->getCurrentDate();
+			
+			// Close and output PDF document
+			$response = new Response($pdf->Output("llicencies_impressio_partes_".$current->format('YmdHis'). ".pdf", "D"));
+			$response->headers->set('Content-Type', 'application/pdf');
+			return $response;
+				
+		} else {
+			$this->get('session')->getFlashBag()->add('sms-notice', 'No hi ha cap llista pendent d\'imprimir');
+			
+			$this->logEntryAuth('IMPRES PARTES CAP', '');
+		}
+	
+		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
+	}
+
+	public function imprimirparteAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
 		$parteid = $request->query->get("id");
 	
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 	
 		if ($parte != null) {
-			$llicenciesSorted = $parte->getLlicenciesSortedByName();
-
-			// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
-			// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
-			// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-			// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
-			$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
-			$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
-				
-			$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència FECDAS' . date("Y")));
-
-			$pdf->setPrintFooter(false);
-			$pdf->setPrintHeader(false);
-				
-			// zoom - layout - mode
-			$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
-			$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-			$pdf->SetMargins(5, 5, 5);
-			$pdf->SetAutoPageBreak 	(false, 5);
-			//$pdf->SetMargins(0, 0, 0);
-			//$pdf->SetAutoPageBreak 	(false, 0);
-			$pdf->SetTextColor(0, 0, 0); 
 			
-			$width = 86; //Original
-			$height = 54; //Original
-			
-			foreach ($llicenciesSorted as $llicencia) {
-								
-				// Add a page
-				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
-
-				if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $parte, $llicencia);
-				if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
-					$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
-					//$this->printPlasticGeneral($pdf, $parte, $llicencia);
-					$this->printPlasticTecnocampus($pdf, $parte, $llicencia);
-				}
-			}
-			// reset pointer to the last page
-			$pdf->lastPage();
-
-			$current = $this->getCurrentDate();
-				
-			$parte->setDatamodificacio($current);
-			$parte->setImpres(1);
-					
-			$em->flush();
-	
-			$this->logEntryAuth('IMPRES PARTE', $parteid);
-			
+			$pdf = $this->printPartes( array($parte) );
 			
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));
@@ -1562,6 +1537,71 @@ class PDFController extends BaseController {
 		}
 	
 		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
+	}
+	
+	private function printPartes($partes) {
+		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
+		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
+		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
+		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
+		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
+				
+		$pdf->init(array('author' => 'FECDAS',
+						'title' => 'Llicència FECDAS' . date("Y")));
+
+		$pdf->setPrintFooter(false);
+		$pdf->setPrintHeader(false);
+				
+		// zoom - layout - mode
+		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
+		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+		$pdf->SetMargins(5, 5, 5);
+		$pdf->SetAutoPageBreak 	(false, 5);
+		//$pdf->SetMargins(0, 0, 0);
+		//$pdf->SetAutoPageBreak 	(false, 0);
+		$pdf->SetTextColor(0, 0, 0); 
+			
+		$width = 86; //Original
+		$height = 54; //Original
+
+		$current = $this->getCurrentDate();
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$ids = array();
+		foreach ($partes as $parte) {
+			$ids[] = $parte->getId();
+			
+			$llicenciesSorted = $parte->getLlicenciesSortedByName();
+			
+			foreach ($llicenciesSorted as $llicencia) {
+								
+				// Add a page
+				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+
+				if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $parte, $llicencia);
+				
+				if (count($partes) == 1) { // Només imprimir Tecnocampus si s'envia només el parte sol
+					if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+						$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+						//$this->printPlasticGeneral($pdf, $parte, $llicencia);
+						$this->printPlasticTecnocampus($pdf, $parte, $llicencia);
+					}
+				}
+			}
+			
+			$parte->setDatamodificacio($current);
+			$parte->setImpres(1);
+		}
+		// reset pointer to the last page
+		$pdf->lastPage();
+					
+		$em->flush();
+	
+		$this->logEntryAuth('IMPRES PARTE', print_r($ids, true));
+		
+		return $pdf;
 	}
 	
 	private function printPlasticTecnocampus($pdf, $parte, $llicencia) {

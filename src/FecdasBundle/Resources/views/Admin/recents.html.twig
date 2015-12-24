@@ -14,11 +14,7 @@
         <h1>Comunicacions recents</h1>
     </header>
 
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-        <div class="sms-notice">
-  			{{ flashMessage }}
-  		</div>	
-	{% endfor %}
+    {% include 'FecdasBundle:Includes:messages.html.twig' %}
     
     <div id="list-forms">
     	<form id="formrecents" action="{{ path('FecdasBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
@@ -55,7 +51,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-12">
+				<div class="col-md-8">
 					<div class="checkbox-inline">
 				    	<label>
 				      		{{ form_widget(form.baixa) }} Incloure baixes
@@ -77,6 +73,10 @@
 				    	</label>
 					</div>
 				</div>
+				<div class="col-md-4  col-last-right">
+					<a class="link imprimir-pendents" href="{{ path('FecdasBundle_imprimirpendents') }}" alt="Imprimir pendents" 
+						title="Imprimir pendents">Imprimir pendents <i class="fa fa-print blue fa-2x"></i></a>
+				</div>	
 			</div>
 	   	</form>
     </div>

@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
+use FecdasBundle\Classes\MysqlYear;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityClub;
 
@@ -351,76 +352,124 @@ class AdminController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
+		// Afegir funció YEAR de mysql a Doctrine DQL
+		$config = $em->getConfiguration();
+		$config->addCustomDatetimeFunction('YEAR', 'FecdasBundle\Classes\MysqlYear');
 	
 		// GET OPCIONS DE FILTRE
+		$action = $request->query->get('action', '');
 		$page = $request->query->get('page', 1);
-		$sort = $request->query->get('sort', 'p.dataentrada');
+		$sort = $request->query->get('sort', 'l.id');
 		$direction = $request->query->get('direction', 'asc');
 
 		$clubs = $request->query->get('clubs', array()); // Per defecte sense filtre de clubs
-
+		if ($clubs == '') $clubs = array();
+		
 		$tipusparte = $request->query->get('tipusparte', array()); // Per defecte sense filtre de tipus
+		if ($tipusparte == '') $tipusparte = array();
+		
+		$categoria = $request->query->get('categoria', array()); // Per defecte sense filtre de categoria
+		if ($categoria == '') $categoria = array();
 
 		$strDatainici = $request->query->get('datainici', '');
-		$datainici = null;
-		if ($strDatainici != '') $datainici = \DateTime::createFromFormat('d/m/y', $strDatainici); 
+		if ($strDatainici == '') $datainici = \DateTime::createFromFormat('Y-m-d', date("Y") . "-01-01"); 
+		else $datainici = \DateTime::createFromFormat('d/m/Y', $strDatainici);
 		
 		$strDatafinal = $request->query->get('datafinal', '');
 		if ($strDatafinal == '') $datafinal = $this->getCurrentDate();
-		else $datafinal = \DateTime::createFromFormat('d/m/y', $strDatafinal); 
+		else $datafinal = \DateTime::createFromFormat('d/m/Y', $strDatafinal); 
 		
 		$intervals = false;// Per defecte consulta periode
 		if ($request->query->has('intervals') && $request->query->get('intervals') == 1) $intervals = true;
 		
 		$intervaldata = $request->query->get('intervaldata', 'M');
-		
-		$nombretotals = false;
-		if ($request->query->has('nombretotals') && $request->query->get('nombretotals') == 1) $nombretotals = true;
 
-		$sumatotals = false;
-		if ($request->query->has('sumatotals') && $request->query->get('sumatotals') == 1) $sumatotals = true;
-
-		$baixes = false;
-		if ($request->query->has('baixes') && $request->query->get('baixes') == 1) $baixes = true;
-
-		$noves = false;
-		if ($request->query->has('noves') && $request->query->get('noves') == 1) $noves = true;
-
+		$edats = false; 
+		if ($request->query->has('edats') && $request->query->get('edats') == 1) $edats = true;
 		
-		if ($request->getMethod() == 'POST') {
-		} else {
-		}
+		$edatsdata = $request->query->get('edatsdata', '5');
 		
+		$groupclub = false;
+		if ($request->query->has('groupclub') && $request->query->get('groupclub') == 1) $groupclub = true;
 		
+		$grouptipus = false;
+		if ($request->query->has('grouptipus') && $request->query->get('grouptipus') == 1) $grouptipus = true;
+
+		$groupcategoria = false;
+		if ($request->query->has('groupcategoria') && $request->query->get('groupcategoria') == 1) $groupcategoria = true;
+		
+		$groupsexe = false;
+		if ($request->query->has('groupsexe') && $request->query->get('groupsexe') == 1) $groupsexe = true;
+
+		$groupmunicipi = false;
+		if ($request->query->has('groupmunicipi') && $request->query->get('groupmunicipi') == 1) $groupmunicipi = true;
+
+		$groupcomarca = false;
+		if ($request->query->has('groupcomarca') && $request->query->get('groupcomarca') == 1) $groupcomarca = true;
+
+		$groupprovincia = false;
+		if ($request->query->has('groupprovincia') && $request->query->get('groupprovincia') == 1) $groupprovincia = true;
+
+		$baixes = $request->query->get('baixes', '0');;
+
+		$groupQuey = $intervals || $edats || $groupclub || $grouptipus || $groupcategoria || $groupsexe || $groupmunicipi || $groupcomarca || $groupprovincia;
+
+		$queryparams = array ('action' => $action, 'clubs' => $clubs, 'tipusparte' => $tipusparte, 'categoria' => $categoria,
+								'datainici' => $strDatainici, 'datafinal' => $strDatafinal, 'intervals' => ($intervals == true?1:0),
+								'intervaldata' => ($intervals == true?$intervaldata:''), 'edats' => ($edats == true?1:0),
+								'edatsdata' => ($edats == true?$edatsdata:''), 'groupclub' => ($groupclub == true?1:0),
+								'grouptipus' => ($grouptipus == true?1:0),
+								'groupcategoria' => ($groupcategoria == true?1:0), 'groupsexe' => ($groupsexe == true?1:0),
+								'groupmunicipi' => ($groupmunicipi == true?1:0), 'groupcomarca' => ($groupcomarca == true?1:0),
+								'groupprovincia' => ($groupprovincia == true?1:0),
+								);
+
 		// CREAR FORMULARI
 		$formBuilder = $this->createFormBuilder();
 		
 		
 		// Selector múltiple de clubs
+		$clubsO = array();
+		foreach ($clubs as $codi) {
+			$clubsO[] = $em->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
 		$formBuilder->add('clubs', 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityClub',
 		 		'choice_label' 	=> 'llistaText',
 				'required'  	=> false,
-				'data'			=>  $clubs,
+				'data'			=> $clubsO,
 				'multiple'		=> true));
 		
-		
+		$tipusO = array();
+		foreach ($tipusparte as $id) {
+			$tipusO[] = $em->getRepository('FecdasBundle:EntityParteType')->find($id);
+		}
 		// Selector tipus de llicència
 		$formBuilder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 
 				'choice_label' 	=> 'descripcio', 
 				'multiple' 		=> true, 
 				'required' 		=> false,
-				'data'			=> array($tipusparte),
+				'data'			=> $tipusO,
 				'query_builder' => function($repository) {
 					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
 				})
 		);
 		
+		$formBuilder->add('categoria', 'choice', array(
+				'choices'   	=> array('A' => 'Aficionat', 'T' => 'Tècnic', 'I' => 'Infantil'),
+				'required' 		=> false,
+				'expanded'		=> false,
+				'multiple'		=> true,
+				'empty_value' 	=> false,
+				'data' 			=> $categoria
+		));
+		
 		// Selectors de dates: rang entre dates i per intervals mesos / anys
 		$formBuilder->add('datainici', 'datetime', array(
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'required' 		=> false,
+				'empty_value' 	=> null,
 				'format' 		=> 'dd/MM/yyyy',
 				'data' 			=> $datainici
 		));
@@ -428,14 +477,15 @@ class AdminController extends BaseController {
 		$formBuilder->add('datafinal', 'datetime', array(
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'required' 		=> false,
+				'empty_value' 	=> null,
 				'format' 		=> 'dd/MM/yyyy',
 				'data' 			=> $datafinal
 		));
 		
 		$formBuilder->add('intervals', 'checkbox', array(
-    			'required'  => false,
-				'data' => $intervals,
+    			'required'  	=> false,
+				'data' 			=> $intervals,
 		));
 		
 		
@@ -449,67 +499,368 @@ class AdminController extends BaseController {
 				'data' 			=> $intervaldata
 		));
 		
-		// Acumular  totals
-		$formBuilder->add('nombretotals', 'checkbox', array(
-    			'required'  => false,
-				'data' => $nombretotals,
+		// Selectors edats: rang entre edats i per intervals: 5, 10, 20
+		$formBuilder->add('edats', 'checkbox', array(
+    			'required'  	=> false,
+				'data' 			=> $intervals,
 		));
 		
-		$formBuilder->add('sumatotals', 'checkbox', array(
-    			'required'  => false,
-				'data' => $sumatotals,
+		
+		$formBuilder->add('edatsdata', 'choice', array(
+				'choices'   	=> array('5' => '5 anys', '10' => '10 anys', '20' => '20 anys'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'disabled'		=> $edats == false,
+				'data' 			=> $edatsdata
 		));
 
-		// Selectors edats: rang entre edats i per intervals: 5, 10, 20
-		
-		// Per categories: infantil, tècnic, aficionat 
-		
-		// Per sexe: Home / Dona
-		
-		// Baixes
-		$formBuilder->add('baixes', 'checkbox', array(
+
+		// Agrupar per club
+		$formBuilder->add('groupclub', 'checkbox', array(
     			'required'  => false,
-				'data' => $baixes,
+				'data' => $groupclub,
 		));
 		
-		// Noves, federats primera vegada
-		$formBuilder->add('noves', 'checkbox', array(
+		// Agrupar per tipus de llicència
+		$formBuilder->add('grouptipus', 'checkbox', array(
     			'required'  => false,
-				'data' => $noves,
+				'data' => $grouptipus,
+		));
+		
+		// Agrupar per categoria
+		$formBuilder->add('groupcategoria', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupcategoria,
+		));
+
+		// Agrupar per sexe
+		$formBuilder->add('groupsexe', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupsexe,
+		));
+			
+		// Agrupar per municipi
+		$formBuilder->add('groupmunicipi', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupmunicipi,
+		));	
+
+		// Agrupar per comarca
+		$formBuilder->add('groupcomarca', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupcomarca,
+		));	
+
+		// Agrupar per provincia
+		$formBuilder->add('groupprovincia', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupprovincia,
+		));	
+				
+		// Baixes
+		$formBuilder->add('baixes', 'choice', array(
+				'choices'   	=> array('0' => 'Excloure baixes', '1' => 'Incloure baixes', '2' => 'Només baixes'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'data' 			=> $baixes
 		));
 		
 		
 		// Temps des de la darrera llicència
 		$form = $formBuilder->getForm();
 		
+		$sortparams = array('sort' => $sort, 'direction' => $direction, 'inverse' => ($direction=='asc'?'desc':'asc') );
+		$resultat = array();
+		$params = array();
+		$pageSize = 20; // limit
+		$offset = ($page - 1) * $pageSize; 
 		
-		// PREPARAR CONSULTA
-		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT l FROM FecdasBundle\Entity\EntityLlicencia l JOIN l.parte p JOIN p.tipus t JOIN p.club c ";
-		/*$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
-		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
-		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";*/
-		
-		$strQuery .= " ORDER BY ".$sort; 
+		$agrupats = array();
+		$campsHeaderAgrupats = array();
+		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '60px', 'sort' => 'p.id'),
+									'comandaid' 	=> array('hidden' => true, 'nom' => '', 'width' => '0', 'sort' => 'p.id'), 
+									'comandanum' 	=> array('hidden' => false, 'nom' => 'Comanda', 'width' => '110px', 'sort' => 'p.num'),
+									'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '160px', 'sort' => 'c.nom'),
+									'tipus'			=> array('hidden' => false, 'nom' => 'Llicència', 'width' => '100px', 'sort' => 't.codi'),
+									'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'p.dataalta'),      
+									'datacaducitat' => array('hidden' => false, 'nom' => 'Caduca', 'width' => '80px', 'sort' => 'p.dataalta'),
+									'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'p.databaixa'), 
+									'categoria'		=> array('hidden' => false, 'nom' => 'Categoria', 'width' => '80px', 'sort' => 'l.categoria'), 
+									'preu'			=> array('hidden' => false, 'nom' => 'Preu', 'width' => '60px', 'sort' => ''),
+									'llicenciaid'	=> array('hidden' => true, 'nom' => '', 'width' => '0', 'sort' => 'l.id'),  					  	
+					 				'dni'			=> array('hidden' => false, 'nom' => 'DNI', 'width' => '90px', 'sort' => 'e.dni'), 
+					 				'estranger'		=> array('hidden' => false, 'nom' => 'Estra.?', 'width' => '60px', 'sort' => ''), 
+					 				'nom'			=> array('hidden' => false, 'nom' => 'Nom', 'width' => '90px', 'sort' => 'e.nom'), 
+					 				'cognoms'		=> array('hidden' => false, 'nom' => 'Cognoms', 'width' => '150px', 'sort' => 'e.cognoms'), 
+					 				'naixement'		=> array('hidden' => false, 'nom' => 'D. Naix.', 'width' => '80px', 'sort' => 'e.datanaixement'), 
+					 				'edat'			=> array('hidden' => false, 'nom' => 'Edat', 'width' => '50px', 'sort' => 'e.datanaixement'),	
+					 				'sexe'			=> array('hidden' => false, 'nom' => 'Sexe', 'width' => '50px', 'sort' => 'e.sexe'), 
+					 				'telefon1'		=> array('hidden' => false, 'nom' => 'Telf1', 'width' => '80px', 'sort' => 'e.telefon1'), 
+					 				'telefon2'		=> array('hidden' => false, 'nom' => 'Telf2', 'width' => '80px', 'sort' => 'e.telefon2'), 
+					 				'mail'			=> array('hidden' => false, 'nom' => 'eMail', 'width' => '170px', 'sort' => 'e.mail'),	
+					 				'adreca'		=> array('hidden' => false, 'nom' => 'Adreça', 'width' => '200px', 'sort' => 'e.addradreca'), 
+					 				'poblacio'		=> array('hidden' => false, 'nom' => 'Problació', 'width' => '150px', 'sort' => 'e.addrpob'), 
+					 				'cp'			=> array('hidden' => false, 'nom' => 'CP', 'width' => '60px', 'sort' => 'e.addrcp'), 
+					 				'comarca'		=> array('hidden' => false, 'nom' => 'Comarca', 'width' => '150px', 'sort' => 'e.addrcomarca'),
+					 				'provincia'		=> array('hidden' => false, 'nom' => 'Província', 'width' => '100px', 'sort' => 'e.addrprovincia'), 
+					 				'nacionalitat'	=> array('hidden' => false, 'nom' => 'Nacionalitat', 'width' => '50px', 'sort' => ''),
+									);
+		$total = 0;
+		if ($action == 'query') {
+			if ($groupQuey != true) {
+				// PREPARAR CONSULTA SENSE AGRUPAR
+				$strQuery = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l 
+								JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.club c WHERE 1 = 1 ";
+				
+			} else {
+				//$groupQuey = $intervals || $edats || $grouptipus || $groupcategoria || $groupsexe || $groupmunicipi || $groupcomarca || $groupprovincia;
+				// PREPARAR CONSULTA AGRUPADA
+				$campsHeaderAgrupats['num'] = $campsHeader['num'];
+				if ($groupclub == true) {
+					$agrupats[] = 'c.nom';
+					$campsHeaderAgrupats['club'] = $campsHeader['club'];
+					$campsHeaderAgrupats['club']['width'] = 'auto';
+				}
+				if ($grouptipus == true) {
+					$agrupats[] = 't.codi';
+					$campsHeaderAgrupats['tipus'] = $campsHeader['tipus'];
+					$campsHeaderAgrupats['tipus']['width'] = 'auto';
+				}
+				if ($groupcategoria == true) {
+					$agrupats[] = 'a.categoria';
+					$campsHeaderAgrupats['categoria'] = $campsHeader['categoria'];
+					$campsHeaderAgrupats['categoria']['width'] = 'auto';
+				}
+				if ($groupsexe == true) {
+					$agrupats[] = 'e.sexe';
+					$campsHeaderAgrupats['sexe'] = $campsHeader['sexe'];
+					$campsHeaderAgrupats['sexe']['width'] = 'auto';
+				}
+				if ($groupmunicipi == true) {
+					$agrupats[] = 'e.addrpob';
+					$campsHeaderAgrupats['poblacio'] = $campsHeader['poblacio'];
+					$campsHeaderAgrupats['poblacio']['width'] = 'auto';
+				}
+				if ($groupcomarca == true) {
+					$agrupats[] = 'e.addrcomarca';
+					$campsHeaderAgrupats['comarca'] = $campsHeader['comarca'];
+					$campsHeaderAgrupats['comarca']['width'] = 'auto';
+				}
+				if ($groupprovincia == true) {
+					$agrupats[] = 'e.addrprovincia';
+					$campsHeaderAgrupats['provincia'] = $campsHeader['provincia'];
+					$campsHeaderAgrupats['provincia']['width'] = 'auto';
+				}
 
-		$query = $em->createQuery($strQuery);
-			/*->setParameter('ininormal', $inianual)
-			->setParameter('ini365', $ini365);*/
-		
-		$sortparams = array('sort' => $sort,'direction' => $direction);
+				if ($intervals == true) {
+					// Afegir les columnes corresponents
+					$agrupats[] = 'p.dataalta';
+					$anyinici = $datainici->format('Y');
+					$mesinici = $datainici->format('m');
 
-		$paginator  = $this->get('knp_paginator');
-		$resultat = $paginator->paginate(
-				$query,
-				$page,
-				10 /*limit per page*/
-		);
-		
-		$resultat->setParam('sortparams',$sortparams);
+					$anyfinal = $datafinal->format('Y');
+					$mesfinal = $datafinal->format('m');
+					
+					
+					$colsHeaderIntervals = array();
+					if ($intervaldata == 'A') { // Anys
+						if ($anyinici <= $anyfinal) {
+							for ($i = $anyinici; $i <= $anyfinal; $i++) $colsHeaderIntervals[] = $i;
+						}
+					} else { // Mesos
+						if ($anyinici < $anyfinal || ($anyinici == $anyfinal && $mesinici <= $mesfinal)) {
+							$interval = $datainici->diff($datafinal);
+							$mesos = $interval->format('%m');
+							
+							for ($i = 0; $i < $mesos; $i++) {
+								$colsHeaderIntervals[] = ($anyinici+( ceil( ($mesinici + $i)/12) )).'-'.($mesinici+( ceil( ($mesinici + $i)%12) ));
+							}	
+						}
+					}
+
+					foreach ($colsHeaderIntervals as $col) {
+						$campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '100px', 'sort' => '');
+					}					
+				}
+				
+				// Totals de l'agrupació
+				$campsHeaderAgrupats['total'] = array('hidden' => false, 'nom' => 'Total', 'width' => '100px', 'sort' => 'total');
+				$campsHeaderAgrupats['import'] = array('hidden' => false, 'nom' => 'Import', 'width' => '100px', 'sort' => 'import');
+				
+				$campsHeader = $campsHeaderAgrupats;
+				
+				// Només consultar preus a partir de l'any 2012
+				if ($datainici->format('Y') > 2012 && $datafinal->format('Y') > 2012) {	
+					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, SUM(r.preu) AS import FROM FecdasBundle\Entity\EntityLlicencia l 
+									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.club c 
+									JOIN a.producte o JOIN o.preus r
+									WHERE (YEAR(p.dataalta) = r.anypreu AND o.id = r.producte) ";  // Funció YEAR afegida a la configuració de $em => addCustomDatetimeFunction('YEAR', 'FecdasBundle\Classes\MysqlYear');
+				} else {
+					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, 'NS/NC' AS import FROM FecdasBundle\Entity\EntityLlicencia l 
+									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.club c 
+									WHERE 1 = 1 ";
+				}		
+								
+				if ( !in_array($sort, $agrupats) && $sort != 'total' && $sort != 'import') $sort =  $agrupats[0]; // Si l'ordre indicat no coincideix amb cap dels camps agrupats
+				
+			}
+
+			if (count($clubs) > 0) {
+				$strQuery .= " AND p.club IN (:clubs) ";
+				$params['clubs'] = $clubs;
+			}
+			if (count($tipusparte) > 0) {
+				$strQuery .= " AND p.tipus IN (:tipus) ";
+				$params['tipus'] = $tipusparte;
+			}
+			if (count($categoria) > 0) {
+				$strQuery .= " AND a.simbol IN (:categoria) ";
+				$params['categoria'] = $categoria;
+			}
+			if ($datainici != null) {
+				$strQuery .= " AND p.dataalta >= :datainici ";
+				$params['datainici'] = $datainici->format('Y-m-d');
+			}
+			if ($datafinal != null) {
+				$strQuery .= " AND p.dataalta <= :datafinal ";
+				$params['datafinal'] = $datafinal->format('Y-m-d');
+			}
+			if ($baixes == 0) { // Excloure
+				$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
+			}
+			if ($baixes == 2) { // Excloure
+				$strQuery .= " AND (p.databaixa IS NOT NULL OR l.databaixa IS NOT NULL) ";
+			}
+			
+			if ($groupQuey == true) $strQuery .= " GROUP BY ".implode(', ', $agrupats);
+
+
+			/*
+			
+			 Total 19.618 DQL => Total SQL 20849
+SELECT *
+FROM m_llicencies l JOIN m_partes p ON l.parte = p.id JOIN m_comandes d ON d.id = p.id 
+JOIN m_tipusparte t ON p.tipus = t.id JOIN m_categories a ON l.categoria = a.id JOIN m_persones e ON l.persona = e.id JOIN m_clubs c ON d.club = c.codi
+WHERE 1 = 1  AND c.nom = 'ADAS CAVALLDEMAR'
+AND a.simbol IN ('A')  AND p.dataalta >= '2014-01-01 00:00:00'  
+AND p.dataalta <= '2015-11-24 00:00:00'  AND d.databaixa IS NULL AND l.databaixa IS NULL			
+ORDER BY l.id asc			  
+			 
+SELECT *
+FROM m_llicencies l JOIN m_partes p ON l.parte = p.id JOIN m_comandes d ON d.id = p.id 
+JOIN m_tipusparte t ON p.tipus = t.id JOIN m_categories a ON l.categoria = a.id JOIN m_persones e ON l.persona = e.id JOIN m_clubs c ON d.club = c.codi
+JOIN m_productes o ON a.producte = o.id LEFT JOIN m_preus r ON r.producte = o.id 
+WHERE (YEAR(p.dataalta) = r.anypreu OR r.preu IS NULL)  AND c.nom = 'ADAS CAVALLDEMAR'
+AND a.simbol IN ('A')  AND p.dataalta >= '2014-01-01 00:00:00'  
+AND p.dataalta <= '2015-11-24 00:00:00'  AND d.databaixa IS NULL AND l.databaixa IS NULL
+ORDER BY l.id asc 				 
+			  
+			  Total 19 DQL => Total SQL 122
+SELECT c.nom, COUNT(l.id) AS total, SUM(r.preu) AS import 
+FROM m_llicencies l JOIN m_partes p ON l.parte = p.id JOIN m_comandes d ON d.id = p.id
+JOIN m_tipusparte t ON p.tipus = t.id JOIN m_categories a ON l.categoria = a.id JOIN m_persones e ON l.persona = e.id JOIN m_clubs c ON d.club = c.codi 
+JOIN m_productes o ON a.producte = o.id LEFT JOIN m_preus r ON r.producte = o.id 
+WHERE (YEAR(p.dataalta) = r.anypreu OR r.preu IS NULL)  
+AND a.simbol IN ('A')  AND p.dataalta >= '2004-01-01 00:00:00' 
+AND p.dataalta <= '2005-11-24 00:00:00'  AND d.databaixa IS NULL AND l.databaixa IS NULL  
+GROUP BY c.nom 
+			 
+			  
+			  
+			  
+			 */  	 
+			$strQuery .= " ORDER BY ".$sort." ".$direction;
+			$query = $em->createQuery($strQuery);
+				
+			foreach ($params as $k => $p) $query->setParameter($k, $p);
+				
+			$total = count($query->getResult());
+
+			$resultat = $query->setMaxResults($pageSize)->setFirstResult($offset)->getResult();
+			
+		}
+
+		$campsDades = array ();
+		$index = 1;
+
+		if ($groupQuey != true) {
+			// Dades sense agrupar	
+			foreach ($resultat as $llicencia) {
+				$parte = $llicencia->getParte();
+				$url = $this->generateUrl('FecdasBundle_editarcomanda', array('id' => $parte->getId()));
+				$databaixa = '';
+				if ($parte->getDatabaixa() != null) $databaixa = $parte->getDatabaixa()->format('d/m/y');
+				else {
+					if ($llicencia->getDatabaixa() != null) $databaixa = $llicencia->getDatabaixa()->format('d/m/y');
+				}
+				$persona = $llicencia->getPersona();
+				 
+				$campsDades[] = array (	'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
+										'comandaid' 	=> array('hidden' => true, 	'val' => $parte->getId(), 'align' => 'center'), 
+										'comandanum' 	=> array('hidden' => false, 'val' => '<a href="'.$url.'">'.$parte->getNumComanda().'</a>', 'align' => 'center'),
+										'club' 			=> array('hidden' => false, 'val' => $parte->getClub()->getNom(), 'align' => 'left'),
+										'tipus'			=> array('hidden' => false, 'val' => $parte->getTipus()->getCodi(), 'align' => 'left'),
+										'dataalta' 		=> array('hidden' => false, 'val' => $parte->getDataalta()->format('d/m/y'), 'align' => 'center'),      
+										'datacaducitat' => array('hidden' => false, 'val' => $parte->getDatacaducitat('')->format('d/m/y'), 'align' => 'center'),
+										'databaixa'		=> array('hidden' => false, 'val' => $databaixa, 'align' => 'center'), 
+										'categoria'		=> array('hidden' => false, 'val' => $llicencia->getCategoria()->getCategoria(), 'align' => 'center'), 
+										'preu'			=> array('hidden' => false, 'val' => number_format($llicencia->getCategoria()->getPreuAny($parte->getAny()), 2, ',', '.').'€', 'align' => 'right'),
+										'llicenciaid'	=> array('hidden' => true, 	'val' => $llicencia->getId(), 'align' => 'center'),  					  	
+						 				'dni'			=> array('hidden' => false, 'val' => $persona->getDni(), 'align' => 'center'), 
+						 				'estranger'		=> array('hidden' => false, 'val' => ($persona->esEstranger()?'Si':''), 'align' => 'center'), 
+						 				'nom'			=> array('hidden' => false, 'val' => $persona->getNom(), 'align' => 'left'), 
+						 				'cognoms'		=> array('hidden' => false, 'val' => $persona->getCognoms(), 'align' => 'left'), 
+						 				'naixement'		=> array('hidden' => false, 'val' => $persona->getDatanaixement()->format('d/m/y'), 'align' => 'center'), 
+						 				'edat'			=> array('hidden' => false, 'val' => $persona->getEdat(), 'align' => 'center'),	
+						 				'sexe'			=> array('hidden' => false, 'val' => $persona->getSexe(), 'align' => 'center'),	
+						 				'telefon1'		=> array('hidden' => false, 'val' => $persona->getTelefon1(), 'align' => 'center'),	
+						 				'telefon2'		=> array('hidden' => false, 'val' => $persona->getTelefon2(), 'align' => 'center'),
+						 				'mail'			=> array('hidden' => false, 'val' => $persona->getMail(), 'align' => 'left'),	
+						 				'adreca'		=> array('hidden' => false, 'val' => $persona->getAddradreca(), 'align' => 'left'),	
+						 				'poblacio'		=> array('hidden' => false, 'val' => $persona->getAddrpob(), 'align' => 'left'),	
+						 				'cp'			=> array('hidden' => false, 'val' => $persona->getAddrcp(), 'align' => 'center'),
+						 				'comarca'		=> array('hidden' => false, 'val' => $persona->getAddrcomarca(), 'align' => 'left'),
+						 				'provincia'		=> array('hidden' => false, 'val' => $persona->getAddrprovincia(), 'align' => 'center'),
+						 				'nacionalitat'	=> array('hidden' => false, 'val' => $persona->getAddrnacionalitat(), 'align' => 'center'),
+										);
+				
+				$index++;
+			}
+		} else {
+			// Dades agrupades
+			foreach ($resultat as $grup) {
+				$arrayGrup = array ( 'num' => array('hidden' => false, 'val' => $offset + $index, 'align' => 'left') );
+   			
+				foreach ($agrupats as $camp) {
+					// Truere el prefixe		
+					$pos = strrpos($camp, '.');
+					if ($pos !== false)  $camp = substr($camp, $pos+1);  
+									
+					$valor = 'NS/NC';
+					if (isset($grup[$camp])) {
+						if (is_object($grup[$camp])) $valor = $grup[$camp]->format('Y-m-d');
+						else $valor = mb_strtoupper(mb_substr($grup[$camp], 0, 1)).mb_strtolower(mb_substr($grup[$camp], 1));
+						$arrayGrup[$camp] = array('hidden' => false, 'val' => $valor, 'align' => 'left');
+					}
+				}
+				$import = (is_numeric($grup['import'])?number_format($grup['import'], 2, ',', '.').'€':$grup['import']);
+				$arrayGrup['total'] = array('hidden' => false, 'val' => number_format($grup['total'], 0, '', '.'), 'align' => 'right');
+				$arrayGrup['import'] = array('hidden' => false, 'val' => $import, 'align' => 'right');
+				
+				$campsDades[] = $arrayGrup;
+				$index++;
+			}
+
+		} 
 		
 		return $this->render('FecdasBundle:Admin:consultaadmin.html.twig', 
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'resultat' => $resultat,
-						'sortparams' => $sortparams
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'header' => $campsHeader, 'dades' => $campsDades,
+						'total' => $total, 'page' => $page, 'pages' => ceil($total/$pageSize), 'perpage' => $pageSize, 'offset' => $offset,  
+						'sortparams' => $sortparams, 'queryparams' => $queryparams
 				)));
 	}
 	

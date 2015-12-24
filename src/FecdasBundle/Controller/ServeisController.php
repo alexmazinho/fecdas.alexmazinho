@@ -51,7 +51,7 @@ class ServeisController extends BaseController {
 
 			if ($dni == '') throw new \Exception('Entrada incorrecta. Cal indicar el DNI, p.e. https://www.fecdasgestio.cat/dadescompeticio?dni=12345678Z');
 
-			if ($estranger == false && !$this->esDNIvalid($dni))  throw new \Exception('Entrada incorrecta. DNI incorrecte, format 12345678Z.');
+			if ($estranger == false && !BaseController::esDNIvalid($dni))  throw new \Exception('Entrada incorrecta. DNI incorrecte, format 12345678Z.');
 
 			$em = $this->getDoctrine()->getManager();
 				

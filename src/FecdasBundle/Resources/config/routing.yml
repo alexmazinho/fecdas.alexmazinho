@@ -154,6 +154,12 @@ FecdasBundle_imprimirparte:
     requirements:
         _method:  GET
 
+FecdasBundle_imprimirpendents:
+    pattern:  /imprimirpendents
+    defaults: { _controller: "FecdasBundle:PDF:imprimirpendents" }
+    requirements:
+        _method:  GET
+        
 FecdasBundle_carnettopdf:
     pattern:  /carnettopdf
     defaults: { _controller: "FecdasBundle:PDF:carnettopdf" }

@@ -1813,9 +1813,10 @@ select#parte_persona_addrnacionalitat {
     border-style: solid;
     border-width: 1px;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
+    background-color: #efefef; 
 }
 
-#list-consultaadmin table { table-layout: fixed; }
+#list-consultaadmin table { table-layout: fixed; width: auto; background-color: #ffffff;  }
 
 #list-consultaadmin table tr.header { padding: 0 0 10px; }
 

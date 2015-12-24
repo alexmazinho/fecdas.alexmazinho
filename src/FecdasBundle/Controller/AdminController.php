@@ -358,6 +358,8 @@ class AdminController extends BaseController {
 	
 		// GET OPCIONS DE FILTRE
 		$action = $request->query->get('action', '');
+		$target = $request->query->get('target', '');
+		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'l.id');
 		$direction = $request->query->get('direction', 'asc');
@@ -387,7 +389,7 @@ class AdminController extends BaseController {
 		$edats = false; 
 		if ($request->query->has('edats') && $request->query->get('edats') == 1) $edats = true;
 		
-		$edatsdata = $request->query->get('edatsdata', '5');
+		$edatsdata = $request->query->get('edatsdata', '10');
 		
 		$groupclub = false;
 		if ($request->query->has('groupclub') && $request->query->get('groupclub') == 1) $groupclub = true;
@@ -424,154 +426,7 @@ class AdminController extends BaseController {
 								'groupprovincia' => ($groupprovincia == true?1:0),
 								);
 
-		// CREAR FORMULARI
-		$formBuilder = $this->createFormBuilder();
-		
-		
-		// Selector múltiple de clubs
-		$clubsO = array();
-		foreach ($clubs as $codi) {
-			$clubsO[] = $em->getRepository('FecdasBundle:EntityClub')->find($codi);
-		}
-		$formBuilder->add('clubs', 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityClub',
-		 		'choice_label' 	=> 'llistaText',
-				'required'  	=> false,
-				'data'			=> $clubsO,
-				'multiple'		=> true));
-		
-		$tipusO = array();
-		foreach ($tipusparte as $id) {
-			$tipusO[] = $em->getRepository('FecdasBundle:EntityParteType')->find($id);
-		}
-		// Selector tipus de llicència
-		$formBuilder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 
-				'choice_label' 	=> 'descripcio', 
-				'multiple' 		=> true, 
-				'required' 		=> false,
-				'data'			=> $tipusO,
-				'query_builder' => function($repository) {
-					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
-				})
-		);
-		
-		$formBuilder->add('categoria', 'choice', array(
-				'choices'   	=> array('A' => 'Aficionat', 'T' => 'Tècnic', 'I' => 'Infantil'),
-				'required' 		=> false,
-				'expanded'		=> false,
-				'multiple'		=> true,
-				'empty_value' 	=> false,
-				'data' 			=> $categoria
-		));
-		
-		// Selectors de dates: rang entre dates i per intervals mesos / anys
-		$formBuilder->add('datainici', 'datetime', array(
-				'widget' 		=> 'single_text',
-				'input' 		=> 'datetime',
-				'required' 		=> false,
-				'empty_value' 	=> null,
-				'format' 		=> 'dd/MM/yyyy',
-				'data' 			=> $datainici
-		));
 
-		$formBuilder->add('datafinal', 'datetime', array(
-				'widget' 		=> 'single_text',
-				'input' 		=> 'datetime',
-				'required' 		=> false,
-				'empty_value' 	=> null,
-				'format' 		=> 'dd/MM/yyyy',
-				'data' 			=> $datafinal
-		));
-		
-		$formBuilder->add('intervals', 'checkbox', array(
-    			'required'  	=> false,
-				'data' 			=> $intervals,
-		));
-		
-		
-		$formBuilder->add('intervaldata', 'choice', array(
-				'choices'   	=> array('M' => 'Mensual', 'A' => 'Anual'),
-				'required' 		=> false,
-				'expanded'		=> true,
-				'multiple'		=> false,
-				'empty_value' 	=> false,
-				'disabled'		=> $intervals == false,
-				'data' 			=> $intervaldata
-		));
-		
-		// Selectors edats: rang entre edats i per intervals: 5, 10, 20
-		$formBuilder->add('edats', 'checkbox', array(
-    			'required'  	=> false,
-				'data' 			=> $intervals,
-		));
-		
-		
-		$formBuilder->add('edatsdata', 'choice', array(
-				'choices'   	=> array('5' => '5 anys', '10' => '10 anys', '20' => '20 anys'),
-				'required' 		=> false,
-				'expanded'		=> true,
-				'multiple'		=> false,
-				'empty_value' 	=> false,
-				'disabled'		=> $edats == false,
-				'data' 			=> $edatsdata
-		));
-
-
-		// Agrupar per club
-		$formBuilder->add('groupclub', 'checkbox', array(
-    			'required'  => false,
-				'data' => $groupclub,
-		));
-		
-		// Agrupar per tipus de llicència
-		$formBuilder->add('grouptipus', 'checkbox', array(
-    			'required'  => false,
-				'data' => $grouptipus,
-		));
-		
-		// Agrupar per categoria
-		$formBuilder->add('groupcategoria', 'checkbox', array(
-    			'required'  => false,
-				'data' => $groupcategoria,
-		));
-
-		// Agrupar per sexe
-		$formBuilder->add('groupsexe', 'checkbox', array(
-    			'required'  => false,
-				'data' => $groupsexe,
-		));
-			
-		// Agrupar per municipi
-		$formBuilder->add('groupmunicipi', 'checkbox', array(
-    			'required'  => false,
-				'data' => $groupmunicipi,
-		));	
-
-		// Agrupar per comarca
-		$formBuilder->add('groupcomarca', 'checkbox', array(
-    			'required'  => false,
-				'data' => $groupcomarca,
-		));	
-
-		// Agrupar per provincia
-		$formBuilder->add('groupprovincia', 'checkbox', array(
-    			'required'  => false,
-				'data' => $groupprovincia,
-		));	
-				
-		// Baixes
-		$formBuilder->add('baixes', 'choice', array(
-				'choices'   	=> array('0' => 'Excloure baixes', '1' => 'Incloure baixes', '2' => 'Només baixes'),
-				'required' 		=> false,
-				'expanded'		=> true,
-				'multiple'		=> false,
-				'empty_value' 	=> false,
-				'data' 			=> $baixes
-		));
-		
-		
-		// Temps des de la darrera llicència
-		$form = $formBuilder->getForm();
 		
 		$sortparams = array('sort' => $sort, 'direction' => $direction, 'inverse' => ($direction=='asc'?'desc':'asc') );
 		$resultat = array();
@@ -580,18 +435,19 @@ class AdminController extends BaseController {
 		$offset = ($page - 1) * $pageSize; 
 		
 		$agrupats = array();
+		$colsHeaderIntervals = array();
 		$campsHeaderAgrupats = array();
-		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '60px', 'sort' => 'p.id'),
-									'comandaid' 	=> array('hidden' => true, 'nom' => '', 'width' => '0', 'sort' => 'p.id'), 
+		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '60px', 'sort' => ''),
+									'comandaid' 	=> array('hidden' => true, 	'nom' => 'Id Comanda', 'width' => '0', 'sort' => 'p.id'), 
 									'comandanum' 	=> array('hidden' => false, 'nom' => 'Comanda', 'width' => '110px', 'sort' => 'p.num'),
-									'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '160px', 'sort' => 'c.nom'),
+									'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '150px', 'sort' => 'c.nom'),
 									'tipus'			=> array('hidden' => false, 'nom' => 'Llicència', 'width' => '100px', 'sort' => 't.codi'),
 									'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'p.dataalta'),      
 									'datacaducitat' => array('hidden' => false, 'nom' => 'Caduca', 'width' => '80px', 'sort' => 'p.dataalta'),
 									'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'p.databaixa'), 
 									'categoria'		=> array('hidden' => false, 'nom' => 'Categoria', 'width' => '80px', 'sort' => 'l.categoria'), 
 									'preu'			=> array('hidden' => false, 'nom' => 'Preu', 'width' => '60px', 'sort' => ''),
-									'llicenciaid'	=> array('hidden' => true, 'nom' => '', 'width' => '0', 'sort' => 'l.id'),  					  	
+									'llicenciaid'	=> array('hidden' => true, 	'nom' => 'Id Llicència', 'width' => '0', 'sort' => 'l.id'),  					  	
 					 				'dni'			=> array('hidden' => false, 'nom' => 'DNI', 'width' => '90px', 'sort' => 'e.dni'), 
 					 				'estranger'		=> array('hidden' => false, 'nom' => 'Estra.?', 'width' => '60px', 'sort' => ''), 
 					 				'nom'			=> array('hidden' => false, 'nom' => 'Nom', 'width' => '90px', 'sort' => 'e.nom'), 
@@ -610,7 +466,7 @@ class AdminController extends BaseController {
 					 				'nacionalitat'	=> array('hidden' => false, 'nom' => 'Nacionalitat', 'width' => '50px', 'sort' => ''),
 									);
 		$total = 0;
-		if ($action == 'query') {
+		if ( ($action == 'query' || $action == 'csv') && $target == 'llicencies') {
 			if ($groupQuey != true) {
 				// PREPARAR CONSULTA SENSE AGRUPAR
 				$strQuery = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l 
@@ -623,50 +479,40 @@ class AdminController extends BaseController {
 				if ($groupclub == true) {
 					$agrupats[] = 'c.nom';
 					$campsHeaderAgrupats['club'] = $campsHeader['club'];
-					$campsHeaderAgrupats['club']['width'] = 'auto';
 				}
 				if ($grouptipus == true) {
 					$agrupats[] = 't.codi';
 					$campsHeaderAgrupats['tipus'] = $campsHeader['tipus'];
-					$campsHeaderAgrupats['tipus']['width'] = 'auto';
 				}
 				if ($groupcategoria == true) {
 					$agrupats[] = 'a.categoria';
 					$campsHeaderAgrupats['categoria'] = $campsHeader['categoria'];
-					$campsHeaderAgrupats['categoria']['width'] = 'auto';
 				}
 				if ($groupsexe == true) {
 					$agrupats[] = 'e.sexe';
 					$campsHeaderAgrupats['sexe'] = $campsHeader['sexe'];
-					$campsHeaderAgrupats['sexe']['width'] = 'auto';
 				}
 				if ($groupmunicipi == true) {
 					$agrupats[] = 'e.addrpob';
 					$campsHeaderAgrupats['poblacio'] = $campsHeader['poblacio'];
-					$campsHeaderAgrupats['poblacio']['width'] = 'auto';
 				}
 				if ($groupcomarca == true) {
 					$agrupats[] = 'e.addrcomarca';
 					$campsHeaderAgrupats['comarca'] = $campsHeader['comarca'];
-					$campsHeaderAgrupats['comarca']['width'] = 'auto';
 				}
 				if ($groupprovincia == true) {
 					$agrupats[] = 'e.addrprovincia';
 					$campsHeaderAgrupats['provincia'] = $campsHeader['provincia'];
-					$campsHeaderAgrupats['provincia']['width'] = 'auto';
 				}
 
 				if ($intervals == true) {
-					// Afegir les columnes corresponents
+					// Les dades venen agrupades per data d'alta. Afegir les columnes corresponents pels intervals
 					$agrupats[] = 'p.dataalta';
 					$anyinici = $datainici->format('Y');
 					$mesinici = $datainici->format('m');
-
 					$anyfinal = $datafinal->format('Y');
 					$mesfinal = $datafinal->format('m');
-					
-					
-					$colsHeaderIntervals = array();
+			
 					if ($intervaldata == 'A') { // Anys
 						if ($anyinici <= $anyfinal) {
 							for ($i = $anyinici; $i <= $anyfinal; $i++) $colsHeaderIntervals[] = $i;
@@ -674,16 +520,30 @@ class AdminController extends BaseController {
 					} else { // Mesos
 						if ($anyinici < $anyfinal || ($anyinici == $anyfinal && $mesinici <= $mesfinal)) {
 							$interval = $datainici->diff($datafinal);
-							$mesos = $interval->format('%m');
-							
-							for ($i = 0; $i < $mesos; $i++) {
-								$colsHeaderIntervals[] = ($anyinici+( ceil( ($mesinici + $i)/12) )).'-'.($mesinici+( ceil( ($mesinici + $i)%12) ));
+							$mesos = $interval->format('%y')*12 + $interval->format('%m');
+							for ($i = 0; $i <= $mesos; $i++) {
+								$colsHeaderIntervals[] = $anyinici.'-'.str_pad($mesinici, 2, '0', STR_PAD_LEFT); 
+								
+								$mesinici++;
+								if ($mesinici > 12) {
+									$mesinici = 1;
+									$anyinici++;
+								}
 							}	
 						}
 					}
-
 					foreach ($colsHeaderIntervals as $col) {
-						$campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '100px', 'sort' => '');
+						$campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '100px; font-style: italic; font-size: 0.8em; font-weight: normal;', 'sort' => '');
+					}					
+				}
+				
+				if ($edats == true) {
+					// Les dades venen agrupades per data de naixement. Afegir les columnes corresponents pels intervals
+					$agrupats[] = 'e.datanaixement';
+					for ($i = 1; $i <= 95; $i+=$edatsdata) $colsHeaderIntervals[] = $i.' a '.($i+$edatsdata-1);
+					
+					foreach ($colsHeaderIntervals as $col) {
+						$campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '100px; font-style: italic; font-size: 0.8em; font-weight: normal;', 'sort' => '');
 					}					
 				}
 				
@@ -768,8 +628,6 @@ WHERE (YEAR(p.dataalta) = r.anypreu OR r.preu IS NULL)
 AND a.simbol IN ('A')  AND p.dataalta >= '2004-01-01 00:00:00' 
 AND p.dataalta <= '2005-11-24 00:00:00'  AND d.databaixa IS NULL AND l.databaixa IS NULL  
 GROUP BY c.nom 
-			 
-			  
 			  
 			  
 			 */  	 
@@ -780,7 +638,11 @@ GROUP BY c.nom
 				
 			$total = count($query->getResult());
 
-			$resultat = $query->setMaxResults($pageSize)->setFirstResult($offset)->getResult();
+			if ($action == 'csv' || $intervals == true || $edats == true) {
+				$resultat = $query->getResult(); // intervals i edats encara no estan agrupats, no paginar. Export CSV tampoc pagina
+			} else {
+				$resultat = $query->setMaxResults($pageSize)->setFirstResult($offset)->getResult();
+			}
 			
 		}
 
@@ -792,6 +654,9 @@ GROUP BY c.nom
 			foreach ($resultat as $llicencia) {
 				$parte = $llicencia->getParte();
 				$url = $this->generateUrl('FecdasBundle_editarcomanda', array('id' => $parte->getId()));
+				
+				$numcomanda = ($action == 'csv'?$parte->getNumComanda():'<a href="'.$url.'">'.$parte->getNumComanda().'</a>');
+				
 				$databaixa = '';
 				if ($parte->getDatabaixa() != null) $databaixa = $parte->getDatabaixa()->format('d/m/y');
 				else {
@@ -799,9 +664,10 @@ GROUP BY c.nom
 				}
 				$persona = $llicencia->getPersona();
 				 
-				$campsDades[] = array (	'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
+				$campsDades[$llicencia->getId()] = array (	
+										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
 										'comandaid' 	=> array('hidden' => true, 	'val' => $parte->getId(), 'align' => 'center'), 
-										'comandanum' 	=> array('hidden' => false, 'val' => '<a href="'.$url.'">'.$parte->getNumComanda().'</a>', 'align' => 'center'),
+										'comandanum' 	=> array('hidden' => false, 'val' => $numcomanda, 'align' => 'center'),
 										'club' 			=> array('hidden' => false, 'val' => $parte->getClub()->getNom(), 'align' => 'left'),
 										'tipus'			=> array('hidden' => false, 'val' => $parte->getTipus()->getCodi(), 'align' => 'left'),
 										'dataalta' 		=> array('hidden' => false, 'val' => $parte->getDataalta()->format('d/m/y'), 'align' => 'center'),      
@@ -833,29 +699,258 @@ GROUP BY c.nom
 		} else {
 			// Dades agrupades
 			foreach ($resultat as $grup) {
-				$arrayGrup = array ( 'num' => array('hidden' => false, 'val' => $offset + $index, 'align' => 'left') );
-   			
+				
+				$num = ($offset + $index);
+				if ($intervals == true || $edats == true) $num = $index;	
+					
+				$arrayGrup = array ( 'num' => array('hidden' => false, 'val' => $num, 'align' => 'left') );
+			
+				$groupKey = '';
+				$keyInterval = '';
 				foreach ($agrupats as $camp) {
 					// Truere el prefixe		
 					$pos = strrpos($camp, '.');
 					if ($pos !== false)  $camp = substr($camp, $pos+1);  
 									
 					$valor = 'NS/NC';
+					
 					if (isset($grup[$camp])) {
-						if (is_object($grup[$camp])) $valor = $grup[$camp]->format('Y-m-d');
-						else $valor = mb_strtoupper(mb_substr($grup[$camp], 0, 1)).mb_strtolower(mb_substr($grup[$camp], 1));
-						$arrayGrup[$camp] = array('hidden' => false, 'val' => $valor, 'align' => 'left');
+						
+						if ($intervals == true && $camp == 'dataalta') {
+							$keyInterval = $grup[$camp]->format('Y');
+							if ($intervaldata == 'M') $keyInterval .= '-'.$grup[$camp]->format('m'); // Data alta el camp encara no està agrupat
+						}  
+						
+						if ($edats == true && $camp == 'datanaixement') {
+							$datanaixement = $grup[$camp];  // Data naixement el camp encara no està agrupat
+							$current = new \DateTime();
+    						$interval = $current->diff($datanaixement);	
+							$edatInterval = $interval->format('%y');
+							
+							$edatMaxInterval = ceil($edatInterval/$edatsdata)*$edatsdata;
+							$edatMinInterval = $edatMaxInterval - $edatsdata + 1; 
+							
+							$keyInterval = $edatMinInterval.' a '.$edatMaxInterval;
+						}
+						
+						if ($camp != 'datanaixement' && $camp != 'dataalta') {  // Camp agrupar, construir la clau
+							$valor = mb_strtoupper(mb_substr($grup[$camp], 0, 1)).mb_strtolower(mb_substr($grup[$camp], 1));	
+							$groupKey .= str_replace(' ', '_', $grup[$camp]).'_';
+							
+							$arrayGrup[$camp] = array('hidden' => false, 'val' => $valor, 'align' => 'left');
+						} 
+						
+						
 					}
 				}
-				$import = (is_numeric($grup['import'])?number_format($grup['import'], 2, ',', '.').'€':$grup['import']);
-				$arrayGrup['total'] = array('hidden' => false, 'val' => number_format($grup['total'], 0, '', '.'), 'align' => 'right');
-				$arrayGrup['import'] = array('hidden' => false, 'val' => $import, 'align' => 'right');
-				
-				$campsDades[] = $arrayGrup;
-				$index++;
+
+				if (isset($campsDades[$groupKey])) {
+					// Registre existent, afegir dades	
+					$campsDades[$groupKey]['total']['val'] += $grup['total'];
+					$campsDades[$groupKey]['import']['val'] += $grup['import'];
+					
+					if ($intervals == true || $edats == true) {
+						// Afegir intervals a les dades						
+						if (isset($campsDades[$groupKey][$keyInterval])) $campsDades[$groupKey][$keyInterval]['val'] += $grup['total'];				
+					}
+					
+				} else {
+					// Crear nou registre
+					if ($intervals == true || $edats == true) {
+						// Afegir intervals a les dades						
+						foreach ($colsHeaderIntervals as $col) {
+							$arrayGrup[$col] = array('hidden' => false, 'val' => 0, 'align' => 'center');
+						}	
+						
+						if (isset($arrayGrup[$keyInterval])) $arrayGrup[$keyInterval]['val'] = $grup['total'];				
+					}
+					$arrayGrup['total'] = array('hidden' => false, 'val' => $grup['total'], 'align' => 'right');
+					$arrayGrup['import'] = array('hidden' => false, 'val' => $grup['import'], 'align' => 'right');
+					
+					$campsDades[$groupKey] = $arrayGrup;
+					$index++;
+				}
+			}
+
+			if ($action == 'query' && ($intervals == true || $edats == true)) {
+				// En cas d'intervals i edats cal recalcular la paginació
+				$total = count($campsDades);
+				$campsDades = array_slice($campsDades, $offset, $pageSize, true);
 			}
 
 		} 
+		
+		if ($action == 'csv' && $target == 'llicencies') {
+			$filename = "export_consulta_".date("Y_m_d_His").".csv";
+			
+			$header = array(); // Get only header fields
+			foreach ($campsHeader as $camp) $header[] = $camp['nom'];
+			
+			$data = array(); // Get only data matrix
+			foreach ($campsDades as $row) {
+				$rowdata = array(); 
+				foreach ($row as $camp) {
+					$rowdata[] = $camp['val'];
+				}
+				$data[] = $rowdata;
+			}
+			
+			
+			$response = $this->exportCSV($request, $header, $data, $filename);
+			
+			return $response;
+		}
+		
+		// CREAR FORMULARI
+		$formBuilder = $this->createFormBuilder();
+		
+		
+		// Selector múltiple de clubs
+		$clubsO = array();
+		foreach ($clubs as $codi) {
+			$clubsO[] = $em->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		$formBuilder->add('clubs', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityClub',
+		 		'choice_label' 	=> 'llistaText',
+				'required'  	=> false,
+				'data'			=> $clubsO,
+				'multiple'		=> true));
+		
+		$tipusO = array();
+		foreach ($tipusparte as $id) {
+			$tipusO[] = $em->getRepository('FecdasBundle:EntityParteType')->find($id);
+		}
+		// Selector tipus de llicència
+		$formBuilder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 
+				'choice_label' 	=> 'descripcio', 
+				'multiple' 		=> true, 
+				'required' 		=> false,
+				'data'			=> $tipusO,
+				'query_builder' => function($repository) {
+					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
+				})
+		);
+		
+		$formBuilder->add('categoria', 'choice', array(
+				'choices'   	=> array('A' => 'Aficionat', 'T' => 'Tècnic', 'I' => 'Infantil'),
+				'required' 		=> false,
+				'expanded'		=> false,
+				'multiple'		=> true,
+				'empty_value' 	=> false,
+				'data' 			=> $categoria
+		));
+		
+		// Selectors de dates: rang entre dates i per intervals mesos / anys
+		$formBuilder->add('datainici', 'datetime', array(
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required' 		=> false,
+				'empty_value' 	=> null,
+				'format' 		=> 'dd/MM/yyyy',
+				'data' 			=> $datainici
+		));
+
+		$formBuilder->add('datafinal', 'datetime', array(
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required' 		=> false,
+				'empty_value' 	=> null,
+				'format' 		=> 'dd/MM/yyyy',
+				'data' 			=> $datafinal
+		));
+		
+		$formBuilder->add('intervals', 'checkbox', array(
+    			'required'  	=> false,
+				'data' 			=> $intervals,
+		));
+		
+		
+		$formBuilder->add('intervaldata', 'choice', array(
+				'choices'   	=> array('M' => 'Mensual', 'A' => 'Anual'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'disabled'		=> $intervals == false,
+				'data' 			=> $intervaldata
+		));
+		
+		// Selectors edats: rang entre edats i per intervals: 5, 10, 20
+		$formBuilder->add('edats', 'checkbox', array(
+    			'required'  	=> false,
+				'data' 			=> $edats,
+		));
+		
+		
+		$formBuilder->add('edatsdata', 'choice', array(
+				'choices'   	=> array('5' => '5 anys', '10' => '10 anys', '20' => '20 anys'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'disabled'		=> $edats == false,
+				'data' 			=> $edatsdata
+		));
+
+
+		// Agrupar per club
+		$formBuilder->add('groupclub', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupclub,
+		));
+		
+		// Agrupar per tipus de llicència
+		$formBuilder->add('grouptipus', 'checkbox', array(
+    			'required'  => false,
+				'data' => $grouptipus,
+		));
+		
+		// Agrupar per categoria
+		$formBuilder->add('groupcategoria', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupcategoria,
+		));
+
+		// Agrupar per sexe
+		$formBuilder->add('groupsexe', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupsexe,
+		));
+			
+		// Agrupar per municipi
+		$formBuilder->add('groupmunicipi', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupmunicipi,
+		));	
+
+		// Agrupar per comarca
+		$formBuilder->add('groupcomarca', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupcomarca,
+		));	
+
+		// Agrupar per provincia
+		$formBuilder->add('groupprovincia', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupprovincia,
+		));	
+				
+		// Baixes
+		$formBuilder->add('baixes', 'choice', array(
+				'choices'   	=> array('0' => 'Excloure baixes', '1' => 'Incloure baixes', '2' => 'Només baixes'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'data' 			=> $baixes
+		));
+		
+		
+		// Temps des de la darrera llicència
+		$form = $formBuilder->getForm();
+		
+		
 		
 		return $this->render('FecdasBundle:Admin:consultaadmin.html.twig', 
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'header' => $campsHeader, 'dades' => $campsDades,
@@ -863,7 +958,6 @@ GROUP BY c.nom
 						'sortparams' => $sortparams, 'queryparams' => $queryparams
 				)));
 	}
-	
 	
 	
 	public function sincroaccessAction(Request $request) {

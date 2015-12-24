@@ -16,7 +16,7 @@
 			<div class="col-md-8"><h1>Consulta dinàmica segons criteris</h1></div>
 	   	    <div class="col-md-4 col-last-right">
 	   	    	<div class="buttons-top-bootstrap">
-					<div class="button-top"><a class="link export-csv-llicencies" href="javascript:void(0);" alt="Exportar dades" 
+					<div class="button-top"><a class="link export-csv" href="javascript:void(0);" alt="Exportar dades" 
 						title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>
 				</div> 
 			</div>
@@ -117,12 +117,12 @@
 								<div class="radio-inline-options">
 									<div class="radio-inline">
 									    <label>
-									    	{{ form_widget(form.intervaldata[0]) }} Mensual
+									    	{{ form_widget(form.intervaldata[0], { 'attr': {'class': 'radios-intervals'} }) }} Mensual
 									    </label>
 									</div>
 									<div class="radio-inline">
 									  	<label>
-									   		{{ form_widget(form.intervaldata[1]) }} Anual
+									   		{{ form_widget(form.intervaldata[1], { 'attr': {'class': 'radios-intervals'} }) }} Anual
 									   	</label>
 									</div>
 								</div>
@@ -157,17 +157,17 @@
 								<div class="radio-inline-options">
 									<div class="radio-inline">
 									    <label>
-									    	{{ form_widget(form.edatsdata[0]) }} 5 anys
+									    	{{ form_widget(form.edatsdata[0], { 'attr': {'class': 'radios-edats'} }) }} 5 anys
 									    </label>
 									</div>
 									<div class="radio-inline">
 									  	<label>
-									   		{{ form_widget(form.edatsdata[1]) }} 10 anys
+									   		{{ form_widget(form.edatsdata[1], { 'attr': {'class': 'radios-edats'} }) }} 10 anys
 									   	</label>
 									</div>
 									<div class="radio-inline">
 									  	<label>
-									   		{{ form_widget(form.edatsdata[2]) }} 20 anys
+									   		{{ form_widget(form.edatsdata[2], { 'attr': {'class': 'radios-edats'} }) }} 20 anys
 									   	</label>
 									</div>
 								</div>
@@ -244,7 +244,7 @@
 	    			<tr class="header"> 	
 			   		    {% for key, camp in header %}
 				   		<th id="header-consulta-{{ key }}" class="th-listheader col-noresponsive col-listheader-sortable {% if camp.hidden == true %} hidden {% endif %}" style="width: {{ camp.width }}">
-				   			{% if key != 'num' %}
+				   			{% if camp.sort != '' %}
 				   				<a href="{{ path('FecdasBundle_consultaadmin', queryparams|merge({ 'sort': camp.sort, 'direction': sortparams.inverse, 'page': page  })) }}">{{ camp.nom }}</a>
 				   				<span class="listheader-icon {% if sortparams.sort == camp.sort %} listheader-icon-{{ sortparams.direction }} {% endif %}"></span>
 				   			{% else %}
@@ -256,7 +256,14 @@
 					{% for llicencia in dades %}
 						<tr class="data-detall"> 
 						{% for key, camp in llicencia %}
-							<td class="data-detall-cell consulta-{{ key }} data-detall-cell-{{ camp.align }} {% if camp.hidden == true %} hidden {% endif %}">{{ camp.val|raw }}</td>
+							<td class="data-detall-cell consulta-{{ key }} data-detall-cell-{{ camp.align }} {% if camp.hidden == true %} hidden {% endif %}">
+								{% if key == 'total' or key == 'import' %}
+									{% if key == 'total' %} {{ camp.val|number_format(0, '', '.') }}{% endif %}
+									{% if key == 'import' %} {{ camp.val|number_format(2, ',', '.') }}{% endif %}
+								{% else %}
+									{{ camp.val|raw }}
+								{% endif %}
+							</td>
 						{% endfor %}
 						</tr> 
 					{% endfor %}
@@ -278,13 +285,56 @@
 
 <script type="text/javascript">
 
-checkIntervals = function() {
-	var checked = $('#form_intervals').is(':checked');
+checkIntervals = function(elcheck, elradio) {
+	var checked = elcheck.is(':checked');
 	if (checked) {
-		$('#radios-intervals').removeClass('disabled');				
+		elradio.removeProp('disabled');				
 	} else {
-		$('#radios-intervals').addClass('disabled');	
+		elradio.prop('disabled', 'disabled');	
 	};
+};
+
+
+getQueryParams = function(action) {
+	var params = $.param({ 'action': action });
+
+	var tabactive = $( "#tabs-consulta" ).tabs( "option", "active" );
+
+	params += '&'+$.param({ 'target': (tabactive == 0?'llicencies':'clubs') });
+	
+	params += '&'+$.param({ 'clubs': $('#form_clubs').val() });
+	params += '&'+$.param({ 'tipusparte': $('#form_tipusparte').val() });
+	params += '&'+$.param({ 'categoria': $('#form_categoria').val() });
+	params += '&'+$.param({ 'datainici': $('#form_datainici').val() });
+	params += '&'+$.param({ 'datafinal': $('#form_datafinal').val() });
+	params += '&'+$.param({ 'groupclub': $('#form_groupclub').is(':checked')?1:0 });
+	params += '&'+$.param({ 'grouptipus': $('#form_grouptipus').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupcategoria': $('#form_groupcategoria').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupsexe': $('#form_groupsexe').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupmunicipi': $('#form_groupmunicipi').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupcomarca': $('#form_groupcomarca').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupprovincia': $('#form_groupprovincia').is(':checked')?1:0 });
+	params += '&'+$.param({ 'intervals': $('#form_intervals').is(':checked')?1:0 });
+	if ($('#form_intervals').is(':checked')) {	
+		var intervaldata = $('#form_intervaldata_0').val();
+		if ($('#form_intervaldata_1').is(':checked')) intervaldata = $('#form_intervaldata_1').val();
+		params += '&'+$.param({ 'intervaldata': intervaldata });
+	}
+	params += '&'+$.param({ 'edats': $('#form_edats').is(':checked')?1:0 });
+	if ($('#form_edats').is(':checked')) {	
+		var edatsdata = $('#form_edatsdata_0').val();
+		if ($('#form_edatsdata_1').is(':checked')) edatsdata = $('#form_edatsdata_1').val();
+		if ($('#form_edatsdata_2').is(':checked')) edatsdata = $('#form_edatsdata_2').val();
+		params += '&'+$.param({ 'edatsdata': edatsdata });
+	}
+	
+	var baixes = 0;
+	if ($('#form_baixes_1').is(':checked')) baixes = 1;
+	if ($('#form_baixes_2').is(':checked')) baixes = 2;
+	
+	params += '&'+$.param({ 'baixes': baixes });
+
+	return params;
 };
 
 $(document).ready(function(){
@@ -297,51 +347,36 @@ $(document).ready(function(){
 		// options		
 	});
 	
-	checkIntervals();
+	checkIntervals($("#form_intervals"), $('.radios-intervals'));
+	checkIntervals($("#form_edats"), $('.radios-edats'));
 	
 	$("#form_intervals").click(function(){
-		checkIntervals();
+		checkIntervals($(this), $('.radios-intervals'));
 	});
 
+	$("#form_edats").click(function(){
+		checkIntervals($(this), $('.radios-edats'));
+	});
+
+	$( ".export-csv" ).click(function (e) {
+		e.preventDefault();
+
+		// add param query to perform 
+		var url = $('#formconsultaadmin').attr("action");
+		
+		var params = getQueryParams('csv');
+		
+		window.location = url+'?'+params;
+	});
+	
+	
+	
 	$( "#consulta-button-submit" ).click(function (e) {
 		 e.preventDefault();
 		// add param query to perform 
 		var url = $('#formconsultaadmin').attr("action");
-		//var params = $('#formconsultaadmin').serialize();
 		
-		var params = $.param({ 'action': 'query' });
-
-		params += '&'+$.param({ 'clubs': $('#form_clubs').val() });
-		params += '&'+$.param({ 'tipusparte': $('#form_tipusparte').val() });
-		params += '&'+$.param({ 'categoria': $('#form_categoria').val() });
-		params += '&'+$.param({ 'datainici': $('#form_datainici').val() });
-		params += '&'+$.param({ 'datafinal': $('#form_datafinal').val() });
-		params += '&'+$.param({ 'groupclub': $('#form_groupclub').is(':checked')?1:0 });
-		params += '&'+$.param({ 'grouptipus': $('#form_grouptipus').is(':checked')?1:0 });
-		params += '&'+$.param({ 'groupcategoria': $('#form_groupcategoria').is(':checked')?1:0 });
-		params += '&'+$.param({ 'groupsexe': $('#form_groupsexe').is(':checked')?1:0 });
-		params += '&'+$.param({ 'groupmunicipi': $('#form_groupmunicipi').is(':checked')?1:0 });
-		params += '&'+$.param({ 'groupcomarca': $('#form_groupcomarca').is(':checked')?1:0 });
-		params += '&'+$.param({ 'groupprovincia': $('#form_groupprovincia').is(':checked')?1:0 });
-		params += '&'+$.param({ 'intervals': $('#form_intervals').is(':checked')?1:0 });
-		if ($('#form_intervals').is(':checked')) {	
-			var intervalsdata = $('#form_intervaldata_0').val();
-			if ($('#form_intervaldata_1').is(':checked')) intervalsdata = $('#form_intervaldata_1').val();
-			params += '&'+$.param({ 'intervalsdata': intervalsdata });
-		}
-		params += '&'+$.param({ 'edats': $('#form_edats').is(':checked')?1:0 });
-		if ($('#form_edats').is(':checked')) {	
-			var edatsdata = $('#form_edatsdata_0').val();
-			if ($('#form_edatsdata_1').is(':checked')) edatsdata = $('#form_edatsdata_1').val();
-			if ($('#form_edatsdata_2').is(':checked')) edatsdata = $('#form_edatsdata_2').val();
-			params += '&'+$.param({ 'edatsdata': edatsdata });
-		}
-		
-		var baixes = 0;
-		if ($('#form_baixes_1').is(':checked')) baixes = 1;
-		if ($('#form_baixes_2').is(':checked')) baixes = 2;
-		
-		params += '&'+$.param({ 'baixes': baixes });
+		var params = getQueryParams('query');
 		
 		window.location = url+'?'+params;
 	});

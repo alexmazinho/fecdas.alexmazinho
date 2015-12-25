@@ -232,11 +232,13 @@ class CronController extends BaseController {
 		if ($this->isCurrentAdmin() != true and $llicenciaarenovar->getParte()->getClub()->getCodi() != $currentClub)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
+		$em = $this->getDoctrine()->getManager();
+		
 		/*
 		 * Validacions  de les llicències
 		*/
+		$form = null;
 		try {
-	
 			/* Si abans data caducitat renovació per tot el periode
 			 * En cas contrari només des d'ara
 			*/
@@ -248,35 +250,34 @@ class CronController extends BaseController {
 			}
 			/* Crear el nou parte */
 			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus());
-	
+
 			// Afegir llicència		
 			$cloneLlicencia = clone $llicenciaarenovar;
 			
 			/* Init camps */
 			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
-			
-			$parte->addLlicencia($cloneLlicencia);
-	
-		    // Crear factura
-			$factura = $this->crearFactura($dataalta, $parte);
-			
-			$this->addParteDetall($parte, $llicencia);
-			
+			$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
+
 			/* Preparar formulari */
 			$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);
 			
 			$form->get('cloneid')->setData($llicenciaid);  // Posar id
 			$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms
 			$form->get('datacaducitatshow')->setData($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 4 "))); 
-		
+			
+			$parte->addLlicencia($cloneLlicencia);
+	
+		    // Crear factura
+			$factura = $this->crearFactura($dataalta, $parte);
+			
+			$this->addParteDetall($parte, $cloneLlicencia);
+			
 			$this->validaParteLlicencia($parte, $cloneLlicencia);
 		
 			if ($request->getMethod() == 'POST') {
 				$form->bind($request);
 			
 				if ($form->isValid() && $request->request->has('llicencia_renovar')) {
-					$em = $this->getDoctrine()->getManager();
-			
 					// Marquem com renovat
 					$parte->setRenovat(true);
 			
@@ -284,10 +285,8 @@ class CronController extends BaseController {
 					$em->persist($parte);
 					$em->flush();
 			
-					$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA OK',
-							$this->get('session')->get('remote_addr'),
-							$request->server->get('HTTP_USER_AGENT'), $parte->getId());
-			
+					$this->logEntryAuth('RENOVAR LLICENCIA OK',	$llicenciaarenovar->getParte()->getId().' renovat a '.$parte->getId());
+					
 					$this->get('session')->getFlashBag()->add('error-notice',	'Llicència enviada correctament');
 			
 					return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view', 'source' => 'renovacio')));
@@ -296,17 +295,14 @@ class CronController extends BaseController {
 					throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador');
 				}
 			} else {
-				$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA VIEW',
-						$this->get('session')->get('remote_addr'),
-						$request->server->get('HTTP_USER_AGENT'), $parte->getId());
+				$this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$llicenciaarenovar->getParte()->getId());
 			}			
 		} catch (\Exception $e) {
+				
 			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 			
-			$this->logEntry($this->get('session')->get('username'), 'RENOVAR LLICENCIA ERROR',
-					$this->get('session')->get('remote_addr'),
-					$request->server->get('HTTP_USER_AGENT'), $parte->getId());
-				
+			$this->logEntryAuth('RENOVAR LLICENCIA ERROR',	$llicenciaarenovar->getParte()->getId().' => '. $e->getMessage());
+			
 		}
 			
 		return $this->render('FecdasBundle:Cron:renovarllicencia.html.twig',

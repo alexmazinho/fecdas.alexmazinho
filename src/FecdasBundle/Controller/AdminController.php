@@ -734,7 +734,9 @@ GROUP BY c.nom
 						}
 						
 						if ($camp != 'datanaixement' && $camp != 'dataalta') {  // Camp agrupar, construir la clau
-							$valor = mb_strtoupper(mb_substr($grup[$camp], 0, 1)).mb_strtolower(mb_substr($grup[$camp], 1));	
+							
+							//$valor = mb_strtoupper(mb_substr($grup[$camp], 0, 1)).mb_strtolower(mb_substr($grup[$camp], 1));	
+							$valor = $grup[$camp];
 							$groupKey .= str_replace(' ', '_', $grup[$camp]).'_';
 							
 							$arrayGrup[$camp] = array('hidden' => false, 'val' => $valor, 'align' => 'left');
@@ -1229,6 +1231,68 @@ GROUP BY c.nom
 	
 		return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page)));
 	}
+	
+	public function duplicatllicenciaAction(Request $request) {
+		/* Anular petició duplicat */
+				
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$llicenciaid = $request->query->get("id");
+		
+		$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaid);
+		
+		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::CODI_DUPLICAT_LLICENCIA);
+		
+		$duplicat = null;
+		$detall = null;
+		
+		try {
+		
+			if ($llicencia == null) throw new \Exception('Llicència '.$llicenciaid.' no trobada' );
+			
+			if ($producte == null) throw new \Exception('Producte '.BaseController::CODI_DUPLICAT_LLICENCIA.' no trobat' );
+			
+			$carnet = $this->getDoctrine()->getRepository('FecdasBundle:EntityCarnet')->findOneByProducte($producte);
+			
+			if ($carnet == null) throw new \Exception('Tipus de duplicat: '.$producte->getDescripcio().', no trobat' );
+			
+			$persona = $llicencia->getPersona();
+			
+			$duplicat = $this->crearComandaDuplicat('Petició duplicat de llicència '.$persona->getNomCognoms(), $llicencia->getParte()->getClub());
+			
+			$duplicat->setPersona($persona);
+			$duplicat->setCarnet($carnet);
+					
+			$detall = $this->addDuplicatDetall($duplicat);
+			
+			// Si tot Ok, obrir pdf per imprimir	
+			$duplicat->setDataimpressio($this->getCurrentDate());
+
+			$em->flush();
+			
+			$this->notificarFacturaPerMail($duplicat->getFactura());
+			
+			$this->logEntryAuth('DUPLI LLICENCIA OK', 'duplicat ' . $duplicat->getNumComanda() . ' de la llicència ' . $llicenciaid  );
+			
+			$response = $this->redirect($this->generateUrl('FecdasBundle_imprimirllicencia', array( 'id' => $llicenciaid)));
+			
+		} catch (\Exception $e) {
+			
+			if ($duplicat != null) $em->detach($duplicat);
+			if ($detall != null) $em->detach($detall);
+			
+			$this->logEntryAuth('DUPLI LLICENCIA KO', 'duplicat de la llicència ' . $llicenciaid  );
+					
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);
+		}
+		
+		return $response;;
+	}
+	
 	
 	public function ajaxclubsnomsAction(Request $request) {
 		$search = $this->consultaAjaxClubs($request->get('term'));

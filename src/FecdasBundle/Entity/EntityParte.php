@@ -92,7 +92,7 @@ class EntityParte extends EntityComanda {
 
 	public function cloneLlicencies($parteoriginal, $currentDate) {
 		// Get current collection
-		$llicencies = $parteoriginal->getLlicencies();
+		$llicencies = $parteoriginal->getLlicenciesSortedByName();
 	
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
@@ -483,6 +483,19 @@ class EntityParte extends EntityComanda {
     		$this->tipus->getId() == 9 || $this->tipus->getId() == 10 ||
     		$this->tipus->getId() == 11) return true;
     	return false;
+    }
+
+	public function allowRemoveLlicencia($admin = false) {
+   	
+		if ($admin == true) return true;
+		
+		$current = new \DateTime();
+    	$interval = $current->diff($this->getDataalta());
+
+		// Màxim 1 mes de marge per esborrar llicències		
+		if ($interval->format('%r%a') < -30) return false; 
+		
+		return true;
     }
 
     public function allowRenovar() {

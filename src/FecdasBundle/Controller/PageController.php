@@ -916,10 +916,13 @@ class PageController extends BaseController {
 				$requestParams['action'] != 'persona') {
 				
 				if ($requestParams['action'] == 'remove') {
+				
 					// Errors generen excepció
 					$data = $this->getCurrentDate();
 					$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 					$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+    
+					if (!$parte->allowRemoveLlicencia($this->isCurrentAdmin())) throw new \Exception('Esteu fora de termini per poder esborrar llicències d\'aquesta llista. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 
 					$this->removeParteDetall($parte, $llicencia, $maxNumFactura, $maxNumRebut);
 					
@@ -975,8 +978,20 @@ class PageController extends BaseController {
 									'llicenciadades' => $llicencia));
 			}
 		} catch (\Exception $e) {
-
-			$em->clear();
+				
+			if ($llicencia != null) {
+				if ($llicencia->getId() == 0) $em->detach($llicencia);
+				else $em->refresh($llicencia);
+			} 
+			if ($parte != null) {
+				if ($parte->getId() == 0) $em->detach($parte);
+				else $em->refresh($parte);
+			} 
+			if ($factura != null) {
+				if ($factura->getId() == 0) $em->detach($factura);
+				else $em->refresh($factura);
+			} 
+			
 			$this->logEntryAuth('LLICENCIA KO', ' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
 	
 			$response = new Response($e->getMessage());
@@ -986,90 +1001,6 @@ class PageController extends BaseController {
 		return $response;
 	}
 	
-	private function validaParteLlicencia($parte, $llicencia) {
-		
-		$em = $this->getDoctrine()->getManager();
-
-		$dataalta = $parte->getDataalta();
-		$tipus = $parte->getTipus();
-		$current = $this->getCurrentDate();
-		$errData = $this->validaDataLlicencia($dataalta, $tipus);
-			
-		if ($errData != "") throw new \Exception($errData);
-		// NO llicències amb data passada. Excepte administradors
-		// Data alta molt aprop de la caducitat.
-
-		if ($dataalta->format('y') > $current->format('y')) {
-			// Només a partir 10/12 poden fer llicències any següent
-			if ($current->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
-				($current->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
-				 $current->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) {
-				throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
-			}
-		}
-		
-		/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-		/* id 4 - Competició --> és la única que es pot fer */
-		/* id 9 i 12 - Tecnocampus també es pot fer */
-		/*if ($parte->getTipus()->getEs365() == true && $parte->getTipus()->getId() != 4
-			&& $parte->getTipus()->getId() != 9 && $parte->getTipus()->getId() != 12) {					
-			
-			$this->get('session')->getFlashBag()->clear();
-			$this->get('session')->getFlashBag()->add('sms-notice','El procés de contractació d’aquesta modalitat d’assegurances està suspès temporalment.
-				Si us plau, contacteu amb la FECDAS –93 356 05 43– per dur a terme la contractació de la llicència.
-				Gràcies per la vostra comprensió.');
-			$valida = false;
-		}*/
-		/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
-		/* Valida tipus actiu --> és la única que es pot fer */
-		if ($tipus->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
-
-		// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
-		$datainici_reduida = new \DateTime(date("Y-m-d", strtotime($dataalta->format('Y') . "-09-01")));
-		if (($tipus->getId() == 5 or $tipus->getId() == 6) &&
-			($dataalta->format('Y-m-d') < $datainici_reduida->format('Y-m-d'))) { // reduïdes
-			throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');
-		}
-			
-		if ($this->validaLlicenciaInfantil($parte, $llicencia) == false) throw new \Exception('L\'edat de la persona ('.$llicencia->getPersona()->getDni().') no correspon amb el tipus de llicència');
-						
-		if ($this->validaPersonaRepetida($parte, $llicencia) == false) throw new \Exception('Aquesta persona ('.$llicencia->getPersona()->getDni().') ja té una llicència en aquesta llista');
-
-		// Comprovar que no hi ha llicències vigents 
-		// Per la pròpia persona
-		$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
-		if ($parteoverlap != null) throw new \Exception($llicencia->getPersona()->getNomCognoms(). ' - Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
-															$parteoverlap->getDataalta()->format('d/m/Y'));
-
-		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
-			
-		if ($current->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d') && 
-			$parte->getClub()->controlCredit() == true) {
-			// Comprovació de saldos clubs DIFE
-/***************  SALDOS ENCARA NO ************************************************************************************************************************/					
-			/*if ($parte->getPreuTotal() > $parte->getClub()->getSaldo() + $parte->getClub()->getLimitcredit()) {
-					throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
-					Per poder fer noves gestions, cal que contacteu amb la FECDAS');
-			}*/
-		}
-	}
- 
-	private function validaDataLlicencia(\DateTime $dataalta, $tipus) {
-		$avui = $this->getCurrentDate('now');
-		if (!$this->isCurrentAdmin() and $dataalta < $avui) return 'No es poden donar d\'alta ni actualitzar llicències amb data passada';
-		
-		if ($tipus->getEs365() == true and $tipus->getFinal() != null) {
-			// Llicències anuals per curs. Si dataalta + 2 mesos > datafinal del tipus vol dir que la intenten donar d'alta quasi quan caduca per error
-			$dataClone = clone $dataalta;
-			$dataClone->add(new \DateInterval('P2M')); // Add 2 Months
-			if ($dataalta->format('m-d') <= $tipus->getFinal() and $dataClone->format('m-d') > $tipus->getFinal()) {
-				return 'L\'inici de les llicències està molt proper a la caducitat';
-			}
-		}
-		
-		return ''; 
-	} 
 
 	public function personaAction(Request $request) {
 

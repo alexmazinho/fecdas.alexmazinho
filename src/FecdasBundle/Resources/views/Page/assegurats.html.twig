@@ -123,14 +123,19 @@
 							<div class="data-detall-cell assegurat-actions">
 								{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
 									<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
-										<i class="fa fa-newspaper-o fa-1x blue"></i></a>
+										<i class="fa fa-list-alt fa-1x orange"></i></a>
 								{% endif %}
+								{% if admin == true %}
+									<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': persona.llicenciaVigent.id}) }}" 
+										data-club="{{ persona.llicenciaVigent.parte.club.nom }}" alt="Duplicat llicència" title="Duplicat llicència">
+										<i class="fa fa-copy fa-1x lightblue"></i></a>
+								{% endif  %}
 								{% if persona.llicenciaVigent.parte.allowRenovar %}
 									<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-					   					<i class="fa fa-retweet fa-1x orange"></i></a>
+					   					<i class="fa fa-retweet fa-1x green"></i></a>
 				   				{% endif %}
 				   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
-				   					<i class="fa fa-search fa-1x green"></i></a>
+				   					<i class="fa fa-search fa-1x blue"></i></a>
 								<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
 				   					<i class="fa fa-user fa-1x red"></i></a>
 			   				</div>
@@ -138,9 +143,9 @@
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
 				   				<div class="data-detall-cell assegurat-actions">
 			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-			   						<i class="fa fa-retweet fa-1x orange"></i></a>
+			   						<i class="fa fa-retweet fa-1x green"></i></a>
 			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
-			   						<i class="fa fa-search fa-1x green"></i></a>
+			   						<i class="fa fa-search fa-1x blue"></i></a>
 				   				<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
 			   						<i class="fa fa-user fa-1x red"></i></a>
 			   					</div>
@@ -211,6 +216,21 @@
 			// Recarrega consulta afegint la dades del formulari
 			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
 			
+		});
+
+		$( ".llicencia-duplicat" ).click(function (e) {
+			e.preventDefault();
+			
+			var url = $(this).attr('href');
+
+			var club = $(this).attr('data-club'); 
+			
+			var strHtml = '<p>Es crearà una nova comanda per aquest duplicat a càrrec del club '+club+'</p>';
+			dialegConfirmacio(strHtml, 'Comanda duplicat', 'auto', 400, function() { 
+				
+				window.location = url;
+				 
+			}, function() { });
 		});
 		
 		

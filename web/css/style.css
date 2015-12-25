@@ -389,10 +389,13 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall .data-detall-cell i.fa-trash-o:hover { background-color: #a94442;  }
 .data-detall .data-detall-cell i.fa-plus-circle:hover { background-color: #31708f; }
 .link i.fa.blue:hover { background-color: #31708f; }
+.link i.fa.lightblue:hover { background-color: #96c4ea; }
 .link i.fa.red:hover { background-color: #a94442; } 
 .link i.fa.green:hover { background-color: #5cb85c; }
 .link i.fa.orange:hover { background-color: #eea236; } 
 .link i.fa.yellow:hover { background-color: #FFFF66; }
+.link i.fa.gray:hover { background-color: #CCCCCC; }
+
 
 .data-detall .data-detall-cell i.fa.transparent:hover { background-color: transparent; color: transparent;  } 
   
@@ -508,6 +511,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .label-actions { float:right; }
 
 .blue { color: #1240a0; /*#2281cf;*/ }
+.lightblue { color: #96c4ea; }
 .red { color: #a94442; }
 .green { color: #5cb85c; }
 .orange { color: #eea236; }
@@ -1133,8 +1137,8 @@ ul.detalls li .alert { margin: 10px 0; }
 #header-asseguratnom {	width: 10%; text-align: left;}
 #header-asseguratcognoms {	width: 10%;text-align: left;}
 #header-asseguratnaixement { width: 8%;text-align: center; }
-#header-assegurattipusdesc { width: 25%;text-align: left; }
-#header-asseguratactions { width: 12%;text-align: right; }
+#header-assegurattipusdesc { width: 31%;text-align: left; }
+#header-asseguratactions { width: 6%;text-align: right; }
 
 .assegurat-id {	display:none}
 .assegurat-compacte { width: 40%; }
@@ -1142,8 +1146,8 @@ ul.detalls li .alert { margin: 10px 0; }
 .assegurat-nom { width: 10%; text-align: left; }
 .assegurat-cognoms { width: 10%; text-align:left;}
 .assegurat-naixement { width: 8%; text-align:center;}
-.assegurat-tipusdesc { width: 25%; text-align:left; }
-.assegurat-actions { width: 12%; text-align: right;   }
+.assegurat-tipusdesc { width: 31%; text-align:left; }
+.assegurat-actions { width: 6%; text-align: right;   }
 
 /*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;

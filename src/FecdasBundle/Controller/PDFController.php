@@ -66,8 +66,14 @@ class PDFController extends BaseController {
 				
 				if ($comanda->getClub() != null) {
 				
-					$response = $this->facturatopdf($factura, $comanda);
+					$pdf = $this->facturatopdf($factura, $comanda);
 					
+					$nomfitxer = "factura_" .  str_replace("/", "-", $factura->getNumfactura()) . "_" . $comanda->getClub()->getCodi() . ".pdf";
+
+					// Close and output PDF document
+					$response = new Response($pdf->Output($nomfitxer, "D")); // D: send to the browser and force a file download with the name given by name.
+					$response->headers->set('Content-Type', 'application/pdf');
+
 					$this->logEntryAuth('PRINT FACTURA OK', $reqId);
 					
 					return $response;
@@ -79,394 +85,7 @@ class PDFController extends BaseController {
 		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut imprimir la factura, poseu-vos en contacte amb la Federació' );
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
-	
-	private function facturatopdf($factura, $comanda) {
-		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		$club = $comanda->getClub();
-		
-		// Per veure-ho => acroread 86,3 %
-		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-			
-		$pdf->init(array('author' => 'FECDAS', 'title' => $factura->getConcepte()));
-			
-		$pdf->setPrintFooter(false);
-		$pdf->setPrintHeader(false);
-		
-		// set image scale factor
-		//$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-		//$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-		$pdf->AddPage();
-		$pdf->setCellPaddings(0,0,0,0);
-		$pdf->SetFont('freesans');	
-		// set color for background
-		$pdf->SetFillColor(255, 255, 255); //Blanc
-		// set color for text
-		$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
-		
-		$y_margin = 18;
-		$l_margin = 26;
-		$r_margin = 21;
-		
-		//$dim = $pdf->getPageDimensions();  //$dim['w'] = 595.276  $dim['h']
-		//$w_half = $dim['w']/2; // 300 aprox
-		
-		$w_half = 105 - $l_margin;
-		
-		$y_logos = $y_margin;
-		$x_logos = $l_margin;
-		$h_logos = 23;
-		$h_fedelogo = 24;
-		$w_fedelogo = 20;
-		$h_genelogo = 12;
-		$w_genelogo = 35;
-		$h_esportlogo = 12;
-		$w_esportlogo = 30;
-		
-		$y_fedeinfo = $y_margin;
-		$x_fedeinfo = $l_margin + $w_half;
-		$h_fedeinfo = 42;
-		$y_clubinfo = $y_margin + $h_logos;
-		$x_clubinfo = $l_margin;
-		$h_clubinfo = 41;
-		$y_factuinfo = $y_margin + $h_fedeinfo;
-		$offset_factuinfo = 30;
-		$x_factuinfo = $l_margin + $w_half+$offset_factuinfo;
-		$h_factuinfo = 22;
-		$y_taula = $y_margin + 64;
-		$x_taula = $l_margin;
-		$h_taula = 145;
-		$y_taula2 = $y_taula + 78;
-		$y_rebut = $y_factuinfo + $h_factuinfo + $h_taula;
-		$x_rebut = $l_margin;
-		$h_rebut = 55;
 
-		$y = $y_clubinfo; //$pdf->getY();
-		$x = $x_clubinfo; //$pdf->getX();
-
-		
-		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
-		$showTemplate = ($this->get('session')->get('username', '') != self::MAIL_FACTURACIO) &&
-						($this->get('session')->get('username', '') != self::MAIL_FACTURACIO2);  
-		$showTemplate = true; // De moment imprimir sense plantilla
-		
-		
-		//$pdf->Rect($x_logos, $y_logos, $w_half, $h_logos - 1, 'F', '', array(255, 0, 0) );  // red 				
-		//$pdf->Rect($x_fedeinfo, $y_fedeinfo, $w_half+5, $h_fedeinfo - 1, 'F', '', array(0, 255, 0) ); // green
-		//$pdf->Rect($x_clubinfo, $y_clubinfo, $w_half, $h_clubinfo - 1, 'F', '', array(0, 0, 255) ); // blue
-		//$pdf->Rect($x_factuinfo, $y_factuinfo, $w_half - $offset_factuinfo, $h_factuinfo - 1, 'F', '', array(255, 255, 0) ); // groc
-		//$pdf->Rect($x_taula, $y_taula, $w_half*2, $h_taula - 1, 'F', '', array(0, 255, 255) ); // cyan
-		//$pdf->Rect($x_rebut, $y_rebut + 1, $w_half*2, $h_rebut, 'F', '', array(240, 240, 240) ); // cyan
-		
-		
-		$pdf->SetMargins($l_margin, $y_margin, $r_margin);
-		$pdf->SetAutoPageBreak 	(false, 15);
-		$pdf->SetFontSize(12);
-		
-		if($showTemplate == true) {
-			/* LOGOS */		
-			// file, x, y, w, h, format, link alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
-			$pdf->Image('images/fecdaslogopdf.gif', $x_logos, $y_logos, 
-						$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
-						'', false, false, array(''),
-						'LT', false, false);
-			$pdf->Image('images/logo-generalitat.jpg', $x_logos+$w_fedelogo+2, $y_logos, 
-						$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
-						'', false, false, array(''),
-						'CT', false, false);
-			$pdf->Image('images/esport-logo.jpg', $x_logos+$w_fedelogo+4.5, $y_logos+$h_genelogo, 
-						$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
-						'', false, false, array(''),
-						'CB', false, false);
-				
-			/* FEDE INFO */
-			
-			$tbl = '<p align="right" style="padding:0;"><span style="font-size:16px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
-			$tbl .= '<span style="font-size:11px;">Moll de la Vela, 1 (Zona Forum)<br/>';
-			$tbl .= '08930 Sant Adrià de Besòs<br/>';
-			$tbl .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
-			$tbl .= 'Adreça electrònica: info@fecdas.cat<br/>';
-			$tbl .= 'www.fecdas.cat<br/>';
-			$tbl .= 'NIF: Q5855006B</span></p>';
-			$pdf->writeHTMLCell($w_half+5, $h_fedeinfo, $x_fedeinfo, $y_fedeinfo, $tbl, '', 1, false, true, 'R', false);
-		}	
-		
-		/* CLUB INFO */	
-		$pdf->SetTextColor(0, 0, 0); // Negre	
-		$pdf->SetFontSize(16);
-		if ($factura->esAnulacio() == true) {
-			$text = '<br/><b>FACTURA ANUL·LACIÓ</b>';
-			
-			$pdf->writeHTMLCell($w_half, 0, $x_clubinfo, $y_clubinfo, $text, '', 1, false, true, 'L', false);
-		}
-		
-		$pdf->SetFontSize(11);
-		$tbl = '<p align="left" style="padding:0;"><b>' . $club->getNom(). '</b><br/>';
-		$tbl .= '' . $club->getAddradreca() . '<br/>';
-		$tbl .= '' . $club->getAddrcp() . " - " . $club->getAddrpob() . '<br/>';
-		$tbl .= '' . $club->getAddrprovincia() . '<br/>';
-		$tbl .= 'Telf: ' . $club->getTelefon();
-
-		$pdf->writeHTMLCell($w_half, 0, $x_clubinfo, $y_clubinfo + 10, $tbl, '', 1, false, true, 'L', false);
-		
-		/* FACTU INFO */	
-		$pdf->SetFontSize(8);
-		if ($showTemplate == true) {
-			$tbl = '<p align="left" style="padding:0; color: #003366;">Factura número:</p><br/>';
-			$tbl .= '<p align="left" style="padding:0; color: #003366;">Data:<br/>';
-			$tbl .= 'NIF:</p>';
-			$pdf->writeHTMLCell($w_half - $offset_factuinfo, 0, $x_factuinfo, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
-		}
-		
-		$tbl  = '<p align="right" style="padding:0;"><b>' . $factura->getNumfactura(). '</p><br/>';
-		$tbl .= '<p align="right" style="padding:0;">' . $factura->getDatafactura()->format('d/m/Y') . '<br/>';
-		$tbl .= $club->getCif() . '</p>';
-		$pdf->writeHTMLCell($w_half - $offset_factuinfo-8, 0, $x_factuinfo+8, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
-		
-		/* TAULA DETALL */
-		$pdf->SetFontSize(8);
-		$facturaSenseIVA = true;
-		if ($factura->getDetalls() != null) {
-			
-			if ($showTemplate == true) {	
-				$tbl = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-						<tr>
-						<td width="96" align="center" style="border: 1px solid #003366; color:#003366;">REFERÈNCIA</td>
-						<td width="240" align="center" style="border: 1px solid #003366; color:#003366;">CONCEPTE</td>
-						<td width="58" align="center" style="border: 1px solid #003366; color:#003366;">QUANT.</td>
-						<td width="81" align="center" style="border: 1px solid #003366; color:#003366;">PREU</td>
-						<td width="86" align="center" style="border: 1px solid #003366; color:#003366;">IMPORT</td>
-						</tr>';
-				
-				// En blanc
-				$tbl .= '<tr>';
-				$tbl .= '<td style="height: 257px; border: 1px solid #003366;" align="center">&nbsp;</td>';
-				$tbl .= '<td style="border: 1px solid #003366;" align="left">&nbsp;</td>';
-				$tbl .= '<td style="border: 1px solid #003366;" align="center">&nbsp;</td>';
-				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
-				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
-				$tbl .= '</tr>';
-			
-				$tbl .= '</table>';
-				
-				$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 2, false, true, 'L', false);
-				
-				$tbl = '<table border="0" cellpadding="2" cellspacing="0" style="border-color: #003366; border-collapse: collapse; ">
-						<tr>
-						<td width="96" align="left" style="height: 41px;border: 1px solid #003366; color:#003366;">&nbsp;&nbsp;&nbsp;TOTAL</td>
-						<!-- 240 entre els dos -->
-						<td width="95" align="center" style="border: 1px solid #003366; color:#003366;">DTE</td>
-						<td width="145" align="center" style="border: 1px solid #003366; color:#003366;">BASE IMP.</td>
-						<!-- 58 + 81 + 86 = 225 entre els dos -->
-						<td width="90" align="center" style="border: 1px solid #003366; color:#003366;">IVA</td>
-						<td width="135" align="center" style="border: 1px solid #003366; color:#003366;">TOTAL FACTURA</td>
-						</tr>';
-				$tbl .= '<tr><td colspan="4" align="left" style="height: 41px; border: 1px solid #003366; color:#003366;">&nbsp;&nbsp;&nbsp;Altres càrrecs</td>';
-				$tbl .= '<td align="center" style="border: 1px solid #003366; color:#003366;">Import</td></tr>';
-				$tbl .= '<tr style="border-bottom: none;"><td colspan="4" style="height: 38px;">&nbsp;</td>';
-				$tbl .= '<td align="center" style="border: 1px solid #003366; color:#003366;">TOTAL A PAGAR<span style="font-weight:bold;font-size:12px;">&nbsp;</span></td></tr>';
-				$tbl .= '</table>';
-				
-				//$y_taula2 = $pdf->getY();
-				$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 1, false, true, 'L', false);
-			}
-			
-			// Sistema nou del 2015.
-			//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
-			$detallsArray = json_decode($factura->getDetalls(), true);
-			
-			$pdf->SetTextColor(0, 0, 0); // Negre	
-			//$pdf->setY($y_taula + 10);
-			$pdf->SetFontSize(10);
-			
-			// Columnes
-			$w_codi = 27;
-			$x_codi = $x_taula;
-			$x_producte = $x_codi + $w_codi;
-			$w_producte = 68;
-			$x_total = $x_producte + $w_producte;
-			$w_total = 16;
-			$x_preuu = $x_total + $w_total;
-			$w_preuu = 23;
-			$x_import = $x_preuu + $w_preuu;
-			$w_import = 23;
-			$row_h = 5;
-			$row_h_extra_max = 14;
-			$pdf->setY($y_taula + 8);
-			
-			if ($detallsArray == true) {
-			
-				foreach ($detallsArray as $lineafactura) {
-					if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
-						
-					$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
-					
-					/*$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-						<td width="96" align="center">'.$lineafactura['codi'].'</td>
-						<td width="240" align="left">'.$lineafactura['producte'].$strExtra.'</td>
-						<td width="58" align="center">'.$lineafactura['total'].'</td>
-						<td width="81" align="center">'.number_format($lineafactura['preuunitat'], 2, ',', '.').'€</td>
-						<td width="86" align="center"><span style="font-weight:bold;">'.number_format($lineafactura['import'], 2, ',', '.').'€</span></td>
-						</tr></table>';	*/
-					
-					// 	$w, $h, $txt, $border = 0, $align = 'J', $fill = false, $ln = 0(dreta) 1 o 2, $x = '', $y = '',
-			  		// $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 0, $valign = 'T', $fitcell = false 
-			  		// $pdf->SetFillColor(100, 100, 100); //Gris
-					
-					$row_y = $pdf->getY() + 1;
-					$pdf->MultiCell($w_codi, $row_h, $lineafactura['codi'], 0, 'C', true, 0, $x_codi, $row_y, 
-									true, 0, false, true, $row_h, 'T', true);
-					$pdf->MultiCell($w_producte - 4, $row_h, $lineafactura['producte'], 0, 'L', true, 0, $x_producte + 2, $row_y, 
-									true, 0, false, true, $row_h, 'T', true);
-					$pdf->MultiCell($w_total, $row_h, $lineafactura['total'], 0, 'C', true, 0, $x_total, $row_y, 
-									true, 0, false, true, $row_h, 'T', true);
-					$pdf->MultiCell($w_preuu, $row_h, number_format($lineafactura['preuunitat'], 2, ',', '.').'€', 0, 'C', true, 0, $x_preuu, $row_y, 
-									true, 0, false, true, $row_h, 'T', true);
-	
-					$pdf->SetFont('', 'B');
-					$pdf->MultiCell($w_import, $row_h, number_format($lineafactura['import'], 2, ',', '.').'€', 0, 'C', true, 2, $x_import, $row_y, 
-									true, 0, false, true, $row_h, 'T', true);
-	
-					$pdf->SetFont('', '');
-	
-					$strExtra = '';
-					if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
-						$strExtra = '';
-						foreach ($lineafactura['extra'] as $extra) {
-							//$strExtra .= '<br/> -&nbsp;'.$extra;
-							$strExtra .= $extra.', ';
-						}
-						if (count($lineafactura['extra']) > 0) $strExtra = substr($strExtra, 0, -2); 
-						$strExtra .= '';
-					}	
-					
-					$row_h_extra = $row_h;
-					
-					if (count($lineafactura['extra']) > 30 || $strExtra == '') {
-						$strExtra = '';
-					} else {
-						if (count($lineafactura['extra']) <= 10) $row_h_extra = 7;	
-						else $row_h_extra = max($row_h_extra_max * count($lineafactura['extra']) / 30, 10);
-					}				
-	
-					$row_y = $pdf->getY();
-					$pdf->SetFont('', 'I', 7);
-					$pdf->SetTextColor(100, 100, 100); //Gris
-					
-					$pdf->MultiCell($w_producte - 4, $row_h_extra, $strExtra, 0, 'L', true, 2, $x_producte + 2, $row_y, 
-									true, 0, false, true, $row_h_extra, 'T', true);
-					$pdf->SetTextColor(0, 0, 0); //Negre
-					$pdf->SetFont('', '', 10);				
-				}
-			} else {
-				
-				
-				/*$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-					<td width="96" align="center">&nbsp;</td>
-					<td width="240" align="left">'.$factura->getDetalls().'</td>
-					<td width="58" align="center">&nbsp;</td>
-					<td width="81" align="center">&nbsp;</td>
-					<td width="86" align="center">&nbsp;</td>
-					</tr></table>';	*/
-				
-				$pdf->MultiCell($w_producte - 4, $row_h_extra_max, $factura->getDetalls(), 0, 'L', true, 2, $x_producte + 2, $pdf->getY(), 
-									true, 0, false, true, $row_h_extra_max, 'T', true);
-										
-				//$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);		// Màxim y => 150	
-			}
-			// Concepte
-			if ($factura->esAnulacio()) $strConcepte = 'Anul·lació factura '.$factura->getNumFactura().' '.$factura->getDatafactura()->format('d/m/Y');
-			else {
-				if ($factura->getImport() < 0) $strConcepte = 'Factura anul·lació '.$comanda->getComentaris();
-				else $strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
-			}
-			
-			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-					<td width="96" align="center">&nbsp;</td>
-					<td width="240" align="left">'.$strConcepte.'</td>
-					<td width="58" align="center">&nbsp;</td>
-					<td width="81" align="center">&nbsp;</td>
-					<td width="86" align="center">&nbsp;</td>
-					</tr></table>';	
-				
-			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);		// Màxim y => 150
-
-			
-			if ($comanda->getComentaris()!=null && $comanda->getComentaris() != '' && $comanda->esAltre()) {  // Mostrar comentari per altres
-				$pdf->SetFont('', 'I', 10);
-				$pdf->MultiCell($w_producte - 4, $row_h, $comanda->getComentaris(), 0, 'L', true, 0, $x_producte + 2, $pdf->getY(), 
-								true, 0, false, true, $row_h, 'T', true);
-			}
-			
-			$pdf->SetFont('', '', 12);
-			//$pdf->SetFontSize(12);
-			// PEU 1 TOTAL PARCIAL
-			$pdf->setY($y_taula2+5);
-			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-					<td width="96" align="center">'.number_format($factura->getImport(), 2, ',', '.').' €</td>
-					<td width="95" align="center">--</td>
-					<td width="145" align="center">&nbsp;</td>
-					<td width="90" align="center">&nbsp;</td>
-					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
-					</tr></table>';	
-			
-			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
-			
-			$pdf->SetFontSize(16);
-			// PEU 2 - TOTAL FINAL
-			$pdf->setY($y_taula2+26);
-			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-					<td width="96">&nbsp;</td><td width="95">&nbsp;</td><td width="145">&nbsp;</td><td width="90">&nbsp;</td>
-					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
-					</tr></table>';	
-			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
-
-			$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366	
-			
-		} else {
-			
-			$pdf->SetFontSize(16);	
-				
-			$tbl = '<table border="1" cellpadding="50" cellspacing="0" style="color:#555555;">';
-			$tbl .= '<tr><td><p style="line-height: 2; color:#000000;"><b>Factura corresponent a la llista de llicències ' . $comanda->getNumComanda();
-			$tbl .= ' amb un import de '.number_format($factura->getImport(), 2, ',', '.') .  ' €</b></p></td></tr>';
-			$tbl .= '</table>';
-		
-			$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 1, false, true, 'L', false);
-		}
-		
-		if ($facturaSenseIVA == true) {
-			// set color for text
-			$pdf->SetTextColor(0, 51, 102); // Blau
-			$pdf->SetFont('dejavusans', '', 7.5, '', true);
-			$text = '<p>Factura exempta d\'I.V.A. segons la llei 49/2002</p>';
-			$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+26, $text, '', 1, false, true, 'L', false);
-		}
-		
-		$pdf->SetTextColor(0, 0, 0); // Negre
-		$pdf->SetFontSize(8);
-
-		$text = 'Número de compte corrent LA CAIXA 2100-0900-95-0211628657';
-		
-		$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+31, $text, '', 1, false, true, 'L', false);
-
-		
-		/* ESPAI REBUT */	
-		if ($comanda->comandaPagada() == true) {
-			$pdf = $this->rebuttopdf($comanda->getRebut(), $pdf);
-			//$pdf->writeHTMLCell($w_half*2, $h_rebut, $x_rebut, $y_rebut, '', '', 1, false, true, 'L', false);
-		}
-
-		// reset pointer to the last page
-		$pdf->lastPage();
-			
-		$nomfitxer = "factura_" .  str_replace("/", "-", $factura->getNumfactura()) . "_" . $club->getCodi() . ".pdf";
-		
-		// Close and output PDF document
-		$response = new Response($pdf->Output($nomfitxer, "D"));
-		$response->headers->set('Content-Type', 'application/pdf');
-		return $response;
-	}
-	
 	public function rebuttopdfAction(Request $request) {
 		/* Rebut comanda */
 	
@@ -1496,10 +1115,34 @@ class PDFController extends BaseController {
 		$partes = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->findByImpres(0);
 	
 		if (count($partes) > 0) {
-			
-			$pdf = $this->printPartes( $partes );
+			$em = $this->getDoctrine()->getManager();
 			
 			$current = $this->getCurrentDate();
+			
+			$llicencies = array();
+			$ids = array();
+			foreach ($partes as $parte) {
+				
+				if (count($partes) > 1 && 
+					($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+					 $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 )) {
+					 	
+					 // Només imprimir Tecnocampus si s'envia només el parte sol. Cal canviar la targeta de plàstic
+				} else {
+					$llicencies = array_merge($llicencies, $parte->getLlicenciesSortedByName());
+	
+					$parte->setDatamodificacio($current);
+					$parte->setImpres(1);
+					
+					$ids[] = $parte->getId();	
+				}
+			}
+			
+			$pdf = $this->printLlicencies( $llicencies );
+					
+			$em->flush();
+	
+			$this->logEntryAuth('IMPRES PARTES OK', print_r($ids, true));
 			
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_partes_".$current->format('YmdHis'). ".pdf", "D"));
@@ -1524,8 +1167,16 @@ class PDFController extends BaseController {
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 	
 		if ($parte != null) {
+			$em = $this->getDoctrine()->getManager();
 			
-			$pdf = $this->printPartes( array($parte) );
+			$pdf = $this->printLlicencies( $parte->getLlicenciesSortedByName() );
+			
+			$parte->setDatamodificacio($this->getCurrentDate());
+			$parte->setImpres(1);
+					
+			$em->flush();
+	
+			$this->logEntryAuth('IMPRES PARTE', $parteid);
 			
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));
@@ -1539,7 +1190,41 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
 	}
 	
-	private function printPartes($partes) {
+	public function imprimirllicenciaAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$llicenciaid = $request->query->get("id");
+	
+		$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaid);
+	
+		if ($llicencia != null) {
+			$em = $this->getDoctrine()->getManager();
+				
+			$pdf = $this->printLlicencies( array( $llicencia ) );
+			
+			$llicencia->setDatamodificacio($this->getCurrentDate());
+					
+			$em->flush();
+	
+			$this->logEntryAuth('IMPRES LLICENCIA', $llicenciaid);
+			
+			// Close and output PDF document
+			$response = new Response($pdf->Output("llicencia_impressio_".$llicenciaid. ".pdf", "D"));
+			$response->headers->set('Content-Type', 'application/pdf');
+			return $response;
+
+		} else {
+			$this->logEntryAuth('IMPRES LLICENCIA ERROR', $llicenciaid);
+		}
+	
+		$response = new Response('No s\'ha pogut imprimir la llicència');
+		$response->setStatusCode(500);
+		
+		return $response;
+	}
+	
+	private function printLlicencies( $llicencies ) {
 		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
 		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
@@ -1565,46 +1250,27 @@ class PDFController extends BaseController {
 		$width = 86; //Original
 		$height = 54; //Original
 
-		$current = $this->getCurrentDate();
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		$ids = array();
-		foreach ($partes as $parte) {
-			$ids[] = $parte->getId();
-			
-			$llicenciesSorted = $parte->getLlicenciesSortedByName();
-			
-			foreach ($llicenciesSorted as $llicencia) {
+		foreach ($llicencies as $llicencia) {
+			$parte = $llicencia->getParte();
 								
-				// Add a page
-				$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+			// Add a page
+			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 
-				if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $parte, $llicencia);
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $llicencia);
 				
-				if (count($partes) == 1) { // Només imprimir Tecnocampus si s'envia només el parte sol
-					if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
-						$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
-						//$this->printPlasticGeneral($pdf, $parte, $llicencia);
-						$this->printPlasticTecnocampus($pdf, $parte, $llicencia);
-					}
-				}
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+					//$this->printPlasticGeneral($pdf, $llicencia);
+					$this->printPlasticTecnocampus($pdf, $llicencia);
 			}
-			
-			$parte->setDatamodificacio($current);
-			$parte->setImpres(1);
 		}
 		// reset pointer to the last page
 		$pdf->lastPage();
-					
-		$em->flush();
-	
-		$this->logEntryAuth('IMPRES PARTE', print_r($ids, true));
-		
+			
 		return $pdf;
 	}
 	
-	private function printPlasticTecnocampus($pdf, $parte, $llicencia) {
+	private function printPlasticTecnocampus($pdf, $llicencia) {
 		// Posicions
 		$xPol = 0;
 		$yPol =	2;		
@@ -1626,7 +1292,7 @@ class PDFController extends BaseController {
 		$xCad = 61+7;
 		$yCad =	50.1+0.5;
 		
-		
+		$parte = $llicencia->getParte();
 		$polissa = $parte->getTipus()->getPolissa();
 		
 		// Dades
@@ -1709,7 +1375,7 @@ class PDFController extends BaseController {
 		
 	}
 	
-	private function printPlasticGeneral($pdf, $parte, $llicencia) {
+	private function printPlasticGeneral($pdf, $llicencia) {
 		// Posicions
 		$xTit = 0;
 		$yTit =	12;		
@@ -1728,6 +1394,7 @@ class PDFController extends BaseController {
 		$xCad = 61;
 		$yCad =	50.1;
 		
+		$parte = $llicencia->getParte();
 		$persona = $llicencia->getPersona();
 		if ( $persona == null) return;
 		

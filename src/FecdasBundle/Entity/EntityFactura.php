@@ -61,6 +61,11 @@ class EntityFactura {
 	protected $comptabilitat;	// FK taula m_comptabilitat => Enviament programa compta
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $enviada;
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -91,6 +96,7 @@ class EntityFactura {
 		//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE);
 		$this->detalls = json_encode($detalls);
 		$this->comanda = $comanda;
+		$this->enviada = false;
 
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();
@@ -274,6 +280,26 @@ class EntityFactura {
     public function getComptabilitat()
     {
         return $this->comptabilitat;
+    }
+	
+	/**
+     * Set enviada
+     *
+     * @param boolean $enviada
+     */
+    public function setEnviada($enviada)
+    {
+    	$this->enviada = $enviada;
+    }
+    
+    /**
+     * Get enviada
+     *
+     * @return boolean
+     */
+    public function getEnviada()
+    {
+    	return $this->enviada;
     }
 	
 	/**

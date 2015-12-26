@@ -151,7 +151,7 @@ class PageController extends BaseController {
 					$tipusparte = $form->get('tipus')->getData();
 					if ($tipusparte == null) throw new \Exception('Cal indicar un tipus de llista');
 					
-					$parte = $this->crearComandaParte($dataalta, $tipusparte);
+					$parte = $this->crearComandaParte($dataalta, $tipusparte, $currentClub, 'Importació llicències');
 
 					$factura = $this->crearFactura($dataalta, $parte);
 
@@ -179,14 +179,17 @@ class PageController extends BaseController {
 					return $this->render('FecdasBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
 				} catch (\Exception $e) {
-					if ($factura != null) $em->detach($factura);
-					if ($parte != null) $em->detach($parte);
+					/*if ($factura != null) $em->detach($factura);
+					if ($parte != null) $em->detach($parte);*/
+					$em->clear();
 					
 					$this->logEntryAuth('IMPORT CSV KO', $e->getMessage());
 					
 					$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 				}					
 			} else {
+				$em->clear();
+				
 				// Fitxer massa gran normalment
 				$this->logEntryAuth('IMPORT CSV ERROR', "Error desconegut");
 				
@@ -225,30 +228,29 @@ class PageController extends BaseController {
 				
 			$tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find($tipusparte);
 			
-			$parte = $this->crearComandaParte($dataalta, $tipus);
+			$parte = $this->crearComandaParte($dataalta, $tipus, $currentClub, 'Importació llicències');
 			
 			$factura = $this->crearFactura($dataalta, $parte);
 			
 			$this->importFileCSVData($temppath, $parte, true);
 			
+			$parte->setComentaris('Importació llicències:'.' '.$parte->getComentariDefault());
+			
 			$em->flush();
+			
+			$this->notificarFacturaPerMail($factura);
 			
 			$this->get('session')->getFlashBag()->add('sms-notice',"Llicències enviades correctament");
 			
 			return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
-			
+
 		} catch (\Exception $e) {
+
 			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 		}
 		
-		/* No hauria de passar mai, el fitxer està validat */
-		$urlconfirm = $this->generateUrl('FecdasBundle_confirmcsv', array(
-				'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->getTimestamp(),
-				'club' => $parte->getClub()->getCodi(), 'tempfile' => $temppath
-		));
+		return $this->redirect($this->generateUrl('FecdasBundle_importcsv'));
 		
-		return $this->render('FecdasBundle:Page:importcsvconfirm.html.twig', 
-				$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
 	}
 	
 	private function importFileCSVData ($file, $parte, $persist = false) {
@@ -675,7 +677,7 @@ class PageController extends BaseController {
 			$dataalta->add(new \DateInterval('P1D')); // Add 1
 		}
 
-		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $partearenovar->getComentaris());
+		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $partearenovar->getClub(), 'Renovació llicències');
 		
 		// Clone llicències
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
@@ -729,9 +731,12 @@ class PageController extends BaseController {
 				// Marquem com renovat
 				$partearenovar->setRenovat(true);
 					
-				$em->persist($parte);
+				$parte->setComentaris('Renovació llicències:'.' '.$parte->getComentariDefault());
+				
 				$em->flush();
 	
+				$this->notificarFacturaPerMail($factura);
+				
 				$this->logEntryAuth('RENOVAR OK', $parte->getId());
 					
 				$this->get('session')->getFlashBag()->add('sms-notice',	'Llista de llicències enviada correctament');
@@ -740,11 +745,6 @@ class PageController extends BaseController {
 			}
 		} catch (\Exception $e) {
 				
-			/*foreach ($parte->getLlicencies() as $llicencia)	$em->detach($llicencia);
-			foreach ($parte->getDetalls() as $detall)	$em->detach($detall);
-			$em->detach($parte);
-			$em->detach($factura);*/
-			
 			$em->clear();
 			
 			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
@@ -874,7 +874,7 @@ class PageController extends BaseController {
 					$tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find($tipusid);
 						
 					// Crear parte nou per poder carregar llista
-					$parte = $this->crearComandaParte($partedataalta, $tipus);
+					$parte = $this->crearComandaParte($partedataalta, $tipus, $this->getCurrentClub(), 'Comanda llicències');
 					
 					$factura = $this->crearFactura($partedataalta, $parte);
 				} else {
@@ -957,6 +957,8 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 					
 				}
+
+				$parte->setComentaris('Comanda llicències:'.' '.$parte->getComentariDefault());
 
 				$em->flush();
 

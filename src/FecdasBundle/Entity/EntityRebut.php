@@ -70,7 +70,12 @@ class EntityRebut {
 	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $comentari;
-	
+
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $enviat;
+
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
@@ -108,6 +113,7 @@ class EntityRebut {
 		$this->tipuspagament = $tipusPagament;
 		$this->num = $num;
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->enviat = false;
 		if ($comanda == null) { // Ingrés no  associat a cap comanda
 			$this->club = $club;
 			$this->import = $import;
@@ -483,6 +489,27 @@ class EntityRebut {
 	public function setComentari($comentari) {
 		$this->comentari = $comentari;
 	}
+
+	/**
+     * Set enviat
+     *
+     * @param boolean $enviat
+     */
+    public function setEnviat($enviat)
+    {
+    	$this->enviat = $enviat;
+    }
+    
+    /**
+     * Get enviat
+     *
+     * @return boolean
+     */
+    public function getEnviat()
+    {
+    	return $this->enviat;
+    }
+	
 
 	/**
 	 * @return datetime

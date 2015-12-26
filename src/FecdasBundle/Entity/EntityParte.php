@@ -341,8 +341,8 @@ class EntityParte extends EntityComanda {
     	$numT = $this->getNumTecnics();
     	$numI = $this->getNumInfantils();
     	
-    	$text = 'Comanda llicències: ';
-    	$text .= ($numA > 0)?$numA.'xA ':''; 
+    	//$text = 'Comanda llicències: ';
+    	$text = ($numA > 0)?$numA.'xA ':''; 
     	$text .= ($numT > 0)?$numT.'xT ':'';
     	$text .= ($numI > 0)?$numI.'xI ':'';
     	return $text;

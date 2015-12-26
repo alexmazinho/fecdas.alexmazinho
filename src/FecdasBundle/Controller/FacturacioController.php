@@ -967,6 +967,7 @@ class FacturacioController extends BaseController {
 			
 				$em ->flush();
 				
+				$this->notificarFacturaPerMail($factura);
 			}
 			
 			if ($action == 'anular' || $action == 'desar' || $action == 'pagar') { // Totes borren sessió
@@ -1196,7 +1197,7 @@ class FacturacioController extends BaseController {
 			$this->logEntryAuth('COMANDA EDIT',	'Comanda : ' . $comanda->getId().' '.$comanda->getInfoComanda());
 			
 		} else {
-			/* Alta o modificació de clubs */
+			/* Alta o modificació de comandes */
 			$data = $request->request->get('comanda');
 			$id = (isset($data['id'])?$data['id']:0);
 		
@@ -1204,7 +1205,7 @@ class FacturacioController extends BaseController {
 		
 			if ($comanda == null) {
 				
-				// Comanda nova. Crear factura
+				// Comanda nova. Crear factura => Opció no disponible, només tramitar comandes noves a través de la cistella
 				$current = $this->getCurrentDate();
 				
 				$comanda = $this->crearComanda($current);

@@ -184,6 +184,13 @@ FecdasBundle_renovarllicencia:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_enviamentfactures:
+    pattern:  /enviamentfactures
+    defaults: { _controller: "FecdasBundle:Cron:enviamentfactures" }
+    requirements:
+        _method:  GET
+
+
 FecdasBundle_checkclubs:
     pattern:  /checkclubs
     defaults: { _controller: "FecdasBundle:Cron:checkclubs" }

@@ -13,6 +13,8 @@ use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Form\FormLlicenciaRenovar;
 
+use Doctrine\ORM\UnitOfWork;
+
 class CronController extends BaseController {
 
 	public function checkrenovacioAction(Request $request) {
@@ -190,6 +192,41 @@ class CronController extends BaseController {
 		return true;
 	}
 	
+	public function enviamentfacturesAction(Request $request) {
+		/* Planificar cron cada 5/10 minuts
+		 * wget -O - -q http://www.fecdasgestio.cat/enviamentfactures?periode=1 >> mailsrenovacio.txt*/
+		
+		// Enviament de les factures dels partes consolidats del darrer dia (o periode indicat)
+		
+		$periode = $request->query->get('periode', 1); // 1 dia endarrera per defecte 
+		
+		$datadesde = $this->getCurrentDate()->sub(new \DateInterval('P'.$periode.'D')); // Mirar endarrera els dies indicats a periode
+		
+		$em = $this->getDoctrine()->getManager();
+		 
+		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f JOIN f.comanda c ";  // Només factures (no anul·lacions) 
+		$strQuery .= " WHERE f.enviada = 0 ";
+		$strQuery .= " AND f.dataentrada >= :datadesde ";
+		$strQuery .= " ORDER BY f.dataentrada ";
+				
+		$query = $em->createQuery($strQuery)->setParameter('datadesde', $datadesde->format('Y-m-d H:i:s'));
+										
+		$facturesNoEnviades = $query->getResult();
+										
+		foreach ($facturesNoEnviades as $factura) {
+			
+			if ($factura->getComanda() != null &&
+				$factura->getComanda()->esParte() &&
+				$factura->getComanda()->comandaConsolidada() == true ) {
+			
+				$this->notificarFacturaPerMail($factura);
+				
+				echo " Factura notificada ".$factura->getNumFactura()."<br/>";
+			}
+		}
+		
+		return new Response("FINAL ENVIAMENT FACTURES PARTES");
+	}
 	
 	public function renovarllicenciaAction(Request $request) {
 		/* Entra una id de llicència i se li renova la llicència vigent o la darrera llicència des de data d'avui */
@@ -227,13 +264,13 @@ class CronController extends BaseController {
 		$llicenciaarenovar = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaid);
 		
 		if ($llicenciaarenovar == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	
+
 		/* Validació impedir modificacions altres clubs */
 		if ($this->isCurrentAdmin() != true and $llicenciaarenovar->getParte()->getClub()->getCodi() != $currentClub)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
 		$em = $this->getDoctrine()->getManager();
-		
+
 		/*
 		 * Validacions  de les llicències
 		*/
@@ -249,14 +286,16 @@ class CronController extends BaseController {
 				$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 			}
 			/* Crear el nou parte */
-			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus());
+			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus(), $llicenciaarenovar->getParte()->getClub(), 'Renovació llicència');
 
 			// Afegir llicència		
 			$cloneLlicencia = clone $llicenciaarenovar;
-			
+	
 			/* Init camps */
 			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
 			$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
+
+			$em->persist($cloneLlicencia);
 
 			/* Preparar formulari */
 			$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);
@@ -265,25 +304,27 @@ class CronController extends BaseController {
 			$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms
 			$form->get('datacaducitatshow')->setData($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 4 "))); 
 			
-			$parte->addLlicencia($cloneLlicencia);
-	
-		    // Crear factura
-			$factura = $this->crearFactura($dataalta, $parte);
 			
-			$this->addParteDetall($parte, $cloneLlicencia);
-			
-			$this->validaParteLlicencia($parte, $cloneLlicencia);
-		
 			if ($request->getMethod() == 'POST') {
 				$form->bind($request);
 			
 				if ($form->isValid() && $request->request->has('llicencia_renovar')) {
+						
+					$parte->addLlicencia($cloneLlicencia);
+	
+				    // Crear factura
+					$factura = $this->crearFactura($dataalta, $parte);
+			
+					$detall = $this->addParteDetall($parte, $cloneLlicencia);
+					$this->validaParteLlicencia($parte, $cloneLlicencia);
+				
 					// Marquem com renovat
 					$parte->setRenovat(true);
-			
-					$em->persist($cloneLlicencia);
-					$em->persist($parte);
+					$parte->setComentaris('Renovació llicència:'.' '.$parte->getComentariDefault().' '.$cloneLlicencia->getPersona()->getNomCognoms());
+					
 					$em->flush();
+			
+					$this->notificarFacturaPerMail($factura);
 			
 					$this->logEntryAuth('RENOVAR LLICENCIA OK',	$llicenciaarenovar->getParte()->getId().' renovat a '.$parte->getId());
 					
@@ -298,11 +339,12 @@ class CronController extends BaseController {
 				$this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$llicenciaarenovar->getParte()->getId());
 			}			
 		} catch (\Exception $e) {
-				
+
+			$em->clear();
+			
+			$this->logEntryAuth('RENOVAR LLICENCIA KO',	$llicenciaarenovar->getParte()->getId().' '.$e->getMessage());
+							
 			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
-			
-			$this->logEntryAuth('RENOVAR LLICENCIA ERROR',	$llicenciaarenovar->getParte()->getId().' => '. $e->getMessage());
-			
 		}
 			
 		return $this->render('FecdasBundle:Cron:renovarllicencia.html.twig',

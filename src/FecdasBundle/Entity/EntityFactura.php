@@ -136,6 +136,17 @@ class EntityFactura {
 	}
 	
 	/**
+	 * @return \FecdasBundle\Entity\EntityComanda
+	 */
+	public function getComandaFactura() {
+		if ($this->comandaanulacio == null && $this->comanda == null) return null;
+		
+		if ($this->esAnulacio() == true) return $this->comandaanulacio;	
+		
+		return $this->comanda;
+	}
+	
+	/**
 	 * Factura format curt amb any  XXXXX/XX
 	 *
 	 * @return string

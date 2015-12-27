@@ -1273,8 +1273,6 @@ GROUP BY c.nom
 
 			$em->flush();
 			
-			$this->notificarFacturaPerMail($duplicat->getFactura());
-			
 			$this->logEntryAuth('DUPLI LLICENCIA OK', 'duplicat ' . $duplicat->getNumComanda() . ' de la llicència ' . $llicenciaid  );
 			
 			$response = $this->redirect($this->generateUrl('FecdasBundle_imprimirllicencia', array( 'id' => $llicenciaid)));

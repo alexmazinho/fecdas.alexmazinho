@@ -967,7 +967,6 @@ class FacturacioController extends BaseController {
 			
 				$em ->flush();
 				
-				$this->notificarFacturaPerMail($factura);
 			}
 			
 			if ($action == 'anular' || $action == 'desar' || $action == 'pagar') { // Totes borren sessió

@@ -184,9 +184,9 @@ FecdasBundle_renovarllicencia:
     requirements:
         _method:  GET|POST
 
-FecdasBundle_enviamentfactures:
-    pattern:  /enviamentfactures
-    defaults: { _controller: "FecdasBundle:Cron:enviamentfactures" }
+FecdasBundle_enviamentfacturesrebuts:
+    pattern:  /enviamentfacturesrebuts
+    defaults: { _controller: "FecdasBundle:Cron:enviamentfacturesrebuts" }
     requirements:
         _method:  GET
 

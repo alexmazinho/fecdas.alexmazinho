@@ -238,8 +238,6 @@ class PageController extends BaseController {
 			
 			$em->flush();
 			
-			$this->notificarFacturaPerMail($factura);
-			
 			$this->get('session')->getFlashBag()->add('sms-notice',"Llicències enviades correctament");
 			
 			return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
@@ -735,8 +733,6 @@ class PageController extends BaseController {
 				
 				$em->flush();
 	
-				$this->notificarFacturaPerMail($factura);
-				
 				$this->logEntryAuth('RENOVAR OK', $parte->getId());
 					
 				$this->get('session')->getFlashBag()->add('sms-notice',	'Llista de llicències enviada correctament');

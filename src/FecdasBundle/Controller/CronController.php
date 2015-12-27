@@ -13,8 +13,6 @@ use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Form\FormLlicenciaRenovar;
 
-use Doctrine\ORM\UnitOfWork;
-
 class CronController extends BaseController {
 
 	public function checkrenovacioAction(Request $request) {
@@ -192,9 +190,9 @@ class CronController extends BaseController {
 		return true;
 	}
 	
-	public function enviamentfacturesAction(Request $request) {
-		/* Planificar cron cada 5/10 minuts
-		 * wget -O - -q http://www.fecdasgestio.cat/enviamentfactures?periode=1 >> mailsrenovacio.txt*/
+	public function enviamentfacturesrebutsAction(Request $request) {
+		// Planificar cron cada 5/10 minuts
+		//    */5 * * * * /usr/bin/wget -O - -q http://www.fecdasgestio.cat/enviamentfacturesrebuts?periode=1
 		
 		// Enviament de les factures dels partes consolidats del darrer dia (o periode indicat)
 		
@@ -203,30 +201,224 @@ class CronController extends BaseController {
 		$datadesde = $this->getCurrentDate()->sub(new \DateInterval('P'.$periode.'D')); // Mirar endarrera els dies indicats a periode
 		
 		$em = $this->getDoctrine()->getManager();
-		 
-		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f JOIN f.comanda c ";  // Només factures (no anul·lacions) 
+		
+		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f "; 
 		$strQuery .= " WHERE f.enviada = 0 ";
 		$strQuery .= " AND f.dataentrada >= :datadesde ";
 		$strQuery .= " ORDER BY f.dataentrada ";
-				
+		
 		$query = $em->createQuery($strQuery)->setParameter('datadesde', $datadesde->format('Y-m-d H:i:s'));
 										
 		$facturesNoEnviades = $query->getResult();
+		
+
+		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r "; 
+		$strQuery .= " WHERE r.enviat = 0 ";
+		$strQuery .= " AND r.dataentrada >= :datadesde ";
+		$strQuery .= " ORDER BY r.dataentrada ";
+		
+		$query = $em->createQuery($strQuery)->setParameter('datadesde', $datadesde->format('Y-m-d H:i:s'));
 										
+		$rebutsNoEnviats = $query->getResult();
+		
+		
+		$comandes = array();
 		foreach ($facturesNoEnviades as $factura) {
+			$comanda = $factura->getComandaFactura();
 			
-			if ($factura->getComanda() != null &&
-				$factura->getComanda()->esParte() &&
-				$factura->getComanda()->comandaConsolidada() == true ) {
+			if ($comanda->comandaConsolidada() == true && !isset($comandes[$comanda->getId()])) $comandes[$comanda->getId()] = $comanda;
+		}
+		
+		foreach ($rebutsNoEnviats as $rebut) {
+			// Ingressos i rebuts de vàries comandes s'envien a part
+			$comandesRebut = $rebut->getComandes();
 			
-				$this->notificarFacturaPerMail($factura);
+			if ($rebut->esIngres() == true || ($comandesRebut != null && count($comandesRebut) > 1)) {
+
+				$log = $this->notificarIngressosPerMail($rebut);
 				
-				echo " Factura notificada ".$factura->getNumFactura()."<br/>";
+				$this->logEntryAuth('NOTIF. INGRES OK', $rebut->getNumRebut(). ': ' .$log);
+			
+				echo " Ingrès notificat ".$rebut->getNumRebut(). ': ' .$log."<br/>";
+			
+			} else {
+				$comanda = null;
+				if ($comandesRebut != null && count($comandesRebut) == 1) $comanda = $comandesRebut[0];
+				else $comanda = $rebut->getComandaanulacio();
+
+				if ($comanda != null && $comanda->comandaConsolidada() == true && !isset($comandes[$comanda->getId()]))	$comandes[$comanda->getId()] = $comanda;			
+			}				
+		}
+		
+		foreach ($comandes as $comanda) {
+			
+			$log = $this->notificarFacturesRebutsPerMail($comanda);
+			
+			$this->logEntryAuth('NOTIF. COMANDA OK', $comanda->getNumComanda(). ': ' .$log);
+			
+			echo " Comanda notificada ".$comanda->getNumComanda(). ': ' .$log."<br/>";
+		}
+		
+		return new Response("FINAL ENVIAMENT FACTURES i REBUTS");
+	}
+
+	private function notificarIngressosPerMail($rebut) {
+		// Ingressos no associats a cap comanda o ingressos associats a múltiples comandes
+		
+		if ($rebut == null) return;
+		
+		$club = $rebut->getClub();
+		
+		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMail();
+		else {
+			$tomails = self::getCarnetsMails();
+			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';
+		}
+		
+		$subject = "Federació Catalana d'Activitats Subaquàtiques. Notificació ingrès ".$rebut->getNumRebut();
+		
+		$log = 'ingrès: '.$rebut->getNumRebut();
+		
+		$body = "<p>Benvolgut club ".$club->getNom()."</p>";
+		$body .= "<p>Us fem arribar el rebut <b>".$rebut->getNumRebut()."</b> corresponent a l'ingrès tramitat en data <b>".$rebut->getDatapagament()->format('d/m/Y')."</b></p>";
+		
+		if (count($rebut->getComandes()) > 0) {
+			// Ingrés múltiples comandes
+			$body = "<p>En concepte d'abonament de les factures ".$rebut->getLlistaNumsFactures()."</p>";
+			$log = ', abonament factures: '.$rebut->getLlistaNumsFactures();
+		}
+		
+		$attachments = array();
+		
+		$pdf = $this->rebuttopdf($rebut);
+			
+		$nom =  "rebut_". str_replace("/", "-", $rebut->getNumRebut()) . "_" . $club->getCodi() . ".pdf";
+			
+		$attachments[] = array( 'name' => $nom,
+									//'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)
+									'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
+							);
+		
+		$this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments);
+
+		$rebut->setEnviat(true);
+		// Si tot correcte actualitzar rebut a enviat		
+		$em = $this->getDoctrine()->getManager();
+		
+		$em->flush();
+		
+		return $log;
+	}
+
+
+	private function notificarFacturesRebutsPerMail($comanda) {
+		if ($comanda == null || $comanda->getFactura()) return;
+		
+		$club = $comanda->getClub();
+		
+		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMail();
+		else {
+			$tomails = self::getCarnetsMails();
+			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';
+		}
+		
+		$subject = "Federació Catalana d'Activitats Subaquàtiques. Notificació comanda ".$comanda->getNumComanda();
+		
+		$body = "<p>Benvolgut club ".$club->getNom()."</p>";
+		$body .= "<p>Us fem arribar els següents documents relacionats amb la comanda <b>".$comanda->getNumComanda()."</b> tramitada en data <b>".$comanda->getDataentrada()->format('d/m/Y')."</b></p>";
+		
+		$log = '';
+		$factures = array();
+		$strNumsFactures = '';
+		$rebuts = array();
+		$strNumsRebuts = '';
+		$attachments = array();
+		
+		// Revisar factura i rebuts normals
+		$factura = $comanda->getFactura();
+		$rebut = $comanda->getRebut();
+		if ($factura->getEnviada() != true) {
+			$factures[] = $factura;  
+			$strNumsFactures .= $factura->getNumFactura();
+			$log .= 'F.'.$factura->getNumFactura().' ';
+
+			$factura->setEnviada(true);
+			if ($rebut != null) {
+				$rebut->setEnviat(true);// El rebut normal s'imprimeix junt amb la factura 
+				$strNumsRebuts .= $rebut->getNumRebut();
+				$log .= 'R.'.$rebut->getNumRebut().' '; 
+			}
+		} else {
+			if ($rebut->getEnviat() != true) {
+				$rebut->setEnviat(true);
+				$rebuts[] = $rebut; // La factura ja estava enviada
+				$strNumsRebuts .= $rebut->getNumRebut();
+				$log .= 'R.'.$rebut->getNumRebut().' ';
+			}
+		}
+		if ($strNumsFactures != '') $body = "<p>Factura: ".$strNumsFactures."</p>";
+		if ($strNumsRebuts != '') $body = "<p>Rebut: ".$strNumsRebuts."</p>";
+		
+		// Revisar anul·lacions
+		$strNumsFactures = '';
+		$strNumsRebuts = '';
+		
+ 		foreach ($comanda->getFacturesanulacions() as $factura) {
+			if ($factura->getEnviada() != true) {
+				$strNumsFactures .= $factura->getNumFactura().', ';
+				$log .= 'F.'.$factura->getNumFactura().' ';
+				$factures[] = $factura;
+				$factura->setEnviada(true);
 			}
 		}
 		
-		return new Response("FINAL ENVIAMENT FACTURES PARTES");
+		foreach ($comanda->getRebutsanulacions() as $rebut) {
+			if ($rebut->getEnviat() != true) {
+				$strNumsRebuts .= $rebut->getNumRebut().', ';
+				$log .= 'R.'.$rebut->getNumRebut().' ';
+				$rebuts[] = $rebut;
+				$rebut->setEnviat(true);
+			}
+		}
+		
+		if ($strNumsFactures != '' || $strNumsRebuts != '') $body .= "<br/><h3>Anul·lacions</h3>";
+		
+		if ($strNumsFactures != '') $body = "<p>Factures: ".substr($strNumsFactures, -2)."</p>";
+		if ($strNumsRebuts != '') "<p>Rebuts: ".substr($strNumsRebuts, -2)."</p>";  
+		
+		// Crear adjunts
+		foreach ($factures as $factura) {
+			$pdf = $this->facturatopdf($factura);
+			
+			$nom = ($factura->esAnulacio()?"factura_anul_lacio_":"factura_") .  str_replace("/", "-", $factura->getNumFactura()) . "_" . $club->getCodi() . ".pdf";
+			
+			$attachments[] = array( 'name' => $nom,
+									//'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)
+									'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
+									);
+		}
+		
+		foreach ($rebuts as $rebut) {
+			$pdf = $this->rebuttopdf($rebut);
+			
+			$nom =  ($rebut->esAnulacio()?"rebut_anul_lacio_":"rebut_") .  str_replace("/", "-", $rebut->getNumRebut()) . "_" . $club->getCodi() . ".pdf";
+			
+			$attachments[] = array( 'name' => $nom,
+									//'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)
+									'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
+									);
+		}
+		
+		$this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments);
+
+		// Si tot correcte actualitzar factures i rebuts a enviats		
+		$em = $this->getDoctrine()->getManager();
+		
+		$em->flush();
+		
+		return $log;
 	}
+
 	
 	public function renovarllicenciaAction(Request $request) {
 		/* Entra una id de llicència i se li renova la llicència vigent o la darrera llicència des de data d'avui */
@@ -323,8 +515,6 @@ class CronController extends BaseController {
 					$parte->setComentaris('Renovació llicència:'.' '.$parte->getComentariDefault().' '.$cloneLlicencia->getPersona()->getNomCognoms());
 					
 					$em->flush();
-			
-					$this->notificarFacturaPerMail($factura);
 			
 					$this->logEntryAuth('RENOVAR LLICENCIA OK',	$llicenciaarenovar->getParte()->getId().' renovat a '.$parte->getId());
 					

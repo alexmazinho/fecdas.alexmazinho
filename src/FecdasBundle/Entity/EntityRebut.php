@@ -124,7 +124,9 @@ class EntityRebut {
 			$this->import = ($import != 0?$import:$comanda->getTotalDetalls());
 
 			if ($this->import < 0) {
-				$this->comentari = "Rebut anulació comanda ".$comanda->getNumComanda();	
+				if (abs($this->import) >= $comanda->getTotalDetalls()) $this->comentari = "Rebut anul·lació comanda ".$comanda->getNumComanda();
+				else $this->comentari = "Rebut anul·lació parcial comanda ".$comanda->getNumComanda();
+					
 				$this->setComandaanulacio($comanda);
 				$comanda->addrebutsanulacions($this);
 			} else {

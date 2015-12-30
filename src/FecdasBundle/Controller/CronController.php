@@ -265,6 +265,11 @@ class CronController extends BaseController {
 	private function notificarIngressosPerMail($rebut) {
 		// Ingressos no associats a cap comanda o ingressos associats a múltiples comandes
 		
+		/*
+		 * Ingrés cap factura
+		 * ingrés múltiples factures
+		 */ 
+		
 		if ($rebut == null) return;
 		
 		$club = $rebut->getClub();
@@ -312,7 +317,18 @@ class CronController extends BaseController {
 
 
 	private function notificarFacturesRebutsPerMail($comanda) {
-		if ($comanda == null || $comanda->getFactura()) return;
+		/*
+		 * Factura no pagada
+		 * Factura (pagada) amb rebut 
+		 * Rebut factura enviada anteriorment 
+		 * Factura amb anul·lacions
+		 * Factura (pagada) amb rebut i anul·lacions
+		 * Anul·lacions
+		 * Anul·lacions amb pagaments
+		 * 
+		 */ 
+		
+		if ($comanda == null || $comanda->getFactura() == null) return;
 		
 		$club = $comanda->getClub();
 		
@@ -349,16 +365,16 @@ class CronController extends BaseController {
 				$log .= 'R.'.$rebut->getNumRebut().' '; 
 			}
 		} else {
-			if ($rebut->getEnviat() != true) {
+			if ($rebut != null && $rebut->getEnviat() != true) {
 				$rebut->setEnviat(true);
 				$rebuts[] = $rebut; // La factura ja estava enviada
 				$strNumsRebuts .= $rebut->getNumRebut();
 				$log .= 'R.'.$rebut->getNumRebut().' ';
 			}
 		}
-		if ($strNumsFactures != '') $body = "<p>Factura: ".$strNumsFactures."</p>";
-		if ($strNumsRebuts != '') $body = "<p>Rebut: ".$strNumsRebuts."</p>";
-		
+		if ($strNumsFactures != '') $body .= "<p>Factura: ".$strNumsFactures."</p>";
+		if ($strNumsRebuts != '') $body .= "<p>Rebut: ".$strNumsRebuts."</p>";
+	
 		// Revisar anul·lacions
 		$strNumsFactures = '';
 		$strNumsRebuts = '';
@@ -383,8 +399,8 @@ class CronController extends BaseController {
 		
 		if ($strNumsFactures != '' || $strNumsRebuts != '') $body .= "<br/><h3>Anul·lacions</h3>";
 		
-		if ($strNumsFactures != '') $body = "<p>Factures: ".substr($strNumsFactures, -2)."</p>";
-		if ($strNumsRebuts != '') "<p>Rebuts: ".substr($strNumsRebuts, -2)."</p>";  
+		if ($strNumsFactures != '') $body .= "<p>Factures: ".substr($strNumsFactures, 0, -2)."</p>";
+		if ($strNumsRebuts != '') $body .= "<p>Rebuts: ".substr($strNumsRebuts, 0, -2)."</p>";  
 		
 		// Crear adjunts
 		foreach ($factures as $factura) {

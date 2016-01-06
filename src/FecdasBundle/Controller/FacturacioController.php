@@ -1888,7 +1888,7 @@ class FacturacioController extends BaseController {
 
 				if ($form->isValid()) {
 					
-					$maxNumRebut = $this->getMaxNumEntity($rebut->getDataentrada()->format('Y'), BaseController::REBUTS) + 1;
+					$maxNumRebut = $this->getMaxNumEntity($rebut->getDatapagament()->format('Y'), BaseController::REBUTS) + 1;
 					$rebut->setNum($maxNumRebut);
 
 					if ($current->format('Y-m-d') == $rebut->getDatapagament()->format('Y-m-d')) {

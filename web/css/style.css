@@ -1809,9 +1809,9 @@ select#parte_persona_addrnacionalitat {
 /************************************************* Persona Fin  ******************************************************/
 
 
-/************************************************* Consulta Admin  ******************************************************/
+/************************************************* Consulta Admin / Clubs ******************************************************/
 
-#list-consultaadmin { 
+#list-consultaadmin, #list-consultaclubs { 
 	overflow-x: scroll;
 	border-color: #82CFFA #E7F2FB #96C4EA;
     border-style: solid;
@@ -1820,9 +1820,9 @@ select#parte_persona_addrnacionalitat {
     background-color: #efefef; 
 }
 
-#list-consultaadmin table { table-layout: fixed; width: auto; background-color: #ffffff;  }
+#list-consultaadmin table, #list-consultaclubs table { table-layout: fixed; /*width: auto;*/ background-color: #ffffff;  }
 
-#list-consultaadmin table tr.header { padding: 0 0 10px; }
+#list-consultaadmin table tr.header, #list-consultaclubs table tr.header { padding: 0 0 10px; }
 
 .th-listheader {
     border-bottom: 1px solid #96c4ea;
@@ -1845,14 +1845,16 @@ select#parte_persona_addrnacionalitat {
     
 }
 
-#list-consultaadmin .th-listheader a {
+#list-consultaadmin .th-listheader a, #list-consultaclubs .th-listheader a {
     color: #2281cf;
 }
 
 #list-consultaadmin table tr td.data-detall-cell { font-size: 0.9em; }
 
 #list-consultaadmin table tr td.data-detall-cell, 
-#list-consultaadmin .th-listheader { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#list-consultaadmin .th-listheader,
+#list-consultaclubs table tr td.data-detall-cell, 
+#list-consultaclubs .th-listheader { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 
 .data-detall-cell-left { text-align: left; }

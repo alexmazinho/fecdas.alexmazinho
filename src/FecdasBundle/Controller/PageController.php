@@ -307,7 +307,7 @@ class PageController extends BaseController {
 				if (isset($row['provincia']) and $row['provincia'] != null and $row['provincia'] != "") $persona->setAddrprovincia(mb_convert_case($row['provincia'], MB_CASE_TITLE, "utf-8"));
 				if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
 				
-				$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'N';
+				$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'S';
 				$this->validarDadesPersona($persona, $estranger);
 			
 				/* Creació i validació de la llicència */
@@ -976,7 +976,9 @@ class PageController extends BaseController {
 									'llicenciadades' => $llicencia));
 			}
 		} catch (\Exception $e) {
-				
+			
+			$em->clear();
+			/*	
 			if ($llicencia != null) {
 				if ($llicencia->getId() == 0) $em->detach($llicencia);
 				else $em->refresh($llicencia);
@@ -988,7 +990,7 @@ class PageController extends BaseController {
 			if ($factura != null) {
 				if ($factura->getId() == 0) $em->detach($factura);
 				else $em->refresh($factura);
-			} 
+			} */
 			
 			$this->logEntryAuth('LLICENCIA KO', ' Parte '.$id.'- Llicencia '.$lid.' : ' .$e->getMessage());
 	

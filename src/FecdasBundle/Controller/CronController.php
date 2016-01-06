@@ -289,8 +289,8 @@ class CronController extends BaseController {
 		
 		if (count($rebut->getComandes()) > 0) {
 			// Ingrés múltiples comandes
-			$body = "<p>En concepte d'abonament de les factures ".$rebut->getLlistaNumsFactures()."</p>";
-			$log = ', abonament factures: '.$rebut->getLlistaNumsFactures();
+			$body .= "<p>En concepte d'abonament de les factures ".$rebut->getLlistaNumsFactures()."</p>";
+			$log .= ', abonament factures: '.$rebut->getLlistaNumsFactures();
 		}
 		
 		$attachments = array();
@@ -473,6 +473,8 @@ class CronController extends BaseController {
 		
 		if ($llicenciaarenovar == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 
+		if ($request->getMethod() != 'POST')  $this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$llicenciaarenovar->getParte()->getId());
+		
 		/* Validació impedir modificacions altres clubs */
 		if ($this->isCurrentAdmin() != true and $llicenciaarenovar->getParte()->getClub()->getCodi() != $currentClub)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -482,6 +484,7 @@ class CronController extends BaseController {
 		/*
 		 * Validacions  de les llicències
 		*/
+		
 		$form = null;
 		try {
 			/* Si abans data caducitat renovació per tot el periode
@@ -498,11 +501,14 @@ class CronController extends BaseController {
 
 			// Afegir llicència		
 			$cloneLlicencia = clone $llicenciaarenovar;
+			
 	
 			/* Init camps */
 			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
 			$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
-
+			
+			$parte->addLlicencia($cloneLlicencia);
+			
 			$em->persist($cloneLlicencia);
 
 			/* Preparar formulari */
@@ -517,8 +523,6 @@ class CronController extends BaseController {
 				$form->bind($request);
 			
 				if ($form->isValid() && $request->request->has('llicencia_renovar')) {
-						
-					$parte->addLlicencia($cloneLlicencia);
 	
 				    // Crear factura
 					$factura = $this->crearFactura($dataalta, $parte);
@@ -534,15 +538,13 @@ class CronController extends BaseController {
 			
 					$this->logEntryAuth('RENOVAR LLICENCIA OK',	$llicenciaarenovar->getParte()->getId().' renovat a '.$parte->getId());
 					
-					$this->get('session')->getFlashBag()->add('error-notice',	'Llicència enviada correctament');
+					$this->get('session')->getFlashBag()->add('sms-notice',	'Llicència enviada correctament');
 			
 					return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view', 'source' => 'renovacio')));
 			
 				} else {
 					throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador');
 				}
-			} else {
-				$this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$llicenciaarenovar->getParte()->getId());
 			}			
 		} catch (\Exception $e) {
 

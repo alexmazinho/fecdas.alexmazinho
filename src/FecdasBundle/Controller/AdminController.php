@@ -358,7 +358,6 @@ class AdminController extends BaseController {
 	
 		// GET OPCIONS DE FILTRE
 		$action = $request->query->get('action', '');
-		$target = $request->query->get('target', '');
 		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'l.id');
@@ -466,7 +465,7 @@ class AdminController extends BaseController {
 					 				'nacionalitat'	=> array('hidden' => false, 'nom' => 'Nacionalitat', 'width' => '50px', 'sort' => ''),
 									);
 		$total = 0;
-		if ( ($action == 'query' || $action == 'csv') && $target == 'llicencies') {
+		if ( $action == 'query' || $action == 'csv' ) {
 			if ($groupQuey != true) {
 				// PREPARAR CONSULTA SENSE AGRUPAR
 				$strQuery = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l 
@@ -782,7 +781,7 @@ GROUP BY c.nom
 
 		} 
 		
-		if ($action == 'csv' && $target == 'llicencies') {
+		if ($action == 'csv') {
 			$filename = "export_consulta_".date("Y_m_d_His").".csv";
 			
 			$header = array(); // Get only header fields
@@ -960,6 +959,522 @@ GROUP BY c.nom
 						'sortparams' => $sortparams, 'queryparams' => $queryparams
 				)));
 	}
+	
+	
+	public function consultaclubsAction(Request $request) {
+	
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		// Afegir funció YEAR de mysql a Doctrine DQL
+		$config = $em->getConfiguration();
+		$config->addCustomDatetimeFunction('YEAR', 'FecdasBundle\Classes\MysqlYear');
+	
+		// GET OPCIONS DE FILTRE
+		$action = $request->query->get('action', '');
+		
+		$page = $request->query->get('page', 1);
+		$sort = $request->query->get('sort', 'c.nom');
+		$direction = $request->query->get('direction', 'asc');
+
+		$activats = true;
+		if ($request->query->has('activats') && $request->query->get('activats') == 0) $activats = false;
+
+		$baixes = $request->query->get('baixes', '0');
+
+		$municipi = $request->query->get('municipi', '');;
+		$comarca = $request->query->get('comarca', '');
+		$provincia = $request->query->get('provincia', '');
+
+		$grouptipuspagament = false;
+		if ($request->query->has('grouptipuspagament') && $request->query->get('grouptipuspagament') == 1) $grouptipuspagament = true;
+
+		$grouptipusclub = false;
+		if ($request->query->has('grouptipusclub') && $request->query->get('grouptipusclub') == 1) $grouptipusclub = true;
+
+		$groupmunicipi = false;
+		if ($request->query->has('groupmunicipi') && $request->query->get('groupmunicipi') == 1) $groupmunicipi = true;
+
+		$groupcomarca = false;
+		if ($request->query->has('groupcomarca') && $request->query->get('groupcomarca') == 1) $groupcomarca = true;
+
+		$groupprovincia = false;
+		if ($request->query->has('groupprovincia') && $request->query->get('groupprovincia') == 1) $groupprovincia = true;
+
+		$groupmunicipicorreu = false;
+		if ($request->query->has('groupmunicipicorreu') && $request->query->get('groupmunicipicorreu') == 1) $groupmunicipicorreu = true;
+
+		$groupcomarcacorreu = false;
+		if ($request->query->has('groupcomarcacorreu') && $request->query->get('groupcomarcacorreu') == 1) $groupcomarcacorreu = true;
+
+		$groupprovinciacorreu = false;
+		if ($request->query->has('groupprovinciacorreu') && $request->query->get('groupprovinciacorreu') == 1) $groupprovinciacorreu = true;
+
+		$tipuspagament = $request->query->get('tipuspagament', array()); // Per defecte sense filtre de tipus
+		if ($tipuspagament == '') $tipuspagament = array();
+
+		$tipusclub = $request->query->get('tipusclub', array()); // Per defecte sense filtre de tipus
+		if ($tipusclub == '') $tipusclub = array();
+
+		$strDataalta = $request->query->get('dataalta', '');
+		if ($strDataalta == '') $dataalta = null; 
+		else $dataalta = \DateTime::createFromFormat('d/m/Y', $strDataalta);
+
+		$strDatajunta = $request->query->get('datajunta', '');
+		if ($strDatajunta == '') $datajunta = null; 
+		else $datajunta = \DateTime::createFromFormat('d/m/Y', $strDatajunta);
+		
+
+		$groupQuey = $grouptipuspagament || $grouptipusclub || $groupmunicipi || $groupcomarca || $groupprovincia || $groupmunicipicorreu || $groupcomarcacorreu || $groupprovinciacorreu;
+
+		$queryparams = array ('action' => $action, 'activats' => $activats, 'baixes' => $baixes, 
+								'tipuspagament' => $tipuspagament, 'tipusclub' => $tipusclub,
+								'dataalta' => $strDataalta, 'datajunta' => $strDatajunta,
+								'municipi' => $municipi, 'comarca' => $comarca,	'provincia' => $provincia,
+								'grouptipuspagament' => $grouptipuspagament, 'grouptipusclub' => $grouptipusclub,
+								'groupmunicipi' => ($groupmunicipi == true?1:0), 'groupcomarca' => ($groupcomarca == true?1:0),
+								'groupprovincia' => ($groupprovincia == true?1:0), 'groupmunicipicorreu' => ($groupmunicipicorreu == true?1:0), 
+								'groupcomarcacorreu' => ($groupcomarcacorreu == true?1:0), 'groupprovinciacorreu' => ($groupprovinciacorreu == true?1:0)
+								);
+
+
+		
+		$sortparams = array('sort' => $sort, 'direction' => $direction, 'inverse' => ($direction=='asc'?'desc':'asc') );
+		$resultat = array();
+		$params = array();
+		$pageSize = 20; // limit
+		$offset = ($page - 1) * $pageSize; 
+		
+		$agrupats = array();
+		$colsHeaderIntervals = array();
+		$campsHeaderAgrupats = array();
+		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '40px', 'sort' => ''),
+									'codi' 			=> array('hidden' => false, 'nom' => 'Codi', 'width' => '80px', 'sort' => 'c.codi'),
+									'tipusclub' 	=> array('hidden' => false, 'nom' => 'Tipus', 'width' => '120px', 'sort' => 't.tipus'),
+									'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '170px', 'sort' => 'c.nom'),
+									'actiu'			=> array('hidden' => false, 'nom' => 'Actiu', 'width' => '60px', 'sort' => 'c.activat'),
+									'telefon' 		=> array('hidden' => false, 'nom' => 'Telèfon', 'width' => '80px', 'sort' => 'c.telefon'),
+									'fax' 			=> array('hidden' => false, 'nom' => 'Fax', 'width' => '80px', 'sort' => 'c.fax'),
+									'mobil' 		=> array('hidden' => false, 'nom' => 'Mòbil', 'width' => '80px', 'sort' => 'c.mobil'),         
+									'mail'			=> array('hidden' => false, 'nom' => 'eMail', 'width' => '170px', 'sort' => 'c.mail'),
+									'web'			=> array('hidden' => false, 'nom' => 'Web', 'width' => '170px', 'sort' => 'c.web'),
+									'cif'			=> array('hidden' => false, 'nom' => 'CIF', 'width' => '100px', 'sort' => 'c.cif'),
+									'compte'		=> array('hidden' => false, 'nom' => 'Compte', 'width' => '100px', 'sort' => 'c.compte'),
+					 				'adreca'		=> array('hidden' => false, 'nom' => 'Adreça', 'width' => '200px', 'sort' => 'c.addradreca'), 
+					 				'poblacio'		=> array('hidden' => false, 'nom' => 'Problació', 'width' => '150px', 'sort' => 'c.addrpob'), 
+					 				'cp'			=> array('hidden' => false, 'nom' => 'CP', 'width' => '60px', 'sort' => 'c.addrcp'), 
+					 				'comarca'		=> array('hidden' => false, 'nom' => 'Comarca', 'width' => '150px', 'sort' => 'c.addrcomarca'),
+					 				'provincia'		=> array('hidden' => false, 'nom' => 'Província', 'width' => '110px', 'sort' => 'c.addrprovincia'), 
+					 				'adrecacorreu'	=> array('hidden' => false, 'nom' => 'Adreça correu', 'width' => '200px', 'sort' => 'c.addradrecacorreu'), 
+					 				'poblaciocorreu'=> array('hidden' => false, 'nom' => 'Pob. correu', 'width' => '150px', 'sort' => 'c.addrpobcorreu'), 
+					 				'cpcorreu'		=> array('hidden' => false, 'nom' => 'CP correu', 'width' => '60px', 'sort' => 'c.addrcpcorreu'), 
+					 				'comarcacorreu'	=> array('hidden' => false, 'nom' => 'Comarca correu', 'width' => '150px', 'sort' => 'c.addrcomarcacorreu'),
+					 				'provinciacorreu'	=> array('hidden' => false, 'nom' => 'Prov. correu', 'width' => '110px', 'sort' => 'c.addrprovinciacorreu'),
+									'tipuspagament'	=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '130px', 'sort' => 'e.descripcio'),
+					 				'limitcredit'	=> array('hidden' => false, 'nom' => 'Crèdit', 'width' => '100px', 'sort' => 'c.limitcredit'), 
+									'romanent'		=> array('hidden' => false, 'nom' => 'Romanent '.(date('Y')-1), 'width' => '100px', 'sort' => 'c.romanent'), 
+									'totalpagaments'=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '100px', 'sort' => 'c.totalpagaments'),
+									'totalllicencies'=> array('hidden' => false, 'nom' => 'T. llicències', 'width' => '100px', 'sort' => 'c.totalllicencies'),
+									'totalduplicats'=> array('hidden' => false, 'nom' => 'T. duplicats', 'width' => '100px', 'sort' => 'c.totalduplicats'),
+									'totalaltres'	=> array('hidden' => false, 'nom' => 'T. altres', 'width' => '100px', 'sort' => 'c.totalaltres'),
+									'ajustsubvencions'	=> array('hidden' => false, 'nom' => 'Ajust subv.', 'width' => '100px', 'sort' => 'c.ajustsubvencions'),
+									'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'c.dataalta'),
+									'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'c.databaixa'), 
+									'datacreacio' 	=> array('hidden' => false, 'nom' => 'Creació', 'width' => '80px', 'sort' => 'c.datacreacio'),
+									'datajunta'		=> array('hidden' => false, 'nom' => 'Últ. Junta', 'width' => '80px', 'sort' => 'c.datajunta'), 
+									'estatus'		=> array('hidden' => false, 'nom' => 'Estatuts', 'width' => '80px', 'sort' => 'c.estatuts'),
+									'registre'		=> array('hidden' => false, 'nom' => 'Núm. Registre', 'width' => '80px', 'sort' => 'c.registre'),
+									'president'		=> array('hidden' => false, 'nom' => 'President', 'width' => '180px', 'sort' => ''),
+									'vicepresident'	=> array('hidden' => false, 'nom' => 'Vicepresident', 'width' => '180px', 'sort' => ''),
+									'secretari'		=> array('hidden' => false, 'nom' => 'Secretari', 'width' => '180px', 'sort' => ''),
+									'tresorer'		=> array('hidden' => false, 'nom' => 'Tresorer', 'width' => '180px', 'sort' => ''),
+									'vocals'		=> array('hidden' => false, 'nom' => 'Vocals', 'width' => '260px', 'sort' => ''),
+									);
+		$total = 0;
+		if ($action == 'query' || $action == 'csv') {
+			if ($groupQuey != true) {
+				// PREPARAR CONSULTA SENSE AGRUPAR
+				$strQuery = "SELECT c, t FROM FecdasBundle\Entity\EntityClub c 
+								LEFT JOIN c.tipus t LEFT JOIN c.estat e WHERE 1 = 1 ";
+				
+			} else {
+				//$groupQuey = $grouptipuspagament || $grouptipusclub || $groupmunicipi || $groupcomarca || $groupprovincia || $groupmunicipicorreu || $groupcomarcacorreu || $groupprovinciacorreu;
+				// PREPARAR CONSULTA AGRUPADA
+				$campsHeaderAgrupats['num'] = $campsHeader['num'];
+				
+				if ($grouptipuspagament == true) {
+					$agrupats[] = 'e.descripcio';
+					$campsHeaderAgrupats['tipuspagament'] = $campsHeader['tipuspagament'];
+				}
+				if ($grouptipusclub == true) {
+					$agrupats[] = 't.tipus';
+					$campsHeaderAgrupats['tipusclub'] = $campsHeader['tipusclub'];
+				}
+				if ($groupmunicipi == true) {
+					$agrupats[] = 'c.addrpob';
+					$campsHeaderAgrupats['poblacio'] = $campsHeader['poblacio'];
+				}
+				if ($groupcomarca == true) {
+					$agrupats[] = 'c.addrcomarca';
+					$campsHeaderAgrupats['comarca'] = $campsHeader['comarca'];
+				}
+				if ($groupprovincia == true) {
+					$agrupats[] = 'c.addrprovincia';
+					$campsHeaderAgrupats['provincia'] = $campsHeader['provincia'];
+				}
+				if ($groupmunicipicorreu == true) {
+					$agrupats[] = 'c.addrpobcorreu';
+					$campsHeaderAgrupats['poblaciocorreu'] = $campsHeader['poblaciocorreu'];
+				}
+				if ($groupcomarcacorreu == true) {
+					$agrupats[] = 'c.addrcomarcacorreu';
+					$campsHeaderAgrupats['comarcacorreu'] = $campsHeader['comarcacorreu'];
+				}
+				if ($groupprovinciacorreu == true) {
+					$agrupats[] = 'c.addrprovinciacorreu';
+					$campsHeaderAgrupats['provinciacorreu'] = $campsHeader['provinciacorreu'];
+				}
+
+				// Totals de l'agrupació
+				$campsHeaderAgrupats['total'] = array('hidden' => false, 'nom' => 'Total', 'width' => '100px', 'sort' => 'total');
+
+				
+				$campsHeader = $campsHeaderAgrupats;
+				
+				$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(c.codi) AS total FROM FecdasBundle\Entity\EntityClub c 
+								LEFT JOIN c.tipus t LEFT JOIN c.estat e WHERE 1 = 1 ";
+				
+				if ( !in_array($sort, $agrupats) && $sort != 'total' && $sort != 'import') $sort =  $agrupats[0]; // Si l'ordre indicat no coincideix amb cap dels camps agrupats
+				
+			}
+
+			if (count($tipuspagament) > 0) {
+				$strQuery .= " AND c.estat IN (:estat) ";
+				$params['estat'] = $tipuspagament;
+			}
+			if (count($tipusclub) > 0) {
+				$strQuery .= " AND c.tipus IN (:tipus) ";
+				$params['tipus'] = $tipusclub;
+			}
+			if ($activats == true) {
+				$strQuery .= " AND c.activat = 1 ";
+			}
+
+			if ($dataalta != null) {
+				$strQuery .= " AND c.dataalta >= :dataalta ";
+				$params['dataalta'] = $dataalta->format('Y-m-d');
+			}
+			if ($datajunta != null) {
+				$strQuery .= " AND c.datajunta <= :datajunta ";
+				$params['datajunta'] = $datajunta->format('Y-m-d');
+			}
+			if ($municipi != '') {
+				$strQuery .= " AND c.addrpob LIKE :municipi ";
+				$params['municipi'] = '%'.$municipi.'%';
+			}
+			if ($comarca != '') {
+				$strQuery .= " AND c.addrcomarca LIKE :comarca ";
+				$params['comarca'] = '%'.$comarca.'%';
+			}
+	
+			if ($provincia != '') {
+				$strQuery .= " AND c.addrprovincia LIKE :provincia ";
+				$params['provincia'] = '%'.$provincia.'%';
+			}			
+			if ($baixes == 0) { // Excloure
+				$strQuery .= " AND c.databaixa IS NULL AND c.databaixa IS NULL ";
+			}
+			if ($baixes == 2) { // Excloure
+				$strQuery .= " AND (c.databaixa IS NOT NULL OR c.databaixa IS NOT NULL) ";
+			}
+			
+			if ($groupQuey == true) $strQuery .= " GROUP BY ".implode(', ', $agrupats);
+
+			$strQuery .= " ORDER BY ".$sort." ".$direction;
+			
+			$query = $em->createQuery($strQuery);
+				
+			foreach ($params as $k => $p) $query->setParameter($k, $p);
+				
+			$total = count($query->getResult());
+
+			if ($action == 'csv') {
+				$resultat = $query->getResult(); // intervals i edats encara no estan agrupats, no paginar. Export CSV tampoc pagina
+			} else {
+				$resultat = $query->setMaxResults($pageSize)->setFirstResult($offset)->getResult();
+			}
+		}
+
+		$campsDades = array ();
+		$index = 1;
+
+		if ($groupQuey != true) {
+			// Dades sense agrupar	
+			foreach ($resultat as $club) {
+				$tipus = $club->getTipus();
+				$estat = $club->getEstat();
+				
+				$url = $this->generateUrl('FecdasBundle_club', array('codi' => $club->getCodi()));
+				
+				$codi = ($action == 'csv'?$club->getCodi():'<a href="'.$url.'">'.$club->getCodi().'</a>');
+				
+				$president = '';
+				$vicepresident = '';
+				$secretari = '';
+				$tresorer = '';
+				$vocals = '';
+
+				$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+	
+				foreach ($jsonCarrecs as $value) {
+					
+					if ($value->cid == BaseController::CARREC_PRESIDENT) $president .= $value->nom;
+					
+					if ($value->cid == BaseController::CARREC_VICEPRESIDENT) $vicepresident .= $value->nom;
+					
+					if ($value->cid == BaseController::CARREC_SECRETARI) $secretari .= $value->nom;
+						
+					if ($value->cid == BaseController::CARREC_TRESORER) $tresorer .= $value->nom;	
+						
+					if ($value->cid == BaseController::CARREC_VOCAL) $vocals .= $value->nom.', ';
+				
+				}
+				
+				if ($vocals != '') $vocals = substr($vocals, 0, -2);
+				
+				$campsDades[$codi] = array (	
+										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
+										'codi' 			=> array('hidden' => false, 'val' => $codi, 'align' => 'left'),
+										'tipusclub' 	=> array('hidden' => false, 'val' => $tipus->getTipus(), 'align' => 'center'),
+										'club' 			=> array('hidden' => false, 'val' => $club->getNom(), 'align' => 'left'),
+										'actiu' 		=> array('hidden' => false, 'val' => ($club->getActivat() == true?'Si':'No'), 'align' => 'center'),      
+										'telefon' 		=> array('hidden' => false, 'val' => $club->getTelefon(), 'align' => 'center'),
+										'fax'			=> array('hidden' => false, 'val' => $club->getFax(), 'align' => 'center'), 
+										'mobil'			=> array('hidden' => false, 'val' => $club->getMobil(), 'align' => 'center'), 
+										'mail'			=> array('hidden' => false, 'val' => $club->getMail(), 'align' => 'left'),
+										'web'			=> array('hidden' => false, 'val' => $club->getWeb(), 'align' => 'left'),  					  	
+						 				'cif'			=> array('hidden' => false, 'val' => $club->getCif(), 'align' => 'center'), 
+						 				'compte'		=> array('hidden' => false, 'val' => $club->getCompte(), 'align' => 'center'), 
+						 				'adreca'		=> array('hidden' => false, 'val' => $club->getAddradreca(), 'align' => 'left'), 
+						 				'poblacio'		=> array('hidden' => false, 'val' => $club->getAddrpob(), 'align' => 'left'), 
+						 				'cp'			=> array('hidden' => false, 'val' => $club->getAddrcp(), 'align' => 'center'), 
+						 				'comarca'			=> array('hidden' => false, 'val' => $club->getAddrcomarca(), 'align' => 'left'),	
+						 				'provincia'			=> array('hidden' => false, 'val' => $club->getAddrprovincia(), 'align' => 'center'),	
+						 				'adrecacorreu'		=> array('hidden' => false, 'val' => $club->getAddradrecacorreu(), 'align' => 'left'),	
+						 				'poblaciocorreu'	=> array('hidden' => false, 'val' => $club->getAddrpobcorreu(), 'align' => 'left'),	
+						 				'cpcorreu'			=> array('hidden' => false, 'val' => $club->getAddrcpcorreu(), 'align' => 'center'),
+						 				'comarcacorreu'		=> array('hidden' => false, 'val' => $club->getAddrcomarcacorreu(), 'align' => 'left'),
+						 				'provinciacorreu'	=> array('hidden' => false, 'val' => $club->getAddrprovinciacorreu(), 'align' => 'center'),
+						 				'tipuspagament'		=> array('hidden' => false, 'val' => $estat->getDescripcio(), 'align' => 'center'),
+						 				'limitcredit'		=> array('hidden' => false, 'val' => number_format($club->getLimitcredit(), 2, ',', '.').'€', 'align' => 'right'),
+						 				'romanent'			=> array('hidden' => false, 'val' => number_format($club->getRomanent(), 2, ',', '.').'€', 'align' => 'right'),	
+						 				'totalpagaments'	=> array('hidden' => false, 'val' => number_format($club->getTotalpagaments(), 2, ',', '.').'€', 'align' => 'right'),
+										'totalllicencies'	=> array('hidden' => false, 'val' => number_format($club->getTotalllicencies(), 2, ',', '.').'€', 'align' => 'right'),	
+										'totalduplicats'	=> array('hidden' => false, 'val' => number_format($club->getTotalduplicats(), 2, ',', '.').'€', 'align' => 'right'),
+										'totalaltres'		=> array('hidden' => false, 'val' => number_format($club->getTotalaltres(), 2, ',', '.').'€', 'align' => 'right'),
+										'ajustsubvencions'	=> array('hidden' => false, 'val' => number_format($club->getAjustsubvencions(), 2, ',', '.').'€', 'align' => 'right'),
+										'dataalta'		=> array('hidden' => false, 'val' => ($club->getDataalta() != null?$club->getDataalta()->format('d/m/y'):''), 'align' => 'center'),																																								
+						 				'databaixa'		=> array('hidden' => false, 'val' => ($club->getDatabaixa() != null?$club->getDatabaixa()->format('d/m/y'):''), 'align' => 'center'),
+										'datacreacio'	=> array('hidden' => false, 'val' => ($club->getDatacreacio() != null?$club->getDatacreacio()->format('d/m/y'):''), 'align' => 'center'),	
+										'datajunta'		=> array('hidden' => false, 'val' => ($club->getDatajunta() != null?$club->getDatajunta()->format('d/m/y'):''), 'align' => 'center'),
+										'estatus'		=> array('hidden' => false, 'val' => ($club->getEstatuts() == true?'Si':'No'), 'align' => 'center'),
+										'registre'		=> array('hidden' => false, 'val' => $club->getRegistre() , 'align' => 'center'),
+										'president'		=> array('hidden' => false, 'val' => $president, 'align' => 'left'),																																								
+										'vicepresident'	=> array('hidden' => false, 'val' => $vicepresident, 'align' => 'left'),
+										'secretari'		=> array('hidden' => false, 'val' => $secretari, 'align' => 'left'),																																								
+										'tresorer'		=> array('hidden' => false, 'val' => $tresorer, 'align' => 'left'),
+										'vocals'		=> array('hidden' => false, 'val' => $vocals, 'align' => 'left'),																																								
+										);
+
+				$index++;
+			}
+		} else {
+			// Dades agrupades
+			foreach ($resultat as $grup) {
+					
+				$campsDades[$index] = array ('num' => array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),);
+				
+				foreach ($grup as $camp => $valor) {
+					
+					if ($camp == 'total') $campsDades[$index][$camp] =  array('hidden' => false, 'val' => $valor, 'align' => 'right');
+					else $campsDades[$index][$camp] =  array('hidden' => false, 'val' => $valor, 'align' => 'left');
+					
+				}		
+				$index++;
+			}
+
+		} 
+		
+		if ($action == 'csv') {
+			$filename = "export_consulta_clubs_".date("Y_m_d_His").".csv";
+			
+			$header = array(); // Get only header fields
+			foreach ($campsHeader as $camp) $header[] = $camp['nom'];
+			
+			$data = array(); // Get only data matrix
+			foreach ($campsDades as $row) {
+				$rowdata = array(); 
+				foreach ($row as $camp) {
+					$rowdata[] = $camp['val'];
+				}
+				$data[] = $rowdata;
+			}
+			
+			
+			$response = $this->exportCSV($request, $header, $data, $filename);
+			
+			return $response;
+		}
+		
+		// CREAR FORMULARI
+		$formBuilder = $this->createFormBuilder();
+
+		$formBuilder->add('activats', 'checkbox', array(
+    			'required'  	=> false,
+				'data' 			=> $activats,
+		));
+		
+		// Selector múltiple de tipus de clubs
+		$tipusO = array();
+		foreach ($tipusclub as $tip) {
+			$tipusO[] = $em->getRepository('FecdasBundle:EntityClubType')->find($tip);
+		}
+		$formBuilder->add('tipusclub', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityClubType',
+		 		'choice_label' 	=> 'tipus',
+				'required'  	=> false,
+				'data'			=> $tipusO,
+				'multiple'		=> true
+		));
+		
+		// Selector múltiple de tipus de pagament
+		$pagamentO = array();
+		foreach ($tipuspagament as $tip) {
+			$pagamentO[] = $em->getRepository('FecdasBundle:EntityClubEstat')->find($tip);
+		}
+
+		$formBuilder->add('tipuspagament', 'entity', array(
+				'class'   		=> 'FecdasBundle:EntityClubEstat',
+				'choice_label' 	=> 'descripcio',
+				'required' 		=> false,
+				'data' 			=> $pagamentO,
+				'multiple'		=> true,
+		));
+		
+		// Selectors de dates
+		$formBuilder->add('dataalta', 'datetime', array(
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required' 		=> false,
+				'empty_value' 	=> null,
+				'format' 		=> 'dd/MM/yyyy',
+				'data' 			=> $dataalta
+		));
+
+		$formBuilder->add('datajunta', 'datetime', array(
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required' 		=> false,
+				'empty_value' 	=> null,
+				'format' 		=> 'dd/MM/yyyy',
+				'data' 			=> $datajunta
+		));
+		
+		$formBuilder->add('municipi', 'choice', array(
+				'choices' => $this->getMunicipis(),
+				//'preferred_choices' => array(''),
+				'empty_value' 	=> 'Municipi ...',
+				'required'  	=> false,
+				'data' 			=> $municipi
+		));
+		
+		$formBuilder->add('comarca', 'choice', array(
+				'choices' => $this->getComarques(),
+				//'preferred_choices' => array(''),
+				'empty_value' 	=> 'Comarca ...',
+				'required'  	=> false,
+				'data' 			=> $comarca
+		));
+		
+		$formBuilder->add('provincia', 'choice', array(
+				'choices' => array('Barcelona' => 'Barcelona','Girona' => 'Girona','Tarragona' => 'Tarragona','Lleida' => 'Lleida' ),
+				//'preferred_choices' => array('Barcelona','Girona','Tarragona','Lleida' ),
+				'empty_value' 	=> 'Província...',
+				'required'  	=> false,
+				'data' 			=> $provincia
+		));
+		
+		// Agrupar per tipus pagament
+		$formBuilder->add('grouptipuspagament', 'checkbox', array(
+    			'required'  => false,
+				'data' => $grouptipuspagament,
+		));
+		
+		// Agrupar per tipus de club
+		$formBuilder->add('grouptipusclub', 'checkbox', array(
+    			'required'  => false,
+				'data' => $grouptipusclub,
+		));
+		
+		// Agrupar per municipi
+		$formBuilder->add('groupmunicipi', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupmunicipi,
+		));	
+
+		// Agrupar per comarca
+		$formBuilder->add('groupcomarca', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupcomarca,
+		));	
+
+		// Agrupar per provincia
+		$formBuilder->add('groupprovincia', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupprovincia,
+		));	
+		
+		// Agrupar per municipi correu
+		$formBuilder->add('groupmunicipicorreu', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupmunicipicorreu,
+		));	
+
+		// Agrupar per comarca correu
+		$formBuilder->add('groupcomarcacorreu', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupcomarcacorreu,
+		));	
+
+		// Agrupar per provincia correu
+		$formBuilder->add('groupprovinciacorreu', 'checkbox', array(
+    			'required'  => false,
+				'data' => $groupprovinciacorreu,
+		));	
+						
+		// Baixes
+		$formBuilder->add('baixes', 'choice', array(
+				'choices'   	=> array('0' => 'Excloure baixes', '1' => 'Incloure baixes', '2' => 'Només baixes'),
+				'required' 		=> false,
+				'expanded'		=> true,
+				'multiple'		=> false,
+				'empty_value' 	=> false,
+				'data' 			=> $baixes
+		));
+		
+		
+		// Temps des de la darrera llicència
+		$form = $formBuilder->getForm();
+		
+		return $this->render('FecdasBundle:Admin:consultaclubs.html.twig', 
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'header' => $campsHeader, 'dades' => $campsDades,
+						'total' => $total, 'page' => $page, 'pages' => ceil($total/$pageSize), 'perpage' => $pageSize, 'offset' => $offset,  
+						'sortparams' => $sortparams, 'queryparams' => $queryparams
+				)));
+	}
+	
 	
 	
 	public function sincroaccessAction(Request $request) {

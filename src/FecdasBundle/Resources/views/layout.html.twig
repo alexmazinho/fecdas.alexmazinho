@@ -123,6 +123,7 @@
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Clubs i usuaris <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
+			            <li id="menu-admconsultaclubs" class="separator"><a href="{{ path('FecdasBundle_consultaclubs') }}">Consulta amb criteris</a></li>
 			          	<li id="menu-admnouclub" class="separator"><a href="{{ path('FecdasBundle_club', { 'action': 'nouclub' }) }}">Nou club</a></li>
 			          	<li id="menu-admnouusuari" class="separator"><a href="{{ path('FecdasBundle_club', { 'action': 'adduser' }) }}">Afegir usuari</a></li>
 			          	<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">Edició clubs</a></li>

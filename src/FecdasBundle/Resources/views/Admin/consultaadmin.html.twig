@@ -1,7 +1,7 @@
 {# src/Fecdas/PartesBundle/Resources/views/Admin/consultaadmin.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block title %}Aplicació gestió FECDAS. Consulta dinàmica segons criteris{% endblock %}
+{% block title %}Aplicació gestió FECDAS. Consulta dinàmica llicències segons criteris{% endblock %}
 
 {% block stylesheets %}
 	
@@ -240,7 +240,7 @@
 		</div>
 		<div class="col-md-12">
 	    	<div id="list-consultaadmin">
-	    		<table class="table">
+	    		<table class="table" style="{% if header|length < 8 %} width:auto; {% endif %}>
 	    			<tr class="header"> 	
 			   		    {% for key, camp in header %}
 				   		<th id="header-consulta-{{ key }}" class="th-listheader col-noresponsive col-listheader-sortable {% if camp.hidden == true %} hidden {% endif %}" style="width: {{ camp.width }}">
@@ -298,10 +298,6 @@ checkIntervals = function(elcheck, elradio) {
 getQueryParams = function(action) {
 	var params = $.param({ 'action': action });
 
-	var tabactive = $( "#tabs-consulta" ).tabs( "option", "active" );
-
-	params += '&'+$.param({ 'target': (tabactive == 0?'llicencies':'clubs') });
-	
 	params += '&'+$.param({ 'clubs': $('#form_clubs').val() });
 	params += '&'+$.param({ 'tipusparte': $('#form_tipusparte').val() });
 	params += '&'+$.param({ 'categoria': $('#form_categoria').val() });

@@ -1,0 +1,360 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/consultaadmin.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Consulta dinàmica clubs segons criteris{% endblock %}
+
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block body %}
+	<header>
+		<div class="row">
+			<div class="col-md-8"><h1>Consulta clubs</h1></div>
+	   	    <div class="col-md-4 col-last-right">
+	   	    	<div class="buttons-top-bootstrap">
+					<div class="button-top"><a class="link export-csv" href="javascript:void(0);" alt="Exportar dades" 
+						title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>
+				</div> 
+			</div>
+		</div>
+    </header>
+
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+    
+		 	<div id="list-forms">
+		    	<form id="formconsultaclubs" action="{{ path('FecdasBundle_consultaclubs') }}" method="get" {{ form_enctype(form) }}  class="appform">
+		    		<div class="row">
+						<div class="col-md-3">
+						    <div class="form-group">
+						    	{{ form_label(form.tipusclub, 'Tipus club', { 'label_attr': {'class': ''} }) }}
+								{{ form_widget(form.tipusclub, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+						<div class="col-md-3">
+						    <div class="form-group">
+						    	{{ form_label(form.tipuspagament, 'Tipus pagament', { 'label_attr': {'class': ''} }) }}
+								{{ form_widget(form.tipuspagament, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+						
+						<div class="col-md-3">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-group">
+									   	{{ form_label(form.dataalta, 'Data alta ', { 'label_attr': {'class': ''} }) }}
+										<div id="formconsulta-dataalta" class="input-group">
+											<span class="input-group-addon">Posterior a</span>
+											{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+											<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-group">
+									   	{{ form_label(form.datajunta, 'Data junta ', { 'label_attr': {'class': ''} }) }}
+										<div id="formconsulta-datajunta" class="input-group">
+											<span class="input-group-addon">Posterior a</span>
+											{{ form_widget(form.datajunta, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+											<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+										</div>
+									</div>
+								</div>
+							</div>									
+						</div>
+						<div class="col-md-12">
+						  	<div class="form-group form-group-2-inline">
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.activats) }} Només clubs actius
+							    	</label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+						    <h4 class="blue">Filtrar geogràficament</h4>
+						</div>
+						<div class="col-md-3">
+						    <div class="form-group">
+								{{ form_widget(form.municipi, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+						<div class="col-md-3">
+						    <div class="form-group">
+								{{ form_widget(form.comarca, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+						<div class="col-md-3">
+						    <div class="form-group">
+								{{ form_widget(form.provincia, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+
+						<div class="col-md-12">
+						    <h4 class="blue">Agrupar les dades per...</h4>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group form-group-2-inline">		
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.grouptipuspagament) }} Tipus de pagament
+							    	</label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.grouptipusclub) }} Tipus de club
+							    	</label>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group form-group-2-inline">		
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.groupmunicipi) }} Municipi
+							    	</label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.groupcomarca) }} Comarca
+							    	</label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.groupprovincia) }} Província
+							    	</label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label><h4>Adreça de correu:</h4></label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.groupmunicipicorreu) }} Municipi
+							    	</label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.groupcomarcacorreu) }} Comarca
+							    	</label>
+								</div>
+								<div class="checkbox-inline">
+							    	<label>
+							      		{{ form_widget(form.groupprovinciacorreu) }} Província
+							    	</label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-8">
+							<div class="form-group form-group-2-inline">
+								<div id="radios-baixes" class="input-group input-group-radio">
+									<div class="input-group-addon input-group-addon-2-inline">Baixes</div>
+									<div class="radio-inline">
+								    	<label>
+								      		{{ form_widget(form.baixes[0]) }} Excloure baixes
+								    	</label>
+									</div>
+									<div class="radio-inline">
+								    	<label>
+								      		{{ form_widget(form.baixes[1]) }} Incloure baixes
+								    	</label>
+									</div>
+									<div class="radio-inline">
+								    	<label>
+								      		{{ form_widget(form.baixes[2]) }} Només baixes
+								    	</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					
+						<div class="col-md-4  col-last-right">
+							<button type="submit" id="consulta-button-submit" class="btn btn-default btn-lg"><i class="fa fa-search"></i> Consultar</button>
+						</div>	
+					</div>
+			   	</form>
+		    </div>
+    <br/>
+    
+	{% if dades|length > 0 %}  
+	<div class="row">
+		<div class="col-md-4"><h4 class="blue">Nombre de registres: {{ total|number_format(0, ',', '.') }}</h4></div>
+		<div class="col-md-8">
+			{% if total > perpage %}
+			<div class="navigation">Pàgines: 
+				<div class="pagination">
+					{% set minpage = max(1, page-2) %}
+					{% set maxpage = min(pages, minpage + 4) %}
+					{% if page != 1 %}
+						<span class="first"><a href="{{ path('FecdasBundle_consultaclubs', queryparams|merge({ 'sort': sortparams.sort, 'direction': sortparams.direction, 'page': 1  })) }}">&lt;&lt;</a></span>
+						<span class="previous"><a href="{{ path('FecdasBundle_consultaclubs', queryparams|merge({ 'sort': sortparams.sort, 'direction': sortparams.direction, 'page': minpage - 1  })) }}">&lt;</a></span>
+					{% endif %}
+			    	{% for i in minpage..maxpage %}
+			    		{% if i == page %}
+					    	<span class="current">{{ i }}</span>
+					    {% else %}
+					    	<span class="page"><a href="{{ path('FecdasBundle_consultaclubs', queryparams|merge({ 'sort': sortparams.sort, 'direction': sortparams.direction, 'page': i  })) }}">{{ i }}</a></span>
+					    {% endif %}
+					{% endfor %}
+			        {% if page != pages %}
+				        <span class="next"><a href="{{ path('FecdasBundle_consultaclubs', queryparams|merge({ 'sort': sortparams.sort, 'direction': sortparams.direction, 'page': maxpage + 1  })) }}">&gt;</a></span>
+			            <span class="last"><a href="{{ path('FecdasBundle_consultaclubs', queryparams|merge({ 'sort': sortparams.sort, 'direction': sortparams.direction, 'page': pages  })) }}">&gt;&gt;</a></span>
+		            {% endif %}
+			    </div>
+			</div>{% endif %}
+		</div>
+		<div class="col-md-12">
+	    	<div id="list-consultaclubs">
+	    		<table class="table" style="{% if header|length < 8 %} width:auto; {% endif %}">
+	    			<tr class="header"> 	
+			   		    {% for key, camp in header %}
+				   		<th id="header-consulta-{{ key }}" class="th-listheader col-noresponsive col-listheader-sortable {% if camp.hidden == true %} hidden {% endif %}" style="width: {{ camp.width }}">
+				   			{% if camp.sort != '' %}
+				   				<a href="{{ path('FecdasBundle_consultaclubs', queryparams|merge({ 'sort': camp.sort, 'direction': sortparams.inverse, 'page': page  })) }}">{{ camp.nom }}</a>
+				   				<span class="listheader-icon {% if sortparams.sort == camp.sort %} listheader-icon-{{ sortparams.direction }} {% endif %}"></span>
+				   			{% else %}
+				   				{{ camp.nom }}
+				   			{% endif %}
+				   		</th>
+				   		{% endfor %}
+				   	</tr> 
+					{% for llicencia in dades %}
+						<tr class="data-detall"> 
+						{% for key, camp in llicencia %}
+							<td class="data-detall-cell consulta-{{ key }} data-detall-cell-{{ camp.align }} {% if camp.hidden == true %} hidden {% endif %}">
+								{% if key == 'total' or key == 'import' %}
+									{% if key == 'total' %} {{ camp.val|number_format(0, '', '.') }}{% endif %}
+									{% if key == 'import' %} {{ camp.val|number_format(2, ',', '.') }}{% endif %}
+								{% else %}
+									{{ camp.val|raw }}
+								{% endif %}
+							</td>
+						{% endfor %}
+						</tr> 
+					{% endfor %}
+					
+				</table>
+		 	</div>
+		 </div>
+	 </div>
+   	{% else %}
+        <div class="sms-notice">Cap resultat amb aquests criteris</div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+
+getQueryParams = function(action) {
+	var params = $.param({ 'action': action });
+
+	params += '&'+$.param({ 'activats': $('#form_activats').is(':checked')?1:0 });
+	params += '&'+$.param({ 'tipuspagament': $('#form_tipuspagament').val() });
+	params += '&'+$.param({ 'tipusclub': $('#form_tipusclub').val() });
+	params += '&'+$.param({ 'dataalta': $('#form_dataalta').val() });
+	params += '&'+$.param({ 'datajunta': $('#form_datajunta').val() });
+	params += '&'+$.param({ 'municipi': $('#form_municipi').val() });
+	params += '&'+$.param({ 'comarca': $('#form_comarca').val() });
+	params += '&'+$.param({ 'provincia': $('#form_provincia').val() });
+	params += '&'+$.param({ 'grouptipuspagament': $('#form_grouptipuspagament').is(':checked')?1:0 });
+	params += '&'+$.param({ 'grouptipusclub': $('#form_grouptipusclub').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupmunicipi': $('#form_groupmunicipi').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupcomarca': $('#form_groupcomarca').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupprovincia': $('#form_groupprovincia').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupmunicipicorreu': $('#form_groupmunicipicorreu').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupcomarcacorreu': $('#form_groupcomarcacorreu').is(':checked')?1:0 });
+	params += '&'+$.param({ 'groupprovinciacorreu': $('#form_groupprovinciacorreu').is(':checked')?1:0 });
+
+	var baixes = 0;
+	if ($('#form_baixes_1').is(':checked')) baixes = 1;
+	if ($('#form_baixes_2').is(':checked')) baixes = 2;
+	
+	params += '&'+$.param({ 'baixes': baixes });
+
+	return params;
+};
+
+$(document).ready(function(){
+
+	setMenuActive("menu-admconsultaclubs");
+
+	$("#menu-adm").click();
+
+	$( ".export-csv" ).click(function (e) {
+		e.preventDefault();
+
+		// add param query to perform 
+		var url = $('#formconsultaclubs').attr("action");
+		
+		var params = getQueryParams('csv');
+		
+		window.location = url+'?'+params;
+	});
+	
+	$( "#consulta-button-submit" ).click(function (e) {
+		 e.preventDefault();
+		// add param query to perform 
+		var url = $('#formconsultaclubs').attr("action");
+		
+		var params = getQueryParams('query');
+		
+		window.location = url+'?'+params;
+	});
+	
+	
+	$("select#form_municipi").select2({
+		placeholder: "Escollir municipi",
+		minimumInputLength: 2,
+		allowClear: true,
+	});
+
+
+	$("select#form_comarca").select2({
+		placeholder: "Escollir comarca",
+		minimumInputLength: 2,
+		allowClear: true,
+	});
+	
+	var current = new Date();
+	var defdate = new Date (current.getFullYear()-6, current.getMonth() + 1, current.getDay());
+	var maxdate = current;
+	var mindate = new Date (current.getFullYear()-100, current.getMonth() + 1, current.getDay());
+	initDateTimePicker ( 
+		$( '#form_dataalta' ), 
+		mindate, 
+		maxdate, 
+		defdate, 
+		'dataalta-picker', 
+		false,
+		''
+	);
+	initDateTimePicker ( 
+		$( '#form_datajunta' ), 
+		mindate, 
+		maxdate, 
+		defdate, 
+		'datajunta-picker', 
+		false,
+		''
+	);
+	
+});
+
+</script>
+
+{% endblock %}
+

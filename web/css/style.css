@@ -1686,6 +1686,24 @@ input#formuserclub-randompassword { width: 150px; }
 
 /*#formcarnet .row { margin-bottom: 15px; }*/
 
+#header-carnetsnum {	width: 3%; text-align: left;}
+#header-carnetsnom { width: 15%;  text-align: left; }
+#header-carnetscognoms { width: 24%;  text-align: left; }
+#header-carnetsdni { width: 12%; }
+#header-carnetsexpedicio { width: 12%;  text-align: center; }
+#header-carnetsemissio { width: 12%; text-align: center; }
+#header-carnetscaducitat { width: 12%; text-align: center; }
+#header-carnetsactions { width: 10%; text-align: right; }
+
+.data-detall-cell.carnets-num {	width: 3%; text-align: left;}
+.data-detall-cell.carnets-nom { width: 15%;  text-align: left; }
+.data-detall-cell.carnets-cognoms { width: 24%;  text-align: left; }
+.data-detall-cell.carnets-dni { width: 12%; }
+.data-detall-cell.carnets-expedicio { width: 12%;  text-align: center; }
+.data-detall-cell.carnets-emissio { width: 12%; text-align: center; }
+.data-detall-cell.carnets-caducitat { width: 12%; text-align: center; }
+.data-detall-cell.carnets-actions { width: 10%; text-align: right; }
+
 
 
 /************************************************* Persona  ******************************************************/

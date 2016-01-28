@@ -290,6 +290,7 @@ class PageController extends BaseController {
 					$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
 					
 					$datanaixement = \DateTime::createFromFormat('Y-m-d', $row['naixement']);
+					if ($row['sexe'] == 'D' || $row['sexe'] == 'd') $row['sexe'] = BaseController::SEXE_DONA;
 					$persona->setSexe($row['sexe']);
 					$persona->setDatanaixement($datanaixement);
 					$persona->setAddrnacionalitat($row['nacionalitat']);
@@ -673,6 +674,8 @@ class PageController extends BaseController {
 			$dataalta = $partearenovar->getDataCaducitat($this->getLogMailUserData("renovarAction 2 "));
 			$dataalta->setTime(00, 00);
 			$dataalta->add(new \DateInterval('P1D')); // Add 1
+		} else {
+			$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
 		}
 
 		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $partearenovar->getClub(), 'Renovació llicències');

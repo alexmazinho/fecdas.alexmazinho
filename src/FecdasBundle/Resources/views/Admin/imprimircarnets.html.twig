@@ -1,0 +1,390 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/imprimircarnet.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% form_theme form 'FecdasBundle:Includes:formtheming.html.twig' %}
+
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Formulari d'impressió de carnets {% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Formulari d'impressió de carnets</h1>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+    
+	<form id="formcarnets" action="{{ path('FecdasBundle_imprimircarnets') }}" method="post" {{ form_enctype(form) }}  class="appform">
+		<div class="row">
+			 <div class="col-md-4">
+				{{ form_label(form.federat, '(Opcional) Cerca federat') }}
+				<div id="formcarnet-federat"  class="form-group">
+					{{ form_widget(form.federat, { 'attr': {'class': 'form-control form-control-left'} }) }}
+				</div>
+			 </div>
+			 <div class="col-md-5">
+			 	<div class="form-group">
+					{{ form_label(form.importfile, 'Fitxer dades de carnets (CSV)') }}
+					{{ form_widget(form.importfile, { 'attr': {'class': 'form-control'} }) }}
+					<div class="input-group" style="position:relative;">
+					<span class="input-group-addon">Navegar...</span>
+					<input id="upload-file-info" class="form-control" type="text">
+			        <span class="input-group-addon input-group-addon-action">
+			        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+			        </span>
+			        </div>
+				</div>
+			 </div>
+			 <div class="col-md-1">
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<p><a class="import-carnets" alt="Importar dades" title="Afegir dades" href="javascript:void(0);">
+			   				<i class="fa fa-upload blue fa-2x"></i></a></p>
+				</div>
+			 </div>
+			 <div class="col-md-2">
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<p><a href="{{ asset('media/exemple_import_carnets.csv')  }}" target="_blank">
+								<img width="30" src="{{ asset('images/icon-csv.png') }}"> Fitxer d'exemple</a></p>
+				</div>
+			 </div>
+		</div>
+		<div class="row">
+			 <div class="col-md-2">
+				{{ form_label(form.nom, 'Nom') }}
+				<div id="formcarnet-nom"  class="form-group">
+					{{ form_widget(form.nom, { 'attr': {'class': 'form-control form-control-left'} }) }}
+				</div>
+			 </div>
+			 <div class="col-md-3">
+				{{ form_label(form.cognoms, 'Cognoms') }}
+				<div id="formcarnet-cognoms"  class="form-group">
+					{{ form_widget(form.cognoms, { 'attr': {'class': 'form-control form-control-left'} }) }}
+				</div>
+			 </div>
+			 <div class="col-md-2">
+				{{ form_label(form.nif, 'NIF/Pass.') }}
+				<div id="formcarnet-nif"  class="form-group">
+					{{ form_widget(form.nif, { 'attr': {'class': 'form-control form-control-center'} }) }}
+				</div>
+			 </div>
+			 <div class="col-md-2">
+			 	<label>&nbsp;</label>
+				<div class="form-group form-group-2-inline">						
+					<div class="checkbox-inline">
+						<label>
+							{{ form_widget(form.estranger) }} estranger 
+						</label>
+					</div>
+				</div>
+			 </div>
+		</div>
+		<div class="row">
+			<div class="col-md-3">
+				{{ form_label(form.num, 'Número de certificat') }}
+				<div id="formcarnet-num"  class="form-group">
+					{{ form_widget(form.num, { 'attr': {'class': 'form-control form-control-left'} }) }}
+				</div>
+			 </div>
+			 <div class="col-md-3">
+				<div class="form-group">
+					{{ form_label(form.dataemissio, 'Data d\'emissió baixa') }}
+					<div id="formcarnet-dataemissio" class="input-group">
+		  				<span class="input-group-addon">Des de</span>
+						{{ form_widget(form.dataemissio, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			 </div>
+			 <div class="col-md-3">
+				<div class="form-group">
+					{{ form_label(form.datacaducitat, 'Data de caducitat') }}
+					<div id="formcarnet-datacaducitat" class="input-group">
+		  				<span class="input-group-addon">Des de</span>
+						{{ form_widget(form.datacaducitat, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+					
+				</div>
+			 </div>
+			 <div class="col-md-1">
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<p><a class="afegir-carnet" alt="Afegir dades a la taula" title="Afegir dades a la taula" href="javascript:void(0);">
+			   				<i class="fa fa-plus-circle blue fa-2x"></i></a></p>
+				</div>
+			 </div>
+		</div>
+		<!-- <div class="row">
+			 <div class="col-md-5">
+				<div class="form-group">
+					{# form_label(form.logo, 'Imatge del logo del club...') #}
+					{# form_widget(form.logo, { 'attr': {'class': 'form-control'} }) #}
+					<div class="input-group" style="position:relative;">
+						<span class="input-group-addon">Navegar...</span>
+						<input id="upload-file-info" class="form-control" type="text">
+				        <span class="input-group-addon input-group-addon-action">
+				        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+				        </span>
+				    </div>
+				</div>
+			 </div>
+		</div> -->
+		<div class="row">
+			 <div class="col-md-12 col-last-right">
+				<div class="form-group">
+					<a class="imprimir-carnets" alt="Imprimir carnets" title="Imprimir carnets" href="{{ path('FecdasBundle_carnettopdf') }}">
+			   				<i class="fa fa-print blue fa-2x"></i></a>
+				 </div>
+			 </div>	
+		</div>
+		
+		<div id="formcarnet-rest">{{ form_rest(form) }}</div>
+		
+    </form>
+
+	{% set total = carnets|length %}
+	<div id="list-carnets" class="row">	
+    	<div class="col-md-12">
+	    	<div class="table-header">	
+		   		<div id="list-header">
+			   		<div id="header-carnetsnum" class="col-listheader">&nbsp;</div>
+			   		<div id="header-carnetsnom" class="col-listheader">Nom</div>
+			   		<div id="header-carnetscognoms" class="col-listheader">Cognoms</div>
+			   		<div id="header-carnetsdni" class="col-listheader">DNI</div>
+			   		<div id="header-carnetsexpedicio" class="col-listheader">Núm. exp.</div>
+			   		<div id="header-carnetsemissio" class="col-listheader">Emissió</div>
+			   		<div id="header-carnetscaducitat" class="col-listheader">Caducitat</div>
+			   		<div id="header-carnetsactions" class="col-listheader">Total: <span>{{ total }}</span></div>
+			   	</div>
+			</div>
+		
+			<div class="table-scroll">
+			   	<ol id="list-data">
+			   		<li class="data-detall data-detall-clone hidden">
+			   			<div class="data-detall-cell carnets-num">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-nom">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-cognoms">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-dni">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-expedicio">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-emissio">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-caducitat">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-actions"><a class="esborrar-carnet link" alt="Treure dades de la taula" title="Treure dades de la taula" href="javascript:void(0);">
+			   				<i class="fa fa-trash-o red fa-1x"></i></a></div>
+			   		</li>
+					{% for carnet in carnets %}
+			   			<li class="data-detall data-detall-carnet">
+			   			<div class="data-detall-cell carnets-num">{{ loop.index }}</div>
+			   			<div class="data-detall-cell carnets-nom">{{ carnet.nom }}</div>
+			   			<div class="data-detall-cell carnets-cognoms">{{ carnet.cognoms }}</div>
+			   			<div class="data-detall-cell carnets-dni">{{ carnet.dni }}</div>
+			   			<div class="data-detall-cell carnets-expedicio">{{ carnet.expedicio }}</div>
+			   			<div class="data-detall-cell carnets-emissio">{{ carnet.emissio }}</div>
+			   			<div class="data-detall-cell carnets-caducitat">{{ carnet.caducitat }}</div>
+			   			<div class="data-detall-cell carnets-actions"><a class="esborrar-carnet link" alt="Treure dades de la taula" title="Treure dades de la taula" href="javascript:void(0);">
+			   				<i class="fa fa-trash-o red fa-1x"></i></a></div>
+			   		</li>
+			   		{% endfor %}
+		   			<li class="data-detall data-detall-nodata" {% if total > 0 %}style="display: none;"{% endif %}><div class="data-detall-cell carnets-nodata"><div class="sms-notice">Sense dades</div></div></li>
+			   	</ol>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
+
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+			setMenuActive("menu-admincarnets");
+
+			var current = new Date();
+			var mindate = new Date (current.getFullYear()-1, current.getMonth() + 1, current.getDay()); // Un any endarrera
+			var maxdate = new Date (current.getFullYear(), current.getMonth() + 2, current.getDay());  // 1 mes futur
+			initDateTimePicker ( 
+				$( '#form_dataemissio' ), 
+				current, 
+				maxdate, 
+				current, 
+				'dataemissio-picker', 
+				false,
+				''
+			);
+
+			maxdate = new Date (current.getFullYear()+1, current.getMonth() + 2, current.getDay());  // 1 mes i 1 any futur 
+			
+			initDateTimePicker ( 
+				$( '#form_datacaducitat' ), 
+				current, 
+				maxdate, 
+				maxdate, 
+				'datacaducitat-picker', 
+				false,
+					''
+			);
+
+			prepareFileInput( $("#form_importfile") );
+
+			$( ".import-carnets" ).click(function (e) {
+				e.preventDefault();
+	
+				$("#formcarnets").submit();
+
+				$("#formcarnets").submit(function () {
+			    	
+			    	return true;
+			    });  
+
+			});
+
+			$( ".imprimir-carnets" ).click(function (e) {
+				e.preventDefault();
+
+				$('.alert').remove();
+				
+				var total = ($('#header-carnetsactions span').html()*1); 
+				
+				if (total <= 0) {
+					dialegError("Error", "No hi ha dades per imprimir", 350, 0);
+					return;
+				} 
+
+				var url = $(this).attr('href');
+
+				// Recollir dades per enviar
+				var carnets = [];
+				$(".data-detall-carnet").each(function() {
+
+					carnets.push( { nom: $(this).find('.carnets-nom').html(),
+									cognoms: $(this).find('.carnets-cognoms').html(),
+									dni: $(this).find('.carnets-dni').html(),
+									expedicio: $(this).find('.carnets-expedicio').html(),
+									emissio: $(this).find('.carnets-emissio').html(),
+									caducitat: $(this).find('.carnets-caducitat').html(),	 } );
+						
+					
+				});
+
+				window.location = url+'?carnets='+JSON.stringify(carnets); 
+
+			});
+			
+			
+			// Cerca federat
+			init_cercapersones_JSON('#form_federat', 
+									'Cercar per dni o nom dades del federat ... ', 
+									"{{  path('FecdasBundle_jsonpersones') }}",
+									function(dades) {
+										// Callback. Exemple {"id":"47422","text":"Pere ABADAL GONZALEZ","nom":"Pere","cognoms":"ABADAL GONZALEZ","dni":"77112119L"}
+				 						$("#form_nom").val(dades.nom);
+				 						$("#form_cognoms").val(dades.cognoms);
+				 						$("#form_nif").val(dades.dni);
+									});
+
+			$( ".afegir-carnet" ).click(function (e) {
+				e.preventDefault();
+
+				$('.alert').remove();
+				
+				var index = ($('#header-carnetsactions span').html()*1) + 1; 
+				
+				newElement = $('.data-detall-clone').clone();
+				$(newElement).removeClass('data-detall-clone hidden');
+				$(newElement).addClass('data-detall-carnet');
+				$(newElement).find('.carnets-num').html( index );
+
+				if ($('#form_nom').val().trim() == '') {
+					dialegError("Error", "Cal indicar el nom", 350, 100);
+					return;
+				}
+				$(newElement).find('.carnets-nom').html( $('#form_nom').val().toProperCase()  );
+				if ($('#form_cognoms').val().trim() == '') {
+					dialegError("Error", "Cal indicar els cognoms", 350, 100);
+					return;
+				}
+				$(newElement).find('.carnets-cognoms').html( $('#form_cognoms').val().toProperCase() );
+				if ($('#form_nif').val().trim() == '') {
+					dialegError("Error", "Cal indicar el DNI", 350, 100);
+					return;
+				}
+
+				var error = validarDadesPersona($("#form_nif").val(), $("#form_estranger").is(':checked'));
+        		if (error != "") {
+        			dialegError("Error", error, 400, 0);
+        			return;
+        		}
+				
+				$(newElement).find('.carnets-dni').html( $('#form_nif').val().toUpperCase() );
+				if ($('#form_num').val().trim() == '') {
+					dialegError("Error", "Cal indicar el número d'expedició", 350, 100);
+					return;
+				}
+				$(newElement).find('.carnets-expedicio').html( $('#form_num').val()  );
+				if ($('#form_dataemissio').val().trim() == '') {
+					dialegError("Error", "Cal indicar la data d'emissió", 350, 100);
+					return;
+				}
+				$(newElement).find('.carnets-emissio').html( $('#form_dataemissio').val()  );
+				if ($('#form_datacaducitat').val().trim() == '') {
+					dialegError("Error", "Cal indicar la data de caducitat", 350, 100);
+					return;
+				}
+				$(newElement).find('.carnets-caducitat').html( $('#form_datacaducitat').val() );
+				
+				// Canviar total
+				$('#header-carnetsactions span').html( index ); 
+
+				// Afegir fila
+				$('.data-detall-nodata').before( $(newElement)  );
+
+				// Amagar missatge no data si escau
+				if ( $('.data-detall-nodata').is(":visible") ) {
+					$('.data-detall-nodata').hide();
+				}
+				
+			});
+
+			// Click esborrar. Delegate event
+			$( "#list-carnets" ).on( "click", ".esborrar-carnet", function( e ) {
+				e.preventDefault();
+
+				$('.alert').remove();
+				
+				delElement = $(this).parents('li.data-detall').remove();
+
+				var total = ($('#header-carnetsactions span').html()*1) - 1;  
+
+				// Actualitzar números de fila
+				var fila = 1;
+				$(".data-detall-carnet").each(function() {
+
+					$(this).find('.carnets-num').html( fila++ );
+				});
+
+				// Canviar total
+				$('#header-carnetsactions span').html( total );
+
+				// Mostrar missatge no data si escau
+				if ( total == 0 && !$('.data-detall-nodata').is(":visible") ) {
+					$('.data-detall-nodata').show();
+				}
+			});
+			
+		});
+	</script>
+
+
+{% endblock %}
+

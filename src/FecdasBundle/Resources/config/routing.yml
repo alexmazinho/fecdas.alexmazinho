@@ -355,9 +355,9 @@ FecdasBundle_ajaxclubsnoms:
     requirements:
         _method:  GET
         
-FecdasBundle_imprimircarnet:
-    pattern:  /imprimircarnet
-    defaults: { _controller: "FecdasBundle:Admin:imprimircarnet" }
+FecdasBundle_imprimircarnets:
+    pattern:  /imprimircarnets
+    defaults: { _controller: "FecdasBundle:Admin:imprimircarnets" }
     requirements:
         _method:  GET|POST
 

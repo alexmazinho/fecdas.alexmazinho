@@ -200,6 +200,13 @@
 	    return n > 9 ? "" + n: "0" + n;
 	};
 	
+	// proper case string prptotype (JScript 5.5+)
+	String.prototype.toProperCase = function()
+	{
+	  return this.toLowerCase().replace(/^(.)|\s(.)/g, 
+	      function($1) { return $1.toUpperCase(); });
+	};
+	
 	sortLlista = function(listheaderid, llistaid) {
 	    $('.'+listheaderid)
 	    .off('click')

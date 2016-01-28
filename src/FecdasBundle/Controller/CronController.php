@@ -868,28 +868,44 @@ class CronController extends BaseController {
 				} else {
 					if ($diesPendent == self::DIES_PENDENT_AVIS) {
 						// Enviar mail falten 2 dies
+						
+						$databaixa = clone $parte_iter->getDataentrada();
+						$databaixa->add(new \DateInterval('P'.self::DIES_PENDENT_MAX.'D')); // Add 10 dies
+						
 						$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
 						if ($parte_iter->getClub()->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
 						
 						$bccmails = $this->getFacturacioMails();
 						$tomails = array($parte_iter->getClub()->getMail());
 						$body = "<p>Benvolgut club ".$parte_iter->getClub()->getNom()."</p>";
-						$body .= "<p>Us fem saber que la tramitació de llicències/assegurances 
-								feta en la data del " . $parte_iter->getDataentrada()->format('d-m-Y') . " s'anul·larà en 48 hores a partir de l'enviament d'aquest correu 
-								tret que se'n faci efectiu el pagament</p>";
+						$body .= "<p>Per motius de seguretat administrativa, ens veiem en l’obligació de fer-vos saber que no 
+								podem validar la tramitació de llicències/assegurances feta en la data " . $parte_iter->getDataentrada()->format('d-m-Y') . " 
+								si no se’n fa el pagament abans de la data " . $databaixa->format('d-m-Y') . " 
+								perquè el marge que se’ns permet per a validar-les abans de procedir 
+								és de 10 dies a partir del moment de la tramitació. Gràcies per la vostra comprensió</p>";
 						
 						$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 						$sortida .= " Parte pendent >> Notificació per mail falten 2 dies ". $parte_iter->getClub()->getNom();
 						$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
 					} else {
 						if ($diesPendent > self::DIES_PENDENT_MAX) {
-							// Esborrar
+							// Baixa del parte, anul·lació de la comanda 
+							$data = $this->getCurrentDate();
+							$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+							$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+							
+							foreach ($parte_iter->getLlicencies() as $llicencia) {
+								if (!$llicencia->esBaixa()) {
+									$detallBaixa = $this->removeParteDetall($parte_iter, $llicencia, $maxNumFactura, $maxNumRebut);
+								}
+							}
+							
 							$parte_iter->setDatamodificacio($current);
 							$parte_iter->setDatabaixa($current);
-							foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
+							/*foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
 								$llicencia_iter->setDatamodificacio($current);
 								$llicencia_iter->setDatabaixa($current);
-							}
+							}*/
 							$em->flush();
 							
 							$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();

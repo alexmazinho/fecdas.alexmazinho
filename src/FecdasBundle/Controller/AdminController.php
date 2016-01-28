@@ -5,6 +5,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\File\File;
+
+use FecdasBundle\Classes\CSVReader;
 
 use FecdasBundle\Classes\MysqlYear;
 use FecdasBundle\Entity\EntityParte;
@@ -22,7 +25,7 @@ class AdminController extends BaseController {
 		return new Response("");
 	}
 	
-	public function imprimircarnetAction(Request $request) {
+	public function imprimircarnetsAction(Request $request) {
 		// Formulari per imprimir carnet CMAS
 		 
 		if ($this->isAuthenticated() != true)
@@ -52,7 +55,9 @@ class AdminController extends BaseController {
 		$formBuilder->add('federat', 'hidden', array('data' => $formdata['federat']));  // Cerca federat
 					
 		$formBuilder->add('nif', 'text', array('required' => false, 'data' => $formdata['nif']));
-					
+			
+		$formBuilder->add('estranger', 'checkbox', array('required'  => false ));
+				
 		$formBuilder->add('dataemissio', 'datetime', array(
 								'required' 		=> false,
 								'mapped'		=> false,
@@ -75,31 +80,35 @@ class AdminController extends BaseController {
 					
 		$formBuilder->add('num', 'text', array('required' => false, 'data' => $formdata['num'])); // Número de certificat
 					
+		$atributs = array('accept' => '.csv');
+		$formBuilder->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
+					
 		/*$formBuilder->add('logo', 'file', array('required' 	=> false,'attr' => array('accept' => 'image/*')));*/
 			
 		$form = $formBuilder->getForm();
 		
-		try {
-			if ($request->getMethod() == 'POST') {
-				// Validació del formulari enviat
-				if (!isset($formdata['nom']) || $formdata['nom'] == '') throw new \Exception('Cal indicar el nom ' );
+		$carnets = array();
+		
+		if ($request->getMethod() == 'POST') {
+			try {
 				
-				if (!isset($formdata['cognoms']) || $formdata['cognoms'] == '') throw new \Exception('Cal indicar els cognoms ' );
-				
-				if (!isset($formdata['nif']) || $formdata['nif'] == '') throw new \Exception('Cal indicar el nif ' );
-				
-				if (!isset($formdata['dataemissio']) || $formdata['dataemissio'] == '') throw new \Exception('Cal indicar la data d\'emissio ' );
-				
-				$emissio = \DateTime::createFromFormat('d/m/Y', $formdata['dataemissio']);
-				
-				if (!isset($formdata['datacaducitat']) || $formdata['datacaducitat'] == '') throw new \Exception('Cal indicar la data de caducitat ' );
-				
-				$caducitat = \DateTime::createFromFormat('d/m/Y', $formdata['datacaducitat']);
-				
-				if (!isset($formdata['num']) || $formdata['num'] == '') throw new \Exception('Cal indicar el número de certificat ' );
-
+				// Carrega del fitxer
 				$form->handleRequest($request);
 				 	
+				$file = $form->get('importfile')->getData();
+			
+				if ($file == null) throw new \Exception('Cal escollir un fitxer');
+				
+				if (!$file->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $file->getMaxFilesize());
+					
+				if ($file->guessExtension() != 'txt'
+					|| $file->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
+					
+				$temppath = $file->getPath()."/".$file->getFileName();
+					
+				$carnets = $this->importCarnetsCSVData($temppath);					
+					
+					
 				/*$logo = $form['logo']->getData();
 				
 				if ($logo == null) throw new \Exception('Cal escollir el logo del club ' );
@@ -120,24 +129,79 @@ class AdminController extends BaseController {
 
 				$formdata['logo'] = $tempname;
 				*/	
-				$pathParam = array(); //Specified path param if you have some
-   				$queryParam = array('dades' => $formdata);
-    			$response = $this->forward("FecdasBundle:PDF:carnettopdf", $pathParam, $queryParam);
 				
-				return $response;
-				
-			} else {
-				$this->logEntryAuth('CARNET FORM',	'');
-			}
-		} catch (\Exception $e) {
+				$this->logEntryAuth('CARNETS POST OK',	count($carnets));
+			} catch (\Exception $e) {
 				// Ko, mostra form amb errors
-				$this->logEntryAuth('CARNET ERROR',	$e->getMessage());
+				$this->logEntryAuth('CARNETS POST ERROR',	$e->getMessage());
 				$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			}
+			
+			//return $this->redirect($this->generateUrl('FecdasBundle_imprimircarnets', array('form' => $form, 'carnets' => $carnets)));
+				
+		} else {
+			$this->logEntryAuth('CARNETS VIEW',	'');
 		}
 		
-		return $this->render('FecdasBundle:Admin:imprimircarnet.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView())));
+		return $this->render('FecdasBundle:Admin:imprimircarnets.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'carnets' => $carnets)));
 
+	}
+	
+	private function importCarnetsCSVData ($file) {
+		$reader = new CSVReader();
+		$reader->setCsv($file);
+		$reader->readLayoutFromFirstRow();
+		//$reader->setLayout(array('nom', 'cognoms', 'dni', 'estranger', 'expedicio', 'emissio', 'caducitat'));
+		
+		$carnets = array();
+		
+		$fila = 0;
+		
+		//$header = implode($reader->getLayout());
+
+		while($reader->process()) {
+			$fila++;
+				
+			$row = $reader->getRow();
+			//our logic here
+				
+			if (!isset($row['nom']) || trim($row['nom']) == '') throw new \Exception('Falta el camp \'nom\'');
+			if (!isset($row['cognoms'])) throw new \Exception('Falta el camp \'cognoms\'');
+			if (!isset($row['dni'])) throw new \Exception('Falta el camp \'dni\'');
+			if (!isset($row['estranger'])) throw new \Exception('Falta el camp \'estranger\'');
+			
+			if (mb_strtoupper($row['estranger'], "utf-8") != 'S' && mb_strtoupper($row['estranger'], "utf-8") != 'N') throw new \Exception('Al camp \'estranger\' cal indicar \'S\' o \'N\'');
+				
+			if (!isset($row['expedicio'])) throw new \Exception('Falta el camp \'expedicio\'');
+			if (!isset($row['emissio'])) throw new \Exception('Falta el camp \'emissio\'');
+			if (!isset($row['caducitat'])) throw new \Exception('Falta el camp \'caducitat\'');
+
+			$emissio = \DateTime::createFromFormat('d/m/Y', $row['emissio']);
+			if ($emissio == false)  throw new \Exception('Format incorrecte de la data d\'emissió. Cal indicar el formar \'dd/mm/YYYY\'');
+				
+			$caducitat = \DateTime::createFromFormat('d/m/Y', $row['caducitat']);
+			if ($caducitat == false)  throw new \Exception('Format incorrecte de la data de caducita. Cal indicar el formar \'dd/mm/YYYY\'');
+
+			$row['nom'] = mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8");
+			$row['cognoms'] = mb_convert_case($row['cognoms'], MB_CASE_TITLE, "utf-8"); //mb_strtoupper($row['cognoms'], "utf-8")		
+			$row['dni'] = mb_convert_case($row['dni'], MB_CASE_UPPER, "utf-8");
+			
+			$carnets[] = $row;
+				
+			$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'S';
+				
+			if ($estranger == false) {
+				/* Només validar DNI nacionalitat espanyola */
+				$dnivalidar = $row['dni'];
+				/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
+				if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
+						
+				if (BaseController::esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI '.$dnivalidar.' és incorrecte');
+			}
+	 	} 
+		
+		return 	$carnets;	 
 	}
 	
 	public function recentsAction(Request $request) {

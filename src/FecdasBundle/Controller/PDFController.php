@@ -989,7 +989,10 @@ class PDFController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		$dades = $request->query->get('dades', array());
+		$carnets = $request->query->get('carnets', json_encode(array()));
+		
+		$carnetsArray = json_decode($carnets, true);
+		
 		$current = $this->getCurrentDate();
 		
 		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
@@ -1013,9 +1016,6 @@ class PDFController extends BaseController {
 		$width = 86; //Original
 		$height = 54; //Original
 
-		// Add a page
-		$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
-		
 		// 	Image ($file, $x='', $y='', 
 		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
 		// 			$palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, 
@@ -1024,17 +1024,22 @@ class PDFController extends BaseController {
 							$width, $height, 'jpg', '', 'LT', true, 150, 
 							'', false, false, array(), true,
 							false, false, false, array());*/
-				
-		$this->printPlasticCarnet($pdf, $dades);
+		
+		foreach ($carnetsArray as $dades) {
+			// Add a page
+			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+			
+			$this->printPlasticCarnet($pdf, $dades);	
+		}		
 				
 		// reset pointer to the last page
 		$pdf->lastPage();
 	
 		// Generació del PDF 
-		$this->logEntryAuth('CARNET OK', json_encode($dades));
-				
+		$this->logEntryAuth('CARNET OK', json_encode($carnets));
+		
 		// Close and output PDF document
-		$response = new Response($pdf->Output("carnet_".$dades['nif']."_".$current->format('Y-m-d').".pdf", "D"));
+		$response = new Response($pdf->Output("carnets_".$current->format('Y-m-d').".pdf", "D"));
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
 	}
@@ -1080,16 +1085,16 @@ class PDFController extends BaseController {
 		$pdf->Cell(0, 0, isset($dades['cognoms'])?$dades['cognoms']:'', 0, 1, 'L');
 
 		$pdf->SetXY($xDni, $yDni);
-		$pdf->Cell(0, 0, isset($dades['nif'])?$dades['nif']:'', 0, 1, 'L');
+		$pdf->Cell(0, 0, isset($dades['dni'])?$dades['dni']:'', 0, 1, 'L');
 
 		$pdf->SetXY($xEmi, $yEmi+$gap);
-		$pdf->Cell(0, 0, isset($dades['dataemissio'])?$dades['dataemissio']:'', 0, 1, 'L');
+		$pdf->Cell(0, 0, isset($dades['emissio'])?$dades['emissio']:'', 0, 1, 'L');
 				
 		$pdf->SetXY($xCad, $yCad+$gap);
-		$pdf->Cell(0, 0, isset($dades['datacaducitat'])?$dades['datacaducitat']:'', 0, 1, 'L');
+		$pdf->Cell(0, 0, isset($dades['caducitat'])?$dades['caducitat']:'', 0, 1, 'L');
 				
 		$pdf->SetXY($xNum, $yNum+$gap);
-		$pdf->Cell(0, 0, isset($dades['num'])?$dades['num']:'', 0, 1, 'L');
+		$pdf->Cell(0, 0, isset($dades['expedicio'])?$dades['expedicio']:'', 0, 1, 'L');
 		
 		// Logo club
 		/*$pdf->SetXY($xLogoC, $yLogoC);

@@ -921,8 +921,12 @@ class FacturacioController extends BaseController {
 		$transport = ($transport == 1?true:false);
 		$comentaris = $request->query->get('comentaris', '');
 		$club = null;
+		$datafacturacio = $this->getCurrentDate();
+		$strDatafacturacio = $request->query->get('datafacturacio', '');
 		
-		if ($this->isCurrentAdmin()) {  // Admins poden escollir el club 
+		if ($strDatafacturacio != '') $datafacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio); 
+				
+		if ($this->isCurrentAdmin()) {  // Admins poden escollir el club i data facturacio 
 			$codi = $request->query->get('club', ''); 
 			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		}
@@ -935,9 +939,7 @@ class FacturacioController extends BaseController {
 	
 			if ($action == 'desar' || $action == 'pagar') {
 				// Comanda nova. Crear factura
-				$current = $this->getCurrentDate();
-				
-				$comanda = $this->crearComanda($current, $comentaris);
+				$comanda = $this->crearComanda($this->getCurrentDate(), $comentaris);
 				
 				$cart = $this->getSessionCart();
 				
@@ -963,7 +965,7 @@ class FacturacioController extends BaseController {
 				// Validacions comuns i anotacions stock
 				$this->tramitarComanda($comanda);
 
-				$factura = $this->crearFactura($current, $comanda);
+				$factura = $this->crearFactura($datafacturacio, $comanda);
 			
 				$em ->flush();
 				

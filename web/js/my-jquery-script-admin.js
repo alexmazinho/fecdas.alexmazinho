@@ -172,13 +172,14 @@
 	};
 
 	confirmarPagament = function(url, titol, urlok) {
+		
 		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true,
           	buttons : {
             	"Confirmar" : function() {
     	        	$(this).dialog("close");
-    	        	console.log(url);	
+    	        	
     	        	$('#progressbar').show();  // Rellotge
         	
     	    		var params = { 	datapagament: $( "#datapagament" ).val(), 
@@ -203,11 +204,15 @@
 	    	   			//$('#parte_tipus').val('');
 	    	   			 
 	    	   			//$('#formparte-llicencia').html(sms);
+	    	   			$( '#dialeg' ).html('');
+	    	   			$(this).dialog( "destroy" );
     	    		});
     	        },
 	            "Cancel·lar" : function() {
 	    			//Cancel submit behavior
-	            	$(this).dialog("close");
+	            	
+	            	$( '#dialeg' ).html('');
+	            	$(this).dialog( "destroy" );
 	            }
 	        },
 	        title: titol,
@@ -241,7 +246,7 @@
 			       $('#tipuspagament').append( htmlOpcio );
 			  });
 		});
-
+		
 	    $("#dialeg").dialog("open");
 	};
 	
@@ -478,7 +483,7 @@
 		    	   	$("#main-col").prepend(sms);
    	    		});
 				 
-			}, function() { });
+			}, function() { }, function() { });
 	    	
 		});
 	};

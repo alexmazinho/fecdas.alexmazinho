@@ -227,9 +227,9 @@
 			e.preventDefault();	
 			var url = $(this).attr("href");
 			
-			dialegConfirmacio( pagamentComandaSMS(), "Abans de continuar...", 0, 550, function() {
+			dialegConfirmacio( pagamentComandaSMS( false ), "Abans de continuar...", 0, 550, function() {
 	        	window.location = url+'&comentaris='+$('#comanda_comentaris').val();
-	        }, function() {} );
+	        }, function() {}, function() {});
 		});
 
 		
@@ -270,7 +270,7 @@
 					
 					window.location = url;
 					 
-				}, function() { });
+				}, function() { }, function() {});
 			});
 		
 			$('.confirmar-pagament').click(function(e) {

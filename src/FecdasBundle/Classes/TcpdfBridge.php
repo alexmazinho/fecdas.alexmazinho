@@ -54,7 +54,7 @@ class TcpdfBridge extends \TCPDF {
         $this->setFontSubsetting(true);
         
         //Document Encryption / Security. http://www.tcpdf.org/examples/example_016.phps
-        $this->SetProtection(array('modify', 'copy'), '', null, 2, null);
+        //$this->SetProtection(array('modify', 'copy'), '', null, 2, null);
     }
     
     public function Header() {

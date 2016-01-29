@@ -426,7 +426,8 @@
 	};
 	
 	
-	dialegConfirmacio = function(strHtml, titol, h, w, callbackok, callbackko) {
+	dialegConfirmacio = function(strHtml, titol, h, w, callbackok, callbackko, callbackopen) {
+		
 		$( '#dialeg' ).html(strHtml);
 		
 		$( '#dialeg' ).dialog({
@@ -437,19 +438,23 @@
 			 modal: true,
 			 buttons: {
 			 	"Continuar": function() {
-			 		$( this ).dialog( "close" );
-			 		//$( this ).dialog( "destroy" );
+			 		
 			 		callbackok();
+
 			 		$( '#dialeg' ).html('');
+			 		$( this ).dialog( "destroy" );
 			 	},
 			 	"Cancel·lar": function() {
-			 		$( this ).dialog( "close" );
-			 		//$( this ).dialog( "destroy" );
 			 		callbackko();
+
 			 		$( '#dialeg' ).html('');
+			 		$( this ).dialog( "destroy" );
 			 	}
-			 }
+			 },
+			 open: callbackopen
 		});
+		
+		
 	}; 
 	
 	smsResultAjax = function(result, sms) {
@@ -1258,19 +1263,36 @@
 	    });
 	};
 
-	pagamentComandaSMS = function() {
-		return "<div class='sms-pagament'><p>Per pagar la comanda "+
-			" pot fer la transferència en qualsevol moment al número de compte:</p> "+ 
-			"<p>2100 0900 95 0211628657</p> "+
-			"<ul><li>Amb targeta de crèdit o dèbit</li> "+
-			"<li>Amb un compte de \'La Caixa\'</li> "+
-			"<li>Mitjançant transferència des d\'una altra entitat</li></ul> "+
-			"<p>Gràcies</p>"+
-			"<div class='form-group'>"+
-		    "<label for='comanda_comentaris'>Comentaris</label>"+
-			"<div id='formcomanda-comentaris'>"+
-			"	<textarea class='form-control' rows='3' name='comanda[comentaris]' id='comanda_comentaris'></textarea>"+
-			"</div></div></div>";
+	pagamentComandaSMS = function(admin) {
+		
+		var dialegHtml = '';
+				
+		dialegHtml += "<div class='sms-pagament'><p>Per pagar la comanda ";
+		dialegHtml += " pot fer la transferència en qualsevol moment al número de compte:</p> "; 
+		dialegHtml += "   <p>2100 0900 95 0211628657</p> ";
+		dialegHtml += "   <ul><li>Amb targeta de crèdit o dèbit</li> ";
+		dialegHtml += "      <li>Amb un compte de \'La Caixa\'</li> ";
+		dialegHtml += "      <li>Mitjançant transferència des d\'una altra entitat</li></ul> ";
+		dialegHtml += "   <p>Gràcies</p>";
+		
+		if (admin == true) {
+			dialegHtml += "   <div class='form-group'>";
+			dialegHtml += "      <label for='comanda_datafactura'>Data facturació</label>";
+			dialegHtml += "      <div id='formcomanda-datafactura'>";
+			dialegHtml += "	         <input type='text' id='datafacturacio' disabled='disabled'/>";
+			dialegHtml += "      </div>";
+			dialegHtml += "   </div>";
+		}
+		
+		dialegHtml += "   <div class='form-group'>";
+		dialegHtml += "      <label for='comanda_comentaris'>Comentaris</label>";
+		dialegHtml += "      <div id='formcomanda-comentaris'>";
+		dialegHtml += "	        <textarea class='form-control' rows='3' name='comanda[comentaris]' id='comanda_comentaris'></textarea>";
+		dialegHtml += "      </div>";
+		dialegHtml += "   </div>";
+		dialegHtml += "</div>";
+		
+		return dialegHtml;
 	};
 	
 	
@@ -1604,7 +1626,7 @@
 	        		$('#formclub').submit();
 		        }, function() {
 		        	$( "#tabs-club" ).tabs( "option", "active", 1 );
-		        });
+		        }, function() { });
 	        	
 			} else {
 				$('#formclub').submit();

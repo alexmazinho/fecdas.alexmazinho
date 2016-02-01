@@ -328,7 +328,7 @@ class AdminController extends BaseController {
 				));
 		$form = $formBuilder->getForm();
 		
-		
+		/*
 		// Crear índex taula partes per data entrada
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
 		$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
@@ -357,11 +357,12 @@ class AdminController extends BaseController {
 		if ($currentNoPagat == true) $strQuery .= " AND p.rebut IS NULL ";
 		if ($currentNoImpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 ";
 		if ($currentCompta == true) $strQuery .= " AND f.comptabilitat <> 1 ";
+		*/
 		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
 		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
 		//if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
 
-		$strQuery .= " ORDER BY ".$sort; 
+		/*$strQuery .= " ORDER BY ".$sort; 
 
 		$query = $em->createQuery($strQuery)
 			->setParameter('ininormal', $inianual)
@@ -372,12 +373,13 @@ class AdminController extends BaseController {
 			// Dates normals
 		} else {
 			// dates dels anys escollits a les factures / rebuts
-			/*if ($currentNumrebut == true) $partesrecents->setParam('numrebut',$currentNumrebut);
-			if ($currentNumfactura == true) $partesrecents->setParam('numfactura',$currentNumfactura);*/
+			//if ($currentNumrebut == true) $partesrecents->setParam('numrebut',$currentNumrebut);
+			//if ($currentNumfactura == true) $partesrecents->setParam('numfactura',$currentNumfactura);
 			if ($currentNumrebut == true) $query->setParameter('numrebut',$currentNumrebut);
 			if ($currentNumfactura == true) $query->setParameter('numfactura',$currentNumfactura);
 		}
-
+		*/
+		
 		/*if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$currentEstat]);
 	
 		// Paràmetres URL sort i pagination 
@@ -393,6 +395,11 @@ class AdminController extends BaseController {
 							/*'numrebut' => $currentNumrebut, 'anyrebut' => $currentAnyrebut,
 							'numfactura' => $currentNumfactura, 'anyfactura' => $currentAnyfactura,
 							'estat' => $currentEstat, 'baixa' => true, 'nopagat' => true, 'noimpres' => 'true' */);
+
+		$query = $this->consultaPartesRecents($currentClub, $currentEstat, $currentBaixa, 
+											$currentNoPagat, $currentNoImpres, $currentCompta, 
+											$currentNumfactura, $currentAnyfactura,
+											$currentNumrebut, $currentAnyrebut, $sort.' '.$direction);
 
 		$paginator  = $this->get('knp_paginator');
 		$partesrecents = $paginator->paginate(

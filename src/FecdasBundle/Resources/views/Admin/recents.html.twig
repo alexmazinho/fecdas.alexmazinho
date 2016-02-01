@@ -74,7 +74,7 @@
 					</div>
 				</div>
 				<div class="col-md-4  col-last-right">
-					<a class="link imprimir-pendents" href="{{ path('FecdasBundle_imprimirpendents') }}" alt="Imprimir pendents" 
+					<a class="link imprimir-pendents" href="{{ path('FecdasBundle_imprimirpendents', sortparams)|raw }}" alt="Imprimir pendents" 
 						title="Imprimir pendents">Imprimir pendents <i class="fa fa-print blue fa-2x"></i></a>
 				</div>	
 			</div>
@@ -87,8 +87,7 @@
 	   		<div id="list-header">
 		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.num') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-parterecentsfactura" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Factura', 'p.factura') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.factura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsfactura" class="col-listheader col-noresponsive listheader-noorder">Factura</div>
 		   		<div id="header-parterecentsentrada" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Entrada', 'p.dataentrada') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentsdata" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}
@@ -152,6 +151,26 @@
 
 <script type="text/javascript">
 
+recentsParams = function() {
+	var params = []; 
+	params.push( {'name':'clubs','value': $('#form_clubs').val()} );
+	params.push( {'name':'estat','value': $('#form_estat').val()} );
+	
+	params.push( {'name':'numrebut','value': $('#form_numrebut').val()} );
+	params.push( {'name':'anyrebut','value': $('#form_anyrebut').val()} );
+	params.push( {'name':'numfactura','value': $('#form_numfactura').val()} );
+	params.push( {'name':'anyfactura','value': $('#form_anyfactura').val()} );
+	
+	params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
+	params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
+	params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
+	params.push( {'name':'compta','value': ($('#form_compta').is(':checked'))?1:0} );
+	
+	//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
+	
+	return params;
+};
+
 $(document).ready(function(){
 	setMenuActive("menu-admllistes");
 
@@ -164,38 +183,28 @@ $(document).ready(function(){
 	
 	selectRecentsClub();
 
-	$('#form_clubs').change(function () {
+	$('#form_clubs, #form_numfactura, #form_numrebut, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
 		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+		var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
+		var params = recentsParams();
+
+		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+		window.location = url; 
 	});
-	$('#form_numfactura').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
+
+	$('.imprimir-pendents').click(function (e) {
+		e.preventDefault();
+		
+		var url = $(this).attr('href');
+		var params = recentsParams();
+
+		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+		window.location = url; 
 	});
-	$('#form_numrebut').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
-	});
-	$('#form_estat').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
-	});
-	$('#form_baixa').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
-	});
-	$('#form_nopagat').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
-	});
-	$('#form_noimpres').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
-	});
-	$('#form_compta').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		recentsReload("{{ path('FecdasBundle_recents', sortparams)|raw }}");
-	});
+	
+	
+
+	
 	//sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

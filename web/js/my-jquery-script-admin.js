@@ -150,27 +150,6 @@
 		});
 	};
 	
-	recentsReload = function(url) {
-		var params = []; 
-		params.push( {'name':'clubs','value': $('#form_clubs').val()} );
-		params.push( {'name':'estat','value': $('#form_estat').val()} );
-		
-		params.push( {'name':'numrebut','value': $('#form_numrebut').val()} );
-		params.push( {'name':'anyrebut','value': $('#form_anyrebut').val()} );
-		params.push( {'name':'numfactura','value': $('#form_numfactura').val()} );
-		params.push( {'name':'anyfactura','value': $('#form_anyfactura').val()} );
-		
-		params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
-		params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
-		params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
-		params.push( {'name':'compta','value': ($('#form_compta').is(':checked'))?1:0} );
-		
-		//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
-		
-		
-		llistaPaginationAndSort(url, params);
-	};
-
 	confirmarPagament = function(url, titol, urlok) {
 		
 		$("#dialeg").dialog({

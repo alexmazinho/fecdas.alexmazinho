@@ -651,17 +651,45 @@ class PDFController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		$partes = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->findByImpres(0);
+		// Cerca
+		$currentBaixa = false; // Inclou Baixes
+		if ($request->query->has('baixa') && $request->query->get('baixa') == 1) $currentBaixa = true;
+		$currentNoPagat = false;// No pagats
+		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 1) $currentNoPagat = true;
+		$currentNoImpres = false;// No impres
+		if ($request->query->has('noimpres') && $request->query->get('noimpres') == 1) $currentNoImpres = true;
+		$currentCompta = false;// Pendents compta
+		if ($request->query->has('compta') && $request->query->get('compta') == 1) $currentCompta = true;
+
+		$currentNumfactura = $request->query->get('numfactura', '');
+		$currentNumrebut = $request->query->get('numrebut', '');
+		$currentAnyfactura = $request->query->get('anyfactura', '');
+		$currentAnyrebut = $request->query->get('anyrebut', '');
+		
+		//$currentClub = null;
+		$em = $this->getDoctrine()->getManager();
+		$currentClub = $em->getRepository('FecdasBundle:EntityClub')->find($request->query->get('clubs', ''));
+		
+		$defaultEstat = self::TOTS_CLUBS_DEFAULT_STATE; // Tots normal
+		if ($this->get('session')->get('username', '') == self::MAIL_FACTURACIO)  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
+		$currentEstat = $request->query->get('estat', $defaultEstat);
+		
+		$sort = $request->query->get('sort', 'p.dataentrada');
+		$direction = $request->query->get('direction', 'asc');
+		
+		$query = $this->consultaPartesRecents($currentClub, $currentEstat, $currentBaixa, 
+											$currentNoPagat, $currentNoImpres, $currentCompta, 
+											$currentNumfactura, $currentAnyfactura, $currentNumrebut, $currentAnyrebut, $sort.' '.$direction);
+	
+		$partes = $query->getResult();
+		//$partes = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->findByImpres(0);
 	
 		if (count($partes) > 0) {
-			$em = $this->getDoctrine()->getManager();
-			
 			$current = $this->getCurrentDate();
 			
 			$llicencies = array();
 			$ids = array();
 			foreach ($partes as $parte) {
-				
 				if (count($partes) > 1 && 
 					($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
 					 $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 )) {

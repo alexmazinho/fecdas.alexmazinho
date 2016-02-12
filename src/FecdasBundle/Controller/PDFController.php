@@ -304,12 +304,14 @@ class PDFController extends BaseController {
 				$pdf->init(array('author' => 'FECDAS', 'title' => 'Llicències ' . date("Y")), 
 						true, "Llista número: " . $parte->getId());
 							
-				$pdf->AddPage();
+				$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 				
 				// set color for background
 				$pdf->SetFillColor(255, 255, 255); //Blanc
 				// set color for text
 				$pdf->SetTextColor(0, 0, 0); // Negre
+				
+				$pdf->AddPage();
 				
 				$y_ini = $pdf->getY();
 				$x_ini = $pdf->getX();
@@ -394,18 +396,7 @@ class PDFController extends BaseController {
 					$num_pages = $pdf->getNumPages();
 					$pdf->startTransaction();
 					
-					$persona = $llicencia_iter->getPersona();
-					
-					$pdf->Cell($w[0], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-					$pdf->Cell($w[1], 6, $persona->getCognoms(), 'LRB', 0, 'L', 0, '', 1); 
-					$pdf->Cell($w[2], 6, $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);  
-					$pdf->Cell($w[3], 6, $persona->getDatanaixement()->format("d/m/y") , 'LRB', 0, 'C', 0, '', 1); 
-					$pdf->Cell($w[4], 6, $persona->getAddradreca(), 'LRB', 0, 'L', 0, '', 1); 
-					$pdf->Cell($w[5], 6, $persona->getAddrcp(), 'LRB', 0, 'C', 0, '', 1);  
-					$pdf->Cell($w[6], 6, $persona->getAddrpob(), 'LRB', 0, 'L', 0, '', 1);
-					$pdf->Cell($w[7], 6, $llicencia_iter->getCategoria()->getSimbol(), 'LRB', 0, 'C', 0, '', 1);  
-					$pdf->Cell($w[8], 6, $llicencia_iter->getActivitats(), 'LRB', 0, 'C', 0, '', 1); 
-					$pdf->Ln();
+					$this->parteRow($pdf, $w, $llicencia_iter);
 					
 					if($num_pages < $pdf->getNumPages()) {
 						//Undo adding the row.
@@ -415,6 +406,9 @@ class PDFController extends BaseController {
 						$this->parteHeader($pdf, $w);
 						$pdf->SetFillColor(255, 255, 255); //Blanc
 						$pdf->SetFont('dejavusans', '', 9, '', true);
+						
+						$this->parteRow($pdf, $w, $llicencia_iter);
+						
 					} else {
 						//Otherwise we are fine with this row, discard undo history.
 						$pdf->commitTransaction();
@@ -452,8 +446,6 @@ class PDFController extends BaseController {
 				
 				$pdf->writeHTML($tbl, false, false, false, false, '');
 				
-				$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-				
 				// reset pointer to the last page
 				$pdf->lastPage();
 			
@@ -479,6 +471,22 @@ class PDFController extends BaseController {
 		$pdf->Cell($w[6], 7, 'POBLACIO', 1, 0, 'C', 1);
 		$pdf->Cell($w[7], 7, 'CAT', 1, 0, 'C', 1);
 		$pdf->Cell($w[8], 7, 'ACTIVITATS', 1, 0, 'C', 1);
+		$pdf->Ln();
+	}
+	
+	private function parteRow($pdf, $w, $llicencia) {
+		
+		$persona = $llicencia->getPersona();
+		 
+		$pdf->Cell($w[0], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+		$pdf->Cell($w[1], 6, $persona->getCognoms(), 'LRB', 0, 'L', 0, '', 1); 
+		$pdf->Cell($w[2], 6, $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);  
+		$pdf->Cell($w[3], 6, $persona->getDatanaixement()->format("d/m/y") , 'LRB', 0, 'C', 0, '', 1); 
+		$pdf->Cell($w[4], 6, $persona->getAddradreca(), 'LRB', 0, 'L', 0, '', 1); 
+		$pdf->Cell($w[5], 6, $persona->getAddrcp(), 'LRB', 0, 'C', 0, '', 1);  
+		$pdf->Cell($w[6], 6, $persona->getAddrpob(), 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[7], 6, $llicencia->getCategoria()->getSimbol(), 'LRB', 0, 'C', 0, '', 1);  
+		$pdf->Cell($w[8], 6, $llicencia->getActivitats(), 'LRB', 0, 'C', 0, '', 1); 
 		$pdf->Ln();
 	}
 	

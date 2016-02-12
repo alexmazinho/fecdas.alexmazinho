@@ -894,11 +894,17 @@ class CronController extends BaseController {
 							$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 							$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
 							
+							$detallsBaixa = array();
+							$extra = array();
 							foreach ($parte_iter->getLlicencies() as $llicencia) {
 								if (!$llicencia->esBaixa()) {
 									$detallBaixa = $this->removeParteDetall($parte_iter, $llicencia, $maxNumFactura, $maxNumRebut);
 								}
 							}
+							
+							
+							
+							
 							
 							$parte_iter->setDatamodificacio($current);
 							$parte_iter->setDatabaixa($current);

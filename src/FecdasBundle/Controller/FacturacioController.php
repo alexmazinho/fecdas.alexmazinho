@@ -1297,26 +1297,29 @@ class FacturacioController extends BaseController {
 		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
 		
+		$detallsBaixa = array();
+		$extra = array();
 		if ($comanda->esParte()) {
 			$parte = $comanda;
-			
+			$llicenciesBaixa = array();
 			foreach ($parte->getLlicencies() as $llicencia) {
 				if (!$llicencia->esBaixa()) {
-					$detallBaixa = $this->removeParteDetall($parte, $llicencia, $maxNumFactura, $maxNumRebut);
+					$llicenciesBaixa[] = $llicencia;
 				}
 			}
+
+			$dadesBaixa = $this->removeParteDetalls($parte, $llicenciesBaixa);
+			if ( isset($dadesBaixa['detalls']) ) $detallsBaixa = $dadesBaixa['detalls'];
+			if ( isset($dadesBaixa['extra']) ) $extra = $dadesBaixa['extra'];
+			
 		} else {
-		//foreach ($detalls as $detall) {
 			foreach ($comanda->getDetalls() as $detall) {
 				if (!$detall->esBaixa()) {
-						
-					$detallBaixa = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
-
-					$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $comanda, $detallBaixa, $maxNumFactura, $maxNumRebut);
-					
+					$detallsBaixa[] = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
 				}
 			}
 		}
+		if (count($detallsBaixa) > 0) $this->crearFacturaRebutAnulacio($this->getCurrentDate(), $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
 
 		$comanda->setDatamodificacio(new \DateTime());
 		$comanda->setDatabaixa(new \DateTime());

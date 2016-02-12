@@ -1744,9 +1744,10 @@ GROUP BY c.nom
 			$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 			$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
 
-			$detallBaixa = $this->removeComandaDetall($duplicat, $producte, 1);	
+			$detallsBaixa = array();
+			$detallsBaixa[] = $this->removeComandaDetall($duplicat, $producte, 1);	
 			
-			$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $duplicat, $detallBaixa, $maxNumFactura, $maxNumRebut);
+			$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $duplicat, $detallsBaixa, $maxNumFactura, $maxNumRebut);
 			
 			$em->flush();
 		

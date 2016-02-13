@@ -80,6 +80,12 @@ FecdasBundle_llicencia:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_baixallicencies:
+    pattern:  /baixallicencies
+    defaults: { _controller: "FecdasBundle:Page:baixallicencies" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_persona:
     pattern:  /persona
     defaults: { _controller: "FecdasBundle:Page:persona" }

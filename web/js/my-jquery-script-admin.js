@@ -12,7 +12,8 @@
 			var params = { 	roleclub:e.val };
 			$.get(url,	params,
 			function(data) {
-				window.location = window.location.pathname; 
+				//window.location = window.location.pathname; 
+				location.reload();
 			}); // Canvi de rol
 		});
 	};

@@ -1293,10 +1293,6 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 		}
 		
-		$data = $this->getCurrentDate();
-		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
-		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-		
 		$detallsBaixa = array();
 		$extra = array();
 		if ($comanda->esParte()) {
@@ -1308,9 +1304,7 @@ class FacturacioController extends BaseController {
 				}
 			}
 
-			$dadesBaixa = $this->removeParteDetalls($parte, $llicenciesBaixa);
-			if ( isset($dadesBaixa['detalls']) ) $detallsBaixa = $dadesBaixa['detalls'];
-			if ( isset($dadesBaixa['extra']) ) $extra = $dadesBaixa['extra'];
+			$this->removeParteDetalls($parte, $llicenciesBaixa); // Crea factura si escau (comanda consolidada)
 			
 		} else {
 			foreach ($comanda->getDetalls() as $detall) {
@@ -1318,18 +1312,29 @@ class FacturacioController extends BaseController {
 					$detallsBaixa[] = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
 				}
 			}
+			
+			if (count($detallsBaixa) > 0) {
+				$data = $this->getCurrentDate();
+				$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+				$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
+			
+				$this->crearFacturaRebutAnulacio($data, $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
+			}
 		}
-		if (count($detallsBaixa) > 0) $this->crearFacturaRebutAnulacio($this->getCurrentDate(), $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
 
 		$comanda->setDatamodificacio(new \DateTime());
 		$comanda->setDatabaixa(new \DateTime());
-	
 	
 		$em->flush();
 	
 		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId());
 		$this->get('session')->getFlashBag()->add('sms-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
-		return $this->redirect($this->generateUrl('FecdasBundle_comandes', array('baixes' => true)));
+		
+		$params = $request->query->all();
+		if (isset($params['baixes'])) $params['baixes'] = true;
+		
+		return $this->redirect($this->generateUrl('FecdasBundle_comandes', $params));
+		//return $this->redirect($this->generateUrl('FecdasBundle_comandes', array('baixes' => true)));
 	}
 	
 	public function pagamentcomandaAction(Request $request) {

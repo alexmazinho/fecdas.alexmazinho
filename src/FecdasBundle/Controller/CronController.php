@@ -890,32 +890,33 @@ class CronController extends BaseController {
 					} else {
 						if ($diesPendent > self::DIES_PENDENT_MAX) {
 							// Baixa del parte, anul·lació de la comanda 
-							$data = $this->getCurrentDate();
-							$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
-							$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-							
 							$detallsBaixa = array();
 							$extra = array();
+							$llicenciesBaixa = array();
 							foreach ($parte_iter->getLlicencies() as $llicencia) {
 								if (!$llicencia->esBaixa()) {
-									$detallBaixa = $this->removeParteDetall($parte_iter, $llicencia, $maxNumFactura, $maxNumRebut);
+									$llicenciesBaixa[] = $llicencia;
 								}
 							}
 							
+							try {
+								$this->removeParteDetalls($parte_iter, $llicenciesBaixa); // Crea factura si escau (comanda consolidada)
 							
+								//$parte_iter->setDatabaixa($current);
+		
+								$em->flush();
+								
+								$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();
+								$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
 							
-							
-							
-							$parte_iter->setDatamodificacio($current);
-							$parte_iter->setDatabaixa($current);
-							/*foreach ($parte_iter->getLlicencies() as $c => $llicencia_iter) {
-								$llicencia_iter->setDatamodificacio($current);
-								$llicencia_iter->setDatabaixa($current);
-							}*/
-							$em->flush();
-							
-							$sortida .= " Parte pendent >> Baixa més de 10 dies ". $parte_iter->getClub()->getNom();
-							$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+							} catch (\Exception $e) {
+			
+								$em->clear();
+								
+								$sortida .= " ERROR Baixa parte pendent ". $parte_iter->getClub()->getNom();
+								$sortida .= " (Parte " .  $parte_iter->getId() . " entrat el dia ". $parte_iter->getDataentrada()->format('d-m-Y') .")</br>";
+								$sortida .= " (error: " . $e->getMessage() .")</br>";
+							}
 						} else {
 							// Esperar
 							$sortida .= " Parte pendent >> ". $parte_iter->getClub()->getNom();

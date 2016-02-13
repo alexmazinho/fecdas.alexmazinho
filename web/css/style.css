@@ -365,6 +365,10 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .checkbox-inline label { margin-bottom: 0; } 
 
+.data-detall-cell .checkbox-inline { display: inline; padding: 0; }
+
+.data-detall-cell .checkbox-inline input { position: unset; margin: 0; }
+
 .checkbox-right, .radio-right { margin-left: 0; position: inherit; }
 
 .select2-container { padding: 0; border: none;  height: 100%;}
@@ -1327,12 +1331,13 @@ input#form_dni {
 #header-llicenciaactivitats {	width: 20%;  }
 #header-llicenciaactivitatslong {	width: 30%;  }
 #header-llicenciapreu {	width: 6%; text-align: right;  }
-#header-llicenciaenviarllicencia {	width: 7%; text-align: center; }
+#header-llicenciaenviarllicencia {	width: 4%; text-align: center; }
 #header-llicenciaenviarllicencia img {	
 	bottom: 10px;
     position: relative;
 }
-#header-llicenciaactions { width: 10%; }
+#header-llicenciacheck {	width: 5%; text-align: center; }
+#header-llicenciaactions { width: 8%; }
 .header-llicenciaactions-scroll { width: 12%; }
 
 .llicencia-id {	display:none}
@@ -1343,9 +1348,10 @@ input#form_dni {
 .llicencia-activitats {	width: 20%; font-size: 9px; letter-spacing: 0; }
 .llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { width: 6%; text-align: right;}
-.llicencia-enviarllicencia { width: 7%; letter-spacing:2px; text-align: center;}
+.llicencia-enviarllicencia { width: 4%; letter-spacing:2px; text-align: center;}
+.llicencia-checkllicencia { width: 5%; text-align: center;}
 .llicencia-no { width: 6%; }
-.llicencia-actions { width: 10%; text-align: center; margin-top: -14px}
+.llicencia-actions { width: 8%; text-align: right; margin-top: -14px}
 
 .parte-llicencia, .club-usuari {
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;

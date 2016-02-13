@@ -406,7 +406,7 @@ class PageController extends BaseController {
 		);
 		$partesclub->setParam('desde',$desde->format('d/m/Y'));
 		
-		
+error_log($sort. ' => '.$direction);		
 		
 		/* Recollir estadístiques */
 		$stat = $club->getDadesDesde( $tipus, $desde, $fins );
@@ -916,17 +916,14 @@ class PageController extends BaseController {
 				
 				if ($requestParams['action'] == 'remove') {
 				
-					// Errors generen excepció
-					$data = $this->getCurrentDate();
-					$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
-					$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-    
 					if (!$parte->allowRemoveLlicencia($this->isCurrentAdmin())) throw new \Exception('Esteu fora de termini per poder esborrar llicències d\'aquesta llista. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 
-					$this->removeParteDetall($parte, $llicencia, $maxNumFactura, $maxNumRebut);
+					$detallsBaixa = array();
+					$extra = array();
+					$llicenciesBaixa = array( $llicencia );
+					$this->removeParteDetalls($parte, $llicenciesBaixa); // Crea factura si escau (comanda consolidada)
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
-					
 				} else {
 					// Update / insert llicència
 					$form = $this->createForm(new FormParte(), $parte);
@@ -1002,6 +999,77 @@ class PageController extends BaseController {
 		}
 	
 		return $response;
+	}
+
+	public function baixallicenciesAction(Request $request) {
+
+		if ($this->isAuthenticated() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+
+		if (!$this->getCurrentClub()->potTramitar()) {
+			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$response = $this->redirect($this->generateUrl('FecdasBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
+			return $response;
+		}
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$parteid = $request->query->get('id', 0);
+		
+		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+		
+		$detallsBaixa = array();
+		$extra = array();
+		$llicenciesBaixa = array( );
+		
+		$idsLlicencies = $request->query->get('llicencies', '');
+
+		try {
+			if ($parte == null) throw new \Exception("S\'ha produït un error esborrant les llicències. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");		
+
+			if (!$parte->allowRemoveLlicencia($this->isCurrentAdmin())) throw new \Exception('Esteu fora de termini per poder esborrar llicències d\'aquesta llista. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+
+			if ($idsLlicencies != '') {
+				$idsLlicencies = urldecode($idsLlicencies); 
+		
+				$arrayIdsLlicencies = json_decode($idsLlicencies); // Array
+				
+				foreach ($parte->getLlicencies() as $llicencia) {
+
+					$key = array_search($llicencia->getId(), $arrayIdsLlicencies); 
+					
+					if (!$llicencia->esBaixa() && $key !== false) { // Trobat, no és baixa
+
+						array_splice($arrayIdsLlicencies, $key, 1); // Treure Id de la llicència trobada
+						
+						$llicenciesBaixa[] = $llicencia;
+					}
+				}
+			}
+
+			if (count($llicenciesBaixa) == 0) throw new \Exception("No ha estat possible esborrar aquestes llicències. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
+			
+			if (count($arrayIdsLlicencies) != 0) throw new \Exception("No ha estat possible esborrar alguna de les llicències. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
+		
+			$this->removeParteDetalls($parte, $llicenciesBaixa);  // Crea factura si escau (comanda consolidada)
+
+			$em->flush();
+		
+			$this->logEntryAuth('BAIXA LLICENCIES OK', 'parte '.$parteid . ' llicencies ' . $idsLlicencies);	
+		
+			$this->get('session')->getFlashBag()->add('sms-notice', 'Llicències esborrades correctament');
+			
+		} catch (\Exception $e) {
+			
+			$em->clear();
+			
+			$this->logEntryAuth('BAIXA LLICENCIES KO', 'parte '.$parteid . ' llicencies ' . $idsLlicencies .' '. $e->getMessage());	
+			
+			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
+		}
+
+		return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parteid, 'action' => 'view') ));
+		
 	}
 	
 

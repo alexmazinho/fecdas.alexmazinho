@@ -406,8 +406,6 @@ class PageController extends BaseController {
 		);
 		$partesclub->setParam('desde',$desde->format('d/m/Y'));
 		
-error_log($sort. ' => '.$direction);		
-		
 		/* Recollir estadístiques */
 		$stat = $club->getDadesDesde( $tipus, $desde, $fins );
 		$stat['saldo'] = $club->getSaldo();

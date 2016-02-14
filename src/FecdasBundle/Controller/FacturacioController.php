@@ -2407,8 +2407,6 @@ class FacturacioController extends BaseController {
 
 	private function tpvResponse($redsysapi) {
 		
-		error_log('tpvResponse '.json_encode($redsysapi->vars_pay));
-		
 		$tpvresponse = array('itemId' => 0, 'environment' => '', 'source' => '',
 				'Ds_Response' => '', 'Ds_Order' => 0, 'Ds_Date' => '', 'Ds_Hour' => '',
 				'pendent' => false);

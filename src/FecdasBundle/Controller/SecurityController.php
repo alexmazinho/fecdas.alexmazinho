@@ -675,8 +675,6 @@ class SecurityController extends BaseController
 		foreach ($codis as $codi) {
 			$strTest = 'CAT'.str_pad($indexTest, 3, '0', STR_PAD_LEFT);
 
-			//error_log($indexTest.' '.$codi['codi']. ' '.$strTest);
-
 			if (strtoupper($codi['codi']) > $strTest) return $strTest;
 			
 			$indexTest++;

@@ -400,7 +400,7 @@ class EntityParte extends EntityComanda {
     	
     	$datacaducitat = new \DateTime($this->dataalta->format("Y-m-d"));
     	if ($this->getTipus() != null) {
-    	if ($this->getTipus()->getId() != 11) { // No un dia
+    	if ($this->getTipus()->getId() != BaseController::ID_LLICENCIES_DIA) { // No un dia
     		if ($this->getTipus()->getEs365() == true) {
     			/* Competició. En 365 datafinal indica data de caducitat */
     			if ($this->getTipus()->getFinal() != null) {
@@ -489,13 +489,15 @@ class EntityParte extends EntityComanda {
    	
 		if ($admin == true) return true;
 		
+		return false;
+		/*
 		$current = new \DateTime();
     	$interval = $current->diff($this->getDataalta());
 
 		// Màxim 1 mes de marge per esborrar llicències		
 		if ($interval->format('%r%a') < -30) return false; 
 		
-		return true;
+		return true;*/
     }
 
     public function allowRenovar() {

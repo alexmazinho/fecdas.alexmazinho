@@ -56,16 +56,18 @@ class FormRebut extends AbstractType {
 						'required' => false,
 						'disabled' 		=> $rebut->estaComptabilitzat(),
 				));
+				
 				$form->add('club', 'entity', array(
 						'class' 		=> 'FecdasBundle:EntityClub',
 						'query_builder' => function($repository) {
 								return $repository->createQueryBuilder('c')
 										->orderBy('c.nom', 'ASC')
-										->where('c.databaixa IS NULL');
-										//->where('c.activat = 1');
+										->where('c.databaixa IS NULL')
+										->where('c.activat = 1');
 								}, 
 						'choice_label' 	=> 'nom',
-						'empty_value' 	=> 'Seleccionar club',  
+						//'empty_value' 	=> 'Seleccionar club',  
+						'empty_value' 	=> '',	// Important deixar en blanc pel bon comportament del select2
 						'required'  	=> false,
 						'data'			=> $rebut->getClub(),
 						'disabled' 		=> $rebut->getId() > 0,

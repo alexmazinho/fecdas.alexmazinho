@@ -23,8 +23,8 @@
 				<div class="row">
 					  <div class="col-md-6  col-xs-12">
 					  	<div class="form-group">
-					    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
-							{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+					    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					  </div>
 				</div>
@@ -205,7 +205,7 @@
 	
 	
 	getUrlWithFilterParams = function(url) {
-		var cerca = $( "#form_cerca" ).val();
+		var cerca = $( "#form_clubs" ).val();
 		var baixes = ($( '#form_baixes' ).is(':checked')?1:0);
 		var pendents = ($( '#form_pendents' ).is(':checked')?1:0)
 		var numfactura = $( "#form_numfactura" ).val();
@@ -240,7 +240,7 @@
 		});
 
 		
-		$("#form_cerca").change(function() {
+		$("#form_clubs").change(function() {
 			filtreLlistacomandes();
 	    });
 
@@ -285,7 +285,7 @@
 				confirmarPagament($(this).attr("href"), "Confirmació de pagament");
 			});
 		    
-			$("select#form_cerca").select2({
+			$("select#form_clubs").select2({
 				minimumInputLength: 2,
 				allowClear: true,
 				placeholder: 'Seleccionar Club'

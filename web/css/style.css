@@ -375,6 +375,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
 
+
 .data-detall .data-detall-cell i.fa, .link i.fa { 
 	padding: 4px;
 	border-radius: 50%;
@@ -438,7 +439,13 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     
 }
 
-
+#menu-user .select2-container {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+ 	width: 90%;   
+}
 
 #header #menu-user .menu-user-dropdown.open .dropdown-menu { width: 100%; text-align: right; left:inherit; right: 0; }
 

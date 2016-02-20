@@ -697,21 +697,11 @@ class FacturacioController extends BaseController {
 				10/*limit per page*/
 		);
 		
-		$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'entity', array(
-					'class' 		=> 'FecdasBundle:EntityClub',
-					'query_builder' => function($repository) {
-							return $repository->createQueryBuilder('c')
-								->orderBy('c.nom', 'ASC')
-								->where('c.databaixa IS NULL');
-								//->where('c.activat = 1');
-							}, 
-					'choice_label' 	=> 'nom',
-					'empty_value' 	=> '', // Important deixar en blanc pel bon comportament del select2
-					'required'  	=> false,
-					'data'			=> $club
-			))
-			->add('numrebut', 'text', array(
+		$formBuilder = $this->createFormBuilder();
+		
+		$this->addClubsActiusForm($formBuilder, $club);
+		
+		$formBuilder->add('numrebut', 'text', array(
 				'required' => false,
 				'data' => $nr
 		));
@@ -804,19 +794,6 @@ class FacturacioController extends BaseController {
 		}
 		
 		$formBuilder = $this->createFormBuilder()
-			 ->add('cerca', 'entity', array(
-						'class' 		=> 'FecdasBundle:EntityClub',
-						'query_builder' => function($repository) {
-								return $repository->createQueryBuilder('c')
-									->orderBy('c.nom', 'ASC')
-									->where('c.databaixa IS NULL');
-									//->where('c.activat = 1');
-								}, 
-						'choice_label' 	=> 'nom',
-						'empty_value' 	=> '', // Important deixar en blanc pel bon comportament del select2
-						'required'  	=> false,
-						'data'			=> $club
-				))
 			->add('numcomanda', 'text', array(
 				'data' 	=> $nc ))
 			->add('numfactura', 'text', array(
@@ -832,6 +809,7 @@ class FacturacioController extends BaseController {
 			
 		));
 		
+		$this->addClubsActiusForm($formBuilder, $club);
 			
 		return $this->render('FecdasBundle:Facturacio:comandes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
@@ -880,20 +858,9 @@ class FacturacioController extends BaseController {
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'search', array( ) )
 			->add('tipus', 'hidden', array(
-				'data' => $tipus))
-			->add('club', 'entity', array(
-						'class' 		=> 'FecdasBundle:EntityClub',
-						'query_builder' => function($repository) {
-								return $repository->createQueryBuilder('c')
-									->orderBy('c.nom', 'ASC')
-									->where('c.databaixa IS NULL');
-									//->where('c.activat = 1');
-								}, 
-						'choice_label' 	=> 'nom',
-						'empty_value' 	=> '',  // Important deixar en blanc pel bon comportament del select2
-						'required'  	=> false,
-						'data'			=> $club
-				));
+				'data' => $tipus));
+		
+		$this->addClubsActiusForm($formBuilder, $club);
 		
 		$cart = $this->getSessionCart();
 		$formtransport = $this->formulariTransport($cart);		
@@ -2172,37 +2139,57 @@ class FacturacioController extends BaseController {
 		
 	} 
 	
-	
 	protected function consultaComandes($codi, $nc, $ac, $nf, $af, $nr, $ar, $baixes, $pendents, $strOrderBY = 'c.dataentrada', $direction = 'desc' ) {
 		
 		$em = $this->getDoctrine()->getManager();
+		
+		$anulaIds = array();
 		
 		$strQuery = "SELECT c, f, r FROM FecdasBundle\Entity\EntityComanda c LEFT JOIN c.factura f LEFT JOIN c.rebut r ";
 		$strQuery .= "WHERE 1 = 1 ";
 		if ($codi != '') $strQuery .= " AND c.club = :codi ";
 		
-		if (is_numeric($nf) && $nf > 0) $strQuery .= " AND f.num = :numfactura ";
+		if (is_numeric($nf) && $nf > 0) {
+			$strQuery .= " AND ( (f.num = :numfactura ";
 
-		if (is_numeric($af) && $af > 0) {
-			$datainicifactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-01-01 00:00:00");
-			$datafinalfactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-12-31 23:59:59");
-			$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ";
+			if (is_numeric($af) && $af > 0) {
+				$datainicifactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-01-01 00:00:00");
+				$datafinalfactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-12-31 23:59:59");
+				$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ) ";
+			} else {
+				$strQuery .= " ) ";
+			}
+
+			// Obté anul·lacions amb aquest número			
+			$anulacions = $this->consultaFacturesAnulacio($nf, $af);
+			foreach ($anulacions as $factura) {
+				$anulaIds[] = $factura->getComandaAnulacio()->getId();
+			}
+			
+			if (count($anulaIds) > 0) $strQuery .= " OR c.id IN (:anulacions) ";
+			
+			$strQuery .= " ) ";
+			
 		}
 		
-		if (is_numeric($nr) && $nr > 0) $strQuery .= " AND r.num = :numrebut ";
+		if (is_numeric($nr) && $nr > 0) {
+			$strQuery .= " AND r.num = :numrebut ";
 
-		if (is_numeric($ar) && $ar > 0) {
-			$datainicirebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-01-01 00:00:00");
-			$datafinalrebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-12-31 23:59:59");
-			$strQuery .= " AND r.datapagament >= :rini AND r.datapagament <= :rfi ";
+			if (is_numeric($ar) && $ar > 0) {
+				$datainicirebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-01-01 00:00:00");
+				$datafinalrebut = \DateTime::createFromFormat('Y-m-d H:i:s', $ar."-12-31 23:59:59");
+				$strQuery .= " AND r.datapagament >= :rini AND r.datapagament <= :rfi ";
+			}
 		}
 		
-		if (is_numeric($nc) && $nc > 0) $strQuery .= " AND c.num = :numcomanda ";
+		if (is_numeric($nc) && $nc > 0) {
+			$strQuery .= " AND c.num = :numcomanda ";
 
-		if (is_numeric($ac) && $ac > 0) {
-			$datainicicomanda = \DateTime::createFromFormat('Y-m-d H:i:s', $ac."-01-01 00:00:00");
-			$datafinalcomanda = \DateTime::createFromFormat('Y-m-d H:i:s', $ac."-12-31 23:59:59");
-			$strQuery .= " AND c.dataentrada >= :cini AND c.dataentrada <= :cfi ";
+			if (is_numeric($ac) && $ac > 0) {
+				$datainicicomanda = \DateTime::createFromFormat('Y-m-d H:i:s', $ac."-01-01 00:00:00");
+				$datafinalcomanda = \DateTime::createFromFormat('Y-m-d H:i:s', $ac."-12-31 23:59:59");
+				$strQuery .= " AND c.dataentrada >= :cini AND c.dataentrada <= :cfi ";
+			}
 		}
 		
 		if (!$baixes) $strQuery .= " AND c.databaixa IS NULL ";
@@ -2216,30 +2203,70 @@ class FacturacioController extends BaseController {
 		if ($pos !== false) $strQuery .= " AND c.factura IS NOT NULL ";
 		
 		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
+		
 		$query = $em->createQuery($strQuery);
 	
 		if ($codi != '') $query->setParameter('codi', $codi);
-		if (is_numeric($nf) && $nf > 0) $query->setParameter('numfactura', $nf);
-		if (is_numeric($nr) && $nr > 0) $query->setParameter('numrebut', $nr);
-		if (is_numeric($nc) && $nc > 0) $query->setParameter('numcomanda', $nc);
+		if (is_numeric($nf) && $nf > 0) {
+			$query->setParameter('numfactura', $nf);
+
+			if (is_numeric($af) && $af > 0) {
+				$query->setParameter('fini', $datainicifactura);
+				$query->setParameter('ffi', $datafinalfactura);
+			}
+				
+			if (count($anulaIds) > 0) {
+				$query->setParameter('anulacions', $anulaIds);
+			}
+		}
+		if (is_numeric($nr) && $nr > 0) {
+			$query->setParameter('numrebut', $nr);
+
+			if (is_numeric($ar) && $ar > 0) {
+				$query->setParameter('rini', $datainicirebut);
+				$query->setParameter('rfi', $datafinalrebut);
+			}
+		}
+		if (is_numeric($nc) && $nc > 0) {
+			$query->setParameter('numcomanda', $nc);
+
+			if (is_numeric($ac) && $ac > 0) {
+				$query->setParameter('cini', $datainicicomanda);
+				$query->setParameter('cfi', $datafinalcomanda);
+			}
+		}
+		
+		return $query;
+	}
+
+	private function consultaFacturesAnulacio($nf, $af) {
+		$em = $this->getDoctrine()->getManager();
+		
+		if (!is_numeric($nf)) $nf = 0;
+		
+		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		$strQuery .= " WHERE f.num = :num AND f.comandaanulacio IS NOT NULL ";
+
+		if (is_numeric($af) && $af > 0) {
+			$datainicifactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-01-01 00:00:00");
+			$datafinalfactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-12-31 23:59:59");
+			$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ";
+		}
+		
+		$query = $em->createQuery($strQuery);
+		
+		$query->setParameter('num', $nf);
+		
 		if (is_numeric($af) && $af > 0) {
 			$query->setParameter('fini', $datainicifactura);
 			$query->setParameter('ffi', $datafinalfactura);
 		}
+			
+		$anulacions = $query->getResult();
 		
-		if (is_numeric($ar) && $ar > 0) {
-			$query->setParameter('rini', $datainicirebut);
-			$query->setParameter('rfi', $datafinalrebut);
-		}
-		
-		if (is_numeric($ac) && $ac > 0) {
-			$query->setParameter('cini', $datainicicomanda);
-			$query->setParameter('cfi', $datafinalcomanda);
-		}
-				
-		return $query;
+		return $anulacions;	
 	}
-
+	
 	public function notificacioOkAction(Request $request) {
 		// Resposta TPV on-line, genera resposta usuaris correcte
 		return $this->notificacioOnLine($request);

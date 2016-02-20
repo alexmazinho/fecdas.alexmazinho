@@ -34,8 +34,8 @@
 					{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
 					<div class="{% if admin != true %}hidden{% else %}col-md-5 col-xs-12{% endif %}">
 					  	<div class="form-group">
-					    	{{ form_label(form.club, 'Club', { 'label_attr': {'class': ''} }) }}
-							{{ form_widget(form.club, { 'attr': {'class': 'form-control'} }) }}
+					    	{{ form_label(form.clubs, 'Club', { 'label_attr': {'class': ''} }) }}
+							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
 				    <div class="col-md-5 col-xs-8">
@@ -121,7 +121,7 @@
 		
 			e.preventDefault();
 			
-			var url = $(this).attr("href")+'&club='+$('#form_club').val()+'&transport='+($('#form_transport_0').is(':checked')?1:0);
+			var url = $(this).attr("href")+'&club='+$('#form_clubs').val()+'&transport='+($('#form_transport_0').is(':checked')?1:0);
 			
 			confirmarPagament(url, "Confirmació de pagament", "{{ path('FecdasBundle_comandes') }}");
 		});
@@ -130,7 +130,7 @@
 			
 			e.preventDefault();
 
-			var url = $(this).attr("href")+'&club='+$('#form_club').val();
+			var url = $(this).attr("href")+'&club='+$('#form_clubs').val();
 			
 			dialegConfirmacio( pagamentComandaSMS( {% if admin == true %} true {% else %} false {% endif %} ), "Abans de continuar...", 0, 550, function() {
 				var datafacturacio = '';
@@ -160,7 +160,7 @@
 
 		$( ".cistella-resum" ).on( "click", ".anular-cistella", function(e) {
 			e.preventDefault();	
-			var url = $(this).attr("href")+'&club='+$('#form_club').val();
+			var url = $(this).attr("href")+'&club='+$('#form_clubs').val();
 			window.location = url;
 		});
 		
@@ -315,11 +315,11 @@
 
 		// Comanda filtre clubs disponible per admin's
 		{% if admin == true  %} 
-			$("#form_club").change(function() {
+			$("#form_clubs").change(function() {
 				window.location = $("#form_productes").attr('action')+'?tipus='+$('#form_tipus').val()+'&club='+$(this).val();
 		    });
 		
-			$("select#form_club").select2({
+			$("select#form_clubs").select2({
 				minimumInputLength: 2,
 				allowClear: true,
 				placeholder: 'Seleccionar club'

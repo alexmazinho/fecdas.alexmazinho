@@ -685,6 +685,7 @@ class PDFController extends BaseController {
 		$sort = $request->query->get('sort', 'p.dataentrada');
 		$direction = $request->query->get('direction', 'asc');
 		
+		
 		$query = $this->consultaPartesRecents($currentClub, $currentEstat, $currentBaixa, 
 											$currentNoPagat, $currentNoImpres, $currentCompta, 
 											$currentNumfactura, $currentAnyfactura, $currentNumrebut, $currentAnyrebut, $sort.' '.$direction);
@@ -694,7 +695,7 @@ class PDFController extends BaseController {
 	
 		if (count($partes) > 0) {
 			$current = $this->getCurrentDate();
-			
+		
 			$llicencies = array();
 			$ids = array();
 			foreach ($partes as $parte) {
@@ -704,21 +705,24 @@ class PDFController extends BaseController {
 					 	
 					 // Només imprimir Tecnocampus si s'envia només el parte sol. Cal canviar la targeta de plàstic
 				} else {
-					$llicencies = array_merge($llicencies, $parte->getLlicenciesSortedByName());
-	
-					$parte->setDatamodificacio($current);
-					$parte->setImpres(1);
+					if ($parte->getTipus()->getTemplate() != '') {
 					
-					$ids[] = $parte->getId();	
+						$llicencies = array_merge($llicencies, $parte->getLlicenciesSortedByName());
+		
+						$parte->setDatamodificacio($current);
+						$parte->setImpres(1);
+						
+						$ids[] = $parte->getId();	
+					}
 				}
 			}
-			
+		
 			$pdf = $this->printLlicencies( $llicencies );
 					
 			$em->flush();
-	
+
 			$this->logEntryAuth('IMPRES PARTES OK', print_r($ids, true));
-			
+
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_partes_".$current->format('YmdHis'). ".pdf", "D"));
 			$response->headers->set('Content-Type', 'application/pdf');
@@ -800,6 +804,7 @@ class PDFController extends BaseController {
 	}
 	
 	private function printLlicencies( $llicencies ) {
+	
 		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
 		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php

@@ -129,8 +129,8 @@
 		   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
 		   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   			{% endif %}
-		   				<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
-		   					<i class="fa fa-print blue"></i></a>
+		   				{% if parte.tipus.id != 11  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
+		   					<i class="fa fa-print blue"></i></a>{% endif %}
 		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
 		   					<i class="fa fa-search orange"></i></a>
 					</div>

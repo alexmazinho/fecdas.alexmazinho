@@ -13,7 +13,7 @@
 {% block body %}
 	<header>
 		<div class="row">
-			<div class="col-md-8"><h1>Consulta dinàmica segons criteris</h1></div>
+			<div class="col-md-8"><h1>Consulta dinàmica de llicències segons criteris</h1></div>
 	   	    <div class="col-md-4 col-last-right">
 	   	    	<div class="buttons-top-bootstrap">
 					<div class="button-top"><a class="link export-csv" href="javascript:void(0);" alt="Exportar dades" 
@@ -25,12 +25,7 @@
 
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
-    <div id="tabs-consulta">
-		<ul>
-			<li><a href="#consulta-llicencies-tab1">Consulta llicències</a></li>
-			<li><a href="#consulta-clubs-tab2">Consulta clubs</a></li>
-		</ul>
-			
+    
 		<div id="consulta-llicencies-tab1" class="consulta-tab">	<!-- Inici tab 1  -->
 
 
@@ -38,10 +33,23 @@
 		    	<form id="formconsultaadmin" action="{{ path('FecdasBundle_consultaadmin') }}" method="get" {{ form_enctype(form) }}  class="appform">
 		    		<div class="row">
 						<div class="col-md-4">
-						  	<div class="form-group">
-						    	<label>Filtre per club</label>
-						    	{{ form_label(form.clubs, 'Escollir clubs', { 'label_attr': {'class': 'sr-only'} }) }}
-								{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+							<div class="row">
+								<div class="col-md-12">
+							  		<div class="form-group">
+							    		<label>Filtre per club</label>
+							    		{{ form_label(form.clubs, 'Escollir clubs', { 'label_attr': {'class': 'sr-only'} }) }}
+										{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+									</div>
+								</div>
+								<div class="col-md-12">
+							  		<div class="form-group form-group-2-inline">
+										<div class="checkbox-inline">
+								    		<label>
+								      			{{ form_widget(form.activats) }} Només clubs actius
+								    		</label>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 						<div class="col-md-3">
@@ -204,8 +212,6 @@
 					</div>
 			   	</form>
 		    </div>
-		</div> <!-- Fi tab 1  -->
-		<div id="consulta-clubs-tab2" class="consulta-tab">	<!-- Inici tab 2  --><h3 class="blue">Pendent</h3> <!-- Fi tab 2  --> </div>
 		
 	</div>    
     
@@ -299,6 +305,7 @@ getQueryParams = function(action) {
 	var params = $.param({ 'action': action });
 
 	params += '&'+$.param({ 'clubs': $('#form_clubs').val() });
+	params += '&'+$.param({ 'activats': $('#form_activats').is(':checked')?1:0 });
 	params += '&'+$.param({ 'tipusparte': $('#form_tipusparte').val() });
 	params += '&'+$.param({ 'categoria': $('#form_categoria').val() });
 	params += '&'+$.param({ 'datainici': $('#form_datainici').val() });
@@ -339,9 +346,9 @@ $(document).ready(function(){
 
 	$("#menu-adm").click();
 
-	$( "#tabs-consulta" ).tabs({
+	/*$( "#tabs-consulta" ).tabs({
 		// options		
-	});
+	});*/
 	
 	checkIntervals($("#form_intervals"), $('.radios-intervals'));
 	checkIntervals($("#form_edats"), $('.radios-edats'));

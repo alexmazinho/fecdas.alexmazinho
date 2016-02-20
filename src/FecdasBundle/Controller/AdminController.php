@@ -274,14 +274,8 @@ class AdminController extends BaseController {
 		
 		$formBuilder = $this->createFormBuilder();
 		
-		$clubsSelectOptions = array('class' => 'FecdasBundle:EntityClub',
-				'choice_label' => 'nom',
-				'label' => 'Filtre per club: ',
-				'required'  => false );
-			
-		if ($currentClub != null) $clubsSelectOptions['data'] = $currentClub;
+		$this->addClubsActiusForm($formBuilder, $currentClub);
 		
-		$formBuilder->add('clubs', 'genemu_jqueryselect2_entity', $clubsSelectOptions);
 		
 		$formBuilder->add('estat', 'choice', array(
 				'choices'   => $states,
@@ -437,6 +431,9 @@ class AdminController extends BaseController {
 		$clubs = $request->query->get('clubs', array()); // Per defecte sense filtre de clubs
 		if ($clubs == '') $clubs = array();
 		
+		$activats = true;
+		if ($request->query->has('activats') && $request->query->get('activats') == 0) $activats = false;
+		
 		$tipusparte = $request->query->get('tipusparte', array()); // Per defecte sense filtre de tipus
 		if ($tipusparte == '') $tipusparte = array();
 		
@@ -486,7 +483,7 @@ class AdminController extends BaseController {
 
 		$groupQuey = $intervals || $edats || $groupclub || $grouptipus || $groupcategoria || $groupsexe || $groupmunicipi || $groupcomarca || $groupprovincia;
 
-		$queryparams = array ('action' => $action, 'clubs' => $clubs, 'tipusparte' => $tipusparte, 'categoria' => $categoria,
+		$queryparams = array ('action' => $action, 'clubs' => $clubs, 'activats' => $activats, 'tipusparte' => $tipusparte, 'categoria' => $categoria,
 								'datainici' => $strDatainici, 'datafinal' => $strDatafinal, 'intervals' => ($intervals == true?1:0),
 								'intervaldata' => ($intervals == true?$intervaldata:''), 'edats' => ($edats == true?1:0),
 								'edatsdata' => ($edats == true?$edatsdata:''), 'groupclub' => ($groupclub == true?1:0),
@@ -642,6 +639,9 @@ class AdminController extends BaseController {
 			if (count($clubs) > 0) {
 				$strQuery .= " AND p.club IN (:clubs) ";
 				$params['clubs'] = $clubs;
+			}
+			if ($activats == true) {
+				$strQuery .= " AND c.activat = 1 ";
 			}
 			if (count($tipusparte) > 0) {
 				$strQuery .= " AND p.tipus IN (:tipus) ";
@@ -888,6 +888,11 @@ GROUP BY c.nom
 				'required'  	=> false,
 				'data'			=> $clubsO,
 				'multiple'		=> true));
+		
+		$formBuilder->add('activats', 'checkbox', array(
+    			'required'  	=> false,
+				'data' 			=> $activats,
+		));
 		
 		$tipusO = array();
 		foreach ($tipusparte as $id) {
@@ -1682,19 +1687,7 @@ GROUP BY c.nom
 				'data' => $currentEstat
 		));
 		
-		$formBuilder->add('club', 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityClub',
-				'query_builder' => function($repository) {
-						return $repository->createQueryBuilder('c')
-								->orderBy('c.nom', 'ASC')
-								->where('c.databaixa IS NULL');
-								//->where('c.activat = 1');
-						}, 
-				'choice_label' 	=> 'nom',
-				'empty_value' 	=> 'Seleccionar club',
-				'required'  	=> false,
-				'data' 			=> $club,
-		));
+		$this->addClubsActiusForm($formBuilder, $club);
 		
 		$form = $formBuilder->getForm();
 	

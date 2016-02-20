@@ -77,7 +77,7 @@
 	   	<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
 	   	<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>
-	   	<div id="header-llicenciacheck" class="col-listheader"><i class="fa fa-check-square-o fa-1x"></i></div>
+	   	<div id="header-llicenciacheck" class="col-listheader">{% if admin == true %}<i class="fa fa-check-square-o fa-1x"></i>{% endif %}</div>
 	   	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
 	</div>
 </div>
@@ -98,7 +98,7 @@
 					{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
 					</div>
 					<div class="data-detall-cell llicencia-checkllicencia">
-						{% if admin == true or parte.club.controlCredit == true %}
+						{% if admin == true %}
 						<div class="checkbox-inline"><input type="checkbox" class="check-llicencia-remove" value="0" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][baixa]" id="form_llicencies_{{ loop.index0 }}_baixa"></div>
 						{% endif %}
 					</div>
@@ -107,7 +107,7 @@
 						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}" alt="llicència" title="llicència"><i class="fa fa-credit-card fa-1x orange"></i></a>
 					{% endif %}
 					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
-					{% if admin == true or parte.club.controlCredit == true %}
+					{% if admin == true %}
 						<a href="{{ path('FecdasBundle_llicencia') }}" value="{{ llicencia.id }}" class="link remove-llicencia" name="remove-llicencia" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
 					{% endif %}
 					</div>
@@ -122,7 +122,7 @@
 
 <div class="row">
 	<div class="col-md-9"><div class="sms-footer">Per esborrar alguna llicència cal posar-se en contacte amb la Federació</div></div>
-	{% if parte.numLlicencies > 0 and (admin == true or parte.club.controlCredit == true) %}
+	{% if parte.numLlicencies > 0 and admin == true %}
 		<div class="col-md-3 col-last-right">
 			<a id="button-llicencies-remove" href="{{ path('FecdasBundle_baixallicencies', { 'id': parte.id}) }}" class="btn btn-default btn-lg"><i class="fa fa-trash"></i> Anul·lar seleccionades</a>
 		</div>

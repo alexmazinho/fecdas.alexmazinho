@@ -22,8 +22,8 @@
 		    	<div class="row">
 				  <div class="col-md-6">
 				  	<div class="form-group">
-				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
-						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+				    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				  </div>
 				  <div class="col-md-3">
@@ -121,16 +121,16 @@
 	$(document).ready(function(){
 		setMenuActive("menu-admingresos");
 		
-		$("#form_cerca").change(function() {
-			filtreLlistaingresos($( "#form_cerca" ).val(), $( "#form_numrebut" ).val() );
+		$("#form_clubs").change(function() {
+			filtreLlistaingresos($( "#form_clubs" ).val(), $( "#form_numrebut" ).val() );
 	    });
 
 		$("#form_numrebut").change(function() {
-			filtreLlistaingresos($( "#form_cerca" ).val(), $( "#form_numrebut" ).val() );
+			filtreLlistaingresos($( "#form_clubs" ).val(), $( "#form_numrebut" ).val() );
 	    });
 		
 		// ingres
-		$("select#form_cerca").select2({
+		$("select#form_clubs").select2({
 			minimumInputLength: 2,
 			allowClear: true,
 			placeholder: 'Seleccionar club'

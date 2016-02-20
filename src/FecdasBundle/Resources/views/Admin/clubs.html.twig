@@ -30,7 +30,7 @@
 			 	<div class="form-group">
 					<label>Club</label>
 					<div id="formrebut-club"  class="">
-						{{ form_widget(form.club, { 'attr': {'class': 'form-control form-control-left'} }) }}
+						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control form-control-left'} }) }}
 					</div>
 				</div>
 			</div>
@@ -136,26 +136,28 @@ $(document).ready(function(){
 	$('#form_estat').change(function () {
 		// Recarrega consulta afegint la dades del formulari
 		var url = "{{ path('FecdasBundle_clubs', sortparams)|raw }}";
-		url += '&codi='+$("#form_club").val();
+		url += '&codi='+$("#form_clubs").val();
 		clubsSaldosReload(url);
 	});
 	
 	$('#formclubs').submit(function () {
 		// Recarrega consulta afegint la dades del formulari
 		var url = "{{ path('FecdasBundle_clubs', sortparams)|raw }}";
-		url += '&codi='+$("#form_club").val();
+		url += '&codi='+$("#form_clubs").val();
 		clubsSaldosReload(url);
 		return false;
 	});
 
-	$("#form_club").select2({
+	
+	$("#form_clubs").select2({
 		minimumInputLength: 2,
 		allowClear: true,
+		placeholder: 'Seleccionar club'
 	});
 
-	$("#form_club").change( function() {
+	$("#form_clubs").change( function() {
 		var url = "{{ path('FecdasBundle_clubs', sortparams)|raw }}";
-		url += '&codi='+$("#form_club").val();
+		url += '&codi='+$("#form_clubs").val();
 		clubsSaldosReload(url);
 	});
 

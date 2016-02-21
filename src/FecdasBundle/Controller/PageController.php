@@ -520,7 +520,7 @@ class PageController extends BaseController {
 
 			$llicencies = array();
 			foreach ($persones as $persona_iter) {
-				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate());
+				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate(true));  // Incloure baixes
 			}
 			
 			/* Ordenades de última a primera 
@@ -537,10 +537,10 @@ class PageController extends BaseController {
 			});
 			
 		} else {
-			$llicencies = $persona->getLlicenciesSortedByDate();			
+			$llicencies = $persona->getLlicenciesSortedByDate(true); // Incloure baixes			
 		}
 
-		return $this->render('FecdasBundle:Page:assegurathistorial.html.twig', array('llicencies' => $llicencies));
+		return $this->render('FecdasBundle:Page:assegurathistorial.html.twig', array('llicencies' => $llicencies, 'admin' => $this->isCurrentAdmin()));
 		
 	}
 	

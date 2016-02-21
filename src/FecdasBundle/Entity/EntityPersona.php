@@ -194,12 +194,12 @@ class EntityPersona {
     	return null;
     }
     
-    public function getLlicenciesSortedByDate()
+    public function getLlicenciesSortedByDate($baixes = false)
     {
     	/* Ordenades de última a primera */
     	$arr = array();
     	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->isValida()) $arr[] = $llicencia;
+    		if ($llicencia->isValida() || $baixes == true) $arr[] = $llicencia;
     	}
 
     	usort($arr, function($a, $b) {

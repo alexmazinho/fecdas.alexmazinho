@@ -1223,6 +1223,7 @@ ul.detalls li .alert { margin: 10px 0; }
 .assegurat-llicencia-categoria {  }
 .assegurat-llicencia-club {  }
 .assegurat-llicencia-desc {  }
+.assegurat-llicencia-action { float:right; }
 
 .data-detall-historic { display:inline }
 

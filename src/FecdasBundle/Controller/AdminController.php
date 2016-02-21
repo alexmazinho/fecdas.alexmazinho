@@ -1826,6 +1826,13 @@ GROUP BY c.nom
 		
 		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::CODI_DUPLICAT_LLICENCIA);
 		
+		$factura = false;
+		if ($request->query->has('factura') && $request->query->get('factura') == 1) $factura = true;
+		
+		$strDatafacturacio = $request->query->get('datafacturacio', '');
+		$dataFacturacio = $this->getCurrentDate();
+		if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
+		
 		$duplicat = null;
 		$detall = null;
 		
@@ -1839,21 +1846,26 @@ GROUP BY c.nom
 			
 			if ($carnet == null) throw new \Exception('Tipus de duplicat: '.$producte->getDescripcio().', no trobat' );
 			
-			$persona = $llicencia->getPersona();
+			if ($factura == true) { // Crear comanda
 			
-			$duplicat = $this->crearComandaDuplicat('Petició duplicat de llicència '.$persona->getNomCognoms(), $llicencia->getParte()->getClub());
-			
-			$duplicat->setPersona($persona);
-			$duplicat->setCarnet($carnet);
-					
-			$detall = $this->addDuplicatDetall($duplicat);
-			
-			// Si tot Ok, obrir pdf per imprimir	
-			$duplicat->setDataimpressio($this->getCurrentDate());
-
-			$em->flush();
-			
-			$this->logEntryAuth('DUPLI LLICENCIA OK', 'duplicat ' . $duplicat->getNumComanda() . ' de la llicència ' . $llicenciaid  );
+				$persona = $llicencia->getPersona();
+				
+				$duplicat = $this->crearComandaDuplicat('Petició duplicat de llicència '.$persona->getNomCognoms(), $llicencia->getParte()->getClub());
+				
+				$duplicat->setPersona($persona);
+				$duplicat->setCarnet($carnet);
+						
+				$detall = $this->addDuplicatDetall($duplicat, $dataFacturacio);
+				
+				// Si tot Ok, obrir pdf per imprimir	
+				$duplicat->setDataimpressio($this->getCurrentDate());
+	
+				$em->flush();
+				
+				$this->logEntryAuth('DUPLI LLICENCIA OK', 'duplicat ' . $duplicat->getNumComanda() . ' de la llicència ' . $llicenciaid  );
+			} else {
+				$this->logEntryAuth('DUPLI IMPRESSIO OK', 'impressió duplicat de la llicència ' . $llicenciaid  );
+			}
 			
 			$response = $this->redirect($this->generateUrl('FecdasBundle_imprimirllicencia', array( 'id' => $llicenciaid)));
 			

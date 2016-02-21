@@ -127,7 +127,8 @@
 								{% endif %}
 								{% if admin == true %}
 									<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': persona.llicenciaVigent.id}) }}" 
-										data-club="{{ persona.llicenciaVigent.parte.club.nom }}" alt="Duplicat llicència" title="Duplicat llicència">
+										data-club="{{ persona.llicenciaVigent.parte.club.nom }}"
+										data-persona="{{ persona.nomcognoms }}" alt="Duplicat llicència" title="Duplicat llicència">
 										<i class="fa fa-copy fa-1x lightblue"></i></a>
 								{% endif  %}
 								{% if persona.llicenciaVigent.parte.allowRenovar %}
@@ -224,13 +225,54 @@
 			var url = $(this).attr('href');
 
 			var club = $(this).attr('data-club'); 
+
+			var persona = $(this).attr('data-persona');
 			
-			var strHtml = '<p>Es crearà una nova comanda per aquest duplicat a càrrec del club '+club+'</p>';
+			var strHtml = "<p>Duplicat llicència "+persona+"</p>";
+			strHtml += "   <div class='form-group'>";
+			strHtml += "	  <div class='checkbox'>";
+			strHtml += "		<label>";
+			strHtml += "			<input type='checkbox' value='0' id='checkfactura'>"; 
+			strHtml += "			Cal crear una comanda nova per aquest duplicat a càrrec del club "+club+"?";
+			strHtml += "		</label>";
+			strHtml += "	  </div>";
+			strHtml += "      <div id='formduplicat-datafactura' style='display:none'>";
+			strHtml += "      	<label for='comanda_datafactura'>Data facturació</label>";
+			strHtml += "	    <input type='text' id='datafacturacio' disabled='disabled'/>";
+			strHtml += "      </div>";
+			strHtml += "  </div>";
+
 			dialegConfirmacio(strHtml, 'Comanda duplicat', 'auto', 400, function() { 
 				
+				url += '&factura='+($('#checkfactura').is(':checked')?1:0)+'&datafacturacio='+$('#datafacturacio').val();
+					
 				window.location = url;
 				 
-			}, function() { }, function() { });
+			}, function() { }, function() {
+
+				$("#checkfactura").click(function(){
+					var checked = $(this).is(':checked');
+					if (checked) {
+						$( "#datafacturacio" ).datepicker({
+				      		showOn: "button",
+				            //buttonImage: "/images/icon-calendar.gif",
+				            buttonText: "<i class='fa fa-calendar fa-1x blue'></i>",
+				            //buttonImageOnly: true,
+				            dateFormat: 'dd/mm/yy'
+				      	});
+					    
+					  	$( "#datafacturacio" ).datepicker( "setDate", new Date() );
+
+					  	$( "#formduplicat-datafactura").show();
+					} else {
+						$( "#formduplicat-datafactura").hide();
+
+						$( "#datafacturacio" ).datepicker('destroy');
+					}
+				});
+				
+	        	
+			});
 		});
 		
 		

@@ -785,15 +785,23 @@ class EntityLlicencia {
      */
     public function isValida()
     {
-    	return ($this->getDatabaixa() == null and $this->getParte() != null and $this->getParte()->getPendent() == false);
+    	return ($this->getDatabaixa() == null && $this->getParte() != null && $this->getParte()->getPendent() == false);
     }
 
+	/**
+     * Get llicencia baixa
+     */
+    public function isBaixa()
+    {
+    	return ($this->getDatabaixa() != null || $this->getParte() == null || ($this->getParte() != null && $this->getParte()->getDatabaixa() != null));
+    }
+	
     /**
      * Get llicencia vigent
      */
     public function isVigent()
     {
-    	return ($this->isValida() == true and $this->getParte()->isVigent() == true);
+    	return ($this->isValida() == true && $this->getParte()->isVigent() == true);
     }
     
 }

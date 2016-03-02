@@ -679,6 +679,41 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 .list-data-adm .data-detall-cell.comanda-actions { width: 7%; text-align: right; font-size: 1.2em; }
 
 
+/*************** FECDAS NOU factures ****************/
+
+#header-factura-estat  { display: none; }
+#header-factura-num { width: 12%; text-align: right; }
+#header-factura-total { width: 10%; text-align: right; }
+#header-factura-data { width: 15%; text-align: center; }
+#header-factura-comanda { width: 15%; text-align: center; }
+#header-factura-concepte { width: 45%; text-align: left; }
+#header-factura-actions { display: none; }
+
+.data-detall-cell.factura-estat  { display: none; }
+.data-detall-cell.factura-num { width: 12%; text-align: right; }
+.data-detall-cell.factura-total { width: 10%; text-align: right; }
+.data-detall-cell.factura-data { width: 15%; text-align: center; }
+.data-detall-cell.factura-comanda { width: 15%; text-align: center; }
+.data-detall-cell.factura-concepte { width: 45%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.factura-actions { display: none; }
+
+.list-header-adm #header-factura-estat  { display: table-cell; width: 3%; text-align: left; }
+.list-header-adm #header-factura-num { width: 12%; text-align: left; }
+.list-header-adm #header-factura-club { width: 15%; text-align: left;  }
+.list-header-adm #header-factura-total { width: 10%; text-align: right; }
+.list-header-adm #header-factura-data { width: 10%; text-align: center; }
+.list-header-adm #header-factura-comanda { width: 12%; text-align: center; }
+.list-header-adm #header-factura-concepte { width: 36%; text-align: left; }
+
+.list-data-adm .data-detall-cell.factura-estat  { display: table-cell; width: 3%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.factura-num { width: 12%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.factura-club { width: 15%; text-align: left; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.factura-total { width: 10%; text-align: right; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.factura-data { width: 10%; text-align: center; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.factura-comanda { width: 12%; text-align: center; font-size: 0.9em; }
+.list-data-adm .data-detall-cell.factura-concepte { width: 36%; text-align: left; font-size: 0.85em; }
+
+
 /*************** FECDAS NOU comanda ****************/
 
 .detall-form-row-prototype { display: none; }
@@ -2268,6 +2303,7 @@ p.info-bold {
 	text-indent: 0px;
 }
 
+#dialeg #datafacturacio { width: 120px; text-align: center;}
 
 
 /*****************************************************************************************************************/

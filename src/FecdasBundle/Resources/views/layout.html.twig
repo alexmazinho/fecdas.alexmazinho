@@ -102,6 +102,7 @@
 			          	{% endif %}
 			          	<li class="divider"></li>
 			          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
+			          	<li id="menu-factures"><a href="{{ path('FecdasBundle_factures', { 'sort': 'f.datafactura', 'direction':'desc' }) }}">Factures</a></li>
  		            </ul>
 		        </li>
 		        <li class="dropdown">
@@ -152,6 +153,7 @@
 			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
+			          	<li id="menu-admfactures"><a href="{{ path('FecdasBundle_factures', { 'sort': 'f.datafactura', 'direction':'desc' }) }}">Factures</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admtraspas"><a href="{{ path('FecdasBundle_traspascomptabilitat') }}">Enviar comptabilitat</a></li>
 			          </ul>
@@ -194,7 +196,7 @@
  	
 	{{ parent() }}
 
-	<script src="{{ asset('js/my-jquery-script.js?v=2.09') }}" type="text/javascript"></script>	
+	<script src="{{ asset('js/my-jquery-script.js?v=2.10') }}" type="text/javascript"></script>	
     <script src="{{ asset('js/my-jquery-script-admin.js?v=2.07') }}" type="text/javascript"></script>
     
     <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>

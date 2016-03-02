@@ -900,7 +900,7 @@ class CronController extends BaseController {
 							}
 							
 							try {
-								$this->removeParteDetalls($parte_iter, $llicenciesBaixa); // Crea factura si escau (comanda consolidada)
+								$this->removeParteDetalls($parte_iter, $llicenciesBaixa); // Crea factura si escau a data d'avui (comanda consolidada)
 							
 								//$parte_iter->setDatabaixa($current);
 		

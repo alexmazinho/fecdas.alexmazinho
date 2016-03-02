@@ -156,6 +156,32 @@ class EntityFactura {
 	}
 	
 	/**
+	 * @return text extra. Federats factura
+	 */
+	public function getConcepteExtra($max = 0) {
+		$strExtra = '';
+		try {
+			$detallsArray = json_decode($this->detalls, true);
+			
+			foreach ($detallsArray as $lineafactura) {
+				if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
+					foreach ($lineafactura['extra'] as $extra) {
+						$strExtra .= $extra.', ';
+					}
+					if (count($lineafactura['extra']) > 0) $strExtra = substr($strExtra, 0, -2); 
+				}	
+			}
+		} catch (\Exception $e) {
+			error_log('FECDAS GESTIO error factura detalls '.$this->id. '('.$e->getMessage().')');
+			return '';
+		}	
+		
+		if ($max > 0 && strlen($strExtra) > $max)  $strExtra = substr($strExtra, 0, $max).'...';
+		
+		return $strExtra;
+	}
+	
+	/**
 	 * @return integer
 	 */
 	public function getId() {

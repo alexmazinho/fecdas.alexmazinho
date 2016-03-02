@@ -916,10 +916,14 @@ class PageController extends BaseController {
 				
 					if (!$parte->allowRemoveLlicencia($this->isCurrentAdmin())) throw new \Exception('Esteu fora de termini per poder esborrar llicències d\'aquesta llista. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 
+					$strDatafacturacio = isset($requestParams['datafacturacio'])?$requestParams['datafacturacio']:'';
+					$dataFacturacio = $this->getCurrentDate();
+					if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
+
 					$detallsBaixa = array();
 					$extra = array();
 					$llicenciesBaixa = array( $llicencia );
-					$this->removeParteDetalls($parte, $llicenciesBaixa); // Crea factura si escau (comanda consolidada)
+					$this->removeParteDetalls($parte, $llicenciesBaixa, $dataFacturacio); // Crea factura si escau (comanda consolidada)
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 				} else {

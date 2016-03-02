@@ -868,9 +868,9 @@ class PDFController extends BaseController {
 		$xClu = 12;
 		$yClu =	45.6;		
 		$xTlf = 15+4;
-		$yTlf =	50.1+0.5;		
+		$yTlf =	49.1+0.5;		
 		$xCad = 61+7;
-		$yCad =	50.1+0.5;
+		$yCad =	49.1+0.5;
 		
 		$parte = $llicencia->getParte();
 		$polissa = $parte->getTipus()->getPolissa();
@@ -947,10 +947,10 @@ class PDFController extends BaseController {
 		$pdf->SetXY($x_titols, $yClu+$y_offset);
 		$pdf->Cell(0, 0, 'Entitat:', 0, 1, 'L');
 
-		$pdf->SetXY($x_titols, $yTlf+$y_offset);
+		$pdf->SetXY($x_titols, $yTlf+$y_offset-0.3);
 		$pdf->Cell(0, 0, 'Telf. Entitat:', 0, 1, 'L');
 				
-		$pdf->SetXY($xCad_tit, $yCad+$y_offset);
+		$pdf->SetXY($xCad_tit, $yCad+$y_offset-0.3);
 		$pdf->Cell(0, 0, 'Vàlida fins/Valid until:', 0, 1, 'L');
 		
 	}

@@ -1,0 +1,191 @@
+{# src/Fecdas/FecdasBundle/Resources/views/Facturacio/factures.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Llista de factures {% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Factures</h1>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+        
+    <div id="factures-main">
+	    <div id="list-forms">
+	    	<form id="form_factures" action="{{ path('FecdasBundle_factures') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+				<div class="row">
+					{% if admin == true %}
+						  <div class="col-md-4 col-xs-12">
+						  	<div class="form-group">
+						    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						  </div>
+					{% endif %}
+					<div class="col-md-3 col-xs-4">
+						<div class="form-group">
+					    	<div class="input-group">
+						    	<span class="input-group-addon"># Factura</span>
+								{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-xs-4">
+					  	<div class="form-group">
+					    	<div class="input-group">
+						    	<span class="input-group-addon"># Comanda</span>
+								{{ form_widget(form.numcomanda, { 'attr': {'class': 'form-control'} }) }}
+							</div>
+						</div>
+					</div>				   
+					{% if admin == true %}
+						<div class="col-md-2  col-xs-4">
+							<div class="checkbox">
+								<label>
+							    	{{ form_widget(form.pendents) }} Pendents pagament
+							    </label>
+							</div>
+						</div>
+					{% endif %}
+				</div>
+		   	</form>
+	    </div>
+	    <div class="table-header">	
+		   	<div id="list-header" class="{% if admin == true  %}list-header-adm{% endif %}">
+				<div id="header-factura-id" class="col-listheader hidden">&nbsp;</div>
+				<div id="header-factura-estat" class="col-listheader collistheader-noorder">&nbsp;</div>
+		   		<div id="header-factura-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(factures, 'Num.', 'f.num') }}
+		   			<span class="listheader-icon {% if factures.isSorted('f.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		{% if admin == true  %}	
+		   			<div id="header-factura-club" class="col-listheader collistheader-noorder">Club</div>
+		   		{% endif %}
+		   		<div id="header-factura-total" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(factures, 'Total', 'f.import') }}
+		   			<span class="listheader-icon {% if factures.isSorted('f.import') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-factura-data" class="col-listheader">{{ knp_pagination_sortable(factures, 'Data', 'f.datafactura') }}
+		   			<span class="listheader-icon {% if factures.isSorted('f.datafactura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-factura-comanda" class="col-listheader collistheader-noorder">Comanda</div>
+		   		<div id="header-factura-concepte" class="col-listheader collistheader-noorder">Concepte</div>
+		   		<div id="header-factura-actions" class="col-listheader collistheader-noorder">&nbsp;</div>
+		   	</div>
+	   	</div>
+		{% if factures|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data" class="{% if admin == true  %}list-data-adm{% endif %}">
+			{% for factura in factures %} 
+				{% set comanda = factura.comanda %}
+				{% if factura.esAnulacio %}
+					{% set comanda = factura.comandaanulacio %}
+				{% endif %}
+			
+		   		<li class="data-detall">
+		   			<div class="data-detall-cell factura-id hidden">{{ factura.id }}</div>
+		   			<div class="data-detall-cell factura-estat">
+		   				{% if comanda.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ comanda.estat }}{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell factura-num">
+		   				{% if factura.comptabilitat == null and admin == true %} <span class="fa fa-exclamation-triangle fa-1x orange"></span> {% endif %}
+		   				<a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+			   				{% if factura.import < 0 %}<span class="red">(-){{ factura.numfactura }}</span>
+			   				{% else %}{{ factura.numfactura }}{% endif %}
+			   				<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+			   			</a>
+		   			</div>
+		   			{% if admin == true  %}	
+		   				<div class="data-detall-cell factura-club">
+		   					<a href="/club?codiclub={{ comanda.club.codi }}" title="Veure dades del club" alt="Veure dades del club">{{ comanda.club.nom }}</a>
+		   				</div>
+		   			{% endif %}
+		   			<div class="data-detall-cell factura-total">{{ factura.import|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell factura-data">{{ factura.datafactura|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell factura-comanda">
+		   				<a class="comanda-action-view link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.numcomanda, 'baixes': 1 }) }}" alt="Consultar comanda" title="Consultar comanda">{{ comanda.numcomanda }}</a>
+		   				{% if comanda.esParte == true %}
+		   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': comanda.id }) }}" alt="Consultar llista" title="Consultar llista">
+		   						<i class="fa fa-list fa-1x blue"></i></a>
+		   				{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell factura-concepte">{{ factura.concepte|nl2br }}<br/><span class="extra">{{ factura.concepteExtra(400)|nl2br }}</span></div>
+		   			<div class="data-detall-cell factura-actions">&nbsp;</div>
+		   		</li>
+		   		{% endfor %} 
+			</ol>
+		</div>
+		{% if factures.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(factures, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha factures per mostrar</div>
+	    {% endif %}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+
+
+	{{ parent() }}
+ 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+
+	<script type="text/javascript">
+	
+	
+	getUrlWithFilterParams = function(url) {
+		var cerca = $( "#form_clubs" ).val();
+		var baixes = ($( '#form_baixes' ).is(':checked')?1:0);
+		var pendents = ($( '#form_pendents' ).is(':checked')?1:0)
+		var numfactura = $( "#form_numfactura" ).val();
+		var numrebut = $( "#form_numrebut" ).val();
+		var numcomanda = $( "#form_numcomanda" ).val();  
+
+		return url + "&cerca="+cerca+"&baixes="+baixes+"&numcomanda="+numcomanda+"&numfactura="+numfactura+"&numrebut="+numrebut+"&pendents="+pendents;
+	}
+
+
+	filtreLlistafactures = function() {
+
+		window.location = getUrlWithFilterParams("{{ path('FecdasBundle_factures', sortparams)|raw }}");
+	}
+
+	$(document).ready(function(){
+
+		{% if admin == true  %}
+			setMenuActive("menu-admfactures");
+		{% else %}
+			setMenuActive("menu-factures");
+		{% endif %}
+
+		$("#form_clubs").change(function() {
+			filtreLlistafactures();
+	    });
+
+		$("#form_numfactura").change(function() {
+			filtreLlistafactures();
+	    });
+
+		$("#form_numcomanda").change(function() {
+			filtreLlistafactures();
+	    });
+	    
+		$( '#form_pendents' ).change(function(e) {
+			filtreLlistafactures();
+		});
+		
+		// Comanda filtre clubs disponible per admin's
+		{% if admin == true  %} 
+
+			$("select#form_clubs").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: 'Seleccionar Club'
+			});
+		{% endif %}
+	});
+	
+	</script>
+
+
+{% endblock %}
+

@@ -420,6 +420,12 @@ FecdasBundle_comandes:
     requirements:
         _method:  GET
 
+FecdasBundle_factures:
+    pattern:  /factures
+    defaults: { _controller: "FecdasBundle:Facturacio:factures" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_tramitarcistella:
     pattern:  /tramitarcistella
     defaults: { _controller: "FecdasBundle:Facturacio:tramitarcistella" }

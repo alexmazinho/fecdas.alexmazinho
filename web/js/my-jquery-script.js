@@ -1136,7 +1136,59 @@
 			params += '&'+$.param({ 'llicencia': llic });
 	        
 	        var url = $(this).attr('href');
+	        
+	        var strHtml = '<p>Segur que vols esborrar aquesta llicència?</p>';
+			strHtml += "   <p>Data factura anul·lació<br/>";
+			strHtml += "	  <input type='text' id='datafacturacio' disabled='disabled'/>";
+			strHtml += "   </p>";
+			
+			dialegConfirmacio(strHtml, 'Confirmació baixa llicència', 'auto', 400, function() { 
+				
+	        	$('#progressbar').show();  // Rellotge
+	        	
+	        	params += '&'+$.param({ 'datafacturacio': $('#datafacturacio').val() });
+	        	
+	 	        $.post(url, params,
+	 	        	function(data, textStatus) {
+	 	        	
+	 	        	$('#progressbar').hide();
+	 	        	
+	 	        	$("#llista-llicencies").html(data);
+	 	        	removeLlicenciaClick();
+	 	        	showResumParteDetall();
+	 	        	sortLlista("col-listheader", "list-data");
+	 	        	// Hide llicencia
+	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
+	 		    	else $('#formparte-llicencia').slideUp('fast');
+	 		    	
+	 	        }).fail( function(xhr, status, error) {
+					 // xhr.status + " " + xhr.statusText, status, error
+					 var sms = smsResultAjax('KO', xhr.responseText);
 
+					 $('div.alert').remove();
+					 
+					 $('#progressbar').hide();  // Rellotge
+				    
+				     $("#llista-llicencies").prepend(sms);
+				});
+				 
+			}, function() { }, function() { 
+
+				$( "#datafacturacio" ).datepicker({
+		      		showOn: "button",
+		            //buttonImage: "/images/icon-calendar.gif",
+		            buttonText: "<span class='fa fa-calendar fa-1x'></span>",
+		            //buttonImageOnly: true,
+		            dateFormat: 'dd/mm/yy'
+		      	});
+			    
+			  	$( "#datafacturacio" ).datepicker( "setDate", new Date() );
+			});
+	        
+	        
+	        
+	       /*  
+	        
 	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
@@ -1181,7 +1233,7 @@
 	
 	        $("#dialeg").html("Segur que vols esborrar <br/>aquesta llicència?");
 	        $("#dialeg").dialog("open");
-	    
+	      */
 	    });
 	};
 	

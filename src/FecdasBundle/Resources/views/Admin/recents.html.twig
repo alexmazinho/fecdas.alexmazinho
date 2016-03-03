@@ -111,9 +111,9 @@
 			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parterecents-factura">
 			   			{% for factura in parte.factures %}
-			   				
 			   				<a class="comanda-action-factura {% if factura.esanulacio == true %}red{% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
-		   						{{ factura.numfactura }}
+								{% if factura.import < 0 %}<span class="red">(-){{ factura.numfactura }}</span>
+			   					{% else %}{{ factura.numfactura }}{% endif %}			   			
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 			   			
 			   			{% endfor %}

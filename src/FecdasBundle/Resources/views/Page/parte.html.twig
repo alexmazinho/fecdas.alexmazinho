@@ -235,12 +235,27 @@ $(document).ready(function() {
 			return false;
 		}
 
-		dialegConfirmacio( "Segur que vols anul·lar les llicències?", "Abans de continuar...", 0, 400, function() {
-			url += '&llicencies='+encodeURIComponent(JSON.stringify(idsLlicencies));
+		var strHtml = '<p>Segur que vols anul·lar les llicències?</p>';
+		strHtml += "   <p>Data factura anul·lació<br/>";
+		strHtml += "	  <input type='text' id='datafacturacio' disabled='disabled'/>";
+		strHtml += "   </p>";
+		
+		dialegConfirmacio( strHtml, "Abans de continuar...", 0, 400, function() {
+			url += '&datafacturacio='+$('#datafacturacio').val()+'&llicencies='+encodeURIComponent(JSON.stringify(idsLlicencies));
     		window.location = url;	
         }, 
         function() { /* Cancel */ }, 
-        function() { /* Open */ });
+        function() {
+        	$( "#datafacturacio" ).datepicker({
+	      		showOn: "button",
+	            //buttonImage: "/images/icon-calendar.gif",
+	            buttonText: "<span class='fa fa-calendar fa-1x'></span>",
+	            //buttonImageOnly: true,
+	            dateFormat: 'dd/mm/yy'
+	      	});
+		    
+		  	$( "#datafacturacio" ).datepicker( "setDate", new Date() ); 
+        });
 		
 	});
 	

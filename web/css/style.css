@@ -2615,23 +2615,23 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 #header-parterecentsid { width: 10%; }
-#header-parterecentsfactura { width: 10%; }
+#header-parterecentsfactura { width: 12%; }
 #header-parterecentsentrada {	width: 9%; }
 #header-parterecentsdata {	width: 9%; }
-#header-parterecentsclub {	width: 14%; text-align:left;}
+#header-parterecentsclub {	width: 13%; text-align:left;}
 #header-parterecentstipus {	width: 11%;}
 #header-parterecentspreu {	width: 8%; text-align:right;}
-#header-parterecentsinfo { width: 21%; text-align: left;}
+#header-parterecentsinfo { width: 20%; text-align: left;}
 #header-parterecentsactions { width: 8%;}
 
 .parterecents-id { width: 10%; }
-.parterecents-factura { width: 10%; }
+.parterecents-factura { width: 12%; }
 .parterecents-entrada { width: 9%;  }
 .parterecents-data { width: 9%;  }
-.parterecents-club { width: 14%; text-align:left; font-size: 0.9em;}
+.parterecents-club { width: 13%; text-align:left; font-size: 0.9em;}
 .parterecents-tipus { width: 11%; }
 .parterecents-preu { width: 8%; text-align:right;}
-.parterecents-info {	width: 21%; text-align:left;font-size: 0.9em;}
+.parterecents-info {	width: 20%; text-align:left;font-size: 0.9em;}
 .parterecents-actions { width: 8%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/

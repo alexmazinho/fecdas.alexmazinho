@@ -1185,55 +1185,6 @@
 			  	$( "#datafacturacio" ).datepicker( "setDate", new Date() );
 			});
 	        
-	        
-	        
-	       /*  
-	        
-	        $("#dialeg").dialog({
-	          	buttons : {
-	            	"Confirmar" : function() {
-	            		
-	    	        	$(this).dialog("close");
-	    	        	
-	    	        	$('#progressbar').show();  // Rellotge
-	    	        	
-	    	 	        $.post(url, params,
-	    	 	        	function(data, textStatus) {
-	    	 	        	
-	    	 	        	$('#progressbar').hide();
-	    	 	        	
-	    	 	        	$("#llista-llicencies").html(data);
-	    	 	        	removeLlicenciaClick();
-	    	 	        	showResumParteDetall();
-	    	 	        	sortLlista("col-listheader", "list-data");
-	    	 	        	// Hide llicencia
-	    	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	 		    	else $('#formparte-llicencia').slideUp('fast');
-	    	 		    	
-	    	 	        }).fail( function(xhr, status, error) {
-	    					 // xhr.status + " " + xhr.statusText, status, error
-	    					 var sms = smsResultAjax('KO', xhr.responseText);
-
-	    					 $('div.alert').remove();
-	    					 
-	    					 $('#progressbar').hide();  // Rellotge
-	    				    
-	    				     $("#llista-llicencies").prepend(sms);
-	    				});
-	            	},
-	            	"Cancel·lar" : function() {
-	              		$(this).dialog("close");
-	            	}
-	          	},
-	        	title: "Confirmació per esborrar",
-	        	//height: 180,
-	        	width: 300,
-	        	zIndex:	350
-	        });
-	
-	        $("#dialeg").html("Segur que vols esborrar <br/>aquesta llicència?");
-	        $("#dialeg").dialog("open");
-	      */
 	    });
 	};
 	

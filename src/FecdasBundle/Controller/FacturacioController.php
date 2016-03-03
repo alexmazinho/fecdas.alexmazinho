@@ -2318,34 +2318,6 @@ class FacturacioController extends BaseController {
 		return $query;
 	}
 
-	private function consultaFacturesAnulacio($nf, $af) {
-		$em = $this->getDoctrine()->getManager();
-		
-		if (!is_numeric($nf)) $nf = 0;
-		
-		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
-		$strQuery .= " WHERE f.num = :num AND f.comandaanulacio IS NOT NULL ";
-
-		if (is_numeric($af) && $af > 0) {
-			$datainicifactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-01-01 00:00:00");
-			$datafinalfactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-12-31 23:59:59");
-			$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ";
-		}
-		
-		$query = $em->createQuery($strQuery);
-		
-		$query->setParameter('num', $nf);
-		
-		if (is_numeric($af) && $af > 0) {
-			$query->setParameter('fini', $datainicifactura);
-			$query->setParameter('ffi', $datafinalfactura);
-		}
-			
-		$anulacions = $query->getResult();
-		
-		return $anulacions;	
-	}
-	
 	private function consultaFactures($codi, $nc, $ac, $nf, $af, $pendents, $strOrderBY = 'f.datafactura', $direction = 'desc' ) {
 		
 		$em = $this->getDoctrine()->getManager();

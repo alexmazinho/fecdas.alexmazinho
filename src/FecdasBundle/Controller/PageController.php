@@ -1017,6 +1017,10 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		$parteid = $request->query->get('id', 0);
+
+		$strDatafacturacio = $request->query->get('datafacturacio', '');
+		$dataFacturacio = $this->getCurrentDate();
+		if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
 		
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 		
@@ -1053,7 +1057,7 @@ class PageController extends BaseController {
 			
 			if (count($arrayIdsLlicencies) != 0) throw new \Exception("No ha estat possible esborrar alguna de les llicències. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
 		
-			$this->removeParteDetalls($parte, $llicenciesBaixa);  // Crea factura si escau (comanda consolidada)
+			$this->removeParteDetalls($parte, $llicenciesBaixa, $dataFacturacio);  // Crea factura si escau (comanda consolidada)
 
 			$em->flush();
 		

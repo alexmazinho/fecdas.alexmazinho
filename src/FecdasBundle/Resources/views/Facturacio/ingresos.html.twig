@@ -20,23 +20,30 @@
 	    <div id="list-forms">
 	    	<form id="form_ingresos" action="{{ path('FecdasBundle_nouingres') }}" method="GET" {{ form_enctype(form) }}  class="appform">
 		    	<div class="row">
+		    	  {% if admin == true %}
 				  <div class="col-md-6">
 				  	<div class="form-group">
 				    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				  </div>
+				  {% endif %}
 				  <div class="col-md-3">
 				  	<div class="form-group">
 				    	<div class="input-group">
 					    	<span class="input-group-addon">Rebut</span>
 							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control'} }) }}
+							<span class="input-group-addon input-group-addon-icon input-group-addon-icon-search">
+								<span class="fa fa-search fa-1x"></span>
+							</span>
 						</div>
 					</div>
 				  </div>
+				  {% if admin == true %}	
 				  <div class="col-md-2 col-md-offset-1 col-last-right">
 						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
 				  </div>
+				  {% endif %}
 				</div>
 		   	</form>
 	    </div>
@@ -55,9 +62,11 @@
 		   			<span class="listheader-icon {% if ingresos.isSorted('c.dataentrada,c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-ingres-romanent" class="col-listheader collistheader-noorder">Romanent</div>
 		   		<div id="header-ingres-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
+		   		{% if admin == true %}
 		   		<div id="header-ingres-compta" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Enviat\nComptabilitat.', 'r.comptabilitat') }}
 		   			<span class="listheader-icon {% if ingresos.isSorted('r.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-ingres-actions" class="col-listheader collistheader-noorder">&nbsp;</div>
+		   		{% endif %}
 		   	</div>
 	   	</div> 
 		{% if ingresos|length > 0 %} 
@@ -74,6 +83,7 @@
 		   			<div class="data-detall-cell ingres-data">{{ ingres.datapagament|date('d/m/y') }}</div>
 		   			<div class="data-detall-cell ingres-import">{{ ingres.import|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell ingres-comanda">
+		   			{% if admin == true %}
 		   				{% if ingres.esAnulacio != true %}
 			   				{% for comanda in ingres.comandes %} 
 			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id}) }}" alt="Veure comanda" title="Veure comanda">
@@ -83,15 +93,28 @@
 		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'id': ingres.comandaanulacio.id }) }}"  title="Veure comanda" alt="Veure comanda">
 			   					<span class="red">{{ ingres.comandaanulacio.numComanda }}</span></a>	
 		   				{% endif %}	
+		   			{% else %}
+		   				{% if ingres.esAnulacio != true %}
+			   				{% for comanda in ingres.comandes %} 
+			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.numcomanda }) }}" alt="Veure comanda" title="Veure comanda">
+			   						{{ comanda.numComanda }} ({{ comanda.totaldetalls|number_format(2, ',', '.') }} €)</a><br/>
+							{% endfor %}
+		   				{% else %}
+		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'numcomanda': ingres.comandaanulacio.numcomanda }) }}"  title="Veure comanda" alt="Veure comanda">
+			   					<span class="red">{{ ingres.comandaanulacio.numComanda }}</span></a>	
+		   				{% endif %}	
+		   			{% endif %}
 		   			</div>
 		   			<div class="data-detall-cell ingres-romanent">{{ ingres.romanent|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
+		   			{% if admin == true %}
 		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
 		   			<div class="data-detall-cell ingres-actions">
 						{% if maxnum == ingres.num and ingres.isCurrentYear and ingres.tipuspagament != constant('FecdasBundle\\Controller\\BaseController::TIPUS_PAGAMENT_TPV') %}<a class="comanda-action-remove-rebut link" href="{{ path('FecdasBundle_esborrarultimrebut', { 'rebut': ingres.id }) }}"><i class="fa fa-trash-o red"></i></a>{% endif %}
 		   				<a class="comanda-action-edit-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': ingres.id}) }}" 
 		   					alt="{{ ingres.infoToolTip(admin) }}" title="{{ ingres.infoToolTip(admin) }}"><i class="fa fa-pencil text-info blue"></i></a>
 		   			</div>
+		   			{% endif %}
 		   		</li>
 		   		{% endfor %}
 			</ol>
@@ -119,7 +142,11 @@
 	};
 
 	$(document).ready(function(){
-		setMenuActive("menu-admingresos");
+		{% if admin == true %}
+			setMenuActive("menu-admingresos");
+		{% else %}
+			setMenuActive("menu-ingresos");
+		{% endif %}
 		
 		$("#form_clubs").change(function() {
 			filtreLlistaingresos($( "#form_clubs" ).val(), $( "#form_numrebut" ).val() );

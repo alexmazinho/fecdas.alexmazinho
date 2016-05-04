@@ -236,6 +236,9 @@ input.disabled label
 
 .input-group-radio .input-group-addon-2-inline { padding-right: 10px !important; border-right: 1px solid #ccc;}
 
+.input-group-addon-icon-search { padding: 6px 6px }
+
+
 #dialeg p {
 	padding-bottom: 10px;
 }

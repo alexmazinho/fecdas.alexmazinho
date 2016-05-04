@@ -665,14 +665,17 @@ class FacturacioController extends BaseController {
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	
 		$this->logEntryAuth('VIEW INGRESOS', $this->get('session')->get('username'));
-	
-		$codi = $request->query->get('cerca', '');
+
 		$club = null;
-		if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		if (!$this->isCurrentAdmin()) { // Users normals només consulten comandes pròpies 
+			$club = $this->getCurrentClub();
+			$codi = $club->getCodi(); 
+		} else {
+			$codi = $request->query->get('cerca', '');
+			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		
 		$nr = $request->query->get('numrebut', '');
 	
 		$arrayReb = explode("/", $nr);
@@ -699,7 +702,7 @@ class FacturacioController extends BaseController {
 		
 		$formBuilder = $this->createFormBuilder();
 		
-		$this->addClubsActiusForm($formBuilder, $club);
+		if ($this->isCurrentAdmin()) $this->addClubsActiusForm($formBuilder, $club);
 		
 		$formBuilder->add('numrebut', 'text', array(
 				'required' => false,

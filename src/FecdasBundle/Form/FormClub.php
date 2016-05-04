@@ -180,7 +180,7 @@ class FormClub extends AbstractType {
 		$builder->add('addrprovincia', 'choice', array(
 				'choices' => array('BARCELONA' => 'BARCELONA','GIRONA' => 'GIRONA',
 						'TARRAGONA' => 'TARRAGONA','LLEIDA' => 'LLEIDA' ),
-				'data' => 'BARCELONA',
+				//'data' => 'BARCELONA',
 				'required'  => false,
 		));
 		
@@ -203,7 +203,7 @@ class FormClub extends AbstractType {
 		$builder->add('addrprovinciacorreu', 'choice', array(
 				'choices' => array('BARCELONA' => 'BARCELONA','GIRONA' => 'GIRONA',
 						'TARRAGONA' => 'TARRAGONA','LLEIDA' => 'LLEIDA' ),
-				'data' => 'BARCELONA',
+				//'data' => 'BARCELONA',
 				'required'  => false,
 		));
 		

@@ -94,9 +94,9 @@ class SecurityController extends BaseController
     						return $this->redirect($url);
     					}
 
-    					if ($user->getForceupdate() == true) {
+    					/*if ($user->getForceupdate() == true) {
     						return $this->redirect($this->generateUrl('FecdasBundle_user'));
-    					}
+    					}*/
     					
     					return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
     				}
@@ -628,7 +628,7 @@ class SecurityController extends BaseController
     					$randomPassword = $this->generateRandomPassword();
     					$userclub->setPwd(sha1($randomPassword));
     					$userclub->setRole("user");
-    					$userclub->setForceupdate(true);
+    					//$userclub->setForceupdate(true);
     					$club->addEntityUser($userclub);
 
     					$em->persist($userclub);
@@ -728,7 +728,7 @@ class SecurityController extends BaseController
     			$useruser = $requestParams['club']['user'];
     			$randomPassword = $requestParams['club']['pwd']['first'];
     			$userrole = $requestParams['club']['role'];
-    			$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
+    			//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
     			
     			$userclub = new EntityUser();
     			
@@ -743,7 +743,7 @@ class SecurityController extends BaseController
     				
     				$userclub->setPwd(sha1($randomPassword));
     				$userclub->setRole($userrole);
-    				$userclub->setForceupdate($forceupdate);
+    				//$userclub->setForceupdate($forceupdate);
     				$club->addEntityUser($userclub);
     				
    					$em = $this->getDoctrine()->getManager();

@@ -32,10 +32,11 @@
 				{{ form_label(form.pwd.second, 'Repeteix la paraula clau', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.pwd.second, { 'attr': {'class': 'forminput-inside'} }) }}
 			 </div> 
-			 <div id="formuser-forceupdate">
-			 	{{ form_label(form.forceupdate, 'Obliga a actualitzar', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-				{{ form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) }}
+			 <!-- <div id="formuser-forceupdate">
+			 	{# form_label(form.forceupdate, 'Obliga a actualitzar', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) #}
+				{# form_widget(form.forceupdate, { 'attr': {'class': 'formcheckbox-right'} }) #}
 			 </div>
+			  -->
 			 <div id="formuser-rest">
 			 	{{ form_widget(form.recoverytoken) }}
 			 	{{ form_widget(form.usertoken) }}

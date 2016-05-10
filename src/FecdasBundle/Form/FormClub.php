@@ -248,11 +248,11 @@ class FormClub extends AbstractType {
 		));
 		
 		
-		$builder->add('forceupdate', 'checkbox', array(
+		/*$builder->add('forceupdate', 'checkbox', array(
     	    	'required'  => false,
 				'mapped' => false,
 				'data' => true,
-		));
+		));*/
 		
 		$builder->add('role', 'choice', array(
 				'choices' => array('user'=> 'user'),

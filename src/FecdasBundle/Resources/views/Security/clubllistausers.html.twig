@@ -10,7 +10,7 @@
 		   	<div id="header-userclubuser" class="col-listheader">Usuari</div>
 		   	<div id="header-userclublastaccess" class="col-listheader">Darrer accés</div>
 		   	<div id="header-userclubrol" class="col-listheader">Rol</div>
-		   	<div id="header-userclubforceupdate" class="col-listheader">Canvi clau</div>
+		   	<!-- <div id="header-userclubforceupdate" class="col-listheader">Canvi clau</div> -->
 		   	<div id="header-userclubactions" class="col-listheader">&nbsp;</div>
 		</div>
 	</div>
@@ -28,13 +28,13 @@
 					{% endif %}
 					</div>
 					<div class="data-detall-cell userclub-rol">{{ userclub.role }}</div>
-					<div class="data-detall-cell userclub-forceupdate" class="form-left">
-					{% if userclub.forceupdate == true %}
+					<!-- <div class="data-detall-cell userclub-forceupdate" class="form-left">
+					{# if userclub.forceupdate == true #}
 					Si
-					{% else %}
+					{# else #}
 					No
-					{% endif %}
-					</div>
+					{# endif #}
+					</div> -->
 					<div class="data-detall-cell userclub-actions">
 					{% if admin == true %}
 						<a class="label-remove-userclub link" href="javascript:void(0);" onclick="removedUserClick('{{ userclub.user }}');" alt="Esborrar usuari" title="Esborrar usuari"><i class="fa fa-trash fa-1x red"></i></a>

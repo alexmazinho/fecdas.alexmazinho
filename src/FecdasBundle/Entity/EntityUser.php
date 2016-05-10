@@ -41,7 +41,7 @@ class EntityUser {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $forceupdate;
+	//protected $forceupdate;
 	
 	/**
 	 * @ORM\Column(type="string", length=40, nullable=true)
@@ -156,20 +156,20 @@ class EntityUser {
      *
      * @param boolean $forceupdate
      */
-    public function setForceupdate($forceupdate)
+    /*public function setForceupdate($forceupdate)
     {
     	$this->forceupdate = $forceupdate;
-    }
+    }*/
     
     /**
      * Get forceupdate
      *
      * @return boolean
      */
-    public function getForceupdate()
+    /*public function getForceupdate()
     {
     	return $this->forceupdate;
-    }
+    }*/
 
     /**
      * Set recoverytoken

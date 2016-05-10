@@ -27,9 +27,9 @@ class FormUser extends AbstractType {
     		'second_name' => 'second',
 		));
 		
-		$builder->add('forceupdate', 'checkbox', array(
+		/*$builder->add('forceupdate', 'checkbox', array(
     	    'required'  => false
-		));
+		));*/
 		
 		$builder->add('recoverytoken', 'hidden');
 		$builder->add('usertoken', 'hidden', array('mapped' => false));

@@ -123,6 +123,10 @@ class PDFController extends BaseController {
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		
+		$interval = $this->intervalDatesPerDefecte($request);
+		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:$this->getCurrentDate());
+		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:$this->getCurrentDate());
+		
 		$currentVigent = true;
 		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
 		
@@ -192,7 +196,7 @@ class PDFController extends BaseController {
 
 		$strOrderBY = $this->get('request')->query->get('sort', 'e.cognoms, e.nom'); // e.cognoms, e.nom per defecte
 		 
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $strOrderBY); 
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $desde, $fins, $currentVigent, $strOrderBY); 
 		$persones = $query->getResult();
 		
 		

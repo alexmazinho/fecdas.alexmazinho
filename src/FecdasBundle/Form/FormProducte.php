@@ -113,7 +113,22 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'data' 			=> $producte->getTransport() == true
 			));
 		
+			$form->add('visible', 'checkbox', array(
+					'required' 		=> false,
+					'data' 			=> $producte->getVisible() == true
+			));
 			
+			if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
+					$activat = true;
+					if ($producte->getCategoria() != null && 
+						$producte->getCategoria()->getTipusparte() != null) $activat =  $producte->getCategoria()->getTipusparte()->getActiu();
+					
+					$form->add('activat', 'checkbox', array(
+							'required' 	=> false,
+							'mapped' 	=> false,
+							'data' 		=> $activat
+					));
+			}
 			/*$form->add ( 'iva', 'number', array (
 					'required' => true,
 					'mapped' => false,

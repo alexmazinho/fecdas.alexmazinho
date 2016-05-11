@@ -4,7 +4,7 @@ namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(readOnly=true)
+ * @ORM\Entity
  * @ORM\Table(name="m_tipusparte") 
  * 
  * @author alex

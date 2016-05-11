@@ -20,7 +20,7 @@ class EntityCategoria {
 	protected $id;
 	
 	/**
-	 * @ORM\OneToOne(targetEntity="EntityProducte")
+	 * @ORM\OneToOne(targetEntity="EntityProducte", inversedBy="categoria")
 	 * @ORM\JoinColumn(name="producte", referencedColumnName="id")
 	 **/
 	protected $producte;

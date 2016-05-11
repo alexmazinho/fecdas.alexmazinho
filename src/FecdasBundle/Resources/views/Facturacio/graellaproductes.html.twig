@@ -29,8 +29,9 @@
     	
     	{% if productes|length > 0 %}
    		<div class="grid-productes-header">
+   			
 			<form id="form_productes" action="{{ path('FecdasBundle_graellaproductes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
-				<div class="row">	
+				<div class="row">		
 					{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
 					<div class="{% if admin != true %}hidden{% else %}col-md-5 col-xs-12{% endif %}">
 					  	<div class="form-group">
@@ -38,18 +39,19 @@
 							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
-				    <div class="col-md-5 col-xs-8">
+				    <div class="col-md-4 col-xs-8">
 					  	<div class="form-group">
 					    	{{ form_label(form.cerca, 'Filtrar per descripció', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
-					<div class="col-md-2 col-xs-4">
+					<div class="col-md-3 {% if admin != true %}col-md-offset-5{% endif %} col-xs-4">
 						<label class="required">&nbsp;</label>
 						<p class="total-productes-grid">Total productes: {{ productes|length }}</p>
 					</div>
-				</div>
+				</div>	
 		   	</form>
+		   	
 		</div>
 	    <div class="row grid-productes">	
     	    <div class="col-md-12 col-last-right">

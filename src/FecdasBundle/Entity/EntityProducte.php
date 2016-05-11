@@ -76,6 +76,17 @@ class EntityProducte {
 	protected $pes;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $visible; // visible pels clubs?
+
+	
+	/**
+	 * @ORM\OneToOne(targetEntity="EntityCategoria", mappedBy="producte")
+	 **/
+	protected $categoria; // categoria del producte si és llicència pot ser null
+		
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -389,6 +400,52 @@ class EntityProducte {
     {
         return $this->pes;
     }
+
+
+	/**
+     * Set visible
+     *
+     * @param boolean $visible
+     */
+    public function setVisible($visible)
+    {
+    	$this->visible = $visible;
+    }
+    
+    /**
+     * Get visible
+     *
+     * @return boolean
+     */
+    public function getVisible()
+    {
+    	return $this->visible;
+    }
+
+	/**
+	 * Set categoria
+	 *
+	 * @param \FecdasBundle\Entity\EntityCategoria $categoria
+	 * @return EntityCategoria
+	 */
+	public function setCategoria(\FecdasBundle\Entity\EntityCategoria $categoria = null)
+	{
+		$this->categoria = $categoria;
+	
+		return $this;
+	}
+	
+	/**
+	 * Get categoria
+	 *
+	 * @return \FecdasBundle\Entity\EntityCategoria
+	 */
+	public function getCategoria()
+	{
+		return $this->categoria;
+	}
+
+
 
     /**
      * Set dataentrada

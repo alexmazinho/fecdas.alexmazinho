@@ -688,6 +688,8 @@
 		params.push( {'name':'dni','value': $('#form_dni').val()} );
 		params.push( {'name':'nom','value': $('#form_nom').val()} );
 		params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
+		params.push( {'name':'desde','value': $('#form_desde').val()} );
+		params.push( {'name':'fins','value': $('#form_fins').val()} );
 
 		llistaPaginationAndSort(url, params);
 	};

@@ -1632,6 +1632,17 @@ class FacturacioController extends BaseController {
     				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' ); //$form->getErrorsAsString()
     			}
 
+				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
+					$activat = $form->get('activat')->getData();
+error_log($activat?'Si activat':'No activat');					
+					if ($producte->getCategoria() != null && 
+						$producte->getCategoria()->getTipusparte() != null) {
+							error_log('canvi actiu');
+							$producte->getCategoria()->getTipusparte()->setActiu($activat);
+						}
+				}
+
+
     			$em->flush();
     			 
     			$this->get('session')->getFlashBag()->add('sms-notice',	'El producte s\'ha desat correctament');
@@ -1851,7 +1862,8 @@ class FacturacioController extends BaseController {
 		if (! $baixes) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($tipus > 0) $strQuery .= " AND p.tipus = :tipus";
 		if ($compte != '') $strQuery .= " AND p.codi = :compte";
-		
+		if (! $this->isCurrentAdmin() ) $strQuery .= " AND p.visible = 1";
+error_log($strQuery);		
 		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
 		
 		$query = $em->createQuery($strQuery);

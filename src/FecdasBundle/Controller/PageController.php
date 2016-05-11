@@ -346,12 +346,9 @@ class PageController extends BaseController {
 
 		$club = $this->getCurrentClub();
 		
-		$desdeDefault = "01/01/".(date("Y"));
-		$desde = \DateTime::createFromFormat('d/m/Y', $request->query->get('desde', $desdeDefault));
-		
-		$finsDefault = "31/12/".(date("Y"));
-		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) $finsDefault = "31/12/".(date("Y")+1);		
-		$fins = \DateTime::createFromFormat('d/m/Y', $request->query->get('fins', $finsDefault));
+		$interval = $this->intervalDatesPerDefecte($request);
+		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:$this->getCurrentDate());
+		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:$this->getCurrentDate());
 		
 		$tipus = $request->query->get('tipus', 0);
 		$page = $request->query->get('page', 1);
@@ -416,7 +413,7 @@ class PageController extends BaseController {
 						'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
-
+	
 	public function llicenciesParteAction(Request $request) {
 	
 		if ($this->isAuthenticated() != true) return new Response("");
@@ -448,6 +445,10 @@ class PageController extends BaseController {
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		
+		$interval = $this->intervalDatesPerDefecte($request);
+		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:$this->getCurrentDate());
+		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:$this->getCurrentDate());
+		
 		$currentDNI = trim($currentDNI);
 		$currentNom = trim($currentNom);
 		$currentCognoms = trim($currentCognoms);
@@ -473,9 +474,12 @@ class PageController extends BaseController {
 		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
 		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
 		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots) );
+		$formBuilder->add('desde', 'text', array('read_only' => true, 'data' => $desde->format('d/m/Y')));
+		$formBuilder->add('fins', 'text', array('read_only'  => true, 'data' => $fins->format('d/m/Y')));
+		
 		$form = $formBuilder->getForm(); 
 	
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $currentVigent, $sort);
+		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $desde, $fins, $currentVigent, $sort);
 		$paginator  = $this->get('knp_paginator');
 		$persones = $paginator->paginate(
 				$query,
@@ -483,6 +487,8 @@ class PageController extends BaseController {
 				10 /*limit per page*/
 		); 
 		/* Paràmetres URL sort i pagination */
+		$persones->setParam('desde',$desde->format('d/m/Y'));
+		$persones->setParam('fins',$fins->format('d/m/Y'));
 		if ($currentDNI != '') $persones->setParam('dni',$currentDNI);
 		if ($currentNom != '') $persones->setParam('nom',$currentNom);
 		if ($currentCognoms != '') $persones->setParam('cognoms',$currentCognoms);

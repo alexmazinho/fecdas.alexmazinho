@@ -20,6 +20,24 @@
     
 	<form id="formproducte" action="{{ path('FecdasBundle_editarproducte') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
+			<div class="col-md-2">
+				<div class="form-group">
+				 	<label>
+				 		<div class="checkbox-inline"><h4>{{ form_widget(form.visible) }} visible pels clubs</h4></div>
+					 </label>
+				</div>
+			</div>
+			{% if (producte.tipus == constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_LLICENCIES')) %}
+				<div class="col-md-2">
+					<div class="form-group">
+					 	<label>
+					 		<div class="checkbox-inline"><h4>{{ form_widget(form.activat) }} llicència activada</h4></div>
+						 </label>
+					</div>
+				</div>
+			{% endif %}
+		</div>
+		<div class="row">
 			 <div class="col-md-2">
 				{{ form_label(form.codi, 'Codi comptabilitat') }}
 				<div id="formproducte-codi"  class="">

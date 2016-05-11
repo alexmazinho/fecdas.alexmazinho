@@ -31,15 +31,34 @@
    		</header>
    		<div class="row">
 			{% if admin == true %}
-			<div class="col-md-3">
-				<div class="checkbox">
-			    	<label>
-			      		{{ form_widget(form.tots) }} (Admins.) Qualsevol club
-			    	</label>
+				<div class="col-md-12">
+					<div class="checkbox">
+				    	<label>
+				      		{{ form_widget(form.tots) }} (Admins.) Qualsevol club
+				    	</label>
+					</div>
+				</div>
+			{% endif %}
+			<div class="col-md-2 col-xs-4">
+				<div class="form-group">
+					{{ form_label(form.desde, 'Dades des de') }}
+					<div class="input-group" >
+						{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
 				</div>
 			</div>
-			{% endif %}
-			<div class="col-md-5">
+	    	<div class="col-md-2 col-xs-4">
+				<div class="form-group">
+					{{ form_label(form.fins, 'fins') }}
+					<div class="input-group" >
+						{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-5 col-xs-4">
+				<label>&nbsp;</label>
 				<div class="checkbox">
 			    	<label>
 			      		{{ form_widget(form.vigent) }} Només mostrar les llicències vigents
@@ -48,7 +67,7 @@
 			</div>
 		</div>
    		<div class="row">
-			<div class="col-md-2">
+			<div class="col-md-2 col-xs-4">
 			  	<div class="form-group">
 			  		<div class="input-group">
 				    	{{ form_label(form.dni, 'DNI/NIE', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -57,7 +76,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-4 col-xs-4">
 			  	<div class="form-group">
 			  		<div class="input-group">
 				    	{{ form_label(form.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -66,7 +85,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-4  col-xs-4">
 			  	<div class="form-group">
 			  		<div class="input-group">
 				    	{{ form_label(form.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -75,7 +94,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2 col-last-right">
+			<div class="col-md-2 col-xs-12 col-last-right">
 				<button id="formassegurats-submit"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-search blue"></i> cerca</button>
 			</div>
 		</div>
@@ -206,7 +225,34 @@
 			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
 			return false;
 		});
+
+		var current = new Date();
+		var mindate = new Date (current.getFullYear()-5, current.getMonth(), current.getDay());
+		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+		initDateTimePicker ( 
+			$( '#form_desde' ), 
+			mindate, 
+			maxdate, 
+			current, 
+			'desde-picker', 
+			false,
+			function (selectedDateTime) {
+				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");  
+			}
+		);
 	
+		initDateTimePicker ( 
+			$( '#form_fins' ), 
+			mindate, 
+			maxdate, 
+			current, 
+			'fins-picker', 
+			false,
+			function (selectedDateTime) {
+				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}"); 
+			}
+		);
+		
 		$('#form_tots').change(function () {
 			// Recarrega consulta afegint la dades del formulari
 			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");

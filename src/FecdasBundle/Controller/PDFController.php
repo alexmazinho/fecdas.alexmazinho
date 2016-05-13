@@ -124,11 +124,11 @@ class PDFController extends BaseController {
 		$currentCognoms = $request->query->get('cognoms', '');
 		
 		$interval = $this->intervalDatesPerDefecte($request);
-		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:$this->getCurrentDate());
-		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:$this->getCurrentDate());
+		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:null);
+		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:null);
 		
-		$currentVigent = true;
-		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
+		$currentVigent = false;
+		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
 		
 		$currentTots = false;
 		if ($this->isCurrentAdmin() && $this->get('request')->query->has('tots') && $this->get('request')->query->get('tots') == 1) $currentTots = true;
@@ -156,7 +156,7 @@ class PDFController extends BaseController {
 		$pdf->SetFont('dejavusans', '', 12, '', true);
 		// Titol segons filtre
 		if ($currentVigent == true) $text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
-		else $text = '<b>Històric d\'assegurats</b>';
+		else $text = '<b>Històric d\'assegurats '.($desde != null?'des de '.$desde->format('d/m/Y').' ':'').' '.($fins != null?'fins '.$fins->format('d/m/Y'):'').' </b>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
 		
 		$pdf->Ln();
@@ -206,7 +206,7 @@ class PDFController extends BaseController {
 			$num_pages = $pdf->getNumPages();
 			$pdf->startTransaction();
 			
-			$this->asseguratsRow($pdf, $persona, $total, $w);
+			$this->asseguratsRow($pdf, $persona, $desde, $fins, $total, $w);
 				
 			if($num_pages < $pdf->getNumPages()) {
 
@@ -218,7 +218,7 @@ class PDFController extends BaseController {
 				$pdf->SetFillColor(255, 255, 255); //Blanc
 				$pdf->SetFont('dejavusans', '', 9, '', true);
 				
-				$this->asseguratsRow($pdf, $persona, $total, $w);
+				$this->asseguratsRow($pdf, $persona, $desde, $fins, $total, $w);
 				
 			} else {
 				//Otherwise we are fine with this row, discard undo history.
@@ -255,7 +255,7 @@ class PDFController extends BaseController {
 		
 	}
 	
-	private function asseguratsRow($pdf, $persona, $total, $w) {
+	private function asseguratsRow($pdf, $persona, $desde, $fins, $total, $w) {
 		$llicencia = $persona->getLlicenciaVigent();
 		
 		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
@@ -267,7 +267,7 @@ class PDFController extends BaseController {
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
 			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
 		} else {
-			$text =  $persona->getInfoAssegurats($this->isCurrentAdmin());
+			$text =  $persona->getInfoAssegurats($this->isCurrentAdmin(), $desde, $fins);
 		}
 		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
 			

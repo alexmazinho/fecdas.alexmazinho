@@ -381,10 +381,11 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .data-detall .data-detall-cell i.fa, .link i.fa { 
 	padding: 4px;
+	margin-left: -4px;
 	border-radius: 50%;
 	text-align: center;
-	min-width: 22px;
-	min-height: 22px;
+	min-width: 20px;
+	min-height: 20px;
 	-webkit-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-moz-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
   	-ms-transition: background-color 0.6s ease-in-out, color 0.6s ease-in-out;
@@ -1182,21 +1183,21 @@ ul.detalls li .alert { margin: 10px 0; }
 
 #header-asseguratid { display:none}
 #header-asseguratcompacte { width: 40%; }
-#header-asseguratdni {	width: 11%;  }
-#header-asseguratnom {	width: 10%; text-align: left;}
-#header-asseguratcognoms {	width: 10%;text-align: left;}
-#header-asseguratnaixement { width: 8%;text-align: center; }
-#header-assegurattipusdesc { width: 31%;text-align: left; }
-#header-asseguratactions { width: 6%;text-align: right; }
+#header-asseguratdni {	width: 10%;  }
+#header-asseguratnom {	width: 15%; text-align: left;}
+#header-asseguratcognoms {	width: 15%;text-align: left;}
+#header-asseguratnaixement { width: 10%;text-align: center; }
+#header-assegurattipusdesc { width: 38%;text-align: left; }
+#header-asseguratactions { width: 12%;text-align: right; }
 
 .assegurat-id {	display:none}
 .assegurat-compacte { width: 40%; }
-.assegurat-dni { width: 11%;  }
-.assegurat-nom { width: 10%; text-align: left; }
-.assegurat-cognoms { width: 10%; text-align:left;}
-.assegurat-naixement { width: 8%; text-align:center;}
-.assegurat-tipusdesc { width: 31%; text-align:left; }
-.assegurat-actions { width: 6%; text-align: right;   }
+.assegurat-dni { width: 10%;  }
+.assegurat-nom { width: 15%; text-align: left; }
+.assegurat-cognoms { width: 15%; text-align:left;}
+.assegurat-naixement { width: 10%; text-align:center;}
+.assegurat-tipusdesc { width: 38%; text-align:left; }
+.assegurat-actions { width: 12%; text-align: right;   }
 
 /*
 .llicencia-historial { color: inherit; display: inline-block; padding-right: 30px;
@@ -1219,9 +1220,11 @@ ul.detalls li .alert { margin: 10px 0; }
 	opacity:1;
 }*/
 
+#llista-assegurats { position: relative; }
+
 #llista-assegurats .data-detall-cell { /*padding: 1%;*/ }  /* Total 10 %*/
 #llista-assegurats #list-header  { position: relative;  }
-#llista-assegurats .data-detall { /*display:inline*/ display: inline-block;  width: 100%; position: relative;  } /* Permet afegir historial*/
+#llista-assegurats .data-detall { /*display:inline*/ /*display: inline-block;*/  width: 100%; /*position: relative; */ } /* Permet afegir historial*/
 
 #llista-assegurats .llicencia-historial  { color: #555555; }
 
@@ -1230,15 +1233,23 @@ ul.detalls li .alert { margin: 10px 0; }
 .llicencia-historial img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
 
 .assegurat-historial { 
-	display:none; 
-	position: relative;
+	display:inline; 
+	/*position: relative;*/
+	position: absolute;
+	left: 0;
+	top: 60px;
+	z-index: 300;
 	width: auto; 
 	margin: auto;  
+	max-height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
 	border: 1px solid #81C6FF;
     box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2), 10px 0 10px -5px rgba(0, 0, 0, 0.2); 
     line-height: 24px;
     padding: 5px 20px;
     margin: 5px 15%;
+    background-color: #fff;
 }
 
 .assegurat-historial .close {
@@ -1263,7 +1274,7 @@ ul.detalls li .alert { margin: 10px 0; }
 .assegurat-llicencia-desc {  }
 .assegurat-llicencia-action { float:right; }
 
-.data-detall-historic { display:inline }
+.data-detall-historic { /*display:inline*/ }
 
 
 /*

@@ -21,9 +21,11 @@
 							<div class="button-top"><a class="link" href="{{ path('FecdasBundle_asseguratstopdf', persones.params) }}" alt="Descarregar les llistes" 
 								title="Descarregar les llistes">
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
-							<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_asseguratstopdf', persones.params|merge({ 'print': 1 })) }}" alt="Descarregar les llistes" 
-								title="Descarregar les llistes">
+							<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_asseguratstopdf', persones.params|merge({ 'print': 1 })) }}" alt="Imprimir les llistes" 
+								title="Imprimir les llistes">
 								<i class="fa fa-print fa-1x blue"></i></a></div>
+							<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_assegurats', persones.params|merge({ 'format': 'csv' })) }}" alt="Exportar dades" 
+								title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
 						</div> 
 					{% endif %}
 				</div>
@@ -41,7 +43,7 @@
 			{% endif %}
 			<div class="col-md-2 col-xs-4">
 				<div class="form-group">
-					{{ form_label(form.desde, 'Dades des de') }}
+					{{ form_label(form.desde, 'Altes des de') }}
 					<div class="input-group" >
 						{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
 						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
@@ -135,7 +137,7 @@
 				   		<div class="data-detall-cell assegurat-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell assegurat-tipusdesc">
 				   			<a class="llicencia-historial" href="{{ path('FecdasBundle_historialLlicencies', { 'id': persona.id }) }}"  alt="Historial llicències" title="Historial llicències">
-				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoAssegurats(admin) }}</span>
+				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoAssegurats(admin, persones.params.datadesde, persones.params.datafins) }}</span>
 			   				</a>
 						</div>
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
@@ -219,7 +221,14 @@
 		showPersonClickAssegurats();
 	
 		showHistorialLlicencies();
-	
+
+		$(window).resize(function() {
+			hideMask();
+	        
+	        if ($.browser.msie) $('.assegurat-historial').hide(); 
+	    	else $('.assegurat-historial').slideUp('slow');
+		});
+		
 		$('#form_assegurats').submit(function () {
 			// Recarrega consulta afegint la dades del formulari
 			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
@@ -255,13 +264,22 @@
 		
 		$('#form_tots').change(function () {
 			// Recarrega consulta afegint la dades del formulari
-			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+			//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");
 			
 		});
 	
 		$('#form_vigent').change(function () {
 			// Recarrega consulta afegint la dades del formulari
-			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
+			if ( $('#form_vigent').is(':checked') ) {
+				$( '#form_desde, #form_fins' ).prop('disabled', 'disabled').val( '' );
+				//$( '#form_desde, #form_fins' ).prop('placeholder', '--');
+			} else {
+				// Posar dates any en curs
+				$( '#form_desde, #form_fins' ).removeAttr('disabled');
+				$( '#form_desde' ).val( '01/01/'+current.getFullYear() );	
+				$( '#form_fins' ).val( '31/12/'+current.getFullYear() );
+				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");
+			}
 			
 		});
 

@@ -347,8 +347,8 @@ class PageController extends BaseController {
 		$club = $this->getCurrentClub();
 		
 		$interval = $this->intervalDatesPerDefecte($request);
-		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:$this->getCurrentDate());
-		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:$this->getCurrentDate());
+		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:null);
+		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:null);
 		
 		$tipus = $request->query->get('tipus', 0);
 		$page = $request->query->get('page', 1);
@@ -362,7 +362,7 @@ class PageController extends BaseController {
 		} else {
 			if ($request->query->has('desde') || $request->query->has('fins') || $request->query->has('tipus')) {
 				$this->logEntryAuth('VIEW PARTES SEARCH', $club->getCodi()." ".$tipus.":".
-									$desde->format('Y-m-d')."->".$fins->format('Y-m-d'));
+									($desde != null?$desde->format('Y-m-d'):"null")."->".($fins != null?$fins->format('Y-m-d'):"null"));
 			}
 			else $this->logEntryAuth('VIEW PARTES', $club->getCodi());
 		}
@@ -373,10 +373,12 @@ class PageController extends BaseController {
 		}
 				
 		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
-				'read_only' => true,
-				'data' => $desde->format('d/m/Y'),
+				'read_only' => false,
+				'required' => false,
+				'data' => ($desde != null?$desde->format('d/m/Y'):''),
+				'attr' => array( 'placeholder' => '--')
 		));
-		$formBuilder->add('fins', 'text', array('read_only'  => true, 'data' => $fins->format('d/m/Y')));
+		$formBuilder->add('fins', 'text', array('read_only'  => false, 'required' => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--') ) );
 		
 		$tipusSearch =  $this->getTotsTipusParte();
 		$formBuilder->add('tipus', 'choice', array(
@@ -401,7 +403,7 @@ class PageController extends BaseController {
 				$page,
 				10/*limit per page*/
 		);
-		$partesclub->setParam('desde',$desde->format('d/m/Y'));
+		$partesclub->setParam('desde',($desde != null?$desde->format('d/m/Y'):''));
 		
 		/* Recollir estadístiques */
 		$stat = $club->getDadesDesde( $tipus, $desde, $fins );
@@ -440,21 +442,22 @@ class PageController extends BaseController {
 		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'e.cognoms, e.nom');
+		$format = $request->query->get('format', '');
 		$direction = $request->query->get('direction', 'desc');
 		$currentDNI = $request->query->get('dni', '');
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		
 		$interval = $this->intervalDatesPerDefecte($request);
-		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:$this->getCurrentDate());
-		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:$this->getCurrentDate());
+		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:null);
+		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:null);
 		
 		$currentDNI = trim($currentDNI);
 		$currentNom = trim($currentNom);
 		$currentCognoms = trim($currentCognoms);
 		
-		$currentVigent = true;
-		if ($request->query->has('vigent') && $request->query->get('vigent') == 0) $currentVigent = false;
+		$currentVigent = false;
+		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
 		    
 		$currentTots = false; // Admins poden cerca tots els clubs
 		if ($this->isCurrentAdmin() && $request->query->has('tots') && $request->query->get('tots') == 1) $currentTots = true;
@@ -463,23 +466,19 @@ class PageController extends BaseController {
 				
 		if ($request->getMethod() == 'POST') {
 			// Criteris de cerca.Desactivat JQuery 
-			$this->logEntryAuth('VIEW PERSONES POST', "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
+			$this->logEntryAuth('VIEW PERSONES POST', ($format != ''?$format:''). "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
 			
 		} else {
-			$this->logEntryAuth('VIEW PERSONES', "club: " . $currentClub);
+			$this->logEntryAuth('VIEW PERSONES', ($format != ''?$format:'')."club: " . $currentClub);
 		}
 	
-		$formBuilder = $this->createFormBuilder()->add('dni', 'search', array('required'  => false, 'data' => $currentDNI)); 
-		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
-		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
-		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
-		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots) );
-		$formBuilder->add('desde', 'text', array('read_only' => true, 'data' => $desde->format('d/m/Y')));
-		$formBuilder->add('fins', 'text', array('read_only'  => true, 'data' => $fins->format('d/m/Y')));
-		
-		$form = $formBuilder->getForm(); 
-	
 		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $desde, $fins, $currentVigent, $sort);
+		
+		if ($format == 'csv') {
+			// Generar CSV
+			return $this->exportAssegurats($request, $query->getResult(), $desde, $fins);
+		}
+		
 		$paginator  = $this->get('knp_paginator');
 		$persones = $paginator->paginate(
 				$query,
@@ -487,18 +486,75 @@ class PageController extends BaseController {
 				10 /*limit per page*/
 		); 
 		/* Paràmetres URL sort i pagination */
-		$persones->setParam('desde',$desde->format('d/m/Y'));
-		$persones->setParam('fins',$fins->format('d/m/Y'));
+		$persones->setParam('datadesde',$desde);
+		$persones->setParam('datafins',$fins);
+		if ($desde != null) $persones->setParam('desde',$desde->format('d/m/Y'));
+		if ($fins != null) $persones->setParam('fins',$fins->format('d/m/Y'));
 		if ($currentDNI != '') $persones->setParam('dni',$currentDNI);
 		if ($currentNom != '') $persones->setParam('nom',$currentNom);
 		if ($currentCognoms != '') $persones->setParam('cognoms',$currentCognoms);
-		if ($currentVigent == false) $persones->setParam('vigent',false);
+		if ($currentVigent == true) $persones->setParam('vigent',true);
 		if ($currentTots == true) $persones->setParam('tots',true);
 		
+		$formBuilder = $this->createFormBuilder()->add('dni', 'search', array('required'  => false, 'data' => $currentDNI)); 
+		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
+		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
+		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
+		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots) );
+		$formBuilder->add('desde', 'text', array('read_only' => false, 'required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
+		$formBuilder->add('fins', 'text', array('read_only'  => false, 'required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
+		
+		$form = $formBuilder->getForm(); 
+	
 		return $this->render('FecdasBundle:Page:assegurats.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
 						'sortparams' => array('sort' => $sort,'direction' => $direction)) 
 						));
+	}
+	
+	private function exportAssegurats($request, $persones, $desde, $fins) {
+			
+		$strTemps = "data".date("Y_m_d_His");
+		$strTitol = "Llicències a data ".date("d/m/Y"); 
+		
+		if ($desde != null || $fins != null) {
+			$strTemps = "periode";
+			$strTitol = "Llicències període ";
+			if ($desde != null) {
+				$strTemps .= "_desde_".$desde->format("Y_m_d");
+				$strTitol .= " desde ".$desde->format("d/m/Y");
+			}
+			if ($fins != null) {
+				$strTemps .= "_fins_".$desde->format("Y_m_d");
+				$strTitol .= " fins ".$desde->format("d/m/Y");
+			}
+			
+		}
+					
+		$filename = "export_assegurats_".$strTemps.".csv";
+			
+		$headerLic = array();
+		if ($this->isCurrentAdmin()) $headerLic = array('club');
+		$headerLic[] = $strTitol;	
+			
+		$header = array_merge(array ('num'), EntityPersona::csvHeader(), $headerLic);
+			
+		$data = array(); // Get only data matrix
+		$i = 1;
+		foreach ($persones as $persona) {
+			
+			$rowLic = array();
+			if ($this->isCurrentAdmin()) $rowLic = array( $persona->getClub()->getNom() );
+			$rowLic[] = $persona->getInfoAssegurats($this->isCurrentAdmin(), $desde, $fins);	
+			
+			
+			$rowdata = array_merge(array ( $i ), $persona->csvRow(), $rowLic);
+			$data[] = $rowdata;
+			$i++; 
+		}
+			
+		$response = $this->exportCSV($request, $header, $data, $filename);
+		return $response;
 	}
 	
 	public function historialLlicenciesAction(Request $request) {
@@ -510,7 +566,7 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 				
 		$asseguratId = $request->query->get('id');
-			
+		
 		$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($asseguratId);
 			
 		if (!$persona) return new Response("");
@@ -535,16 +591,16 @@ class PageController extends BaseController {
 			 * INNER JOIN m_persones e ON l.persona = e.id 
 			 * GROUP BY e.dni HAVING COUNT(DISTINCT p.club) > 1
 			 * */
-			usort($llicencies, function($a, $b) {
-				if ($a === $b) {
-					return 0;
-				}
-				return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
-			});
-			
 		} else {
 			$llicencies = $persona->getLlicenciesSortedByDate(true); // Incloure baixes			
 		}
+		// Ordre
+		usort($llicencies, function($a, $b) {
+			if ($a === $b) {
+				return 0;
+			}
+			return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
+		});
 
 		return $this->render('FecdasBundle:Page:assegurathistorial.html.twig', array('llicencies' => $llicencies, 'admin' => $this->isCurrentAdmin()));
 		

@@ -704,25 +704,42 @@
 
 	        var current = $(this).parents(".data-detall");
 	        
-	        if (current.hasClass('data-detall-historic')) {
+/*	        if (current.hasClass('data-detall-historic')) {
 	        	current.removeClass('data-detall-historic');
 		        if ($.browser.msie) current.children('.assegurat-historial').hide(); 
 		    	else current.children('.assegurat-historial').slideUp('slow');
 
 	        } else {
-	        	current.children('.assegurat-historial').remove();
+	        	//current.children('.assegurat-historial').remove();
+*/	        	
+	        if ($.browser.msie) $('.assegurat-historial').hide(); 
+	    	else $('.assegurat-historial').slideUp('slow');
+
+	        hideMask();
+	        
+	        if ( current.hasClass('data-detall-historic')) {
+		        if ($.browser.msie) current.children('.assegurat-historial').show(); 
+		    	else current.children('.assegurat-historial').slideDown('slow');
+		        
+		        showElementMask(  $('#llista-assegurats .table-scroll'), false );
+	        } else {
 		        var url = $(this).attr("href");
+		        
 		        $.get(url, function(data, textStatus) {
-		        	
 		        	current.addClass('data-detall-historic');
 		        	current.append(data);
 			        if ($.browser.msie) current.children('.assegurat-historial').show(); 
 			    	else current.children('.assegurat-historial').slideDown('slow');
 
+			        showElementMask( $('#llista-assegurats .table-scroll'), false );
+			        
 			        //if close button is clicked
 				    $('.assegurat-historial .close').click(function (e) {
 				        //Cancel the link behavior
 				        e.preventDefault();
+				        
+				        hideMask();
+				        
 				        current.removeClass('data-detall-historic');
 				        if ($.browser.msie) current.children('.assegurat-historial').hide(); 
 				    	else current.children('.assegurat-historial').slideUp('slow');
@@ -794,6 +811,31 @@
         $('.mask').fadeOut("slow"); 
 	};
 
+	
+	showElementMask = function(element, showImage) {
+        // Show mask before overlay
+        //Get the screen height and width
+		var maskHeight = element.height();
+        var maskWidth = element.width();
+        $('.mask').offset( { top: 0, left: 0 } );
+        
+        $('.mask').css({'width':maskWidth,'height':maskHeight});
+
+        //Set height and width to mask to fill up the whole screen
+        
+        //$('.mask').offset(element.offset());
+        var offsetTop = element.offset().top - $(window).scrollTop();
+        var offsetLeft = element.offset().left - $(window).scrollLeft();
+
+        //transition effect    
+        $('.mask').fadeTo("slow",0.6);
+        $('.mask').offset( { top: offsetTop, left: offsetLeft } );
+        if ( showImage == false ) {
+        	$( '.mask-progress' ).hide();
+        }
+	};
+	
+	
 	obrirMascaraBlock = function(block) {
 		$(block).prepend('<div class="block-mask"><div><span class="fa fa-spinner fa-spin fa-2x green"></span></div></div>');
 		$(block).css({'min-height':'200px'});

@@ -144,6 +144,48 @@ class EntityPersona {
 	public function __toString() {
 		return $this->getLlistaText();
 	}
+
+	public static function csvHeader() {
+		return array (  'dni', 
+				 		'nom', 
+				 		'cognoms', 
+				 		'naixement', 
+				 		'edat',	
+				 		'sexe', 
+				 		'telefon1', 
+				 		'telefon2', 
+				 		'mail',	
+				 		'adreca', 
+				 		'poblacio', 
+				 		'cp', 
+				 		'comarca',
+				 		'provincia', 
+				 		'pais' );
+	}
+	
+	/**
+     * Get persona info. as csv data 
+     *
+     * @return string
+     */
+    public function csvRow()
+    {
+    	return array (	$this->getDni(), 
+				 		$this->getNom(), 
+				 		$this->getCognoms(), 
+				 		$this->getDatanaixement()->format('d/m/Y'), 
+				 		$this->getEdat(),	
+				 		$this->getSexe(), 
+				 		$this->getTelefon1(), 
+				 		$this->getTelefon2(), 
+				 		$this->getMail(),	
+				 		$this->getAddradreca(), 
+				 		$this->getAddrpob(), 
+				 		$this->getAddrcp(), 
+				 		$this->getAddrcomarca(),
+				 		$this->getAddrprovincia(), 
+				 		$this->getAddrnacionalitat() );
+    }
 	
     /**
      * Get nom i cognoms "COGNOMS, nom
@@ -183,6 +225,29 @@ class EntityPersona {
     	return  $strAdreca;
     }
     
+    public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)
+    {
+    	/* Ordenades de última a primera */
+    	$arr = array();
+    	foreach ($this->llicencies as $llicencia) {
+    		if ($llicencia->isValida() || $baixes == true) {
+    			$parte = $llicencia->getParte();
+				
+				if ($parte != null && 
+					($desde == null || $desde->format('Y-m-d') <= $parte->getDataalta()->format('Y-m-d') ) && 
+					($fins == null  || $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d') )  ) $arr[] = $llicencia;
+			}
+    	}
+
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+    		return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
+    	});
+    	return $arr;
+    }
+
     /**
      * 
      * @return FecdasBundle\Entity\EntityLlicencia
@@ -194,25 +259,8 @@ class EntityPersona {
     	return null;
     }
     
-    public function getLlicenciesSortedByDate($baixes = false)
-    {
-    	/* Ordenades de última a primera */
-    	$arr = array();
-    	foreach ($this->llicencies as $llicencia) {
-    		if ($llicencia->isValida() || $baixes == true) $arr[] = $llicencia;
-    	}
-
-    	usort($arr, function($a, $b) {
-    		if ($a === $b) {
-    			return 0;
-    		}
-    		return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
-    	});
-    	return $arr;
-    }
-    
-    public function getLastLlicencia() {
-    	$llicenciesOrdenades = $this->getLlicenciesSortedByDate();
+    public function getLastLlicencia($desde = null, $fins = null) {
+    	$llicenciesOrdenades = $this->getLlicenciesSortedByDate(false, $desde, $fins);
     	
     	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
     	
@@ -224,16 +272,28 @@ class EntityPersona {
      *
      * @return string
      */
-    public function getInfoAssegurats($admin = false) {
+    public function getInfoAssegurats($admin = false, $desde = null, $fins = null) {
     	$txtClub = "";
     	if ($admin) $txtClub = "(".$this->club->getNom().") ";  
     	
-    	if ($this->getLlicenciaVigent() != null and $this->getLlicenciaVigent()->getParte() != null)
-    		return  $txtClub . $this->getLlicenciaVigent()->getCategoria()->getDescripcio() . " fins al " . $this->getLlicenciaVigent()->getParte()->getDatacaducitat()->format('d/m/Y');
+		if ($desde != null || $fins != null) {
+			$llicenciaLast = $this->getLastLlicencia($desde, $fins);
+	    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null )  {
+	    		$parte = $llicenciaLast->getParte();
+    			if ($fins != null && $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d')) return $txtClub . $llicenciaLast->getCategoria()->getDescripcio() . " fins al " . $parte->getDatacaducitat()->format('d/m/Y');
+				return $txtClub . "Darrera llicència finalitzada en data " . $parte->getDatacaducitat()->format('d/m/Y');	
+			}
+			
+			return $txtClub . "Persona sense llicències en aquestes dates";		
+		}
+		
+		$llicenciaVigent = $this->getLlicenciaVigent(); 
+    	if ($llicenciaVigent != null && $llicenciaVigent->getParte() != null)
+    		return  $txtClub . $llicenciaVigent->getCategoria()->getDescripcio() . " fins al " . $llicenciaVigent->getParte()->getDatacaducitat()->format('d/m/Y');
     		
-    	
-    	if ($this->getLastLlicencia() != null and $this->getLastLlicencia()->getParte() != null)  
-    		return $txtClub . "Darrera llicència finalitzada en data " . $this->getLastLlicencia()->getParte()->getDatacaducitat()->format('d/m/Y');
+    	$llicenciaLast = $this->getLastLlicencia();
+    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null )  
+    		return $txtClub . "Darrera llicència finalitzada en data " . $llicenciaLast->getParte()->getDatacaducitat()->format('d/m/Y');
     	
     	return $txtClub . "Persona sense historial de llicències";
     }

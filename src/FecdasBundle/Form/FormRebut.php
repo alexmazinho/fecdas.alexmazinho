@@ -21,7 +21,10 @@ class FormRebut extends AbstractType {
 			$rebut = $event->getData();
 		
 			/* Check we're looking at the right data/form */
-			if ($rebut instanceof EntityRebut) {
+			if ($rebut instanceof EntityRebut) { 
+				
+				$editable = $rebut->esIngres() || $rebut->getTipuspagament() != BaseController::TIPUS_PAGAMENT_TPV;
+				
 				
 				$form->add('numrebut', 'text', array(
 						'required' 	=> true,
@@ -42,14 +45,16 @@ class FormRebut extends AbstractType {
 				
 				$form->add('dadespagament', 'text', array(
 						'required' 		=> false,
-						'disabled' 		=> $rebut->estaComptabilitzat(),
+						//'disabled' 		=> $rebut->estaComptabilitzat(),
+						'disabled'		=> !$editable
 				));
 				
 				$form->add('tipuspagament', 'choice', array(
 						'required' 		=> true,
 						'choices' 		=> BaseController::getTipusDePagament(),
 						'empty_value' 	=> '',
-						'disabled' 		=> $rebut->estaComptabilitzat(),
+						//'disabled' 		=> $rebut->estaComptabilitzat(),
+						'disabled'		=> !$editable || $rebut->estaComptabilitzat()
 				));
 				
 				$form->add('comentari', 'textarea', array(
@@ -79,13 +84,15 @@ class FormRebut extends AbstractType {
 						'input' 		=> 'datetime',
 						'empty_value' 	=> false,
 						'format' 		=> 'dd/MM/yyyy',
-						'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
+						//'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
+						'disabled' 		=>  !$editable || $rebut->estaComptabilitzat(),		
 				));
 				
 				$form->add ( 'import', 'number', array (
 						'required' 		=> true,
 						'scale' 		=> 2,
-						'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
+						//'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
+						'disabled'		=> !$editable || $rebut->estaComptabilitzat()		
 				));
 			}
 		});

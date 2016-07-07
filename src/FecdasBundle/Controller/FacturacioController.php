@@ -2203,28 +2203,43 @@ class FacturacioController extends BaseController {
 
 			// Validacions edició
 			if ($rebutOriginal != null) {
+				$editable = $rebutOriginal->esIngres() || $rebutOriginal->getTipuspagament() != BaseController::TIPUS_PAGAMENT_TPV;
+				
 				if ($rebut->getClub()->getCodi() != $rebutOriginal->getClub()->getCodi()) {
 					$form->get('club')->addError(new FormError('Valor incorrecte'));
 					throw new \Exception('No es pot modificar el club associat al rebut');
 				}
 				
-				if ($rebut->esIngres() && !$rebut->estaComptabilitzat()) {
-					// Els ingresos (no comptabilitzats) es poden editar
-					
-					
-				} else {
-					// La resta de rebuts no poden modificar ni import ni data
-					if ($rebut->getImport() != $rebutOriginal->getImport()) {
-						$form->get('import')->addError(new FormError('Valor incorrecte'));
-						throw new \Exception('No es pot modificar l\'import');
-					}
-					
-					if ($rebut->getDatapagament() != $rebutOriginal->getDatapagament()) {
-						$form->get('datapagament')->addError(new FormError('Valor incorrecte'));
-						throw new \Exception('No es pot modificar la data de pagament');
-					}
+				if (!$editable && $rebut->getDadespagament() != $rebutOriginal->getDadespagament()) {
+					$form->get('dadespagament')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es poden modificar les dades dels rebuts del TPV');
 				}
 				
+				if (!$editable && $rebut->getTipuspagament() != $rebutOriginal->getTipuspagament()) {
+					$form->get('tipuspagament')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es pot modificar el tipus de pagament dels rebuts del TPV');
+				}
+					
+				if (!$editable && $rebut->getDatapagament()->format('Y-m-d') != $rebutOriginal->getDatapagament()->format('Y-m-d')) {
+					$form->get('datapagament')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es pot modificar la data de pagament dels rebuts del TPV');	
+				}
+
+				if (!$editable && $rebut->getImport() != $rebutOriginal->getImport()) {
+					$form->get('datapagament')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es pot modificar l\'import dels rebuts del TPV');
+				}	
+				
+				// La resta de rebuts no poden modificar ni import ni data
+				if ($rebutOriginal->estaComptabilitzat() && $rebut->getImport() != $rebutOriginal->getImport()) {
+					$form->get('import')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es pot modificar l\'import dels rebuts comptabilitzats, cal anul·lar l\'apunt');
+				}
+					
+				if ($rebutOriginal->estaComptabilitzat() && $rebut->getDatapagament() != $rebutOriginal->getDatapagament()) {
+					$form->get('datapagament')->addError(new FormError('Valor incorrecte'));
+					throw new \Exception('No es pot modificar la data de pagamentdels rebuts comptabilitzats, cal anul·lar l\'apunt');
+				}
 			}
 
 		}

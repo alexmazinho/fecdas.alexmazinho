@@ -1794,9 +1794,9 @@ GROUP BY c.nom
 			}
 			
 			$body = "<p>Benvolgut club ".$duplicat->getClub()->getNom()."</p>";
-			$body .= "<p>Us fem saber que la petició de duplicat per ";
-			$body .= "<strong>".$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() . "</strong> (<i>".$duplicat->getTextCarnet()."</i>),";
-			$body .= " ha estat impresa i es pot passar a recollir per la Federació.</p>";
+			$body .= "<p>Us fem saber que hem imprès el duplicat del/a ";
+			$body .= "<strong>".$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() . "</strong> (<i>".$duplicat->getTextCarnet()."</i>)";
+			$body .= "</p>";
 			
 			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 			

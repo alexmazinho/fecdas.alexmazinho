@@ -6,7 +6,7 @@ use FecdasBundle\Classes\CSVReader;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\Form\FormError;
 
 //use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -1150,10 +1150,12 @@ class PageController extends BaseController {
 		$options['comarques'] = $this->getComarques();
 		$options['nacions'] = $this->getNacions();
 
+		$formpersona = null; 
+
 		$em = $this->getDoctrine()->getManager();
 		
-		if ($request->getMethod() == 'POST') {
-			try {
+		try {
+			if ($request->getMethod() == 'POST') {
 				$p = $request->request->get('persona', null);
 				if ($p == null) throw new \Exception("Dades incorrectes");
 	
@@ -1180,7 +1182,7 @@ class PageController extends BaseController {
 						
 						$estranger = ( isset($p['estranger']) && $p['estranger'] == 1 )?true:false;
 						
-						$this->validarDadesPersona($persona, $estranger);
+						$this->validarDadesPersona($persona, $estranger, $formpersona);
 
 						if ($persona->getId() == 0) {
 							$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
@@ -1223,65 +1225,69 @@ class PageController extends BaseController {
 				} else {
 					return new Response();
 				}
-			} catch (\Exception $e) {
-				if ($persona->getId() == 0) $em->detach($persona);
-				else 	$em->refresh($persona);
+			}
+			if ($request->isXmlHttpRequest()) {
+				// Reload form persona
+				$persona = new EntityPersona($this->getCurrentDate());
+				$options['edit'] = true;
+				$persona->setDatanaixement(	new \DateTime(date("Y-m-d", strtotime(date("Y-m-d") . " -40 year"))));
+				$persona->setSexe("H");
+				$persona->setAddrnacionalitat("ESP");
+					
+				if ($request->query->get('persona', 0) != 0) { // Select diferent person
+					$persona = $this->getDoctrine()
+							->getRepository('FecdasBundle:EntityPersona')
+							->find($request->query->get('persona'));
+					if (!$this->isCurrentAdmin()) $options['edit'] = false;
+				}
+				$formpersona = $this->createForm(new FormPersona($options), $persona);
+			}
+		} catch (\Exception $e) {
+			if ($persona->getId() == 0) $em->detach($persona);
+			else 	$em->refresh($persona);
 				 
-				$this->logEntryAuth('PERSONA KO',	$e->getMessage());
+			$this->logEntryAuth('PERSONA KO',	$e->getMessage());
 				
-				$response = new Response($e->getMessage());
-				$response->setStatusCode(500);
-				return $response;
-			}
-		}
-		
-		if ($request->isXmlHttpRequest()) {
-			// Reload form persona
-			$persona = new EntityPersona($this->getCurrentDate());
-			$options['edit'] = true;
-			$persona->setDatanaixement(	new \DateTime(date("Y-m-d", strtotime(date("Y-m-d") . " -40 year"))));
-			$persona->setSexe("H");
-			$persona->setAddrnacionalitat("ESP");
-				
-			if ($request->query->get('persona', 0) != 0) { // Select diferent person
-				$persona = $this->getDoctrine()
-						->getRepository('FecdasBundle:EntityPersona')
-						->find($request->query->get('persona'));
-				if (!$this->isCurrentAdmin()) $options['edit'] = false;
-			}
-			$formpersona = $this->createForm(new FormPersona($options), $persona);
-			
-			return $this->render('FecdasBundle:Page:persona.html.twig',
-					array('formpersona' => $formpersona->createView(),));
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);
+			return $response;
 		}
 
-		return new Response("Error personaAction ");
+		return $this->render('FecdasBundle:Page:persona.html.twig',
+					array('formpersona' => $formpersona->createView(),));
 	}
 	
-	private function validarDadesPersona($persona, $estranger = false) {
+	private function validarDadesPersona($persona, $estranger = false, $form = null) {
 		if ($persona == null || $persona->getClub() == null) throw new \Exception("Les dades no són correctes");
 		
 		$club = $persona->getClub();
 		
-		if ($persona->getNom() == null || $persona->getNom() == "" || 
-			$persona->getCognoms() == null || $persona->getCognoms() == "") throw new \Exception("Cal indicar nom i cognoms");
+		if ($persona->getNom() == null || $persona->getNom() == "") {
+				//if ($form != null) $form->get('nom')->addError(new FormError('Falta el nom')); 
+				throw new \Exception("Cal indicar el nom");
+		}
+
+		if ($persona->getCognoms() == null || $persona->getCognoms() == "") {
+				//if ($form != null) $form->get('cognoms')->addError(new FormError('Falten els cognoms')); 
+				throw new \Exception("Cal indicar els cognoms");
+		}
 		
 		if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
 	
-		if ($persona->getId() == 0 &&
-			($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
-			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
-			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
-		
-		
 		if ($persona->getSexe() != BaseController::SEXE_HOME && $persona->getSexe() != BaseController::SEXE_DONA)
 				throw new \Exception('Manca indicar correctament el sexe de la persona ');
 
 		$currentMin = $this->getCurrentDate();
 		$currentMin->sub(new \DateInterval('P'.BaseController::EDAT_MINIMA.'Y')); // -4 anys 
 				
-		if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "" ||
-			$persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
+		if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "") throw new \Exception('Cal indicar la data de naixement'); 
+		
+		if ($persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
+
+		if ($persona->getId() == 0 &&
+			($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
+			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
+			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
 		
 		$em = $this->getDoctrine()->getManager();							
 		

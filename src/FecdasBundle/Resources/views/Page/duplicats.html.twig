@@ -43,7 +43,7 @@
 		   		<div id="header-duplicatcarnet" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Carnet', 'c.tipus') }}
 		   			<span class="listheader-icon {% if duplicats.isSorted('c.tipus') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-duplicatfoto" class="col-listheader listheader-noorder">Foto<span class="listheader-order"></span></div>
-		   		<div id="header-duplicatimpressio" class="col-listheader listheader-noorder">Impresa<span class="listheader-order"></span></div>
+		   		<div id="header-duplicatimpressio" class="col-listheader listheader-noorder">Notificat club<span class="listheader-order"></span></div>
 		   		<div id="header-duplicatextra" class="col-listheader listheader-noorder">Observacions<span class="listheader-order"></span></div>
 		   		<div id="header-duplicatactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ duplicats.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
@@ -75,8 +75,8 @@
 				   		<div class="data-detall-cell duplicat-impressio">
 				   		{% if duplicat.dataimpressio is null %}
 				   			{% if admin == true %}
-					   			<a class="duplicat-impres link" href="{{ path('FecdasBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Duplicat imprès" title="Duplicat imprès">
-			   							<i class="fa fa-print orange"></i></a>
+					   			<a class="duplicat-impres link" href="{{ path('FecdasBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Notificar club duplicat està imprès" title="Notificar club duplicat està imprès">
+			   							<i class="fa fa-thumbs-o-up orange"></i></a>
 			   				{% endif %}
 			   			{% else %}
 			   				{{ duplicat.dataimpressio|date('d/m/y') }}

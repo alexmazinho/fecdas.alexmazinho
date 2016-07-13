@@ -17,10 +17,14 @@ use FecdasBundle\Entity\EntityClub;
 class AdminController extends BaseController {
 	
 	public function changeroleAction(Request $request) {
+		$this->get('session')->remove('adminasuser');	
 		if (!$this->isCurrentAdmin()) return new Response(""); 
 			
 		// Canviar Club Administrador	
 		if ($request->query->has('roleclub')) $this->get('session')->set('roleclub', $request->query->get('roleclub'));
+		
+		
+		if ($request->query->has('role') && $request->query->get('role', '') == 'club') $this->get('session')->set('adminasuser', true);
 		
 		return new Response("");
 	}

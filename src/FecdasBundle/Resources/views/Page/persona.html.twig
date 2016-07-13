@@ -7,7 +7,7 @@
 		  	<div class="form-group">
 				{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
 				{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom'} }) }}
-			</div>
+			</div>{{ form_errors(formpersona.nom) }}
 		</div>
 		<div id="formpersona-cognoms"  class="col-md-5  col-xs-5">
 			{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}

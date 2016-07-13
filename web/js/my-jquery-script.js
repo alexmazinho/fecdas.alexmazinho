@@ -866,11 +866,12 @@
 			var current = new Date();
 			var mindate = new Date( current.getFullYear() - 100, 1 - 1, 1);
 			var maxdate = new Date ( current.getFullYear() - 4, 1 - 1, 1);
+			var opendate = new Date ( current.getFullYear() - 30, 1 - 1, 1);
 			initDateTimePicker ( 
 				$( '#persona_datanaixement' ), 
 				mindate, 
 				maxdate, 
-				new Date (), 
+				opendate, 
 				'datanaixement-picker', 
 				false
 			);
@@ -879,6 +880,8 @@
 			autocompleters();
 			actionsModalOverlay();
 			actionsPersonaForm(origen);
+			
+			if (id == 0) $( '#persona_datanaixement' ).val(''); // Noves persones naixement blank, cal omplir 
 			
 			$("select#parte_persona_addrprovincia").select2({
 				minimumInputLength: 2,

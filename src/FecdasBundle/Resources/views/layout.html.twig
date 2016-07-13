@@ -45,9 +45,14 @@
 					<li><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió <i class="fa fa-sign-in fa-fw"></i></a></li>	
 				{% endif %}	
 			    {% if roleform is defined %}
-			    <li class="divider"></li>
-			    <li>{{ form_label(roleform.role) }}</li>
-			    <li><p>{{ form_widget(roleform.role) }} <i class="fa fa-exchange fa-fw"></i></p></li>
+			    	{{ form_widget(roleform.currentrole) }}
+			    	<li class="divider"></li>
+			    	{% if adminasuser is defined and adminasuser == true %}
+			    		<li><a class="changerole" href="{{ path('FecdasBundle_changerole', {'role': 'admin'}) }}">Tornar al rol Admin <i class="fa fa-user-plus fa-fw"></i></a></li>
+			    	{% else %}
+			    		<li><a class="changerole" href="{{ path('FecdasBundle_changerole', {'role': 'club'}) }}">Activar rol club <i class="fa fa-user fa-fw"></i></a></li>
+			    	{% endif %}
+			    	<li><p>{{ form_widget(roleform.roleclub) }} <i class="fa fa-exchange fa-fw"></i></p></li>
 				{% endif %}
 			  </ul>
 			</div>
@@ -85,6 +90,7 @@
 					<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
 		          </ul>
 		        </li>
+		        {% if allowcomandes == true %}
 		        <li class="dropdown">
 			        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Comandes <span class="caret"></span></a>
 			        <ul class="dropdown-menu" role="menu">
@@ -106,6 +112,7 @@
 			          	<li id="menu-ingresos"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
  		            </ul>
 		        </li>
+		        {% endif %}
 		        <li class="dropdown">
 		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consulta <span class="caret"></span></a>
 		          <ul class="dropdown-menu" role="menu">
@@ -228,7 +235,6 @@
 			mainMenuClick();
 	
 			changeRoleClub("{{ path('FecdasBundle_changerole') }}");
-	
 			
 		});
 	

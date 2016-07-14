@@ -326,6 +326,23 @@ class EntityParte extends EntityComanda {
     	return $this->getNumLlicenciesCategoria('T');
     }
     
+	/**
+     * Obté número de llicències per enviar
+     *
+     * @return integer
+     */
+    public function getNumEnviar()
+    {
+    	
+    	// Només si no estan donades de baixa
+    	$count = 0;
+    	foreach($this->llicencies as $llicencia_iter) {
+    		if (!$llicencia_iter->esBaixa() && $llicencia_iter->getEnviarllicencia() == true) $count++;
+    	}
+    	return $count;
+    }
+	
+	
     /**
      * Obté número de infantils (llicències actives)
      *

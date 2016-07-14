@@ -1,0 +1,74 @@
+{# src/Fecdas/FecdasBundle/Resources/views/Facturacio/taulaapunts.html.twig #}
+<div class="table-header">	
+  	<div id="list-header">
+		<div id="header-apunt-id" class="col-listheader hidden">&nbsp;</div>
+		<div id="header-apunt-num" class="col-listheader collistheader-noorder">Núm.</div>
+		<div id="header-apunt-data" class="col-listheader collistheader-noorder">Data</div>
+		<div id="header-apunt-deure" class="col-listheader collistheader-noorder">Deure</div>
+		<div id="header-apunt-haver" class="col-listheader collistheader-noorder">Haver</div>
+		<div id="header-apunt-comanda" class="col-listheader collistheader-noorder">Comanda</div>
+		<div id="header-apunt-concepte" class="col-listheader collistheader-noorder">Concepte</div>
+		<div id="header-apunt-saldo" class="col-listheader collistheader-noorder">Saldo</div>
+		<div id="header-apunt-entrada" class="col-listheader collistheader-noorder">Entrada</div>
+   	</div>
+</div>
+{% if apunts|length > 0 %}
+	<div class="table-scroll">
+	   	<ol id="list-data">
+		{% for key,apunt in apunts %} 
+	   		<li class="data-detall {% if apunt.tipus == 'F' %}data-detall-factura{% endif %} {% if apunt.tipus == 'R' %}data-detall-rebut{% endif %}">
+	   			<div class="data-detall-cell apunt-id hidden">{{ apunt.id }}</div>
+	   			<div class="data-detall-cell apunt-num">
+	   				{% if apunt.compta == '' and admin == true %} <span class="fa fa-exclamation-triangle fa-1x orange"></span> {% endif %}
+	   				{{ apunt.tipus }}{{ apunt.num|raw }}
+	   				{% if apunt.tipus == 'F' %}
+	   					<a class="apunt-factura-pdf link" href="{{ path('FecdasBundle_facturatopdf', { 'id': apunt.id}) }}" alt="PDF Factura" title="PDF Factura"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
+	   				{% endif %}
+	   				{% if apunt.tipus == 'R' %}
+	   					<a class="apunt-rebut-pdf link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': apunt.id}) }}" alt="PDF Rebut" title="PDF Rebut"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
+	   				{% endif %}
+	   			</div>
+	   			<div class="data-detall-cell apunt-data">{{ apunt.data|date('d/m/Y') }}</div>
+	   			<div class="data-detall-cell apunt-deure red">{% if apunt.tipus == 'F' %}{{ apunt.import|number_format(2, ',', '.') }}€{% endif %}</div>
+	   			<div class="data-detall-cell apunt-haver green">{% if apunt.tipus == 'R' %}{{ apunt.import|number_format(2, ',', '.') }}€{% endif %}</div>
+	   			<div class="data-detall-cell apunt-comanda">
+	   				{% for num, comanda in apunt.comandes %} 
+			   			<a class="editar-comanda link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.num }) }}" alt="Veure comanda" title="Veure comanda">
+			   				{{ comanda.num }} ({{ comanda.import|number_format(2, ',', '.') }} €)</a><br/>
+					{% endfor %}
+	   			</div>
+	   			<div class="data-detall-cell apunt-concepte">{{ apunt.concepte|raw }}</div>
+	   			<div class="data-detall-cell apunt-saldo"> 
+					<span class="{% if apunt.saldo < 0 %}red{% else %}green{% endif %}">{{ apunt.saldo|number_format(2, ',', '.') }}€</span>
+	   			</div>
+	   			<div class="data-detall-cell apunt-entrada">{{ apunt.entrada|date('Y-m-d H:i:s') }}</div>
+	   		</li>
+	   		{% endfor %} 
+		</ol>
+	</div>
+	{% if pagination.total > pagination.perpage %}
+		<div class="navigation">Pàgines: 
+			<div class="pagination">
+				{% set minpage = max(1, pagination.page-2) %}
+				{% set maxpage = min(pagination.pages, minpage + 4) %}
+				{% if pagination.page != 1 %}
+					<span class="first"><a href="{{ path('FecdasBundle_apunts', pagination|merge({ 'page': 1  })) }}">&lt;&lt;</a></span>
+					<span class="previous"><a href="{{ path('FecdasBundle_apunts', pagination|merge({ 'page': minpage - 1  })) }}">&lt;</a></span>
+				{% endif %}
+			   	{% for i in minpage..maxpage %}
+			   		{% if i == pagination.page %}
+				    	<span class="current">{{ i }}</span>
+				    {% else %}
+				    	<span class="page"><a href="{{ path('FecdasBundle_apunts', pagination|merge({ 'page': i  })) }}">{{ i }}</a></span>
+				    {% endif %}
+				{% endfor %}
+  		    	{% if pagination.page != pagination.pages %}
+			        <span class="next"><a href="{{ path('FecdasBundle_apunts', pagination|merge({ 'page': maxpage + 1  })) }}">&gt;</a></span>
+			        <span class="last"><a href="{{ path('FecdasBundle_apunts', pagination|merge({ 'page': pagination.pages  })) }}">&gt;&gt;</a></span>
+		    	{% endif %}
+			</div>
+		</div>
+	{% endif %}
+{% else %}
+	<div class="sms-notice">No hi ha cap moviment per aquestes dates</div>
+{% endif %}

@@ -196,6 +196,22 @@ class EntityRebut {
 	}
 
 	/**
+	 * Get array nums totes comandes
+	 *
+	 * @return array
+	 */
+	public function getArrayNumsComandes()
+	{
+		if ($this->esAnulacio()) return array ( $this->comandaanulacio->getNum() => array ( 'num' => $this->comandaanulacio->getNumComanda(), 'import' => $this->comandaanulacio->getTotalDetalls() ));
+			
+		$nums = array();
+		foreach ($this->comandes as $comanda) {
+			$nums[ $comanda->getNum() ] = array ( 'num' => $comanda->getNumComanda(), 'import' => $comanda->getTotalDetalls() );	
+		}
+		return $nums;
+	}
+
+	/**
 	 * Get nums factures totes comandes
 	 *
 	 * @return string

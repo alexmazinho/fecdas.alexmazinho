@@ -95,6 +95,7 @@
 		   		<div id="header-parterecentsclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Club', 'c.nom') }}
 		   				<span class="listheader-icon {% if partes.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parterecentstipus" class="col-listheader listheader-noorder">Tipus<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsenviar" class="col-listheader listheader-noorder"><i class="fa fa-envelope fa-1x"></i><span class="listheader-order"></span></div>
 		   		<div id="header-parterecentspreu" class="col-listheader listheader-noorder">Preu<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentsinfo" class="col-listheader listheader-noorder">Informació<span class="listheader-order"></span></div>
 		   		<div id="header-parterecentsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }}</div>
@@ -121,7 +122,8 @@
 			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
 		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
 		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
-		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }} ({{ parte.numLlicencies }})</div>
+		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }}</div>
+		   			<div class="data-detall-cell parterecents-enviar">{{ parte.numEnviar }}/{{ parte.numLlicencies }}</div>
 		   			<div class="data-detall-cell parterecents-preu">{{ parte.getTotalDetalls|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parterecents-actions">

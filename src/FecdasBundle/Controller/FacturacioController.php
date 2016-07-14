@@ -318,7 +318,7 @@ class FacturacioController extends BaseController {
 	}
 
 
-	private function consultaFacturesConsolidades($desde = null, $fins = null) {
+	private function consultaFacturesConsolidades($desde = null, $fins = null, $club = null, $pendents = true) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
@@ -326,8 +326,10 @@ class FacturacioController extends BaseController {
 		$strQuery .= " WHERE f.import != 0 ";
 		if ($desde != null) $strQuery .= " AND f.datafactura >= :ini ";
 		if ($fins != null) $strQuery .= " AND f.datafactura <= :final ";
-		$strQuery .= " AND (f.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
+		if ($pendents == true) $strQuery .= " AND (f.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
 		$strQuery .= " ORDER BY f.datafactura";
+
+error_log('QUERY factures '.$strQuery. ' ===> '.$desde->format('Y-m-d H:i:s'). ' ===> '.$club->getCodi(). ' ===> '.($pendents == true?'SI':'NO'));
 		
 		$query = $em->createQuery($strQuery);
 		if ($desde != null) $query->setParameter('ini', $desde->format('Y-m-d H:i:s'));
@@ -335,36 +337,47 @@ class FacturacioController extends BaseController {
 		
 		$totesFactures = $query->getResult();
 
+error_log('TOTES factures '.count($totesFactures));
+
 		$factures = array();		
 		foreach ($totesFactures as $factura) {
 			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
 			else $comanda = $factura->getComanda();
 
-			if ($comanda != null && $comanda->comandaConsolidada() && 
-				$comanda->getClub() != BaseController::CODI_FECDAS &&
-				$comanda->getClub() != BaseController::CODI_CLUBTEST) $factures[] = $factura; // No s'envia res de la Federació o del club TEST a comptabilitat 
+			if ($comanda != null && $comanda->comandaConsolidada()) {
+				if ($club != null) {
+					if ($comanda->getClub()->getCodi() == $club->getCodi()) $factures[] = $factura;
+				} else {
+					if ($comanda->getClub() != BaseController::CODI_FECDAS &&
+						$comanda->getClub() != BaseController::CODI_CLUBTEST) $factures[] = $factura; // No s'envia res de la Federació o del club TEST a comptabilitat
+				}
+			} 
 		}
 		return $factures;
 	}
 
-	private function consultaRebutsConsolidats($desde = null, $fins = null) {
+	private function consultaRebutsConsolidats($desde = null, $fins = null, $club = null, $pendents = true) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
 		$strQuery .= " WHERE r.import != 0 ";
 		if ($desde != null)  $strQuery .= " AND r.datapagament >= :ini ";
 		if ($fins != null)  $strQuery .= " AND r.datapagament <= :final ";
-		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
-		$strQuery .= " AND (r.club != '".BaseController::CODI_FECDAS."') ";	// No s'envia res de la Federació a comptabilitat
-		$strQuery .= " AND (r.club != '".BaseController::CODI_CLUBTEST."') ";	// No s'envia res del club TEST
+		if ($pendents == true) $strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara
+		if ($club != null)  $strQuery .= " AND r.club = :club "; 		// Un club 
+		else {
+			$strQuery .= " AND (r.club != '".BaseController::CODI_FECDAS."') ";	// No s'envia res de la Federació a comptabilitat
+			$strQuery .= " AND (r.club != '".BaseController::CODI_CLUBTEST."') ";	// No s'envia res del club TEST
+		}
 		$strQuery .= " ORDER BY r.datapagament";
-		
+error_log('QUERY rebuts '.$strQuery. ' ===> '.$desde->format('Y-m-d H:i:s'). ' ===> '.$club->getCodi(). ' ===> '.($pendents == true?'SI':'NO'));		
 		$query = $em->createQuery($strQuery);
 		if ($desde != null) $query->setParameter('ini', $desde->format('Y-m-d H:i:s'));
 		if ($fins != null)  $query->setParameter('final', $fins->format('Y-m-d H:i:s'));
+		if ($club != null)  $query->setParameter('club', $club);
 
 		$rebuts = $query->getResult();
-		
+error_log('TOTS rebuts '.count($rebuts));		
 		return $rebuts;
 	}
 	
@@ -895,6 +908,149 @@ class FacturacioController extends BaseController {
 						'factures' => $factures,  'sortparams' => array('sort' => $sort,'direction' => $direction))
 				));
 	}
+
+	public function apuntsAction(Request $request) {
+		// Llistat d'apunts d'un club ordenats per data descendent
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$club = null;
+		if ($this->isCurrentAdmin()) {   
+			$codi = $request->query->get('club', ''); // Admin filtra club
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		if ($club == null) {  // Users normals només consulten comandes pròpies 
+			$club = $this->getCurrentClub();
+		}	
+	
+		$this->logEntryAuth('VIEW APUNTS', $this->get('session')->get('username'));
+
+		$datadesde = null;
+		$datafins = null;
+		$strDatadesde = $request->query->get('datadesde', '');
+		$strDatafins = $request->query->get('datafins', '');
+		
+		if ($strDatadesde != '') $datadesde = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatadesde . ' 00:00:00'); 
+		if ($datadesde == null) $datadesde = \DateTime::createFromFormat('d/m/Y H:i:s', '01/01/'.date('Y'). ' 00:00:00');
+		
+		if ($strDatafins != '') $datafins = \DateTime::createFromFormat('d/m/Y H:i:s', $strDatafins . ' 23:59:59'); 
+		if ($datafins == null) $datafins = $this->getCurrentDate('now');
+
+ 		$apunts = $this->consultaApunts($club, $datadesde, $datafins);
+
+		$page = $request->query->get('page', 1);
+		$perpage = BaseController::PER_PAGE_DEFAULT; 
+		$offset = ($page - 1) * $perpage;
+		$total = count($apunts);		
+
+		$pagination = array('page' => $page, 'perpage' => $perpage, 'total' => $total, 'pages' => ceil($total/$perpage), 'club' => $club->getCodi(), 'datadesde' => $datadesde->format('d/m/Y'), 'datafins' => $datafins->format('d/m/Y') );
+		
+		$apunts = array_slice($apunts, $offset, $perpage, true);
+		
+		if ($request->isXmlHttpRequest()) {
+			// Crida ajax. Recarrega taula
+			return $this->render('FecdasBundle:Facturacio:taulaapunts.html.twig',
+				$this->getCommonRenderArrayOptions(array(
+						'apunts' => $apunts, 'pagination' => $pagination)
+				));
+		} 
+		
+		$formBuilder = $this->createFormBuilder()
+			->add('datadesde', 'date', array(
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required'		=>	false,
+				'empty_value' 	=> false,
+				'data'			=> $datadesde,
+				'format' 		=> 'dd/MM/yyyy'))
+			->add('datafins', 'date', array(
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'data'			=> $datafins,
+				'format' 		=> 'dd/MM/yyyy'
+		));
+		
+		if ($this->isCurrentAdmin()) $this->addClubsActiusForm($formBuilder, $club); // Admin selecció de club
+			
+		return $this->render('FecdasBundle:Facturacio:apunts.html.twig',
+				$this->getCommonRenderArrayOptions(array(
+						'form' => $formBuilder->getForm()->createView(),
+						'club' => $club,
+						'apunts' => $apunts,
+						'pagination' => $pagination)
+				));
+	}
+
+	private function consultaApunts($club, $datadesde, $datafins) {
+		// Consulta per $datafins null => calcular saldos des de saldo actual endarrera 
+		$factures = $this->consultaFacturesConsolidades($datadesde, null, $club, false);
+		$rebuts = $this->consultaRebutsConsolidats($datadesde, null, $club, false);
+		$apunts = array();
+		
+		$saldo = $club->getSaldo();
+		
+		// rebuts i factures a format comú
+		foreach ($factures as $factura) {
+			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
+			else $comanda = $factura->getComanda();
+			
+			$apunts[] = array(
+							'tipus' 	=> 'F',
+							'id' 		=> $factura->getId(), 
+							'num' 		=> ($factura->esAnulacio() == true?'<span class="red">(-)':'').$factura->getNumfactura().($factura->esAnulacio() == true?'</span>':''),
+							'data' 		=> $factura->getDatafactura(),
+							'entrada' 	=> $factura->getDataentrada(),
+							'import' 	=> $factura->getImport(),
+							'comandes'	=> array( $comanda->getNum() => array( 'num' => $comanda->getNumcomanda(), 'import' => $comanda->getTotalDetalls() ) ),
+							'concepte'	=> $factura->getConcepte().'<br/><span class="extra">'.$factura->getConcepteExtra(400).'</span>',
+							'compta'	=> ($factura->getComptabilitat()!=null?$factura->getComptabilitat()->getDataenviament():''),
+							'saldo'		=> 0
+							
+			); 
+		}
+
+		foreach ($rebuts as $rebut) {
+			$apunts[] = array(
+							'tipus' 	=> 'R',
+							'id' 		=> $rebut->getId(), 
+							'num' 		=> $rebut->getNumrebut(),  // No hi ha rebuts anul·lació
+							'data' 		=> $rebut->getDatapagament(),
+							'entrada' 	=> $rebut->getDataentrada(),
+							'import' 	=> $rebut->getImport(),
+							'comandes'	=> $rebut->getArrayNumsComandes(),
+							'concepte'	=> $rebut->getComentari(),
+							'compta'	=> ($rebut->getComptabilitat()!=null?$rebut->getComptabilitat()->getDataenviament():''),
+							'saldo'		=> 0
+							
+			);
+		}
+		
+		// Ordenar per data
+		usort($apunts, function($a, $b) {
+			if ($a === $b) {
+				return 0;
+			}
+			if ($a['data']->format('Y-m-d') == $b['data']->format('Y-m-d')) return ($a['tipus'] > $b['tipus'])? -1:1;
+			return ($a['data'] > $b['data'])? -1:1;
+		});
+		
+		// Calcular saldo i filtre datafins
+		foreach ($apunts as $k => $apunt) {
+			$apunts[$k]['saldo'] = $saldo;
+			
+			if ($apunt['tipus'] == 'R') $saldo -= $apunt['import'];
+			else $saldo += $apunt['import'];
+			
+			if ($datafins != null && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) unset($apunts[$k]); 
+		}
+		return $apunts;
+	}
+	
+
 
 	public function graellaproductesAction(Request $request) {
 		// Graella de productes per afegir a la cistella
@@ -2420,7 +2576,6 @@ class FacturacioController extends BaseController {
 		
 		return $query;
 	}
-	
 	
 	public function notificacioOkAction(Request $request) {
 		// Resposta TPV on-line, genera resposta usuaris correcte

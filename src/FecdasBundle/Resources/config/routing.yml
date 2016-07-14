@@ -426,6 +426,12 @@ FecdasBundle_factures:
     requirements:
         _method:  GET
 
+FecdasBundle_apunts:
+    pattern:  /apunts
+    defaults: { _controller: "FecdasBundle:Facturacio:apunts" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_tramitarcistella:
     pattern:  /tramitarcistella
     defaults: { _controller: "FecdasBundle:Facturacio:tramitarcistella" }

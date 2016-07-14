@@ -811,6 +811,32 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 .candidata-action-select .fa.fa-hidden:hover { opacity: 1; }  
 .candidata-action-select .fa.fa-shown:hover { opacity: 0; }
  
+ /*************** FECDAS NOU apunts ****************/
+
+#header-apunt-id  { display: none; }
+#header-apunt-num { width: 10%; text-align: left; }
+#header-apunt-data { width: 10%; text-align: center; }
+#header-apunt-deure { width: 7%; text-align: right; }
+#header-apunt-haver { width: 7%; text-align: right; }
+#header-apunt-comanda { width: 15%; text-align: center; }
+#header-apunt-concepte { width: 20%; text-align: left; }
+#header-apunt-saldo { width: 10%; text-align: right; }
+#header-apunt-entrada { width: 15%; text-align: right; font-size: 0.9em; }
+
+.data-detall-cell.apunt-id  { display: none; }
+.data-detall-cell.apunt-num { width: 10%; text-align: left; }
+.data-detall-cell.apunt-data { width: 10%; text-align: center; }
+.data-detall-cell.apunt-deure { width: 7%; text-align: right; }
+.data-detall-cell.apunt-haver { width: 7%; text-align: right; }
+.data-detall-cell.apunt-comanda { width: 15%; text-align: center; }
+.data-detall-cell.apunt-concepte { width: 20%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.apunt-saldo { width: 10%; text-align: right; }
+.data-detall-cell.apunt-entrada { width: 15%; text-align: right; font-size: 0.9em; }
+
+ 
+ /*.data-detall.data-detall-factura { background-color: #F9FEF9; }
+ .data-detall.data-detall-rebut { background-color: #FFF7E7; }*/
+ 
  /*************** FECDAS NOU traspas ****************/
  
  .table-scroll.enviaments { /*max-width: 650px;*/ }
@@ -2629,23 +2655,25 @@ li.parte-pendent-sincro .parterecents-actions {
 }
 
 #header-parterecentsid { width: 10%; }
-#header-parterecentsfactura { width: 12%; }
-#header-parterecentsentrada {	width: 9%; }
-#header-parterecentsdata {	width: 9%; }
+#header-parterecentsfactura { width: 11%; }
+#header-parterecentsentrada {	width: 8%; }
+#header-parterecentsdata {	width: 8%; }
 #header-parterecentsclub {	width: 13%; text-align:left;}
 #header-parterecentstipus {	width: 11%;}
 #header-parterecentspreu {	width: 8%; text-align:right;}
-#header-parterecentsinfo { width: 20%; text-align: left;}
+#header-parterecentsenviar {	width: 5%; text-align:center;}
+#header-parterecentsinfo { width: 18%; text-align: left;}
 #header-parterecentsactions { width: 8%;}
 
 .parterecents-id { width: 10%; }
-.parterecents-factura { width: 12%; }
-.parterecents-entrada { width: 9%;  }
-.parterecents-data { width: 9%;  }
+.parterecents-factura { width: 11%; }
+.parterecents-entrada { width: 8%;  }
+.parterecents-data { width: 8%;  }
 .parterecents-club { width: 13%; text-align:left; font-size: 0.9em;}
 .parterecents-tipus { width: 11%; }
 .parterecents-preu { width: 8%; text-align:right;}
-.parterecents-info {	width: 20%; text-align:left;font-size: 0.9em;}
+.parterecents-enviar { width: 5%; text-align:center;}
+.parterecents-info {	width: 18%; text-align:left;font-size: 0.9em;}
 .parterecents-actions { width: 8%; text-align:right; margin-top: -14px}
 
 /*****************************************************************************************************************/

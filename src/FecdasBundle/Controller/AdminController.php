@@ -1031,8 +1031,6 @@ GROUP BY c.nom
 		// Temps des de la darrera llicència
 		$form = $formBuilder->getForm();
 		
-		
-		
 		return $this->render('FecdasBundle:Admin:consultaadmin.html.twig', 
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'header' => $campsHeader, 'dades' => $campsDades,
 						'total' => $total, 'page' => $page, 'pages' => ceil($total/$pageSize), 'perpage' => $pageSize, 'offset' => $offset,  

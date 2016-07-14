@@ -6,7 +6,7 @@ use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="m_productes", uniqueConstraints={@ORM\UniqueConstraint(name="codi_idx", columns={"codi"})})
+ * @ORM\Table(name="m_productes")
  * 
  * @author alex
  *

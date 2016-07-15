@@ -34,7 +34,7 @@
 	   			<div class="data-detall-cell apunt-comanda">
 	   				{% for num, comanda in apunt.comandes %} 
 			   			<a class="editar-comanda link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.num }) }}" alt="Veure comanda" title="Veure comanda">
-			   				{{ comanda.num }} ({{ comanda.import|number_format(2, ',', '.') }} €)</a><br/>
+			   				{{ comanda.num }} {% if comanda.import != 0 %} ({{ comanda.import|number_format(2, ',', '.') }} €) {% endif %}</a><br/>
 					{% endfor %}
 	   			</div>
 	   			<div class="data-detall-cell apunt-concepte">{{ apunt.concepte|raw }}</div>

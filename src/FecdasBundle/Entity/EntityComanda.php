@@ -207,6 +207,19 @@ class EntityComanda {
 	}
 
 	/**
+	 * Actualitza romanent club. Comanda facturada a l'any anterior
+	 * 
+	 */
+	public function updateClubRomanent($import) {
+		if ($this->club == null) return false;
+		
+		$this->club->setRomanent($this->club->getRomanent() - $import); // Resta import del romanent
+		$this->club->addEntityComanda($this);
+		
+		return true; 
+	}
+
+	/**
      * Is a current year comanda
      *  
      * @return boolean

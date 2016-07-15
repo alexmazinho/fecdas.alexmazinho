@@ -106,7 +106,8 @@ class EntityFactura {
 				//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
 				$this->detalls = json_encode($detalls); // Desar estat detalls a la factura
 			}
-			$this->comanda->updateClubSaldos($this->import);
+			if ($datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($this->import);
+			else $this->comanda->updateClubSaldos($this->import);
 		}
 	}
 	
@@ -235,7 +236,10 @@ class EntityFactura {
 	 */
 	public function setImport($import) {
 		// Update import comanda
-		if ($this->comanda != null) $this->comanda->updateClubSaldos($import - $this->import);
+		if ($this->comanda != null) {
+			if ($this->datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($import - $this->import);
+			else $this->comanda->updateClubSaldos($import - $this->import);
+		}
 
 		$this->import = $import;
 	}

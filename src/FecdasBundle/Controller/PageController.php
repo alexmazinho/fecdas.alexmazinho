@@ -1514,7 +1514,7 @@ class PageController extends BaseController {
 		$llicencia->name = 'llicencia-nova';
 		$llicencia->setDatacaducitat($datacaducitat);
 		
-		$llicencia->setEnviarllicencia(true);
+		$llicencia->setEnviarllicencia(false); // Per defecte no
 
 		// Checks depends on parte type
 		switch ($tipusparteId) {

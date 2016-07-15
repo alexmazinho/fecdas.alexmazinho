@@ -206,7 +206,8 @@ class FacturacioController extends BaseController {
 		$datafinal = \DateTime::createFromFormat('d/m/Y H:i:s', $final." 23:59:59");
 		if ($datafinal->format('Y-m-d H:i:s') > $datamax->format('Y-m-d H:i:s')) $datafinal = $datamax;
 		 
-		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".txt";
+		//$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".txt";
+		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".ods";
 	
 		$enviament = null;
 		$fs = new Filesystem();
@@ -216,7 +217,8 @@ class FacturacioController extends BaseController {
 			} else {
 				$enviament = new EntityComptabilitat($filename, $datainici, $datafinal);
 				$em->persist($enviament);
-				$assentaments = $this->generarFitxerAssentaments($enviament); // Array
+				//$assentaments = $this->generarFitxerAssentaments($enviament); // Array
+				$assentaments = $this->generarFitxerAssentamentsContasol($enviament); // Array
 				if ($enviament->getApunts() == 0) throw new \Exception("No hi ha assentaments per aquests criteris de cerca ");
 				
 				$fs->dumpFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, implode("\r\n",$assentaments));
@@ -317,6 +319,20 @@ class FacturacioController extends BaseController {
 		return $assentaments; 
 	}
 
+	/**
+	 * Get fitxer assentaments per transpassar al programa de comptabilitat
+	 *
+	 * @return array
+	 */
+	private function generarFitxerAssentamentsContasol($enviament) {
+
+		$num = 0;
+		$apuntsFactures = $this->generarAssentamentsFactures($enviament, $num);
+		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament, $num);
+		$assentaments = array_merge($apuntsFactures, $apuntsRebuts);
+		return $assentaments; 
+	}
+
 
 	private function consultaFacturesConsolidades($desde = null, $fins = null, $club = null, $pendents = true) {
 		$em = $this->getDoctrine()->getManager();
@@ -329,15 +345,11 @@ class FacturacioController extends BaseController {
 		if ($pendents == true) $strQuery .= " AND (f.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
 		$strQuery .= " ORDER BY f.datafactura";
 
-error_log('QUERY factures '.$strQuery. ' ===> '.$desde->format('Y-m-d H:i:s'). ' ===> '.$club->getCodi(). ' ===> '.($pendents == true?'SI':'NO'));
-		
 		$query = $em->createQuery($strQuery);
 		if ($desde != null) $query->setParameter('ini', $desde->format('Y-m-d H:i:s'));
 		if ($fins != null) $query->setParameter('final', $fins->format('Y-m-d H:i:s'));
 		
 		$totesFactures = $query->getResult();
-
-error_log('TOTES factures '.count($totesFactures));
 
 		$factures = array();		
 		foreach ($totesFactures as $factura) {
@@ -370,14 +382,12 @@ error_log('TOTES factures '.count($totesFactures));
 			$strQuery .= " AND (r.club != '".BaseController::CODI_CLUBTEST."') ";	// No s'envia res del club TEST
 		}
 		$strQuery .= " ORDER BY r.datapagament";
-error_log('QUERY rebuts '.$strQuery. ' ===> '.$desde->format('Y-m-d H:i:s'). ' ===> '.$club->getCodi(). ' ===> '.($pendents == true?'SI':'NO'));		
 		$query = $em->createQuery($strQuery);
 		if ($desde != null) $query->setParameter('ini', $desde->format('Y-m-d H:i:s'));
 		if ($fins != null)  $query->setParameter('final', $fins->format('Y-m-d H:i:s'));
 		if ($club != null)  $query->setParameter('club', $club);
 
 		$rebuts = $query->getResult();
-error_log('TOTS rebuts '.count($rebuts));		
 		return $rebuts;
 	}
 	
@@ -482,6 +492,53 @@ error_log('TOTS rebuts '.count($rebuts));
 		return $apunt;
 	}
 	
+	private function crearLiniaAssentamentContasol($data, $numAssenta, $linia, $compte, $conc, $doc, $import, $tipus) {
+		/**
+		 * Columna	Descripció
+		 * A 		Diario : 1   => General
+		 * B		Fecha: DD/MM/AAAA
+		 * C		Asiento: Si es 0 s'assigna automàtic. Agrupa assentaments per número de document
+		 * D		Orden: Linia? 
+		 * E		Cuenta: XXXXXXX
+		 * F		Import pessetes 
+		 * G		Concepte (Max 60)
+		 * H		Document (Max 5)
+		 * I		Import Deure eur  	=> Si haver > 0 aquest val 0,00
+		 * J 		Import haver eur	=> Si deure > 0 aquest val 0,00
+		 * K		Moneda P -contramoneda (Pesseta) o E - Empresa
+		 * L		Punteo 1-Si 0-No
+		 * M		Tipus de IVA: R- Repercutido S-Soportado	¿Repercutido?
+		 * N		Codi IVA: numèric ?
+		 * O 		Departament  veure taula constants
+		 * P		Subdepartament  veure taula constants
+		 * Q		Imatge
+		 * 
+		 */
+		$import = number_format($import, 2, ',', '');
+		$conc = $this->netejarNom($conc, false);
+		
+		$apunt = array();
+		$apunt[] = BaseController::INDEX_DIARI_CONTASOL;  	// Columna A
+		$apunt[] = $data->format('d/m/Y'); 					// Columna B
+		$apunt[] = 0; 										// Columna C 
+		$apunt[] = $linia; 									// Columna D
+		$apunt[] = $compte; 								// Columna E
+		$apunt[] = 0; 										// Columna F
+		$apunt[] = substr(str_pad($conc, 60, " ", STR_PAD_LEFT), 0, 60); 	// Columna G
+		$apunt[] = substr(str_pad($doc, 5, "0", STR_PAD_LEFT), 0, 5);		// Columna H
+		$apunt[] = ($tipus == BaseController::DEBE?$import:0); 	// Columna I
+		$apunt[] = ($tipus == BaseController::HABER?$import:0);; 	// Columna J
+		$apunt[] = 'E'; 									// Columna K
+		$apunt[] = 0; 										// Columna L
+		$apunt[] = ''; 										// Columna M
+		$apunt[] = 0; 										// Columna N
+		$apunt[] = BaseController::getDepartamentConta( $compte, 'dpt' ); 	// Columna O
+		$apunt[] = BaseController::getDepartamentConta( $compte, 'subdpt' );; 	// Columna P
+		$apunt[] = ''; 										// Columna Q
+		
+		return implode(";",$apunt);
+	}
+	
 	private function assentamentRebut($num, $rebut) {
 		$assentament = array();
 		$linia = 1;
@@ -495,18 +552,21 @@ error_log('TOTS rebuts '.count($rebuts));
 		$compte = $club->getCompte();
 		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té indicat compte comptable");
 		//$desc = $this->netejarNom($rebut->getConcepteRebutLlarg(), false);
-		$desc = $this->netejarNom($club->getNom(), false);
-		$conc = mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
-		$doc = $rebut->getNumRebutCurt();
+		//$desc = $this->netejarNom($club->getNom(), false);
+		$conc = 'REBUT/ '.substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
+		//$doc = $rebut->getNumRebutCurt();
+		$doc = str_pad($rebut->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
 		$import = $rebut->getImport();
-		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
+		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $import, BaseController::HABER);
 			
 		$linia++;
 		// APUNT CAIXA
-		$compte = BaseController::getComptePagament($rebut->getTipuspagament());
-		$desc = BaseController::getTextComptePagament($rebut->getTipuspagament());
+		$compte = BaseController::getComptePagament($rebut->getTipuspagament());		// 5700000 o 5720001;
+		$conc = BaseController::getTextComptePagament($rebut->getTipuspagament());		// 'CAIXA FEDERACIO' o 'BANC \'LA CAIXA\'';
 		
-		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
+		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $import, BaseController::DEBE);
 		
 		return $assentament;
 	}
@@ -525,13 +585,16 @@ error_log('TOTS rebuts '.count($rebuts));
 		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té compte comptable assignat");
 		
 		//$desc = 'PEDIDO '.$comanda->getNumComanda().' '.$this->netejarNom($club->getNom(), false);
-		$desc = $this->netejarNom($club->getNom(), false);
+		//$desc = $this->netejarNom($club->getNom(), false);
 		//$conc = mb_convert_encoding($factura->getNumFactura()." (".$this->netejarNom($factura->getConcepte(), false).")", 'UTF-8',  'auto');
-		$conc = $factura->getNumFactura()." (".utf8_decode($this->netejarNom($factura->getConcepte(), false)).")";
-		$doc = $factura->getNumFacturaCurt();
+		$conc = 'FRA/ '.substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.utf8_decode($this->netejarNom($factura->getConcepte(), false));
+		$docAny = $factura->getNumFacturaCurt();
+		$doc = str_pad($factura->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
+		
 		$import = $factura->getImport();
 					
-		$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $import, BaseController::DEBE);
+		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $import, BaseController::DEBE);
 					
 		$linia++;
 		$importAcumula = 0;
@@ -541,13 +604,14 @@ error_log('TOTS rebuts '.count($rebuts));
 		$detallsArray = json_decode($factura->getDetalls(), false, 512);
 		foreach ($detallsArray as $compte => $d) {
 		// APUNT/S PRODUCTE/S
-			$desc = $this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
+			//$desc = $this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
 			//$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".mb_convert_encoding($d->producte, 'UTF-8',  'auto');						
-			$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".utf8_decode($d->producte);
+			$conc = $d->total.' '.utf8_decode($d->producte);
 			$importDetall = $d->import;	
 			$importAcumula += $importDetall;	
 
-			$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
+			//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
+			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $importDetall, BaseController::HABER);
 						
 			$linia++;
 			$index++;
@@ -2139,7 +2203,7 @@ error_log('TOTS rebuts '.count($rebuts));
 
 					$this->validIngresosRebuts($form, $rebut);
 					
-					$club->setTotalpagaments($club->getTotalpagaments() + $rebut->getImport()); 
+					$rebut->updateClubPagaments($rebut->getImport());
 					
 					$em->flush();
 					$this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi.' => '.$maxNumRebut.' '.$rebut->getImport());
@@ -2207,7 +2271,7 @@ error_log('TOTS rebuts '.count($rebuts));
 				 			
 				
 				// Actualitzar saldo club
-				$rebut->getClub()->setTotalpagaments($rebut->getClub()->getTotalpagaments() - $rebut->getImport());
+				$rebut->updateClubPagaments(-1 * $rebut->getImport());
 				
 				$em->remove($rebut);
 				$em->flush();
@@ -2289,7 +2353,7 @@ error_log('TOTS rebuts '.count($rebuts));
 					$this->validIngresosRebuts($form, $rebut, $rebutOriginal);
 		
 					// Actualitzar saldos
-					$rebut->getClub()->setTotalpagaments($rebut->getClub()->getTotalpagaments() - $rebutOriginal->getImport() + $rebut->getImport());
+					$rebut->updateClubPagaments( $rebut->getImport() - $rebutOriginal->getImport() );
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades del rebut ' ); //$form->getErrorsAsString()

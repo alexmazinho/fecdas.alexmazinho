@@ -82,7 +82,7 @@ class EntityComptabilitat {
 	
 	
 	public function __constructParams($fitxer = '', $datadesde = null, $datafins = null) {
-		if ($datadesde == null) $datadesde = new \DateTime();
+		//if ($datadesde == null) $datadesde = new \DateTime();
 		if ($datafins == null) $datafins = new \DateTime();
 		
 		$this->datadesde = $datadesde;

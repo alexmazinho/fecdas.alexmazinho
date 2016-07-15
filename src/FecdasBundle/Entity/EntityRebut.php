@@ -136,10 +136,25 @@ class EntityRebut {
 			} 
 		}
 		if ($this->club != null) {
-			$this->club->setTotalpagaments($this->club->getTotalpagaments() + $this->import);
+			$this->updateClubPagaments($this->import);
 			$this->club->addEntityRebut($this);
 		} 
 	}
+	
+	/**
+	 * Actualitza pagaments club. Si el pagament es de l'any anterior modifica romanent
+	 * 
+	 */
+	public function updateClubPagaments($import) {
+			
+		if ($this->club == null) return false;
+		
+		if ($this->datapagament != null && $this->datapagament->format('Y') < date('Y')) $this->club->setRomanent($this->club->getRomanent() + $import);
+		else $this->club->setTotalpagaments($this->club->getTotalpagaments() + $import);
+		
+		return true; 
+	}
+	
 	
 	
 	public function __toString() {

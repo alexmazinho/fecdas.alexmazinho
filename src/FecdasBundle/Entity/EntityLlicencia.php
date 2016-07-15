@@ -168,7 +168,7 @@ class EntityLlicencia {
 		$this->bampolles = false;
 		$this->nocmas = false;
 		$this->fusell = false;
-		$this->enviarllicencia = true;
+		$this->enviarllicencia = false;
 	}
 	
 	public function __toString() {

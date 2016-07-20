@@ -84,6 +84,7 @@
    
     <div class="table-header">
     	<div id="list-header" >
+    		<div id="header-factdetallid" class="col-listheader">id</div>
    			<div id="header-factdetallcodi" class="col-listheader">Codi</div>
 		   	<div id="header-factdetalldesc" class="col-listheader">Descripció</div>
 		   	<div id="header-factdetallquantitat" class="col-listheader">Quantitat</div>
@@ -98,6 +99,7 @@
 	   		<ol id="list-data">
 			{% for lineadetall in detall %}
 		   		<li class="data-detall">
+		   			<div class="data-detall-cell factdetall-id">{{ lineadetall.id }}</div>
 			   		<div class="data-detall-cell factdetall-codi">{{ lineadetall.codi }}</div>
 			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.producte|raw }}</div>
 			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.total }}</div>

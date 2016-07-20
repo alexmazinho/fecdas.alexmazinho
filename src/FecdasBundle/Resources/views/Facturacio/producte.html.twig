@@ -50,29 +50,41 @@
 					{{ form_widget(form.abreviatura, { 'attr': {'class': 'form-control form-control-center'} }) }}
 				</div>{{ form_errors(form.abreviatura)  }}
 			 </div>
-			 <div class="col-md-3">
+			 <div class="col-md-2">
 			    <div id="formproducte-tipus" class="form-group">
 			    	{{ form_label(form.tipus, 'Tipus de producte') }}
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
 				</div>{{ form_errors(form.tipus)  }}
 			 </div>
 			 <div class="col-md-2">
-				{{ form_label(form.minim, 'Uds. mínim') }}
+			    <div id="formproducte-departament" class="form-group">
+			    	{{ form_label(form.departament, 'Departament') }}
+					<div class="input-group"><div class="input-group-addon"></div>{{ form_widget(form.departament, { 'attr': {'class': 'form-control'} }) }}</div>
+				</div>{{ form_errors(form.departament)  }}
+			 </div>
+			 <div class="col-md-2">
+			    <div id="formproducte-subdepartament" class="form-group">
+			    	{{ form_label(form.subdepartament, 'Subdepartament') }}
+					<div class="input-group"><div class="input-group-addon"></div>{{ form_widget(form.subdepartament, { 'attr': {'class': 'form-control'} }) }}</div>
+				</div>{{ form_errors(form.subdepartament)  }}
+			 </div>
+			 <div class="col-md-1">
+				{{ form_label(form.minim, 'Mín. uds') }}
 				<div id="formproducte-minim"  class="">
 					{{ form_widget(form.minim, { 'attr': {'class': 'form-control form-control-center'} }) }}{{ form_errors(form.minim)  }}
 				</div>
 			 </div>
-			 <div class="col-md-3">
+			 <div class="col-md-2">
 				<div class="form-group">
 					{{ form_label(form.databaixa, 'Data de baixa') }}
 					<div id="formproducte-databaixa" class="input-group">
-		  				<span class="input-group-addon">Des de</span>
+		  				<span class="input-group-addon"></span>
 						{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
 						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 					</div>{{ form_errors(form.databaixa)  }}
 				</div>
 			 </div>
-			<div class="col-md-6">
+			<div class="col-md-8">
 				<div class="form-group">
 					{{ form_label(form.descripcio, 'Descripció') }}
 					<div id="formproducte-descripcio"  class="input-group ">
@@ -183,7 +195,7 @@
 					  </div>	
 				 </div>
 			 </div>
-			 <div id="historic-preus" class="col-md-4">
+			 <div id="historic-preus" class="col-md-6">
 				<div class="table-header">	
 				  	<div id="list-header">
 				  		<div id="header-preuid" class="col-listheader collistheader-noorder">Id</div>
@@ -302,6 +314,30 @@
 				}, function() { }, function() { });
 			});
 
+			$('#producte_departament').change( function() {
+
+				// Buidar llista subdepartaments
+				$('#producte_subdepartament option').remove();
+				if ($(this).val() != '')  {
+					var url = "{{ path('FecdasBundle_jsondepartaments') }}";
+					url += '?dpt='+$(this).val();  // Consulta llista subdepartaments
+					
+					$.get(url, function(data) {
+						var subdpts = JSON.parse( data );		// subdpts= {"1":"ingresos B - A","2":"ingresos B - B"}  
+						$.each( subdpts, function ( key , value) {
+						    $('#producte_subdepartament').append($('<option>', { 
+						        value: key,
+						        text : value 
+						    }));
+						});
+					});
+				}
+					
+					
+				
+			});
+
+			
 			$("#producte_stockable").click(function(){
 				var checked = $(this).is(':checked');
 				if (checked) {

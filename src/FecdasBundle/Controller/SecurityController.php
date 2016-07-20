@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use FecdasBundle\Form\FormLogin;
 use FecdasBundle\Form\FormUser;
 use FecdasBundle\Form\FormClub;
+use FecdasBundle\Form\FormClubAdmin;
 use FecdasBundle\Entity\EntityUser;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityClub;
@@ -269,13 +270,12 @@ class SecurityController extends BaseController
 		$nommembre = $request->query->get('nommembre', 0);	// nom del membre del club en cas de no ser federat
 		$carrec = $request->query->get('carrec', 0)*1;
 		
-		
 		try {
 			/* De moment administradors */
-	    	if ($this->isCurrentAdmin() != true) {
+	    	/*if ($this->isCurrentAdmin() != true) {
 	    		$this->logEntryAuth('ADD JUNTA NO ADMIN',	'club : ' . $codi);
 				throw new \Exception("Acció no permesa, es desarà al registre");
-			}
+			}*/
 			
 			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 			
@@ -308,57 +308,53 @@ class SecurityController extends BaseController
 				foreach ($jsonCarrecs as $value) {
 					if ($value->cid == BaseController::CARREC_VOCAL) $num++;
 				}
-				$jsonCarrecs[] = array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num, 'nom' => $nommembre);
-				$club->setCarrecs(json_encode($jsonCarrecs));
-				$em->flush();
-				$this->logEntryAuth('ADD JUNTA OK',	'club : ' . $codi.' persona '.$id.'-'.$nommembre.' carrec'.$carrec);
-				
-				return new Response("Nou vocal actualitzat correctament");
+				$jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num, 'nom' => $nommembre);
 				
 			} else { // Altres càrrecs, substituir
 				foreach ($jsonCarrecs as $k => $value) {
 					if ($carrec == $value->cid) $key = $k;
 				}
 				// No existeix
+				if ($key < 0) $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre); // add
+				else $jsonCarrecs[$key] = (object)  array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
+				
+				usort($jsonCarrecs, function($a, $b) {
+		    		if ($a === $b) {
+		    			return 0;
+		    		}
+					
+					if ($a->cid == $b->cid) return ($a->nc < $b->nc? -1:1); 
+					
+		    		return ($a->cid*1 < $b->cid*1? -1:1);
+	    		});
+				
 			}
-			
-			if ($key < 0) $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre); // add
-			else $jsonCarrecs[$key] = (object)  array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
-			
-			usort($jsonCarrecs, function($a, $b) {
-	    		if ($a === $b) {
-	    			return 0;
-	    		}
-				
-				if ($a->cid == $b->cid) return ($a->nc < $b->nc? -1:1); 
-				
-	    		return ($a->cid*1 < $b->cid*1? -1:1);
-    		});
-			
 			$club->setCarrecs(json_encode($jsonCarrecs));
 			$em->flush();
-			$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' persona '.$id.'-'.$nommembre.' carrec'.$carrec);
-			
-			return new Response("Junta actualitzada correctament");
-		
+				
+			$this->logEntryAuth('ADD JUNTA OK',	'club : ' . $codi.' persona '.$id.'-'.$nommembre.' carrec'.$carrec);
+					
 		} catch (\Exception $e) {
 			$response = new Response($e->getMessage());
 	    	$response->setStatusCode(500);
+	    	return $response;
 		}
-		return $response;
+
+		return $this->responseJunta($jsonCarrecs, $club);
 	}
 
 	public function clubupdatejuntaAction(Request $request) {
 		$codi = $request->query->get('codi', '');	
 		$keyid = $request->query->get('id', 0); // Inclou cid-nc  => carrec id + '-' + número de càrrec
 		$nommembre = $request->query->get('nommembre', '');
+		$response = new Response('');
 		
 		try {
 			/* De moment administradors */
-	    	if ($this->isCurrentAdmin() != true) {
+	    	/*if ($this->isCurrentAdmin() != true) {
 	    		$this->logEntryAuth('DEL JUNTA NO ADMIN',	'club : ' . $codi);
 				throw new \Exception("Acció no permesa, es desarà al registre");
-			}
+			}*/
 
 			if ($nommembre == '') {
 	    		$this->logEntryAuth('ADD JUNTA ERROR',	'Nom del membre junta no indicat ');
@@ -374,7 +370,7 @@ class SecurityController extends BaseController
 			
 			$em = $this->getDoctrine()->getManager();	
 			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
-			
+
 			$key = -1; 
 			$ncUpd = 0;
 			foreach ($jsonCarrecs as $k => $value) {
@@ -382,7 +378,7 @@ class SecurityController extends BaseController
 				if ($value->cid.'-'.$value->nc == $keyid) {
 					$key = $k;
 						
-					$jsonCarrecs[$key] = array('id' 	=>	$value->id, 
+					$jsonCarrecs[$key] = (object) array('id' 	=>	$value->id, 
 												'cid'	=>	$value->cid, 
 												'nc' 	=> $value->nc, 
 												'nom' 	=> $nommembre);		// upd
@@ -391,14 +387,12 @@ class SecurityController extends BaseController
 					$em->flush();
 					$this->logEntryAuth('UPD JUNTA OK',	'club : ' . $codi.' keyid '.$keyid);
 		
-					return new Response("Junta actualitzada correctament");
+					return $this->responseJunta($jsonCarrecs, $club);
 				}
 			}
 			
 			$this->logEntryAuth('UPD JUNTA ERROR',	'No trobat => club : ' . $codi. ' id: '.$keyid);
 			throw new \Exception("Càrrec no trobat");
-			
-			
 			
 		} catch (\Exception $e) {
 			$response = new Response($e->getMessage());
@@ -410,13 +404,14 @@ class SecurityController extends BaseController
 	public function clubremovejuntaAction(Request $request) {
 		$codi = $request->query->get('codi', '');	
 		$keyid = $request->query->get('id', 0); // Inclou cid-nc  => carrec id + '-' + número de càrrec
+		$club = null;
 		
 		try {
 			/* De moment administradors */
-	    	if ($this->isCurrentAdmin() != true) {
+	    	/*if ($this->isCurrentAdmin() != true) {
 	    		$this->logEntryAuth('DEL JUNTA NO ADMIN',	'club : ' . $codi);
 				throw new \Exception("Acció no permesa, es desarà al registre");
-			}
+			}*/
 			
 			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 			
@@ -447,124 +442,111 @@ class SecurityController extends BaseController
 			array_splice($jsonCarrecs, $key, 1);  // del
 			$club->setCarrecs(json_encode($jsonCarrecs));
 			$em->flush();
+			
 			$this->logEntryAuth('DEL JUNTA OK',	'club : ' . $codi.' keyid '.$keyid);
 			
-			return new Response("Junta actualitzada correctament");
 		} catch (\Exception $e) {
 			$response = new Response($e->getMessage());
 	    	$response->setStatusCode(500);
+			return $response;
 		}
-		return $response;
+		
+		return $this->responseJunta($jsonCarrecs, $club);
+	}
+
+	private function responseJunta($jsonCarrecs, $club) {
+		
+		$carrecs = $this->getArrayCarrecs($jsonCarrecs);
+		
+		$htmlResponse = $this->renderView('FecdasBundle:Security:clubtaulajunta.html.twig',	$this->getCommonRenderArrayOptions(array('club' => $club, 'carrecs' => $carrecs) ) );
+		
+		return new Response( json_encode( array(
+				'table' => $htmlResponse,
+				'value'	=> json_encode($jsonCarrecs)
+		)));
 	}
 
 	
     public function clubAction(Request $request) {
-    	$this->get('session')->getFlashBag()->clear();
-    	
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
     
     	/* De moment administradors */
-    	if ($this->isCurrentAdmin() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+    	/*if ($this->isCurrentAdmin() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_login'));*/
     	
     	$club  = $this->getCurrentClub();
 		$tab	= $id = $request->query->get('tab', 0);;    	
     	$nouclub = false;
 		$clubCodi = '';
-
-		$em = $this->getDoctrine()->getManager();
-	    
-		if ($request->getMethod() == 'POST') {
-			$formdata = $request->request->get('club');
+		$form = null;
+		$carrecs = array();
+		$optionsForm = array( 'comarques' => $this->getComarques(), 'provincies' => $this->getProvincies());
 	
-	   		if (isset($formdata['nouclub'])) {
-	   			$club = new EntityClub();
-					
-				if (!isset($formdata['codi'])) $codiNou = $this->obtenirCodiClub();
-				else $codiNou = $formdata['codi'];
-					
-				$club->setCodi($codiNou);
-				
-				$em->persist($club);
+		try {
+			$em = $this->getDoctrine()->getManager();
 
-				$nouclub = true;				
-	   		} else {
-				// Codi del club read_only
-	   			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($formdata['codi']);
-	   		}
-		} else {
-			
-			if ($this->isCurrentAdmin() != true) {
-   				$this->logEntryAuth('CLUB VIEW OK',	'club : ' . $club->getCodi());
-   			} else {
-   				
-   				if ($request->query->has('action') and $request->query->get('action') == "adduser") {
-					$tab = 3;
-				}
+			if ($request->getMethod() == 'POST') {
+				$formdata = $request->request->get('club');
+
+				if (isset($formdata['nouclub']) && $this->isCurrentAdmin() != true) throw new \Exception("Acció no permesa");	// Només admins poden crear clubs
 				
-   				if ($request->query->has('action') and $request->query->get('action') == "nouclub") {
-   					$codiNou = $this->obtenirCodiClub();
-					$this->logEntryAuth('CLUB NEW VIEW', 'club : ' . $codiNou);	
-					
-    				$club = new EntityClub();
-					
+		   		if (isset($formdata['nouclub']) && $this->isCurrentAdmin() == true) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find( $formdata['codi'] ); 
+
+		   		if ($club == null) {
+		   					
+		   			$club = new EntityClub();
+
+					if (!isset($formdata['codi'])) $codiNou = $this->obtenirCodiClub();
+					else $codiNou = $formdata['codi'];
+						
 					$club->setCodi($codiNou);
 					
 					$em->persist($club);
-    				$nouclub = true;
-					
-    			} else {
-    				if ($request->query->has('codiclub')) {
-    					// Edit club, external GET 
-    					$codiclub = $request->query->get('codiclub');
-    					$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
-    				}
-    				
-    				if (!$club) $club  = $this->getCurrentClub();
-    					
-    				$this->logEntryAuth('CLUB UPD VIEW', 'club : ' . $club->getCodi());
-    			}
-   			}
-   		}
-		
-		$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
-		
-   		$form = $this->createForm(new FormClub($options), $club);
-		
-		/* Alta o modificació de clubs */
-		$strACtionLog = ($nouclub)?"CLUB NEW ":"CLUB UPD ";
-
-		$carrecs = array();
-		
-		try {
-			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
-
-			foreach ($jsonCarrecs as $key => $value) {
-				
-				if ($value->id == 0 || $value->id != '') {
-					$carrecs[$value->cid."-".$value->nc] = array(
-							'id' 		=> 0, 
-							'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
-							'nom' 	 	=> (isset($value->nom) != true?'desconegut':$value->nom )
-					);
-				} else {
-					$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
-					$carrecs[$value->cid."-".$value->nc] = array(
-							'id' 		=> $value->id, 
-							'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
-							'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
-					);
+	
+					$nouclub = true;	
 				}
-			}
+			} else {
+		
+				if ($this->isCurrentAdmin() != true) $action = 'club view';
+				else {
+					$action = $request->query->get('action', 'admin club view');
+					
+	   				if ($request->query->has('action') && $action == "adduser") {
+						$tab = 3;
+					}
+					
+	   				if ($request->query->has('action') && $action == "nouclub") {
+	   					$codiNou = $this->obtenirCodiClub();
+	    				$club = new EntityClub();
+						
+						$club->setCodi($codiNou);
+						
+	    				$nouclub = true;
+	    			} else {
+	    				//$this->get('session')->getFlashBag()->clear();
+	    				if ($request->query->has('codiclub')) {
+	    					// Edit club, external GET 
+	    					$codiclub = $request->query->get('codiclub');
+	    					$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
+	    				}
+	    			}
+	   			}
+				
+				$this->logEntryAuth('CLUB VIEW OK',	$action. ' : ' . $club->getCodi());
+				
+				if ($action == "nouclub") $em->persist($club);
+
+	   		}
+
+	   		if ($this->isCurrentAdmin() != true) $form = $this->createForm(new FormClub( $optionsForm ), $club);
+			else $form = $this->createForm(new FormClubAdmin( $optionsForm ), $club);
+			
+			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
+			
+			$carrecs = $this->getArrayCarrecs($jsonCarrecs);
 			
 	   		if ($request->getMethod() == 'POST') {
-			
-				/*$clubCodi = $club->getCodi();
-	
-	   			$options = array('nou' => $nouclub, 'admin' => $this->isCurrentAdmin());
-	   			$form = $this->createForm(new FormClub($options), $club);*/
-	   
 	   			$form->handleRequest($request);
 	   			
 	   			if ($form->isValid()) {
@@ -583,33 +565,26 @@ class SecurityController extends BaseController
 						$tab = 0;	
 						throw new \Exception("Cal indicar un mail");
 					}
-	   				
-					if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
-						$tab = 2;
-						throw new \Exception("El compte comptable ha de tenir longitud 7 i ser numèric");
-					}
-					$checkcompte =  $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->findOneBy(array('compte' => $club->getCompte()));
-					if ($checkcompte != null && $club->getCodi() != $checkcompte->getCodi())  {
-						$tab = 2;
-						throw new \Exception("El compte ".$club->getCompte()." ja existeix per al club " . $checkcompte->getNom());
-					}
-	
-	   				/*if ($nouclub) {
-	   					// Nou club
-	   					$checkclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($club->getCodi());
-	   					if ($checkclub != null) throw new \Exception("Aquest codi de club ja existeix");
-	   				}*/
-	   				
-	   				/*if ($club->getActivat() == true && $club->getDatabaixa() != null) {
-	   					$tab = 3;	
-	   					throw new \Exception("Un club donat de baixa no pot estar actiu");
-	   				}*/
-	   				if ($club->getDatabaixa() != null) $club->setActivat(false);
-	   					
+	   			
+					if ($this->isCurrentAdmin() != true) {	
+						if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
+							$tab = 2;
+							throw new \Exception("El compte comptable ha de tenir longitud 7 i ser numèric");
+						}
+						$checkcompte =  $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->findOneBy(array('compte' => $club->getCompte()));
+						if ($checkcompte != null && $club->getCodi() != $checkcompte->getCodi())  {
+							$tab = 2;
+							throw new \Exception("El compte ".$club->getCompte()." ja existeix per al club " . $checkcompte->getNom());
+						}
+		   				
+		   				if ($club->getDatabaixa() != null) $club->setActivat(false);
+		   			}
+					
 	   				/* Validacions mail no existeix en altres clubs */
 	   				$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($club->getMail());
 	   				if ($checkuser != null) {
-	   					if  ($nouclub || (!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())) {
+	   					if  ($nouclub || 
+	   						(!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())	) {
 	   						$tab = 0;	
 							throw new \Exception("Aquest mail ja existeix per un altre club, " . $club->getMail());
 	   					}
@@ -628,7 +603,6 @@ class SecurityController extends BaseController
     					$randomPassword = $this->generateRandomPassword();
     					$userclub->setPwd(sha1($randomPassword));
     					$userclub->setRole("user");
-    					//$userclub->setForceupdate(true);
     					$club->addEntityUser($userclub);
 
     					$em->persist($userclub);
@@ -640,28 +614,47 @@ class SecurityController extends BaseController
     					$this->get('session')->getFlashBag()->add('sms-notice', 'Dades del club desades correctament ');
     				}
 	    			$em->flush(); // Error
-	   				$this->logEntryAuth($strACtionLog . 'OK', 'club : ' . $club->getCodi());
+	   				$this->logEntryAuth(($nouclub)?"CLUB NEW ":"CLUB UPD " . 'OK', 'club : ' . $club->getCodi());
 					return $this->redirect($this->generateUrl('FecdasBundle_club', array( 'codiclub' => $club->getCodi(), 'tab' => $tab )));
 	   			} else {
-	   				// get a ConstraintViolationList
 	   				$this->get('session')->getFlashBag()->add('error-notice', "error validant les dades". $form->getErrorsAsString());
-	   				
-	   				$club  = $this->getCurrentClub();
-	   				$form = $this->createForm(new FormClub($options), $club);
-	   				
-	   				return $this->render('FecdasBundle:Security:club.html.twig',
-	   						$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab, 'carrecs' => $carrecs)));
 	   			}
 	   		}
 		} catch (\Exception $e) {
 			$em->clear();
 			$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
-			$this->logEntryAuth($strACtionLog. 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());
+			$this->logEntryAuth(($nouclub)?"CLUB NEW ":"CLUB UPD ". 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());
 		}
    		
+		if ($form == null) $form = $this->createForm(new FormClubAdmin( $optionsForm ), $club);
+		
     	return $this->render('FecdasBundle:Security:club.html.twig', 
-    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'tab' => $tab, 'carrecs' => $carrecs)));
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'club' => $club, 'nouclub' => $nouclub, 'tab' => $tab, 'carrecs' => $carrecs)));
     }
+
+	private function getArrayCarrecs($jsonCarrecs) {
+
+		$carrecs = array();
+		foreach ($jsonCarrecs as $key => $value) {
+			
+			if ($value->id == 0 || $value->id != '') {
+				$carrecs[$value->cid."-".$value->nc] = array(
+						'id' 		=> 0, 
+						'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
+						'nom' 	 	=> (isset($value->nom) != true?'desconegut':$value->nom )
+				);
+			} else {
+				$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
+				$carrecs[$value->cid."-".$value->nc] = array(
+						'id' 		=> $value->id, 
+						'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
+						'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
+				);
+			}
+		}
+		
+		return $carrecs;
+	}
 
     private function obtenirCodiClub() {
     	$em = $this->getDoctrine()->getManager();
@@ -685,10 +678,6 @@ class SecurityController extends BaseController
     public function baixaclubAction(Request $request) {
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
-    
-    	/* De moment administradors */
-    	if ($this->isCurrentAdmin() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
     	
 		$codi	= $id = $request->query->get('club', '');    	
 
@@ -697,6 +686,8 @@ class SecurityController extends BaseController
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
 		try {
+			if ($this->isCurrentAdmin() != true) throw new \Exception('Acció no permesa');
+			
 			$current = $this->getCurrentDate();
 			if ($club == null) throw new \Exception('No s\'ha pogut trobar el club per donar-lo de baixa');
 
@@ -718,105 +709,97 @@ class SecurityController extends BaseController
 
     public function usuariclubAction(Request $request) {
     	//$this->get('session')->getFlashBag()->clear();
-    
-    	if ($request->isXmlHttpRequest()) {
-    		if ($request->getMethod() == 'POST') {
-    			// Alta nou usuari de club
-    			$requestParams = $request->request->all();
-    			
-    			$codiclub = $requestParams['club']['codi'];
-    			$useruser = $requestParams['club']['user'];
-    			$randomPassword = $requestParams['club']['pwd']['first'];
-    			$userrole = $requestParams['club']['role'];
-    			//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
-    			
-    			$userclub = new EntityUser();
-    			
-    			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
+    	$club = null;
+		$userclub = null;
+    	try {
+    		
+	    	if ($this->isCurrentAdmin() != true) throw new \Exception("Acció no permesa");
+	    
+			if ($request->isXmlHttpRequest() != true) throw new \Exception("Error. Contacti amb l'administrador (100)");
+			
+	    	if ($request->getMethod() == 'POST') {
+	    		// Alta nou usuari de club
+	    		$requestParams = $request->request->all();
+	    		
+	    		$codiclub = $requestParams['club']['codi'];
+	    		$useruser = $requestParams['club']['user'];
+	    		$randomPassword = $requestParams['club']['pwd']['first'];
+	    		$userrole = $requestParams['club']['role'];
+	    		//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
+	    		
+	    		$userclub = new EntityUser();
+	    		
+	   			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
+	   			$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($useruser);
+	   			
+	   			if ($checkuser != null)  throw new \Exception("Aquest usuari ja existeix: ".$useruser);
+				
+				// No existeix
+   				$userclub->setClub($club);
+    			$userclub->setUser($useruser);
+    				
+    			$userclub->setPwd(sha1($randomPassword));
+    			$userclub->setRole($userrole);
+    			//$userclub->setForceupdate($forceupdate);
+    			$club->addEntityUser($userclub);
+	    				
+   				$em = $this->getDoctrine()->getManager();
+   				$em->persist($userclub);
+	   				
+   				$em->flush();
+	   				
+   				$this->get('session')->getFlashBag()->add('error-notice', 'Nou usuari ' . $userclub->getUser() . ', amb clau: ' . $randomPassword);
+	    		
+				$this->logEntryAuth('USER CLUB NEW OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());	
 
-    			$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($useruser);
-    			
-    			if ($checkuser == null) {
-   					// No existeix
-    				$userclub->setClub($club);
-    				$userclub->setUser($useruser);
-    				
-    				$userclub->setPwd(sha1($randomPassword));
-    				$userclub->setRole($userrole);
-    				//$userclub->setForceupdate($forceupdate);
-    				$club->addEntityUser($userclub);
-    				
-   					$em = $this->getDoctrine()->getManager();
-   					$em->persist($userclub);
-   				
-   					$em->flush();
-   				
-   					$this->get('session')->getFlashBag()->add('error-notice', 'Nou usuari ' .
-   							$userclub->getUser() . ', amb clau: ' . $randomPassword);
-    						
-   					$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW OK',
-   							$this->get('session')->get('remote_addr'),
-   							$request->server->get('HTTP_USER_AGENT'),
-   							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
-    			} else {
-    					// Existeix -> error
-    				$this->get('session')->getFlashBag()->add('error-notice', 'Aquest usuari ja existeix');
-    				$this->logEntry($this->get('session')->get('username'), 'USER CLUB NEW KO',
-    						$this->get('session')->get('remote_addr'),
-    						$request->server->get('HTTP_USER_AGENT'),
-    						'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
-    			}
-    			
-    			return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
-    					array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
-    		} else {
-    			if ($request->query->has('action')) {
-    				// Activar o desactivar usuaris
-    				$action = $request->query->get('action');
-    				
-    				$userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($request->query->get('user'));
+	    	} else {
+	    	
+		   		if ($request->query->has('action') != true) return new Response("Error. Contacti amb l'administrador (101)"); 
+		
+				// Activar o desactivar usuaris
+				$action = $request->query->get('action');
+		    			
+				$userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($request->query->get('user'));
+		
+				if ($userclub == null) throw new \Exception('Error. Posa\'t en contacte amb l\'administrador');
 
-    				if ($userclub != null) {
-    					if ($action == 'remove') {
-    						/* Change email, add prefix . Actualitza en cascada el registre per no perdre'l 
-    						 * Permet tornar a fer servir l'usuari */
-    						$userclub->setDatabaixa($this->getCurrentDate());
-    						
-    						$upduser = $userclub->getUser();
-    						for($i = 0; $i <= 6; $i++) {
-    							$upduser = chr(rand(97, 122)) . $upduser;
-    						}
-    						$userclub->setUser($upduser);
-    						
-    					}
-    					if ($action == 'resetpwd') {
-    						$randomPassword = $this->generateRandomPassword();
-    						$userclub->setPwd(sha1($randomPassword));
-    						$this->get('session')->getFlashBag()->add('error-notice', 'Clau de l\'usuari ' .
-    								$userclub->getUser() . ', canviada: ' . $randomPassword);
-    					}
-    					
-    					$club = $userclub->getClub();
-
-    					$em = $this->getDoctrine()->getManager();
-    					$em->flush();
-    					
-    					$this->logEntry($this->get('session')->get('username'), 'USER '. strtoupper($action) . ' OK',
-    							$this->get('session')->get('remote_addr'),
-    							$request->server->get('HTTP_USER_AGENT'),
-    							'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());
-    				} else {
-    					// Error
-    					$this->get('session')->getFlashBag()->add('error-notice', 'Error. Posa\'t en contacte amb l\'administrador');
-    					$club = $this->getCurrentClub();
-    				}
-    				
-    				return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
-    						array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
-    			} 
-    		}
-    	}
-    
-    	return new Response("Error. Contacti amb l'administrador (userclubAction)");
+				if ($action == 'remove') {
+					/* Change email, add prefix . Actualitza en cascada el registre per no perdre'l 
+					 * Permet tornar a fer servir l'usuari */
+					$userclub->setDatabaixa($this->getCurrentDate());
+	   						
+					$upduser = $userclub->getUser();
+					for($i = 0; $i <= 6; $i++) {
+						$upduser = chr(rand(97, 122)) . $upduser;
+					}
+					$userclub->setUser($upduser);
+		 						
+				}
+				if ($action == 'resetpwd') {
+	   				$randomPassword = $this->generateRandomPassword();
+	   				$userclub->setPwd(sha1($randomPassword));
+	   				$this->get('session')->getFlashBag()->add('error-notice', 'Clau de l\'usuari ' .
+	   						$userclub->getUser() . ', canviada: ' . $randomPassword);
+	   			}
+				
+	   			$club = $userclub->getClub();
+		
+	   			$em = $this->getDoctrine()->getManager();
+	   			$em->flush();
+				
+				$this->logEntryAuth('USER '. strtoupper($action) . ' OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser());	
+	   		}
+		} catch (\Exception $e) {
+			$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+	   		
+			$extra = '. Club : ' . ($club != null?$club->getCodi():'') . ' user: ' . ($userclub != null?$userclub->getUser():'');
+			$this->logEntryAuth('USER KO', $e->getMessage().$extra);	
+		}
+			
+		if ($club == null) $club = $this->getCurrentClub();
+				
+   		return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
+   				array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
+   	 	
     }
 }

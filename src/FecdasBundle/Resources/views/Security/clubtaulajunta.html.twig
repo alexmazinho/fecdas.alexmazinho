@@ -1,0 +1,24 @@
+{% if carrecs|length > 0 %}
+	<div class="table-noscroll">
+		<ol id="list-data">
+			{% for key, carrec in carrecs %}
+				<li class="data-detall">
+					<div class="data-detall-cell userclub-junta-carrec">{{ carrec.carrec }}</div>
+					<div class="data-detall-cell userclub-junta-nom hidden">{{ carrec.nom }}</div>
+					<div class="data-detall-cell userclub-junta-text">
+						<input id="club_nommembre_{{ key }}" class="form-control" type="text" name="club[nommembre]" value="{{ carrec.nom }}" data-key="{{ key }}">
+					</div>
+					<div class="data-detall-cell userclub-junta-action">
+						<a href="{{ path('FecdasBundle_clubremovejunta', {'codi': club.codi, 'id': key } ) }}" class="btn link formclub-removecarrec" title="Esborrar">
+							<i class="fa fa-remove fa-1x red"></i>
+						</a>
+					</div>
+				</li>
+			{% endfor %}
+		</ol>
+	</div>
+{% else %}
+	<div class="alert alert-info form-alert">
+		<span class="fa fa-info-cicle fa-1x"></span>Sense informació de la Junta 
+	</div>
+{% endif %}

@@ -118,6 +118,27 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'data' 			=> $producte->getVisible() == true
 			));
 			
+			// Selector departament compta
+			$form->add('departament', 'choice', array(
+					'choices'   => BaseController::getDepartamentsConta( 0 ),
+					'multiple'  => false,
+					'expanded'  => false,
+					'empty_value' => '',
+					'data' 		=> $producte->getDepartament(),
+			));
+			
+			$subdepartaments = array();
+			if ($producte->getDepartament() == 0) $subdepartaments = BaseController::getDepartamentsConta( -1 );
+			else $subdepartaments = BaseController::getDepartamentsConta( $producte->getDepartament() ); 
+			
+			// Selector subdepartament compta
+			$form->add('subdepartament', 'choice', array(
+					'choices'   => $subdepartaments,
+					'multiple'  => false,
+					'expanded'  => false,
+					'data' 		=> $producte->getSubdepartament(),
+			));
+			
 			if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
 					$activat = true;
 					if ($producte->getCategoria() != null && 

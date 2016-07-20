@@ -205,9 +205,9 @@ class EntityParte extends EntityComanda {
 	 */
 	public function getDetallsAcumulats($baixes = false)
 	{
-		$acumulades = parent::getDetallsAcumulats();	
+		$acumulades = parent::getDetallsAcumulats( $baixes );	
 
- 	  	foreach ($this->llicencies as $llicencia) {
+ 	  	/*foreach ($this->llicencies as $llicencia) {
     		if (!$llicencia->esBaixa() || $baixes == true) {
     			$producte = $llicencia->getCategoria()->getProducte();		
     			if (isset($acumulades[$producte->getCodi()]) &&
@@ -225,6 +225,32 @@ class EntityParte extends EntityComanda {
 							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
 							'abreviatura' => $producte->getAbreviatura(), 
 							'descompte' => 0, 'codi' => $producte->getCodi(),
+					);
+				}
+				
+			}
+    	}*/
+    	
+    	foreach ($this->llicencies as $llicencia) {
+    		if (!$llicencia->esBaixa() || $baixes == true) {
+    			$producte = $llicencia->getCategoria()->getProducte();		
+    			if (isset($acumulades[$producte->getId()]) &&
+					isset($acumulades[$producte->getId()]['extra'])) {
+    				$acumulades[$producte->getId()]['extra'][] = $llicencia->getPersona()->getNomCognoms();  
+				} else {
+					error_log('revisar llicencies parte i detall comandes id '.$this->id);
+					$acumulades[$producte->getId()] = array(
+							'total' => 1,	
+							'totalbaixa' => 0, 
+							'preuunitat' => $producte->getPreu($this->dataalta->format('Y')),
+							'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 
+							'import' => $producte->getPreu($this->dataalta->format('Y')),
+							'producte' => $producte->getDescripcio(),
+							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
+							'abreviatura' => $producte->getAbreviatura(), 
+							'descompte' => 0, 
+							'codi' => $producte->getCodi(),
+							'id' => $producte->getId()
 					);
 				}
 				
@@ -614,13 +640,13 @@ class EntityParte extends EntityComanda {
      *
      * @return string
      */
-    public function getInfoLlistat() {
+    public function getInfoLlistat( $br = PHP_EOL, $llista = false ) {
     	// Missatge que es mostra a la llista de partes
     	//$textInfo = parent::getInfoLlistat();
 
-		$textInfo = $this->comentaris.PHP_EOL.($this->tipus != null?$this->tipus->getDescripcio():'');
+		$textInfo = $this->comentaris.$br.($this->tipus != null?$this->tipus->getDescripcio():'');
 		
-    	if (trim($textInfo) != '') $textInfo .= PHP_EOL;
+    	if (trim($textInfo) != '') $textInfo .= $br;
 		
     	if ($this->esBaixa()) return $textInfo.'Llista anul·lada';
     	

@@ -492,7 +492,7 @@ class FacturacioController extends BaseController {
 		return $apunt;
 	}
 	
-	private function crearLiniaAssentamentContasol($data, $numAssenta, $linia, $compte, $conc, $doc, $import, $tipus) {
+	private function crearLiniaAssentamentContasol($data, $numAssenta, $linia, $compte, $conc, $dpt, $subdpt, $doc, $import, $tipus) {
 		/**
 		 * Columna	Descripció
 		 * A 		Diario : 1   => General
@@ -532,8 +532,8 @@ class FacturacioController extends BaseController {
 		$apunt[] = 0; 										// Columna L
 		$apunt[] = ''; 										// Columna M
 		$apunt[] = 0; 										// Columna N
-		$apunt[] = BaseController::getDepartamentConta( $compte, 'dpt' ); 	// Columna O
-		$apunt[] = BaseController::getDepartamentConta( $compte, 'subdpt' );; 	// Columna P
+		$apunt[] = $dpt; 									// Columna O
+		$apunt[] = $subdpt; 								// Columna P
 		$apunt[] = ''; 										// Columna Q
 		
 		return implode(";",$apunt);
@@ -558,7 +558,7 @@ class FacturacioController extends BaseController {
 		$doc = str_pad($rebut->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
 		$import = $rebut->getImport();
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $import, BaseController::HABER);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, 0, 0, $doc, $import, BaseController::HABER);
 			
 		$linia++;
 		// APUNT CAIXA
@@ -566,7 +566,7 @@ class FacturacioController extends BaseController {
 		$conc = BaseController::getTextComptePagament($rebut->getTipuspagament());		// 'CAIXA FEDERACIO' o 'BANC \'LA CAIXA\'';
 		
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, 0, 0, $doc, $import, BaseController::DEBE);
 		
 		return $assentament;
 	}
@@ -594,7 +594,7 @@ class FacturacioController extends BaseController {
 		$import = $factura->getImport();
 					
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $import, BaseController::DEBE);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, 0, 0, $doc, $import, BaseController::DEBE);
 					
 		$linia++;
 		$importAcumula = 0;
@@ -610,8 +610,10 @@ class FacturacioController extends BaseController {
 			$importDetall = $d->import;	
 			$importAcumula += $importDetall;	
 
+			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi($compte);
+
 			//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
-			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $doc, $importDetall, BaseController::HABER);
+			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $producte->getDepartament(), $producte->getSubdepartament(), $doc, $importDetall, BaseController::HABER);
 						
 			$linia++;
 			$index++;
@@ -1189,6 +1191,7 @@ class FacturacioController extends BaseController {
 		$club = null;
 		$datafacturacio = $this->getCurrentDate();
 		$strDatafacturacio = $request->query->get('datafacturacio', '');
+		$comandaKits = false;
 		
 		if ($strDatafacturacio != '') $datafacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio); 
 				
@@ -1222,6 +1225,9 @@ class FacturacioController extends BaseController {
 					$tarifa = BaseController::getTarifaTransport($pesComanda);
 					
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+					
+					if ($producte == null) throw new \Exception("No es pot afegir el transport a la comanda, poseu-vos en contacte amb la Federació"); 
+					
 					$anotacions = $producte->getDescripcio().' '.$pesComanda.'g';	
 					$detall = $this->addComandaDetall($comanda, $producte, 1, 0, $anotacions);		
 				}
@@ -1234,6 +1240,23 @@ class FacturacioController extends BaseController {
 				$factura = $this->crearFactura($datafacturacio, $comanda);
 			
 				$em ->flush();
+			
+			
+				// Enviar notificació mail Albert si és una comanda de Kits
+				if ($comanda->comandaKits()) {
+					$subject = ":: Comanda KITS ::";
+					$tomails = $this->getCarnetsMails(); // Carnets Albert
+					
+					$body = "<h3>Nova comanda Kits del club ". $comanda->getClub()->getNom()."</h3>";
+					$body .= "<p>Comanda: ". $comanda->getNumcomanda() ."</p>";
+					$body .= "<p>". $comanda->getInfoLlistat( "<br/>" ) ."</p>";
+
+					$this->buildAndSendMail($subject, $tomails, $body);
+					
+					$this->logEntryAuth('NOTI. KITS', 'club ' . $comanda->getClub()->getNom() . ' comanda ' . $comanda->getNumcomanda());
+					
+					$this->get('session')->getFlashBag()->add('sms-notice',"Notificació enviada correctament");
+				}
 				
 			}
 			
@@ -1980,8 +2003,6 @@ class FacturacioController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_producte', array('id' => $producte->getId())));*/
 	}
 	
-	
-	
 	public function jsonpreuAction(Request $request) {
 		//foment.dev/jsonpreu?id=32&anypreu=2015
 		$response = new Response();
@@ -2063,6 +2084,17 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
+	public function jsondepartamentsAction(Request $request) {
+		//foment.dev/jsondepartaments?dpt=1   
+		$response = new Response();
+	
+		$dpt = $request->get('dpt', 0);
+		
+		$subdpts = BaseController::getDepartamentsConta($dpt);
+		
+		return new Response( json_encode($subdpts) );
+	}
+	
 	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
 		$em = $this->getDoctrine()->getManager();
 	
@@ -2133,7 +2165,7 @@ class FacturacioController extends BaseController {
 		$this->get('session')->getFlashBag()->clear();
 		
 		$em = $this->getDoctrine()->getManager();
-
+ 
 		// Comandes pendents de pagament. Inicialment al club connectat
 		if ($request->getMethod() != 'POST') {
 			$codi = $request->query->get('codi', '');

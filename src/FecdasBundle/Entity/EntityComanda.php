@@ -189,6 +189,15 @@ class EntityComanda {
 		return !$this->esDuplicat() && !$this->esParte();
 	}
 
+    public function comandaKits()
+    {
+		// Baixa dels detalls
+		foreach ($this->getDetalls() as $detall) {
+			if (!$detall->esBaixa() && $detall->getProducte()->esKit()) return true;
+		}
+		return false;
+    }
+
 	/**
 	 * Actualitza saldos club. Reescriptura updateClubSaldoTipusComanda
 	 * 
@@ -360,13 +369,13 @@ class EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getInfoLlistat()
+	public function getInfoLlistat( $br = PHP_EOL, $llista = false )
 	{
 		$info = $this->comentaris;
-		if (trim($info) != '' && $this->getNumDetalls()>0) $info .= PHP_EOL;
+		if (trim($info) != '' && $this->getNumDetalls()>0) $info .= $br;
 		
 		foreach ($this->detalls as $d) {
-			if (!$d->esBaixa()) $info .= $d->getAnotacions().', ';	
+			if (!$d->esBaixa()) $info .= $d->getAnotacions().($llista == true?$br:', ');	
 		}
 		return substr($info, 0, -2);
 	}
@@ -537,7 +546,7 @@ class EntityComanda {
 	{
 		$acumulades = array();
 		
-		foreach ($this->detalls as $d) {
+		/*foreach ($this->detalls as $d) {
 			if ( (!$d->esBaixa() || $baixes == true) && 
 					$d->getProducte() != null) {
 				
@@ -554,7 +563,36 @@ class EntityComanda {
 			}
 		}
 		ksort($acumulades); // Ordenada per codi
+		return $acumulades;*/
+		
+		foreach ($this->detalls as $d) {
+			if ( (!$d->esBaixa() || $baixes == true) && 
+					$d->getProducte() != null) {
+				
+				$id = $d->getProducte()->getId();
+				
+				if (isset($acumulades[$id])) {
+					$acumulades[$id]['total'] += $d->getUnitats();
+					if ($baixes == true) $acumulades[$id]['total'] += $d->getUnitatsbaixa();
+					$acumulades[$id]['import'] += $d->getTotal($baixes);
+				}
+				else {
+					$acumulades[$id] = $d->getDetallsArray($baixes);
+				}
+			}
+		}
+		
+		// Ordre  codi > producte
+		usort($acumulades, function($a, $b) {
+			if ($a === $b) {
+				return 0;
+			}
+			if ($a['codi'] == $b['codi']) ($a['producte'] > $b['producte'])? -1:1;
+			return ($a['codi'] > $b['codi'])? -1:1;
+		});
+		
 		return $acumulades;
+		
 	}
 	
 	/**

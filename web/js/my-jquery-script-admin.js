@@ -9,7 +9,7 @@
 			minimumInputLength: 2
 		});
 		$("#menu-user select#form_roleclub").change(function(e) {
-			var currRole = $("#menu-user select#form_currentrole").val();
+			var currRole = $("#menu-user #form_currentrole").val();
 			if (currRole == '') currRole = 'admin';
 			var params = { 	role: currRole, roleclub:e.val };
 			$.get(url,	params,

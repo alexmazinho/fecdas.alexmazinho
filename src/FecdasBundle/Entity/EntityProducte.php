@@ -79,13 +79,22 @@ class EntityProducte {
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $visible; // visible pels clubs?
-
 	
 	/**
 	 * @ORM\OneToOne(targetEntity="EntityCategoria", mappedBy="producte")
 	 **/
 	protected $categoria; // categoria del producte si és llicència pot ser null
-		
+
+	/**
+	 * @ORM\Column(type="integer", nullable=false)
+	 */
+	protected $departament;
+	
+	/**
+	 * @ORM\Column(type="integer", nullable=false)
+	 */
+	protected $subdepartament;
+			
 	/**
 	 * @ORM\Column(type="datetime")
 	 */
@@ -136,6 +145,16 @@ class EntityProducte {
 		 
 		return $preusconsolidated;
 	}
+	
+	/**
+     * és Kit?
+     *
+     * @return boolean 
+     */
+    public function esKit()
+    {
+        return $this->tipus == BaseController::TIPUS_PRODUCTE_KITS;
+    }
 	
 	/**
      * Get id
@@ -402,6 +421,7 @@ class EntityProducte {
     }
 
 
+
 	/**
      * Set visible
      *
@@ -446,6 +466,51 @@ class EntityProducte {
 	}
 
 
+    /**
+     * Set departament
+     *
+     * @param integer $departament
+     * @return EntityProducte
+     */
+    public function setDepartament($departament)
+    {
+        $this->departament = $departament;
+
+        return $this;
+    }
+
+    /**
+     * Get departament
+     *
+     * @return integer 
+     */
+    public function getDepartament()
+    {
+        return $this->departament;
+    }
+
+    /**
+     * Set subdepartament
+     *
+     * @param integer $subdepartament
+     * @return EntityProducte
+     */
+    public function setSubdepartament($subdepartament)
+    {
+        $this->subdepartament = $subdepartament;
+
+        return $this;
+    }
+
+    /**
+     * Get subdepartament
+     *
+     * @return integer 
+     */
+    public function getSubdepartament()
+    {
+        return $this->subdepartament;
+    }
 
     /**
      * Set dataentrada

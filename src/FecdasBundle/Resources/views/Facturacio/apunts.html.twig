@@ -65,24 +65,6 @@
 
 	<script type="text/javascript">
 
-
-	reloadScroll = function() {
-		if ( $('.table-scroll').hasScrollBar() == true ) {
-
-			var totalWidth = $('.table-header').width();
-			var barWidth = 15;
-			
-			$('.col-listheader.collistheader-noorder').not('#header-apunt-entrada').each( function() {
-				var ratio = $(this).width( )/totalWidth;
-				
-				$(this).width( $(this).width( ) - ( ratio * barWidth) );
-			});
-
-			$('#header-apunt-entrada').width( $('#header-apunt-entrada').width( ) + barWidth );
-			//$('.table-header').width( $('.table-header').width( ) - 15 );
-		};
-	}
-	
 	reloadApunts = function(url) {
 		showElementMask($('#taula-apunts'), true);
 		
@@ -91,7 +73,7 @@
 
 			$('#taula-apunts').html(data);
 
-			reloadScroll();
+			reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader.collistheader-noorder'), $('#header-apunt-entrada'));
 			
 		}).fail( function(xhr, status, error) {
 			hideMask();
@@ -144,7 +126,7 @@
 	    });
 		
 		
-		reloadScroll();
+		reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader.collistheader-noorder'), $('#header-apunt-entrada'));
 
 		
 		{% if admin == true  %}

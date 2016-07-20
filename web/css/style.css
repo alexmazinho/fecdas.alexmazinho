@@ -68,6 +68,17 @@ input, .form-control {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fafafa', endColorstr='#fafafa', GradientType=0 );
 }
 
+input.form-control-updated, .form-control.form-control-updated {
+    border-bottom-color: #66afe9;
+    border-left-color: #66afe9;
+    border-right-color: #66afe9;
+    border-top-color: #66afe9;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
+    outline-color: -moz-use-text-color;
+    outline-style: none;
+    outline-width: 0;
+}
+
 input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
 	/*border-top: 1px solid #FFFFFF;*/
   	/* background: #CCCCCC;
@@ -205,11 +216,14 @@ select[disabled="true"],
 select[disabled="disabled"],
 input[disabled="true"],
 input[disabled="disabled"],
+input[readonly="readonly"],
+input[readonly="true"],
+select[readonly="readonly"],
+select[readonly="true"],
 .input-group-radio.disabled,
 .input-group-radio.disabled label,
 input.disabled,
 input.disabled label  
-  
 { 
 	/*background-color: #f0ebe2;*/
     color: #777777; 
@@ -1714,6 +1728,8 @@ select#parte_renovar_tipus { width: 240px; }
 #formclub-addradreca, #formclub-addradrecacorreu { width: 28%; }
 
 
+#llista-usuarisclub .table-scroll { max-height: 150px; }
+
 /*
 input#club_nom { width: 350px; }
 input#club_telefon { width: 116px; }
@@ -1746,9 +1762,10 @@ select#club_tipusparte {
 #formclub-dades-tab4 #formclub-saldoclub input { font-weight: bold }
 
 .data-detall-cell.userclub-junta-nom { display: none; }
-.data-detall-cell.userclub-junta-text { text-align: left; padding: 2px 6px; }
-.data-detall-cell.userclub-junta-carrec { text-align: left; padding: 2px 6px; font-weight: bold; }
-.data-detall-cell.userclub-junta-action { text-align: right; padding: 2px 6px;  } 
+.data-detall-cell.userclub-junta-carrec { text-align: left; padding: 2px 6px; font-weight: bold;  width: 15%; }
+.data-detall-cell.userclub-junta-text { text-align: left; padding: 2px 6px;  width: 80%;}
+.data-detall-cell.userclub-junta-action { text-align: right; padding: 2px 4px;  width: 3%; } 
+.data-detall-cell.userclub-junta-action a { padding: 0; }
 
 
 input#user_club_user { width: 298px; }
@@ -2065,6 +2082,7 @@ select#parte_persona_addrnacionalitat {
 	text-align: right;
 }
 
+#header-factdetallid {	display:none; }
 #header-factdetallcodi {	width: 10%; }
 #header-factdetalldesc {	width: 36%; text-align: left; }
 #header-factdetallquantitat {	width: 10%; }
@@ -2073,6 +2091,7 @@ select#parte_persona_addrnacionalitat {
 #header-factdetalliva {	width: 10%; text-align: right; line-height: 14px;}
 #header-factdetallpreutotal {	width: 10%; text-align: right; }
 
+.factdetall-id {	display:none; }
 .factdetall-codi {	width: 10%; }
 .factdetall-desc {	width: 36%; text-align: left; }
 .factdetall-quantitat {	width: 10%;  }
@@ -2250,6 +2269,7 @@ p.info-bold {
  { display: none }
 
 
+#formclub, #formclub-rest.hidden { display: none; }
 
 #formduplicats #duplicat_dni { width: 120px; }
 #formduplicats #duplicat_nom, #formduplicats #duplicat_cognoms { width: 300px; }

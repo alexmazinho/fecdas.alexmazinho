@@ -301,9 +301,31 @@
 	};
 	
 	$.fn.hasScrollBar = function() {
+		
+		console.log( this.get(0).scrollHeight+' '+this.innerHeight());
+		if (this.get(0).scrollHeight == 0) return false;
+		
         return this.get(0) ? this.get(0).scrollHeight > this.innerHeight() : false;
     };
 	
+    reloadScrollTable = function( scroll, header, colHeader, lastColHeader  ) { 
+    					// per exemple $('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions') 
+ 	
+		if ( scroll.hasScrollBar() == true ) {
+			var totalWidth = header.width();
+			var barWidth = 15;
+			
+			colHeader.not('#header-apunt-entrada').each( function() {
+				var ratio = $(this).width( ) / totalWidth;
+				
+				$(this).width( $(this).width( ) - ( ratio * barWidth) );
+			});
+
+			lastColHeader.width( lastColHeader.width( ) + barWidth );
+			//header.width( $('.table-header').width( ) - 15 );
+		};
+	};
+    
 	/********** Selectors de dates ***************/
 	
 	loadCalendar = function(elem, callback) {
@@ -881,7 +903,7 @@
 			);
 			
 			formFocus();
-			autocompleters();
+			autocompleters( $('#formpersona-autocompleters').attr('href'), $('#parte_persona_addrpob'), $('#parte_persona_addrcp'), $('#parte_persona_addrprovincia'), $('#parte_persona_addrcomarca'), "#edicio-persona" );
 			actionsModalOverlay();
 			actionsPersonaForm(origen);
 			
@@ -916,35 +938,51 @@
 		});
 	};
 	
-	autocompletersConfig = function(camp, open) {
+	autocompletersConfig = function(url, camp, pob, cp, prov, comarca, open, appendSel) {
 		
-		var route = $("#formpersona-autocompleters").attr("href");
+		comarca.select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: "Comarca",
+		});
+		
+		prov.select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: "Província",
+		});
+		
+		var route = url;
 		var $configs = {
 			source: function(request, response) {
 				var $data = { term: request.term, tipus:camp };
 				$.getJSON(route, $data, response);
 			},
 			position: open,
-			appendTo: "#edicio-persona",
-			select: function(event, ui){
-				$("#parte_persona_addrpob").val(ui.item.municipi);
-				$("#parte_persona_addrcp").val(ui.item.cp);	
-				$("#parte_persona_addrcp").trigger("blur.labelFx");
-				$("#parte_persona_addrprovincia").val(ui.item.provincia);
-				$("select#parte_persona_addrprovincia").select2({
+			appendTo: appendSel,
+			select: function( event, ui ){
+				pob.val(ui.item.municipi);
+				cp.val(ui.item.cp);	
+				cp.trigger("blur.labelFx");
+
+				//comarca.trigger("blur.labelFx");
+				comarca.select2("destroy").select2( {} );
+				comarca.val(ui.item.comarca);
+				comarca.select2({
+					minimumInputLength: 2,
+					allowClear: true,
+					placeholder: "Comarca",
+				});
+				//comarca.trigger("blur.labelFx");
+
+				prov.select2("destroy").select2( {} );
+				prov.val(ui.item.provincia);
+				prov.select2({
 					minimumInputLength: 2,
 					allowClear: true,
 					placeholder: "Província",
 				});
 				
-				//$("#parte_persona_addrprovincia").trigger("blur.labelFx");
-				$("#parte_persona_addrcomarca").val(ui.item.comarca);
-				$("select#parte_persona_addrcomarca").select2({
-					minimumInputLength: 2,
-					allowClear: true,
-					placeholder: "Comarca",
-				});
-				//$("#parte_persona_addrcomarca").trigger("blur.labelFx");
 			}
 		};
 
@@ -952,10 +990,9 @@
 	};
 	
 	
-	autocompleters = function() {
-		
-		$('#parte_persona_addrpob').autocomplete(autocompletersConfig('poblacio'),  { my : "left bottom", at: "left top", collision: "none" });
-		$('#parte_persona_addrcp').autocomplete(autocompletersConfig('cp'), { my : "right top", at: "right bottom", collision: "flip" });
+	autocompleters = function( url, pob, cp, prov, comarca, appendSel ) {
+		pob.autocomplete(autocompletersConfig(url, 'poblacio', pob, cp, prov, comarca,  { my : "left bottom", at: "left top", collision: "none" }, appendSel ));
+		cp.autocomplete(autocompletersConfig(url, 'cp', pob, cp, prov, comarca, { my : "right top", at: "right bottom", collision: "flip" }, appendSel ));
 	};
 	
 	actionsPersonaForm = function(origen) {
@@ -1606,14 +1643,14 @@
 	        
 	        $("#club_addrpobcorreu").val( $("#club_addrpob").val() );
 	        $("#club_addrcpcorreu").val( $("#club_addrcp").val() );
-	        $("#club_addrcomarcacorreu").val( $("#club_addrcomarca").val() );
-	        $("#club_addrprovinciacorreu").val( $("#club_addrprovincia").val() );
+	        $("#club_addrcomarcacorreu").val( $("#club_addrcomarca").val() ).trigger("change");
+	        $("#club_addrprovinciacorreu").val( $("#club_addrprovincia").val() ).trigger("change");
 	        $("#club_addradrecacorreu").val( $("#club_addradreca").val() );
 	    });
 	};
 	
 	
-	saveClub = function() {
+	saveClub = function( admin ) {
 		/* desar club */
 		$('.formclub-save')
 	    .off('click')
@@ -1633,17 +1670,18 @@
 	        	dialegError("Error", "cal indicar el cif del club", 400, 0);
 				return false;
 	        }
-	        console.log($("#club_compte").val());
-	        if ($("#club_compte").val() == "" || isNaN($("#club_compte").val())) {
-	        	dialegError("Error", "cal indicar el compte contable", 400, 0);
-	        	$( "#tabs-club" ).tabs( "option", "active", 2 );
-				return false;
-	        } else {
-	        	console.log($("#club_compte").val().length);
-		        if ($("#club_compte").val().length != 7 ) {
-		        	dialegError("Error", "el compte comptable té un format incorrecte", 400, 0);
+
+	        if (admin == true) {
+		        if ($("#club_compte").val() == "" || isNaN($("#club_compte").val())) {
+		        	dialegError("Error", "cal indicar el compte comptable", 400, 0);
 		        	$( "#tabs-club" ).tabs( "option", "active", 2 );
 					return false;
+		        } else {
+			        if ($("#club_compte").val().length != 7 ) {
+			        	dialegError("Error", "el compte comptable té un format incorrecte", 400, 0);
+			        	$( "#tabs-club" ).tabs( "option", "active", 2 );
+						return false;
+			        }
 		        }
 	        }
 	        
@@ -1675,7 +1713,7 @@
 	        	}
 	        }
 	       
-	        if ($("#club_tipusparte :selected").length < 1) {
+	        if (admin == true && $("#club_tipusparte :selected").length < 1) {
 	        	dialegConfirmacio( "El club no té assignat cap tipus de llicència", "Abans de continuar...", 0, 400, function() {
 	        		$('#formclub').submit();
 		        }, function() {
@@ -1685,7 +1723,7 @@
 			} else {
 				$('#formclub').submit();
 			}
-		});
+	    });
 	};
 
 	nouClub = function() {
@@ -1733,6 +1771,8 @@
 			$.post(url, params,
 			function(data, textStatus) {
 		    	$("#llista-usuarisclub").html(data);
+		    	
+		    	reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));
 			});
 	    });
 	};
@@ -1744,6 +1784,8 @@
 		$.get(url, params,
 		function(data, textStatus) {
 	    	$("#llista-usuarisclub").html(data);
+	    	
+	    	reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));
 		});
 	};
 	
@@ -1754,6 +1796,8 @@
 		$.get(url, params,
 		function(data, textStatus) {
 	    	$("#llista-usuarisclub").html(data);
+	    	
+	    	reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));
 		});
 	};
 	

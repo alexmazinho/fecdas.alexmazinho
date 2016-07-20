@@ -154,6 +154,7 @@ class EntityComandaDetall {
 					'abreviatura' => $this->producte->getAbreviatura(),
 					'descompte' => $this->descomptedetall,
 					'codi' => $this->producte->getCodi(),
+					'id' => $this->producte->getId()
 		);
 
 	}

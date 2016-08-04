@@ -395,14 +395,8 @@ class FacturacioController extends BaseController {
 	 * Factures	  => Club apunt D + Producte corresponent apunt H	
 	 * Anular factura? => Club apunt D + Producte corresponent apunt H  però els dos amb import negatiu
 	 * 
-	 * @param unknown $datainici
-	 * @param unknown $datafinal
-	 * @param string $baixes
-	 * @return multitype:string
 	 */
 	private function generarAssentamentsFactures($enviament, &$num) {
-		$em = $this->getDoctrine()->getManager();
-		
 		$factures = $this->consultaFacturesConsolidades($enviament->getDatadesde(), $enviament->getDatafins());
 		
 		$totalFactures = 0;	
@@ -429,14 +423,10 @@ class FacturacioController extends BaseController {
 	} 
 	
 	
-		/**
+	/**
 	 *  Rebuts	=> Club apunt H  + Caixa corresponent apunt D 		
 	 *	Anular rebut => Club apunt H  + Caixa corresponent apunt D  però import negatiu
 	 *
-	 * @param unknown $datainici
-	 * @param unknown $datafinal
-	 * @param string $baixes
-	 * @return multitype:string
 	 */
 	private function generarAssentamentsRebuts($enviament, &$num) {
 		/*$em = $this->getDoctrine()->getManager();
@@ -461,7 +451,6 @@ class FacturacioController extends BaseController {
 
 		$totalRebuts = 0;
 		$assentaments = array();
-		$comandes = array();
 		foreach ($rebuts as $rebut) {
 			$assentament = $this->assentamentRebut($num, $rebut);
 			$assentaments = array_merge($assentaments, $assentament);
@@ -524,7 +513,7 @@ class FacturacioController extends BaseController {
 		$apunt[] = $linia; 									// Columna D
 		$apunt[] = $compte; 								// Columna E
 		$apunt[] = 0; 										// Columna F
-		$apunt[] = substr(str_pad($conc, 60, " ", STR_PAD_LEFT), 0, 60); 	// Columna G
+		$apunt[] = substr(str_pad($conc, 60, " ", STR_PAD_RIGHT), 0, 60); 	// Columna G
 		$apunt[] = substr(str_pad($doc, 5, "0", STR_PAD_LEFT), 0, 5);		// Columna H
 		$apunt[] = ($tipus == BaseController::DEBE?$import:0); 	// Columna I
 		$apunt[] = ($tipus == BaseController::HABER?$import:0);; 	// Columna J
@@ -553,20 +542,21 @@ class FacturacioController extends BaseController {
 		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té indicat compte comptable");
 		//$desc = $this->netejarNom($rebut->getConcepteRebutLlarg(), false);
 		//$desc = $this->netejarNom($club->getNom(), false);
-		$conc = 'REBUT/ '.substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
+		$concRebut = mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
+		$conc = substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.$concRebut;
 		//$doc = $rebut->getNumRebutCurt();
 		$doc = str_pad($rebut->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
 		$import = $rebut->getImport();
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, 0, 0, $doc, $import, BaseController::HABER);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'REBUT/ '.$conc, 0, 0, $doc, $import, BaseController::HABER);
 			
 		$linia++;
 		// APUNT CAIXA
 		$compte = BaseController::getComptePagament($rebut->getTipuspagament());		// 5700000 o 5720001;
-		$conc = BaseController::getTextComptePagament($rebut->getTipuspagament());		// 'CAIXA FEDERACIO' o 'BANC \'LA CAIXA\'';
+		$conc = BaseController::getTextComptePagament($rebut->getTipuspagament()).'. '.$concRebut;		// 'CAIXA FEDERACIO' o 'BANC \'LA CAIXA\'';
 		
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, 0, 0, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'REBUT/ '.$conc, 0, 0, $doc, $import, BaseController::DEBE);
 		
 		return $assentament;
 	}
@@ -587,33 +577,34 @@ class FacturacioController extends BaseController {
 		//$desc = 'PEDIDO '.$comanda->getNumComanda().' '.$this->netejarNom($club->getNom(), false);
 		//$desc = $this->netejarNom($club->getNom(), false);
 		//$conc = mb_convert_encoding($factura->getNumFactura()." (".$this->netejarNom($factura->getConcepte(), false).")", 'UTF-8',  'auto');
-		$conc = 'FRA/ '.substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.utf8_decode($this->netejarNom($factura->getConcepte(), false));
-		$docAny = $factura->getNumFacturaCurt();
+		$conc = substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.utf8_decode($this->netejarNom($factura->getConcepte(), false));
+		//$docAny = $factura->getNumFacturaCurt();
 		$doc = str_pad($factura->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
 		
 		$import = $factura->getImport();
 					
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $import, BaseController::DEBE);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, 0, 0, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'FRA/ '.$conc, 0, 0, $doc, $import, BaseController::DEBE);
 					
 		$linia++;
 		$importAcumula = 0;
 		$index = 1;
-		$numApunts = count(json_decode($factura->getDetalls(), true)); // Compta en format array
+		//$numApunts = count(json_decode($factura->getDetalls(), true)); // Compta en format array
 		//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
+		
 		$detallsArray = json_decode($factura->getDetalls(), false, 512);
-		foreach ($detallsArray as $compte => $d) {
+		foreach ($detallsArray as $id => $d) {
 		// APUNT/S PRODUCTE/S
 			//$desc = $this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
 			//$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".mb_convert_encoding($d->producte, 'UTF-8',  'auto');						
 			$conc = $d->total.' '.utf8_decode($d->producte);
 			$importDetall = $d->import;	
 			$importAcumula += $importDetall;	
-
-			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi($compte);
-
+			//$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi($compte);
+            $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneById($id);
+            
 			//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
-			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, $conc, $producte->getDepartament(), $producte->getSubdepartament(), $doc, $importDetall, BaseController::HABER);
+			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $producte->getCodi(), 'FRA/ '.$conc, $producte->getDepartament(), $producte->getSubdepartament(), $doc, $importDetall, BaseController::HABER);
 						
 			$linia++;
 			$index++;

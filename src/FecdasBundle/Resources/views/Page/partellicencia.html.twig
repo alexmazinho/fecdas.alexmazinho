@@ -33,9 +33,11 @@
 		</div> 
 	</div>
 	<div class="form-row clearfix">
-		<div class="checkbox-inline llicencia-check check-correu">
+		<div class="llicencia-check check-correu">
 		    <label>
-		      {{ form_widget(llicencia.enviarllicencia) }} Rebre llicència per correu?
+		      Rebre llicència per correu? 
+		      <div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
+		      <div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
 		    </label>
 		</div>
 		

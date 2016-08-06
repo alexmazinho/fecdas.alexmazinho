@@ -1288,6 +1288,12 @@
 				dialegError("Error", "cal seleccionar una persona de la llista d'assegurats", 400);
 				return false;
 			}
+
+			if ($("#llicencia_enviarllicencia_0").prop("checked") == false &&
+				$("#llicencia_enviarllicencia_1").prop("checked") == false) { // Radio button
+				dialegError("Error", "cal indicar si es vol rebre la llicència per correu", 400);
+				return false;
+			}
 			
 	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	    	else $('#formparte-llicencia').slideUp('fast');

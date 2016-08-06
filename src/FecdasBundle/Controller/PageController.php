@@ -763,7 +763,7 @@ class PageController extends BaseController {
 					
 				$p = $request->request->get('parte_renew');
 				$i = 0; 
-				foreach ($parte->getLlicencies() as $c => $llicencia) {
+				foreach ($parte->getLlicencies() as $llicencia) {
 					if (!isset($p['llicencies'][$i]['renovar'])) {
 						// Treure llicències que no es volen renovar
 						$parte->removeLlicencia($llicencia);
@@ -778,7 +778,7 @@ class PageController extends BaseController {
 				 * Validacions  de les llicències
 				 */
 				$avisos = '';
-				foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+				foreach ($parte->getLlicencies() as $llicencia_iter) {
 					try {
 						$this->validaParteLlicencia($parte, $llicencia_iter);
 					} catch (\Exception $e) {
@@ -829,7 +829,6 @@ class PageController extends BaseController {
 		}
 		
 		$parteid = 0;
-		$currentClub = $this->getCurrentClub();
 		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('parte')) { 
@@ -854,7 +853,7 @@ class PageController extends BaseController {
 			$this->logEntryAuth('PARTE NEW', $parteid);
 			
 			$parte = $this->crearComandaParte($dataalta);
-			$factura = $this->crearFactura($dataalta, $parte);
+			$this->crearFactura($dataalta, $parte);
 		}
 		
 		$form = $this->createForm(new FormParte(), $parte);
@@ -892,8 +891,6 @@ class PageController extends BaseController {
 		$lid = 0;
 		$parte = null;
 		$llicencia = null;
-		$detall = null;
-		$factura = null;
 		$currentPerson = 0;
 		$tipusid = 0;
 		$response = '';
@@ -909,8 +906,6 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->clear();
 			
 		
-		$personaOriginal = null;
-		$categoriaOriginal = null;
 		try {
 			$p = $requestParams['parte'];
 			$l = $requestParams['llicencia'];
@@ -982,8 +977,6 @@ class PageController extends BaseController {
 					$dataFacturacio = $this->getCurrentDate();
 					if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
 
-					$detallsBaixa = array();
-					$extra = array();
 					$llicenciesBaixa = array( $llicencia );
 					$this->removeParteDetalls($parte, $llicenciesBaixa, $dataFacturacio); // Crea factura si escau (comanda consolidada)
 					
@@ -999,7 +992,7 @@ class PageController extends BaseController {
 					if (!$formLlicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formLlicencia->getErrorsAsString());
 						
 					if (!$form->isValid()) throw new \Exception('Error validant les dades de la llista: '.$form->getErrorsAsString());
-	
+
 					// Errors generen excepció
 					$this->validaParteLlicencia($parte, $llicencia);
 

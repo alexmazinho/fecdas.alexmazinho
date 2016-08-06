@@ -2,7 +2,6 @@
 namespace FecdasBundle\Form;
 
 use FecdasBundle\Entity\EntityParte;
-use FecdasBundle\Controller\BaseController;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -25,7 +24,7 @@ class FormParteRenew extends AbstractType {
 				
 				$dataalta = $parte->getDataalta();
 				if ($dataalta == null) $dataalta = new \DateTime();
-				$llistatipus = BaseController::getLlistaTipusParte($parte->getClub(), $dataalta);
+				
 				$tipusparte = $parte->getTipus();
 				
 				$form->add('tipus', 'entity',	array(

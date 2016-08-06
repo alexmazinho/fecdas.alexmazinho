@@ -3,6 +3,7 @@ namespace FecdasBundle\Form;
 
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPersona;
+use FecdasBundle\Controller\BaseController;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
@@ -132,11 +133,27 @@ class FormLlicencia extends AbstractType {
 						'required'  => false,
 						'read_only' => !$parte->isAllowEdit(),
 				));
-				$form->add('enviarllicencia', 'checkbox', array(
+				/*$form->add('enviarllicenciaSi', 'checkbox', array(
 						'required'  => false,
+						'mapped'    => false,
 						'read_only' => !$parte->isAllowEdit(),
+						'data'      => ($llicencia->esNova()?false:$llicencia->getEnviarllicencia()) 
 				));
-				
+                $form->add('enviarllicenciaNo', 'checkbox', array(
+                        'required'  => false,
+                        'mapped'    => false,
+                        'read_only' => !$parte->isAllowEdit(),
+                        'data'      => ($llicencia->esNova()?false:!$llicencia->getEnviarllicencia()) 
+                ));*/
+                $form->add('enviarllicencia', 'choice', array(
+                        'required'  => true,
+                        'multiple'  => false,
+                        'expanded'  => true,
+                        'choices'   => array( BaseController::INDEX_ENVIARLLICENCIA => 'Si', BaseController::INDEX_NOENVIARLLICENCIA => 'No' ),
+                        'read_only' => !$parte->isAllowEdit(),
+                        'data'      => ($llicencia->esNova()?-1:($llicencia->getEnviarllicencia()?BaseController::INDEX_ENVIARLLICENCIA:BaseController::INDEX_NOENVIARLLICENCIA)) 
+                ));
+		
 			}
 				
 		});

@@ -67,7 +67,7 @@
 		{% endif %}	
 
 		<div class="row">
-			 <div class="col-md-1">
+			 <div class="col-md-1 col-xs-2">
 				<div class="form-group">
 					{{ form_label(form.any) }}
 					<div id="formparte-any"  class="input-group ">
@@ -76,7 +76,7 @@
 					</div>
 				</div>
 			 </div>
-			 <div class="col-md-4">
+			 <div class="col-md-4 col-xs-5">
 				<div class="form-group">
 					{{ form_label(form.dataalta, 'Validesa') }}
 					<div id="formparte-dataalta" class="input-group">
@@ -86,13 +86,13 @@
 					</div>
 				</div>
 			  </div>
-			  <div class="col-md-4">
+			  <div class="col-md-4 col-xs-5">
 			    <div id="formparte-tipus" class="form-group">
 			    	{{ form_label(form.tipus, 'Tipus de llista d\'assegurats') }}
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
 				</div>
 			  </div>
-  			  <div class="col-md-2">
+  			  <div class="col-md-2 col-xs-5">
 				<div class="form-group">
 		  			{% if parte.datapagament is not null %}
 						<label>Data Pagament</label>

@@ -98,11 +98,11 @@ class EntityParte extends EntityComanda {
 		
 		foreach ($llicencies as $llicencia_iter) {
 			if (!$llicencia_iter->esBaixa()) {
+
 				$cloneLlicencia = clone $llicencia_iter;
-				
 				/* Init camps */
 				$cloneLlicencia->setDatamodificacio($currentDate);
-				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat("cloneLlicencies"));
+				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat());
 				
 				$this->llicencies->add($cloneLlicencia);
 				$cloneLlicencia->setParte($this);
@@ -429,9 +429,9 @@ class EntityParte extends EntityComanda {
 
     	if ($this->dataalta == null) {
     		// mime type to display message in HTML
-    		$headers = "From: webadmin@fecdasgestio.cat\r\n";
-    		$headers .= "MIME-Version: 1.0\r\n";
-    		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+    		//$headers = "From: webadmin@fecdasgestio.cat\r\n";
+    		//$headers .= "MIME-Version: 1.0\r\n";
+    		//$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
     		/* Error punyetero. Debug */
     		/*if ($source == null) {
 	    		error_log("getDataCaducitat amb dataalta null (Origen desconegut)", 1, "alexmazinho@gmail.com",$headers);

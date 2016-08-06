@@ -41,8 +41,11 @@
 		 
 			<div class="form-row clearfix">
 				<div class="llicencia-check check-correu" class="form-left">
-					{{ form_label(form.enviarllicencia, 'Rebre llicència per correu?', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
-					{{ form_widget(form.enviarllicencia, { 'attr': {'class': 'formcheckbox-right'} }) }}
+					<label>
+    					Rebre llicència per correu?
+    					<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[0]) }}{{ form_label(form.enviarllicencia[0]) }}</div>
+    		      		<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[1]) }}{{ form_label(form.enviarllicencia[1]) }}</div>
+					</label>
 				</div>
 			</div>
 			<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
@@ -136,6 +139,13 @@ $(document).ready(function(){
 	$('#formllicencia-renovar').click(function(e) {
 		//Cancel the link behavior
 	    e.preventDefault();
+
+		if ($("#llicencia_renovar_enviarllicencia_0").prop("checked") == false &&
+			$("#llicencia_renovar_enviarllicencia_1").prop("checked") == false) { // Radio button
+				dialegError("Error", "cal indicar si es vol rebre la llicència per correu", 400);
+				return false;
+		}
+	    
 	    $("#formrenovar").submit();
 	});
 	        

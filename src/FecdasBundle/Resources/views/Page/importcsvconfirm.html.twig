@@ -22,11 +22,11 @@
 		</div>
 		{% include 'FecdasBundle:Includes:messages.html.twig' %}
 		<div class="table-header">
-			<div id="summary-header">
-				<div id="header-totals" class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}<br/>Aquestes llicències seran vàlides des de 
+			<div id="summary-header" class="row">
+				<div id="header-totals" class="col-listheader col-md-8">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}<br/>Aquestes llicències seran vàlides des de 
 				<time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time> fins a 
 				<time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-			   	<div id="parte-preu" class="col-listheader">Total: {{ parte.getTotalDetalls|number_format(2, ',') }} €</div>
+			   	<div id="parte-preu" class="col-listheader col-md-4">Total: {{ parte.getTotalDetalls|number_format(2, ',') }} €</div>
 			</div>
 		</div>
 		<div class="table-noscroll">

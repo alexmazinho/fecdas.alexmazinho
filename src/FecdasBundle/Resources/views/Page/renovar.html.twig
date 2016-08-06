@@ -12,13 +12,13 @@
    
 	<form id="formrenovar" action="{{ path('FecdasBundle_renovar') }}" method="post" {{ form_enctype(form) }}  class="appform">
 		<div class="row">
-			<div class="col-md-1">
+			<div class="col-md-1 col-xs-2">
 				<div id="formparte-any">
 					<label class="required">Any</label>
 					{{ form_widget(form.any, { 'id': 'parte_any', 'attr': {'class': 'form-control'} }) }}
 				</div>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-4 col-xs-6">
 				<div class="form-group">
 					{{ form_label(form.tipus, 'Tipus de llistat d\'assegurats') }}
 					<div id="formparte-tipus" class="input-group">
@@ -28,7 +28,7 @@
 				</div>
 			</div>
 			
-			<div class="col-md-3">
+			<div class="col-md-3 col-xs-4">
 				<div class="form-group">
 					{{ form_label(form.dataalta, 'Validesa') }}
 					<div id="formparte-dataalta" class="input-group">
@@ -38,7 +38,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-4 col-xs-12">
 				<div class="form-right">
 					<div class="required">&nbsp;</div>			
 					<input type="submit" alt="Renovar llista" title="Renovar llista" 
@@ -51,11 +51,11 @@
 			<div class="col-md-12">                
 			{% if form.llicencies|length > 0 and form.llicencies|length == parte.numLlicencies %}
 				<div class="table-header" class="clearfix">
-					<div id="summary-header">
-						<div id="header-totals" class="col-listheader"> 
+					<div id="summary-header" class="row">
+						<div id="header-totals" class="col-listheader col-md-8"> 
 						Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
 			  			fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-			  			<div id="parte-preu" class="col-listheader">Total: <div id="parte-preu-valor"></div> €</div>
+			  			<div id="parte-preu" class="col-listheader col-md-4">Total: <div id="parte-preu-valor"></div> €</div>
 		  			</div>
 				</div>
 				<div class="table-header">
@@ -81,7 +81,9 @@
 							<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
 							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>
 							<div class="data-detall-cell llicencia-enviarllicencia">		
-							{% if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
+							    {# if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif #}
+								<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
+		      					<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
 							</div>
 							{% if llicencia.renovar is defined %}
 							<div class="data-detall-cell llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>

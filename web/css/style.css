@@ -970,7 +970,6 @@ ul.detalls li .alert { margin: 10px 0; }
 
 #header-totals {
 	text-align: left;
-	width: 80%;
 }
 
 #list-header, #summary-header, .data-detall-header {
@@ -1421,14 +1420,14 @@ input#form_dni {
 #formparte-rest { display: none; }
 
 #header-llicenciaparteid { display:none}
-#header-llicenciapersona {	width: 25%; text-align: left;}
+#header-llicenciapersona {	width: 23%; text-align: left;}
 #header-llicenciapersonalong {	width: 35%; text-align: left;}
 #header-llicenciadni {	width: 10%;  }
 #header-llicenciacategoria {	width: 10%;  }
-#header-llicenciaactivitats {	width: 20%;  }
+#header-llicenciaactivitats {	width: 15%;  }
 #header-llicenciaactivitatslong {	width: 30%;  }
 #header-llicenciapreu {	width: 6%; text-align: right;  }
-#header-llicenciaenviarllicencia {	width: 4%; text-align: center; }
+#header-llicenciaenviarllicencia {	width: 11%; text-align: center; }
 #header-llicenciaenviarllicencia img {	
 	bottom: 10px;
     position: relative;
@@ -1438,14 +1437,14 @@ input#form_dni {
 .header-llicenciaactions-scroll { width: 12%; }
 
 .llicencia-id {	display:none}
-.llicencia-persona { width: 25%; text-align: left; }
+.llicencia-persona { width: 23%; text-align: left; font-size: 0.9em;}
 .llicencia-personalong { width: 35%; text-align: left; }
 .llicencia-dni { width: 10%; }
 .llicencia-categoria { width: 10%; }
-.llicencia-activitats {	width: 20%; font-size: 9px; letter-spacing: 0; }
+.llicencia-activitats {	width: 15%; font-size: 9px; letter-spacing: 0; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { width: 6%; text-align: right;}
-.llicencia-enviarllicencia { width: 4%; letter-spacing:2px; text-align: center;}
+.llicencia-enviarllicencia { width: 11%; text-align: center; font-size: 0.9em; white-space: nowrap; overflow: visible; }
 .llicencia-checkllicencia { width: 5%; text-align: center;}
 .llicencia-no { width: 6%; }
 .llicencia-actions { width: 8%; text-align: right; margin-top: -14px}
@@ -1559,7 +1558,6 @@ select#parte_renovar_tipus { width: 240px; }
 	color: #2281CF;
 	font-size: 16px;
 	text-align: right;
-	width: 20%;
 }
 
 #parte-preu-valor {

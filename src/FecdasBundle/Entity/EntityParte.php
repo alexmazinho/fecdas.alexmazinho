@@ -242,9 +242,9 @@ class EntityParte extends EntityComanda {
 					$acumulades[$producte->getId()] = array(
 							'total' => 1,	
 							'totalbaixa' => 0, 
-							'preuunitat' => $producte->getPreu($this->dataalta->format('Y')),
+							'preuunitat' => $producte->getPreu($this->dataalta->format('Y'))->getPreu(),
 							'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 
-							'import' => $producte->getPreu($this->dataalta->format('Y')),
+							'import' => $producte->getPreu($this->dataalta->format('Y'))->getPreu(),
 							'producte' => $producte->getDescripcio(),
 							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
 							'abreviatura' => $producte->getAbreviatura(), 

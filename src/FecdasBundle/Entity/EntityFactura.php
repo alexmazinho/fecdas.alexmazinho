@@ -88,7 +88,7 @@ class EntityFactura {
 	}
 	
 	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '', $detalls = array()) {
-	
+
 		$this->datafactura = $datafactura;
 		$this->num = $num;
 		$this->import = $import;

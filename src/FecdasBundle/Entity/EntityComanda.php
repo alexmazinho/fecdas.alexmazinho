@@ -570,7 +570,7 @@ class EntityComanda {
 					$d->getProducte() != null) {
 				
 				$id = $d->getProducte()->getId();
-				
+
 				if (isset($acumulades[$id])) {
 					$acumulades[$id]['total'] += $d->getUnitats();
 					if ($baixes == true) $acumulades[$id]['total'] += $d->getUnitatsbaixa();
@@ -583,7 +583,7 @@ class EntityComanda {
 		}
 		
 		// Ordre  codi > producte
-		usort($acumulades, function($a, $b) {
+		uasort($acumulades, function($a, $b) {
 			if ($a === $b) {
 				return 0;
 			}

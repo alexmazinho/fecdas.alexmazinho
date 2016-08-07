@@ -1277,10 +1277,13 @@ class PageController extends BaseController {
 		
 		if ($persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
 
-		if ($persona->getId() == 0 &&
+		/*if ($persona->getId() == 0 &&
 			($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
 			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
-			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");
+			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");*/
+			
+		if ($persona->getId() == 0 && 
+            ($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar l'adreça de correu electrònica");	
 		
 		$em = $this->getDoctrine()->getManager();							
 		

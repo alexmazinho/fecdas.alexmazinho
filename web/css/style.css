@@ -79,6 +79,8 @@ input.form-control-updated, .form-control.form-control-updated {
     outline-width: 0;
 }
 
+.form-control.form-select { padding: 6px; }
+
 input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
 	/*border-top: 1px solid #FFFFFF;*/
   	/* background: #CCCCCC;

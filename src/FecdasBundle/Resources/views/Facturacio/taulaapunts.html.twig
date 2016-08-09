@@ -1,5 +1,11 @@
 {# src/Fecdas/FecdasBundle/Resources/views/Facturacio/taulaapunts.html.twig #}
 <div class="table-header">	
+	<div id="summary-header">
+		<div id="header-apunt-summary-club" class="col-listheader">Saldo actual del club: </div>
+	   	<div id="header-apunt-summary-saldo" class="col-listheader">{{ club.saldo|number_format(2, ',', '.') }}€</div>
+	</div>
+</div>
+<div class="table-header">	
   	<div id="list-header">
 		<div id="header-apunt-id" class="col-listheader hidden">&nbsp;</div>
 		<div id="header-apunt-num" class="col-listheader collistheader-noorder">Núm.</div>

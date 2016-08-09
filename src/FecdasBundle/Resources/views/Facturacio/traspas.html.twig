@@ -156,10 +156,12 @@
 
 		    	  params.push( {'name':'inici','value':  $("#form_datadesde").val() } );
 		    	  params.push( {'name':'final','value':  $("#form_datafins").val() } );
+
+		    	  obrirMascaraBlock( '.table-scroll.enviaments' );
 		    	  
 		    	  $( ".alert").remove();
 				  $.get(url, params, function(data, textStatus) {
-
+						tancarMascaraBlock('.table-scroll.enviaments');
 						window.location = "{{ path('FecdasBundle_traspascomptabilitat') }}";
 						/*				  
 					    var fileRow = "<div class='data-detall-cell enviament-id hidden'>__ID__</div>";
@@ -184,6 +186,7 @@
 					    $(wrapper).find('.enviament-desc a').click();*/
 	  						
 				  }).fail( function(xhr, status, error) {
+					 tancarMascaraBlock('.table-scroll.enviaments');
 					 // xhr.status + " " + xhr.statusText, status, error
 					 var sms = smsResultAjax('OK', error);
 					 if (xhr.status != 500) {

@@ -615,7 +615,7 @@ class CronController extends BaseController {
 		$sortida .= "<h2>Nombre de clubs: " . count($clubs) . "</h2>";
 		$nclubsincidencias = 0;
 		$sortida .= "<h2>Clubs amb incidència: -updinci- </h2>";
-		$sortida .= "<p class='comment'>*Romanent: Deute del club acumulat en anys anteriors. Valors negatius indiquen saldo favorable al club</p>";
+		$sortida .= "<p class='comment'>*Romanent: Deute del club acumulat en anys anteriors. Valors negatius indiquen el deute del club club</p>";
 
 		$sortida .= "<table>";
 		

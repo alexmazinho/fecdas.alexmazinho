@@ -865,7 +865,8 @@
 	obrirMascaraBlock = function(block) {
 		$(block).prepend('<div class="block-mask"><div><span class="fa fa-spinner fa-spin fa-2x green"></span></div></div>');
 		$(block).css({'min-height':'200px'});
-		$('.block-mask').fadeTo("slow",1); 
+		$(block).css({'position':'relative'});
+		$('.block-mask').fadeTo("slow",0.5); 
 	};
 
 	tancarMascaraBlock = function(block) {

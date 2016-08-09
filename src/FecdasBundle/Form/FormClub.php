@@ -8,7 +8,6 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use FecdasBundle\Entity\EntityClub;
-use FecdasBundle\Entity\EntityMunicipi;
 use FecdasBundle\Controller\BaseController;
 
 class FormClub extends AbstractType {
@@ -22,7 +21,9 @@ class FormClub extends AbstractType {
 
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+	    $options = $this->options; 
+        
+		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($options) {
 			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
 			$form = $event->getForm();
 			$club = $event->getData();
@@ -63,25 +64,25 @@ class FormClub extends AbstractType {
 				
 				// Per poder gestionar Camel Case 
 				$form->add('addrcomarca', 'choice', array(
-					'choices' 	=> $this->options['comarques'],
+					'choices' 	=> $options['comarques'],
 					'required'  => false,
 					'data'		=> mb_convert_case($club->getAddrcomarca(), MB_CASE_TITLE, "utf-8")
 				));
 		
 				$form->add('addrprovincia', 'choice', array(
-					'choices' => $this->options['provincies'],
+					'choices'   => $options['provincies'],
 					'required'  => false,
 					'data'		=> mb_convert_case($club->getAddrprovincia(), MB_CASE_TITLE, "utf-8")
 				));
 
 				$form->add('addrcomarcacorreu', 'choice', array(
-					'choices' => $this->options['comarques'],
+					'choices'   => $options['comarques'],
 					'required'  => false,
 					'data'		=> mb_convert_case($club->getAddrcomarcacorreu(), MB_CASE_TITLE, "utf-8")
 				));
 				
 				$form->add('addrprovinciacorreu', 'choice', array(
-					'choices' => $this->options['provincies'],
+					'choices'   => $options['provincies'],
 					'required'  => false,
 					'data'		=> mb_convert_case($club->getAddrprovinciacorreu(), MB_CASE_TITLE, "utf-8")
 				));

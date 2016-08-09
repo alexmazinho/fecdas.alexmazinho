@@ -395,7 +395,7 @@ class EntityClub {
 		$dades['importpartes'] = $totalimportpartes; // Total suma preu partes any en curs
 		$dades['importduplicats'] = $totalimportduplicats; // Total suma preu duplicats any en curs
 		$dades['importaltres'] = $totalimportaltres; // Total suma preu altres any en curs
-		$dades['saldocalculat'] = $totalpagaments + $this->ajustsubvencions - $this->romanent - $totalimport;
+		$dades['saldocalculat'] = $totalpagaments + $this->ajustsubvencions + $this->romanent - $totalimport;
 		 
 		 
 		$saldoDif = abs($dades['saldocalculat'] - $this->getSaldo()); 
@@ -425,7 +425,7 @@ class EntityClub {
 	 * @return decimal
 	 */
 	public function getSaldo() {
-		return round($this->totalpagaments + $this->ajustsubvencions - $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
+		return round($this->totalpagaments + $this->ajustsubvencions + $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
 	}
 	
 	/**

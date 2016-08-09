@@ -542,7 +542,8 @@ class FacturacioController extends BaseController {
 		if ($compte == null || $compte == '') throw new \Exception("El club  ".$club->getNom()." no té indicat compte comptable");
 		//$desc = $this->netejarNom($rebut->getConcepteRebutLlarg(), false);
 		//$desc = $this->netejarNom($club->getNom(), false);
-		$concRebut = mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
+		//$concRebut = mb_convert_encoding($this->netejarNom($rebut->getConcepteRebutCurt(), false), 'UTF-8',  'auto');
+		$concRebut = utf8_decode($this->netejarNom($rebut->getConcepteRebutCurt(), false));
 		$conc = substr($this->netejarNom($club->getNom(), false), 0, 20).'. '.$concRebut;
 		//$doc = $rebut->getNumRebutCurt();
 		$doc = str_pad($rebut->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
@@ -602,6 +603,8 @@ class FacturacioController extends BaseController {
 			$importAcumula += $importDetall;	
 			//$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi($compte);
             $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneById($id);
+         
+            if ($producte == null) throw new \Exception("Factura ".$factura->getNumfactura()." incorrecte. Producte ".$d->codi." incorrecte (".$id.")");
             
 			//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
 			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $producte->getCodi(), 'FRA/ '.$conc, $producte->getDepartament(), $producte->getSubdepartament(), $doc, $importDetall, BaseController::HABER);
@@ -1009,7 +1012,7 @@ class FacturacioController extends BaseController {
 			// Crida ajax. Recarrega taula
 			return $this->render('FecdasBundle:Facturacio:taulaapunts.html.twig',
 				$this->getCommonRenderArrayOptions(array(
-						'apunts' => $apunts, 'pagination' => $pagination)
+						'apunts' => $apunts, 'pagination' => $pagination, 'club' => $club)
 				));
 		} 
 		
@@ -1049,7 +1052,7 @@ class FacturacioController extends BaseController {
 		$apunts = array();
 		
 		$saldo = $club->getSaldo();
-		
+
 		// rebuts i factures a format comú
 		foreach ($factures as $factura) {
 			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();

@@ -12,9 +12,7 @@
 {% block title %}Aplicació gestió FECDAS. Apunts del club {% endblock %}
 
 {% block body %}
-	<header>
-        <h1>Saldo actual del club {{ club.saldo|number_format(2, ',', '.') }}€</h1>
-    </header>
+	
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
         
     <div id="apunts-main">
@@ -66,17 +64,17 @@
 	<script type="text/javascript">
 
 	reloadApunts = function(url) {
-		showElementMask($('#taula-apunts'), true);
+		obrirMascaraBlock( '#taula-apunts' );
 		
 		$.get(url, function(data) {
-			hideMask();
+			tancarMascaraBlock( '#taula-apunts' );
 
 			$('#taula-apunts').html(data);
 
 			reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader.collistheader-noorder'), $('#header-apunt-entrada'));
 			
 		}).fail( function(xhr, status, error) {
-			hideMask();
+			tancarMascaraBlock( '#taula-apunts' );
 		});
 	};
 	

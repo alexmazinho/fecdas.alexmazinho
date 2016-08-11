@@ -762,7 +762,7 @@
 		
 		    $("#dialog").html("<p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, " +
 		    		"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p>" +
-		    		"<p>2100 0900 95 0211628657</p>" +
+		    		"<p>xxxxx</p>" +
 		    		"<p>I rebrà al seu club les llicències i la factura.</p>" +
 		    		"<p>Si vol realitzar el pagament ara, ho pot fer</p>" +
 		    		"<ul><li>Amb targeta de crèdit o dèbit</li>" +

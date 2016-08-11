@@ -683,7 +683,7 @@ class PDFController extends BaseController {
 		$currentClub = $em->getRepository('FecdasBundle:EntityClub')->find($request->query->get('clubs', ''));
 		
 		$defaultEstat = self::TOTS_CLUBS_DEFAULT_STATE; // Tots normal
-		if ($this->get('session')->get('username', '') == self::MAIL_FACTURACIO)  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
+		if ($this->get('session')->get('username', '') == $this->getParameter('MAIL_FACTURACIO'))  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
 		$currentEstat = $request->query->get('estat', $defaultEstat);
 		
 		$sort = $request->query->get('sort', 'p.dataentrada');

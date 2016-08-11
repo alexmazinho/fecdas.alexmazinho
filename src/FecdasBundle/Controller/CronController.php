@@ -734,16 +734,9 @@ class CronController extends BaseController {
 		
 		$subject = "Informe diari de l'estat dels clubs";
 		$bccmails = array();
-		$tomails = array(self::MAIL_ADMINTEST);
+		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
 		$body = $sortida;
 		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-		
-		/*$this->logEntry(self::MAIL_ADMINLOG, 'CRON CLUBS',
-				$this->get('session')->get('remote_addr'),
-				$request->server->get('HTTP_USER_AGENT'));*/
-		
-		
-		/*return new Response($sortida);*/
 		
 		$helper = new FlushHelper();
 				
@@ -779,7 +772,7 @@ class CronController extends BaseController {
 
 		
 		$bccmails = array();
-		$tomails = array(self::MAIL_ADMINTEST);
+		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
 		
 		foreach ($clubs as $c => $club_iter) {
 			if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
@@ -818,7 +811,7 @@ class CronController extends BaseController {
 	
 	
 	
-		$this->logEntry(self::MAIL_ADMINLOG, 'INFORME TRIM CLUBS',
+		$this->logEntry($this->getParameter('MAIL_ADMINLOG'), 'INFORME TRIM CLUBS',
 				$this->get('session')->get('remote_addr'),
 				$request->server->get('HTTP_USER_AGENT'));
 	
@@ -927,7 +920,7 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMINLOG, 'CRON PENDENTS',
+		$this->logEntry($this->getParameter('MAIL_ADMINLOG'), 'CRON PENDENTS',
 				$this->get('session')->get('remote_addr'),
 				$request->server->get('HTTP_USER_AGENT'), $this->get('kernel')->getEnvironment());
 		
@@ -938,7 +931,7 @@ class CronController extends BaseController {
 		// Revisar incidències. Parte sincronitzat  o pagat. Enviar mail
 		$subject = ":: Incidència revisió partes pendents ::";
 		$bccmails = array();
-		$tomails = array(self::MAIL_ADMINTEST);
+		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
 		
 		if ($parte->getIdparteAccess() != null) {
 			$body = "<h1>Parte pendent sincronitzat</h1>";
@@ -1032,7 +1025,7 @@ class CronController extends BaseController {
 			}
 		}
 	
-		$this->logEntry(self::MAIL_ADMINLOG, 'CRON PARTES DIA',
+		$this->logEntry($this->getParameter('MAIL_ADMINLOG'), 'CRON PARTES DIA',
 				$this->get('session')->get('remote_addr'),
 				$request->server->get('HTTP_USER_AGENT'));
 	

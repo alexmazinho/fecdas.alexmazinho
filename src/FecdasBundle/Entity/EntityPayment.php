@@ -14,8 +14,11 @@ class EntityPayment {
 	protected $url;
 	protected $environment;
 	protected $redsysapi;
+    protected $version;
+    protected $key;
 	
-	public function __construct($id, $environment, $preu, $desc, $titular, $src) {
+	public function __construct($id, $environment, $preu, $desc, $titular, $src, $url, $urlmerchant, 
+	                           $fuc, $currency, $trans, $terminal, $name, $lang, $version, $key) {
 		/**
 		 * Configuració sermepa
 		 * host: http://www.fecdasgestio.cat
@@ -26,7 +29,7 @@ class EntityPayment {
 		 * URL_OK: http://www.fecdasgestio.cat/notificacioOK  (Botó continuar)
 		 * URL_KO: http://www.fecdasgestio.cat/notificacioKO  (Botó cancel o tancar finestra)
 		 * 
-		 * Tarjeta: 4548812049400004
+		 * Tarjeta test: 4548812049400004
 		 *	Fecha de caducidad: 12/12
 		 *	Código de Seguridad: 123
 		 *	CIP: 123456
@@ -58,14 +61,10 @@ class EntityPayment {
 		$numordre = sprintf("%'x-12s", $str);
 		$numordre = substr($numordre, 0, 11);
 		
-		if ($this->environment == 'dev') {
-			$this->url = BaseController::COMERC_REDSYS_URL_TEST; // Test
-			$urlmerchant = BaseController::COMERC_REDSYS_URLMER_TEST;
-		} else {
-			$this->url = BaseController::COMERC_REDSYS_URL; // Real
-			$urlmerchant = BaseController::COMERC_REDSYS_URLMER;
-		}
-		
+		$this->url = $url;
+		$this->version = $version;
+        $this->key = $key;
+        
 		$dades = $id.";".$src.";".$this->environment;  //Ds_Merchant_MerchantData, retorn notificació on-line
 		
 		// Canvis API RedSys
@@ -75,17 +74,17 @@ class EntityPayment {
 		// Se Rellenan los campos
 		$this->redsysapi->setParameter("DS_MERCHANT_AMOUNT",$total);
 		$this->redsysapi->setParameter("DS_MERCHANT_ORDER",$numordre);
-		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTCODE",BaseController::COMERC_REDSYS_FUC);
-		$this->redsysapi->setParameter("DS_MERCHANT_CURRENCY",BaseController::COMERC_REDSYS_CURRENCY);
-		$this->redsysapi->setParameter("DS_MERCHANT_TRANSACTIONTYPE",BaseController::COMERC_REDSYS_TRANS);
-		$this->redsysapi->setParameter("DS_MERCHANT_TERMINAL",BaseController::COMERC_REDSYS_TERMINAL);
+		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
+		$this->redsysapi->setParameter("DS_MERCHANT_CURRENCY",$currency);
+		$this->redsysapi->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
+		$this->redsysapi->setParameter("DS_MERCHANT_TERMINAL",$terminal);
 		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTURL",$urlmerchant);
 		$this->redsysapi->setParameter("DS_MERCHANT_URLOK","");		// Al TPV
 		$this->redsysapi->setParameter("DS_MERCHANT_URLKO","");		// Al TPV
-		$this->redsysapi->setParameter("DS_MERCHANT_PRODUCTDESCRIPTION", $desc);								// Comanda
-		$this->redsysapi->setParameter("DS_MERCHANT_TITULAR", $titular);										// Nom club
-		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTNAME", BaseController::COMERC_REDSYS_MERCHANTNAME);	// FECDAS
-		$this->redsysapi->setParameter("DS_MERCHANT_CONSUMERLANGUAGE", BaseController::COMERC_REDSYS_LANG);		// Català - 3
+        $this->redsysapi->setParameter("DS_MERCHANT_PRODUCTDESCRIPTION", $desc);		// Comanda
+		$this->redsysapi->setParameter("DS_MERCHANT_TITULAR", $titular);				// Nom club
+		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTNAME", $name);	
+		$this->redsysapi->setParameter("DS_MERCHANT_CONSUMERLANGUAGE", $lang);		    // Català
 		$this->redsysapi->setParameter("DS_MERCHANT_MERCHANTDATA", $dades);												// Dades per notificació de tornada
 		
 	}
@@ -97,15 +96,13 @@ class EntityPayment {
     }
     public function getVersion()
     {
-    	return BaseController::COMERC_REDSYS_SHA_256_VERSION;
+    	return $this->version;
     }
 	
 
 	public function getSignatura() 
 	{
-		if ($this->environment == 'dev') $signature = $this->redsysapi->createMerchantSignature(BaseController::COMERC_REDSYS_SHA_256_KEY_TEST);
-		else $signature = $this->redsysapi->createMerchantSignature(BaseController::COMERC_REDSYS_SHA_256_KEY);
- 
+		$signature = $this->redsysapi->createMerchantSignature($this->key);
 		return $signature; 
 		
 	}

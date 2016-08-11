@@ -221,7 +221,7 @@ class AdminController extends BaseController {
 	
 		$states = explode(";", self::CLUBS_STATES);
 		$defaultEstat = self::TOTS_CLUBS_DEFAULT_STATE; // Tots normal
-		if ($this->get('session')->get('username', '') == self::MAIL_FACTURACIO)  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
+		if ($this->get('session')->get('username', '') == $this->getParameter('MAIL_FACTURACIO'))  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
 
 		// Cerca
 		$currentBaixa = false; // Inclou Baixes

@@ -1361,13 +1361,13 @@
 	    });
 	};
 
-	pagamentComandaSMS = function(admin) {
+	pagamentComandaSMS = function(admin, iban) {
 		
 		var dialegHtml = '';
 				
 		dialegHtml += "<div class='sms-pagament'><p>Per pagar la comanda ";
 		dialegHtml += " pot fer la transferència en qualsevol moment al número de compte:</p> "; 
-		dialegHtml += "   <p>2100 0900 95 0211628657</p> ";
+		dialegHtml += "   <p>"+iban+"</p> ";
 		dialegHtml += "   <ul><li>Amb targeta de crèdit o dèbit</li> ";
 		dialegHtml += "      <li>Amb un compte de \'La Caixa\'</li> ";
 		dialegHtml += "      <li>Mitjançant transferència des d\'una altra entitat</li></ul> ";
@@ -1394,10 +1394,10 @@
 	};
 	
 	
-	pagamentLlicenciesSMS = function() {
+	pagamentLlicenciesSMS = function(iban) {
 		return "<div class='sms-pagament'><p>Si <b>NO</b> té intenció de pagar la totalitat de les llicències ara, "+ 
     		"no continuï, pot fer la transferència en qualsevol moment al número de compte:</p> "+ 
-			"<p>2100 0900 95 0211628657</p> "+
+			"<p>"+iban+"</p> "+
 			"<p>I rebrà al seu club les llicències i la factura.</p> "+
     		"<p>Si vol realitzar el pagament ara, ho pot fer</p> "+
     		"<ul><li>Amb targeta de crèdit o dèbit</li> "+
@@ -1406,7 +1406,7 @@
     		"<p>Gràcies</p></div>";
 	};
 	
-	tramitarPagamentButton = function(selector) {
+	tramitarPagamentButton = function(selector, iban) {
 		
 		$( selector ).click(function(e) {
 			e.preventDefault();
@@ -1430,7 +1430,7 @@
 		        zIndex:	350
 		    });
 		
-		    $("#dialeg").html( pagamentLlicenciesSMS() );
+		    $("#dialeg").html( pagamentLlicenciesSMS( iban ) );
 		    
 		    $("#dialeg").dialog("open");
 		});

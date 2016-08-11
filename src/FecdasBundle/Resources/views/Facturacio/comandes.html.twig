@@ -243,7 +243,7 @@
 			e.preventDefault();	
 			var url = $(this).attr("href");
 			
-			dialegConfirmacio( pagamentComandaSMS( false ), "Abans de continuar...", 0, 550, function() {
+			dialegConfirmacio( pagamentComandaSMS( false, "{{ iban }}" ), "Abans de continuar...", 0, 550, function() {
 	        	window.location = url+'&comentaris='+$('#comanda_comentaris').val();
 	        }, function() {}, function() {});
 		});

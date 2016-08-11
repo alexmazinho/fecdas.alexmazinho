@@ -134,7 +134,7 @@
 
 			var url = $(this).attr("href")+'&club='+$('#form_clubs').val();
 			
-			dialegConfirmacio( pagamentComandaSMS( {% if admin == true %} true {% else %} false {% endif %} ), "Abans de continuar...", 0, 550, function() {
+			dialegConfirmacio( pagamentComandaSMS( {% if admin == true %} true {% else %} false {% endif %}, "{{ iban }}" ), "Abans de continuar...", 0, 550, function() {
 				var datafacturacio = '';
 
 				if ($('#datafacturacio').length != 0) {

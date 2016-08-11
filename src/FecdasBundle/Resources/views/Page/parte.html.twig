@@ -203,8 +203,7 @@ $(document).ready(function() {
 		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
 	});
 
-	//var recordatori = "{# constant('FecdasBundle\\Controller\\BaseController::RECORDATORI_PAGAMENT')|raw #}";
-	tramitarPagamentButton("#formparte-payment");
+	tramitarPagamentButton("#formparte-payment", "{{ iban }}" );
 	
 	showResumParteDetall();
 

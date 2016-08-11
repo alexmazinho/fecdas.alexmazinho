@@ -1644,8 +1644,23 @@ class FacturacioController extends BaseController {
 				// Get factura detall
 				$detallfactura = $comanda->getDetallsAcumulats(); 
 				
+                $url = $this->getComercRedsysParam( 'COMERC_REDSYS_URL' ); // Real
+                $urlmerchant = $this->getComercRedsysParam( 'COMERC_REDSYS_URLMER' );
+                $key = $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_KEY' );
+                
+                if ($this->get('kernel')->getEnvironment() == 'dev') {
+                    $url = $this->getComercRedsysParam( 'COMERC_REDSYS_URL_TEST' ); // Test
+                    $urlmerchant = $this->getComercRedsysParam( 'COMERC_REDSYS_URLMER_TEST' );
+                    $key = $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_KEY_TEST' );
+                }
+                
 				$payment = new EntityPayment($comandaid, $this->get('kernel')->getEnvironment(),
-							$comanda->getTotalDetalls(), $desc, $club->getNom(), $origen);
+							$comanda->getTotalDetalls(), $desc, $club->getNom(), $origen, $url, $urlmerchant, 
+							$this->getComercRedsysParam( 'COMERC_REDSYS_FUC' ), $this->getComercRedsysParam( 'COMERC_REDSYS_CURRENCY' ),
+                            $this->getComercRedsysParam( 'COMERC_REDSYS_TRANS' ), $this->getComercRedsysParam( 'COMERC_REDSYS_TERMINAL' ),
+                            $this->getComercRedsysParam( 'COMERC_REDSYS_MERCHANTNAME' ), $this->getComercRedsysParam( 'COMERC_REDSYS_LANG' ),
+                            $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_VERSION' ), $key);
+
 				$formpayment = $this->createForm(new FormPayment(), $payment);
 				
 				$this->logEntryAuth('PAGAMENT VIEW', $comandaid);
@@ -1660,7 +1675,7 @@ class FacturacioController extends BaseController {
 		}
 		
 		/* Error */
-		$this->logEntryAuth('PAGAMENT KO', $parteid);
+		$this->logEntryAuth('PAGAMENT KO', $comandaid);
 		$this->get('session')->getFlashBag()->add('sms-notice', 'No s\'ha pogut accedir al pagament, poseu-vos en contacte amb la Federació' );
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
@@ -2748,7 +2763,7 @@ class FacturacioController extends BaseController {
 				// Pendent, enviar mail 
 				$subject = ":: TPV. Pagament pendent de confirmació ::";
 				$bccmails = array();
-				$tomails = array(self::MAIL_ADMINTEST);
+				$tomails = array($this->getParameter('MAIL_ADMINTEST'));
 						
 				$body = "<h1>Parte pendent</h1>";
 				$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
@@ -2769,7 +2784,7 @@ class FacturacioController extends BaseController {
 				
 			$subject = ':: Incidència TPV ::';
 			$bccmails = array();
-			$tomails = array(self::MAIL_ADMINTEST);
+			$tomails = array($this->getParameter('MAIL_ADMINTEST'));
 				
 			$body = '<h1>Error TPV</h1>';
 			$body .= '<h2>Missatge: '.$e->getMessage().'</h2>';
@@ -2816,14 +2831,14 @@ class FacturacioController extends BaseController {
 
 		$redsysapi = new RedsysAPI();		
 		
-		$version = $tpvdata["Ds_SignatureVersion"];
+		//$version = $tpvdata["Ds_SignatureVersion"];
 		$params = $tpvdata["Ds_MerchantParameters"];
 		$signaturaRebuda = $tpvdata["Ds_Signature"];
 
-		$decodec = $redsysapi->decodeMerchantParameters($params);	
+		//$decodec = $redsysapi->decodeMerchantParameters($params);	
 		
-		if ($this->get('kernel')->getEnvironment() == 'dev') $key = BaseController::COMERC_REDSYS_SHA_256_KEY_TEST;
-		else $key = BaseController::COMERC_REDSYS_SHA_256_KEY;
+		if ($this->get('kernel')->getEnvironment() == 'dev') $key = $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_KEY_TEST' );
+        else $key = $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_KEY' );
 		
 		$signatura = $redsysapi->createMerchantSignatureNotif($key, $params);
 
@@ -2884,15 +2899,15 @@ class FacturacioController extends BaseController {
 				$redsysapi->setParameter("Ds_Date",$formdata['Ds_Date']);
 				$redsysapi->setParameter("Ds_Hour",$formdata['Ds_Hour']);
 				$redsysapi->setParameter("Ds_Amount",0);
-				$redsysapi->setParameter("Ds_Currency",BaseController::COMERC_REDSYS_CURRENCY);
+				$redsysapi->setParameter("Ds_Currency",$this->getComercRedsysParam( 'COMERC_REDSYS_CURRENCY' ));
 				$redsysapi->setParameter("Ds_Order",$formdata['Ds_Order']);
-				$redsysapi->setParameter("Ds_MerchantCode",BaseController::COMERC_REDSYS_FUC);
-				$redsysapi->setParameter("Ds_Terminal",BaseController::COMERC_REDSYS_TERMINAL);
+				$redsysapi->setParameter("Ds_MerchantCode",$this->getComercRedsysParam( 'COMERC_REDSYS_FUC' ));
+				$redsysapi->setParameter("Ds_Terminal",$this->getComercRedsysParam( 'COMERC_REDSYS_TERMINAL' ));
 				$redsysapi->setParameter("Ds_Response",$formdata['Ds_Response']);
 				$redsysapi->setParameter("Ds_MerchantData",$formdata['Ds_MerchantData']);
 				$redsysapi->setParameter("Ds_SecurePayment",1);
-				$redsysapi->setParameter("Ds_TransactionType",BaseController::COMERC_REDSYS_TRANS);
-				$redsysapi->setParameter("Ds_ConsumerLanguage", BaseController::COMERC_REDSYS_LANG);		// Català - 3
+				$redsysapi->setParameter("Ds_TransactionType",$this->getComercRedsysParam( 'COMERC_REDSYS_TRANS' ));
+				$redsysapi->setParameter("Ds_ConsumerLanguage", $this->getComercRedsysParam( 'COMERC_REDSYS_LANG' ));		// Català - 3
 
 				
 				$strResponse = '<div>'.$formdata['accio'].'</div>';
@@ -2903,8 +2918,8 @@ class FacturacioController extends BaseController {
 				 
 				$strResponse .= '<form id="responseform" action="'.$formdata['accio'].'" method="'.$method.'"  class="appform">';
 		   		$strResponse .= '<p><textarea rows="5" name="Ds_MerchantParameters">'.$paramsResponse.'</textarea></p>';
-		   		$strResponse .= '<p><input type="text" name="Ds_Signature" value="'.$redsysapi->createMerchantSignatureNotif(BaseController::COMERC_REDSYS_SHA_256_KEY_TEST, $paramsResponse).'"></p>';	
-		   		$strResponse .= '<p><input type="text" name="Ds_SignatureVersion" value="'.BaseController::COMERC_REDSYS_SHA_256_VERSION.'"></p>';
+		   		$strResponse .= '<p><input type="text" name="Ds_Signature" value="'.$redsysapi->createMerchantSignatureNotif($this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_KEY_TEST' ), $paramsResponse).'"></p>';	
+		   		$strResponse .= '<p><input type="text" name="Ds_SignatureVersion" value="'.$this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_VERSION' ).'"></p>';
 		   		$strResponse .= '<p><input type="submit" class="forminput-inside" value="Test" /></p>';
 		   		$strResponse .= '</form>';
 	

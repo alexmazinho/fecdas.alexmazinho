@@ -111,9 +111,12 @@ class EntityProducte {
 	protected $databaixa;
 	
 	public function __construct() {
+	    $this->tipus = BaseController::TIPUS_PRODUCTE_KITS;
 		$this->stockable = false;
 		$this->transport = false;
 		$this->dataentrada = new \DateTime();
+        $this->departament = BaseController::INDEX_DPT_INGRESOS_KITS;
+        $this->subdepartament = BaseController::INDEX_SUBDPT_INGRESOS_KITS_MERCHANDISING;
 		$this->preus = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
@@ -125,6 +128,11 @@ class EntityProducte {
 	{
 		return $this->databaixa != null;
 	}
+    
+    public function esNou()
+    {
+        return $this->id == 0;
+    }
 	
 	public function getEstat()
 	{

@@ -4,9 +4,6 @@ namespace FecdasBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Validator\Constraints\Type;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -139,7 +136,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'data' 		=> $producte->getSubdepartament(),
 			));
 			
-			if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
+			if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES && !$producte->esNou()) {
 					$activat = true;
 					if ($producte->getCategoria() != null && 
 						$producte->getCategoria()->getTipusparte() != null) $activat =  $producte->getCategoria()->getTipusparte()->getActiu();
@@ -149,6 +146,11 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 							'mapped' 	=> false,
 							'data' 		=> $activat
 					));
+			} else {
+			    $form->add('activat', 'hidden', array(
+                            'required'  => false,
+                            'mapped'    => false,
+                    ));
 			}
 			/*$form->add ( 'iva', 'number', array (
 					'required' => true,

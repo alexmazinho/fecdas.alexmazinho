@@ -1805,7 +1805,6 @@ class FacturacioController extends BaseController {
     	if ($request->getMethod() == 'POST') {
     		try {
     			$form->handleRequest($request);
-    			 
     			$anypreu 	= $form->get('anypreus')->getData();
     			$importpreu = $form->get('preu')->getData();
     			$iva 		= $form->get('iva')->getData();
@@ -1823,12 +1822,13 @@ class FacturacioController extends BaseController {
     			if ($form->isValid()) {
     				if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
     				
-    				$codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
+    				/* NO ES VALIDA CODIS DIFERENTS, ara varis productes poden tenir mateix codi Agost 2016
+                    $codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
     				
     				if ($codiExistent != null && $codiExistent != $producte) {
     					$form->get('codi')->addError(new FormError('Codi existent'));
     					throw new \Exception('El codi indicat ja existeix pel producte: ' .$codiExistent->getDescripcio() );
-    				}
+    				}*/
     				
     				if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
     					$form->get('codi')->addError(new FormError('Codi incorrecte'));

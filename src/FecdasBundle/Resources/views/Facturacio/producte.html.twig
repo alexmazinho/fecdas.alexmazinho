@@ -27,7 +27,7 @@
 					 </label>
 				</div>
 			</div>
-			{% if (producte.tipus == constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_LLICENCIES')) %}
+			{% if (producte.esnou != true and producte.tipus == constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_LLICENCIES')) %}
 				<div class="col-md-2">
 					<div class="form-group">
 					 	<label>
@@ -35,6 +35,8 @@
 						 </label>
 					</div>
 				</div>
+			{% else %}
+				{{ form_widget(form.activat) }}
 			{% endif %}
 		</div>
 		<div class="row">

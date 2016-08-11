@@ -127,14 +127,19 @@ class BaseController extends Controller {
 	// Diario Contasol
 	const INDEX_DIARI_CONTASOL = 1;
 	
-	const INDEX_DPT_INGRESOS_A = "1";
-	const INDEX_DPT_INGRESOS_B = "3";
+    const INDEX_DPT_INGRESOS_LLICENCIES    = 100;
+    const INDEX_DPT_INGRESOS_KITS          = 120;
+	const INDEX_DPT_INGRESOS_VARIS         = 130;
 	
-	const INDEX_SUBDPT_INGRESOS_A_A = "1";
-	const INDEX_SUBDPT_INGRESOS_A_B = "2";
-	const INDEX_SUBDPT_INGRESOS_A_C = "12";
-	const INDEX_SUBDPT_INGRESOS_B_A = "1";
-	const INDEX_SUBDPT_INGRESOS_B_B = "2";
+	const INDEX_SUBDPT_INGRESOS_LLICENCIES_LLICENCIES   = 1;
+	const INDEX_SUBDPT_INGRESOS_LLICENCIES_DUPLICATS    = 2;
+    const INDEX_SUBDPT_INGRESOS_LLICENCIES_INSCRIPCIONS = 3;
+    const INDEX_SUBDPT_INGRESOS_LLICENCIES_CURSOS       = 4;
+    const INDEX_SUBDPT_INGRESOS_LLICENCIES_ARBITRATGE   = 5;
+    const INDEX_SUBDPT_INGRESOS_KITS_KITS               = 1;
+    const INDEX_SUBDPT_INGRESOS_KITS_MERCHANDISING      = 2;
+    const INDEX_SUBDPT_INGRESOS_VARIS_LLIBRES           = 2;
+    const INDEX_SUBDPT_INGRESOS_VARIS_TRANSPORT         = 4;
 	
 	
 	protected static $tipusproducte; // Veure getTipusDeProducte()
@@ -143,28 +148,6 @@ class BaseController extends Controller {
 	protected static $carrecs; // Veure getCarrecs()
 	protected static $estats; // Veure getEstats()
 	
-	
-	/**
-	 * Descripció departament/subdepartament dels productes. Accés per clau
-	 */
-	/*public static function getDepartamentConta( $key = '' , $tipus = 'dpt') {
-		
-		$taulaDptsConta = array(
-			'dpt'	=> array (
-				INDEX_DPT_INGRESOS_A 	=> 'ingresos A',
-				INDEX_DPT_INGRESOS_B 	=> 'ingresos B'),
-			'subdpt'	=> array (
-				INDEX_SUBDPT_INGRESOS_A_A => 'Sub ingresos A - A',
-				INDEX_SUBDPT_INGRESOS_A_B => 'Sub ingresos A - A', 
-				INDEX_SUBDPT_INGRESOS_A_C => 'Sub ingresos A - A',
-				INDEX_SUBDPT_INGRESOS_B_A => 'Sub ingresos A - A',
-				INDEX_SUBDPT_INGRESOS_B_B => 'Sub ingresos A - A' )
-		);
-		
-		if ( isset( $taulaDptsConta[$tipus][$key]  ) ) return $taulaDptsConta[$tipus][$key]; 
-		
-		return 0;	// Desconegut
-	}*/
 	
 	public static function getTipusClubsNoComandes() {
 	    // Symfony no deixa definir constants com Arrays TIPUS_CLUBS_NO_COMANDES   
@@ -179,25 +162,48 @@ class BaseController extends Controller {
 	 * 		$dpt => (other) array buit
 	 */
 	public static function getDepartamentsConta( $dpt ) {
-		
+		/*
+        130 Varis
+            2 Libres i documents
+            4 Transport 
+        120 Kits i merchandising
+            1 Kits
+            2 Merchandising
+        100 Llicències i cursos
+            1 Llicències
+            2 Duplicats
+            3 Inscripcions
+            4 Cursos
+            5 Arbitratge
+         */
+        
 		switch ($dpt) {
-			case self::INDEX_DPT_INGRESOS_A:
+			case self::INDEX_DPT_INGRESOS_LLICENCIES:
 				return array (
-					self::INDEX_SUBDPT_INGRESOS_A_A => 'ingresos A - A',
-					self::INDEX_SUBDPT_INGRESOS_A_B => 'ingresos A - B',
-					self::INDEX_SUBDPT_INGRESOS_A_C	=> 'ingresos A - C'
+					self::INDEX_SUBDPT_INGRESOS_LLICENCIES_LLICENCIES      => '1 - Llicències',
+					self::INDEX_SUBDPT_INGRESOS_LLICENCIES_DUPLICATS       => '2 - Duplicats',
+					self::INDEX_SUBDPT_INGRESOS_LLICENCIES_INSCRIPCIONS	   => '3 - Inscripcions',
+					self::INDEX_SUBDPT_INGRESOS_LLICENCIES_CURSOS          => '4 - Cursos',
+					self::INDEX_SUBDPT_INGRESOS_LLICENCIES_ARBITRATGE      => '5 - Arbitratge'
 				);
 				break;
-			case self::INDEX_DPT_INGRESOS_B:
+			case self::INDEX_DPT_INGRESOS_KITS:
 				return array (
-					self::INDEX_SUBDPT_INGRESOS_B_A => 'ingresos B - A',
-					self::INDEX_SUBDPT_INGRESOS_B_B => 'ingresos B - B'
+					self::INDEX_SUBDPT_INGRESOS_KITS_KITS          => '1 - Kits',
+					self::INDEX_SUBDPT_INGRESOS_KITS_MERCHANDISING => '2 - Merchandising'
 				);
 				break;
+            case self::INDEX_DPT_INGRESOS_VARIS:
+                return array (
+                    self::INDEX_SUBDPT_INGRESOS_VARIS_LLIBRES   => '2 - Llibres i documents',
+                    self::INDEX_SUBDPT_INGRESOS_VARIS_TRANSPORT => '4 - Transport'
+                );
+                break;    
 			case 0:	// dpt 0
 				return array (
-					self::INDEX_DPT_INGRESOS_A 	=> 'ingresos A',
-					self::INDEX_DPT_INGRESOS_B 	=> 'ingresos B'
+					self::INDEX_DPT_INGRESOS_LLICENCIES => '100 - Llicències i cursos',
+					self::INDEX_DPT_INGRESOS_KITS 	    => '120 - Kits i merchandising',
+					self::INDEX_DPT_INGRESOS_VARIS      => '130 - Varis'
 				);
 		}
 

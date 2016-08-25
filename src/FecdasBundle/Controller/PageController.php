@@ -744,7 +744,7 @@ class PageController extends BaseController {
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
 
 		// Crear factura
-		$factura = $this->crearFactura($dataalta, $parte);
+		$this->crearFactura($dataalta, $parte);
 			
 		$form = $this->createForm(new FormParteRenew(), $parte);
 		
@@ -930,7 +930,7 @@ class PageController extends BaseController {
 					// Crear parte nou per poder carregar llista
 					$parte = $this->crearComandaParte($partedataalta, $tipus, $this->getCurrentClub(), 'Comanda llicències');
 					
-					$factura = $this->crearFactura($partedataalta, $parte);
+					$this->crearFactura($partedataalta, $parte);
 				} else {
 					$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($id);
 	
@@ -957,7 +957,6 @@ class PageController extends BaseController {
 			$tipusid = $parte->getTipus()->getId();
 			$partedataalta = $parte->getDataalta();
 	
-			$factura = $parte->getFactura();
 			// Person submitted
 			if ($currentPerson > 0) {
 				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($currentPerson);
@@ -1282,8 +1281,8 @@ class PageController extends BaseController {
 			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
 			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");*/
 			
-		if ($persona->getId() == 0 && 
-            ($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar l'adreça de correu electrònica");	
+		/*if ($persona->getId() == 0 && 
+            ($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar l'adreça de correu electrònica");*/	
 		
 		$em = $this->getDoctrine()->getManager();							
 		

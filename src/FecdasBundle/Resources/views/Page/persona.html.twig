@@ -1,6 +1,6 @@
 <form id="formpersona" action="{{ path('FecdasBundle_persona') }}" method="post" {{ form_enctype(formpersona) }}  class="modalform appform container-fluid">
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
-	<h1>Dades personals</h1>
+	<h1>Dades personals<div id="sms-mailpersona">* Cal omplir <strong>l'adreça de correu</strong> per poder fer la tramitació</div></h1>
 	<div class="row">
 		{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
 		<div id="formpersona-nom" class="col-md-3  col-xs-3">
@@ -89,8 +89,7 @@
 	</div> 
 	<div class="row">
 	 	<div id="adreca-header" class="col-md-12  col-xs-12">
-			<div><h3>Adreça</h3></div>
-			<div id="sms-mailpersona">* Indica l'adreça de correu per poder rebre notificacions de la Federeació</div>
+			<h3>Adreça</h3>
 		</div>
 		<div id="formpersona-addradreca" class="col-md-6  col-xs-6">
 		  	<div class="form-group">

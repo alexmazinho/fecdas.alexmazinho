@@ -37,6 +37,7 @@ class BaseController extends Controller {
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
 	const ID_LLICENCIES_DIA = 11;	
+    const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 15/12 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
@@ -59,7 +60,7 @@ class BaseController extends Controller {
 	
 	const TARIFA_MINPES3 = 10000; // 10 Kg
 	const TARIFA_MINPES2 = 5000; // 5 Kg
-	const PRODUCTE_CORREUS = 6290004;	// Abans juliol 2016 => 6290900
+	const PRODUCTE_CORREUS = 7590004;	// Abans juliol 2016 => 6290900 / 6290004
 	const TARIFA_TRANSPORT1 = 6.00; // Tarifa <= 5 Kg (6.00 €)
 	const TARIFA_TRANSPORT2 = 12.00; // Tarifa > 5 Kg i < 10 Kg (12.00€)
 	const TARIFA_TRANSPORT3 = 18.00; // Tarifa > 10 Kg (18.00€)
@@ -598,6 +599,17 @@ class BaseController extends Controller {
 			}
 		}
 		
+        /* Validar persones noves (alta > 2016-09-01 si tenen mail informat 
+         * Llicències diferents de la diària
+         */
+        if ($tipus->getId() != self::ID_LLICENCIES_DIA) {
+            $persona = $llicencia->getPersona();
+            if ($persona->getDataentrada()->format('Y-m-d') > self::INICI_VALIDACIO_MAIL) {
+                if ($persona->getMail() == null || $persona->getMail() == "") 
+                    throw new \Exception("El federat ".$persona->getNomCognoms()." no té indicada adreça de correu electrònica");
+            }     
+        }
+        
 		/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 		/* id 4 - Competició --> és la única que es pot fer */
 		/* id 9 i 12 - Tecnocampus també es pot fer */
@@ -907,12 +919,17 @@ class BaseController extends Controller {
 			$strQuery .= " AND p.pendent = 0 ";
 			$strQuery .= " AND p.dataalta <= :currenttime ";
 			$strQuery .= " AND l.datacaducitat >= :currentdate ";
-		} else { 
-			$strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e JOIN e.llicencies l JOIN l.parte p ";
-			$strQuery .= " WHERE e.databaixa IS NULL AND p.databaixa IS NULL ";
-			$strQuery .= " AND p.pendent = 0 ";
-			if ($desde != null) $strQuery .= " AND p.dataalta >= :desde ";
-			if ($fins != null) $strQuery .= " AND p.dataalta <= :fins ";
+		} else {
+		    if ($desde != null || $fins != null) { 
+    			$strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e JOIN e.llicencies l JOIN l.parte p ";
+    			$strQuery .= " WHERE e.databaixa IS NULL AND p.databaixa IS NULL ";
+    			$strQuery .= " AND p.pendent = 0 ";
+    			if ($desde != null) $strQuery .= " AND p.dataalta >= :desde ";
+    			if ($fins != null) $strQuery .= " AND p.dataalta <= :fins ";
+            } else {
+                $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
+                $strQuery .= " WHERE e.databaixa IS NULL ";
+            }
 		}
 		
 		if ($tots == false) $strQuery .= " AND e.club = :club ";
@@ -931,8 +948,8 @@ class BaseController extends Controller {
 		if ($nom != "") $query->setParameter('nom', "%" . $nom . "%");
 		if ($cognoms != "") $query->setParameter('cognoms', "%" . $cognoms . "%");
 		if ($vigent == true) {
-			$query->setParameter('currenttime', $this->getCurrentDate()->format('Y-m-d').' 00:00:00');
-			$query->setParameter('currentdate', $this->getCurrentDate()->format('Y-m-d'));
+			$query->setParameter('currenttime', $current->format('Y-m-d').' 00:00:00');
+			$query->setParameter('currentdate', $current->format('Y-m-d'));
 		} else {
 			if ($desde != null) $query->setParameter('desde', $desde->format('Y-m-d').' 00:00:00');
 			if ($fins != null) $query->setParameter('fins', $fins->format('Y-m-d').' 23:59:59');

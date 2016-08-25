@@ -1033,6 +1033,10 @@
 	          	buttons : {
 	            	"Confirmar" : function() {
 	    	        	$(this).dialog("close");
+	    	        	if ($('#persona_mail').val() != "" && !isValidEmailAddress( $('#persona_mail').val() ) ) {
+				        	dialegError("Error", "L'adreça de correu  no té un format correcte", 400);
+							return false;
+		   	        	}
 	    	        	if ($('#parte_persona_id').val() != 0) {
 	    	        		// Modificació no valida DNI
 	    	        		submitPerson("save", origen);
@@ -1052,13 +1056,23 @@
 	              		$(this).dialog("close");
 	            	}
 	          	},
-	        	title: "Valida les dades",
+	        	title: "Desar les dades",
 	        	height: 'auto',
 	        	width: 400,
 	        	zIndex:	350
 	        });
-	
-	        $("#dialeg").html("<p>Comprova que el DNI és correcte i està ben escrit.</p><p>Després no el podràs modificar.</p>");
+			
+			var htmlRecordatori = "";
+			if ($('#parte_persona_id').val() == 0) {
+				htmlRecordatori += "<p>Comproveu que el <strong>DNI és correcte</strong> i està ben escrit.<br/>Després no el podreu modificar.</p>";	
+			}
+			if ($('#persona_mail').val() == "") {
+				htmlRecordatori += "<p>Recordeu que cal omplir <strong>l'adreça de correu</strong> per poder fer la tramitació</p>";	
+			}
+			if (htmlRecordatori == "") {
+				htmlRecordatori = "<p>Confirmeu per desar les dades del federat</p>";
+			}
+	        $("#dialeg").html(htmlRecordatori);
 	        $("#dialeg").dialog("open");
 	        
 	    });   

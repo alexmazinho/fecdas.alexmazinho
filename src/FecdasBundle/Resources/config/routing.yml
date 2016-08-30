@@ -214,7 +214,13 @@ FecdasBundle_checkpendents:
     defaults: { _controller: "FecdasBundle:Cron:checkpendents" }
     requirements:
         _method:  GET
-        
+
+FecdasBundle_checkduplipendents:
+    pattern:  /checkduplipendents
+    defaults: { _controller: "FecdasBundle:Cron:checkduplipendents" }
+    requirements:
+        _method:  GET
+                
 FecdasBundle_checkpartesdia:
     pattern:  /checkpartesdia
     defaults: { _controller: "FecdasBundle:Cron:checkpartesdia" }

@@ -2079,6 +2079,43 @@ class BaseController extends Controller {
 		}
 	}
 
+    protected function baixaComanda($comanda, $dataFacturacio = null) {
+        if ($dataFacturacio == null) $dataFacturacio = $this->getCurrentDate();
+        
+        if ($comanda->esParte()) {
+            $parte = $comanda;
+            $llicenciesBaixa = array();
+            foreach ($parte->getLlicencies() as $llicencia) {
+                if (!$llicencia->esBaixa()) {
+                    $llicenciesBaixa[] = $llicencia;
+                }
+            }
+
+            $this->removeParteDetalls($parte, $llicenciesBaixa, $dataFacturacio); // Crea factura si escau (comanda consolidada)
+            
+        } else {
+            $detallsBaixa = array();
+            $extra = array();
+            foreach ($comanda->getDetalls() as $detall) {
+                if (!$detall->esBaixa()) {
+                    $detallsBaixa[] = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
+                }
+            }
+            
+            if (count($detallsBaixa) > 0) {
+                $maxNumFactura = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::FACTURES) + 1;
+                $maxNumRebut = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::REBUTS) + 1;
+            
+                $this->crearFacturaRebutAnulacio($dataFacturacio, $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
+            }
+        }
+
+        $comanda->setDatamodificacio(new \DateTime());
+        $comanda->setDatabaixa(new \DateTime());
+        
+    }
+
+
 	protected function removeParteDetalls($parte, $llicencies, $dataFacturacio = null) {
 		if ($parte == null || !is_array($llicencies) || count($llicencies) == 0) throw new \Exception('Dades incorrectes');
 
@@ -2773,6 +2810,24 @@ class BaseController extends Controller {
 		return $source." ".$this->get('session')->get('username')." (".$request->server->get('HTTP_USER_AGENT').")";
 	}
 	
+    protected function validateCronAuth($request, $action = '') {
+        $cronsecret = $this->getParameter( 'cronsecret', '' ); 
+        $secret = $request->query->get('secret', '');
+        
+        if ($secret == '' || $secret != $cronsecret) {
+            // mail admin
+            $this->logEntryAuth('AUTH ERROR NOTIFICA', "ERROR ".$action.": ".$secret.' <> '.$cronsecret);
+            $errorAuth = " Error auth ".$action." ".$secret." <> ".$cronsecret."<br/>";
+            echo $errorAuth;
+            
+            $tomails = self::getAdminMails();
+            $subject = "Federació Catalana d'Activitats Subaquàtiques. ERROR ".$action;
+        
+            $this->buildAndSendMail($subject, $tomails, $errorAuth);
+            
+            throw new \Exception("ERROR ".$action);
+        }
+    }
 	
 	protected function buildAndSendMail($subject, $tomails, $body, $bccmails = array(), $attachmentPath = null, $attachments = array()) {
 		$bccmails[] = $this->getParameter('MAIL_ADMINTEST');

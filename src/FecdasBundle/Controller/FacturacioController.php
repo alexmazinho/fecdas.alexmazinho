@@ -1580,36 +1580,7 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 		}
 		
-		$detallsBaixa = array();
-		$extra = array();
-		if ($comanda->esParte()) {
-			$parte = $comanda;
-			$llicenciesBaixa = array();
-			foreach ($parte->getLlicencies() as $llicencia) {
-				if (!$llicencia->esBaixa()) {
-					$llicenciesBaixa[] = $llicencia;
-				}
-			}
-
-			$this->removeParteDetalls($parte, $llicenciesBaixa, $dataFacturacio); // Crea factura si escau (comanda consolidada)
-			
-		} else {
-			foreach ($comanda->getDetalls() as $detall) {
-				if (!$detall->esBaixa()) {
-					$detallsBaixa[] = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
-				}
-			}
-			
-			if (count($detallsBaixa) > 0) {
-				$maxNumFactura = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::FACTURES) + 1;
-				$maxNumRebut = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::REBUTS) + 1;
-			
-				$this->crearFacturaRebutAnulacio($dataFacturacio, $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
-			}
-		}
-
-		$comanda->setDatamodificacio(new \DateTime());
-		$comanda->setDatabaixa(new \DateTime());
+		$this->baixaComanda($comanda, $dataFacturacio);
 	
 		$em->flush();
 	

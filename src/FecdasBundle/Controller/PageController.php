@@ -91,7 +91,6 @@ class PageController extends BaseController {
 		/* Form importcsv */
 		$currentClub = $this->getCurrentClub();
 		$dataalta = $this->getCurrentDate('now');
-		$factura = null;
 		$parte = null;
 		
 		// Data modificada, refer llista tipus
@@ -153,7 +152,7 @@ class PageController extends BaseController {
 					
 					$parte = $this->crearComandaParte($dataalta, $tipusparte, $currentClub, 'Importació llicències');
 
-					$factura = $this->crearFactura($dataalta, $parte);
+					$this->crearFactura($dataalta, $parte);
 
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
 						|| $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
@@ -230,7 +229,7 @@ class PageController extends BaseController {
 			
 			$parte = $this->crearComandaParte($dataalta, $tipus, $currentClub, 'Importació llicències');
 			
-			$factura = $this->crearFactura($dataalta, $parte);
+			$this->crearFactura($dataalta, $parte);
 			
 			$this->importFileCSVData($temppath, $parte, true);
 			

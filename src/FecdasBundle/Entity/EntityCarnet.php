@@ -43,7 +43,9 @@ class EntityCarnet {
 	 * @return boolean
 	 */
 	public function esLlicencia() {
-		return $this->getCodisortida() == 7090000;
+		//return $this->getCodisortida() == 7090000;
+		$pos = stripos($this->producte->getDescripcio(), "llicència");
+		return $pos !== false;
 	}
 	
 	public function __toString() {

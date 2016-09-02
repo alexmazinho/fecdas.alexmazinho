@@ -6,6 +6,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use FecdasBundle\Controller\BaseController;
@@ -20,7 +21,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		// event and that the preSetData method should be called.
 		return array (
 				
-				FormEvents::POST_SUBMIT => array('postSubmitData', 900),  // Desactiva validació
+				//FormEvents::POST_SUBMIT => array('postSubmitData', 900),  // Desactiva validació
 				FormEvents::SUBMIT => array('submitData', 900),
 				FormEvents::PRE_SET_DATA => 'preSetData'
 		);
@@ -116,15 +117,17 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 			));
 			
 			// Selector departament compta
-			$form->add('departament', 'choice', array(
+			/*$form->add('departament', 'choice', array(
 					'choices'   => BaseController::getDepartamentsConta( 0 ),
 					'multiple'  => false,
 					'expanded'  => false,
 					'empty_value' => '',
 					'data' 		=> $producte->getDepartament(),
-			));
+			));*/
 			
-			$subdepartaments = array();
+			$this->subdepartamentFormModifier($form, $producte);
+			
+			/*$subdepartaments = array();
 			if ($producte->getDepartament() == 0) $subdepartaments = BaseController::getDepartamentsConta( -1 );
 			else $subdepartaments = BaseController::getDepartamentsConta( $producte->getDepartament() ); 
 			
@@ -134,7 +137,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'multiple'  => false,
 					'expanded'  => false,
 					'data' 		=> $producte->getSubdepartament(),
-			));
+			));*/
 			
 			if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES && !$producte->esNou()) {
 					$activat = true;
@@ -169,21 +172,36 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 	}
 	
 	// No propagar, evita validacions
-	public function postSubmitData(FormEvent $event) {
+	/*public function postSubmitData(FormEvent $event) {
 	
 		//$event->stopPropagation();
-	}
+	}*/
 	
 	public function submitData(FormEvent $event) {
 		// It's important here to fetch $event->getForm()->getData(), as
 		// $event->getData() will get you the client data (that is, the ID)
 		$producte = $event->getForm()->getData();
 		$form = $event->getForm ();
-	
 		$origen = $form->get('anypreus')->getData(); // Detectar origen, si és selector anys refrescar els valors del preu, iva...
 	
 	}
 	
+// Afegir subdepartament en funció del valor escollit a departament
+	public function subdepartamentFormModifier(FormInterface $form, EntityProducte $producte = null) {
+		$subdepartaments = array();
+		if ($producte == null || $producte->getDepartament() == 0) $subdepartaments = BaseController::getDepartamentsConta( -1  );
+		else $subdepartaments = BaseController::getDepartamentsConta( $producte->getDepartament()  );	
+			
+		// Selector subdepartament compta
+		$form->add('subdepartament', 'choice', array(
+				'choices'   => $subdepartaments,
+				'multiple'  => false,
+				'expanded'  => false,
+				'data' 		=> $producte->getSubdepartament(),
+		));
+			
+    }
+    	
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
@@ -225,6 +243,33 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 				'empty_value' => false,
 				'format' => 'dd/MM/yyyy HH:mm',
 		));
+		
+		$builder->add('departament', 'choice', array(
+				'choices'   => BaseController::getDepartamentsConta( 0 ),
+				'multiple'  => false,
+				'expanded'  => false,
+				'empty_value' => '',
+				//'data' 		=> $producte->getDepartament(),
+		));
+		
+		$current = $this;
+		
+		$builder->get('departament')->addEventListener(
+	            FormEvents::POST_SUBMIT,
+	            function (FormEvent $event) use ($current) {
+	                // It's important here to fetch $event->getForm()->getData(), as
+	                // $event->getData() will get you the client data (that is, the ID)
+	                $departament = $event->getForm()->getData(); // => Dada de l'esdeveniment
+					
+					$producte = $event->getForm()->getParent()->getData(); // Dades del formulari pare
+
+					$producte->setDepartament($departament);	
+	                // since we've added the listener to the child, we'll have to pass on
+	                // the parent to the callback functions!
+	                //$formModifier($event->getForm()->getParent(), $sport);
+					$current->subdepartamentFormModifier($event->getForm()->getParent(), $producte);
+	            }
+	    );
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

@@ -23,6 +23,7 @@ use FecdasBundle\Entity\EntityPreu;
 use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityComptabilitat;
 use FecdasBundle\Classes\RedsysAPI;
+use FecdasBundle\Classes\Funcions;
 
 
 class FacturacioController extends BaseController {
@@ -986,6 +987,9 @@ class FacturacioController extends BaseController {
 	
 		$this->logEntryAuth('VIEW APUNTS', $this->get('session')->get('username'));
 
+		// GET OPCIONS DE FILTRE
+		$action = $request->query->get('action', '');
+
 		$datadesde = null;
 		$datafins = null;
 		$strDatadesde = $request->query->get('datadesde', '');
@@ -998,6 +1002,43 @@ class FacturacioController extends BaseController {
 		if ($datafins == null) $datafins = $this->getCurrentDate('now');
 
  		$apunts = $this->consultaApunts($club, $datadesde, $datafins);
+
+		if ($action == 'csv') {
+			$filename = "export_apunts_".Funcions::netejarPath($club->getNom())."_".$datadesde->format('Y-m-d')."_".$datafins->format('Y-m-d')."_".date('Hms').".csv";
+			
+			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Comanda', 'Concepte', 'Saldo', 'Entrada'); 
+			
+			$data = array(); // Get only data matrix
+			foreach ($apunts as $row) {
+				$deure = 0;
+				$haver = 0;
+				if ($row['tipus'] == 'F') $deure = number_format($row['import'], 2, ',', '.');
+				if ($row['tipus'] == 'R') $haver = number_format($row['import'], 2, ',', '.');
+				$strComanda = '';
+				foreach ($row['comandes'] as $comanda) {
+					$strComanda .= $comanda['num'].($comanda['import']!=0?' '.number_format($comanda['import'], 2, ',', '.'):'');
+				} 
+				
+				$strConcepte = $row['concepte'];
+				if ($row['extra'] != false) {
+					$strExtra = $row['extra']['dades'];	
+					if (strlen($strExtra) > 80) $strExtra = substr($strExtra, 0, 77).'...';
+					
+					$strConcepte .= PHP_EOL.$strExtra; 
+				}
+				$strNum = "";
+				if ($row['anulacio'] == true) $strNum .= '(-)';
+				$strNum .= $row['num']; 
+				
+				$rowdata = array( $strNum, $row['data']->format('Y-m-d'), $deure, $haver, $strComanda, $strConcepte, number_format($row['saldo'], 2, ',', '.'), $row['entrada']->format('Y-m-d H:i:s')); 
+				
+				$data[] = $rowdata;
+			}
+			
+			$response = $this->exportCSV($request, $header, $data, $filename);
+			
+			return $response;
+		}
 
 		$page = $request->query->get('page', 1);
 		$perpage = BaseController::PER_PAGE_DEFAULT; 
@@ -1058,15 +1099,20 @@ class FacturacioController extends BaseController {
 			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
 			else $comanda = $factura->getComanda();
 			
+			$extra = array('dades' => $factura->getConcepteExtra(), 'more' => false);
+			if ($factura->getNumDetallsExtra() > 2) $extra['more'] = true;
+			
 			$apunts[] = array(
 							'tipus' 	=> 'F',
 							'id' 		=> $factura->getId(), 
-							'num' 		=> ($factura->esAnulacio() == true?'<span class="red">(-)':'').$factura->getNumfactura().($factura->esAnulacio() == true?'</span>':''),
+							'num' 		=> $factura->getNumfactura(),
+							'anulacio'	=> $factura->esAnulacio(),
 							'data' 		=> $factura->getDatafactura(),
 							'entrada' 	=> $factura->getDataentrada(),
 							'import' 	=> $factura->getImport(),
 							'comandes'	=> array( $comanda->getNum() => array( 'num' => $comanda->getNumcomanda(), 'import' => $comanda->getTotalDetalls() ) ),
-							'concepte'	=> $factura->getConcepte().'<br/><span class="extra">'.$factura->getConcepteExtra(400).'</span>',
+							'concepte'	=> $factura->getConcepte(),
+							'extra'		=> $extra,
 							'compta'	=> ($factura->getComptabilitat()!=null?$factura->getComptabilitat()->getDataenviament():''),
 							'saldo'		=> 0
 							
@@ -1078,11 +1124,13 @@ class FacturacioController extends BaseController {
 							'tipus' 	=> 'R',
 							'id' 		=> $rebut->getId(), 
 							'num' 		=> $rebut->getNumrebut(),  // No hi ha rebuts anul·lació
+							'anulacio'	=> false,
 							'data' 		=> $rebut->getDatapagament(),
 							'entrada' 	=> $rebut->getDataentrada(),
 							'import' 	=> $rebut->getImport(),
 							'comandes'	=> $rebut->getArrayNumsComandes(),
 							'concepte'	=> $rebut->getComentari(),
+							'extra'		=> false,
 							'compta'	=> ($rebut->getComptabilitat()!=null?$rebut->getComptabilitat()->getDataenviament():''),
 							'saldo'		=> 0
 							
@@ -1094,7 +1142,7 @@ class FacturacioController extends BaseController {
 			if ($a === $b) {
 				return 0;
 			}
-			if ($a['data']->format('Y-m-d') == $b['data']->format('Y-m-d')) return ($a['tipus'] > $b['tipus'])? -1:1;
+			if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['tipus'] > $b['tipus'])? -1:1;
 			return ($a['data'] > $b['data'])? -1:1;
 		});
 		
@@ -1852,7 +1900,7 @@ class FacturacioController extends BaseController {
     				
     				
     			} else {
-    				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' ); //$form->getErrorsAsString()
+    				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString()); 
     			}
 
 				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
@@ -2062,17 +2110,6 @@ class FacturacioController extends BaseController {
 		$response->setContent(json_encode($search));
 		
 		return $response;
-	}
-	
-	public function jsondepartamentsAction(Request $request) {
-		//foment.dev/jsondepartaments?dpt=1   
-		$response = new Response();
-	
-		$dpt = $request->get('dpt', 0);
-		
-		$subdpts = BaseController::getDepartamentsConta($dpt);
-		
-		return new Response( json_encode($subdpts) );
 	}
 	
 	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {

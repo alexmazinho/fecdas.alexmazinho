@@ -182,6 +182,23 @@ class EntityFactura {
 		return $strExtra;
 	}
 	
+	public function getNumDetallsExtra() {
+		$total = 0;
+		try {
+			$detallsArray = json_decode($this->detalls, true);
+			
+			foreach ($detallsArray as $lineafactura) {
+				if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
+					$total += count($lineafactura['extra']);
+				}
+			}
+		} catch (\Exception $e) {
+			error_log('FECDAS GESTIO error factura num detalls detalls '.$this->id. '('.$e->getMessage().')');
+		}	
+
+		return $total;
+	}
+	
 	/**
 	 * @return integer
 	 */

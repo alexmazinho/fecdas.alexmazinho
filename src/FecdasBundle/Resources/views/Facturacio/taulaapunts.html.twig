@@ -26,7 +26,7 @@
 	   			<div class="data-detall-cell apunt-id hidden">{{ apunt.id }}</div>
 	   			<div class="data-detall-cell apunt-num">
 	   				{% if apunt.compta == '' and admin == true %} <span class="fa fa-exclamation-triangle fa-1x orange"></span> {% endif %}
-	   				{{ apunt.tipus }}{{ apunt.num|raw }}
+	   				{{ apunt.tipus }}{% if apunt.anulacio == true %}<span class="red">(-){% endif %}{{ apunt.num|raw }}{% if apunt.anulacio == true %}</span>{% endif %}
 	   				{% if apunt.tipus == 'F' %}
 	   					<a class="apunt-factura-pdf link" href="{{ path('FecdasBundle_facturatopdf', { 'id': apunt.id}) }}" alt="PDF Factura" title="PDF Factura"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
 	   				{% endif %}
@@ -43,7 +43,12 @@
 			   				{{ comanda.num }} {% if comanda.import != 0 %} ({{ comanda.import|number_format(2, ',', '.') }} €) {% endif %}</a><br/>
 					{% endfor %}
 	   			</div>
-	   			<div class="data-detall-cell apunt-concepte">{{ apunt.concepte|raw }}</div>
+	   			<div class="data-detall-cell data-detall-cell-extra apunt-concepte">
+	   				{{ apunt.concepte|raw }}
+	   				{% if (apunt.extra != false) %}
+	   					<br/><span class="extra">{{ apunt.extra.dades }}</span>{% if (apunt.extra.more == true) %}<span class="fa fa-chevron-down"></span>{% endif %}
+	   				{% endif %}
+	   			</div>
 	   			<div class="data-detall-cell apunt-saldo"> 
 					<span class="{% if apunt.saldo < 0 %}red{% else %}green{% endif %}">{{ apunt.saldo|number_format(2, ',', '.') }}€</span>
 	   			</div>

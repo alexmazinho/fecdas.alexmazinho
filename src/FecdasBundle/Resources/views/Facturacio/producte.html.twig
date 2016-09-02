@@ -316,29 +316,28 @@
 				}, function() { }, function() { });
 			});
 
-			$('#producte_departament').change( function() {
 
-				// Buidar llista subdepartaments
-				$('#producte_subdepartament option').remove();
-				if ($(this).val() != '')  {
-					var url = "{{ path('FecdasBundle_jsondepartaments') }}";
-					url += '?dpt='+$(this).val();  // Consulta llista subdepartaments
-					
-					$.get(url, function(data) {
-						var subdpts = JSON.parse( data );		// subdpts= {"1":"ingresos B - A","2":"ingresos B - B"}  
-						$.each( subdpts, function ( key , value) {
-						    $('#producte_subdepartament').append($('<option>', { 
-						        value: key,
-						        text : value 
-						    }));
-						});
-					});
-				}
-					
-					
-				
+			$('#producte_departament').change(function() {
+				  // ... retrieve the corresponding form.
+				  var $form = $(this).closest('form');
+				  // Simulate form data, but only include the selected sport value.
+				  var data = {};
+				  data[$('#producte_departament').attr('name')] = $('#producte_departament').val();
+				  // Submit data via AJAX to the form's action path.
+				  $.ajax({
+				    url : $form.attr('action'),
+				    type: $form.attr('method'),
+				    data : data,
+				    success: function(html) {
+				      // Replace current position field ...
+				      $('#producte_subdepartament').replaceWith(
+				        // ... with the returned one from the AJAX response.
+				        $(html).find('#producte_subdepartament')
+				      );
+				    // Position field now displays the appropriate positions.
+					}
+				});
 			});
-
 			
 			$("#producte_stockable").click(function(){
 				var checked = $(this).is(':checked');

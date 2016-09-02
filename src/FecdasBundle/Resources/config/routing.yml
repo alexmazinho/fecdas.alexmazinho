@@ -504,12 +504,6 @@ FecdasBundle_jsontipuspagaments:
     requirements:
         _method:  GET
 
-FecdasBundle_jsondepartaments:
-    pattern:  /jsondepartaments
-    defaults: { _controller: "FecdasBundle:Facturacio:jsondepartaments" }
-    requirements:
-        _method:  GET
-
 FecdasBundle_editarrebut:
     pattern:  /editarrebut
     defaults: { _controller: "FecdasBundle:Facturacio:editarrebut" }

@@ -685,7 +685,7 @@ class EntityParte extends EntityComanda {
     {
     	if ($this->web == false) return false;  // No web no permet imprimir
     	
-    	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_PAGAMENT_DIFERIT and $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
+    	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_PAGAMENT_DIFERIT && $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
     	
     	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_SENSE_TRAMITACIO) return false; // NOTR mai 
 

@@ -4,7 +4,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/style.css?v=2.20') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css?v=2.21') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css?v=2.01') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery.ui.theme.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery-ui.min.css') }}" type="text/css" rel="stylesheet" />
@@ -120,8 +120,8 @@
 		          	<li id="menu-partes"><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llicències</a></li>
 		          	<li class="divider"></li>
 		          	<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
-		          	{#<li class="divider"></li>
-		          	<li id="menu-apunts"><a href="{{ path('FecdasBundle_apunts') }}">Moviments i saldo</a></li>#}
+		          	<li class="divider"></li>
+		          	<li id="menu-apunts"><a href="{{ path('FecdasBundle_apunts') }}">Moviments i saldo</a></li>
 					{% if busseig == true  %}
 			            <li class="divider"></li>
 						<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>

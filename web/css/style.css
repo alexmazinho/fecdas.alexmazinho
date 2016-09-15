@@ -372,6 +372,16 @@ html[xmlns] .clearfix {
 
 /*************** FECDAS NOU bootstrap ****************/
 
+.no-gutter > [class*='col-'] {
+    padding-right:0;
+    padding-left:0;
+}
+
+.gutter-10 > [class*='col-'] {
+    padding-right:10px;
+    padding-left:10px;
+}
+
 label { color: #555555; font-weight: normal; }
 
 button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } 
@@ -610,11 +620,21 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 }
 
 #productes-main { }
-.grid-productes { width: 100% !important;  position: relative; }
+.grid-productes { /*width: 100% !important;  position: relative;*/ }
 
 .grid-productes-header { margin-bottom: 20px; position: relative;  }
 
-.graella-item > div { border: 1px solid #007FFF; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+.graella-item > div { border: 1px solid #007FFF; padding: 10px; border-radius: 5px; margin-bottom: 20px; 
+
+position: relative; padding: 7%; padding-bottom: 64px;
+
+}
+
+.graella-item > div.graella-item-admin { 
+	
+	padding-bottom: 134px;  /* 70px + 64px */ 
+
+}
 
 .graella-item h4 { font-weight: bold; text-align: left; color: #000000; }
 
@@ -628,11 +648,28 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .graella-item-with-min { font-style: italic; color: #a94442; font-size: 0.9em; }
 .graella-item-transport { font-style: normal; color: #1240a0; font-size: 0.9em; }
-.graella-item-admin { background-color: #eea236; background-color: rgba(238, 162, 54, 0.6); color: #1240a0; padding: 3px;}
-p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1240a0; font-size: 0.9em; line-height: 0.8; }
-.graella-item-admin a { float: right; } 
+.graella-item-admin-actions { background-color: #eea236; background-color: rgba(238, 162, 54, 0.6); color: #1240a0; padding: 3px;
+
+	position: absolute;
+    width: 86%;
+    bottom: 10px;
+   /*display: inline;
+   vertical-align: bottom;*/
+
+}
+p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1240a0; font-size: 0.9em; line-height: 0.8;}
+.graella-item-admin-actions a { float: right; } 
  
-.graella-item-add { text-align: right; display: block; margin-top: 10px;  padding-top: 10px; border-top: 1px solid #eeeeee; }
+.graella-item-add { text-align: left; display: block; /*margin-top: 10px; */ padding-top: 10px; border-top: 1px solid #eeeeee;
+
+	position: absolute;
+    width: 86%;
+    bottom: 10px;
+}
+
+.graella-item > div.graella-item-admin .graella-item-add { bottom: 70px; }
+
+
 .graella-item-esgotat .graella-item-add { text-align: center; }
 
 .graella-item-add a, .graella-item-add input { display: inline; vertical-align: middle; }

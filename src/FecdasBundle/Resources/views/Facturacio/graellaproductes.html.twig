@@ -53,17 +53,12 @@
 		   	</form>
 		   	
 		</div>
-	    <div class="row grid-productes">	
-    	    <div class="col-md-12 col-last-right">
-				<div class="buttons-top-bootstrap">
-					
-				</div>	
-   		    </div>
-   		    <div class="clearfix">
+	    <div class="row grid-productes gutter-10">	
+   		    
 	    	<div class="block-mask" style="opacity: 0.6; display: block;"><div><span class="fa fa-spinner fa-spin fa-2x green"></span></div></div>
 			{% for producte in productes %}
 		   		<div class="col-md-2 col-sm-3 col-xs-6 graella-item graella-item-show {% if producte.disponible == false %} graella-item-esgotat {% endif %}">
-					<div>
+					<div {% if admin == true %}class="graella-item-admin"{% endif %}>
 						<h4>{{ producte.abreviatura }}<span class="graella-item-preu">{{ producte.getPreuAny("now"|date('Y'))|number_format(2, ',', '.') }} €</span></h4>
 							<h5>{{ producte.descripcio }}</h5>
 						{% if producte.minim != null %}<div class="graella-item-with-min">Quantitat mínima: {{ producte.minim }}</div> {% endif %}
@@ -82,7 +77,7 @@
 							{% endif %}
 						</p>
 						{% if admin == true %}
-							<div class="graella-item-admin">
+							<div class="graella-item-admin-actions">
 								<p>Admin:<a title="Editar" alt="Editar" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" class="producte-action-edit link"><i class="fa fa-pencil blue"></i></a></p>
 								{% if producte.stockable == 1 and producte.stock != null %}
 									<span class="graella-item-admin-comment">stock {{ producte.stock }}.</span>
@@ -94,13 +89,14 @@
 						{% endif %}
 					</div>
 				</div>
-				{% if loop.index % 6 == 0 %} <div class="clearfix visible-md-block visible-lg-block"></div> {%  endif %}
-				{% if loop.index % 4 == 0 %} <div class="clearfix visible-sm-block"></div> {%  endif %}
-				{% if loop.index % 2 == 0 %} <div class="clearfix visible-xs-block"></div> {%  endif %}
+				{% if loop.index % 6 == 0 %} <div class="clearfix visible-md-block visible-lg-block"></div>{%  endif %}
+				{% if loop.index % 4 == 0 %} <div class="clearfix visible-sm-block"></div>{%  endif %}
+				{% if loop.index % 2 == 0 %} <div class="clearfix visible-xs-block"></div>{%  endif %}
 			{% endfor %} 	
+			
 		</div>
 		{% endif %}	    
-	</div>
+	
     <div id="dialeg-edicio-producte" class="finestra-overlay"></div>
 {% endblock %}
 
@@ -246,7 +242,7 @@
 		
 		//obrirMascaraBlock('.grid-productes');
 		
-		var $grid = $('.grid-productes').masonry({
+		/*var $grid = $('.grid-productes').masonry({
 			  // options
 			  itemSelector: '.graella-item-show',
 			  percentPosition: true,
@@ -257,7 +253,9 @@
 			  tancarMascaraBlock('.grid-productes');
 		});
 
-		$('.grid-productes').masonry('layout');
+		$('.grid-productes').masonry('layout');*/
+
+		resizeGridItemHeight( '.grid-productes .graella-item-show > div' );
 		
 		$("#form_cerca").change(function() {
 			var toSearch = $(this).val();
@@ -328,6 +326,60 @@
 			});
 		{% endif %}
 	});
+
+	resizeGridItemHeight = function ( itemSel ) {
+		var height = 200; // alçada mínima 
+
+		var heightInRow = [];
+		var row = 0;
+		
+		var i = 0, numItems = $( itemSel ).length;
+console.log('total '+numItems);		
+		$( itemSel ).each( function() {
+
+			var itemHeight = $(this).height();
+
+			var currentY = $(this).parent().position().top;
+			
+			if (i == 0) {
+				// Start
+				heightInRow[row] = { yposition: currentY, height: itemHeight };
+			 
+			} else {
+				if (heightInRow[row].yposition < currentY) {
+					// new row
+					row++;
+					heightInRow[row] = { yposition: currentY, height: itemHeight };
+				} else {
+					// item in same row
+					if (itemHeight > heightInRow[row].height) {
+						heightInRow[row].height = itemHeight;
+					}
+				}
+			}
+			$(this).addClass('row-'+row);			
+			
+			if (itemHeight > height) height = itemHeight;
+
+			i++;
+console.log(' i: '+i + ' => h: '+itemHeight + ' max: '+ height + ' Y: ' +currentY);			
+			if(i >= numItems) {
+				// last item. Resize all 
+				//$( itemSel ).height( height );
+
+				len = heightInRow.length;
+				for (row=0; row<len; ++row) {
+					$( itemSel + '.row-'+row).height( heightInRow[row].height );
+					
+				}
+				
+				tancarMascaraBlock('.grid-productes');
+console.log(' resize '+JSON.stringify(heightInRow));
+			}
+			
+		});	 
+		
+	}
 	
 	</script>
 

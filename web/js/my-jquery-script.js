@@ -301,17 +301,19 @@
 	};
 	
 	$.fn.hasScrollBar = function() {
+		var $this = $(this);
 		
-		console.log( this.get(0).scrollHeight+' '+this.innerHeight());
-		if (this.get(0).scrollHeight == 0) return false;
+		//console.log( this.get(0).scrollHeight+' '+this.innerHeight());
+		if ($this.get(0).scrollHeight == 0) return false;
 		
-        return this.get(0) ? this.get(0).scrollHeight > this.innerHeight() : false;
+        return $this.get(0) ? $this.get(0).scrollHeight > this.innerHeight() : false;
     };
 	
     reloadScrollTable = function( scroll, header, colHeader, lastColHeader  ) { 
     					// per exemple $('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions') 
  	
-		if ( scroll.hasScrollBar() == true ) {
+		//if ( scroll.hasScrollBar() == true ) {
+    	if ( scroll.hasOverflowY() == true ) {
 			var totalWidth = header.width();
 			var barWidth = 15;
 			

@@ -703,6 +703,7 @@ class PDFController extends BaseController {
 			$llicencies = array();
 			$ids = array();
 			foreach ($partes as $parte) {
+					
 				if (count($partes) > 1 && 
 					($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
 					 $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 )) {
@@ -726,6 +727,10 @@ class PDFController extends BaseController {
 			$em->flush();
 
 			$this->logEntryAuth('IMPRES PARTES OK', print_r($ids, true));
+			
+			foreach ($llicencies as $llicencia) {
+				$this->logEntryAuth('IMPRES PARTES OK - LIC', $llicencia->getId().' - '.$llicencia->getPersona()->getNomCognoms());
+			}
 
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_partes_".$current->format('YmdHis'). ".pdf", "D"));
@@ -752,14 +757,19 @@ class PDFController extends BaseController {
 		if ($parte != null) {
 			$em = $this->getDoctrine()->getManager();
 			
-			$pdf = $this->printLlicencies( $parte->getLlicenciesSortedByName() );
+			$llicencies = $parte->getLlicenciesSortedByName();
+			$pdf = $this->printLlicencies( $llicencies );
 			
 			$parte->setDatamodificacio($this->getCurrentDate());
 			$parte->setImpres(1);
-					
+			
 			$em->flush();
 	
 			$this->logEntryAuth('IMPRES PARTE', $parteid);
+
+			foreach ($llicencies as $llicencia) {
+				$this->logEntryAuth('IMPRES PARTE - LIC', $llicencia->getId().' - '.$llicencia->getPersona()->getNomCognoms());
+			}
 			
 			// Close and output PDF document
 			$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));

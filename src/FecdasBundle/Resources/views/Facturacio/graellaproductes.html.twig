@@ -47,7 +47,7 @@
 					</div>
 					<div class="col-md-3 {% if admin != true %}col-md-offset-5{% endif %} col-xs-4">
 						<label class="required">&nbsp;</label>
-						<p class="total-productes-grid">Total productes: {{ productes|length }}</p>
+						<p class="total-productes-grid">Total productes: <span>{{ productes|length }}</span></p>
 					</div>
 				</div>	
 		   	</form>
@@ -288,9 +288,13 @@
 					i++;
 					
 					if(i >= numItems) {
-						$('.grid-productes').masonry('reloadItems');
-						$('.grid-productes').masonry('layout');
+						
+						/*$('.grid-productes').masonry('reloadItems');
+						$('.grid-productes').masonry('layout');*/
+						resizeGridItemHeight( '.grid-productes .graella-item-show > div' );
 
+						$('.total-productes-grid span').html( $('.grid-productes .graella-item-show').length );
+						
 						if ( $('.alert').length == 0 &&
 							$('.grid-productes .graella-item-show').length == 0) {
 							var sms = smsResultAjax('OK', 'cap producte coincideix amb la cerca');
@@ -334,13 +338,19 @@
 		var row = 0;
 		
 		var i = 0, numItems = $( itemSel ).length;
-console.log('total '+numItems);		
+
+		$('.visible-md-block, .visible-lg-block, .visible-sm-block, .visible-xs-block').remove();
+		
 		$( itemSel ).each( function() {
 
+			if ((i + 1) % 6 == 0) $(this).parent().after('<div class="clearfix visible-md-block visible-lg-block"></div>');
+			if ((i + 1) % 4 == 0) $(this).parent().after('<div class="clearfix visible-sm-block"></div>');
+			if ((i + 1) % 2 == 0) $(this).parent().after('<div class="clearfix visible-xs-block"></div>');
+			
 			var itemHeight = $(this).height();
 
 			var currentY = $(this).parent().position().top;
-			
+
 			if (i == 0) {
 				// Start
 				heightInRow[row] = { yposition: currentY, height: itemHeight };
@@ -362,7 +372,7 @@ console.log('total '+numItems);
 			if (itemHeight > height) height = itemHeight;
 
 			i++;
-console.log(' i: '+i + ' => h: '+itemHeight + ' max: '+ height + ' Y: ' +currentY);			
+			
 			if(i >= numItems) {
 				// last item. Resize all 
 				//$( itemSel ).height( height );
@@ -374,7 +384,7 @@ console.log(' i: '+i + ' => h: '+itemHeight + ' max: '+ height + ' Y: ' +current
 				}
 				
 				tancarMascaraBlock('.grid-productes');
-console.log(' resize '+JSON.stringify(heightInRow));
+
 			}
 			
 		});	 

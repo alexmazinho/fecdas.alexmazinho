@@ -12,7 +12,7 @@ use FecdasBundle\Classes\CSVReader;
 use FecdasBundle\Classes\MysqlYear;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityClub;
-
+use FecdasBundle\Form\FormLlicenciaMail;
 
 class AdminController extends BaseController {
 	
@@ -1553,7 +1553,73 @@ GROUP BY c.nom
 				)));
 	}
 	
+	public function llicenciespermailAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
+		$em = $this->getDoctrine()->getManager();
+		
+		$filtre = '';
+		if ($request->getMethod() == 'POST') {
+			
+		} else {
+			$parteid = $request->query->get('id', 0);
+			$filtre = $request->query->get('filter', '');
+		}
+		
+		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+		
+		try {
+			if ($parte == null) throw new \Exception ('Llista no trobada');  
+			
+			if ($request->getMethod() == 'POST') {
+			
+			} else {
+				// CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
+				
+				$llicencies = $parte->getLlicenciesSortedByName();
+				
+				foreach ($llicencies as $k => $llicencia) {
+					if ($filtre != '' && strpos($llicencia->getPersona()->getNomCognoms(), $filtre) !== false) {
+						unset($llicencies[$k]);
+					}						
+				}
+
+				$formBuilder = $this->createFormBuilder();
+								
+				$formBuilder->add('id', 'hidden', array(
+					'data'	=> $parteid
+				));
+
+				$formBuilder->add('filtre', 'text', array(
+					'data'	=> $filtre
+				));
+				
+				$formBuilder->add('llicencies', 'collection', array(
+					'type' 	=> new FormLlicenciaMail(),
+					'data'	=> $llicencies
+				));
+				
+			}
+			
+		} catch (\Exception $e) {
+			
+			$this->logEntryAuth('MAIL LLICENCIES KO', 'parte ' . $parteid . ' error: '.$e->getMessage() );
+					
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);
+			return $response;
+		}
+		$this->logEntryAuth('MAIL LLICENCIES OK', ' accio '.$request->getMethod());
+		
+		// Temps des de la darrera llicència
+		$form = $formBuilder->getForm();
+		
+		return $this->render('FecdasBundle:Admin:llicenciespermailform.html.twig', 
+				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'filtre' => $filtre ) )
+		);
+	}
+
 	
 	public function sincroaccessAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)

@@ -579,7 +579,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.producte-estat  { width: 4%; text-align: left; }
 .data-detall-cell.producte-codi  { width: 10%; text-align: center; }
 .data-detall-cell.producte-nomcurt  { width: 8%; text-align: center; }
-.data-detall-cell.producte-descripcio { width: 29%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.producte-descripcio { width: 29%; text-align: left; font-size: 0.9em; word-wrap: break-word; }
 .data-detall-cell.producte-tipus { width: 7%; text-align: left; }
 .data-detall-cell.producte-import { width: 7%; text-align: right; }
 /*.data-detall-cell.producte-iva { width: 7%; text-align: right; }
@@ -640,7 +640,7 @@ position: relative; padding: 7%; padding-bottom: 64px;
 
 .graella-item h4 .graella-item-preu { float: right; /*font-size: 1.1em;*/ color: #1240a0; }
 
-.graella-item h5 { color: #555555;  }
+.graella-item h5 { color: #555555;  word-wrap: break-word; }
 
 .graella-item-hide  { display:none; }
 
@@ -1099,6 +1099,7 @@ ul.detalls li .alert { margin: 10px 0; }
 	width:100%;
 	border: none;
 	padding: 0;
+	table-layout: fixed;	
 }
 
 #summary-data-hidden {
@@ -1121,7 +1122,7 @@ ul.detalls li .alert { margin: 10px 0; }
 	border-color: #EDF1F5;
     border-style: solid;
     border-width: 1px 0 0;
-    
+    word-wrap: break-word;
 }
 
 .data-detall-cell-extra .extra {
@@ -2037,6 +2038,29 @@ select#parte_persona_addrnacionalitat {
 /************************************************* Persona Fin  ******************************************************/
 
 
+/************************************************* Llicències per mail ******************************************************/
+
+
+#header-personaindex {	width: 7%; text-align: left;}
+#header-personanom { width: 40%;  text-align: left; }
+#header-personamail { width: 40%;  text-align: left; }
+#header-personacheck { width: 7%; }
+
+.data-detall-cell.federat-personaindex {	width: 7%; text-align: left;}
+.data-detall-cell.federat-personanom { width: 40%;  text-align: left; }
+.data-detall-cell.federat-personamail { width: 40%;  text-align: left; }
+.data-detall-cell.federat-personacheck { width: 7%; }
+
+#table-federats table .data-detall-cell input[type="text"],
+#table-federats table .data-detall-cell input[type="text"] { width: 100%; }
+
+#table-federats .input-group-addon { background-color: #fff; }
+
+#table-federats #list-data { margin: 0; } 
+
+/************************************************ Llicències per mail Fi ******************************************************/
+
+
 /************************************************* Consulta Admin / Clubs ******************************************************/
 
 #list-consultaadmin, #list-consultaclubs { 
@@ -2438,6 +2462,8 @@ p.info-bold {
 .duplicat-actions { width: auto; text-align: right; font-size: 1.2em; }
 
 #dialeg { height: auto !important; }
+
+#dialeg .title {  padding-left: 0;  margin-bottom: 20px; }
 
 #dialeg .dialeg-titol {
 	border-bottom: 1px solid #000000;

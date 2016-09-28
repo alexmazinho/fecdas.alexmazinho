@@ -2811,7 +2811,7 @@ class BaseController extends Controller {
 	}
 	
     protected function validateCronAuth($request, $action = '') {
-        $cronsecret = $this->getParameter( 'cronsecret', '' ); 
+        $cronsecret = $this->getParameter( 'secret', '' ); 
         $secret = $request->query->get('secret', '');
         
         if ($secret == '' || $secret != $cronsecret) {

@@ -4,7 +4,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="{{ asset('js/genemu/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/style.css?v=2.21') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css?v=2.23') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css?v=2.01') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery.ui.theme.css') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/redmond/jquery-ui.min.css') }}" type="text/css" rel="stylesheet" />
@@ -107,10 +107,6 @@
 			          	<li id="menu-productes-llicencies"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':1 }) }}">Llicències</a></li>
 			          	<li id="menu-productes-duplicats"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':2 }) }}">Duplicats</a></li>
 			          	{% endif %}
-			          	<li class="divider"></li>
-			          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
-			          	<li id="menu-factures"><a href="{{ path('FecdasBundle_factures', { 'sort': 'f.datafactura', 'direction':'desc' }) }}">Factures</a></li>
-			          	<li id="menu-ingresos"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
  		            </ul>
 		        </li>
 		        {% endif %}
@@ -122,6 +118,9 @@
 		          	<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
 		          	<li class="divider"></li>
 		          	<li id="menu-apunts"><a href="{{ path('FecdasBundle_apunts') }}">Moviments i saldo</a></li>
+		          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
+		          	<li id="menu-factures"><a href="{{ path('FecdasBundle_factures', { 'sort': 'f.datafactura', 'direction':'desc' }) }}">Factures</a></li>
+		          	<li id="menu-ingresos"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
 					{% if busseig == true  %}
 			            <li class="divider"></li>
 						<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>

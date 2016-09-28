@@ -127,11 +127,15 @@
 		   			<div class="data-detall-cell parterecents-preu">{{ parte.getTotalDetalls|number_format(2, ',') }} €</div>
 		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parterecents-actions">
-		   			{% if parte.comandaPagada == false  %}
-		   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
-		   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
-		   			{% endif %}
-		   				{% if parte.tipus.id != 11  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
+			   			{% if parte.perEnviarFederat == true  %}
+			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
+			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa fa-envelope lightblue"></i></a>
+			   			{% endif %}
+			   			{% if parte.comandaPagada == false  %}
+			   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
+			   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+			   			{% endif %}
+		   				{% if parte.perImprimir == true  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
 		   					<i class="fa fa-print blue"></i></a>{% endif %}
 		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
 		   					<i class="fa fa-search orange"></i></a>
@@ -173,6 +177,29 @@ recentsParams = function() {
 	return params;
 };
 
+submitEnviarLllicencies = function(action) {
+	var url = $('#formenquesta').attr("action");
+	var params = $('#formenquesta').serializeArray();
+	params.push( {'name':'submitaction','value': action} );
+
+	$.post(url, params, function(data) {
+		//alert(data);
+		//$( ".selector" ).dialog( "destroy" );
+		dialegInfo("Enquesta desada", data, 350, 100);
+
+		$("#dialeg").dialog("destroy");
+	}).fail( function(xhr, status, error) {
+		 // xhr.status + " " + xhr.statusText, status, error
+		 var sms = smsResultAjax('KO', xhr.responseText);
+		 
+		 $('#edicio-persona').show();
+		 
+		 $("#error-persona").html(sms);
+	     
+	});
+};
+
+
 $(document).ready(function(){
 	setMenuActive("menu-admllistes");
 
@@ -204,9 +231,45 @@ $(document).ready(function(){
 		window.location = url; 
 	});
 	
-	
+	$('.enviament-llicencies').click(function(e) {
+		e.preventDefault();
 
-	
+		// Obrir form selecció federats
+		var url = $(this).attr("href");
+
+		$.get(url, function(data) {
+			
+			$("#dialeg").html(data);
+						
+			var ewidth = $(window).width()*0.8;
+			if (ewidth > 800) ewidth = 800;
+			var eheight = $(document).height()*0.8;
+						
+			$("#dialeg").dialog({
+				buttons : {
+		           	"Enviar" : function() {
+		           		submitEnviarLllicencies('final');
+		       		},
+		           	"Cancel·lar" : function() {
+		             	$(this).dialog("destroy");
+		           	}
+		       	},
+			    show: 1000,
+			    modal: true,
+			    resizable: true,
+			    width: ewidth,
+			    height: eheight,
+			    minWidth: 400,
+			    title: 'Enviament llicències per mail'
+			 });
+		}).fail( function(xhr, status, error) {
+			 var sms = smsResultAjax('KO', xhr.responseText);
+			 
+			 $("#list-forms").prepend(sms);
+		});
+		    
+	});
+		
 	//sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

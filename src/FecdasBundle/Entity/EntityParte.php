@@ -150,6 +150,27 @@ class EntityParte extends EntityComanda {
 	}
 	
 	/**
+	 * Es pot imprimir plàstic?
+	 *
+	 * @return boolean
+	 */
+	public function perImprimir()
+	{
+		return $this->tipus->getTemplate() != '';
+	}
+	
+	/**
+	 * Es pot enviar per mail al federat?
+	 *
+	 * @return boolean
+	 */
+	public function perEnviarFederat()
+	{
+		return $this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 || 
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2;
+	}
+	
+	/**
 	 * Get prefix albarà duplicats. Sobreescriptura
 	 *
 	 * @return string

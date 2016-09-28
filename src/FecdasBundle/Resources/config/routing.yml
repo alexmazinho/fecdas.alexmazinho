@@ -337,6 +337,12 @@ FecdasBundle_clubs:
     requirements:
         _method:  GET|POST
 
+FecdasBundle_llicenciespermail:
+    pattern:  /llicenciespermail
+    defaults: { _controller: "FecdasBundle:Admin:llicenciespermail" }
+    requirements:
+        _method:  GET|POST
+
 FecdasBundle_canviestatclub:
     pattern:  /canviestatclub
     defaults: { _controller: "FecdasBundle:Admin:canviestatclub" }

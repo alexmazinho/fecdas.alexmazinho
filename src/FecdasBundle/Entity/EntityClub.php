@@ -310,7 +310,7 @@ class EntityClub {
 		foreach($this->comandes as $comanda) {
 			if ($comanda->esBaixa() == false && $comanda->isCurrentYear()) {
 				$ncomandes++;
-				$importComanda = $comanda->getTotalDetalls();
+				$importComanda = $comanda->getTotalComanda();
 				
 				$totalimport += $importComanda;
 				

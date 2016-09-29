@@ -113,7 +113,11 @@
 		   		<li class="data-detall {% if comanda.esBaixa %} data-detall-fosc {% endif %}">
 		   			<div class="data-detall-cell comanda-id hidden">{{ comanda.id }}</div>
 		   			<div class="data-detall-cell comanda-estat">
-		   				{% if comanda.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ comanda.estat }}{% endif %}
+		   				{% if admin == true  %}
+		   					{% if comanda.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ comanda.estat }}{% endif %}
+		   				{% else %}
+		   					{% if comanda.comandaPagada != true and comanda.totalComanda > 0 and saldo < 0 %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% endif %}
+		   				{% endif %}
 		   			</div>
 		   			<div class="data-detall-cell comanda-num">{{ comanda.numcomanda }}</div>
 		   			{% if admin == true  %}	
@@ -123,7 +127,14 @@
 		   				</div>
 		   			{% endif %}
 		   			<div class="data-detall-cell comanda-items">{{ comanda.numdetalls }}</div>
-		   			<div class="data-detall-cell comanda-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell comanda-total">
+		   				{% if comanda.isFacturaModificada == true %}
+			   			<strike>{{ comanda.getTotalDetalls|number_format(2, ',', '.') }}€</strike><br/>
+			   			{{ comanda.totalComanda|number_format(2, ',', '.') }}€
+			   			{% else %}
+			   			{{ comanda.totalComanda|number_format(2, ',', '.') }}€
+			   			{% endif %}
+		   			</div>
 		   			<div class="data-detall-cell comanda-data">
 		   				{% if admin == true  %}
 		   					{{ comanda.dataentrada|date('d/m/y') }}
@@ -175,7 +186,7 @@
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell comanda-actions">
 						{% if admin == true  %}
-							{% if comanda.comandaPagada != true and comanda.totalDetalls > 0  %}
+							{% if comanda.comandaPagada != true and comanda.totalComanda > 0  %}
 				   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': comanda.id }) }}" 
 				   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
 		   					{% endif %}
@@ -186,7 +197,8 @@
 			   						<i class="fa fa-trash-o text-danger red"></i></a>
 			   				{% endif %}
 			   			{% else %}
-							{% if comanda.comandaPagada != true and comanda.totalDetalls > 0  %}
+							{% if comanda.comandaPagada != true and comanda.totalComanda > 0 and saldo < 0 %}
+								{% set saldo = saldo + comanda.totalComanda %}
 				        		<a class="link pagar-comanda" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': comanda.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
 				        			<i class="fa fa-credit-card fa-1x green"></i></a>
 							{% endif %}

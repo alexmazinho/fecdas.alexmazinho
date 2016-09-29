@@ -113,9 +113,15 @@
 	   		<ol id="list-data">
 	   			<li id="factdetall-totals" class="data-detall">
 	   				<div class="data-detall-cell factdetall-tab"></div>
+	   				{% if comanda.isFacturaModificada == true %}
+			   		<div class="data-detall-cell factdetall-totalparcial">{{ comanda.totalComanda|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-iva">{{ 0|number_format(2, '.', ',') }} €</div>
+			   		<div class="data-detall-cell factdetall-total">{{ comanda.totalComanda|number_format(2, '.', ',') }} €</div>
+					{% else %}
 			   		<div class="data-detall-cell factdetall-totalparcial">{{ comanda.totalDetalls|number_format(2, '.', ',') }} €</div>
 			   		<div class="data-detall-cell factdetall-iva">{{ comanda.totalIVADetalls|number_format(2, '.', ',') }} €</div>
 			   		<div class="data-detall-cell factdetall-total">{{ comanda.totalDetalls|number_format(2, '.', ',') }} €</div>
+			   		{% endif %}
 			   	</li>	
 			</ol>
 		</div>

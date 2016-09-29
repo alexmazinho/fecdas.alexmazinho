@@ -66,7 +66,7 @@
 				<div id="partes-totals" class="col-listheader">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }} llistes ({{ stat['ltotal']|number_format(0, ',', '.') }} llicències)<br/> 
 				<span>Vigents: {{ stat['vigents']|number_format(0, ',', '.') }} llistes ({{ stat['lvigents']|number_format(0, ',', '.') }} llicències)</span></div>
 				<div id="partes-club" class="col-listheader"><span class="titol-club-nom">{{ club.nom }}</span></div>
-				<div id="partes-import" class="col-listheader total-rowcount">Saldo del club<br><span>(Pendent)</span>{# stat['saldo']|number_format(2, ',', '.') € #}</div>
+				<div id="partes-import" class="col-listheader total-rowcount">Saldo del club<br><span>{{ club.saldo|number_format(2, ',', '.') }}€</span></div>
 			</div>
 		</div>
 	    <div class="table-header">	
@@ -98,7 +98,14 @@
 			   		<a class="llista-llicencies link" href="{{ path('FecdasBundle_llicenciesParte', { 'id': parte.id }) }}" alt="Llicències" title="Llicències">{{ parte.numLlicencies }}
 			   			<i class="fa fa-history orange"></i></a>
 			   		</div>
-			   		<div class="data-detall-cell parte-import">{{ parte.getTotalDetalls|number_format(2, ',', '.') }} €</div>
+			   		<div class="data-detall-cell parte-import">
+			   			{% if parte.isFacturaModificada == true %}
+			   			<strike>{{ parte.getTotalDetalls|number_format(2, ',', '.') }}€</strike><br/>
+			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
+			   			{% else %}
+			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
+			   			{% endif %}
+			   		</div>
 			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}

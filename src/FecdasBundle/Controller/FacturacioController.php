@@ -620,98 +620,6 @@ class FacturacioController extends BaseController {
 		return $assentament;
 	} 
 
-
-	 
-	/*private function generarAssentamentsComandes($enviament, $baixes = false) {
-	
-		$em = $this->getDoctrine()->getManager();
-		
-		$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
-		
-		//if ($baixes == false) {
-			$strQuery .= " WHERE (c.dataentrada >= :ini AND c.dataentrada <= :final) ";
-			$strQuery .= " AND (c.comptabilitat IS NULL) ";   // Pendent d'enviar encara 
-		//} else {
-		//	$strQuery .= " WHERE (c.databaixa >= :ini AND c.databaixa <= :final) ";
-		//	$strQuery .= " AND (c.comptabilitat IS NOT NULL) ";  // Enviat a compta
-		//}
-		$strQuery .= " ORDER BY c.dataentrada";
-		
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('ini', $enviament->getDatadesde()->format('Y-m-d H:i:s'));
-		$query->setParameter('final', $enviament->getDatafins()->format('Y-m-d H:i:s'));
-		
-		$result = $query->getResult();
-
-		$comandes = $enviament->getComandes();
-		$assentaments = array();
-		foreach ($result as $comanda) {
-			$assentament = $this->assentamentComanda($comanda);
-			$assentaments = array_merge($assentaments, $assentament);
-		}
-		//$enviament->setComandes($comandes);
-
-		return $assentaments;
-	}	
-
-	private function assentamentComanda($comanda) {
-		$assentament = array();
-		
-		$importTotal = $comanda->getTotalDetalls();
-			
-		if ($importTotal > 0) {	
-			$comandes++;
-			$linia = 1;
-			//$signe = ($baixes == false?'0':'-');
-			$signe = '0';
-				
-			$data = $comanda->getDataentrada()->format('Ymd');
-				
-			$numAssenta = str_pad($comanda->getId(), 6, "0", STR_PAD_LEFT);//str_repeat("0",6);
-				
-			$desc = $this->netejarNom($comanda->getConcepteComanda(), false);
-			$conc = 'FRA '.$comanda->getFactura()->getNumFactura();
-			$doc = $comanda->getNumAssentament();
-			$import = $signe.str_pad((number_format($importTotal, 2, '.', '').''), 12, "0", STR_PAD_LEFT);
-			// Apunt club
-			$club = $comanda->getClub();
-			$compte = $club->getCompte();
-				
-			$apuntclub = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
-			$apuntclub .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
-			$apuntclub .= $import.BaseController::HABER.str_repeat("0",15);
-					
-			// Validar que quadren imports
-			$assentament[] = $apuntclub;
-					
-			$linia++;
-				
-			$detalls = $comanda->getDetallsAcumulats();
-				
-			foreach ($detalls as $compte => $d) {
-			// Apunt/s producte/s
-					
-				$desc = $d['total']." x ".$this->netejarNom($d['producte'], false);
-						
-				$import = $signe.str_pad((number_format($d['import'], 2, '.', '').''), 12, "0", STR_PAD_LEFT);
-					
-				$apunt = "0".$data.$numAssenta.str_pad($linia."", 4, "0", STR_PAD_LEFT).str_pad($compte."", 9, " ", STR_PAD_RIGHT);
-				$apunt .= str_pad($desc, 100, " ", STR_PAD_RIGHT).str_pad($conc, 40, " ", STR_PAD_RIGHT).$doc.str_repeat(" ",4).str_repeat(" ",4);
-				$apunt .= $import.BaseController::DEBE.str_repeat("0",15);
-				
-				$assentament[] = $apunt;
-						
-				$linia++;
-			}
-				
-			$comanda->getFactura()->setComptabilitat($enviament);
-		} else {
-			$comanda->addComentari("Comanda amb import 0 no s'envia a comptabilitat");
-		}
-		return $assentament;
-	}
-	*/
-	
 	
 	//private function downloadFile($fitxer, $path, $desc) {
 	public function downloadassentamentsAction(Request $request, $filename) {
@@ -798,10 +706,12 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
 		$club = null;
+		$saldo = 0;
 		$codi = $request->query->get('cerca', ''); // Admin filtra club
 		if (!$this->isCurrentAdmin()) {  // Users normals només consulten comandes pròpies 
 			$club = $this->getCurrentClub();
 			$codi = $club->getCodi(); 
+			$saldo = $club->getSaldo();
 		}	
 		else {
 			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
@@ -851,6 +761,21 @@ class FacturacioController extends BaseController {
 		$sort = $request->query->get('sort', 'c.dataentrada');
 		$direction = $request->query->get('direction', 'desc');
 
+		// Recorrer totes les comandes de les pàgines anteriors a l'actual per calcular saldo pendent (només clubs amb deute)
+		if ($page > 1 && !$this->isCurrentAdmin() && $saldo < 0) {
+			$query = $this->consultaComandes($codi, $numcomanda, $anycomanda, $numfactura, $anyfactura, $numrebut, $anyrebut, $baixes, $pendents, $sort, $direction);
+			$index = 0;
+			$anteriors = ($page - 1) * 10;
+			$comandesAnteriors = $query->getResult();
+			foreach ($comandesAnteriors as $comanda) {
+				if (!$comanda->comandaPagada() && $comanda->getTotalComanda() > 0 && $saldo < 0) {
+					$saldo += $comanda->getTotalComanda();
+				}
+				$index++;
+				if ($index >= $anteriors) break;
+			}
+		} 
+		
 		$query = $this->consultaComandes($codi, $numcomanda, $anycomanda, $numfactura, $anyfactura, $numrebut, $anyrebut, $baixes, $pendents, $sort, $direction);
 		
 		$paginator  = $this->get('knp_paginator');
@@ -887,10 +812,10 @@ class FacturacioController extends BaseController {
 		));
 		
 		$this->addClubsActiusForm($formBuilder, $club);
-			
+		
 		return $this->render('FecdasBundle:Facturacio:comandes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-						'comandes' => $comandes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
+						'comandes' => $comandes, 'saldo' => $saldo, 'sortparams' => array('sort' => $sort,'direction' => $direction))
 				));
 	}
 
@@ -1673,12 +1598,12 @@ class FacturacioController extends BaseController {
                     $key = $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_KEY_TEST' );
                 }
                 
-				$payment = new EntityPayment($comandaid, $this->get('kernel')->getEnvironment(),
-							$comanda->getTotalDetalls(), $desc, $club->getNom(), $origen, $url, $urlmerchant, 
+                $payment = new EntityPayment($comandaid, $this->get('kernel')->getEnvironment(),
+							$comanda->getTotalComanda(), $desc, $club->getNom(), $origen, $url, $urlmerchant, 
 							$this->getComercRedsysParam( 'COMERC_REDSYS_FUC' ), $this->getComercRedsysParam( 'COMERC_REDSYS_CURRENCY' ),
                             $this->getComercRedsysParam( 'COMERC_REDSYS_TRANS' ), $this->getComercRedsysParam( 'COMERC_REDSYS_TERMINAL' ),
                             $this->getComercRedsysParam( 'COMERC_REDSYS_MERCHANTNAME' ), $this->getComercRedsysParam( 'COMERC_REDSYS_LANG' ),
-                            $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_VERSION' ), $key);
+                            $this->getComercRedsysParam( 'COMERC_REDSYS_SHA_256_VERSION' ), $key);              
 
 				$formpayment = $this->createForm(new FormPayment(), $payment);
 				
@@ -2204,7 +2129,7 @@ class FacturacioController extends BaseController {
 		$comandes = array(); // Filter comandes amb anul·lacions 
 		foreach ($comandesPendents as $comanda) {
 			if ($comanda->getNumFactures(true) == 1 &&
-				$comanda->getTotalDetalls() > 0) $comandes[] = $comanda;
+				$comanda->getTotalComanda() > 0) $comandes[] = $comanda;
 			
 			
 		}
@@ -2459,10 +2384,10 @@ class FacturacioController extends BaseController {
 						throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
 					}
 					
-					$total += $comanda->getTotalDetalls();		
+					$total += $comanda->getTotalComanda();		
 				}
 				
-				//if (abs($rebut->getImport() - $rebut->getComanda()->getTotalDetalls()) > 0.01) {
+				//if (abs($rebut->getImport() - $rebut->getComanda()->getTotalComanda()) > 0.01) {
 				if ($total > $rebut->getImport()) {	
 									
 					$form->get('import')->addError(new FormError('Valor incorrecte'));

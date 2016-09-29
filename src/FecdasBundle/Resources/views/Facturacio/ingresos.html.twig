@@ -87,7 +87,7 @@
 		   				{% if ingres.esAnulacio != true %}
 			   				{% for comanda in ingres.comandes %} 
 			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id}) }}" alt="Veure comanda" title="Veure comanda">
-			   						{{ comanda.numComanda }} ({{ comanda.totaldetalls|number_format(2, ',', '.') }} €)</a><br/>
+			   						{{ comanda.numComanda }} ({{ comanda.totalComanda|number_format(2, ',', '.') }} €)</a><br/>
 							{% endfor %}
 		   				{% else %}
 		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'id': ingres.comandaanulacio.id }) }}"  title="Veure comanda" alt="Veure comanda">
@@ -97,7 +97,7 @@
 		   				{% if ingres.esAnulacio != true %}
 			   				{% for comanda in ingres.comandes %} 
 			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.numcomanda }) }}" alt="Veure comanda" title="Veure comanda">
-			   						{{ comanda.numComanda }} ({{ comanda.totaldetalls|number_format(2, ',', '.') }} €)</a><br/>
+			   						{{ comanda.numComanda }} ({{ comanda.totalComanda|number_format(2, ',', '.') }} €)</a><br/>
 							{% endfor %}
 		   				{% else %}
 		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'numcomanda': ingres.comandaanulacio.numcomanda }) }}"  title="Veure comanda" alt="Veure comanda">

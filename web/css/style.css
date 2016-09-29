@@ -693,8 +693,8 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 
 /*************** FECDAS NOU comandes ****************/
 
-#header-comanda-estat  { width: 3%; text-align: center; }
-#header-comanda-num { width: 8%; text-align: left; }
+#header-comanda-estat  { width: 2%; text-align: center; }
+#header-comanda-num { width: 10%; text-align: left; }
 #header-comanda-items { width: 5%; text-align: center; }
 #header-comanda-total { width: 10%; text-align: right; }
 #header-comanda-data { width: 12%; text-align: center; }
@@ -703,8 +703,8 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 #header-comanda-comentaris { width: 26%; text-align: left; }
 #header-comanda-actions { width: 10%; text-align: center; }
 
-.data-detall-cell.comanda-estat  { width: 3%; text-align: left; }
-.data-detall-cell.comanda-num { width: 8%; text-align: left; }
+.data-detall-cell.comanda-estat  { width: 2%; text-align: left; }
+.data-detall-cell.comanda-num { width: 10%; text-align: left; }
 .data-detall-cell.comanda-items { width: 5%; text-align: center; }
 .data-detall-cell.comanda-total { width: 10%; text-align: right; }
 .data-detall-cell.comanda-data { width: 12%; text-align: center; }

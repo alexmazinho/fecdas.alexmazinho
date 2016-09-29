@@ -121,10 +121,10 @@ class EntityRebut {
 		} else {  // Pagament d'una comanda
 			//$this->club = ($club != null?$club:$comanda->getClub());
 			$this->club = $comanda->getClub();
-			$this->import = ($import != 0?$import:$comanda->getTotalDetalls());
+			$this->import = ($import != 0?$import:$comanda->getTotalComanda()); // Total a partir de les dades de la Factura per si està modificada
 
 			if ($this->import < 0) {
-				if (abs($this->import) >= $comanda->getTotalDetalls()) $this->comentari = "Rebut anul·lació comanda ".$comanda->getNumComanda();
+				if (abs($this->import) >= $comanda->getTotalComanda()) $this->comentari = "Rebut anul·lació comanda ".$comanda->getNumComanda();
 				else $this->comentari = "Rebut anul·lació parcial comanda ".$comanda->getNumComanda();
 					
 				$this->setComandaanulacio($comanda);
@@ -217,11 +217,11 @@ class EntityRebut {
 	 */
 	public function getArrayNumsComandes()
 	{
-		if ($this->esAnulacio()) return array ( $this->comandaanulacio->getNum() => array ( 'num' => $this->comandaanulacio->getNumComanda(), 'import' => $this->comandaanulacio->getTotalDetalls() ));
+		if ($this->esAnulacio()) return array ( $this->comandaanulacio->getNum() => array ( 'num' => $this->comandaanulacio->getNumComanda(), 'import' => $this->comandaanulacio->getTotalComanda() ));
 			
 		$nums = array();
 		foreach ($this->comandes as $comanda) {
-			$nums[ $comanda->getNum() ] = array ( 'num' => $comanda->getNumComanda(), 'import' => $comanda->getTotalDetalls() );	
+			$nums[ $comanda->getNum() ] = array ( 'num' => $comanda->getNumComanda(), 'import' => $comanda->getTotalComanda() );	
 		}
 		return $nums;
 	}
@@ -305,7 +305,7 @@ class EntityRebut {
 	public function getRomanent() {
 		$romanent = $this->getImport();
 		foreach ($this->comandes as $comanda) {
-			$romanent -= $comanda->getTotalDetalls();
+			$romanent -= $comanda->getTotalComanda();
 		}
 		return $romanent;		
 	}

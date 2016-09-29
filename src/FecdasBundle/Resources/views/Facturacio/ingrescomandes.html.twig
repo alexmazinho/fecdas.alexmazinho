@@ -31,11 +31,11 @@
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						{% endfor %}
 					</div>
-		   			<div class="data-detall-cell candidata-total">{{ comanda.totalDetalls|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell candidata-total">{{ comanda.totalComanda|number_format(2, ',', '.') }}€</div>
 		   			<div class="data-detall-cell candidata-comentaris">{{ comanda.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell candidata-actions">
 						<a class="candidata-action-select link" href="javascript.void();" 
-								data-total="{{ comanda.totalDetalls }}"  data-factura="{{ comanda.factura.numfactura }}"
+								data-total="{{ comanda.totalComanda }}"  data-factura="{{ comanda.factura.numfactura }}"
 								alt="Afegir/Treure comanda" title="Afegir/Treure comanda">
 								<i class="fa fa-close fa-shown red"></i><i class="fa fa-check fa-hidden green"></i></a>
 		   			</div>

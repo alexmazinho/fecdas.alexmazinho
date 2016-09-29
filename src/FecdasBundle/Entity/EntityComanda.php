@@ -486,7 +486,7 @@ class EntityComanda {
 	public function isRebutValid()
 	{
 		if ($this->rebut == null) return false;
-		return abs($this->rebut->getImport() - $this->getTotalDetalls() <= 0.01);
+		return abs($this->rebut->getImport() - $this->getTotalComanda() <= 0.01);
 	}
 	
 	/**
@@ -497,7 +497,7 @@ class EntityComanda {
 	public function getInfoComanda()
 	{
 		return $this->getNumComanda().", dia ".$this->dataentrada->format("d/m/Y").
-			", club ".$this->getClub()->getNom().". Total: ".number_format($this->getTotalDetalls(), 2, ',', '.');
+			", club ".$this->getClub()->getNom().". Total: ".number_format($this->getTotalComanda(), 2, ',', '.');
 	}
 
 	/**
@@ -565,6 +565,27 @@ class EntityComanda {
 		ksort($acumulades); // Ordenada per codi
 		return $acumulades;*/
 		
+		if ($this->isFacturaModificada()) {
+			
+			$detallsArray = json_decode($this->getFactura()->getDetalls(), false, 512);
+			
+			foreach ($detallsArray as $id => $d) {
+						
+					$acumulades[$id] = array('total' => $d->total,
+						'totalbaixa' => $d->totalbaixa,	 
+						'preuunitat' => $d->preuunitat,
+						'ivaunitat' => $d->ivaunitat,
+						'import' => round($d->import, 2),
+						'producte' => $d->producte,
+						'extra'		=> '', //$d->extra
+						'abreviatura' => $d->abreviatura,
+						'descompte' => $d->descompte,
+						'codi' => $d->codi,
+						'id' => $id);
+			}
+			return $acumulades;
+		}
+		
 		foreach ($this->detalls as $d) {
 			if ( (!$d->esBaixa() || $baixes == true) && 
 					$d->getProducte() != null) {
@@ -619,6 +640,34 @@ class EntityComanda {
 	
 		return $this->factura->getNumFacturaCurt();
 	}
+	
+	/**
+	 * Import comanda modificat
+	 *
+	 * @return double
+	 */
+	public function isFacturaModificada() 
+	{
+		return abs($this->getTotalComanda() - $this->getTotalDetalls()) > 0.01 && $this->dataentrada->format('Y') >= 2015;
+	}
+	
+	/**
+	 * Get total factures
+	 *
+	 * @return double
+	 */
+	public function getTotalComanda()
+	{
+
+		if ($this->factura == null) return $this->getTotalDetalls();
+		
+		$total = $this->factura->getImport();
+		
+		foreach ($this->facturesanulacions as $factura) $total += $factura->getImport();
+			
+		return $total;
+	}
+	
 	
 	/**
 	 * Get total suma dels detalls

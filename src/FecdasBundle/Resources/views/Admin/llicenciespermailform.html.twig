@@ -1,6 +1,6 @@
 {# src/Fecdas/PartesBundle/Resources/views/Admin/llicenciespermailform.html.twig #}
     <div id="list-federats-enviament-mail">
-    	<form id="formrecents" action="{{ path('FecdasBundle_llicenciespermail') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    	<form id="formfederatspermail" action="{{ path('FecdasBundle_llicenciespermail') }}" method="post" {{ form_enctype(form) }}  class="appform">
     		<div class="row"><div class="col-md-12"><h3 class="title blue">{{ parte.club.nom }}, llista {{ parte.numcomanda }}</h3></div></div>
     		<div class="row">{{ form_widget(form.id) }}{% include 'FecdasBundle:Includes:messages.html.twig' %}</div>
 			<div id="table-federats">
@@ -42,7 +42,7 @@
 								   		<td class="data-detall-cell federat-personaindex">{{ loop.index }}</td>
 								   		<td class="data-detall-cell federat-personanom">{{ form_widget(llicencia.nom) }}</td>
 								   		<td class="data-detall-cell federat-personamail">{{ form_widget(llicencia.mail) }}</td>
-								   		<td class="data-detall-cell federat-personacheck"><div class="checkbox-inline">{{ form_widget(llicencia.enviar) }}</div></td>
+								   		<td class="data-detall-cell federat-personacheck"><div class="checkbox-inline">{{ form_widget(llicencia.enviar, { 'attr': {'class': 'checkbox-federat'} }) }}</div></td>
 							   		</tr>
 							   	{% endfor %}
 							</tbody>
@@ -51,7 +51,9 @@
 				    	{% endif %}
 				    </table>			
 					<div class="panel-footer">
-						<div class="row"></div>
+						<div class="row">
+							<div class="col-md-12  col-last-right blue"><label class="checkbox-inline"><span>Seleccionar tots:</span>{{ form_widget(form.checkall) }}</label></div>
+						</div>
 					</div>
 				</div>
 			</div>	

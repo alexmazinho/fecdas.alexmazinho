@@ -424,6 +424,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall .data-detall-cell i.fa-trash-o:hover { background-color: #a94442;  }
 .data-detall .data-detall-cell i.fa-plus-circle:hover { background-color: #31708f; }
 .link i.fa.blue:hover { background-color: #31708f; }
+.link i.fa.systemblue:hover { background-color: #2281cf;  }
 .link i.fa.lightblue:hover { background-color: #96c4ea; }
 .link i.fa.red:hover { background-color: #a94442; } 
 .link i.fa.green:hover { background-color: #5cb85c; }
@@ -552,6 +553,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .label-actions { float:right; }
 
 .blue { color: #1240a0; /*#2281cf;*/ }
+.systemblue { color: #2281cf; /*#2281cf;*/ }
 .lightblue { color: #96c4ea; }
 .red { color: #a94442; }
 .green { color: #5cb85c; }
@@ -2058,6 +2060,12 @@ select#parte_persona_addrnacionalitat {
 
 #table-federats #list-data { margin: 0; } 
 
+#table-federats .panel-heading .form-group { margin-bottom: }
+
+#form_checkall input { margin: 0 7px; }
+
+.panel-footer .checkbox-inline span { padding-right: 40px; }
+
 /************************************************ Llicències per mail Fi ******************************************************/
 
 
@@ -2463,7 +2471,7 @@ p.info-bold {
 
 #dialeg { height: auto !important; }
 
-#dialeg .title {  padding-left: 0;  margin-bottom: 20px; }
+#dialeg .title {  padding-left: 0;  line-height: 2; }
 
 #dialeg .dialeg-titol {
 	border-bottom: 1px solid #000000;

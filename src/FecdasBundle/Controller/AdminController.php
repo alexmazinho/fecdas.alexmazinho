@@ -1560,8 +1560,10 @@ GROUP BY c.nom
 		$em = $this->getDoctrine()->getManager();
 		
 		$filtre = '';
+		$parteid = 0;
 		if ($request->getMethod() == 'POST') {
-			
+			$formdata = $request->request->get('form');
+			$parteid = isset($formdata['id'])?$formdata['id']:0;
 		} else {
 			$parteid = $request->query->get('id', 0);
 			$filtre = $request->query->get('filter', '');
@@ -1573,7 +1575,19 @@ GROUP BY c.nom
 			if ($parte == null) throw new \Exception ('Llista no trobada');  
 			
 			if ($request->getMethod() == 'POST') {
-			
+				$llicencies = $formdata['llicencies'];
+				$res = 'Llicència enviada a <br/>';
+				foreach ($llicencies as $llicencia) {
+					$personaId = $llicencia['id'];
+					
+					if (isset($llicencia['enviar']) && $llicencia['enviar'] == 1) {
+
+						$res .= $llicencia['nom']. ' '.$llicencia['mail'].'</br>';
+						
+					}
+				}
+				
+				return new Response($res);
 			} else {
 				// CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
 				
@@ -1593,6 +1607,10 @@ GROUP BY c.nom
 
 				$formBuilder->add('filtre', 'text', array(
 					'data'	=> $filtre
+				));
+				
+				$formBuilder->add('checkall', 'checkbox', array(
+					'data'	=> true
 				));
 				
 				$formBuilder->add('llicencies', 'collection', array(

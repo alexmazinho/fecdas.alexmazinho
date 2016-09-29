@@ -136,7 +136,7 @@
 		   			<div class="data-detall-cell parterecents-actions">
 			   			{% if parte.perEnviarFederat == true  %}
 			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
-			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa fa-envelope lightblue"></i></a>
+			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa fa-envelope systemblue"></i></a>
 			   			{% endif %}
 			   			{% if parte.comandaPagada == false  %}
 			   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
@@ -185,23 +185,21 @@ recentsParams = function() {
 };
 
 submitEnviarLllicencies = function(action) {
-	var url = $('#formenquesta').attr("action");
-	var params = $('#formenquesta').serializeArray();
-	params.push( {'name':'submitaction','value': action} );
+	var url = $('#formfederatspermail').attr("action");
+	var params = $('#formfederatspermail').serializeArray();
+	//params.push( {'name':'submitaction','value': action} );
 
 	$.post(url, params, function(data) {
-		//alert(data);
-		//$( ".selector" ).dialog( "destroy" );
-		dialegInfo("Enquesta desada", data, 350, 100);
-
+		var sms = smsResultAjax('OK', data);
+		 
+		$("#list-forms").prepend(sms);
+		 
 		$("#dialeg").dialog("destroy");
 	}).fail( function(xhr, status, error) {
 		 // xhr.status + " " + xhr.statusText, status, error
 		 var sms = smsResultAjax('KO', xhr.responseText);
 		 
-		 $('#edicio-persona').show();
-		 
-		 $("#error-persona").html(sms);
+		 $("#list-federats-enviament-mail").prepend(sms);
 	     
 	});
 };
@@ -276,7 +274,17 @@ $(document).ready(function(){
 		});
 		    
 	});
-		
+
+	$( "#dialeg" ).on( "click", "#form_checkall", function() {
+		var checked = $(this).is(':checked');
+	
+		if (checked) {
+			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = true; });				
+		} else {
+			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = false; });
+		};
+	});
+	
 	//sortLlista("col-listheader", "list-data");
 
 	var tableScroll = $('.table-scroll');

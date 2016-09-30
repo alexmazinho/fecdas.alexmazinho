@@ -1,0 +1,57 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/llicenciespermailformtaula.html.twig #}
+<div id="table-federats">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<div class="row">	
+				<div class="col-md-8">
+		    		<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon blue">Filtre per nom o cognom</div>
+							{{ form_widget(form.filtre, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4  col-last-right title blue">Total: {{ form.llicencies|length|number_format(0, ',', '.') }}</div>
+			</div>
+		</div>
+		<div class="table-scroll">
+			<table class="table filtered-table">
+				<thead class="table-header">
+					<tr id="list-header">	
+		    	   		<th id="header-llicenciaid" class="col-listheader listheader-noorder hidden">id</th>
+				   		<th id="header-personaid" class="col-listheader listheader-noorder hidden">personaid</th>
+				   		<th id="header-personaindex" class="col-listheader listheader-noorder">#</th>
+				   		<th id="header-personanom" class="col-listheader listheader-noorder">Nom i cognoms</th>
+				   		<th id="header-personadni" class="col-listheader listheader-noorder">DNI</th>
+				   		<th id="header-personamail" class="col-listheader listheader-noorder">Mail</th>
+				   		<th id="header-personacheck" class="col-listheader listheader-noorder">Enviar?</th>
+				   	</tr>
+				</thead>
+				{% if form.llicencies|length > 0 %}
+					
+					<tbody  id="list-data">
+						{% for llicencia in form.llicencies %}
+					   		<tr class="data-detall">
+						   		<td class="data-detall-cell federat-llicenciaid hidden">{{ form_widget(llicencia.id) }}</td>
+						   		<td class="data-detall-cell federat-personaid hidden">{{ form_widget(llicencia.personaid) }}</td>
+						   		<td class="data-detall-cell federat-personaindex">{{ loop.index }}</td>
+						   		<td class="data-detall-cell federat-personanom">{{ form_widget(llicencia.nom) }}</td>
+						   		<td class="data-detall-cell federat-personadni">{{ form_widget(llicencia.dni) }}</td>
+						   		<td class="data-detall-cell federat-personamail">{{ form_widget(llicencia.mail) }}</td>
+						   		<td class="data-detall-cell federat-personacheck"><div class="checkbox-inline">{{ form_widget(llicencia.enviar, { 'attr': {'class': 'checkbox-federat'} }) }}</div></td>
+					   		</tr>
+					   	{% endfor %}
+					</tbody>
+					
+		  	 	{% else %}
+		        	<div class="sms-notice">Cap federat</div>
+		    	{% endif %}
+		    </table>
+	    </div>			
+		<div class="panel-footer">
+			<div class="row">
+				<div class="col-md-12  col-last-right blue"><label class="checkbox-inline"><span>Seleccionar tots:</span>{{ form_widget(form.checkall) }}</label></div>
+			</div>
+		</div>
+	</div>
+</div>	

@@ -105,7 +105,13 @@
 			 		<a id="formrebut-anular-traspas" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_anulartraspas', { 'rebut': rebut.id }) }}" role="button"><i class="fa fa-undo red"></i> Anul·lar trapàs. El rebut no existeix a comptabilitat</a>
 			 	{% else %}
 			 		<button type="submit" id="formrebut-desar" class="btn btn-default btn-lg"><i class="fa fa-save"></i> Modificar</button>
-				 	{% if maxnum == rebut.num and rebut.isCurrentYear and rebut.tipuspagament != constant('FecdasBundle\\Controller\\BaseController::TIPUS_PAGAMENT_TPV') %}<a id="formrebut-esborrar" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_esborrarultimrebut', { 'rebut': rebut.id }) }}" role="button"><i class="fa fa-trash-o red"></i> Esborrar (Últim rebut)</a>{% endif %} 	
+			 		{% if rebut.isCurrentYear and rebut.tipuspagament != constant('FecdasBundle\\Controller\\BaseController::TIPUS_PAGAMENT_TPV') %}
+			 			{% if maxnum == rebut.num %}
+			 				<a id="formrebut-esborrar" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_esborrarultimrebut', { 'rebut': rebut.id }) }}" role="button"><i class="fa fa-trash-o red"></i> Esborrar (Últim rebut)</a>
+			 			{% else %}
+			 				{# <a id="formrebut-esborrar" class="btn btn-default btn-lg" href="{{ path('FecdasBundle_esborrarultimrebut', { 'rebut': rebut.id }) }}" role="button"><i class="fa fa-trash-o red"></i> Esborrar (La numeració deixarà de ser consecutiva)</a>#}
+			 			{% endif %}
+			 		{% endif %}
 			 	{% endif %}
 			 </div>
 		</div>

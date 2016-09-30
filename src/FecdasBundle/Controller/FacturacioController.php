@@ -2258,6 +2258,8 @@ class FacturacioController extends BaseController {
 		} catch (\Exception $e) {
 			// Ko, mostra form amb errors
 			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			return $this->redirect($this->generateUrl('FecdasBundle_editarrebut',
+									array( 'id' => $rebut->getId() )));
 		}
 
 		return $this->redirect($this->generateUrl('FecdasBundle_ingresos'));
@@ -2360,6 +2362,8 @@ class FacturacioController extends BaseController {
 			/*$form->get('import')->addError(new FormError('Valor incorrecte'));
 			throw new \Exception('Cal indicar un import superior a 0' );*/
 		}
+		if ($rebut->getImport() == 0) throw new \Exception('El rebut no pot tenir un import 0' );
+		
 		if ($rebut->esAnulacio()) {
 			if ($rebut->getDatapagament()->format('Y-m-d') < $rebut->getComandaAnulacio()->getDataentrada()->format('Y-m-d')) {
 				$form->get('datapagament')->addError(new FormError('Data incorrecte'));

@@ -317,15 +317,20 @@ class EntityParte extends EntityComanda {
     }
     
     /**
-     * Obtenir llista de llicències ordenades per nom de l'assegurat
+     * Obtenir llista de llicències ordenades per nom de l'assegurat i filtrades
      *
      * @return array
      */
-    public function getLlicenciesSortedByName()
+    public function getLlicenciesSortedByName($filtre = '')
     {
     	$arr = array();
     	foreach ($this->llicencies as $llicencia) {
-    		if (!$llicencia->esBaixa()) $arr[] = $llicencia;
+    		if (!$llicencia->esBaixa()) {
+
+    			if ($filtre == '' || 
+    				($filtre != '' && 
+    				 strpos( mb_strtolower ($llicencia->getPersona()->getNomCognoms()),  mb_strtolower($filtre)) !== false)) $arr[] = $llicencia;
+			}
     	}
     	 
     	usort($arr, function($a, $b) {

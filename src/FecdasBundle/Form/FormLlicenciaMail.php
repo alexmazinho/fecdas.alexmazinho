@@ -34,6 +34,12 @@ class FormLlicenciaMail extends AbstractType {
 					'data'		=> $persona->getNomCognoms()
 				));
 
+				$form->add('dni', 'text', array(
+					'read_only' => true,
+					'mapped' 	=> false,
+					'data'		=> $persona->getDni()
+				));
+				
 				$form->add('mail', 'text', array(
 					'read_only' => true,
 					'mapped' 	=> false,

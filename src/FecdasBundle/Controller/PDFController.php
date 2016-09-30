@@ -863,112 +863,7 @@ class PDFController extends BaseController {
 			
 		return $pdf;
 	}
-	
-	private function printPlasticTecnocampus($pdf, $llicencia) {
-		// Posicions
-		$xPol = 0;
-		$yPol =	2;		
-		
-		$xTit = 0;
-		$yTit =	12;		
-		$xNom = 10;
-		$yNom =	27.4;		
-		$xDni = 18+5;
-		$yDni =	32.1;		
-		$xCat = 20.5+6;
-		$yCat =	36.7;		
-		$xNai = 19.5+7;
-		$yNai =	41.1;		
-		$xClu = 12;
-		$yClu =	45.6;		
-		$xTlf = 15+4;
-		$yTlf =	49.1+0.5;		
-		$xCad = 61+7;
-		$yCad =	49.1+0.5;
-		
-		$parte = $llicencia->getParte();
-		$polissa = $parte->getTipus()->getPolissa();
-		
-		// Dades
-		$pdf->SetFont('helvetica', 'B', 9, '', true);
-		$pdf->setFontStretching(90);		
-		$pdf->SetXY($xPol, $yPol);
-		$pdf->MultiCell(0,0,'Número de pòlissa: '.$polissa,0,'C',false);		
-		
-		$persona = $llicencia->getPersona();
-		if ( $persona == null) return;
-		
-		$datacaduca = $parte->getDatacaducitat('printparte');
-		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
-				
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
-		$pdf->setFontStretching(100);		
-		$pdf->SetXY($xTit, $yTit);
-		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
 
-		$pdf->SetFont('dejavusans', 'B', 8);
-
-		$pdf->SetXY($xNom, $yNom);
-		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
-
-		$pdf->SetXY($xDni, $yDni);
-		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
-
-		$pdf->SetXY($xCat, $yCat);
-		$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-				
-		$pdf->SetXY($xNai, $yNai);
-		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
-				
-		$pdf->SetXY($xClu, $yClu);
-		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
-
-		$pdf->SetFont('dejavusans', 'B', 7);
-		$pdf->SetXY($xTlf, $yTlf);
-		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
-				
-		$pdf->SetXY($xCad, $yCad);
-		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
-
-		// Títols
-		$xTit = 0;
-		$yTit =	12;		
-		$y_offset = 0.3;
-		$xCad_tit = 37;
-		$x_titols = 0.5;
-
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
-				
-		$pdf->SetXY($xTit, $yTit);
-		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
-
-		$pdf->SetFont('dejavusans', 'B', 7);
-		//$pdf->setFontSpacing(0.5);
-    	//$pdf->setFontStretching(80);
-
-		$pdf->SetXY($x_titols, $yNom+$y_offset);
-		$pdf->Cell(0, 0, 'Nom:', 0, 1, 'L');
-
-		$pdf->SetXY($x_titols, $yDni+$y_offset);
-		$pdf->Cell(0, 0, 'DNI/Passaport:', 0, 1, 'L');
-
-		$pdf->SetXY($x_titols, $yCat+$y_offset);
-		$pdf->Cell(0, 0, 'Categoria/Nivell:', 0, 1, 'L');
-				
-		$pdf->SetXY($x_titols, $yNai+$y_offset);
-		$pdf->Cell(0, 0, 'Data Naixement:', 0, 1, 'L');
-				
-		$pdf->SetXY($x_titols, $yClu+$y_offset);
-		$pdf->Cell(0, 0, 'Entitat:', 0, 1, 'L');
-
-		$pdf->SetXY($x_titols, $yTlf+$y_offset-0.3);
-		$pdf->Cell(0, 0, 'Telf. Entitat:', 0, 1, 'L');
-				
-		$pdf->SetXY($xCad_tit, $yCad+$y_offset-0.3);
-		$pdf->Cell(0, 0, 'Vàlida fins/Valid until:', 0, 1, 'L');
-		
-	}
-	
 	private function printPlasticGeneral($pdf, $llicencia) {
 		// Posicions
 		$xTit = 0;
@@ -1023,21 +918,6 @@ class PDFController extends BaseController {
 		$pdf->SetXY($xCad, $yCad);
 		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
 		
-	}
-	
-	private function getTitolPlastic($parte, $datacaduca = null) {
-		if ($parte == null) return '';
-		$anyLlicencia = $parte->getDataalta()->format('Y');
-		if ($datacaduca == null) $datacaduca = $parte->getDatacaducitat('titolPlastic');
-		$anyFinalLlicencia = $datacaduca->format('Y');
-		$tipus = $parte->getTipus();
-	
-		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
-	
-		$titolPlastic = str_replace("__DESDE__", $anyLlicencia, $titolPlastic);
-		$titolPlastic = str_replace("__FINS__", $anyFinalLlicencia, $titolPlastic);
-	
-		return $titolPlastic;
 	}
 	
 	public function carnettopdfAction(Request $request) {
@@ -1164,5 +1044,53 @@ class PDFController extends BaseController {
 							'', false, false, array(), 'CT',
 							false, false, false, array());*/
 		
+	}
+
+
+	private function printLlicencies( $llicencies ) {
+	
+		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
+		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
+		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
+		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
+		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
+				
+		$pdf->init(array('author' => 'FECDAS',
+						'title' => 'Llicència FECDAS' . date("Y")));
+
+		$pdf->setPrintFooter(false);
+		$pdf->setPrintHeader(false);
+				
+		// zoom - layout - mode
+		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
+		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+		$pdf->SetMargins(5, 5, 5);
+		$pdf->SetAutoPageBreak 	(false, 5);
+		//$pdf->SetMargins(0, 0, 0);
+		//$pdf->SetAutoPageBreak 	(false, 0);
+		$pdf->SetTextColor(0, 0, 0); 
+			
+		$width = 86; //Original
+		$height = 54; //Original
+
+		foreach ($llicencies as $llicencia) {
+			$parte = $llicencia->getParte();
+								
+			// Add a page
+			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $llicencia);
+				
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+					//$this->printPlasticGeneral($pdf, $llicencia);
+					$this->printPlasticTecnocampus($pdf, $llicencia);
+			}
+		}
+		// reset pointer to the last page
+		$pdf->lastPage();
+			
+		return $pdf;
 	}
 }

@@ -2044,12 +2044,15 @@ select#parte_persona_addrnacionalitat {
 
 
 #header-personaindex {	width: 7%; text-align: left;}
-#header-personanom { width: 40%;  text-align: left; }
+#header-personanom { width: 25%;  text-align: left; }
+#header-personadni { width: 15%;  text-align: left; }
 #header-personamail { width: 40%;  text-align: left; }
 #header-personacheck { width: 7%; }
 
 .data-detall-cell.federat-personaindex {	width: 7%; text-align: left;}
-.data-detall-cell.federat-personanom { width: 40%;  text-align: left; }
+.data-detall-cell.federat-personanom { width: 25%;  text-align: left; }
+.data-detall-cell.federat-personadni { width: 15%;  text-align: left; }
+.data-detall-cell.federat-personadni input { text-align: center; }
 .data-detall-cell.federat-personamail { width: 40%;  text-align: left; }
 .data-detall-cell.federat-personacheck { width: 7%; }
 
@@ -2059,6 +2062,8 @@ select#parte_persona_addrnacionalitat {
 #table-federats .input-group-addon { background-color: #fff; }
 
 #table-federats #list-data { margin: 0; } 
+
+#table-federats .table-scroll { max-height: 380px; }
 
 #table-federats .panel-heading .form-group { margin-bottom: }
 

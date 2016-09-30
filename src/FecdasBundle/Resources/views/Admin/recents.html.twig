@@ -189,6 +189,8 @@ submitEnviarLllicencies = function(action) {
 	var params = $('#formfederatspermail').serializeArray();
 	//params.push( {'name':'submitaction','value': action} );
 
+	obrirMascaraBlock( '#table-federats' );
+	
 	$.post(url, params, function(data) {
 		var sms = smsResultAjax('OK', data);
 		 
@@ -200,9 +202,57 @@ submitEnviarLllicencies = function(action) {
 		 var sms = smsResultAjax('KO', xhr.responseText);
 		 
 		 $("#list-federats-enviament-mail").prepend(sms);
+
+		 tancarMascaraBlock( '#table-federats' );
 	     
 	});
 };
+
+
+eventFilterTable = function (containerSel, taulaSel, url) {
+
+	var timeout;
+	// Camp de text per a filtre. Detect input filtre. Si text = '' o text >= 3 sends ajax call		
+	$(containerSel).on( 'input', '#form_filtre', function(e) {
+		if(timeout) {
+		    clearTimeout(timeout);
+		    timeout = null;
+		}
+					
+		var filtre = $(this).val(); 
+					  
+		if ( $(this).data('lastval') != filtre ) {
+			 
+			$(this).data('lastval', filtre);
+
+		    if (filtre == '' || filtre.length >= 3) {
+		    	obrirMascaraBlock(  taulaSel );
+
+		    	$('.alert.alert-dismissible').remove();
+		    	
+		    	timeout = setTimeout( function() {
+					
+					url += '&filtre='+filtre;
+
+					$.get(url, function(data) {
+
+						$(taulaSel).remove();
+						$(containerSel).append(data);
+
+						tancarMascaraBlock( taulaSel );
+					}).fail( function(xhr, status, error) {
+						 var sms = smsResultAjax('KO', xhr.responseText);
+						 
+						 $(containerSel).prepend(sms);
+
+						 tancarMascaraBlock( taulaSel );
+					});	
+					
+				}, 1000);
+			}
+		};
+	});
+}
 
 
 $(document).ready(function(){
@@ -253,6 +303,7 @@ $(document).ready(function(){
 			$("#dialeg").dialog({
 				buttons : {
 		           	"Enviar" : function() {
+		           		$('.alert.alert-dismissible').remove();
 		           		submitEnviarLllicencies('final');
 		       		},
 		           	"Cancel·lar" : function() {
@@ -267,12 +318,17 @@ $(document).ready(function(){
 			    minWidth: 400,
 			    title: 'Enviament llicències per mail'
 			 });
+
+			eventFilterTable("#formfederatspermail", "#table-federats", url);
+			
 		}).fail( function(xhr, status, error) {
 			 var sms = smsResultAjax('KO', xhr.responseText);
 			 
 			 $("#list-forms").prepend(sms);
 		});
-		    
+
+		
+		
 	});
 
 	$( "#dialeg" ).on( "click", "#form_checkall", function() {

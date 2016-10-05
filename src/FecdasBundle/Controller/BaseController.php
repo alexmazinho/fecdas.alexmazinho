@@ -1718,7 +1718,26 @@ class BaseController extends Controller {
 		$width = 150; 
 		$height = 90; 
 		$x_titols = 5;
-		$yLink = 75;
+		$yLinks = 77;
+
+		// Posicions
+		$xTit = 0;
+		$yTit =	8;
+		$offset = 5;		
+		$yNom =	40-$offset;		
+		$yDni =	46-$offset;	
+		$yCat =	52-$offset;		
+		$yNai =	58-$offset;		
+		$yCad = 72-$offset;
+		$yClu =	64-$offset;		
+		$yTlf =	64-$offset;	
+
+		// Links docs
+		$x = $x_titols + 5;
+		$y = $yLinks;
+		$yOffset = 10;
+		$hLink = 6.8;
+		$buttonsMargin = 5;
 
 		$pageLayout = array($width, $height); //  or array($height, $width) 
 		$pdf = new TcpdfBridge('L', PDF_UNIT, $pageLayout, true, 'UTF-8', false);
@@ -1745,21 +1764,79 @@ class BaseController extends Controller {
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
-		$this->printDigitalescolar($pdf, $llicencia);
-
-		$pdf->SetXY($x_titols, $yLink);		
-			
-		$url_polissa = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR);
-		$url_comunicat = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR);
-		$url_protocol = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR);
+		$parte = $llicencia->getParte();
+		$polissa = $parte->getTipus()->getPolissa();
+		
+		// Dades
+		$persona = $llicencia->getPersona();
+		if ( $persona == null) return;
+		
+		$datacaduca = $parte->getDatacaducitat('printparte');
+		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
+				
+		$pdf->SetTextColor(0, 0, 255);
+		$pdf->SetTextColor(255,255,255);
+		
+//		$pdf->SetFillColor(224,224,224);
+//		$pdf->SetAlpha(0.7);
 	
+		$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
+		$pdf->SetFont('dejavusans', 'B', 15, '', true);
+		$pdf->setFontStretching(100);		
+		//$pdf->SetXY($xTit, $yTit);
+		$pdf->MultiCell(0,0,$titolPlastic,0,'C', 0, 0, $xTit, $yTit);
+
+//		$pdf->SetAlpha(1);
+		$pdf->SetFont('dejavusans', 'B', 11);
+		$pdf->SetTextColor(255, 255, 255);
+
+		$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.3, 'depth_h' => 0.3, 'color' => array(53,153,179), 'opacity' => 0.6, 'blend_mode' => 'Normal'));		
+		
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yNom, '<span style="font-size: small;">Nom: </span>'.$persona->getNomCognoms(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yCat, '<span style="font-size: small;">Categoria/Nivell: </span>'.$llicencia->getCategoria()->getCategoria(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yNai, '<span style="font-size: small;">Data Naixement: </span>'.$persona->getDatanaixement()->format('d/m/Y'), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yClu, '<span style="font-size: small;">Entitat: </span>'.$parte->getClub()->getNom(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
+		
+		$pdf->SetFont('dejavusans', 'B', 10);
+		
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yTlf, '<span style="font-size: small;">Telf. Entitat: </span>'.$parte->getClub()->getTelefon(), 0, 0, false, true, 'R', true);
+
+		//$pdf->setFontSpacing(0.5);
+    	//$pdf->setFontStretching(80);
+
+		//Disable
+		$pdf->setTextShadow(array('enabled'=>false));
+				
 		$margins = $pdf->getMargins();
 		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right'];
 		
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
+						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
+						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)));
 		
-		$pdf->Cell($width/3, 0, 'pòlissa', 0, 0, 'C', false, $url_polissa, 1);
-		$pdf->Cell($width/3, 0, 'protocol', 0, 0, 'C', false, $url_protocol, 1);
-		$pdf->Cell($width/3, 0, 'comunicat', 0, 0, 'C', false, $url_comunicat, 1);
+		$pdf->SetTextColor(53,153,179);
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
+
+		$margins = $pdf->getMargins();
+		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right']; 
+		$wLink = $width/3 - 2 * $buttonsMargin;
+
+
+		for ($i=0; $i < count($links); $i++) {
+			$pdf->Image('images/white_button.png', $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
+					'', true, 320, '', false, false, 0, false, false, false);
+			//$pdf->setPageMark(); 
+			$pdf->MultiCell($wLink, $hLink, $links[$i]['text'], 0, 'C', 0, 0, $x, $y, true, 0, false, true, $hLink, 'M', true);
+
+			if ($i == 2) {
+				$y += $yOffset;
+				$x = $x_titols + 5;
+			} else {
+				$x += $wLink + (2 * $buttonsMargin);
+			}
+		}
 		
 		
 		// reset pointer to the last page
@@ -1770,95 +1847,57 @@ class BaseController extends Controller {
 		
 	protected function printLlicenciaT1pdf( $llicencia ) {
 	
-		$pdf = $this->printLlicenciaTecnocampuspdf( $llicencia );
-		
-		$url_polissa = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS);
-		$url_comunicat = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS);
-		$url_protocol = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS);
-	
-		$margins = $pdf->getMargins();
-		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right'];
-		
-		
-		$pdf->Cell($width/3, 0, 'pòlissa', 0, 0, 'L', false, $url_polissa, 1);
-		$pdf->Cell($width/3, 0, 'protocol', 0, 0, 'L', false, $url_protocol, 1);
-		$pdf->Cell($width/3, 0, 'comunicat', 0, 0, 'L', false, $url_comunicat, 1);
-		
-		// reset pointer to the last page
-		$pdf->lastPage();
+		$yLinks = 70;
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
+						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
+						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)));
+						
+		$pdf = $this->printDigitalTecnocampus( $llicencia, $links, $yLinks );
 		
 		return $pdf;
 	}
 	
 	protected function printLlicenciaT2pdf( $llicencia ) {
 	
-		$pdf = $this->printLlicenciaTecnocampuspdf( $llicencia );
+		$yLinks = 67;
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
+						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
+						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)),
+						array('text'=> 'pòlissa busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+						array('text'=> 'protocol busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+						array('text'=> 'comunicat busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 		
-		$url_polissa = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS);
-		$url_comunicat = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS);
-		$url_protocol = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS);
-		$url_polissa_busseig = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG);
-		$url_comunicat_busseig = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG);
-		$url_protocol_busseig = $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG);
 	
-	
-		// Títols
-		$x_titols = 11;
-		$yLink1 = 68;
-		$yLink2 = 76;
-		//$pdf->SetTextColor(6,69,173); 
-		$pdf->SetTextColor(199,132,1);
-		$pdf->SetFont('helvetica', 'B', 11, '', true);
-		
-		
-
-		/*TCPDF::Cell 	( $w, $h = 0, $txt = “, $border = 0, $ln = 0, $align = “, $fill = false, $link = “,
-			  	$stretch = 0,
-			  	$ignore_min_height = false,
-			  	$calign = ’T’,
-			  	$valign = ’M’ 
-		) 	*/
-	
-	 	
-		$margins = $pdf->getMargins();
-		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right'];
-		
-		$bordersLinks = array('LTRB' => array('width' => 0.3, 'cap' => 'round', 'join' => 'bevel', 'dash' => 0, 'color' => array(0, 0, 0)));
-		$pdf->SetLineStyle(array(array('width' => 0.3, 'cap' => 'round', 'join' => 'bevel', 'dash' => 0, 'color' => array(0, 0, 0)) ));
-		
-		
-		$pdf->SetXY($x_titols, $yLink1);
-		//$pdf->LinearGradient($x_titols + 5, $yLink1, $width/3 -10, 5.8, array(255,255,255), array(224,224,224), array(0, 0, 0, 1)); // to bottom
-		//$pdf->SetFillColor(224,224,224);
-		$pdf->RoundedRect($x_titols + 5, $yLink1, $width/3 -10, 5.8, 2, '1111', 'DF',array(), array(255,255,255));
-		/*$pdf->Image('images/click-icon.png', $x_titols + $width/3 - 10, $yLink1+2, 
-						5, 5, 'png', '', '', false, 320, 
-						'', false, false, 1, false, false, false);*/
-		
-			
-		$pdf->Cell($width/3, 0, 'pòlissa', 0, 0, 'C', false, $url_polissa, 1);
-		$pdf->Cell($width/3, 0, 'protocol', 0, 0, 'C', false, $url_protocol, 1);
-		$pdf->Cell($width/3, 0, 'comunicat', 0, 1, 'C', false, $url_comunicat, 1);
-		
-		$pdf->SetXY($x_titols, $yLink2);
-		$pdf->Cell($width/3, 0, 'pòlissa busseig', 0, 0, 'C', false, $url_polissa_busseig, 1);
-		$pdf->Cell($width/3, 0, 'protocol busseig', 0, 0, 'C', false, $url_protocol_busseig, 1);
-		$pdf->Cell($width/3, 0, 'comunicat busseig', 0, 0, 'C', false, $url_comunicat_busseig, 1);
-		
-		// reset pointer to the last page
-		$pdf->lastPage();
+		$pdf = $this->printDigitalTecnocampus( $llicencia, $links, $yLinks );
 		
 		return $pdf;
 	}
 	
-	private function printLlicenciaTecnocampuspdf( $llicencia ) {
+	private function printDigitalTecnocampus( $llicencia, $links, $yLinks ) {
 		// Paper cordinates are calculated in this way: (inches * 72) where (1 inch = 25.4 mm)
 		// Definir paper 13,3'' => 29cmx17cm (WxH) en 16:9
 		// Definir paper 7'' => => 15cmx9cm (WxH) en 16:9
+
+		// Posicions
+		$xTit = 0;
+		$yTit =	18;		
+		$yNom =	35;		
+		$yDni =	40;		
+		$yCad =	56.2;
 		
+		// Títols
+		$x_titols = 11;
+
+		// Links docs
+		$x = $x_titols;
+		$y = $yLinks;
+		$yOffset = 10;
+		$hLink = 6.8;
+		$buttonsMargin = 5;
+				
 		$width = 150; 
 		$height = 90; 
-				
+		
 		$pageLayout = array($width, $height); //  or array($height, $width) 
 		$pdf = new TcpdfBridge('L', PDF_UNIT, $pageLayout, true, 'UTF-8', false);
 				
@@ -1884,24 +1923,6 @@ class BaseController extends Controller {
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
-		
-		$this->printDigitalTecnocampus($pdf, $llicencia);
-			
-		return $pdf;
-	}
-
-	protected function printDigitalTecnocampus($pdf, $llicencia) {
-		// Posicions
-		
-		$xTit = 0;
-		$yTit =	20;		
-		$yNom =	34;		
-		$yDni =	39;		
-		$yCad =	48;
-		
-		// Títols
-		$x_titols = 11;
-		
 		$parte = $llicencia->getParte();
 		$polissa = $parte->getTipus()->getPolissa();
 		
@@ -1919,89 +1940,41 @@ class BaseController extends Controller {
 
 		$pdf->SetFont('dejavusans', 'B', 12);
 
-		$pdf->SetXY($x_titols, $yNom);
-		$pdf->Cell(0, 0, 'Nom: '.$persona->getNomCognoms(), 0, 1, 'L');
-
-		$pdf->SetXY($x_titols, $yDni);
-		$pdf->Cell(0, 0, 'DNI/Passaport: '.$persona->getDni(), 0, 1, 'L');
-
-		$pdf->SetFont('dejavusans', 'B', 10);
-		$pdf->SetXY($x_titols, $yCad);
-		$pdf->Cell(0, 0, 'Vàlida fins/Valid until: '. $datacaduca->format('d/m/Y'), 0, 1, 'R');
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yNom, '<span style="font-size: small;">Nom: </span>'.$persona->getNomCognoms(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
 		//$pdf->setFontSpacing(0.5);
     	//$pdf->setFontStretching(80);
+		
+		$pdf->SetTextColor(199,132,1);
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
+
+		$margins = $pdf->getMargins();
+		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right']; 
+		$wLink = $width/3 - 2 * $buttonsMargin;
+
+
+		for ($i=0; $i < count($links); $i++) {
+			$pdf->Image('images/white_button.png', $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
+					'', true, 320, '', false, false, 0, false, false, false);
+			//$pdf->setPageMark(); 
+			$pdf->MultiCell($wLink, $hLink, $links[$i]['text'], 0, 'C', 0, 0, $x, $y, true, 0, false, true, $hLink, 'M', true);
+
+			if ($i == 2) {
+				$y += $yOffset;
+				$x = $x_titols;
+			} else {
+				$x += $wLink + (2 * $buttonsMargin);
+			}
+		}
+		
+		// reset pointer to the last page
+		$pdf->lastPage();
+			
+		return $pdf;
 	}
 
-	protected function printDigitalescolar($pdf, $llicencia) {
-		// Posicions
-		
-		$xTit = 0;
-		$yTit =	10;
-		$offset = 3;		
-		$yNom =	40-$offset;		
-		$yDni =	45-$offset;	
-		$yCat =	50-$offset;		
-		$yNai =	55-$offset;		
-		$yCad =	60-$offset;
-		$yClu =	65-$offset;		
-		$yTlf =	65+0.5-$offset;	
-		
-		
-		// Títols
-		$x_titols = 5;
-		
-		$parte = $llicencia->getParte();
-		$polissa = $parte->getTipus()->getPolissa();
-		
-		// Dades
-		$persona = $llicencia->getPersona();
-		if ( $persona == null) return;
-		
-		$datacaduca = $parte->getDatacaducitat('printparte');
-		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
-				
-		$pdf->SetTextColor(0, 0, 255);
-		
-		$pdf->SetFillColor(224,224,224);
-		$pdf->SetAlpha(0.7);
-		
-		$pdf->SetFont('dejavusans', 'B', 15, '', true);
-		$pdf->setFontStretching(100);		
-		$pdf->SetXY($xTit, $yTit);
-		$pdf->MultiCell(0,0,$titolPlastic,0,'C',true);
-
-		$pdf->SetAlpha(1);
-		$pdf->SetFont('dejavusans', 'B', 11);
-		$pdf->SetTextColor(255, 255, 255);
-		
-		$pdf->SetXY($x_titols, $yNom);
-		$pdf->Cell(0, 0, 'Nom: '.$persona->getNomCognoms(), 0, 1, 'L');
-
-		$pdf->SetXY($x_titols, $yDni);
-		$pdf->Cell(0, 0, 'DNI/Passaport: '.$persona->getDni(), 0, 1, 'L');
-
-		$pdf->SetXY($x_titols, $yCat);
-		$pdf->Cell(0, 0, 'Categoria/Nivell: '.$llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-				
-		$pdf->SetXY($x_titols, $yNai);
-		$pdf->Cell(0, 0, 'Data Naixement: '.$persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
-				
-		$pdf->SetXY($x_titols, $yClu);
-		$pdf->Cell(0, 0, 'Entitat: '.$parte->getClub()->getNom(), 0, 1, 'L');
-
-		$pdf->SetFont('dejavusans', 'B', 10);
-		$pdf->SetXY($x_titols, $yCad);
-		$pdf->Cell(0, 0, 'Vàlida fins/Valid until: '. $datacaduca->format('d/m/Y'), 0, 1, 'L');
-		
-		$pdf->SetFont('dejavusans', 'B', 10);
-		$pdf->SetXY($x_titols, $yTlf);
-		$pdf->Cell(0, 0, 'Telf. Entitat: '.$parte->getClub()->getTelefon(), 0, 1, 'R');
-
-		//$pdf->setFontSpacing(0.5);
-    	//$pdf->setFontStretching(80);
-	}
-	
 	protected function printPlasticTecnocampus($pdf, $llicencia) {
 		// Posicions
 		$xPol = 0;

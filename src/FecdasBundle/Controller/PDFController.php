@@ -893,7 +893,8 @@ class PDFController extends BaseController {
 			// Add a page
 			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 
-			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $llicencia);
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR) $this->printPlasticGeneral($pdf, $llicencia);
 				
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
 				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {

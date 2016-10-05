@@ -134,13 +134,13 @@
 		   			</div>
 		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parterecents-actions">
-			   			{% if parte.perEnviarFederat == true  %}
-			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
-			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa fa-envelope systemblue"></i></a>
-			   			{% endif %}
 			   			{% if parte.comandaPagada == false  %}
 			   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
 			   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+			   			{% endif %}
+			   			{% if parte.perEnviarFederat == true  %}
+			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
+			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa fa-envelope systemblue"></i></a>
 			   			{% endif %}
 		   				{% if parte.perImprimir == true  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
 		   					<i class="fa fa-print blue"></i></a>{% endif %}
@@ -310,6 +310,8 @@ $(document).ready(function(){
 		// Obrir form selecció federats
 		var url = $(this).attr("href");
 
+		$('.alert.alert-dismissible').remove();
+		
 		$.get(url, function(data) {
 			
 			$("#dialeg").html(data);

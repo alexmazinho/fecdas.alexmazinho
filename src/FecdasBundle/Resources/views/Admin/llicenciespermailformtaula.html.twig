@@ -34,7 +34,10 @@
 					   		<tr class="data-detall">
 						   		<td class="data-detall-cell federat-llicenciaid hidden">{{ form_widget(llicencia.id) }}</td>
 						   		<td class="data-detall-cell federat-personaid hidden">{{ form_widget(llicencia.personaid) }}</td>
-						   		<td class="data-detall-cell federat-personaindex">{{ loop.index }}</td>
+						   		<td class="data-detall-cell federat-personaindex">{{ loop.index }}
+						   			<a class="veure-llicencia-digital link" href="{{ path('FecdasBundle_llicenciadigital', { 'id': llicencia.vars.value.id }) }}" 
+			   							alt="Llicència digital" title="Llicència digital"><i class="fa fa-file-pdf-o red"></i></a>
+						   		</td>
 						   		<td class="data-detall-cell federat-personanom">{{ form_widget(llicencia.nom) }}</td>
 						   		<td class="data-detall-cell federat-personadni">{{ form_widget(llicencia.dni) }}</td>
 						   		<td class="data-detall-cell federat-personamail">{{ form_widget(llicencia.mail) }}</td>

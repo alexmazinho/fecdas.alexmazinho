@@ -1578,7 +1578,7 @@ GROUP BY c.nom
 				$llicencies = $formdata['llicencies'];
 				$res = 'Llicència enviada a <br/>';
 				$log = '';
-				$curs = $parte->getDataalta()->format('Y').'-'.($parte->getDataalta()->format('y') + 1);
+				$curs = $parte->getCurs();
 				$template = $parte->getTipus()->getTemplate();
 				
 				foreach ($llicencies as $llicenciaArray) {

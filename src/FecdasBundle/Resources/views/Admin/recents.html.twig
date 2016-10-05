@@ -285,6 +285,24 @@ $(document).ready(function(){
 		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
 		window.location = url; 
 	});
+
+
+	/*$( "#dialeg" ).on( "click", ".veure-llicencia-digital", function(e) {
+		e.preventDefault();
+
+		var url = $(this).attr("href");
+
+		$.get(url, function(data) {
+
+			window.open().write(data);
+			//document.write(data)
+			
+		}).fail( function(xhr, status, error) {
+			 var sms = smsResultAjax('KO', xhr.responseText);
+			 
+			 $("#list-forms").prepend(sms);
+		});	
+	});*/
 	
 	$('.enviament-llicencies').click(function(e) {
 		e.preventDefault();

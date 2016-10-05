@@ -124,6 +124,12 @@ FecdasBundle_licensetopdf:
     requirements:
         _method:  GET
 
+FecdasBundle_llicenciadigital:
+    pattern:  /llicenciadigital
+    defaults: { _controller: "FecdasBundle:PDF:llicenciadigital" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_partetopdf:
     pattern:  /printparte
     defaults: { _controller: "FecdasBundle:PDF:partetopdf" }

@@ -167,7 +167,20 @@ class EntityParte extends EntityComanda {
 	public function perEnviarFederat()
 	{
 		return $this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 || 
-				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2;
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 ||
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR;
+	}
+	
+	/**
+	 * Get curs
+	 *
+	 * @return string
+	 */
+	public function getCurs()
+	{
+		$any = $this->getDataalta()->format('Y');
+		$anyCaduca = $this->getDatacaducitat()->format('Y');
+		return ($any == $anyCaduca?($anyCaduca-1).'-'.($anyCaduca):$any.'-'.($any + 1));
 	}
 	
 	/**

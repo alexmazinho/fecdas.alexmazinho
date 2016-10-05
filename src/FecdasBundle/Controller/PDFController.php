@@ -817,6 +817,49 @@ class PDFController extends BaseController {
 		return $response;
 	}
 	
+	public function llicenciaDigitalAction(Request $request) {
+		$llicenciaid = $request->query->get("id", 0);
+			
+		try {	
+			if ($this->isCurrentAdmin() != true) throw new \Exception('L\'usuari no pot realitzar aquesta opció, es desarà al registre');
+	
+			$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaid);
+		
+			if ($llicencia == null) throw new \Exception('No s\'ha trobat la llicència.');
+			
+			$parte = $llicencia->getParte();
+			
+			if ($parte == null) throw new \Exception('No s\'ha trobat la llista de la llicència.');
+			
+			$template = $parte->getTipus()->getTemplate();
+			$curs = $parte->getCurs();
+				
+			$method = "printLlicencia".$template."pdf";
+		
+			if (!method_exists($this, $method)) throw new \Exception("Error generant la llicència. No existeix la plantilla"); 		
+
+			$pdf = $this->$method( $llicencia );
+			
+			$this->logEntryAuth('LLICENCIA DIGITAL OK ', $llicenciaid);
+				
+			$nom =  "llicencia_".$curs."_".$llicencia->getId().".pdf";
+
+			// Close and output PDF document
+			$response = new Response($pdf->Output($nom, "D"));
+			$response->headers->set('Content-Type', 'application/pdf');
+			return $response;
+			
+		} catch (\Exception $e) {
+			
+			$this->logEntryAuth('LLICENCIA DIGITAL KO', 'llicencia  ' . $llicenciaid . ' error: '.$e->getMessage() );
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);							
+		}
+
+		return $response;
+
+	}
+	
 	private function printLlicencies( $llicencies ) {
 	
 		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
@@ -1046,51 +1089,4 @@ class PDFController extends BaseController {
 		
 	}
 
-
-	private function printLlicencies( $llicencies ) {
-	
-		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
-		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
-		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
-		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
-		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
-				
-		$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència FECDAS' . date("Y")));
-
-		$pdf->setPrintFooter(false);
-		$pdf->setPrintHeader(false);
-				
-		// zoom - layout - mode
-		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
-		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-		$pdf->SetMargins(5, 5, 5);
-		$pdf->SetAutoPageBreak 	(false, 5);
-		//$pdf->SetMargins(0, 0, 0);
-		//$pdf->SetAutoPageBreak 	(false, 0);
-		$pdf->SetTextColor(0, 0, 0); 
-			
-		$width = 86; //Original
-		$height = 54; //Original
-
-		foreach ($llicencies as $llicencia) {
-			$parte = $llicencia->getParte();
-								
-			// Add a page
-			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
-
-			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL) $this->printPlasticGeneral($pdf, $llicencia);
-				
-			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
-					//$this->printPlasticGeneral($pdf, $llicencia);
-					$this->printPlasticTecnocampus($pdf, $llicencia);
-			}
-		}
-		// reset pointer to the last page
-		$pdf->lastPage();
-			
-		return $pdf;
-	}
 }

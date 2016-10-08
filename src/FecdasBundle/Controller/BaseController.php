@@ -1760,7 +1760,7 @@ class BaseController extends Controller {
 
 		$pdf->AddPage('L', $pageLayout);
 		
-		$pdf->Image('images/fonsanysescolar_150x97.jpg', 0, 0, 
+		$pdf->Image('images/fonsanysescolar_1024x664.jpg', 0, 0, 
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
@@ -1919,7 +1919,7 @@ class BaseController extends Controller {
 
 		$pdf->AddPage('L', $pageLayout);
 		
-		$pdf->Image('images/fonstecnocampus_150x98.jpg', 0, 0, 
+		$pdf->Image('images/fonstecnocampus_910x600.jpg', 0, 0, 
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
@@ -2094,8 +2094,14 @@ class BaseController extends Controller {
 	
 		$tipus = $parte->getTipus();
 		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
+	
+		if (strpos($titolPlastic, "__DESDE__-__FINS__") === false) {
+			$titolPlastic = str_replace("__DESDE__", $parte->getDataalta()->format('Y'), $titolPlastic);
+		} else {
+			$titolPlastic = str_replace("__DESDE__-__FINS__", $parte->getCurs(), $titolPlastic);
+		}
 		
-		$titolPlastic = str_replace("__DESDE__-__FINS__", $parte->getCurs(), $titolPlastic);
+		
 		
 		return $titolPlastic;
 	}

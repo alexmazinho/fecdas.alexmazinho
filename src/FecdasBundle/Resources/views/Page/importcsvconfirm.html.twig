@@ -61,7 +61,7 @@
 					{% if llicencia.persona.nom is defined %}
 					<li class="data-detall">
 						<div class="data-detall-cell llicencia-personalong">{{ llicencia.persona.cognomsNom|cut(90, false, '...') }}</div>
-						<div class="data-detall-cell llicencia-addr">{{ llicencia.persona.adrecaCompleta }}</div>					
+						<div class="data-detall-cell llicencia-addr">{{ llicencia.persona.adrecaCompleta }}{{ llicencia.persona.addrprovincia }}</div>					
 						<div class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</div>
 						<div class="data-detall-cell llicencia-naixement">{{ llicencia.persona.datanaixement|date('d/m/Y') }}</div>
 						<div class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</div>

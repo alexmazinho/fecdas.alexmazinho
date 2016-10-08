@@ -2043,18 +2043,18 @@ select#parte_persona_addrnacionalitat {
 /************************************************* Llicències per mail ******************************************************/
 
 
-#header-personaindex {	width: 4%; text-align: left;}
+#header-personaindex {	width: 6%; text-align: left;}
 #header-personanom { width: 25%;  text-align: left; }
 #header-personadni { width: 17%;  text-align: left; }
-#header-personamail { width: 37%;  text-align: left; }
+#header-personamail { width: 35%;  text-align: left; }
 #header-personadigitalpdf { width: 4%;  text-align: left; }
 #header-personacheck { width: 7%; }
 
-.data-detall-cell.federat-personaindex {	width: 4%; text-align: left;}
+.data-detall-cell.federat-personaindex {	width: 6%; text-align: left;}
 .data-detall-cell.federat-personanom { width: 25%;  text-align: left; }
 .data-detall-cell.federat-personadni { width: 17%;  text-align: left; }
 .data-detall-cell.federat-personadni input { text-align: center; }
-.data-detall-cell.federat-personamail { width: 37%;  text-align: left; }
+.data-detall-cell.federat-personamail { width: 35%;  text-align: left; }
 .data-detall-cell.federat-personadigitalpdf { width: 4%;  text-align: left; font-size: 1.2em; }
 .data-detall-cell.federat-personacheck { width: 7%; }
 

@@ -1710,6 +1710,76 @@ class BaseController extends Controller {
 	
 	}
 	
+	protected function textLlicenciaESmail( $curs ) {
+		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
+		
+		$body = "<div style=''><p>Benvolgut/da esportista</p>";
+		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
+		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
+		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d’incidents.</p>";
+		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents.</p>";
+		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p></div>";
+		
+		$salutacio = "<p>Cordialment,</p>";
+		$salutacio .= "<p>Salvador Punsola<br/>";
+		$salutacio .= "President</p>";
+		
+		return array(
+			'subject' 	=> 	$subject,
+			'body' 		=>	$body,
+			'greeting'	=> 	$salutacio
+		);
+	}
+
+	protected function textLlicenciaT1mail( $curs ) {
+		$subject = "AVÍS IMPORTANT: Assegurança  accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
+		
+		$body = "<div style=''><p>Hola,</p>";
+		$body .= "<p style='text-align: justify;'>T'enviem en el  document adjunt el teu carnet digital vinculat a la teva assegurança acadèmica d'accidents del curs ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>El carnet, personalitzat t'identifica com a contractant d'una assegurança amb l'empresa Mútuacat";
+		$body .= " i et dóna accés als documents que hi estan relacionats: la pòlissa (inclou els centres mèdics on pots adreçar-te),";
+		$body .= " el protocol que cal seguir si es produeix algun incident i el comunicat que, un cop emplenat,";
+		$body .= " cal fer arribar a la companyia d'assegurances.</p></div>";
+		
+		$salutacio = "<p>Salutacions cordials,</p>";
+		$salutacio .= "FECDAS</p>";
+		
+		return array(
+			'subject' 	=> 	$subject,
+			'body' 		=>	$body,
+			'greeting'	=> 	$salutacio
+		);
+	}
+
+	protected function textLlicenciaT2mail( $curs ) {
+		$subject = "AVÍS IMPORTANT: Assegurança  accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
+		
+		$body = "<div style=''><p>Hola,</p>";
+		$body .= "<p style='text-align: justify;'>T'enviem en el  document adjunt el teu carnet digital vinculat a la teva assegurança acadèmica d'accidents del curs ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>El carnet, personalitzat t'identifica com a contractant d'una assegurança amb l'empresa Mútuacat";
+		$body .= " i et dóna accés als documents que hi estan relacionats: la pòlissa (inclou els centres mèdics on pots adreçar-te),";
+		$body .= " el protocol que cal seguir si es produeix algun incident i el comunicat que, un cop emplenat,";
+		$body .= " cal fer arribar a la companyia d'assegurances.</p></div>";
+		$body .= "<p style='text-align: justify;'>En el cas que cursis l'assignatura de Subaquàtiques, comptes amb una altra assegurança";
+		$body .= " –amb l'empresa Helvetia- vinculada a aquesta pràctica esportiva.</p>";
+		$body .= "<p style='text-align: justify;'>En aquest cas, el teu carnet digital compte amb dos jocs d'hipervincles:</p>";
+		$body .= "<p style='text-align: justify;'>1.- El primer joc està relacionat amb l'assegurança acadèmica d'accidents bàsica.</p>";
+		$body .= "<p style='text-align: justify;'>2.- El segon joc, distingit amb el mot \"busseig\",";
+		$body .= " et dóna accés als documents que estan relacionats amb la pràctica de les activitats subaquàtiques:";
+		$body .= " la pòlissa d'Helvetia, el protocol amb Helvetia, que cal seguir si es produeix algun incident i el comunicat que,";
+		$body .= " un cop emplenat, cal fer arribar a la companyia d'assegurances Helvetia.</p>";
+		
+		$salutacio = "<p>Salutacions cordials,</p>";
+		$salutacio .= "FECDAS</p>";
+		
+		return array(
+			'subject' 	=> 	$subject,
+			'body' 		=>	$body,
+			'greeting'	=> 	$salutacio
+		);
+	}
+	
 	protected function printLlicenciaESpdf( $llicencia ) {
 		// Paper cordinates are calculated in this way: (inches * 72) where (1 inch = 25.4 mm)
 		// Definir paper 13,3'' => 29cmx17cm (WxH) en 16:9
@@ -3013,7 +3083,7 @@ class BaseController extends Controller {
         }
     }
 	
-	protected function buildAndSendMail($subject, $tomails, $body, $bccmails = array(), $attachmentPath = null, $attachments = array()) {
+	protected function buildAndSendMail($subject, $tomails, $innerbody, $bccmails = array(), $attachmentPath = null, $attachments = array(), $width = 600, $salutacio = '') {
 		$bccmails[] = $this->getParameter('MAIL_ADMINTEST');
 		if ($this->get('kernel')->getEnvironment() != 'prod') {
 			$tomails = array($this->getParameter('MAIL_ADMINTEST'));  // Entorns de test
@@ -3036,12 +3106,16 @@ class BaseController extends Controller {
 			}		
 		}
 		
+		
+		if ($salutacio != '') {
+			$innerbody .= $salutacio;
+		} else {
+			$innerbody .= "<p>Atentament<br/>";
+			$innerbody .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
+		}
 		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo-mail.png'));
 		
-		$footer = "<p>Atentament<br/>";
-		$footer .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
-		
-		$footer .= "<div style='float:left;padding-right:20px'><img src=".$logosrc." alt='FECDAS' /></div>";
+		/*$footer .= "<div style='float:left;padding-right:20px'><img src=".$logosrc." alt='FECDAS' /></div>";
 		$footer .= "<div style='float:left;text-align:right'>";
 		$footer .= "<small><b>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES</b></small><br/>";
 		$footer .= "<span style='font-size: 10px;'>Moll de la Vela, 1 (Zona Fòrum)<br/>";
@@ -3049,10 +3123,23 @@ class BaseController extends Controller {
 		$footer .= "Tel. 93 356 05 43<br/>";
 		$footer .= "Fax: 93 356 30 73<br/>";
 		$footer .= "Adreça electrònica: ".$this->getParameter('MAIL_CONTACTE')."<br/>";
-		$footer .= "</span></div>"; 
+		$footer .= "</span></div>";*/ 
 		
+		$footer = "<table border='0' cellpadding='0' cellspacing='0' width='100%'>";
+		$footer .= "<tr><td><img src=".$logosrc." alt='FECDAS' width='82' height='78' /></td>";
+		$footer .= "<td style='padding: 0 0 0 20px;'>";
+		$footer .= "<small><b>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES</b></small><br/>";
+		$footer .= "<span style='font-size: 10px;'>Moll de la Vela, 1 (Zona Fòrum)<br/>";
+		$footer .= "08930  Sant Adrià de Besòs<br/>";
+		$footer .= "Tel. 93 356 05 43<br/>";
+		$footer .= "Fax: 93 356 30 73<br/>";
+		$footer .= "Adreça electrònica: ".$this->getParameter('MAIL_CONTACTE')."<br/>";
+		$footer .= "</span></td></tr></table>";
 		
-		$body = "<html style='font-family: Helvetica,Arial,sans-serif;'><head></head><body>".$body.$footer."</body></html>";
+		$body = "<html style='font-family: Helvetica,Arial,sans-serif;'><head></head><body>";
+		$body .= "<table align='left' border='0' cellpadding='0' cellspacing='0' width='".$width."' style='border-collapse: collapse;'>";
+		$body .= "<tr><td style='padding: 10px 0 10px 0;'>".$innerbody."</td></tr>";
+		$body .= "<tr><td style='padding: 10px 0 10px 0;'>".$footer."</td></tr></table></body></html>";
 		
 		$message->setBody($body, 'text/html');
 		

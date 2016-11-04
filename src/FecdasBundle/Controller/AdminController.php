@@ -1659,18 +1659,39 @@ GROUP BY c.nom
 		if ($persona == null || ($persona != null && ($persona->getMail() == '' || $persona->getMail() == null))) 
 			throw new \Exception("Error en les dades de la persona");
 		
-		/*$tomails = array_merge(getLlicenciesMails(), array($persona->getMail()));
-		$bccmails = array($this->getParameter('MAIL_ADMINTEST'));*/
+		$bccmails = $this->getAdminMails();
 		
-		$tomails = array_merge($this->getAdminMails(), array( $this->getParameter('MAIL_ADMINTEST') )) ;  // Entorns de test
+		$tomails = array($persona->getMail());
 		
-		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
+		/*$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
 		
-		$body = "<p>Benvolgut ".$persona->getNomCognoms()."</p>";
-		$body .= "<p>Us fem arribar la llicència federativa digital per al curs ".$curs."</b></p>";
+		$body = "<div style=''><p>Benvolgut/da esportista</p>";
+		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
+		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
+		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d’incidents.</p>";
+		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents.</p>";
+		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p></div>";
+		
+		$salutacio = "<p>Cordialment,</p>";
+		$salutacio .= "<p>Salvador Punsola<br/>";
+		$salutacio .= "President</p>";*/
 		
 		$attachments = array();
 
+		$method = "textLlicencia".$template."mail";
+
+		if (!method_exists($this, $method)) throw new \Exception("Error generant el text del correu de la llicència. No existeix la plantilla");
+
+		$textMail = $this->$method( $curs );
+
+		if (!isset($textMail['subject']) || !isset($textMail['body']) || !isset($textMail['greeting']))
+			throw new \Exception("Error generant el text del correu de la llicència");
+			
+		$subject = $textMail['subject'];
+		$body = $textMail['body'];
+		$salutacio = $textMail['greeting'];
+		
 		$method = "printLlicencia".$template."pdf";
 		
 		if (!method_exists($this, $method)) throw new \Exception("Error generant la llicència. No existeix la plantilla"); 		
@@ -1684,7 +1705,7 @@ GROUP BY c.nom
 									'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
 							);
 		
-		$this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments);
+		$this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments, 470, $salutacio);
 	}
 	
 	public function sincroaccessAction(Request $request) {

@@ -931,7 +931,7 @@ class FacturacioController extends BaseController {
 		if ($action == 'csv') {
 			$filename = "export_apunts_".Funcions::netejarPath($club->getNom())."_".$datadesde->format('Y-m-d')."_".$datafins->format('Y-m-d')."_".date('Hms').".csv";
 			
-			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Comanda', 'Concepte', 'Saldo', 'Entrada'); 
+			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Comanda', 'Concepte', 'Saldo a '.$datafins->format('Y-m-d'), 'Entrada'); 
 			
 			$data = array(); // Get only data matrix
 			foreach ($apunts as $row) {
@@ -1071,6 +1071,8 @@ class FacturacioController extends BaseController {
 			return ($a['data'] > $b['data'])? -1:1;
 		});
 		
+		$current = $this->getCurrentDate(); // Moviments data futura es tenen en compte també
+	
 		// Calcular saldo i filtre datafins
 		foreach ($apunts as $k => $apunt) {
 			$apunts[$k]['saldo'] = $saldo;
@@ -1078,7 +1080,10 @@ class FacturacioController extends BaseController {
 			if ($apunt['tipus'] == 'R') $saldo -= $apunt['import'];
 			else $saldo += $apunt['import'];
 			
-			if ($datafins != null && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) unset($apunts[$k]); 
+			if ($datafins != null && $datafins->format('Y-m-d') < $current->format('Y-m-d') && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) {
+				// Només treure si són consultes fins a data anterior a avui	
+				unset($apunts[$k]);
+			} 
 		}
 		return $apunts;
 	}

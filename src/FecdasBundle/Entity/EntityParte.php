@@ -180,7 +180,12 @@ class EntityParte extends EntityComanda {
 	{
 		$any = $this->getDataalta()->format('Y');
 		$anyCaduca = $this->getDatacaducitat()->format('Y');
-		return ($any == $anyCaduca?($anyCaduca-1).'-'.($anyCaduca):$any.'-'.($any + 1));
+		
+		if ($any == $anyCaduca) $any--;
+		$anyCaduca = substr($anyCaduca."", 2);
+		
+		//return ($any == $anyCaduca?($anyCaduca-1).'-'.($anyCaduca):$any.'-'.($any + 1));
+		return $any.'-'.$anyCaduca;
 	}
 	
 	/**

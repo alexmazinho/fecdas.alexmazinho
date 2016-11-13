@@ -38,7 +38,7 @@
 					{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 				</div>
 	    	</div>
-		 
+		 	{% if parte.perEnviarFederat != true %}
 			<div class="form-row clearfix">
 				<div class="llicencia-check check-correu" class="form-left">
 					<label>
@@ -48,6 +48,9 @@
 					</label>
 				</div>
 			</div>
+			{% else %}
+				{{ form_widget(form.enviarllicencia) }}
+			{% endif %}
 			<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
 			<div class="form-row clearfix" {% if (parte.asseguranca == true) %} style="display:none" {% endif %}>
 				<div class="llicencia-check seleccionar-tot">

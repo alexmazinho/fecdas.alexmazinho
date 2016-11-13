@@ -116,6 +116,7 @@ class BaseController extends Controller {
 	const TEMPLATE_TECNOCAMPUS_1 = 'T1';
 	const TEMPLATE_TECNOCAMPUS_2 = 'T2';
 	const TEMPLATE_ESCOLAR = 'ES';
+	const TEMPLATE_ESCOLAR_SUBMARINISME = 'CS';
 	
 	// Docs assegurança
 	const POLISSA_BUSSEIG = 'polissa_busseig.pdf';
@@ -810,7 +811,9 @@ class BaseController extends Controller {
 		
 		if ($baixa == false) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($nopagat == true) $strQuery .= " AND p.rebut IS NULL ";
-		if ($noimpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 AND t.template IN (:templates)";
+		//if ($noimpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 AND t.template IN (:templates)";
+		// No impreses totes excepte sense template => Llicències de dia
+		if ($noimpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 AND t.template <> ''";
 		if ($compta == true) $strQuery .= " AND f.comptabilitat <> 1 ";
 
 		if (is_numeric($numfactura) && $numfactura > 0) { 
@@ -844,10 +847,10 @@ class BaseController extends Controller {
 		$states = explode(";", self::CLUBS_STATES);
 		if ($estat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$estat]);
 	
-		if ($noimpres == true) {
+		/*if ($noimpres == true) {
 			$templates = array(self::TEMPLATE_GENERAL, self::TEMPLATE_TECNOCAMPUS_1, self::TEMPLATE_TECNOCAMPUS_2);
 			$query->setParameter('templates', $templates);
-		}
+		}*/
 	
 		if (is_numeric($numfactura) && $numfactura > 0) { 
 			if (count($anulaIds) > 0) {
@@ -1711,6 +1714,15 @@ class BaseController extends Controller {
 	}
 	
 	protected function textLlicenciaESmail( $curs ) {
+		return $this->textLlicenciaFecdasmail($curs); 
+	}
+
+	protected function textLlicenciaCSmail( $curs ) {
+		return $this->textLlicenciaFecdasmail($curs); 
+	}
+
+
+	private function textLlicenciaFecdasmail( $curs ) {
 		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
 		
 		$body = "<div style=''><p>Benvolgut/da esportista</p>";
@@ -1731,6 +1743,7 @@ class BaseController extends Controller {
 			'greeting'	=> 	$salutacio
 		);
 	}
+
 
 	protected function textLlicenciaT1mail( $curs ) {
 		$subject = "AVÍS IMPORTANT: Assegurança  accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
@@ -1781,6 +1794,32 @@ class BaseController extends Controller {
 	}
 	
 	protected function printLlicenciaESpdf( $llicencia ) {
+		$yLinks = 77;
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
+				array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
+				array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)));
+				
+		$pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_ESCOLAR );
+		
+		return $pdf;
+	}
+	
+	protected function printLlicenciaCSpdf( $llicencia ) {
+		$yLinks = 67;
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
+						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
+						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)),
+						array('text'=> 'pòlissa busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+						array('text'=> 'protocol busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+						array('text'=> 'comunicat busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+				
+		$pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_ESCOLAR_SUBMARINISME );
+		
+		return $pdf;
+	}
+		
+	private function printDigitalFecdas( $llicencia, $links, $yLinks, $template ) {
+		
 		// Paper cordinates are calculated in this way: (inches * 72) where (1 inch = 25.4 mm)
 		// Definir paper 13,3'' => 29cmx17cm (WxH) en 16:9
 		// Definir paper 7'' => => 15cmx9cm (WxH) en 16:9
@@ -1788,7 +1827,7 @@ class BaseController extends Controller {
 		$width = 150; 
 		$height = 90; 
 		$x_titols = 5;
-		$yLinks = 77;
+		
 
 		// Posicions
 		$xTit = 0;
@@ -1798,7 +1837,7 @@ class BaseController extends Controller {
 		$yDni =	46-$offset;	
 		$yCat =	52-$offset;		
 		$yNai =	58-$offset;		
-		$yCad = 72-$offset;
+		$yCad = ($template == BaseController::TEMPLATE_ESCOLAR? 72-$offset: $yNai);
 		$yClu =	64-$offset;		
 		$yTlf =	64-$offset;	
 
@@ -1813,7 +1852,7 @@ class BaseController extends Controller {
 		$pdf = new TcpdfBridge('L', PDF_UNIT, $pageLayout, true, 'UTF-8', false);
 				
 		$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència Tecnocampus FECDAS' . date("Y")));
+						'title' => 'Llicència Curs Escolar FECDAS' . date("Y")));
 
 		$pdf->setPrintFooter(false);
 		$pdf->setPrintHeader(false);
@@ -1882,10 +1921,6 @@ class BaseController extends Controller {
 		$margins = $pdf->getMargins();
 		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right'];
 		
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
-						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
-						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)));
-		
 		$pdf->SetTextColor(53,153,179);
 		$pdf->SetFont('helvetica', 'B', 10, '', true);
 
@@ -1913,7 +1948,8 @@ class BaseController extends Controller {
 		$pdf->lastPage();
 		
 		return $pdf;
-	}
+	}	
+		
 		
 	protected function printLlicenciaT1pdf( $llicencia ) {
 	

@@ -62,8 +62,7 @@ class EntityPersona {
 	protected $telefon2;
 	
 	/**
-	 * @Assert\Email(message = "El mail '{{ value }}' no es vàlid", checkMX = false)
-	 * @ORM\Column(type="string", length=50, nullable=true)
+	 * @ORM\Column(type="string", length=100, nullable=true)
 	 */
 	protected $mail;
 	
@@ -496,7 +495,7 @@ class EntityPersona {
     }
 
     /**
-     * Get mail
+     * Get mail or mails: mail 1; mail 2; ...
      *
      * @return string 
      */

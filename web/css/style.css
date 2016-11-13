@@ -1412,6 +1412,8 @@ ul.detalls li .alert { margin: 10px 0; }
 .assegurat-llicencia { 
 	display:block;
 	border-top: 1px solid #EDF1F5;
+	position: relative;
+	padding-right: 15px;
 }
 
 .assegurat-llicencia-camp { display:inline;  }
@@ -1419,7 +1421,7 @@ ul.detalls li .alert { margin: 10px 0; }
 .assegurat-llicencia-categoria {  }
 .assegurat-llicencia-club {  }
 .assegurat-llicencia-desc {  }
-.assegurat-llicencia-action { float:right; }
+.assegurat-llicencia-action { /*float:right;*/ position: absolute; right: -10px; top: 0; }
 
 .data-detall-historic { /*display:inline*/ }
 
@@ -1531,16 +1533,17 @@ input#form_dni {
 #header-llicenciapersona {	width: 23%; text-align: left;}
 #header-llicenciapersonalong {	width: 35%; text-align: left;}
 #header-llicenciadni {	width: 10%;  }
-#header-llicenciacategoria {	width: 10%;  }
-#header-llicenciaactivitats {	width: 15%;  }
+#header-llicenciacategoria {	width: 13%;  }
+#header-llicenciaactivitats {	width: 20%;  }
 #header-llicenciaactivitatslong {	width: 30%;  }
 #header-llicenciapreu {	width: 6%; text-align: right;  }
-#header-llicenciaenviarllicencia {	width: 11%; text-align: center; }
+#header-llicenciaenviarllicencia {	width: 4%; text-align: center; }
+#formrenovar #header-llicenciaenviarllicencia {	width: 8%; }
 #header-llicenciaenviarllicencia img {	
 	bottom: 10px;
     position: relative;
 }
-#header-llicenciacheck {	width: 5%; text-align: center; }
+#header-llicenciacheck {	width: 3%; text-align: center; }
 #header-llicenciaactions { width: 8%; }
 .header-llicenciaactions-scroll { width: 12%; }
 
@@ -1548,14 +1551,16 @@ input#form_dni {
 .llicencia-persona { width: 23%; text-align: left; font-size: 0.9em;}
 .llicencia-personalong { width: 35%; text-align: left; }
 .llicencia-dni { width: 10%; }
-.llicencia-categoria { width: 10%; }
-.llicencia-activitats {	width: 15%; font-size: 9px; letter-spacing: 0; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.llicencia-categoria { width: 13%; }
+.llicencia-activitats {	width: 20%; font-size: 9px; letter-spacing: 0; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { width: 6%; text-align: right;}
-.llicencia-enviarllicencia { width: 11%; text-align: center; font-size: 0.9em; white-space: nowrap; overflow: visible; }
-.llicencia-checkllicencia { width: 5%; text-align: center;}
+.llicencia-enviarllicencia { width: 4%; text-align: center; font-size: 0.9em; white-space: nowrap; overflow: visible; }
+#formrenovar .llicencia-enviarllicencia { width: 8%; }
+.llicencia-checkllicencia { width: 3%; text-align: center;}
 .llicencia-no { width: 6%; }
 .llicencia-actions { width: 8%; text-align: right; margin-top: -14px}
+#formrenovar .llicencia-actions { text-align: center; }
 
 .parte-llicencia, .club-usuari {
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
@@ -1933,7 +1938,8 @@ input#formuserclub-randompassword { width: 150px; }
 }
 
 #formpersona-cancel {
-	padding-right:20px;
+	/*padding-right:20px;*/
+	padding-right:0;
 }
 
 .persona-submit {

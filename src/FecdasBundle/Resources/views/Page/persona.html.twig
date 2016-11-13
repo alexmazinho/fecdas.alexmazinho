@@ -80,8 +80,8 @@
 		  	<div class="form-group">
 		  		<div class="input-group">
 			  		<span class="input-group-addon"><span class="fa fa-mail fa-1x"></span></span>
-					{{ form_label(formpersona.mail, 'Adreça electrònica', { 'label_attr': {'class': 'sr-only'} }) }}
-					{{ form_widget(formpersona.mail, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça electrònica'} }) }}
+					{{ form_label(formpersona.mail, 'Adreça electrònica 1; Adreça electrònica 2; ...', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(formpersona.mail, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça electrònica 1; Adreça electrònica 2; ...'} }) }}
 					<span class="input-group-addon"></span>
 				</div>
 			</div>
@@ -89,7 +89,7 @@
 	</div> 
 	<div class="row">
 	 	<div id="adreca-header" class="col-md-12  col-xs-12">
-			<h3>Adreça</h3>
+			<h3>Adreça<div id="sms-mailpersona">Es poden indicar vàries adreces de correu separades per  <strong>';'</strong></div></h3>
 		</div>
 		<div id="formpersona-addradreca" class="col-md-6  col-xs-6">
 		  	<div class="form-group">
@@ -130,7 +130,7 @@
 			</div>
 		</div>
 	</div> 
-	<div class="form-row clearfix">
+	<div class="row">
 		<div id="formpersona-cancel" class="persona-submit form-right">	
 			<input type="submit" id="formpersona-button-cancel" class="form-button-cancel forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
 		</div>

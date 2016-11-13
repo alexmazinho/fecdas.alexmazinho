@@ -1035,10 +1035,16 @@
 	          	buttons : {
 	            	"Confirmar" : function() {
 	    	        	$(this).dialog("close");
-	    	        	if ($('#persona_mail').val() != "" && !isValidEmailAddress( $('#persona_mail').val() ) ) {
-				        	dialegError("Error", "L'adreça de correu  no té un format correcte", 400);
-							return false;
-		   	        	}
+	    	        	if ($('#persona_mail').val() != "") {  // Múltiples adreces acceptades mail 1; mail 2; ...
+	    	        		var mails = $('#persona_mail').val().split(";");
+
+	    	        		for (var i in mails) {
+	    	        			if (mails[i].trim() != "" && !isValidEmailAddress( mails[i].trim() ) ) {
+						        	dialegError("Error", "L'adreça de correu -"+mails[i]+"- no té un format correcte", 400);
+									return false;
+				   	        	}
+							}
+	    	        	}	
 	    	        	if ($('#parte_persona_id').val() != 0) {
 	    	        		// Modificació no valida DNI
 	    	        		submitPerson("save", origen);
@@ -1148,6 +1154,20 @@
         	
         	loadLlicenciaData(data);
 		
+        	/*
+        	 * Amagar / mostrar columna enviar per correu de la llista de llicències
+        	 * Només llicències noves => selector tipus de parte => change
+        	 * n ==> 0
+        	 */
+        	if (n == 0) {
+        		if ($('.llicencia-check.check-correu').length) { // Es mostra el check, mostrar columna
+        			$('#header-llicenciaenviarllicencia').show();
+        		} else {	// El check està ocult, columna també
+        			$('#header-llicenciaenviarllicencia').hide();
+        		}
+        	}
+        	
+        	
         }).fail( function(xhr, status, error) {
         	
 			 // xhr.status + " " + xhr.statusText, status, error
@@ -1170,6 +1190,7 @@
 		};
 		
     	$('#formparte-llicencia').html(data);
+    	
     	$('#progressbar').hide();  // Rellotge
     	if ($.browser.msie) $('#formparte-llicencia').show(); 
     	else $('#formparte-llicencia').slideDown('fast');
@@ -1776,7 +1797,7 @@
 				return false;
 	        } else {
 	        	if( !isValidEmailAddress( $("#club_user").val() ) ) {
-		        	dialegError("Error", "El mail no té un format correcte", 400);
+		        	dialegError("Error", "L'adreça de correu "+$("#club_user").val()+" no té un format correcte", 400);
 					return false;
 	        	}
 	        }

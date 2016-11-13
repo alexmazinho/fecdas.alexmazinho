@@ -1576,6 +1576,7 @@ GROUP BY c.nom
 			
 			if ($request->getMethod() == 'POST') {
 				$llicencies = $formdata['llicencies'];
+				$enviades = 0;
 				$res = 'Llicència enviada a <br/>';
 				$log = '';
 				$curs = $parte->getCurs();
@@ -1592,12 +1593,21 @@ GROUP BY c.nom
 						if ($llicencia != null) {
 							$this->enviarMailLlicencia($llicencia, $curs, $template);
 							
+							$enviades++;
 							$res .= $llicenciaArray['nom']. ' '.$llicenciaArray['mail'].'</br>';
 							$log .= $llicenciaArray['id'].' - '.$llicenciaArray['nom']. ' '.$llicenciaArray['mail'].' ; ';
 						}
 						
 					}
 				}
+
+				if ($enviades == 0)  throw new \Exception ('No s\'ha enviat cap llicència digital');  
+				
+				// Marcar el parte com enviat (imprès)			
+				$parte->setDatamodificacio($this->getCurrentDate());
+				$parte->setImpres(1);
+				$em->flush();
+
 				$this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . '  '.$log );
 				
 				return new Response($res);

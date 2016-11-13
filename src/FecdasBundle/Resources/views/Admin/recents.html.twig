@@ -184,7 +184,7 @@ recentsParams = function() {
 	return params;
 };
 
-submitEnviarLllicencies = function(action) {
+submitEnviarLllicencies = function(action, parteRow) {
 	var url = $('#formfederatspermail').attr("action");
 	var params = $('#formfederatspermail').serializeArray();
 	//params.push( {'name':'submitaction','value': action} );
@@ -195,6 +195,9 @@ submitEnviarLllicencies = function(action) {
 		var sms = smsResultAjax('OK', data);
 		 
 		$("#list-forms").prepend(sms);
+
+		if ($('#form_noimpres').is(':checked')) parteRow.remove();
+		
 		 
 		$("#dialeg").dialog("destroy");
 	}).fail( function(xhr, status, error) {
@@ -309,8 +312,11 @@ $(document).ready(function(){
 
 		// Obrir form selecció federats
 		var url = $(this).attr("href");
-
+		var parteRow = $(this).parents('li.data-detall');  // Si només s'estan mostrant les no impreses, després de l'eviament s'esborrarà la fila
+		
 		$('.alert.alert-dismissible').remove();
+
+		
 		
 		$.get(url, function(data) {
 			
@@ -324,7 +330,7 @@ $(document).ready(function(){
 				buttons : {
 		           	"Enviar" : function() {
 		           		$('.alert.alert-dismissible').remove();
-		           		submitEnviarLllicencies('final');
+		           		submitEnviarLllicencies('final', parteRow);
 		       		},
 		           	"Cancel·lar" : function() {
 		             	$(this).dialog("destroy");

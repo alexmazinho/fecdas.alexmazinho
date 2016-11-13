@@ -1167,7 +1167,7 @@ class PageController extends BaseController {
 				$formpersona->bind($request);
 			
 				if ($formpersona->isValid()) {
-						
+					
 					$baixaPersona = $request->request->get('action') != 'save';
 					if (!$baixaPersona) {
 						
@@ -1204,7 +1204,7 @@ class PageController extends BaseController {
 					foreach ($errors as $error) {
 						if ($error->getPropertyPath() == "telefon1") throw new \Exception("El telèfon ".$persona->getTelefon1()." no és vàlid"); 
 						if ($error->getPropertyPath() == "telefon2") throw new \Exception("El telèfon ".$persona->getTelefon2()." no és vàlid");  
-						if ($error->getPropertyPath() == "mail") throw new \Exception("Adreça de correu electrònica incorrecte");
+						//if ($error->getPropertyPath() == "mail") throw new \Exception("Adreça de correu electrònica incorrecte");
 					}
 					throw new \Exception("Dades invàlides");
 				}
@@ -1282,6 +1282,14 @@ class PageController extends BaseController {
 			
 		/*if ($persona->getId() == 0 && 
             ($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar l'adreça de correu electrònica");*/	
+		
+		if ($persona->getMail() == "") $persona->setMail(null);
+        if ($persona->getMail() != null) {
+        	$mails = explode(";", $persona->getMail());
+			foreach ($mails as $mail) {
+				if (trim($mail) != "" && filter_var(trim($mail), FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".trim($mail)."- no és vàlida");	
+			}
+		}
 		
 		$em = $this->getDoctrine()->getManager();							
 		

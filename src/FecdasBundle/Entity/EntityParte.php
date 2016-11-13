@@ -168,7 +168,8 @@ class EntityParte extends EntityComanda {
 	{
 		return $this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 || 
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 ||
-				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR;
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME;
 	}
 	
 	/**
@@ -593,7 +594,8 @@ class EntityParte extends EntityComanda {
     	// Només renoven alguns tipus de parte
     	if ($this->tipus->getId() == 1 || $this->tipus->getId() == 2 ||
     			$this->tipus->getId() == 4 || $this->tipus->getId() == 7 ||
-    			$this->tipus->getId() == 8 || $this->tipus->getId() == 10) {
+    			$this->tipus->getId() == 8 || $this->tipus->getId() == 10 ||
+				$this->tipus->getId() == 13) {
 
     		/* Si falta menys d'un més per caducar o ja han caducat */
     		$current = new \DateTime();

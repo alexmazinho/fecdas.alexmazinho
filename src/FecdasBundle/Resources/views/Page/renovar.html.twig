@@ -66,7 +66,7 @@
 					   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
 					   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
 					   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
-			   			<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>
+			   			{% if parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
 					   	<div id="header-llicenciaactions" class="col-listheader  {% if form.llicencies|length > 6 %} header-llicenciaactions-scroll {% endif %}">Renovar?</div>
 					</div>
 				</div>
@@ -79,12 +79,14 @@
 							<div class="data-detall-cell llicencia-dni">{{  parte.llicencies[loop.index0].persona.dni }}</div>
 							<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
 							<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
-							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}</div>
+							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}€</div>
+							{% if parte.perEnviarFederat != true %}
 							<div class="data-detall-cell llicencia-enviarllicencia">		
 							    {# if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif #}
 								<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
 		      					<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
 							</div>
+							{% endif %}
 							{% if llicencia.renovar is defined %}
 							<div class="data-detall-cell llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>
 							{% else %}

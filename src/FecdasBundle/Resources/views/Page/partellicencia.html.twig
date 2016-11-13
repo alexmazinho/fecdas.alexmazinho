@@ -32,16 +32,20 @@
 			{{ form_widget(llicencia.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 		</div> 
 	</div>
-	<div class="form-row clearfix">
-		<div class="llicencia-check check-correu">
-		    <label>
-		      Rebre llicència per correu? 
-		      <div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
-		      <div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
-		    </label>
+	{% if llicenciadades.parte.perEnviarFederat != true %}
+		<div class="form-row clearfix">
+			<div class="llicencia-check check-correu">
+			    <label>
+			      Rebre llicència per correu? 
+			      <div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
+			      <div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
+			    </label>
+			</div>
+			
 		</div>
-		
-	</div>
+	{% else %}
+		{{ form_widget(llicencia.enviarllicencia) }}
+	{% endif %}
 	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
 	<div class="form-row clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
 		{% if llicenciadades.parte.allowEdit == true or admin == true%}

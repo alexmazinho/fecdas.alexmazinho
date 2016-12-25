@@ -566,7 +566,7 @@ class SecurityController extends BaseController
 						throw new \Exception("Cal indicar un mail");
 					}
 	   			
-					if ($this->isCurrentAdmin() != true) {	
+					if ($this->isCurrentAdmin() == true) {	
 						if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
 							$tab = 2;
 							throw new \Exception("El compte comptable ha de tenir longitud 7 i ser numèric");

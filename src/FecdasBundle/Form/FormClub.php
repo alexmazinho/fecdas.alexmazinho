@@ -145,7 +145,8 @@ class FormClub extends AbstractType {
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'empty_value' 	=> '',
-				'format' 		=> 'dd/MM/yyyy'
+				'format' 		=> 'dd/MM/yyyy',
+				'read_only' 	=> true
 		));
 
 		$builder->add('databaixa', 'date', array(

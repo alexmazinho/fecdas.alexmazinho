@@ -97,7 +97,13 @@ class EntityComandaDetall {
 		$this->comanda 	= $comanda;
 		$this->producte = $producte;
 		$this->unitats =  $unitats;
-		$this->preuunitat = ($producte != null?$producte->getCurrentPreu():0);
+		
+		if ($producte != null) {
+			$anypreu = ($comanda != null?$comanda->getDatapreu()->format('Y'):date('Y'));
+			$this->preuunitat = $producte->getPreuAny($anypreu);
+		} 
+		  
+		//$this->preuunitat = ($producte != null?$producte->getCurrentPreu():0);
 		//$this->ivaunitat = ($producte != null?$producte->getCurrentIva():0);
 		$this->ivaunitat = 0;  // Totes les comandes sense IVA, si cal després es modifiquen 
 		$this->descomptedetall = $descomptedetall;

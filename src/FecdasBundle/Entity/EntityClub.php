@@ -205,7 +205,7 @@ class EntityClub {
 	protected $ajustsubvencions;
 	
 	/**
-	 * @ORM\Column(type="datetime", nullable=true)
+	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataalta;
 
@@ -240,11 +240,17 @@ class EntityClub {
 	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $carrecs;  // json	
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $comptabilitat;
 
 
 	public function __construct() {
 		$this->activat = true;
 		$this->impressio = false;
+		$this->comptabilitat = false;
 		$this->limitcredit = 0;
 		$this->romanent = 0;
 		$this->totalpagaments = 0;
@@ -252,6 +258,7 @@ class EntityClub {
 		$this->totalduplicats = 0;
 		$this->totalaltres = 0;
 		$this->ajustsubvencions = 0;
+		$this->dataalta = new \DateTime();
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->ingresos = new \Doctrine\Common\Collections\ArrayCollection();
@@ -1469,7 +1476,25 @@ class EntityClub {
         return $this->carrecs;
     }
 	
-
+	/**
+     * Set comptabilitat
+     *
+     * @param boolean $comptabilitat
+     */
+    public function setComptabilitat($comptabilitat)
+    {
+    	$this->comptabilitat = $comptabilitat;
+    }
+    
+    /**
+     * Get comptabilitat
+     *
+     * @return boolean
+     */
+    public function getComptabilitat()
+    {
+    	return $this->comptabilitat;
+    }
 
     /**
      * Add usuaris

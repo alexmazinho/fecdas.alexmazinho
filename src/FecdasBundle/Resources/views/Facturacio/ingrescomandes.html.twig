@@ -18,7 +18,7 @@
 		   		<li class="data-detall">
 		   			<div class="data-detall-cell candidata-id hidden">{{ comanda.id }}</div>
 		   			<div class="data-detall-cell candidata-num">{{ comanda.numcomanda }}</div>
-		   			<div class="data-detall-cell candidata-data">{{ comanda.dataentrada|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell candidata-data data-detall-datacomanda">{{ comanda.dataentrada|date('d/m/Y') }}</div>
 		   			<div class="data-detall-cell candidata-items">{{ comanda.numdetalls }}</div>
 		   			<div class="data-detall-cell candidata-factura">
 		   				{% if comanda.comandaConsolidada == true and comanda.factura != null %}

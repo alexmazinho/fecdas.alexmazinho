@@ -411,6 +411,16 @@ class EntityComanda {
 	}
 
 	/**
+	 * Get datapreu
+	 *
+	 * @return date
+	 */
+	public function getDatapreu()
+	{
+		return $this->dataentrada;
+	}
+
+	/**
 	 * Get importpagament
 	 *
 	 * @return decimal

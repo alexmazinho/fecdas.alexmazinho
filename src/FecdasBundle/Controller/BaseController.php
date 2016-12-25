@@ -2426,16 +2426,24 @@ class BaseController extends Controller {
 			$detallBaixa = $this->removeComandaDetall($parte, $llicencia->getCategoria()->getProducte(), 1);
 		
 			if ($detallBaixa != null) {
-				$codi = $llicencia->getCategoria()->getProducte()->getCodi();
+				//$codi = $llicencia->getCategoria()->getProducte()->getCodi();
+				$id = $llicencia->getCategoria()->getProducte()->getId();
 				$nomLlicencia = $llicencia->getPersona()->getNomCognoms();
 							
-				if (!isset($detallsBaixa[$codi]) && !isset($extra[$codi])) {
+				/*if (!isset($detallsBaixa[$codi]) && !isset($extra[$codi])) {
 					$detallsBaixa[$codi] = $detallBaixa;
 					$extra[$codi] = array( $nomLlicencia );
 				} else {
 					$detallsBaixa[$codi]->setUnitats($detallsBaixa[$codi]->getUnitats() - 1);
 					$extra[$codi][] = $nomLlicencia;
-				}						
+				}*/
+				if (!isset($detallsBaixa[$id]) && !isset($extra[$id])) {
+					$detallsBaixa[$id] = $detallBaixa;
+					$extra[$id] = array( $nomLlicencia );
+				} else {
+					$detallsBaixa[$id]->setUnitats($detallsBaixa[$id]->getUnitats() - 1);
+					$extra[$id][] = $nomLlicencia;
+				}			
 			} 	
 		}
 		

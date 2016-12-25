@@ -1152,6 +1152,7 @@ GROUP BY c.nom
 					 				'provinciacorreu'	=> array('hidden' => false, 'nom' => 'Prov. correu', 'width' => '110px', 'sort' => 'c.addrprovinciacorreu'),
 									'tipuspagament'	=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '130px', 'sort' => 'e.descripcio'),
 					 				'limitcredit'	=> array('hidden' => false, 'nom' => 'Crèdit', 'width' => '100px', 'sort' => 'c.limitcredit'), 
+									'saldo'			=> array('hidden' => false, 'nom' => 'Saldo', 'width' => '100px', 'sort' => ''),
 									'romanent'		=> array('hidden' => false, 'nom' => 'Romanent '.(date('Y')-1), 'width' => '100px', 'sort' => 'c.romanent'), 
 									'totalpagaments'=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '100px', 'sort' => 'c.totalpagaments'),
 									'totalllicencies'=> array('hidden' => false, 'nom' => 'T. llicències', 'width' => '100px', 'sort' => 'c.totalllicencies'),
@@ -1321,6 +1322,8 @@ GROUP BY c.nom
 				}
 				
 				if ($vocals != '') $vocals = substr($vocals, 0, -2);
+
+				$modeda = ($action == 'csv'?'':'€');
 				
 				$campsDades[$codi] = array (	
 										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
@@ -1346,13 +1349,14 @@ GROUP BY c.nom
 						 				'comarcacorreu'		=> array('hidden' => false, 'val' => $club->getAddrcomarcacorreu(), 'align' => 'left'),
 						 				'provinciacorreu'	=> array('hidden' => false, 'val' => $club->getAddrprovinciacorreu(), 'align' => 'center'),
 						 				'tipuspagament'		=> array('hidden' => false, 'val' => $estat->getDescripcio(), 'align' => 'center'),
-						 				'limitcredit'		=> array('hidden' => false, 'val' => number_format($club->getLimitcredit(), 2, ',', '.').'€', 'align' => 'right'),
-						 				'romanent'			=> array('hidden' => false, 'val' => number_format($club->getRomanent(), 2, ',', '.').'€', 'align' => 'right'),	
-						 				'totalpagaments'	=> array('hidden' => false, 'val' => number_format($club->getTotalpagaments(), 2, ',', '.').'€', 'align' => 'right'),
-										'totalllicencies'	=> array('hidden' => false, 'val' => number_format($club->getTotalllicencies(), 2, ',', '.').'€', 'align' => 'right'),	
-										'totalduplicats'	=> array('hidden' => false, 'val' => number_format($club->getTotalduplicats(), 2, ',', '.').'€', 'align' => 'right'),
-										'totalaltres'		=> array('hidden' => false, 'val' => number_format($club->getTotalaltres(), 2, ',', '.').'€', 'align' => 'right'),
-										'ajustsubvencions'	=> array('hidden' => false, 'val' => number_format($club->getAjustsubvencions(), 2, ',', '.').'€', 'align' => 'right'),
+						 				'limitcredit'		=> array('hidden' => false, 'val' => number_format($club->getLimitcredit(), 2, ',', '.').$modeda, 'align' => 'right'),
+						 				'saldo'				=> array('hidden' => false, 'val' => number_format($club->getSaldo(), 2, ',', '.').$modeda, 'align' => 'right'),
+						 				'romanent'			=> array('hidden' => false, 'val' => number_format($club->getRomanent(), 2, ',', '.').$modeda, 'align' => 'right'),	
+						 				'totalpagaments'	=> array('hidden' => false, 'val' => number_format($club->getTotalpagaments(), 2, ',', '.').$modeda, 'align' => 'right'),
+										'totalllicencies'	=> array('hidden' => false, 'val' => number_format($club->getTotalllicencies(), 2, ',', '.').$modeda, 'align' => 'right'),	
+										'totalduplicats'	=> array('hidden' => false, 'val' => number_format($club->getTotalduplicats(), 2, ',', '.').$modeda, 'align' => 'right'),
+										'totalaltres'		=> array('hidden' => false, 'val' => number_format($club->getTotalaltres(), 2, ',', '.').$modeda, 'align' => 'right'),
+										'ajustsubvencions'	=> array('hidden' => false, 'val' => number_format($club->getAjustsubvencions(), 2, ',', '.').$modeda, 'align' => 'right'),
 										'dataalta'		=> array('hidden' => false, 'val' => ($club->getDataalta() != null?$club->getDataalta()->format('d/m/y'):''), 'align' => 'center'),																																								
 						 				'databaixa'		=> array('hidden' => false, 'val' => ($club->getDatabaixa() != null?$club->getDatabaixa()->format('d/m/y'):''), 'align' => 'center'),
 										'datacreacio'	=> array('hidden' => false, 'val' => ($club->getDatacreacio() != null?$club->getDatacreacio()->format('d/m/y'):''), 'align' => 'center'),	

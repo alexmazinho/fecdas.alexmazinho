@@ -208,7 +208,7 @@ class FacturacioController extends BaseController {
 		if ($datafinal->format('Y-m-d H:i:s') > $datamax->format('Y-m-d H:i:s')) $datafinal = $datamax;
 		 
 		//$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".txt";
-		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".ods";
+		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".csv";
 	
 		$enviament = null;
 		$fs = new Filesystem();
@@ -361,8 +361,7 @@ class FacturacioController extends BaseController {
 				if ($club != null) {
 					if ($comanda->getClub()->getCodi() == $club->getCodi()) $factures[] = $factura;
 				} else {
-					if ($comanda->getClub() != BaseController::CODI_FECDAS &&
-						$comanda->getClub() != BaseController::CODI_CLUBTEST) $factures[] = $factura; // No s'envia res de la Federació o del club TEST a comptabilitat
+					if ($comanda->getClub() != BaseController::CODI_CLUBTEST) $factures[] = $factura; // No s'envia res de la Federació o del club TEST a comptabilitat
 				}
 			} 
 		}
@@ -379,7 +378,6 @@ class FacturacioController extends BaseController {
 		if ($pendents == true) $strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara
 		if ($club != null)  $strQuery .= " AND r.club = :club "; 		// Un club 
 		else {
-			$strQuery .= " AND (r.club != '".BaseController::CODI_FECDAS."') ";	// No s'envia res de la Federació a comptabilitat
 			$strQuery .= " AND (r.club != '".BaseController::CODI_CLUBTEST."') ";	// No s'envia res del club TEST
 		}
 		$strQuery .= " ORDER BY r.datapagament";
@@ -2388,10 +2386,11 @@ class FacturacioController extends BaseController {
 			
 				foreach ($rebut->getComandes() as $comanda) {
 					
-					if ($rebut->getDatapagament()->format('Y-m-d') < $comanda->getDataentrada()->format('Y-m-d')) {
+					/* Treure validació 06/12/2016 */
+					/*if ($rebut->getDatapagament()->format('Y-m-d') < $comanda->getDataentrada()->format('Y-m-d')) {
 						$form->get('datapagament')->addError(new FormError('Data incorrecte'));
 						throw new \Exception('La data de pagament ha de ser igual o posterior a la data de la comanda' );
-					}
+					}*/
 					
 					$total += $comanda->getTotalComanda();		
 				}
@@ -2569,7 +2568,7 @@ class FacturacioController extends BaseController {
 			if (is_numeric($af) && $af > 0) {
 				$datainicifactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-01-01 00:00:00");
 				$datafinalfactura = \DateTime::createFromFormat('Y-m-d H:i:s', $af."-12-31 23:59:59");
-				$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ) ";
+				$strQuery .= " AND f.datafactura >= :fini AND f.datafactura <= :ffi ";
 			}
 		}
 		

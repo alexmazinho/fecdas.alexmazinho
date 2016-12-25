@@ -135,7 +135,7 @@
 						<ul class="list-comandes">
 							<li class="data-detall-cell"><a class="rebut-action-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id}) }}" alt="Veure comanda" title="Veure comanda">
 					   				<span {% if comanda.esbaixa == true %}class="red"{% endif %}>{{ comanda.numcomanda }}</span></a></li>
-							<li class="data-detall-cell">{{ comanda.dataentrada|date|date('Y-m-d') }}</li>
+							<li class="data-detall-cell data-detall-datacomanda">{{ comanda.dataentrada|date|date('Y-m-d') }}</li>
 				   			<li class="data-detall-cell">{{ comanda.totalComanda|number_format(2, ',', '.') }} €</li>
 				   			<li class="data-detall-cell">Factures: {{ comanda.llistaNumsFactures(false, true) }} </li>
 							<li class="data-detall-cell">{{ comanda.infoLlistat }}</li>

@@ -738,6 +738,16 @@ class EntityParte extends EntityComanda {
     	return $this->comandaPagada();  // La resta poden imprimir si està pagat
     }
  
+ 	/**
+	 * Get datapreu. Reescriptura
+	 *
+	 * @return date
+	 */
+	public function getDatapreu()
+	{
+		return $this->dataalta;
+	}
+ 
     /**
      * Get id
      *

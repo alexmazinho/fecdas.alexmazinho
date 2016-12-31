@@ -658,7 +658,7 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 
-
+	/*
 	public function imprimirpendentsAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -715,7 +715,6 @@ class PDFController extends BaseController {
 						$llicencies = array_merge($llicencies, $parte->getLlicenciesSortedByName());
 		
 						$parte->setDatamodificacio($current);
-						$parte->setImpres(1);
 						
 						$ids[] = $parte->getId();	
 					}
@@ -745,44 +744,8 @@ class PDFController extends BaseController {
 	
 		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
 	}
-
-	public function imprimirparteAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$parteid = $request->query->get("id");
-	
-		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
-	
-		if ($parte != null) {
-			$em = $this->getDoctrine()->getManager();
-			
-			$llicencies = $parte->getLlicenciesSortedByName();
-			$pdf = $this->printLlicencies( $llicencies );
-			
-			$parte->setDatamodificacio($this->getCurrentDate());
-			$parte->setImpres(1);
-			
-			$em->flush();
-	
-			$this->logEntryAuth('IMPRES PARTE', $parteid);
-
-			foreach ($llicencies as $llicencia) {
-				$this->logEntryAuth('IMPRES PARTE - LIC', $llicencia->getId().' - '.$llicencia->getPersona()->getNomCognoms());
-			}
-			
-			// Close and output PDF document
-			$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));
-			$response->headers->set('Content-Type', 'application/pdf');
-			return $response;
-				
-		} else {
-			$this->logEntryAuth('IMPRES PARTE ERROR', $parteid);
-		}
-	
-		return $this->redirect($this->generateUrl('FecdasBundle_recents'));
-	}
-	
+	*/
+	  
 	public function imprimirllicenciaAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -858,110 +821,6 @@ class PDFController extends BaseController {
 
 		return $response;
 
-	}
-	
-	private function printLlicencies( $llicencies ) {
-	
-		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
-		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
-		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
-		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
-		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
-				
-		$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència FECDAS' . date("Y")));
-
-		$pdf->setPrintFooter(false);
-		$pdf->setPrintHeader(false);
-				
-		// zoom - layout - mode
-		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
-		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-		$pdf->SetMargins(5, 5, 5);
-		$pdf->SetAutoPageBreak 	(false, 5);
-		//$pdf->SetMargins(0, 0, 0);
-		//$pdf->SetAutoPageBreak 	(false, 0);
-		$pdf->SetTextColor(0, 0, 0); 
-			
-		$width = 86; //Original
-		$height = 54; //Original
-
-		foreach ($llicencies as $llicencia) {
-			$parte = $llicencia->getParte();
-								
-			// Add a page
-			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
-
-			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR) $this->printPlasticGeneral($pdf, $llicencia);
-				
-			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
-					//$this->printPlasticGeneral($pdf, $llicencia);
-					$this->printPlasticTecnocampus($pdf, $llicencia);
-			}
-		}
-		// reset pointer to the last page
-		$pdf->lastPage();
-			
-		return $pdf;
-	}
-
-	private function printPlasticGeneral($pdf, $llicencia) {
-		// Posicions
-		$xTit = 0;
-		$yTit =	12;		
-		$xNom = 10;
-		$yNom =	27.4;		
-		$xDni = 18;
-		$yDni =	32.1;		
-		$xCat = 20.5;
-		$yCat =	36.7;		
-		$xNai = 19.5;
-		$yNai =	41.1;		
-		$xClu = 12;
-		$yClu =	45.6;		
-		$xTlf = 15;
-		$yTlf =	50.1;		
-		$xCad = 61;
-		$yCad =	50.1;
-		
-		$parte = $llicencia->getParte();
-		$persona = $llicencia->getPersona();
-		if ( $persona == null) return;
-		
-		$datacaduca = $parte->getDatacaducitat('printparte');
-		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
-
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
-				
-		$pdf->SetXY($xTit, $yTit);
-		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
-
-		$pdf->SetFont('dejavusans', 'B', 8);
-
-		$pdf->SetXY($xNom, $yNom);
-		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
-
-		$pdf->SetXY($xDni, $yDni);
-		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
-
-		$pdf->SetXY($xCat, $yCat);
-		$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-				
-		$pdf->SetXY($xNai, $yNai);
-		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
-				
-		$pdf->SetXY($xClu, $yClu);
-		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
-
-		$pdf->SetXY($xTlf, $yTlf);
-		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
-				
-		$pdf->SetXY($xCad, $yCad);
-		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
-		
 	}
 	
 	public function carnettopdfAction(Request $request) {

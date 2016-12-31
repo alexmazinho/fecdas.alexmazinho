@@ -1,0 +1,16 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/sortidallicenciesformtaulaimpressio.html.twig #}
+{% extends 'FecdasBundle:Admin:sortidallicenciesformtaulatemplate.html.twig' %}
+{% block variableheader %}
+	<th id="header-personaplasticpdf" class="col-listheader listheader-noorder"></th>
+	<th id="header-personacheck" class="col-listheader listheader-noorder">Imprimir?</th>
+	<th id="header-personaimpresa" class="col-listheader listheader-noorder">Impresa</th>
+{% endblock %}
+
+{% block variablecols %}
+	<td class="data-detall-cell federat-personaplasticpdf">
+		<a class="veure-llicencia-plastic link" href="{{ path('FecdasBundle_imprimirllicencia', { 'id': llicencia.vars.value.id }) }}" 
+			alt="Llicència plàstic" title="Llicència plàstic"><i class="fa fa-file-pdf-o red"></i></a>
+	</td>
+	<td class="data-detall-cell federat-personacheck"><div class="checkbox-inline">{{ form_widget(llicencia.imprimir, { 'attr': {'class': 'checkbox-federat'} }) }}</div></td>
+	<td class="data-detall-cell federat-personaimpresa">{% if llicencia.vars.value.impresa == true %}{{ llicencia.vars.value.dataimpressio|date('d/m/Y') }}{% endif %}</td>
+{% endblock %}

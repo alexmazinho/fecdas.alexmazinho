@@ -1,0 +1,16 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/sortidallicenciesformtaulamail.html.twig #}
+{% extends 'FecdasBundle:Admin:sortidallicenciesformtaulatemplate.html.twig' %}
+{% block variableheader %}
+	<th id="header-personadigitalpdf" class="col-listheader listheader-noorder"></th>
+	<th id="header-personacheck" class="col-listheader listheader-noorder">Enviar?</th>
+	<th id="header-personaenviada" class="col-listheader listheader-noorder">Enviada</th>
+{% endblock %}
+
+{% block variablecols %}
+	<td class="data-detall-cell federat-personadigitalpdf">
+		<a class="veure-llicencia-digital link" href="{{ path('FecdasBundle_llicenciadigital', { 'id': llicencia.vars.value.id }) }}" 
+			alt="Llicència digital" title="Llicència digital"><i class="fa fa-file-pdf-o red"></i></a>
+	</td>
+	<td class="data-detall-cell federat-personacheck"><div class="checkbox-inline">{{ form_widget(llicencia.enviar, { 'attr': {'class': 'checkbox-federat'} }) }}</div></td>
+	<td class="data-detall-cell federat-personaenviada">{% if llicencia.vars.value.mailenviat == true %}{{ llicencia.vars.value.datamail|date('d/m/Y') }}{% endif %}</td>
+{% endblock %}

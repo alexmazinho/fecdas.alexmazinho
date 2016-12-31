@@ -1,0 +1,5 @@
+"categoria","dni","estranger","nom","cognoms","naixement","sexe","telefon1","telefon2","mail","adreca","poblacio","cp","provincia","comarca","nacionalitat"
+"A","12345678Z","N","Federat","Nou ",1980-02-05,"H",666555555,,"exemple@fecdas.cat","Moll de la Vela, 1 (Zona Fòrum)","Sant Adrià de Besòs",8930,"Barcelona","Barcelonès",
+"A","12345679S","N","Federada","Existent",,,,,,,,,,,
+"A","12345670Y","N","Federada","Existent Canvi Dades",,,666555555,,"noumail@fecdas.cat","Nova adreça, 99","Nova població",17999,"Girona","Gironès",
+"T","X12345678R","S","Tècnic","Estranger Existent",,,,,,,,,,,

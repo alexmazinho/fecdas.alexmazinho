@@ -13,6 +13,7 @@ use FecdasBundle\Classes\MysqlYear;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityClub;
 use FecdasBundle\Form\FormLlicenciaMail;
+use FecdasBundle\Form\FormLlicenciaImprimir;
 
 class AdminController extends BaseController {
 	
@@ -403,10 +404,18 @@ class AdminController extends BaseController {
 		$partesrecents = $paginator->paginate(
 				$query,
 				$page,
-				10 /*limit per page*/
+				10 
 		);
 		
 		$partesrecents->setParam('sortparams',$sortparams);
+		
+		
+		if ($request->isXmlHttpRequest()) {
+			return $this->render('FecdasBundle:Admin:recentstaula.html.twig', 
+				$this->getCommonRenderArrayOptions(array('partes' => $partesrecents,
+						'sortparams' => $sortparams
+				)));
+		} 
 		
 		return $this->render('FecdasBundle:Admin:recents.html.twig', 
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'partes' => $partesrecents,
@@ -1557,6 +1566,120 @@ GROUP BY c.nom
 				)));
 	}
 	
+	public function imprimirparteAction(Request $request) {
+		if ($this->isCurrentAdmin() != true)
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$em = $this->getDoctrine()->getManager();
+		
+		$filtre = '';
+		$parteid = 0;
+		if ($request->getMethod() == 'POST') {
+			$formdata = $request->request->get('form');
+			$parteid = isset($formdata['id'])?$formdata['id']:0;
+		} else {
+			$parteid = $request->query->get('id', 0);
+			$filtre = $request->query->get('filtre', '');
+		}
+		
+		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+		
+		try {
+			if ($parte == null) throw new \Exception ('Llista no trobada');  
+			
+			if ($request->getMethod() == 'POST') {
+				$llicencies = $formdata['llicencies'];
+				$impreses = 0;
+				
+				$log = '';
+				$llicenciesPerImprimir = array();				
+				
+				foreach ($llicencies as $llicenciaArray) {
+					$personaId = $llicenciaArray['personaid'];
+					$llicenciaId = $llicenciaArray['id'];
+					
+					if (isset($llicenciaArray['imprimir']) && $llicenciaArray['imprimir'] == 1) {
+
+						$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);						
+						
+						if ($llicencia != null) {
+							$llicenciesPerImprimir[] = $llicencia;
+							
+							$impreses++;
+							$log .= $llicenciaArray['id'].' - '.$llicenciaArray['nom']. ' ; ';
+						}
+						
+					}
+				}
+
+				if ($impreses == 0)  throw new \Exception ('No s\'ha imprès cap llicència');  
+				
+				$pdf = $this->printLlicencies( $llicenciesPerImprimir );
+				
+				// Marcar el parte com enviat (imprès)			
+				$parte->setDatamodificacio($this->getCurrentDate());
+				$em->flush();
+
+				$this->logEntryAuth('IMPRES PARTE LLICENCIES OK', 'parte ' . $parteid . '  '.$log );
+				
+				// Close and output PDF document
+				$response = new Response($pdf->Output("llicencies_impressio_parte_".$parte->getId(). ".pdf", "D"));
+				$response->headers->set('Content-Type', 'application/pdf');
+				return $response;
+			} else {
+				// CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
+				
+				$llicencies = $parte->getLlicenciesSortedByName( $filtre );
+
+				$formBuilder = $this->createFormBuilder();
+								
+				$formBuilder->add('id', 'hidden', array(
+					'data'	=> $parteid
+				));
+
+				$formBuilder->add('filtre', 'text', array(
+					'data'	=> $filtre
+				));
+				
+				$formBuilder->add('checkall', 'checkbox', array(
+					'data'	=> true
+				));
+				
+				$formBuilder->add('llicencies', 'collection', array(
+					'type' 	=> new FormLlicenciaImprimir(),
+					'data'	=> $llicencies
+				));
+				
+			}
+			
+		} catch (\Exception $e) {
+			
+			$this->logEntryAuth('IMPRES PARTE LLICENCIES KO', 'parte ' . $parteid . ' error: '.$e->getMessage() );
+					
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);
+			return $response;
+		}
+		$this->logEntryAuth('IMPRES PARTE LLICENCIES FORM', ' accio '.$request->getMethod());
+		
+		// Temps des de la darrera llicència
+		$form = $formBuilder->getForm();
+		
+		if ($request->query->has('filtre')) {  // Recàrrega de la taula
+			return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig', 
+				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'filtre' => $filtre ) )
+			);
+		}
+		
+		return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig', 
+				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 
+															'action' => $this->generateUrl('FecdasBundle_imprimirparte'),
+															'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig',	 
+															'parte' => $parte, 'filtre' => $filtre ) )
+		);
+	}
+	
+	
 	public function llicenciespermailAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -1583,7 +1706,8 @@ GROUP BY c.nom
 				$enviades = 0;
 				$res = 'Llicència enviada a <br/>';
 				$log = '';
-				$curs = $parte->getCurs();
+				if ($parte->getTipus()->getEs365()) $cursAny = $parte->getCurs();
+				else $cursAny = $parte->getAny();
 				$template = $parte->getTipus()->getTemplate();
 				
 				foreach ($llicencies as $llicenciaArray) {
@@ -1595,7 +1719,7 @@ GROUP BY c.nom
 						$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);						
 						
 						if ($llicencia != null) {
-							$this->enviarMailLlicencia($llicencia, $curs, $template);
+							$this->enviarMailLlicencia($llicencia, $cursAny, $template);
 							
 							$enviades++;
 							$res .= $llicenciaArray['nom']. ' '.$llicenciaArray['mail'].'</br>';
@@ -1609,7 +1733,6 @@ GROUP BY c.nom
 				
 				// Marcar el parte com enviat (imprès)			
 				$parte->setDatamodificacio($this->getCurrentDate());
-				$parte->setImpres(1);
 				$em->flush();
 
 				$this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . '  '.$log );
@@ -1655,17 +1778,20 @@ GROUP BY c.nom
 		$form = $formBuilder->getForm();
 		
 		if ($request->query->has('filtre')) {  // Recàrrega de la taula
-			return $this->render('FecdasBundle:Admin:llicenciespermailformtaula.html.twig', 
+			return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig', 
 				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'filtre' => $filtre ) )
 			);
 		}
 		
-		return $this->render('FecdasBundle:Admin:llicenciespermailform.html.twig', 
-				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'filtre' => $filtre ) )
+		return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig', 
+				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 
+															'action' => $this->generateUrl('FecdasBundle_llicenciespermail'),
+															'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',	 
+															'parte' => $parte, 'filtre' => $filtre ) )
 		);
 	}
 
-	private function enviarMailLlicencia($llicencia, $curs, $template) {
+	private function enviarMailLlicencia($llicencia, $cursAny, $template) {
 		if ($llicencia == null) throw new \Exception("Error en les dades de la llicència");
 			
 		$persona = $llicencia->getPersona();
@@ -1677,10 +1803,10 @@ GROUP BY c.nom
 		
 		$tomails = array($persona->getMail());
 		
-		/*$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
+		/*$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$cursAny;
 		
 		$body = "<div style=''><p>Benvolgut/da esportista</p>";
-		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$cursAny."</p>";
 		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
 		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
 		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d’incidents.</p>";
@@ -1697,7 +1823,7 @@ GROUP BY c.nom
 
 		if (!method_exists($this, $method)) throw new \Exception("Error generant el text del correu de la llicència. No existeix la plantilla");
 
-		$textMail = $this->$method( $curs );
+		$textMail = $this->$method( $cursAny );
 
 		if (!isset($textMail['subject']) || !isset($textMail['body']) || !isset($textMail['greeting']))
 			throw new \Exception("Error generant el text del correu de la llicència");
@@ -1712,7 +1838,7 @@ GROUP BY c.nom
 
 		$pdf = $this->$method( $llicencia );
 	
-		$nom =  "llicencia_".$curs."_".$llicencia->getId().".pdf";
+		$nom =  "llicencia_".$cursAny."_".$llicencia->getId().".pdf";
 			
 		$attachments[] = array( 'name' => $nom,
 									//'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)
@@ -1720,6 +1846,9 @@ GROUP BY c.nom
 							);
 		
 		$this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments, 470, $salutacio);
+		
+		$llicencia->setMailenviat( 1 );
+		$llicencia->setDatamail( new \DateTime() );
 	}
 	
 	public function sincroaccessAction(Request $request) {

@@ -1,4 +1,4 @@
-{# src/Fecdas/PartesBundle/Resources/views/Admin/llicenciespermailformtaula.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Admin/sortidallicenciesformtaula.html.twig #}
 <div id="table-federats">
 	<div class="panel panel-default">
 		<div class="panel-heading">
@@ -24,8 +24,8 @@
 				   		<th id="header-personanom" class="col-listheader listheader-noorder">Nom i cognoms</th>
 				   		<th id="header-personadni" class="col-listheader listheader-noorder">DNI</th>
 				   		<th id="header-personamail" class="col-listheader listheader-noorder">Mail</th>
-				   		<th id="header-personadigitalpdf" class="col-listheader listheader-noorder"></th>
-				   		<th id="header-personacheck" class="col-listheader listheader-noorder">Enviar?</th>
+				   		{% block variableheader %}
+				   		{% endblock %}
 				   	</tr>
 				</thead>
 				{% if form.llicencies|length > 0 %}
@@ -39,11 +39,8 @@
 						   		<td class="data-detall-cell federat-personanom">{{ form_widget(llicencia.nom) }}</td>
 						   		<td class="data-detall-cell federat-personadni">{{ form_widget(llicencia.dni) }}</td>
 						   		<td class="data-detall-cell federat-personamail">{{ form_widget(llicencia.mail) }}</td>
-						   		<td class="data-detall-cell federat-personadigitalpdf">
-						   			<a class="veure-llicencia-digital link" href="{{ path('FecdasBundle_llicenciadigital', { 'id': llicencia.vars.value.id }) }}" 
-			   							alt="Llicència digital" title="Llicència digital"><i class="fa fa-file-pdf-o red"></i></a>
-						   		</td>
-						   		<td class="data-detall-cell federat-personacheck"><div class="checkbox-inline">{{ form_widget(llicencia.enviar, { 'attr': {'class': 'checkbox-federat'} }) }}</div></td>
+						   		{% block variablecols %}
+						   		{% endblock %}
 					   		</tr>
 					   	{% endfor %}
 					</tbody>

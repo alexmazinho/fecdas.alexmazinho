@@ -2049,23 +2049,25 @@ select#parte_persona_addrnacionalitat {
 /************************************************* Llicències per mail ******************************************************/
 
 
-#header-personaindex {	width: 6%; text-align: left;}
-#header-personanom { width: 25%;  text-align: left; }
-#header-personadni { width: 17%;  text-align: left; }
-#header-personamail { width: 35%;  text-align: left; }
-#header-personadigitalpdf { width: 4%;  text-align: left; }
-#header-personacheck { width: 7%; }
+#header-personaindex {	width: 4%; text-align: left;}
+#header-personanom { width: 23%;  text-align: left; }
+#header-personadni { width: 14%;  text-align: left; }
+#header-personamail { width: 31%;  text-align: left; }
+#header-personadigitalpdf, #header-personaplasticpdf { width: 4%;  text-align: left; }
+#header-personacheck { width: 11%; font-size: 0.9em; }
+#header-personaenviada, #header-personaimpresa { width: 12%; text-align: right; }
 
-.data-detall-cell.federat-personaindex {	width: 6%; text-align: left;}
-.data-detall-cell.federat-personanom { width: 25%;  text-align: left; }
-.data-detall-cell.federat-personadni { width: 17%;  text-align: left; }
+.data-detall-cell.federat-personaindex {	width: 4%; text-align: left;  vertical-align: middle;}
+.data-detall-cell.federat-personanom { width: 23%;  text-align: left; }
+.data-detall-cell.federat-personadni { width: 14%;  text-align: left; }
 .data-detall-cell.federat-personadni input { text-align: center; }
-.data-detall-cell.federat-personamail { width: 35%;  text-align: left; }
-.data-detall-cell.federat-personadigitalpdf { width: 4%;  text-align: left; font-size: 1.2em; }
-.data-detall-cell.federat-personacheck { width: 7%; }
+.data-detall-cell.federat-personamail { width: 31%;  text-align: left; }
+.data-detall-cell.federat-personadigitalpdf, .data-detall-cell.federat-personaplasticpdf { width: 4%;  text-align: left; font-size: 1.2em;  vertical-align: middle; }
+.data-detall-cell.federat-personacheck { width: 11%;  vertical-align: middle; }
+.data-detall-cell.federat-personaenviada, .data-detall-cell.federat-personaimpresa { width: 12%; color: #2281cf; font-size: 0.9em; font-weight: bold; text-align: right;  vertical-align: middle; }
 
 #table-federats table .data-detall-cell input[type="text"],
-#table-federats table .data-detall-cell input[type="text"] { width: 100%; }
+#table-federats table .data-detall-cell input[type="text"] { width: 100%; font-size: 0.9em; }
 
 #table-federats .input-group-addon { background-color: #fff; }
 
@@ -2827,25 +2829,28 @@ li.parte-pendent-sincro .parterecents-actions {
 
 #header-parterecentsid { width: 10%; }
 #header-parterecentsfactura { width: 11%; }
-#header-parterecentsentrada {	width: 8%; }
 #header-parterecentsdata {	width: 8%; }
 #header-parterecentsclub {	width: 13%; text-align:left;}
 #header-parterecentstipus {	width: 11%;}
 #header-parterecentspreu {	width: 8%; text-align:right;}
 #header-parterecentsenviar {	width: 5%; text-align:center;}
-#header-parterecentsinfo { width: 18%; text-align: left;}
+#header-parterecentssortides {	width: 7%; text-align:center;}
+#header-parterecentsinfo { width: 19%; text-align: left;}
 #header-parterecentsactions { width: 8%;}
 
 .parterecents-id { width: 10%; }
 .parterecents-factura { width: 11%; }
-.parterecents-entrada { width: 8%;  }
 .parterecents-data { width: 8%;  }
 .parterecents-club { width: 13%; text-align:left; font-size: 0.9em;}
 .parterecents-tipus { width: 11%; }
 .parterecents-preu { width: 8%; text-align:right;}
-.parterecents-enviar { width: 5%; text-align:center;}
-.parterecents-info {	width: 18%; text-align:left;font-size: 0.9em;}
+.parterecents-enviar { width: 5%; text-align:center; font-size: 0.9em;}
+.parterecents-sortida { width: 7%; text-align:center; font-size: 0.9em;}
+.parterecents-info {	width: 19%; text-align:left;font-size: 0.9em;}
 .parterecents-actions { width: 8%; text-align:right; margin-top: -14px}
+
+
+.parterecents-data span, #header-parterecentsdata span { font-style: italic; font-size: 0.9em; }
 
 /*****************************************************************************************************************/
 

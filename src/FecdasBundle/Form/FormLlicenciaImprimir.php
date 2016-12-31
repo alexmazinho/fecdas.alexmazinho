@@ -7,7 +7,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 
 
-class FormLlicenciaMail extends FormLlicenciaSortida {
+class FormLlicenciaImprimir extends FormLlicenciaSortida {
 
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
@@ -23,10 +23,9 @@ class FormLlicenciaMail extends FormLlicenciaSortida {
 			if ($llicencia instanceof EntityLlicencia) {
 				$persona = $llicencia->getPersona();
 					
-				$form->add('enviar', 'checkbox', array(
+				$form->add('imprimir', 'checkbox', array(
 					'mapped'  	=> false,
-					'data'		=> $persona->getMail() != '' && !$llicencia->getMailenviat(),
-					'disabled'	=> $persona->getMail() == ''
+					'data'		=> $persona->getMail() == '' && !$llicencia->getImpresa()
 				));
 			}
 		});
@@ -34,7 +33,7 @@ class FormLlicenciaMail extends FormLlicenciaSortida {
 	
 	public function getName()
 	{
-		return 'llicencia_permail';
+		return 'llicencia_perimprimir';
 	}
 
 }

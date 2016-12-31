@@ -113,13 +113,14 @@ class BaseController extends Controller {
 	
 	// Templates plàstic
 	const TEMPLATE_GENERAL = 'G0';
+	const TEMPLATE_TIPUS_F = 'F0';
 	const TEMPLATE_TECNOCAMPUS_1 = 'T1';
 	const TEMPLATE_TECNOCAMPUS_2 = 'T2';
 	const TEMPLATE_ESCOLAR = 'ES';
 	const TEMPLATE_ESCOLAR_SUBMARINISME = 'CS';
 	
 	// Docs assegurança
-	const POLISSA_BUSSEIG = 'polissa_busseig.pdf';
+	const POLISSA_BUSSEIG = 'polissa_busseig_2017.pdf';
 	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus.pdf';
 	const POLISSA_ESCOLAR = 'polissa_escolar.pdf';
 	
@@ -786,7 +787,7 @@ class BaseController extends Controller {
 		$anulaIds = array();
 		
 		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
+		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
 		$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365)) AND ( 1 = 1 ";
@@ -809,12 +810,12 @@ class BaseController extends Controller {
 		if ($estat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
 		
 		
-		if ($baixa == false) $strQuery .= " AND p.databaixa IS NULL ";
+		if ($baixa == false) $strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
 		if ($nopagat == true) $strQuery .= " AND p.rebut IS NULL ";
 		//if ($noimpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 AND t.template IN (:templates)";
 		// No impreses totes excepte sense template => Llicències de dia
-		if ($noimpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 AND t.template <> ''";
-		if ($compta == true) $strQuery .= " AND f.comptabilitat <> 1 ";
+		if ($noimpres == true) $strQuery .= " AND l.impresa = 0 AND l.mailenviat = 0 AND p.pendent = 0 AND t.template <> ''";
+		if ($compta == true) $strQuery .= " AND f.comptabilitat IS NULL AND p.pendent = 0 ";
 
 		if (is_numeric($numfactura) && $numfactura > 0) { 
 		// Obté anul·lacions amb aquest número			
@@ -846,11 +847,6 @@ class BaseController extends Controller {
 		
 		$states = explode(";", self::CLUBS_STATES);
 		if ($estat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$estat]);
-	
-		/*if ($noimpres == true) {
-			$templates = array(self::TEMPLATE_GENERAL, self::TEMPLATE_TECNOCAMPUS_1, self::TEMPLATE_TECNOCAMPUS_2);
-			$query->setParameter('templates', $templates);
-		}*/
 	
 		if (is_numeric($numfactura) && $numfactura > 0) { 
 			if (count($anulaIds) > 0) {
@@ -1713,6 +1709,26 @@ class BaseController extends Controller {
 	
 	}
 	
+	protected function textLlicenciaG0mail( $cursAny ) {
+		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa ".$cursAny;
+		
+		$body = "<div style=''><p>Benvolguda, benvolgut,</p>";
+		$body .= "<p style='text-align: justify;'>Vull donar-te la benvinguda al nou model de llicència de la FECDAS, que espero que sigui del teu grat.</p>";
+		$body .= "<p style='text-align: justify;'>Qualsevol comentari que ens vulguis fer, el tindrem molt en compte!</p>";
+		$body .= "<p style='text-align: justify;'>De la nostra banda, t’agraïm un cop mes la confiança que diposites en el teu club i en la FECDAS.</p>";
+		$body .= "</div>";
+		
+		$salutacio = "<p>Rep una abraçada!</p>";
+		$salutacio .= "<p>Salvador Punsola<br/>";
+		$salutacio .= "President de la FECDAS</p>";
+		
+		return array(
+			'subject' 	=> 	$subject,
+			'body' 		=>	$body,
+			'greeting'	=> 	$salutacio
+		);
+	}
+	
 	protected function textLlicenciaESmail( $curs ) {
 		return $this->textLlicenciaFecdasmail($curs); 
 	}
@@ -1793,6 +1809,17 @@ class BaseController extends Controller {
 		);
 	}
 	
+	protected function printLlicenciaG0pdf( $llicencia ) {
+		$yLinks = 77;
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+				array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+				array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+				
+		$pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_GENERAL );
+		
+		return $pdf;
+	}
+	
 	protected function printLlicenciaESpdf( $llicencia ) {
 		$yLinks = 77;
 		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
@@ -1837,7 +1864,7 @@ class BaseController extends Controller {
 		$yDni =	46-$offset;	
 		$yCat =	52-$offset;		
 		$yNai =	58-$offset;		
-		$yCad = ($template == BaseController::TEMPLATE_ESCOLAR? 72-$offset: $yNai);
+		$yCad = (count($links) <= 3 ? 72-$offset: $yNai);
 		$yClu =	64-$offset;		
 		$yTlf =	64-$offset;	
 
@@ -1869,8 +1896,9 @@ class BaseController extends Controller {
 
 		$pdf->AddPage('L', $pageLayout);
 		
-		$pdf->Image('images/fonsanysescolar_1024x664.jpg', 0, 0, 
-						$width, $height , 'jpg', '', '', false, 320, 
+		$srcImatge = ($template == BaseController::TEMPLATE_GENERAL?'images/fonsgeneral_1024x664.jpg':'images/fonsanysescolar_1024x664.jpg');
+		
+		$pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
 		$parte = $llicencia->getParte();
@@ -2081,6 +2109,140 @@ class BaseController extends Controller {
 		return $pdf;
 	}
 
+
+	protected function getTitolPlastic($parte, $datacaduca = null) {
+		/*if ($parte == null) return '';
+		$anyLlicencia = $parte->getDataalta()->format('Y');
+		if ($datacaduca == null) $datacaduca = $parte->getDatacaducitat('titolPlastic');
+		$anyFinalLlicencia = $datacaduca->format('Y');
+		$tipus = $parte->getTipus();
+	
+		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
+	
+		$titolPlastic = str_replace("__DESDE__", $anyLlicencia, $titolPlastic);
+		$titolPlastic = str_replace("__FINS__", $anyFinalLlicencia, $titolPlastic);*/
+	
+		$tipus = $parte->getTipus();
+		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
+	
+		if (strpos($titolPlastic, "__DESDE__-__FINS__") === false) {
+			$titolPlastic = str_replace("__DESDE__", $parte->getDataalta()->format('Y'), $titolPlastic);
+		} else {
+			$titolPlastic = str_replace("__DESDE__-__FINS__", $parte->getCurs(), $titolPlastic);
+		}
+		
+		
+		
+		return $titolPlastic;
+	}
+	
+	protected function printLlicencies( $llicencies ) {
+	
+		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
+		// Altres opcions BUSINESS_CARD_ES   55x85 mm ; 2.17x3.35 in ¿?
+		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		// Papers => 		/vendor/tcpdf/includes/tcpdf_static.php
+		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
+		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
+				
+		$pdf->init(array('author' => 'FECDAS',
+						'title' => 'Llicència FECDAS' . date("Y")));
+
+		$pdf->setPrintFooter(false);
+		$pdf->setPrintHeader(false);
+				
+		// zoom - layout - mode
+		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
+		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+		$pdf->SetMargins(5, 5, 5);
+		$pdf->SetAutoPageBreak 	(false, 5);
+		//$pdf->SetMargins(0, 0, 0);
+		//$pdf->SetAutoPageBreak 	(false, 0);
+		$pdf->SetTextColor(0, 0, 0); 
+			
+		$width = 86; //Original
+		$height = 54; //Original
+
+		foreach ($llicencies as $llicencia) {
+			$parte = $llicencia->getParte();
+								
+			// Add a page
+			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
+
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TIPUS_F ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR) $this->printPlasticGeneral($pdf, $llicencia);
+				
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+					//$this->printPlasticGeneral($pdf, $llicencia);
+					$this->printPlasticTecnocampus($pdf, $llicencia);
+			}
+			$llicencia->setImpresa(1);
+			$llicencia->setDataimpressio( new \DateTime() );
+		}
+		// reset pointer to the last page
+		$pdf->lastPage();
+			
+		return $pdf;
+	}
+
+	protected function printPlasticGeneral($pdf, $llicencia) {
+		// Posicions
+		$xTit = 0;
+		$yTit =	12;		
+		$xNom = 10;
+		$yNom =	27.4;		
+		$xDni = 18;
+		$yDni =	32.1;		
+		$xCat = 20.5;
+		$yCat =	36.7;		
+		$xNai = 19.5;
+		$yNai =	41.1;		
+		$xClu = 12;
+		$yClu =	45.6;		
+		$xTlf = 15;
+		$yTlf =	50.1;		
+		$xCad = 61;
+		$yCad =	50.1;
+		
+		$parte = $llicencia->getParte();
+		$persona = $llicencia->getPersona();
+		if ( $persona == null) return;
+		
+		$datacaduca = $parte->getDatacaducitat('printparte');
+		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
+
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
+				
+		$pdf->SetXY($xTit, $yTit);
+		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
+
+		$pdf->SetFont('dejavusans', 'B', 8);
+
+		$pdf->SetXY($xNom, $yNom);
+		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+
+		$pdf->SetXY($xDni, $yDni);
+		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
+
+		$pdf->SetXY($xCat, $yCat);
+		$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
+				
+		$pdf->SetXY($xNai, $yNai);
+		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
+				
+		$pdf->SetXY($xClu, $yClu);
+		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+
+		$pdf->SetXY($xTlf, $yTlf);
+		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
+				
+		$pdf->SetXY($xCad, $yCad);
+		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
+		
+	}
+	
 	protected function printPlasticTecnocampus($pdf, $llicencia) {
 		// Posicions
 		$xPol = 0;
@@ -2184,32 +2346,6 @@ class BaseController extends Controller {
 		$pdf->SetXY($xCad_tit, $yCad+$y_offset-0.3);
 		$pdf->Cell(0, 0, 'Vàlida fins/Valid until:', 0, 1, 'L');
 		
-	}
-
-	protected function getTitolPlastic($parte, $datacaduca = null) {
-		/*if ($parte == null) return '';
-		$anyLlicencia = $parte->getDataalta()->format('Y');
-		if ($datacaduca == null) $datacaduca = $parte->getDatacaducitat('titolPlastic');
-		$anyFinalLlicencia = $datacaduca->format('Y');
-		$tipus = $parte->getTipus();
-	
-		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
-	
-		$titolPlastic = str_replace("__DESDE__", $anyLlicencia, $titolPlastic);
-		$titolPlastic = str_replace("__FINS__", $anyFinalLlicencia, $titolPlastic);*/
-	
-		$tipus = $parte->getTipus();
-		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
-	
-		if (strpos($titolPlastic, "__DESDE__-__FINS__") === false) {
-			$titolPlastic = str_replace("__DESDE__", $parte->getDataalta()->format('Y'), $titolPlastic);
-		} else {
-			$titolPlastic = str_replace("__DESDE__-__FINS__", $parte->getCurs(), $titolPlastic);
-		}
-		
-		
-		
-		return $titolPlastic;
 	}
 	
 	protected function crearComanda($data, $comentaris = '', $factura = null) {

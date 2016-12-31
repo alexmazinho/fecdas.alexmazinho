@@ -61,11 +61,6 @@ class EntityParte extends EntityComanda {
 	protected $pendent;
 
 	/**
-	 * @ORM\Column(type="boolean")
-	 */
-	protected $impres;
-	
-	/**
 	 * @ORM\OneToMany(targetEntity="EntityLlicencia", mappedBy="parte")
 	 */
 	protected $llicencies;	// Owning side of the relationship
@@ -74,7 +69,6 @@ class EntityParte extends EntityComanda {
 	public function __construct() {
 		$this->web = true;
 		$this->renovat = false;
-		$this->impres = false;
 		$this->pendent = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		
@@ -160,6 +154,20 @@ class EntityParte extends EntityComanda {
 	}
 	
 	/**
+	 * Parte imprès ?
+	 *
+	 * @return boolean
+	 */
+	public function getImpres()
+	{
+		// Pendent d'imprimir si alguna llicència pendent imprimir
+		foreach ($this->llicencies as $llicencia) {
+			if (!$llicencia->esBaixa() && !$llicencia->getImpresa()) return false;   
+		}	
+		return true;
+	}
+	
+	/**
 	 * Es pot enviar per mail al federat?
 	 *
 	 * @return boolean
@@ -169,7 +177,8 @@ class EntityParte extends EntityComanda {
 		return $this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 || 
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 ||
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
-				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME;
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME ||
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_GENERAL;
 	}
 	
 	/**
@@ -413,6 +422,37 @@ class EntityParte extends EntityComanda {
     	return $count;
     }
 	
+	/**
+     * Obté número de llicències impreses
+     *
+     * @return integer
+     */
+    public function getNumImpreses()
+    {
+    	
+    	// Només si no estan donades de baixa
+    	$count = 0;
+    	foreach($this->llicencies as $llicencia_iter) {
+    		if (!$llicencia_iter->esBaixa() && $llicencia_iter->getImpresa() == true) $count++;
+    	}
+    	return $count;
+    }
+	
+	/**
+     * Obté número de llicències enviades per mail
+     *
+     * @return integer
+     */
+    public function getNumEnviadesMail()
+    {
+    	
+    	// Només si no estan donades de baixa
+    	$count = 0;
+    	foreach($this->llicencies as $llicencia_iter) {
+    		if (!$llicencia_iter->esBaixa() && $llicencia_iter->getMailenviat() == true) $count++;
+    	}
+    	return $count;
+    }
 	
     /**
      * Obté número de infantils (llicències actives)
@@ -927,26 +967,6 @@ class EntityParte extends EntityComanda {
     public function getPendent()
     {
     	return $this->pendent;
-    }
-    
-    /**
-     * Set impres
-     *
-     * @param boolean $impres
-     */
-    public function setImpres($impres)
-    {
-    	$this->impres = $impres;
-    }
-    
-    /**
-     * Get impres
-     *
-     * @return boolean
-     */
-    public function getImpres()
-    {
-    	return $this->impres;
     }
     
     /**

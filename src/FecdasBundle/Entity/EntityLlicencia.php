@@ -131,6 +131,26 @@ class EntityLlicencia {
 	protected $enviarllicencia;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $impresa;
+	
+	/**
+	 * @ORM\Column(type="date", nullable=true)
+	 */
+	protected $dataimpressio; 
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $mailenviat;
+	
+	/**
+	 * @ORM\Column(type="date", nullable=true)
+	 */
+	protected $datamail; 
+	
+	/**
 	 * @ORM\Column(type="date")
 	 */
 	protected $datacaducitat; 
@@ -169,6 +189,8 @@ class EntityLlicencia {
 		$this->nocmas = false;
 		$this->fusell = false;
 		$this->enviarllicencia = false;
+		$this->impresa = false;
+		$this->mailenviat = false;
 	}
 	
 	public function __toString() {
@@ -660,6 +682,86 @@ class EntityLlicencia {
     	return $this->datacaducitat;
     }
     
+	/**
+     * Set impresa
+     *
+     * @param boolean $impresa
+     */
+    public function setImpresa($impresa)
+    {
+    	$this->impresa = $impresa;
+    }
+    
+    /**
+     * Get impresa
+     *
+     * @return boolean
+     */
+    public function getImpresa()
+    {
+    	return $this->impresa;
+    }
+
+	/**
+     * Set dataimpressio
+     *
+     * @param date $dataimpressio
+     */
+    public function setDataimpressio($dataimpressio)
+    {
+    	$this->dataimpressio = $dataimpressio;
+    }
+    
+    /**
+     * Get dataimpressio
+     *
+     * @return date
+     */
+    public function getDataimpressio()
+    {
+    	return $this->dataimpressio;
+    }
+	
+	/**
+     * Set mailenviat
+     *
+     * @param boolean $mailenviat
+     */
+    public function setMailenviat($mailenviat)
+    {
+    	$this->mailenviat = $mailenviat;
+    }
+    
+    /**
+     * Get mailenviat
+     *
+     * @return boolean
+     */
+    public function getMailenviat()
+    {
+    	return $this->mailenviat;
+    }
+	
+	/**
+     * Set datamail
+     *
+     * @param date $datamail
+     */
+    public function setDatamail($datamail)
+    {
+    	$this->datamail = $datamail;
+    }
+    
+    /**
+     * Get datamail
+     *
+     * @return date
+     */
+    public function getDatamail()
+    {
+    	return $this->datamail;
+    }
+	
     /**
      * Set dataentrada
      *

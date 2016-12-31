@@ -1,0 +1,72 @@
+{# src/Fecdas/PartesBundle/Resources/views/Admin/recentstaula.html.twig #}
+    	<div class="table-header">	
+	   		<div id="list-header">
+		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.num') }}
+		   			<span class="listheader-icon {% if partes.isSorted('p.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsfactura" class="col-listheader col-noresponsive listheader-noorder">Factura</div>
+		   		<div id="header-parterecentsdata" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}<br/><span>(entrada)</span>
+		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentsclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Club', 'c.nom') }}
+		   				<span class="listheader-icon {% if partes.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-parterecentstipus" class="col-listheader listheader-noorder">Tipus<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsenviar" class="col-listheader listheader-noorder"><i class="fa fa-envelope fa-1x"></i><span class="listheader-order"></span></div>
+		   		<div id="header-parterecentssortides" class="col-listheader listheader-noorder"><i class="fa blue"><b>@</b></i> <i class="fa fa-print blue"></i><span class="listheader-order"></span></div>
+		   		<div id="header-parterecentspreu" class="col-listheader listheader-noorder">Preu<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsinfo" class="col-listheader listheader-noorder">Informació<span class="listheader-order"></span></div>
+		   		<div id="header-parterecentsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   	</div>
+		</div>
+		{% if partes|length > 0 %}
+		<div class="table-noscroll">
+		   	<ol id="list-data">
+			{% for parte in partes %}
+		   		<li class="data-detall 
+		   		{% if parte.getImpres == false  %} parte-per-imprimir {% endif %}
+				{% if parte.comandaPagada == false  %} parte-pendent {% endif %}
+		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
+			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
+			   		<div class="data-detall-cell parterecents-factura">
+			   			{% for factura in parte.factures %}
+			   				<a class="comanda-action-factura {% if factura.esanulacio == true %}red{% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+								{% if factura.import < 0 %}<span class="red">(-){{ factura.numfactura }}</span>
+			   					{% else %}{{ factura.numfactura }}{% endif %}			   			
+								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+			   			
+			   			{% endfor %}
+			   		</div>
+		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time><br/><span>({{ parte.dataentrada|date('d/m/y') }})</span></div>
+		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
+		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }}</div>
+		   			<div class="data-detall-cell parterecents-enviar">{{ parte.numEnviar }}/{{ parte.numLlicencies }}</div>
+		   			<div class="data-detall-cell parterecents-sortida">{{ parte.numImpreses }} + {{ parte.numEnviadesMail }} / {{ parte.numLlicencies }}</div>
+		   			<div class="data-detall-cell parterecents-preu">
+		   				{% if parte.isFacturaModificada == true %}
+			   			<strike>{{ parte.getTotalDetalls|number_format(2, ',', '.') }}€</strike><br/>
+			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
+			   			{% else %}
+			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
+			   			{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
+		   			<div class="data-detall-cell parterecents-actions">
+			   			{% if parte.comandaPagada == false  %}
+			   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
+			   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+			   			{% endif %}
+			   			{% if parte.perEnviarFederat == true  %}
+			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
+			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa systemblue"><b>@</b></i></a>
+			   			{% endif %}
+		   				{% if parte.perImprimir == true  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
+		   					<i class="fa fa-print blue"></i></a>{% endif %}
+		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
+		   					<i class="fa fa-search orange"></i></a>
+					</div>
+		   		</li>
+		   	{% endfor %}
+			</ol>
+		</div>
+			{% if partes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(partes, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	        <div class="sms-notice">Cap comunicació</div>
+	    {% endif %}

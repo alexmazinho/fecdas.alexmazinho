@@ -160,12 +160,6 @@ FecdasBundle_rebuttopdf:
     requirements:
         _method:  GET
 
-FecdasBundle_imprimirparte:
-    pattern:  /imprimirparte
-    defaults: { _controller: "FecdasBundle:PDF:imprimirparte" }
-    requirements:
-        _method:  GET
-
 FecdasBundle_imprimirllicencia:
     pattern:  /imprimirllicencia
     defaults: { _controller: "FecdasBundle:PDF:imprimirllicencia" }
@@ -346,6 +340,12 @@ FecdasBundle_clubs:
 FecdasBundle_llicenciespermail:
     pattern:  /llicenciespermail
     defaults: { _controller: "FecdasBundle:Admin:llicenciespermail" }
+    requirements:
+        _method:  GET|POST
+
+FecdasBundle_imprimirparte:
+    pattern:  /imprimirparte
+    defaults: { _controller: "FecdasBundle:Admin:imprimirparte" }
     requirements:
         _method:  GET|POST
 

@@ -1,4 +1,4 @@
-{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Admin/recents.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
 {% block javascriptshead %}
@@ -73,88 +73,17 @@
 				    	</label>
 					</div>
 				</div>
-				<div class="col-md-4  col-last-right">
+				{#<div class="col-md-4  col-last-right">
 					<a class="link imprimir-pendents" href="{{ path('FecdasBundle_imprimirpendents', sortparams)|raw }}" alt="Imprimir pendents" 
-						title="Imprimir pendents">Imprimir pendents <i class="fa fa-print blue fa-2x"></i></a>
-				</div>	
+						title="Imprimir pendents">Imprimir pendents BORRAR <i class="fa fa-print blue fa-2x"></i></a>
+				</div>#}	
 			</div>
 	   	</form>
     </div>
     <!--  <div id="list-header" class="clearfix"> -->
     <br/>
     <div id="list-recents">
-    	<div class="table-header">	
-	   		<div id="list-header">
-		   		<div id="header-parterecentsid" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Albarà', 'p.num') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-parterecentsfactura" class="col-listheader col-noresponsive listheader-noorder">Factura</div>
-		   		<div id="header-parterecentsentrada" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Entrada', 'p.dataentrada') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-parterecentsdata" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Inici', 'p.dataalta') }}
-		   			<span class="listheader-icon {% if partes.isSorted('p.dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-parterecentsclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Club', 'c.nom') }}
-		   				<span class="listheader-icon {% if partes.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-parterecentstipus" class="col-listheader listheader-noorder">Tipus<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentsenviar" class="col-listheader listheader-noorder"><i class="fa fa-envelope fa-1x"></i><span class="listheader-order"></span></div>
-		   		<div id="header-parterecentspreu" class="col-listheader listheader-noorder">Preu<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentsinfo" class="col-listheader listheader-noorder">Informació<span class="listheader-order"></span></div>
-		   		<div id="header-parterecentsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ partes.getTotalItemCount|number_format(0, ',', '.') }}</div>
-		   	</div>
-		</div>
-		{% if partes|length > 0 %}
-		<div class="table-noscroll">
-		   	<ol id="list-data">
-			{% for parte in partes %}
-		   		<li class="data-detall 
-		   		{% if parte.impres == false  %} parte-per-imprimir {% endif %}
-				{% if parte.comandaPagada == false  %} parte-pendent {% endif %}
-		   		{% if parte.databaixa is not null %} data-detall-fosc {% endif %}">
-			   		<div class="data-detall-cell parterecents-id">{{ parte.numalbara }}</div>
-			   		<div class="data-detall-cell parterecents-factura">
-			   			{% for factura in parte.factures %}
-			   				<a class="comanda-action-factura {% if factura.esanulacio == true %}red{% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
-								{% if factura.import < 0 %}<span class="red">(-){{ factura.numfactura }}</span>
-			   					{% else %}{{ factura.numfactura }}{% endif %}			   			
-								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-			   			
-			   			{% endfor %}
-			   		</div>
-			   		<div class="data-detall-cell parterecents-entrada"><time datetime="{{ parte.dataentrada|date('c') }}">{{ parte.dataentrada|date('d/m/y') }}</time></div>
-		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time></div>
-		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
-		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }}</div>
-		   			<div class="data-detall-cell parterecents-enviar">{{ parte.numEnviar }}/{{ parte.numLlicencies }}</div>
-		   			<div class="data-detall-cell parterecents-preu">
-		   				{% if parte.isFacturaModificada == true %}
-			   			<strike>{{ parte.getTotalDetalls|number_format(2, ',', '.') }}€</strike><br/>
-			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
-			   			{% else %}
-			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
-			   			{% endif %}
-		   			</div>
-		   			<div class="data-detall-cell parterecents-info">{{ parte.infoLlistat|nl2br }}</div>
-		   			<div class="data-detall-cell parterecents-actions">
-			   			{% if parte.comandaPagada == false  %}
-			   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
-			   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
-			   			{% endif %}
-			   			{% if parte.perEnviarFederat == true  %}
-			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
-			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa fa-envelope systemblue"></i></a>
-			   			{% endif %}
-		   				{% if parte.perImprimir == true  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
-		   					<i class="fa fa-print blue"></i></a>{% endif %}
-		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
-		   					<i class="fa fa-search orange"></i></a>
-					</div>
-		   		</li>
-		   	{% endfor %}
-			</ol>
-		</div>
-		{% if partes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(partes, null, sortparams) }}</div>{% endif %}
-   	{% else %}
-        <div class="sms-notice">Cap comunicació</div>
-    {% endif %}
+    	{% include 'FecdasBundle:Admin:recentstaula.html.twig' %}
     </div>
 {% endblock %}
 
@@ -184,9 +113,53 @@ recentsParams = function() {
 	return params;
 };
 
+
+obrirTaulaSortidaLlicencies = function(url, title, txtSubmit, callbackSubmit) {
+	$('.alert.alert-dismissible').remove();
+	
+	$.get(url, function(data) {
+		
+		$("#dialeg").html(data);
+					
+		var ewidth = $(window).width()*0.8;
+		if (ewidth > 800) ewidth = 800;
+		var eheight = $(document).height()*0.8;
+					
+		$("#dialeg").dialog({
+			buttons :[
+			            {
+			              text: txtSubmit,
+			              click: callbackSubmit
+						},
+						{
+				          text: "Cancel·lar",
+				          click: function() {
+				        	  $(this).dialog("destroy");
+				          }
+						}
+			          ], 
+		    show: 1000,
+		    modal: true,
+		    resizable: true,
+		    width: ewidth,
+		    height: eheight,
+		    minWidth: 400,
+		    title: title
+		 });
+	
+		eventFilterTable("#formfederatssortida", "#table-federats", url);
+		
+	}).fail( function(xhr, status, error) {
+		 var sms = smsResultAjax('KO', xhr.responseText);
+		 
+		 $("#list-forms").prepend(sms);
+	});
+
+};
+
 submitEnviarLllicencies = function(action, parteRow) {
-	var url = $('#formfederatspermail').attr("action");
-	var params = $('#formfederatspermail').serializeArray();
+	var url = $('#formfederatssortida').attr("action");
+	var params = $('#formfederatssortida').serializeArray();
 	//params.push( {'name':'submitaction','value': action} );
 
 	obrirMascaraBlock( '#table-federats' );
@@ -196,15 +169,15 @@ submitEnviarLllicencies = function(action, parteRow) {
 		 
 		$("#list-forms").prepend(sms);
 
-		if ($('#form_noimpres').is(':checked')) parteRow.remove();
-		
+		//if ($('#form_noimpres').is(':checked')) parteRow.remove();
+		printTaulaRecents();
 		 
 		$("#dialeg").dialog("destroy");
 	}).fail( function(xhr, status, error) {
 		 // xhr.status + " " + xhr.statusText, status, error
 		 var sms = smsResultAjax('KO', xhr.responseText);
 		 
-		 $("#list-federats-enviament-mail").prepend(sms);
+		 $("#list-federats-sortida-llicencies").prepend(sms);
 
 		 tancarMascaraBlock( '#table-federats' );
 	     
@@ -257,17 +230,33 @@ eventFilterTable = function (containerSel, taulaSel, url) {
 	});
 }
 
+printTaulaRecents = function() {
+
+	$('.alert.alert-dismissible').remove();
+	
+	var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
+	var params = recentsParams();
+
+	for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+	
+	$.get(url, function(data) {
+
+		$("#list-recents").html(data);
+
+	}).fail( function(xhr, status, error) {
+		 // xhr.status + " " + xhr.statusText, status, error
+		 var sms = smsResultAjax('KO', xhr.responseText);
+		 
+		 $("#list-forms").prepend(sms);
+	});
+};
+
 
 $(document).ready(function(){
 	setMenuActive("menu-admllistes");
 
 	$("#menu-adm").click();
 
-	$('.confirmar-pagament').click(function(e) {
-		e.preventDefault();
-		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-	});
-	
 	selectRecentsClub();
 
 	$('#form_clubs, #form_numfactura, #form_numrebut, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
@@ -279,7 +268,7 @@ $(document).ready(function(){
 		window.location = url; 
 	});
 
-	$('.imprimir-pendents').click(function (e) {
+	/*$('.imprimir-pendents').click(function (e) {
 		e.preventDefault();
 		
 		var url = $(this).attr('href');
@@ -287,73 +276,42 @@ $(document).ready(function(){
 
 		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
 		window.location = url; 
+	});*/
+
+	// Delegate
+	$( "#main-col" ).on( "click", ".confirmar-pagament", function(e) {
+		e.preventDefault();
+		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
 	});
 
-
-	/*$( "#dialeg" ).on( "click", ".veure-llicencia-digital", function(e) {
-		e.preventDefault();
-
-		var url = $(this).attr("href");
-
-		$.get(url, function(data) {
-
-			window.open().write(data);
-			//document.write(data)
-			
-		}).fail( function(xhr, status, error) {
-			 var sms = smsResultAjax('KO', xhr.responseText);
-			 
-			 $("#list-forms").prepend(sms);
-		});	
-	});*/
-	
-	$('.enviament-llicencies').click(function(e) {
+	// Delegate
+	$( "#main-col" ).on( "click", ".parterecents-action-print", function(e) {
 		e.preventDefault();
 
 		// Obrir form selecció federats
 		var url = $(this).attr("href");
+
+		obrirTaulaSortidaLlicencies(url, 'Impressió llicències plàstic', 'Imprimir', function() {
+			$('.alert.alert-dismissible').remove();
+			$('#formfederatssortida').submit();
+			printTaulaRecents();
+			$("#dialeg").dialog("destroy");
+	    });
+	});
+
+	// Delegate
+	$( "#main-col" ).on( "click", ".enviament-llicencies", function(e) {
+		e.preventDefault();
+
 		var parteRow = $(this).parents('li.data-detall');  // Si només s'estan mostrant les no impreses, després de l'eviament s'esborrarà la fila
 		
-		$('.alert.alert-dismissible').remove();
+		// Obrir form selecció federats
+		var url = $(this).attr("href");
 
-		
-		
-		$.get(url, function(data) {
-			
-			$("#dialeg").html(data);
-						
-			var ewidth = $(window).width()*0.8;
-			if (ewidth > 800) ewidth = 800;
-			var eheight = $(document).height()*0.8;
-						
-			$("#dialeg").dialog({
-				buttons : {
-		           	"Enviar" : function() {
-		           		$('.alert.alert-dismissible').remove();
-		           		submitEnviarLllicencies('final', parteRow);
-		       		},
-		           	"Cancel·lar" : function() {
-		             	$(this).dialog("destroy");
-		           	}
-		       	},
-			    show: 1000,
-			    modal: true,
-			    resizable: true,
-			    width: ewidth,
-			    height: eheight,
-			    minWidth: 400,
-			    title: 'Enviament llicències per mail'
-			 });
-
-			eventFilterTable("#formfederatspermail", "#table-federats", url);
-			
-		}).fail( function(xhr, status, error) {
-			 var sms = smsResultAjax('KO', xhr.responseText);
-			 
-			 $("#list-forms").prepend(sms);
-		});
-
-		
+		obrirTaulaSortidaLlicencies(url, 'Enviament llicències per mail', 'Enviar', function() {
+			$('.alert.alert-dismissible').remove();
+	   		submitEnviarLllicencies('final', parteRow);
+	    });
 		
 	});
 

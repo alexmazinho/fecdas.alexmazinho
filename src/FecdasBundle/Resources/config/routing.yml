@@ -233,6 +233,11 @@ FecdasBundle_informesaldos:
     requirements:
         _method:  GET
 
+FecdasBundle_tancamentanysaldos:
+    pattern:  /tancamentanysaldos
+    defaults: { _controller: "FecdasBundle:Cron:tancamentanysaldos" }
+    requirements:
+        _method:  GET
 
 # ---------------------------------------------------------------------------
 # -----------------------  SEGURETAT ------------------------------------

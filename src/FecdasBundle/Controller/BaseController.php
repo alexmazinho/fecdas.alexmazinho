@@ -1858,13 +1858,14 @@ class BaseController extends Controller {
 
 		// Posicions
 		$xTit = 0;
-		$yTit =	8;
-		$offset = 5;		
+		$yTit =	($template == BaseController::TEMPLATE_GENERAL?12:8);
+		$offset = ($template == BaseController::TEMPLATE_GENERAL?3:5);		
 		$yNom =	40-$offset;		
 		$yDni =	46-$offset;	
 		$yCat =	52-$offset;		
-		$yNai =	58-$offset;		
-		$yCad = (count($links) <= 3 ? 72-$offset: $yNai);
+		$yNai =	58-$offset;
+		if ($template == BaseController::TEMPLATE_GENERAL) $yCad = 71-$offset;		
+		else $yCad = (count($links) <= 3 ? 72-$offset: $yNai);
 		$yClu =	64-$offset;		
 		$yTlf =	64-$offset;	
 
@@ -1918,7 +1919,11 @@ class BaseController extends Controller {
 //		$pdf->SetAlpha(0.7);
 	
 		$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
-		$pdf->SetFont('dejavusans', 'B', 15, '', true);
+		if ($template == BaseController::TEMPLATE_GENERAL) {
+			$pdf->SetFont('dejavusans', 'B', 14, '', true);
+		} else {
+			$pdf->SetFont('dejavusans', 'B', 15, '', true);
+		}
 		$pdf->setFontStretching(100);		
 		//$pdf->SetXY($xTit, $yTit);
 		$pdf->MultiCell(0,0,$titolPlastic,0,'C', 0, 0, $xTit, $yTit);

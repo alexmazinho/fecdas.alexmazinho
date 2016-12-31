@@ -165,13 +165,14 @@ submitEnviarLllicencies = function(action, parteRow) {
 	obrirMascaraBlock( '#table-federats' );
 	
 	$.post(url, params, function(data) {
+
 		var sms = smsResultAjax('OK', data);
-		 
-		$("#list-forms").prepend(sms);
 
 		//if ($('#form_noimpres').is(':checked')) parteRow.remove();
 		printTaulaRecents();
-		 
+
+		$("#list-forms").prepend(sms);
+
 		$("#dialeg").dialog("destroy");
 	}).fail( function(xhr, status, error) {
 		 // xhr.status + " " + xhr.statusText, status, error

@@ -572,6 +572,27 @@ class CronController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte)));
 	}
 	
+	
+	public function tancamentanysaldos(Request $request) {
+		/*
+		 * http://www.fecdas.dev/tancamentanysaldos?secret=abc...&update=0&club=CATXXX 	=> consulta un club opcional
+		 * 
+		 * Planificar cron anual 31 de desembre ¿?
+		 * wget -O - -q http://fecdas.dev/app_dev.php/tancamentanysaldos?secret=abc... >> tancamentanysaldos.html*/
+		
+		$sortida = ""; 
+		try { 
+    		$this->validateCronAuth($request, "check clubs");
+			
+			$update = ($request->query->get('update', 0) == 0?false:true);
+    		
+    		$club = $request->query->get('club', '');
+		} catch (\Exception $e) {
+            return new Response($e->getMessage());
+        }
+		return new Response('Fi'); 
+	}
+	
 	public function checkclubsAction(Request $request) {
 		/*
 		 * http://www.fecdas.dev/checkclubs?secret=abc...&page=1&update=0&club=CATXXX 	=> consulta, club opcional

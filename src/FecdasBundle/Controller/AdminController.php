@@ -1992,7 +1992,7 @@ GROUP BY c.nom
 		// Crear índex taula partes per data entrada
 		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityClub c JOIN c.estat e ";
 		//$strQuery .= " WHERE c.activat = true AND c.codi <> 'CAT000' ";
-		$strQuery .= " WHERE c.databaixa IS NULL AND c.codi <> 'CAT000' ";
+		$strQuery .= " WHERE c.databaixa IS NULL AND c.codi <> '".BaseController::CODI_CLUBTEST."' ";
 		if ($currentEstat != 0) $strQuery .= " AND e.descripcio = :filtreestat ";
 		if ($codi != '') $strQuery .= " AND c.codi = :codi ";
 		$strQuery .= " ORDER BY ". $sort;

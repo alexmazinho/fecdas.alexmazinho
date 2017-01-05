@@ -84,7 +84,7 @@
 		   			<div class="data-detall-cell producte-nomcurt">{{ producte.abreviatura }}</div>
 		   			<div class="data-detall-cell producte-descripcio">{{ producte.descripcio }}</div>
 		   			<div class="data-detall-cell producte-tipus">{{ producte.tipustext }}</div>
-		   			<div class="data-detall-cell producte-import">{{ producte.currentPreu|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell producte-import">{{ producte.currentPreu|number_format(2, ',', '.') }}€ ({{ producte.currentAny }})</div>
 		   			<!-- <div class="data-detall-cell producte-iva">{# (producte.currentIva*100)|number_format(0, ',', '.') #}%</div> -->
 		   			<!-- <div class="data-detall-cell producte-total">{# (producte.currentPreu * (1+producte.currentIva))|number_format(2, ',', '.') #}€</div> -->
 		   			<div class="data-detall-cell producte-transport">{% if producte.transport == 1 %}<i class="fa fa-check-circle"></i>{% endif %}</div>

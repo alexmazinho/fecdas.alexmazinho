@@ -573,24 +573,305 @@ class CronController extends BaseController {
 	}
 	
 	
-	public function tancamentanysaldos(Request $request) {
+	public function tancamentanysaldosAction(Request $request) {
 		/*
-		 * http://www.fecdas.dev/tancamentanysaldos?secret=abc...&update=0&club=CATXXX 	=> consulta un club opcional
+		 * http://www.fecdas.dev/tancamentanysaldos?secret=abc...&format=html&page=1&perpage=50&current=2015&update=0&clubs[]=CATXXX&clubs[]=CATYYY 	=> consulta varis clubs opcional
 		 * 
 		 * Planificar cron anual 31 de desembre ¿?
 		 * wget -O - -q http://fecdas.dev/app_dev.php/tancamentanysaldos?secret=abc... >> tancamentanysaldos.html*/
+		$em = $this->getDoctrine()->getManager();
 		
-		$sortida = ""; 
+		$sortidaHtml = ""; 
 		try { 
-    		$this->validateCronAuth($request, "check clubs");
+    		$this->validateCronAuth($request, "tancament any saldos");
+			
+			$current = $request->query->get('current', 0);
+			$format = $request->query->get('format', 'html');  // formats => html o csv 
+			$page = $request->query->get('page', 1);   
+			$perpage = $request->query->get('perpage', 1);
+			
+						
+			if ($current < 2000) throw new \Exception('Cal indicar l\'any de tancament');
 			
 			$update = ($request->query->get('update', 0) == 0?false:true);
     		
-    		$club = $request->query->get('club', '');
+    		$clubsCodisArray = $request->query->get('clubs', array());
+			
+			$clubs = array();
+			if (count($clubsCodisArray) > 0) {
+				foreach ($clubsCodisArray as $codi) {
+					$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+					if ($club != null) $clubs[] = $club;
+				}
+			} else {
+				// Tots els clubs no baixa
+				$clubs = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->findBy(array('databaixa' => null), array('codi' => 'ASC'), $perpage, ($page - 1) * $perpage + 1);// Suma un per no mostrar CAT000
+			}
+			
+			
+			if ($format == 'csv') $linebreak = PHP_EOL;
+			else $linebreak = '<br/>';
+			
+			
+
+			if ($format == 'html') {
+				$header = array('codi', 'nom', 'saldo', 'romanent', 'total pagaments', 
+							'total (llicencies + duplicats + altres) = total comandes',
+							'suma (llicencies + duplicats + altres + correccio anul·lacions) = suma comandes',
+							'suma (factures - anul·lacions) = suma facturat', 'error facturacio',  
+							'error facturació següent', 'suma pagaments', 'error pagaments', 'suma comandes current + següent', 'error comandes suma != total', 
+							'update romanent', 'update total pagaments', 'update total llicencies', 
+							'update total duplicats', 'update total altres', 'update ajust subvencions',
+							'saldo resultant', 'ajust subvencions', 'altres errors'  ); 
+							
+				$sortidaHtml .= "<style>
+									.saldos-tancament { table-layout: fixed; width: 3650px;  }
+									thead {  }
+									tbody {  }
+									.container-scrollable { height: 800px; overflow-y: auto; overflow-x: hidden; width: 3648px; display: block;  }
+									/*thead, tbody { display: block; width: 100%;  }
+									tbody { height: 200px; width: 100%; overflow-x: auto; overflow-y: hidden; }*/
+									.saldos-tancament tr th:nth-child(1), .saldos-tancament tr td:nth-child(1) { width: 60px; }
+									.saldos-tancament tr th:nth-child(2), .saldos-tancament tr td:nth-child(2) { width: 150px; }
+									.saldos-tancament tr th:nth-child(3), .saldos-tancament tr td:nth-child(3),
+									.saldos-tancament tr th:nth-child(4), .saldos-tancament tr td:nth-child(4),
+									.saldos-tancament tr th:nth-child(5), .saldos-tancament tr td:nth-child(5) { width: 80px; }
+									.saldos-tancament tr th:nth-child(6), .saldos-tancament tr td:nth-child(6) { width: 300px; } 
+									.saldos-tancament tr th:nth-child(7), .saldos-tancament tr td:nth-child(7) { width: 350px; } 
+									.saldos-tancament tr th:nth-child(8), .saldos-tancament tr td:nth-child(8) { width: 300px; }
+									.saldos-tancament tr th:nth-child(9), .saldos-tancament tr td:nth-child(9), 
+									.saldos-tancament tr th:nth-child(10), .saldos-tancament tr td:nth-child(10) { width: 100px; } 
+									.saldos-tancament tr th:nth-child(11), .saldos-tancament tr td:nth-child(11) { width: 250px; } 
+									.saldos-tancament tr th:nth-child(12), .saldos-tancament tr td:nth-child(12) { width: 100px; }
+									.saldos-tancament tr th:nth-child(13), .saldos-tancament tr td:nth-child(13) { width: 250px; }
+									.saldos-tancament tr th:nth-child(14), .saldos-tancament tr td:nth-child(14) { width: 100px; }
+									.saldos-tancament tr th:nth-child(15), .saldos-tancament tr td:nth-child(15), 
+									.saldos-tancament tr th:nth-child(16), .saldos-tancament tr td:nth-child(16),
+									.saldos-tancament tr th:nth-child(17), .saldos-tancament tr td:nth-child(17),
+									.saldos-tancament tr th:nth-child(18), .saldos-tancament tr td:nth-child(18),
+									.saldos-tancament tr th:nth-child(19), .saldos-tancament tr td:nth-child(19),
+									.saldos-tancament tr th:nth-child(20), .saldos-tancament tr td:nth-child(20),
+									.saldos-tancament tr th:nth-child(21), .saldos-tancament tr td:nth-child(21),
+									.saldos-tancament tr th:nth-child(22), .saldos-tancament tr td:nth-child(22) { width: 80px; }
+									.saldos-tancament tr th:nth-child(23), .saldos-tancament tr td:nth-child(23) { width: 350px; }
+
+									
+									.saldos-tancament tr td:nth-child(3),
+									.saldos-tancament tr td:nth-child(21) { color: blue;  }
+
+									.saldos-tancament tr td:nth-child(5),
+									.saldos-tancament tr td:nth-child(11) { color: green;  }
+									
+									.saldos-tancament tr td:nth-child(9) { color: blue;  }
+									
+									.saldos-tancament tr td:nth-child(9),
+									.saldos-tancament tr td:nth-child(10),
+									.saldos-tancament tr td:nth-child(12),
+									.saldos-tancament tr td:nth-child(14),
+									.saldos-tancament tr td:nth-child(23) { color: red;  }
+									
+									
+									.saldos-tancament { font-size: 12px; border-collapse: collapse; }
+									.saldos-tancament tr th, .saldos-tancament tr td { text-align: right; /*white-space: nowrap;*/ }
+									.saldos-tancament tr td:first-child, .saldos-tancament tr th:first-child { text-align: left; }
+									.saldos-tancament tr td:first-child { font-size: 0.9em; }
+									.saldos-tancament tr td:last-child, .saldos-tancament tr th:last-child { text-align: left; }
+									.saldos-tancament tr td:last-child { font-size: 0.9em; /*min-width: 500px;*/  }
+								</style>";
+				$sortidaHtml .= "<table class='saldos-tancament taula-cap' cellpadding='8' cellspacing='0' border='1'><thead><tr><th>".implode("</th><th>", $header)."</th></tr></thead></table>
+								<div class='container-scrollable'><table class='saldos-tancament taula-cos' cellpadding='8' cellspacing='0' border='1'><tbody>";
+			} else {
+				$header = array('codi', 'nom', 'saldo', 'romanent', 'total pagaments',  
+							'total llicencies', 'total duplicats', 'total altres', 'total comandes',
+							'suma llicencies', 'suma duplicats', 'suma altres', 'correccio anul·lacions', 'suma comandes calculades', 'suma comandes',
+							'suma factures', 'suma anul·lacions', 'suma facturat', 'error facturacio',  
+							'suma comandes següent', 'suma factures següent', 'suma anul·lacions següent', 'error facturació següent',
+							'suma pagaments', 'suma pagaments següent', 'error pagaments', 
+							'suma comandes current + següent', 'error comandes suma != total', 
+							'update romanent', 'update total pagaments', 'update total llicencies', 
+							'update total duplicats', 'update total altres', 'update ajust subvencions',
+							'saldo resultant', 'ajust subvencions', 'altres errors'  ); 
+			}
+			
+			// Per cada club
+			$data = array();
+			$total = 0;
+			
+			//$start = ($page - 1) * $perpage;
+			
+			//if ($start > 0) $clubs = array_slice($clubs, $start);
+			
+			foreach ($clubs as $club) {
+				//if ($club->getCodi() == BaseController::CODI_CLUBTEST) continue;
+
+				//if ($total >= $perpage) continue;	
+
+				// $dadesAnyAnterior => comandes entrades 2016 però amb factura 2015 ¿?
+				
+				$dades = $club->getDadesCurrent(true, false, $current);  // Generar errors
+				
+				//$dadesAnySeguent = $club->getDadesAnySeguent($current);  // Només poden ser comandes de llicències
+				$dadesAnySeguent = $club->getDadesCurrent(true, false, $current + 1);  // Només poden ser comandes de llicències
+				
+				
+				$totalComandes = $club->getTotalllicencies()+$club->getTotalduplicats()+$club->getTotalaltres();
+				
+				$row = array(
+					'codi'				=> $club->getCodi().($format == 'html'?'<br/>':'-').$club->getCompte(),
+					'nom' 				=> $club->getNom(),
+					'saldo'				=> number_format($club->getSaldo(), 2, ',', '.'),
+					'romanent'			=> number_format($club->getRomanent(), 2, ',', '.'),
+					
+					'totalpagaments'	=> number_format($club->getTotalpagaments(), 2, ',', '.'),
+					);
+
+				if ($format == 'html') {
+					$row['totalcomandes'] = number_format($club->getTotalllicencies(), 2, ',', '.') .' + '.
+											number_format($club->getTotalduplicats(), 2, ',', '.') .' + '.
+											number_format($club->getTotalaltres(), 2, ',', '.') .' = '.
+											number_format($totalComandes, 2, ',', '.');
+				} else {
+					$row['totalllicencies'] = number_format($club->getTotalllicencies(), 2, ',', '.');
+					$row['totalduplicats'] 	= number_format($club->getTotalduplicats(), 2, ',', '.');
+					$row['totalaltres'] 	= number_format($club->getTotalaltres(), 2, ',', '.');
+					$row['totalcomandes'] 	= number_format($totalComandes, 2, ',', '.');
+				}								
+
+				if ($format == 'html') {
+					$row['sumacomandescalc'] =	number_format($dades['importpartes'], 2, ',', '.') .' + '.
+											number_format($dades['importduplicats'], 2, ',', '.').' + '.
+											number_format($dades['importaltres'], 2, ',', '.') .' + '.
+											number_format($dades['correccioanulacions'], 2, ',', '.') .' = '.
+											number_format($dades['importpartes']+$dades['importduplicats']+$dades['importaltres']+$dades['correccioanulacions'], 2, ',', '.') .' ('.
+											number_format($dades['import'], 2, ',', '.').')';
+				} else {
+					$row['sumallicencies'] 		= number_format($dades['importpartes'], 2, ',', '.');
+					$row['sumaduplicats'] 		= number_format($dades['importduplicats'], 2, ',', '.');
+					$row['sumaaltres'] 			= number_format($dades['importaltres'], 2, ',', '.');
+					$row['correccioanulacions'] = number_format($dades['correccioanulacions'], 2, ',', '.');
+					$row['sumacomandescalc']	= number_format($dades['importpartes']+$dades['importduplicats']+$dades['importaltres'], 2, ',', '.');
+					$row['sumacomandes'] 		= number_format($dades['import'], 2, ',', '.');
+				}
+					
+				if ($format == 'html') {
+					$row['sumafactures']	= number_format($dades['importfactures'], 2, ',', '.') .' '.
+											number_format($dades['importanulacions'], 2, ',', '.').' = '.
+											number_format($dades['importfactures']+$dades['importanulacions'], 2, ',', '.');
+				} else {
+					$row['sumafactures']	= number_format($dades['importfactures'], 2, ',', '.');
+					$row['sumaanulacions']	= number_format($dades['importanulacions'], 2, ',', '.');
+					$row['sumafacturat']	= number_format($dades['importfactures']+$dades['importanulacions'], 2, ',', '.');
+				}
+				
+				// Comprovació => comandes facturades == suma factures
+				$row['errorfacturacio']		=  abs($dades['import'] - ($dades['importfactures']+$dades['importanulacions'])) < 0.01?'':
+											number_format(abs($dades['import'] - ($dades['importfactures']+$dades['importanulacions'])), 2, ',', '.');
+											
+				if ($format == 'html') {
+				} else {
+					$row['sumacomandesseguent']		= number_format($dadesAnySeguent['import'], 2, ',', '.');
+					$row['sumafacturesseguent'] 	= number_format($dadesAnySeguent['importfactures'], 2, ',', '.');
+					$row['sumaanulacionsseguent'] 	= number_format($dadesAnySeguent['importanulacions'], 2, ',', '.');
+				}	
+				
+				// Comprovació => comandes facturades any següent == suma factures any següent 
+				$row['errorfacturacioseguent']	= abs($dadesAnySeguent['import'] - ($dadesAnySeguent['importfactures']+$dadesAnySeguent['importanulacions'])) < 0.01?'':
+														number_format(abs($dadesAnySeguent['import'] - ($dadesAnySeguent['importfactures']+$dadesAnySeguent['importanulacions'])), 2, ',', '.');
+
+				if ($format == 'html') {
+					$row['sumapagaments']	= number_format($dades['pagaments'], 2, ',', '.') .' '.
+											number_format($dadesAnySeguent['pagaments'], 2, ',', '.').' = '.
+											number_format($dades['pagaments']+$dadesAnySeguent['pagaments'], 2, ',', '.');
+				} else {
+					$row['sumapagaments']		= number_format($dades['pagaments'], 2, ',', '.');
+					$row['sumapagamentsseguent']= number_format($dadesAnySeguent['pagaments'], 2, ',', '.');
+				}					
+					
+				// Comprovacions => totalpagaments == sumapagaments + sumapagaments any següent
+				$row['errorpagaments']	= abs($club->getTotalpagaments() - $dades['pagaments'] - $dadesAnySeguent['pagaments']) < 0.01?'':number_format(abs($club->getTotalpagaments() - $dades['pagaments'] - $dadesAnySeguent['pagaments']), 2, ',', '.');
+
+
+				if ($format == 'html') {		
+					$row['totalcomandescurrentseguent']	= number_format($dades['import'], 2, ',', '.').' + '.
+														number_format($dadesAnySeguent['import'], 2, ',', '.').' = '.
+														number_format($dades['import'] + $dadesAnySeguent['import'], 2, ',', '.');
+																			
+				} else {
+					$row['totalcomandescurrentseguent']	= number_format($dades['import'] + $dadesAnySeguent['import'], 2, ',', '.');
+				}	 
+
+				// Comprovació => total comandes (llicencies + duplicats + altres) == suma comandes current + comandes any següent  
+				$row['errorcomandes']		= abs($dades['import'] + $dadesAnySeguent['import'] - $totalComandes) < 0.01?'':
+												number_format( abs($dades['import'] + $dadesAnySeguent['import'] - $totalComandes), 2, ',', '.');		
+					 
+				
+				// Càlcul valors per actualitzar a l'any següent
+				$nouromanent 		= $club->getSaldo() + $dadesAnySeguent['import'] - $dadesAnySeguent['pagaments'];
+				$noutotalanyseguent = $dadesAnySeguent['import'];
+				$noutotalllicencies	= $dadesAnySeguent['importpartes'];
+				$noutotalduplicats 	= $dadesAnySeguent['importduplicats'];
+				$noutotalaltres 	= $dadesAnySeguent['importaltres'];
+				$nousaldocalculat 	= $nouromanent + $dadesAnySeguent['pagaments'] - $noutotalllicencies - $noutotalduplicats - $noutotalaltres;
+				 
+				  
+				if (abs($noutotalanyseguent - $noutotalllicencies - $noutotalduplicats - $noutotalaltres) > 0.01) {
+					$noutotalllicencies	= 'ERROR REVISAR';
+					$noutotalduplicats 	= 'ERROR REVISAR';
+					$noutotalaltres 	= 'ERROR REVISAR';
+				}
+				
+				$row['updateromanent'] = number_format($nouromanent, 2, ',', '.');
+				$row['updatetotalpagaments'] = number_format($dadesAnySeguent['pagaments'], 2, ',', '.');
+				$row['updatetotalllicencies'] = number_format($noutotalllicencies, 2, ',', '.');
+				$row['updatetotalduplicats'] = number_format($noutotalduplicats, 2, ',', '.');
+				$row['updatetotalaltres'] = number_format($noutotalaltres, 2, ',', '.');
+				$row['updateajustsubvencions'] = 0;
+				$row['saldoresultant'] = number_format( $nousaldocalculat, 2, ',', '.'); // romanent + pagaments + subvencions - llicencies - duplicats - altres 
+
+				
+				if (abs($club->getSaldo() - $nousaldocalculat) > 0.01) {
+					$row['saldoresultant']	= 'ERROR REVISAR';
+				}
+				
+				$row['ajustsubvencions']	= number_format($club->getAjustsubvencions(), 2, ',', '.');	
+				$row['errors']				= implode($linebreak,array_merge($dades['errors'], $dadesAnySeguent['errors']));
+				
+				
+				$data[] = $row;
+				
+				if ($format == 'html') $sortidaHtml .= "<tr><td>".implode("</td><td>", $row)."</td></tr>"; 
+				
+				$total++;
+				
+				if ($update) {
+					$club->setRomanent($nouromanent);
+					$club->setTotalpagaments($dadesAnySeguent['pagaments']);
+					$club->setTotalllicencies($noutotalllicencies);
+					$club->setTotalduplicats($noutotalduplicats);
+					$club->setTotalaltres($noutotalaltres);	
+					$club->setAjustsubvencions(0);				
+				}				
+			}
+
+			if ($format == 'html') {
+				$sortidaHtml .= "</tbody></table></div>";
+			} 
+
+			if ($update) {
+				$em->flush();				
+			}
+
+			if ($format == 'csv') {
+				$filename = "saldos_tancament_any_".$current.".csv";
+				$response = $this->exportCSV($request, $header, $data, $filename);
+			} else {
+				$response = new Response( $sortidaHtml );
+			}
+			
 		} catch (\Exception $e) {
-            return new Response($e->getMessage());
+            $response = new Response($e->getMessage());
         }
-		return new Response('Fi'); 
+		return $response;
 	}
 	
 	public function checkclubsAction(Request $request) {

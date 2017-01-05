@@ -581,9 +581,9 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.producte-estat  { width: 4%; text-align: left; }
 .data-detall-cell.producte-codi  { width: 10%; text-align: center; }
 .data-detall-cell.producte-nomcurt  { width: 8%; text-align: center; }
-.data-detall-cell.producte-descripcio { width: 29%; text-align: left; font-size: 0.9em; word-wrap: break-word; }
+.data-detall-cell.producte-descripcio { width: 22%; text-align: left; font-size: 0.9em; word-wrap: break-word; }
 .data-detall-cell.producte-tipus { width: 7%; text-align: left; }
-.data-detall-cell.producte-import { width: 7%; text-align: right; }
+.data-detall-cell.producte-import { width: 14%; text-align: right; }
 /*.data-detall-cell.producte-iva { width: 7%; text-align: right; }
 .data-detall-cell.producte-total { width: 7%; text-align: right; font-weight: bold; }*/
 .data-detall-cell.producte-transport { width: 4%; text-align: center; }

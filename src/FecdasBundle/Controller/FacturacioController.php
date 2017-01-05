@@ -1640,7 +1640,6 @@ class FacturacioController extends BaseController {
 		$idproducte = $request->query->get('cerca', 0);
 
 		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
-		
 
 		$tipus = $request->query->get('tipus', 0);
 		$compte = $request->query->get('compte', '');

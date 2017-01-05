@@ -237,6 +237,17 @@ class EntityComanda {
     	return (date("Y", $this->dataentrada->getTimestamp()) == date("Y"));
     }
 
+	/**
+     * Get any
+     *
+     * @return integer
+     */
+    public function getAny()
+    {
+    	return $this->dataentrada->format('Y');
+    }
+	
+	
 	/* Per sobreescriure als fills */
 	public function baixa()
 	{

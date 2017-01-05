@@ -160,6 +160,16 @@ class EntityRebut {
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}
+	
+	/**
+     * Get any
+     *
+     * @return string
+     */
+    public function getAny()
+    {
+    	return $this->datapagament->format('Y');
+    }
 
 	/**
      * Is a current year comanda

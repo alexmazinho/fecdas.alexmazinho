@@ -290,8 +290,10 @@ class EntityClub {
 	 * @return array
 	 */
 	
-	public function getDadesCurrent($errors = false, $update = false)
+	public function getDadesCurrent($errors = false, $update = false, $current = 0)
 	{
+		if ($current == 0) $current = date('Y');	
+			
 		$dades = array('errors' => array());
 		
 		$ncomandes = 0;
@@ -307,6 +309,10 @@ class EntityClub {
 		$totalimportduplicats = 0;
 		$totalimportaltres = 0;
 		
+		$totalfactures = 0;
+		$totalanulacions = 0;
+		$correccioanulacions = 0;  // Anul·lacions facturades any current comandes anys anteriors
+		
 		if ($errors == true) {
 			/* Afegir errors de configuració */
 			if (count($this->tipusparte) == 0) $dades['errors'][] = "Aquest club no té cap tipus de parte activat per tramitar</br>";
@@ -315,78 +321,120 @@ class EntityClub {
 		
 		
 		foreach($this->comandes as $comanda) {
-			if ($comanda->esBaixa() == false && $comanda->isCurrentYear()) {
-				$ncomandes++;
-				$importComanda = $comanda->getTotalComanda();
+			if ($comanda->esBaixa() == false && $comanda->comandaConsolidada() == true && $comanda->getAny() >= ($current -1)) { // Limitar comandes any actual i anterior
 				
-				$totalimport += $importComanda;
-				
-				if ($comanda->comandaPagada()) {
-					$rebut = $comanda->getRebut();
-					
-					$importRebut = $rebut->getImport();
+				$factura = $comanda->getFactura();
 						
-					/*$importRebutsAnulats = 0;
-					foreach($comanda->getRebutsanulacions() as $anulacio) {
-						$importRebutsAnulats += $anulacio->getImport();
-					}*/
+				if ($factura == null) {
+					if ($comanda->getAny() == $current) $dades['errors'][] = "(Comanda sense factura) Comanda: ".$comanda->getNumComanda();
+				} else {
+					if ($factura->getAny() == $current) {
+						// Comandes facturades current any
+						$ncomandes++;
+						$importComanda = $comanda->getTotalComanda();
 						
-					if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $npagatsweb++;
-					else $npagatsmanual++;
+						$totalimport += $importComanda;
 						
-					if ($errors == true){
-						// Varis, validacions imports i dades pagaments
-						// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
-						// Error si import calculat és null
-						// Error si no coincideix import calculat del parte i import pagament
+						if ($comanda->comandaPagada()) {
+							$rebut = $comanda->getRebut();
 							
-						if ($importRebut == 0) {
-							$dades['errors'][] = "(Rebut import 0,00 €) Rebut: ".$rebut->getNumRebut()." (Comanda: ".$comanda->getNumComanda().")";
+							$importRebut = $rebut->getImport();
+								
+							/*$importRebutsAnulats = 0;
+							foreach($comanda->getRebutsanulacions() as $anulacio) {
+								$importRebutsAnulats += $anulacio->getImport();
+							}*/
+								
+							if ($rebut->getTipuspagament() == BaseController::TIPUS_PAGAMENT_TPV) $npagatsweb++;
+							else $npagatsmanual++;
+								
+							if ($errors == true){
+								// Varis, validacions imports i dades pagaments
+								// Error si datapagament / estatpagament / dadespagament / importpagament algun no informat
+								// Error si import calculat és null
+								// Error si no coincideix import calculat del parte i import pagament
+									
+								if ($importRebut == 0) {
+									$dades['errors'][] = "(Rebut import 0,00 €) Rebut: ".$rebut->getNumRebut()." (Comanda: ".$comanda->getNumComanda().")";
+								}
+							}
+						}
+						
+						if ($factura->getImport() == 0) 
+								$dades['errors'][] = "(Factura import 0,00 €) Factura:".$factura->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
+								
+						$totalfactures += $factura->getImport();
+						
+						if ($comanda->esDuplicat() ) {
+							$nduplicats = 0;
+							$totalimportduplicats += $importComanda;
+						}
+						
+						if ($comanda->esAltre() ) {
+							$naltres = 0;
+							$totalimportaltres += $importComanda;
+						}
+						
+						if ($comanda->esParte() ) {
+							$npartes++;
+							$totalimportpartes += $importComanda;
+							
+							$parte = $comanda;
+		
+							$nllicencies +=  $parte->getNumLlicencies();
+							
+							/* Només mirar sincronitzats */
+							$auxImportParte = $parte->getTotalDetalls();
+		
+							if ($errors == true){
+								// Import parte i import rebuts
+								if ($auxImportParte != $importComanda) 
+									$dades['errors'][] = "(Parte/Comanda imports diferents) Comanda: ".$comanda->getNumComanda()." (".$auxImportParte." <> ".$importComanda.")";
+							}
 						}
 					}
 				}
 				
-				if ($comanda->comandaConsolidada() == true) {
-					$factura = $comanda->getFactura();
-					
-					if ($factura == null) $dades['errors'][] = "(Comanda sense factura) Comanda: ".$comanda->getNumComanda();
-					else {
-						if ($factura->getImport() == 0) 
-							$dades['errors'][] = "(Factura import 0,00 €) Factura:".$factura->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
-					}
-				}
-				
-				if ($comanda->esDuplicat() ) {
-					$nduplicats = 0;
-					$totalimportduplicats += $importComanda;
-				}
-				
-				if ($comanda->esAltre() ) {
-					$naltres = 0;
-					$totalimportaltres += $importComanda;
-				}
-				
-				if ($comanda->esParte() ) {
-					$npartes++;
-					$totalimportpartes += $importComanda;
-					
-					$parte = $comanda;
-
-					$nllicencies +=  $parte->getNumLlicencies();
-					
-					/* Només mirar sincronitzats */
-					$auxImportParte = $parte->getTotalDetalls();
-
-					if ($errors == true){
-						// Import parte i import rebuts
-						if ($auxImportParte != $importComanda) 
-							$dades['errors'][] = "(Parte/Comanda imports diferents) Comanda: ".$comanda->getNumComanda()." (".$auxImportParte." <> ".$importComanda.")";
+				foreach ($comanda->getFacturesanulacions() as $anulacio) {
+					if ($anulacio->getAny() == $current) {
+							
+						if ($anulacio->getImport() == 0) $dades['errors'][] = "(Anul·lació import 0,00 €) Factura:".$anulacio->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
+						else {
+							$totalanulacions += $anulacio->getImport();
+						
+							if ($comanda->getAny() < $current) $correccioanulacions += $anulacio->getImport();
+						}
 					}
 				}
 			}
+			if ($comanda->esBaixa() == true && $comanda->comandaConsolidada() == true && $comanda->getAny() >= ($current -1)) {
+				$factura = $comanda->getFactura();
+				if ($factura != null) {
+					$importComanda = $comanda->getTotalComanda();
+					
+					if ( abs($importComanda) > 0.01) 
+								$dades['errors'][] = "(Factura BAIXA import comanda incorrecte != 0 => ".$importComanda.") Factura:".$factura->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";	
+						
+					$importAnulacio = 0; 	
+					foreach ($comanda->getFacturesanulacions() as $anulacio) {
+						//if ($anulacio->getAny() == $current) {
+							$importAnulacio += $anulacio->getImport();
+							
+							if ($anulacio->getAny() == $current && $comanda->getAny() < $current) {
+								$totalanulacions += $anulacio->getImport();	
+								$correccioanulacions += $anulacio->getImport();
+							}
+						//}
+					}
+					if ( abs($factura->getImport() + $importAnulacio) > 0.01) 
+								$dades['errors'][] = "(Factura BAIXA import anul·lacio incorrecte".abs($factura->getImport() - $importComanda).") Factura:".$factura->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
+					
+				}
+				
+			}
 		}
-		
-		$totalpagaments += $this->getTotalIngresos(); // Ingresos no associat a comandes
+	
+		$totalpagaments += $this->getTotalIngresos($current); // Ingresos no associat a comandes
 		
 		$dades['comandes'] = $ncomandes;
 		$dades['partes'] = $npartes;
@@ -398,11 +446,15 @@ class EntityClub {
 		$dades['llicencies'] = $nllicencies;
 		
 		$dades['pagaments'] = $totalpagaments;  // Total suma import rebuts any en curs
-		$dades['import'] = $totalimport;  // Total suma preu comandes any en curs
+		$dades['import'] = $totalimport + $correccioanulacions;  // Total suma preu comandes any en curs
 		$dades['importpartes'] = $totalimportpartes; // Total suma preu partes any en curs
 		$dades['importduplicats'] = $totalimportduplicats; // Total suma preu duplicats any en curs
 		$dades['importaltres'] = $totalimportaltres; // Total suma preu altres any en curs
-		$dades['saldocalculat'] = $totalpagaments + $this->ajustsubvencions + $this->romanent - $totalimport;
+		$dades['correccioanulacions'] = $correccioanulacions; // Anul·lacions facturades any current comandes anys anteriors
+		$dades['saldocalculat'] = $totalpagaments + $this->ajustsubvencions + $this->romanent - $totalimport + $correccioanulacions;
+		
+		$dades['importfactures'] 	= $totalfactures;
+		$dades['importanulacions'] 	= $totalanulacions;
 		 
 		 
 		$saldoDif = abs($dades['saldocalculat'] - $this->getSaldo()); 
@@ -416,15 +468,77 @@ class EntityClub {
 			$saldoDif = 0;
 		} 
 		 
-		if ($errors == true){
+		/* Els totals poden incloure partes de l'any següent i el saldo desquadra 
+		 * 
+		 * if ($errors == true){
 			// Saldos no quadren
 			if ($saldoDif > 0.01) {
 				$dades['errors'][] = "(Saldo calculat <> saldo club) Diferència: ".$saldoDif." (".$dades['saldocalculat']." <> ".$this->getSaldo().")";
 			}
-		}
+		}*/
 		 
 		return $dades;
 	}
+	
+	
+	/**
+	 * Dades del club any següent. Només poden ser partes tramitats a final d'any pel següent
+	 *
+	 * @return array
+	 */
+	
+	/*public function getDadesAnySeguent($current = 0)
+	{
+		if ($current == 0) $current = date('Y');	
+		
+		$dades = array('errors' => array());
+		
+		$ncomandes = 0;
+		$totalpagaments = 0;
+		$totalimport = 0;
+		$totalfactures = 0;
+		$totalanulacions = 0;
+		
+		foreach($this->comandes as $comanda) {
+			if ($comanda->esBaixa() == false && $comanda->getAny() > $current) {
+				$ncomandes++;
+				$importComanda = $comanda->getTotalComanda();
+				
+				$totalimport += $importComanda;
+				
+				if ($comanda->comandaConsolidada() == true) {
+					$factura = $comanda->getFactura();
+					
+					if ($factura == null) $dades['errors'][] = "(Comanda sense factura) Comanda: ".$comanda->getNumComanda();
+					else {
+						if ($factura->getImport() == 0) 
+							$dades['errors'][] = "(Factura import 0,00 €) Factura:".$factura->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
+						
+						if ($factura->getAny() > $current) $totalfactures += $factura->getImport();
+					}
+					
+					foreach ($comanda->getFacturesanulacions() as $anulacio) {
+						if ($anulacio->getAny() > $current) {
+							if ($anulacio->getImport() == 0) 
+								$dades['errors'][] = "(Anul·lació import 0,00 €) Factura:".$anulacio->getNumFactura()." (Comanda: ".$comanda->getNumComanda().")";
+							
+							$totalanulacions += $anulacio->getImport();
+						}
+					}
+				}
+			}
+		}
+
+		$totalpagaments += $this->getTotalIngresos( $current + 1 ); // Ingresos futurs
+		
+		$dades['comandes'] 			= $ncomandes;
+		$dades['pagaments'] 		= $totalpagaments; 
+		$dades['importcomandes'] 	= $totalimport;  
+		$dades['importfactures'] 	= $totalfactures;
+		$dades['importanulacions'] 	= $totalanulacions;
+		
+		return $dades;
+	}*/
 	
 	/**
 	 * Retorna el saldo del club amb les dades del gestor
@@ -440,10 +554,13 @@ class EntityClub {
 	 *
 	 * @return decimal
 	 */
-	public function getTotalIngresos() {
+	public function getTotalIngresos($current = 0)
+	{
+		if ($current == 0) $current = date('Y');	
+		
 		$totalimport = 0;
 		foreach($this->ingresos as $ingres) {
-			if ($ingres->isCurrentYear()) $totalimport += $ingres->getImport();
+			if ($ingres->getAny() == $current) $totalimport += $ingres->getImport();
 		}
 		 
 		return round($totalimport, 2);

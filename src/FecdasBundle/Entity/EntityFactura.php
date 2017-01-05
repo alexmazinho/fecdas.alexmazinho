@@ -120,6 +120,16 @@ class EntityFactura {
 		return $this->comandaanulacio != null;
 	}
 	
+	/**
+     * Get any
+     *
+     * @return integer
+     */
+    public function getAny()
+    {
+    	return $this->datafactura->format('Y');
+    }
+	
 	public function infoToolTip($admin)
 	{
 		$toolTip = 'Factura '.($this->esAnulacio()?'anul·lació':'');

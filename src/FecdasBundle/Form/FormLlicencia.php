@@ -57,12 +57,12 @@ class FormLlicencia extends AbstractType {
 								return $repository->createQueryBuilder('c')
 									->join('c.producte', 'o')
 									->join('c.tipusparte', 'tp')
-									->join('o.preus', 'p')
+									//->join('o.preus', 'p')
 									->where('tp.id = :tipusparte')
-									->andwhere('p.anypreu = :anypreu')
-									->andwhere('p.preu > 0')
+									//->andwhere('p.anypreu = :anypreu')
+									//->andwhere('p.preu > 0')
 									->orderBy('c.simbol', 'ASC')
-									->setParameter('anypreu', $current)
+									//->setParameter('anypreu', $current)
 									->setParameter('tipusparte', $tipusparte);
 								},
 							'choice_label' => $llistacategoria,

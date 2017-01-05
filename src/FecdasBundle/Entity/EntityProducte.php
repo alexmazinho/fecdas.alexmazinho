@@ -614,6 +614,33 @@ class EntityProducte {
     	return null;
     }
     
+	/**
+     * Get preu (objecte) aplicable a any 
+	 * preu any actual si existeix o 
+	 * darrer preu anys anteriors
+     *
+     * @return decimal
+     */
+    public function getPreuAplicable($any)
+    {
+    	// Ordenar per any	
+    	$preus = $this->preus->toArray(); 
+		
+    	usort($preus, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+			// Descendent primer darrer any 
+    		return ($a->getAnypreu() > $b->getAnypreu())? -1:1;
+    	});	
+
+    	foreach($preus as $preu) {
+    		if ($preu->getAnypreu() <= $any) return $preu;
+    	}
+
+    	return null; // No trobat cap aplicable
+    }
+	
     /**
      * Get preu any actual 
      *
@@ -624,6 +651,19 @@ class EntityProducte {
     	return $this->getPreuAny(Date('Y'));
     }
     
+	/**
+     * Get any preu any actual 
+     *
+     * @return decimal
+     */
+    public function getCurrentAny()
+    {
+    	$preu = $this->getPreuAplicable(Date('Y'));
+		//$preu = $this->getPreu($any);
+    	if ($preu == null) return '--';
+    	return $preu->getAnypreu();
+    }
+	
     /**
      * Get preu any
      *
@@ -631,7 +671,8 @@ class EntityProducte {
      */
     public function getPreuAny($any)
     {
-    	$preu = $this->getPreu($any);
+    	$preu = $this->getPreuAplicable($any);
+		//$preu = $this->getPreu($any);
     	if ($preu == null) return 0;
     	return $preu->getPreu();
     }
@@ -654,7 +695,8 @@ class EntityProducte {
      */
     public function getIvaAny($any)
     {
-    	$preu = $this->getPreu($any);
+    	$preu = $this->getPreuAplicable($any);
+		//$preu = $this->getPreu($any);
     	if ($preu == null) return 0;
     	return $preu->getIva();
     }

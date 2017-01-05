@@ -291,9 +291,9 @@ class EntityParte extends EntityComanda {
 					$acumulades[$producte->getId()] = array(
 							'total' => 1,	
 							'totalbaixa' => 0, 
-							'preuunitat' => $producte->getPreu($this->dataalta->format('Y'))->getPreu(),
+							'preuunitat' => $producte->getPreuAny($this->dataalta->format('Y')),
 							'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 
-							'import' => $producte->getPreu($this->dataalta->format('Y'))->getPreu(),
+							'import' => $producte->getPreuAny($this->dataalta->format('Y')),
 							'producte' => $producte->getDescripcio(),
 							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
 							'abreviatura' => $producte->getAbreviatura(), 
@@ -317,7 +317,7 @@ class EntityParte extends EntityComanda {
      */
     public function getAny()
     {
-    	return date("Y", $this->dataalta->getTimestamp());
+    	return $this->dataalta->format('Y');
     }
 
     /**

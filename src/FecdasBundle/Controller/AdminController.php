@@ -1801,7 +1801,14 @@ GROUP BY c.nom
 		
 		$bccmails = $this->getAdminMails();
 		
-		$tomails = array($persona->getMail());
+
+		$tomails = array();
+		$mailsPersona = explode(";", $persona->getMail());
+		foreach ($mailsPersona as $mail) {
+			$tomails[] = trim($mail);	
+		}
+		//$tomails = array($persona->getMail());
+		
 		
 		/*$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$cursAny;
 		

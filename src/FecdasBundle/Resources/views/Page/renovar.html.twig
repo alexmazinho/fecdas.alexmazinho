@@ -90,7 +90,13 @@
 							{% if llicencia.renovar is defined %}
 							<div class="data-detall-cell llicencia-actions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : parte.llicencies[loop.index0].categoria.preuany(parte.any)} }) }}</div>
 							{% else %}
-							<div class="data-detall-cell llicencia-no">No</div>
+								<div class="data-detall-cell llicencia-actions llicencia-no">
+								{% if llicencia.existent is defined %}
+									Llicència ja tramitada <a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': llicencia.existent.vars.value, 'action':'view' }) }}" alt="Veure llista de la llicència" title="Veure llista de la llicència"><i class="fa fa-search blue"></i></a>
+								{% else %}
+									--
+								{% endif %}
+								</div>
 							{% endif %}
 			  			</li>
 				   	{% endfor %}

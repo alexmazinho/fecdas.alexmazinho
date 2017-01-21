@@ -739,12 +739,12 @@ class PageController extends BaseController {
 
 		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $partearenovar->getClub(), 'Renovació llicències');
 		
+		// Crear factura
+		$this->crearFactura($dataalta, $parte);
+
 		// Clone llicències
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
 
-		// Crear factura
-		$this->crearFactura($dataalta, $parte);
-			
 		$form = $this->createForm(new FormParteRenew(), $parte);
 		
 		$form->get('cloneid')->setData($parteid);
@@ -762,32 +762,32 @@ class PageController extends BaseController {
 					
 				$p = $request->request->get('parte_renew');
 				$i = 0; 
-				foreach ($parte->getLlicencies() as $llicencia) {
-					if (!isset($p['llicencies'][$i]['renovar'])) {
-						// Treure llicències que no es volen renovar
-						$parte->removeLlicencia($llicencia);
-					} else {
-						$em->persist($llicencia);
-						$this->addParteDetall($parte, $llicencia);
-					}
-					$i++;
-				}
-
+				
 				/*
 				 * Validacions  de les llicències
 				 */
 				$avisos = '';
-				foreach ($parte->getLlicencies() as $llicencia_iter) {
+				foreach ($parte->getLlicencies() as $llicencia) {
 					try {
-						$this->validaParteLlicencia($parte, $llicencia_iter);
+						if (!isset($p['llicencies'][$i]['renovar'])) {
+							// Treure llicències que no es volen renovar
+							$parte->removeLlicencia($llicencia);
+						} else {
+							$this->validaParteLlicencia($parte, $llicencia);
+						}
 					} catch (\Exception $e) {
 						$avisos .= $e->getMessage().'<br/>';
 					}
+					$i++;
 				}
 
 				if ($avisos != '') throw new \Exception($avisos);
 				 
-							
+				foreach ($parte->getLlicencies() as $llicencia) {
+					$em->persist($llicencia);
+					$this->addParteDetall($parte, $llicencia);
+				}
+					
 				// Marquem com renovat
 				$partearenovar->setRenovat(true);
 					

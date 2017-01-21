@@ -1538,7 +1538,6 @@ input#form_dni {
 #header-llicenciaactivitatslong {	width: 30%;  }
 #header-llicenciapreu {	width: 6%; text-align: right;  }
 #header-llicenciaenviarllicencia {	width: 4%; text-align: center; }
-#formrenovar #header-llicenciaenviarllicencia {	width: 8%; }
 #header-llicenciaenviarllicencia img {	
 	bottom: 10px;
     position: relative;
@@ -1556,11 +1555,20 @@ input#form_dni {
 .llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { width: 6%; text-align: right;}
 .llicencia-enviarllicencia { width: 4%; text-align: center; font-size: 0.9em; white-space: nowrap; overflow: visible; }
-#formrenovar .llicencia-enviarllicencia { width: 8%; }
 .llicencia-checkllicencia { width: 3%; text-align: center;}
 .llicencia-no { width: 6%; }
 .llicencia-actions { width: 8%; text-align: right; margin-top: -14px}
-#formrenovar .llicencia-actions { text-align: center; }
+
+
+#formrenovar #header-llicenciaactivitatslong {	width: 25%;  }
+#formrenovar #header-llicenciaenviarllicencia {	width: 8%; }
+#formrenovar #header-llicenciaactions { width: 13%; }
+
+#formrenovar .llicencia-activitatslong { width: 25%; font-size: 9px; letter-spacing: 0; }
+#formrenovar .llicencia-enviarllicencia { width: 8%; }
+#formrenovar .llicencia-actions { width: 13%; text-align: center; }
+#formrenovar .llicencia-actions.llicencia-no { text-align: right; }
+
 
 .parte-llicencia, .club-usuari {
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;

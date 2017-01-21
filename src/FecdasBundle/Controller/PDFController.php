@@ -539,42 +539,49 @@ class PDFController extends BaseController {
 				$pdf->SetLineStyle(array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 4, 'color' => array(0, 0, 0)));
 				//$pdf->writeHTMLCell($width + 4, 2*($height + 2), $x - 2, $y - 2, '', 1, 0, 0, true, 'L', true);
 
-				$pdf->Image('images/federativa-cara.jpg', $x, $y, 
+				
+				
+				
+				/*$pdf->Image('images/federativa-cara.jpg', $x, $y, 
+						$width, $height , 'jpg', '', '', false, 320, 
+						'', false, false, 1, false, false, false);*/
+				$pdf->Image('images/fonsgeneral_1024x664.jpg', $x, $y, 
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 				
-				$pdf->Image('images/federativa-dors.jpg', $x, $y + $height,
+				$pdf->Image('images/federativa_revers_1024x664.jpg', $x, $y + $height,
 						$width, $height , 'jpg', '', '', false, 320,
 						'', false, false, 1, false, false, false);
 				
 				// set color for text and font
-				$pdf->SetTextColor(240, 240, 240); // Gris
+				//$pdf->SetTextColor(240, 240, 240); // Gris
+				$pdf->SetTextColor(255, 255, 255); // Blanc
 				$pdf->SetFillColor(255, 255, 255); // 
-				/*
+				
 				$pdf->SetFont('dejavusans', 'B', 5.5, '', true);
 				
 				$x = $x_ini + 47;
 				$y = $y_ini + 35;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Nom: " . $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(), 0, 0, 0, true, 'L', true);
 				
-				$y += 5;
+				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "DNI/Passaport: " . $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
 				
-				$y += 5;
+				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Categoria/Nivell: " . $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
 				
-				$y += 5;
+				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Data naixement: " . $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				
-				$y += 5;
+				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Entitat: " . $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
 				
-				$y += 5;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);*/
+				$y += 4;
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
 
-				$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
+				//$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
 				
-				$x = $x_ini + 54.2;
+				/*$x = $x_ini + 54.2;
 				$y = $y_ini + 38.6; // 39.2
 				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(), 0, 0, 0, true, 'L', true);
 				
@@ -596,7 +603,7 @@ class PDFController extends BaseController {
 				
 				$x = $x_ini + 60;
 				$y = $y_ini + 57.5;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);*/
 				
 				//$datacaduca = $llicencia->getParte()->getDataalta();
 				// Caducat 30 dies des de data impressió
@@ -604,19 +611,19 @@ class PDFController extends BaseController {
 				$datacaduca->add(new \DateInterval('P30D'));  // 30 dies
 				
 				if ($datacaduca > $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 1 "))) $datacaduca = $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 2 "));
-				/*
+				
 				$x += 32;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);*/
-				$x += 41;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y + 4, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				/*$x += 41;
+				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);*/
 				
 				/* Tipus de llicència
 				 * Taula TipoParte LL_L1 + LL_L1 + LL_L3 */
 				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);
 
-				$pdf->SetFont('helvetica', 'B', 9.5, '', true);
-				$pdf->SetTextColor(230, 230, 230); // Gris
-				$y = $y_ini + 24;
+				$pdf->SetFont('helvetica', 'B', 9, '', true);
+				//$pdf->SetTextColor(230, 230, 230); // Gris
+				$y = $y_ini + 17;
 				$x = $x_ini + 62;
 
 				$pdf->SetY($y);

@@ -615,14 +615,15 @@ class CronController extends BaseController {
 			
 
 			if ($format == 'html') {
-				$header = array('codi', 'nom', 'saldo', 'romanent', 'total pagaments', 
-							'total (llicencies + duplicats + altres) = total comandes',
-							'suma (llicencies + duplicats + altres + correccio anul·lacions) = suma comandes',
-							'suma (factures - anul·lacions) = suma facturat', 'error facturacio',  
-							'error facturació següent', 'suma pagaments', 'error pagaments', 'suma comandes current + següent', 'error comandes suma != total', 
-							'update romanent', 'update total pagaments', 'update total llicencies', 
-							'update total duplicats', 'update total altres', 'update ajust subvencions',
-							'saldo resultant', 'ajust subvencions', 'altres errors'  ); 
+				$header = array('codi', 'nom', 'saldo ACTUAL', 'romanent '.$current, 'total pagaments '.$current.' + '.($current+1), 
+							'total '.$current.' + '.($current+1).' (llicencies + duplicats + altres) = total comandes',
+							'suma '.$current.' (llicencies + duplicats + altres + correccio anul·lacions) = suma comandes',
+							'suma '.$current.' (factures - anul·lacions) = suma facturat', 'error facturacio '.$current,  
+							'error facturació següent '.($current +1), 'suma pagaments '.$current.' + '.($current+1), 'error pagaments '.$current.' + '.($current+1), 
+							'suma comandes current + següent '.$current.' + '.($current+1), 'error comandes suma != total', 
+							'romanent '.($current+1), 'total pagaments '.($current+1), 'total llicencies '.($current+1), 
+							'total duplicats '.($current+1), 'total altres '.($current+1), 'ajust subvencions '.($current+1),
+							'saldo resultant '.($current+1), 'altres errors'  ); 
 							
 				$sortidaHtml .= "<style>
 									.saldos-tancament { table-layout: fixed; width: 3650px;  }
@@ -652,8 +653,7 @@ class CronController extends BaseController {
 									.saldos-tancament tr th:nth-child(19), .saldos-tancament tr td:nth-child(19),
 									.saldos-tancament tr th:nth-child(20), .saldos-tancament tr td:nth-child(20),
 									.saldos-tancament tr th:nth-child(21), .saldos-tancament tr td:nth-child(21),
-									.saldos-tancament tr th:nth-child(22), .saldos-tancament tr td:nth-child(22) { width: 80px; }
-									.saldos-tancament tr th:nth-child(23), .saldos-tancament tr td:nth-child(23) { width: 350px; }
+									.saldos-tancament tr th:nth-child(22), .saldos-tancament tr td:nth-child(23) { width: 350px; }
 
 									
 									.saldos-tancament tr td:nth-child(3),
@@ -668,7 +668,7 @@ class CronController extends BaseController {
 									.saldos-tancament tr td:nth-child(10),
 									.saldos-tancament tr td:nth-child(12),
 									.saldos-tancament tr td:nth-child(14),
-									.saldos-tancament tr td:nth-child(23) { color: red;  }
+									.saldos-tancament tr td:nth-child(22) { color: red;  }
 									
 									
 									.saldos-tancament { font-size: 12px; border-collapse: collapse; }
@@ -681,16 +681,19 @@ class CronController extends BaseController {
 				$sortidaHtml .= "<table class='saldos-tancament taula-cap' cellpadding='8' cellspacing='0' border='1'><thead><tr><th>".implode("</th><th>", $header)."</th></tr></thead></table>
 								<div class='container-scrollable'><table class='saldos-tancament taula-cos' cellpadding='8' cellspacing='0' border='1'><tbody>";
 			} else {
-				$header = array('codi', 'nom', 'saldo', 'romanent', 'total pagaments',  
-							'total llicencies', 'total duplicats', 'total altres', 'total comandes',
-							'suma llicencies', 'suma duplicats', 'suma altres', 'correccio anul·lacions', 'suma comandes calculades', 'suma comandes',
-							'suma factures', 'suma anul·lacions', 'suma facturat', 'error facturacio',  
-							'suma comandes següent', 'suma factures següent', 'suma anul·lacions següent', 'error facturació següent',
-							'suma pagaments', 'suma pagaments següent', 'error pagaments', 
-							'suma comandes current + següent', 'error comandes suma != total', 
-							'update romanent', 'update total pagaments', 'update total llicencies', 
-							'update total duplicats', 'update total altres', 'update ajust subvencions',
-							'saldo resultant', 'ajust subvencions', 'altres errors'  ); 
+				$header = array('codi', 'nom', 'saldo', 'romanent '.$current, 'total pagaments '.$current.' + '.($current+1),  
+							'total llicencies '.$current.' + '.($current+1), 'total duplicats '.$current.' + '.($current+1), 
+							'total altres '.$current.' + '.($current+1), 'total comandes '.$current.' + '.($current+1),
+							'suma llicencies '.$current, 'suma duplicats '.$current, 'suma altres '.$current, 'correccio anul·lacions', 
+							'suma comandes calculades '.$current, 'suma comandes '.$current,
+							'suma factures '.$current, 'suma anul·lacions '.$current, 'suma facturat '.$current, 'error facturacio '.$current,  
+							'suma comandes següent '.($current+1), 'suma factures següent '.($current+1), 
+							'suma anul·lacions següent '.($current+1), 'error facturació següent '.($current+1),
+							'suma pagaments '.$current, 'suma pagaments següent '.($current+1), 'error pagaments', 
+							'suma comandes '.($current+1), 'error comandes suma != total', 
+							'romanent '.$current.' + '.($current+1), 'total pagaments '.($current+1), 'total llicencies '.($current+1), 
+							'total duplicats '.($current+1), 'total altres '.($current+1), 'ajust subvencions '.($current+1),
+							'saldo resultant '.($current+1), 'altres errors' );  
 			}
 			
 			// Per cada club
@@ -833,7 +836,6 @@ class CronController extends BaseController {
 					$row['saldoresultant']	= 'ERROR REVISAR';
 				}
 				
-				$row['ajustsubvencions']	= number_format($club->getAjustsubvencions(), 2, ',', '.');	
 				$row['errors']				= implode($linebreak,array_merge($dades['errors'], $dadesAnySeguent['errors']));
 				
 				

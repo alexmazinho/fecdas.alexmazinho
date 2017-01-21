@@ -151,6 +151,7 @@
 		
 		var mindate = new Date (current.getFullYear()-5, current.getMonth(), current.getDay());
 		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+
 		initDateTimePicker ( 
 			$( '#form_desde' ), 
 			mindate, 
@@ -163,7 +164,6 @@
 				window.location = "{{ path('FecdasBundle_partes', sortparams)|raw }}"+"&desde="+dataDesde+"&fins="+dataFins+"&tipus="+tipusParte;  
 			}
 		);
-	
 		initDateTimePicker ( 
 			$( '#form_fins' ), 
 			mindate, 

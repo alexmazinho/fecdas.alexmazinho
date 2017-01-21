@@ -232,8 +232,11 @@ class EntityPersona {
     		if ($llicencia->isValida() || $baixes == true) {
     			$parte = $llicencia->getParte();
 				
-				if ($parte != null && 
+				/*if ($parte != null && 
 					($desde == null || $desde->format('Y-m-d') <= $parte->getDataalta()->format('Y-m-d') ) && 
+					($fins == null  || $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d') )  ) $arr[] = $llicencia;*/
+				if ($parte != null && 
+					($desde == null || $desde->format('Y-m-d') <= $parte->getDatacaducitat()->format('Y-m-d') ) && 
 					($fins == null  || $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d') )  ) $arr[] = $llicencia;
 			}
     	}

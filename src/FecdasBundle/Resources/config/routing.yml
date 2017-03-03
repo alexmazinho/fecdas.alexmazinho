@@ -621,6 +621,13 @@ FecdasBundle_dadescompeticio:
 # ---------------------------------------------------------------------------
 
 
+
+FecdasBundle_historicsaldos:
+    pattern:  /historicsaldos
+    defaults: { _controller: "FecdasBundle:Offline:historicsaldos" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_updatejunta:
     pattern:  /updatejunta
     defaults: { _controller: "FecdasBundle:Offline:updatejunta" }

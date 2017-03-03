@@ -514,7 +514,7 @@ class PDFController extends BaseController {
 				$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	
 				$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència FECDAS' . date("Y")));
+						'title' => 'Llicència FECDAS ' . date("Y")), true, $llicencia->getParte()->getClub()->getNom());
 				
 				// Add a page
 				$pdf->AddPage();

@@ -10,11 +10,246 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityComanda;
+use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Controller\BaseController;
 
 
 
 class OfflineController extends BaseController {
+	
+	
+	public function historicsaldosAction(Request $request) {
+		// http://www.fecdas.dev/historicsaldos?desde=2015-12-31&fins=2016-03-01club=CATXXX
+		// http://www.fecdas.dev/historicsaldos?desde=2015-12-31&fins=2016-03-02
+		// http://www.fecdas.dev/historicsaldos?desde=2016-03-01&fins=2016-05-02
+		// http://www.fecdas.dev/historicsaldos?desde=2016-05-01&fins=2016-07-02
+		// http://www.fecdas.dev/historicsaldos?desde=2016-07-01&fins=2016-09-02
+		// http://www.fecdas.dev/historicsaldos?desde=2016-09-01&fins=2016-11-02
+		// http://www.fecdas.dev/historicsaldos?desde=2016-11-01&fins=2017-01-02
+		// http://www.fecdas.dev/historicsaldos?desde=2017-01-01&fins=2017-02-02
+		// http://www.fecdas.dev/historicsaldos?desde=2017-02-01
+		// Script de migració. Executar per refer històric de saldos a partir del registre d'una data
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	
+		$result = '';
+	
+		$em = $this->getDoctrine()->getManager();
+
+		$strDesde = $request->query->get('desde', '2015-12-31');  // Hauria d'existir registre saldo en aquesta data
+		$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $strDesde . " 00:00:00");
+		
+		
+		$strFins = $request->query->get('fins', '');  
+		
+		if ($strFins == '') $this->getCurrentDate('now');
+		else $final = \DateTime::createFromFormat('Y-m-d H:i:s', $strFins . " 23:59:59");
+		
+		
+		$current = clone $desde;
+		$current->add(new \DateInterval('P1D')); // Add 1 Day
+		$inicirevisio = clone $current;
+		
+		$codi = $request->query->get('club', '');  // opcionalment per un club
+
+		//if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		
+		/*$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :desde) ";
+		if ($codi != '') $strQuery .= " AND c.codi = :codi ";
+		$strQuery .= " ORDER BY c.codi";
+		
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
+		if ($codi != '') $query->setParameter('codi', $codi );
+		
+		$clubs = $query->getResult();*/
+
+		$strQuery  = " SELECT * FROM m_clubs c LEFT JOIN m_saldos s ON c.codi = s.club  ";
+		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > '".$desde->format('Y-m-d H:i:s')."') ";
+		if ($codi != '') $strQuery .= " AND c.codi = '".$codi."' ";
+		$strQuery .= " AND s.dataentrada >= '".$desde->format('Y-m-d H:i:s')."' ";
+		$strQuery .= " AND s.dataentrada < '".$current->format('Y-m-d H:i:s')."' ";
+		$strQuery .= " ORDER BY c.codi ASC, s.dataentrada DESC";
+		
+		$stmt = $em->getConnection()->prepare($strQuery);
+		$stmt->execute();
+		$clubssaldos = $stmt->fetchAll();
+		
+		
+		$i = 0;
+		$clubs = array();
+		// Preparar dades inicials
+		while (isset($clubssaldos[$i])) {
+			$clubs[ $clubssaldos[$i]['codi'] ] = array(
+				'nom' => $clubssaldos[$i]['nom'],
+				'club' => null,
+				'databaixa' => $clubssaldos[$i]['databaixa'],
+				'entrades' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['entrades']:0,
+				'sortides' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['sortides']:0,
+				'romanent' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['romanent']:0,
+				'totalpagaments' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['totalpagaments']:0,
+				'totalllicencies' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['totalllicencies']:0,
+				'totalduplicats' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['totalduplicats']:0,
+				'totalaltres' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['totalaltres']:0,
+				'ajustsubvencions' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['ajustsubvencions']:0,
+				'dataentrada' => $clubssaldos[$i]['id'] != null?$clubssaldos[$i]['dataentrada']:'',
+			); 
+			
+			$i++;
+		}
+
+		
+		// Comernçar pel dia 
+		$seguent = clone $current;
+		$seguent->add(new \DateInterval('P1D')); // Add 1 Day
+		
+		$totalFactures = 0;
+		$totalRebuts = 0;
+		
+		while($seguent->format('Y-m-d H:i:s') < $final->format('Y-m-d H:i:s')) {
+			
+			// Preparar clubs nou dia
+			foreach ($clubs as $codi => $club) {
+				
+				$clubs[$codi]['dataentrada'] = clone $seguent;
+				$clubs[$codi]['dataentrada']->sub(new \DateInterval('PT1S')); // Sub 1 segon;
+				$clubs[$codi]['sortides'] = 0;
+				$clubs[$codi]['entrades'] = 0;
+				//echo $codi." => ".($club['dataentrada']==null?"null":$club['dataentrada']->format('Y-m-d H:i:s'))."<br/>";
+			}
+			
+			// Consultar factures entrades entrats dia current
+			$factures = $this->facturesEntre($current, $seguent);
+			
+			$totalFactures += count($factures);
+			
+			foreach ($factures as $factura) {
+				$comanda = $factura->esAnulacio()?$factura->getComandaAnulacio():$factura->getComanda();
+				$club = $comanda->getClub();
+				
+				if (isset($clubs[$club->getCodi()])) {
+					
+					if ($clubs[$club->getCodi()]['club'] == null)  $clubs[$club->getCodi()]['club'] = $club;
+					
+					$import = $factura->getImport();
+					
+					$clubs[$club->getCodi()]['sortides'] += $import;
+					
+					if ($factura->getDatafactura()->format('Y') < $current->format('Y')) {
+						$clubs[$club->getCodi()]['romanent'] -= $import;  // Romanent
+					} else {
+						if ($comanda->esParte()) $clubs[$club->getCodi()]['totalllicencies'] += $import;
+						if ($comanda->esDuplicat()) $clubs[$club->getCodi()]['totalduplicats'] += $import;
+						if ($comanda->esAltre()) $clubs[$club->getCodi()]['totalaltres'] += $import;
+					}			
+				} else {
+					$result .= "F".$factura->getId()." *********** CLUB NO EXISTEIX AL REGISTRE DE SALDOS ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
+				}
+			}
+			
+			// Consultar rebuts entrats dia current
+			$rebuts   = $this->rebutsEntre($current, $seguent);
+			
+			$totalRebuts += count($rebuts);
+			
+			foreach ($rebuts as $rebut) {
+				
+				$club = $rebut->getClub();
+				
+				if (isset($clubs[$club->getCodi()])) {
+					
+					if ($clubs[$club->getCodi()]['club'] == null)  $clubs[$club->getCodi()]['club'] = $club;
+					
+					$import = $rebut->getImport();
+					
+					$clubs[$club->getCodi()]['entrades'] += $import;
+					
+					if ($rebut->getDatapagament()->format('Y') < $current->format('Y')) {
+						$clubs[$club->getCodi()]['romanent'] += $import;  // Romanent
+					} else {
+						$clubs[$club->getCodi()]['totalpagaments'] += $import;
+					}
+					
+				} else {
+					$result .= "R".$rebut->getId()." *********** CLUB NO EXISTEIX AL REGISTRE DE SALDOS ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
+				}
+			}
+			
+			// Afegir registre dia current
+			foreach ($clubs as $codi => $club) {
+				
+				if ($clubs[$codi]['club'] == null)  $clubs[$codi]['club'] = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);;
+
+				//echo "fin ". $codi." => ".($club['dataentrada']==null || $club['dataentrada'] == ''?"null":$club['dataentrada']->format('Y-m-d H:i:s'))."<br/>";
+			
+				$saldos = new EntitySaldos($clubs[$codi]['club'], $club['entrades'], $club['sortides']);
+				$saldos->setRomanent( $club['romanent'] );
+				$saldos->setTotalllicencies( $club['totalllicencies'] );
+				$saldos->setTotalduplicats( $club['totalduplicats'] );
+				$saldos->setTotalaltres( $club['totalaltres'] );
+				$saldos->setTotalpagaments( $club['totalpagaments'] ); 
+				
+				$saldos->setDataentrada( $club['dataentrada'] ); 
+			
+				//echo ($saldos->getDataentrada()==null?"null":$saldos->getDataentrada()->format('Y-m-d H:i:s'));
+				//echo ('data => '.$saldos->getDataentrada());
+			
+				$em->persist($saldos);
+			}
+			$em->flush();
+			
+			// Següent dia
+			$current = clone $seguent;
+			$seguent->add(new \DateInterval('P1D')); // Add 1 Day
+		}
+		
+		$result .= "Desde ".$desde->format('Y-m-d H:i:s')."<br/>";
+		$result .= "Total factures ".$totalFactures."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE dataentrada >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "Total rebuts ".$totalRebuts."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		
+		return new Response($result);
+	}
+	
+	private function facturesEntre($desde, $fins) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar factures entrades entrats dia current
+		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		$strQuery .= " WHERE f.dataentrada >= :desde ";
+		$strQuery .= " AND   f.dataentrada <  :fins ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
+		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		
+		$factures = $query->getResult();
+		
+		return $factures;
+	}
+
+	private function rebutsEntre($desde, $fins) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar factures entrades entrats dia current
+		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.dataentrada >= :desde ";
+		$strQuery .= " AND   r.dataentrada <  :fins ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
+		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		
+		$rebuts = $query->getResult();
+		
+		return $rebuts;
+	}
 	
 	
 	public function updatejuntaAction(Request $request) {

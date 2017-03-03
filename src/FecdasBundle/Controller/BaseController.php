@@ -86,9 +86,7 @@ class BaseController extends Controller {
 	const CODI_FECDAS 					= 'CAT999';		
 	const CODI_CLUBTEST					= 'CAT000';
 	const CODI_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
-	const TEXT_PAGAMENT_CASH 			= 'CAIXA FEDERACIO';		 
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
-	const TEXT_PAGAMENT_CAIXA			= 'BANC \'LA CAIXA\'';
 	
 	
 	//const CODI_PAGAMENT_SARDENYA			= 5720003;		// 5720003  Sardenya
@@ -96,7 +94,10 @@ class BaseController extends Controller {
 	const TIPUS_PAGAMENT_CASH 				= 1;		// 5700000  Metàl·lic
 	const TIPUS_PAGAMENT_TPV				= 2;		// 5720001  La Caixa
 	const TIPUS_PAGAMENT_TRANS_LAIETANIA	= 3;		// 5720001  La Caixa
-		
+	const TEXT_PAGAMENT_CASH 				= 'METÀL.LIC';
+	const TEXT_PAGAMENT_TPV					= 'ON-LINE';
+	const TEXT_PAGAMENT_TRANS				= 'TRANSFERÈNCIA';	
+
 	const TIPUS_COMANDA_LLICENCIES 		= 1;
 	const TIPUS_COMANDA_DUPLICATS 		= 2;
 	const TIPUS_COMANDA_ALTRES			= 3;
@@ -319,8 +320,12 @@ class BaseController extends Controller {
 	 * Obté compte enviament Comptabilitat segons el tipus de pagament
 	 */
 	public static function getTextComptePagament($tipus) {
-		if ($tipus == self::TIPUS_PAGAMENT_CASH) return  self::TEXT_PAGAMENT_CASH;
-		return  self::TEXT_PAGAMENT_CAIXA;
+			
+		if ($tipus == self::TEXT_PAGAMENT_TPV) return  self::TEXT_PAGAMENT_TPV;
+		
+		if ($tipus == self::TIPUS_PAGAMENT_TRANS_LAIETANIA) return  self::TEXT_PAGAMENT_TRANS;
+		
+		return  self::TEXT_PAGAMENT_CASH;
 	}
 	
 	/**
@@ -375,6 +380,21 @@ class BaseController extends Controller {
 		$ivaArray = array('0' => 'Exempt', '0.04' => '4%', '0.08' => '8%', '0.21' => '21%' );
 		return $ivaArray;
 	}
+	
+	/**
+	 * Obté IBAN la caixa 
+	 */
+	public static function getIbanGeneral() {
+		return $this->getParameter('iban');
+	}
+	
+	/**
+	 * Obté IBAN afers escola
+	 */
+	public static function getIbanEscola() {
+		return $this->getParameter('ibanescola');
+	}
+	
 	
 	
 	public static function getLlistaTipusParte($club, $dataconsulta) {
@@ -1833,9 +1853,9 @@ class BaseController extends Controller {
 	
 	protected function printLlicenciaCSpdf( $llicencia ) {
 		$yLinks = 67;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
-						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
-						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)),
+		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
+						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
+						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)),
 						array('text'=> 'pòlissa busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
 						array('text'=> 'protocol busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
 						array('text'=> 'comunicat busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
@@ -2195,21 +2215,36 @@ class BaseController extends Controller {
 	protected function printPlasticGeneral($pdf, $llicencia) {
 		// Posicions
 		$xTit = 0;
-		$yTit =	12;		
-		$xNom = 10;
-		$yNom =	27.4;		
+		$yTit =	12+3.2;		
+		$xNom = 10-1.5;
+		$yNom =	27.4+0.7;		
 		$xDni = 18;
 		$yDni =	32.1;		
-		$xCat = 20.5;
-		$yCat =	36.7;		
+		$xCat = 20.5-1;
+		$yCat =	36.7-0.3;		
 		$xNai = 19.5;
-		$yNai =	41.1;		
-		$xClu = 12;
-		$yClu =	45.6;		
+		$yNai =	41.1-0.5;		
+		$xClu = 12-2.5;
+		$yClu =	45.6-1.0;		
 		$xTlf = 15;
-		$yTlf =	50.1;		
-		$xCad = 61;
-		$yCad =	50.1;
+		$yTlf =	50.1-1.3;		
+		$xCad = 61-4;
+		$yCad =	50.1-1.3;
+		
+		/*********** Alex Test  *************/
+		/*$srcImatge = 'images/federativa_2017_anvers_test.jpg';
+		$width = 86; //Original
+		$height = 54; //Original
+		$pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, 
+						'', false, false, 1, false, false, false);
+		//$pdf->SetTextColor(255, 0, 0); 
+		$pdf->setCellHeightRatio(1.1);
+		// php  vendor/tcpdf/tools/tcpdf_addfont.php -i RobotoCondensed-Regular.ttf,RobotoCondensed-Italic.ttf
+		// ls -l vendor/tcpdf/fonts
+
+		//$fontname = TCPDF_FONTS::addTTFfont('/home/alex/Android/Sdk/platforms/android-23/data/fonts/DroidSans.ttf', 'OpenTypeUnicode', '', 32);
+		//$pdf->SetFont($fontname, 'B', 10);	*/
+		/*********** Alex Test Fi *************/
 		
 		$parte = $llicencia->getParte();
 		$persona = $llicencia->getPersona();
@@ -2218,12 +2253,17 @@ class BaseController extends Controller {
 		$datacaduca = $parte->getDatacaducitat('printparte');
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
+		//$pdf->SetFont('helvetica', 'B', 10, '', true);
+		$pdf->SetFont('helvetica', 'B', 10);
+		//$pdf->setFontSpacing(0.5);
+    	$pdf->setFontStretching(90);
 				
 		$pdf->SetXY($xTit, $yTit);
 		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
 
-		$pdf->SetFont('dejavusans', 'B', 8);
+		//$pdf->SetFont('dejavusans', 'B', 8);
+		$pdf->SetFont('helvetica', 'B', 9);
+		$pdf->setFontStretching(100);
 
 		$pdf->SetXY($xNom, $yNom);
 		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');

@@ -66,6 +66,11 @@ class EntityFactura {
 	protected $enviada;
 	
 	/**
+	 * @ORM\Column(type="string")
+	 */
+	protected $numcompte;
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -87,7 +92,7 @@ class EntityFactura {
 		}
 	}
 	
-	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '', $detalls = array()) {
+	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '', $detalls = array(), $numcompte = '') {
 
 		$this->datafactura = $datafactura;
 		$this->num = $num;
@@ -97,6 +102,7 @@ class EntityFactura {
 		$this->detalls = json_encode($detalls);
 		$this->comanda = $comanda;
 		$this->enviada = false;
+		$this->numcompte = ($numcompte != ''?$numcompte:BaseController::getIbanGeneral());
 
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();
@@ -369,6 +375,21 @@ class EntityFactura {
     {
     	return $this->enviada;
     }
+	
+	/**
+	 * @return string
+	 */
+	public function getNumcompte() {
+		return $this->numcompte;
+	}
+
+	/**
+	 * @param string $numcompte
+	 */
+	public function setNumcompte($numcompte) {
+		$this->numcompte = $numcompte;
+	}
+	
 	
 	/**
 	 * @return datetime

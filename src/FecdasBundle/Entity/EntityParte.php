@@ -98,6 +98,11 @@ class EntityParte extends EntityComanda {
 				$cloneLlicencia->setDatamodificacio($currentDate);
 				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat());
 				
+				$cloneLlicencia->setImpresa(false);
+				$cloneLlicencia->setDataimpressio(null);
+				$cloneLlicencia->setMailenviat(false);
+				$cloneLlicencia->setDatamail(null);				
+				
 				$this->llicencies->add($cloneLlicencia);
 				$cloneLlicencia->setParte($this);
 			}

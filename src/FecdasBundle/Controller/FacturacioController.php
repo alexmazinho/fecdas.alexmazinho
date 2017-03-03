@@ -191,8 +191,8 @@ class FacturacioController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 		
-		$datamin = $this->getCurrentDate('now');
-		$datamin->sub(new \DateInterval('P365D')); // Substract 365 dies	
+		/*$datamin = $this->getCurrentDate('now');
+		$datamin->sub(new \DateInterval('P365D')); // Substract 365 dies*/	
 		
 		$datamax = $this->getCurrentDate('now');
 		//$datamax->sub($this->getIntervalConsolidacio()); // Substract 20 minutes
@@ -201,7 +201,7 @@ class FacturacioController extends BaseController {
 		$inici = $request->query->get('inici', '');
 		$final = $request->query->get('final', date('d/m/Y'));
 		
-		if ($inici == '') $datainici = $datamin; 
+		if ($inici == '') $datainici = null; 
 		else $datainici = \DateTime::createFromFormat('d/m/Y H:i:s', $inici." 00:00:00");
 		
 		$datafinal = \DateTime::createFromFormat('d/m/Y H:i:s', $final." 23:59:59");
@@ -502,8 +502,13 @@ class FacturacioController extends BaseController {
 		 * Q		Imatge
 		 * 
 		 */
+		$separadorCSV = ';'; 
+		$altreSeparadorCSV = ',';
+		
 		$import = number_format($import, 2, ',', '');
 		$conc = $this->netejarNom($conc, false);
+		$conc = str_replace($separadorCSV, ' ', $conc);  // separador csv
+		$conc = str_replace($altreSeparadorCSV, ' ', $conc);  // separador csv
 		
 		$apunt = array();
 		$apunt[] = BaseController::INDEX_DIARI_CONTASOL;  	// Columna A
@@ -524,7 +529,7 @@ class FacturacioController extends BaseController {
 		$apunt[] = $subdpt; 								// Columna P
 		$apunt[] = ''; 										// Columna Q
 		
-		return implode(";",$apunt);
+		return implode($separadorCSV,$apunt);
 	}
 	
 	private function assentamentRebut($num, $rebut) {
@@ -548,15 +553,17 @@ class FacturacioController extends BaseController {
 		$doc = str_pad($rebut->getNum(), 5,"0", STR_PAD_LEFT); // Sense any
 		$import = $rebut->getImport();
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::HABER);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'REBUT/ '.$conc, 0, 0, $doc, $import, BaseController::HABER);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'R/ '.$conc, 0, 0, $doc, $import, BaseController::HABER);
 			
 		$linia++;
 		// APUNT CAIXA
 		$compte = BaseController::getComptePagament($rebut->getTipuspagament());		// 5700000 o 5720001;
-		$conc = BaseController::getTextComptePagament($rebut->getTipuspagament()).'. '.$concRebut;		// 'CAIXA FEDERACIO' o 'BANC \'LA CAIXA\'';
+		
+		//$conc = BaseController::getTextComptePagament($rebut->getTipuspagament()).'. '.$concRebut;		// 'CAIXA FEDERACIO' o 'BANC \'LA CAIXA\'';
+		$conc .= " ". BaseController::getTextComptePagament($rebut->getTipuspagament());
 		
 		//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, $doc, $import, BaseController::DEBE);
-		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'REBUT/ '.$conc, 0, 0, $doc, $import, BaseController::DEBE);
+		$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'R/ '.$conc, 0, 0, $doc, $import, BaseController::DEBE);
 		
 		return $assentament;
 	}

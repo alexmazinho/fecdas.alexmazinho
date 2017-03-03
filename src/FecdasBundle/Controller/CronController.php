@@ -520,6 +520,11 @@ class CronController extends BaseController {
 			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
 			$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
 			
+			$cloneLlicencia->setImpresa(false);
+			$cloneLlicencia->setDataimpressio(null);
+			$cloneLlicencia->setMailenviat(false);
+			$cloneLlicencia->setDatamail(null);	
+			
 			$parte->addLlicencia($cloneLlicencia);
 			
 			$em->persist($cloneLlicencia);

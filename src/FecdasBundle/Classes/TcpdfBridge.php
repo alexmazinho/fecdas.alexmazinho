@@ -59,7 +59,13 @@ class TcpdfBridge extends \TCPDF {
     
     public function Header() {
     	parent::Header();
-    	if ($this->rightheader != "") $this->Cell(0, 15, $this->rightheader, 0, false, 'R', 0, '', 0, false, 'M', 'M');
+    	if ($this->rightheader != "") {
+    		$this->SetY(PDF_MARGIN_HEADER + 2.6);
+    		$this->Cell(0, 0, $this->rightheader, 0, true, 'R', 0, '', 0, false, 'C', 'C');
+			$this->SetY(PDF_MARGIN_HEADER + 7);
+			$this->SetFont('dejavusans', 'I', 8, '', true);
+			$this->Cell(0, 0, date("d/m/Y"), 0, false, 'R', 0, '', 0, false, 'C', 'C');
+		}
     }
     
     

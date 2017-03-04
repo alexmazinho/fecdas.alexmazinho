@@ -27,7 +27,150 @@ use FecdasBundle\Classes\Funcions;
 
 
 class FacturacioController extends BaseController {
+		
+	public function registresaldosAction(Request $request) {
+		// Llistat de comandes
 	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	
+		$club = null;
+		$saldo = 0;
+		$codi = $request->query->get('cerca', ''); // filtra club
+		$grup = $request->query->get('grup', 'D'); // diari
+		$strDesde = $request->query->get('desde', ''); 
+		$strFins = $request->query->get('fins', '');
+		$format = $request->query->get('format', '');
+		$page = $request->query->get('page', 1);
+		
+		if ($strFins != '') $desde = \DateTime::createFromFormat('d/m/Y H:i:s', $strDesde . " 00:00:00");
+		else $desde = \DateTime::createFromFormat('d/m/Y H:i:s', "01/01/".date('Y')." 00:00:00");
+		
+		if ($strFins != '') $fins = \DateTime::createFromFormat('d/m/Y H:i:s', $strFins . " 23:59:59");
+		else $fins = $this->getCurrentDate('now');
+		
+		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		
+		if ($club == null) {   
+			$club = $this->getCurrentClub();
+			$codi = $club->getCodi(); 
+		}	
+	
+		$this->logEntryAuth('REGISTRE SALDOS', $club->getCodi()." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
+		
+		$saldos = $this->saldosEntre($desde, $fins, $club);
+
+		$saldosArray = array();
+		
+		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
+		$formatter->setPattern('yyyy MMMM');
+
+		
+		foreach ($saldos as $saldo) {
+			if ($saldo->getEntrades() != 0 || $saldo->getSortides() != 0) {
+
+				if ($grup != 'M') {
+					$saldosArray[$saldo->getId().$saldo->getDataentrada()->format('Y-m-d')] = array(
+						'id' 				=> $saldo->getId(),
+						'dataentrada' 		=> $saldo->getDataentrada()->format('d/m/Y H:i:s'),
+						'entrades' 			=> $saldo->getEntrades(),
+						'sortides' 			=> $saldo->getSortides(),
+						'romanent' 			=> $saldo->getRomanent(),
+						'totalpagaments' 	=> $saldo->getTotalpagaments(),
+						'totalllicencies' 	=> $saldo->getTotalllicencies(),
+						'totalduplicats' 	=> $saldo->getTotalduplicats(),
+						'totalaltres' 		=> $saldo->getTotalaltres(),
+						'ajustsubvencions' 	=> $saldo->getAjustsubvencions(),
+						'saldo' 			=> $saldo->getSaldo(),
+						'comentaris' 		=> $saldo->getComentaris()
+					);
+				} else {
+					if (isset($saldosArray[$saldo->getDataentrada()->format('Y-m')])) {
+							
+						$saldosArray[$saldo->getDataentrada()->format('Y-m')]['entrades'] += $saldo->getEntrades();
+						$saldosArray[$saldo->getDataentrada()->format('Y-m')]['sortides'] += $saldo->getSortides();
+						
+					} else {
+						$saldosArray[$saldo->getDataentrada()->format('Y-m')] = array(
+							'id' 				=> 0,
+							'dataentrada' 		=> ucwords($formatter->format($saldo->getDataentrada())),
+							'entrades' 			=> $saldo->getEntrades(),
+							'sortides' 			=> $saldo->getSortides()
+						);
+					}
+					
+					// Ordenat per dataentrada, sempre posa la última
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['romanent'] = $saldo->getRomanent();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['totalpagaments']	= $saldo->getTotalpagaments();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['totalllicencies'] = $saldo->getTotalllicencies();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['totalduplicats']	= $saldo->getTotalduplicats();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['totalaltres'] = $saldo->getTotalaltres();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['ajustsubvencions'] = $saldo->getAjustsubvencions();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['saldo'] = $saldo->getSaldo();
+					$saldosArray[$saldo->getDataentrada()->format('Y-m')]['comentaris'] = '';
+					
+				}				
+			}
+		}
+		
+		if ($format == 'csv') {
+			
+			$filename = "export_saldos_".($grup != 'M'?"diari":"mensual")."_".Funcions::netejarPath($club->getNom())."_".$desde->format('Y-m-d')."_".$fins->format('Y-m-d')."_".date('Hms').".csv";
+			
+			$header = array('id', 'Data', 'Entrades', 'Sortides', 'Romanent', 'Pagaments', 'Llicències', 'Duplicats', 'Altres', 'Subvencions', 'Saldo', 'Comentaris' ); 
+			
+			$data = array(); // Get only data matrix
+			foreach ($saldosArray as &$row) {
+				$row['entrades'] = number_format($row['entrades'], 2, ',', '');
+				$row['sortides'] = number_format($row['sortides'], 2, ',', '');
+				$row['romanent'] = number_format($row['romanent'], 2, ',', '');
+				$row['totalpagaments'] = number_format($row['totalpagaments'], 2, ',', '');
+				$row['totalllicencies'] = number_format($row['totalllicencies'], 2, ',', '');
+				$row['totalduplicats'] = number_format($row['totalduplicats'], 2, ',', '');
+				$row['totalaltres'] = number_format($row['totalaltres'], 2, ',', '');
+				$row['ajustsubvencions'] = number_format($row['ajustsubvencions'], 2, ',', '');
+				$row['saldo'] = number_format($row['saldo'], 2, ',', '');
+			}
+				
+			$response = $this->exportCSV($request, $header, $saldosArray, $filename);
+			
+			return $response;
+		}
+		
+		
+		$formBuilder = $this->createFormBuilder()
+			->add('desde', 'date', array(
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required'		=>	false,
+				'data'			=> $desde,
+				'format' 		=> 'dd/MM/yyyy'))
+			->add('fins', 'date', array(
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'empty_value' 	=> false,
+				'data'			=> $fins,
+				'format' 		=> 'dd/MM/yyyy'))
+			->add('grup', 'choice', array(
+				'choices'   	=> array('D' => 'diari', 'M' => 'mensual'),
+				'multiple'  	=> false,
+				'expanded' 		=> true,
+				'data'			=> $grup
+		));
+		
+		$this->addClubsActiusForm($formBuilder, $club);
+		
+		return $this->render('FecdasBundle:Facturacio:registresaldos.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+						'saldos' => $saldosArray, 'club' => $club)
+				));
+	}	
+		
 	public function traspascomptabilitatAction(Request $request) {
 		// http://www.fecdasnou.dev/traspascomptabilitat
 		if (!$this->isAuthenticated())

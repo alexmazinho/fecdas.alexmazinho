@@ -381,22 +381,6 @@ class BaseController extends Controller {
 		return $ivaArray;
 	}
 	
-	/**
-	 * Obté IBAN la caixa 
-	 */
-	public static function getIbanGeneral() {
-		return $this->getParameter('iban');
-	}
-	
-	/**
-	 * Obté IBAN afers escola
-	 */
-	public static function getIbanEscola() {
-		return $this->getParameter('ibanescola');
-	}
-	
-	
-	
 	public static function getLlistaTipusParte($club, $dataconsulta) {
 		$llistatipus = array();
 	
@@ -431,6 +415,20 @@ class BaseController extends Controller {
 		}
 	
 		return $llistatipus;
+	}
+	
+	/**
+	 * Obté IBAN la caixa 
+	 */
+	public function getIbanGeneral() {
+		return $this->getParameter('iban');
+	}
+	
+	/**
+	 * Obté IBAN afers escola
+	 */
+	public function getIbanEscola() {
+		return $this->getParameter('ibanescola');
 	}
 	
     protected function getComercRedsysParam( $param ) {
@@ -1076,7 +1074,7 @@ class BaseController extends Controller {
 
 		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 		
-		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte);
+		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte, null, $this->getIbanGeneral());
 		
 		$em->persist($factura);
 		if ($comanda != null) {
@@ -2759,7 +2757,8 @@ class BaseController extends Controller {
 			$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
 			//$persist = true;
 		}
-		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, $import, $concepte, $detallsFactura);
+		
+		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, $import, $concepte, $detallsFactura, $this->getIbanGeneral());
 		
 		$em->persist($factura);
 		
@@ -3047,6 +3046,61 @@ class BaseController extends Controller {
 		
         return $cart;
     }
+
+	protected function saldosEntre($desde, $fins, $club) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar saldos entre dates per un club
+		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntitySaldos s ";
+		$strQuery .= " WHERE s.club = :club ";
+		$strQuery .= " AND   s.dataentrada >= :desde ";
+		$strQuery .= " AND   s.dataentrada <  :fins ";
+		$strQuery .= " ORDER BY s.dataentrada ASC ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('club', $club->getCodi() );
+		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
+		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		
+		$saldos = $query->getResult();
+		
+		return $saldos;
+	}
+
+
+	protected function facturesEntre($desde, $fins) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar factures entrades entrats dia current
+		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		$strQuery .= " WHERE f.dataentrada >= :desde ";
+		$strQuery .= " AND   f.dataentrada <  :fins ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
+		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		
+		$factures = $query->getResult();
+		
+		return $factures;
+	}
+
+	protected function rebutsEntre($desde, $fins) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar factures entrades entrats dia current
+		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.dataentrada >= :desde ";
+		$strQuery .= " AND   r.dataentrada <  :fins ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
+		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		
+		$rebuts = $query->getResult();
+		
+		return $rebuts;
+	}
 
 	protected function exportCSV($request, $header, $data, $filename) {
 

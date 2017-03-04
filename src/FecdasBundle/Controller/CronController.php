@@ -12,8 +12,100 @@ use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Form\FormLlicenciaRenovar;
+use FecdasBundle\Entity\EntitySaldos;
 
 class CronController extends BaseController {
+
+	public function registrarsaldosAction(Request $request) {
+		// Registre diari de saldos
+		/* Planificar cron diari a les 23:45
+		 * wget -O - -q http://fecdas.dev/registrarsaldos?secret=abc...  */
+		
+		$current = $this->getCurrentDate('now');
+		
+		try {
+			$em = $this->getDoctrine()->getManager();
+			
+			$current->sub(new \DateInterval('PT1S')); // Sub 1 segon;
+			
+			$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+			$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) ";
+			$strQuery .= " ORDER BY c.codi";
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('current', $current->format('Y-m-d H:i:s') );
+			
+			$clubs = $query->getResult();
+			
+			foreach ($clubs as $club) {
+				
+				$strQuery  = " SELECT MAX(s.dataentrada) FROM FecdasBundle\Entity\EntitySaldos s ";
+				$strQuery .= " WHERE s.club = :club ";
+				$query = $em->createQuery($strQuery);
+				$query->setParameter('club', $club->getCodi() );
+				
+				$ultimRegistre = $query->getSingleScalarResult();
+				
+				if ($ultimRegistre != null) {
+					// Consultar factures entrades entrats dia current
+					$entrades = 0;
+					$sortides = 0;
+					
+					$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $ultimRegistre);
+					
+					$factures = $this->facturesEntre($desde, $current);
+					
+					foreach ($factures as $factura) {
+						$comanda = $factura->esAnulacio()?$factura->getComandaAnulacio():$factura->getComanda();
+						
+						if ($club->getCodi() == $comanda->getClub()->getCodi()) {
+							
+							$import = $factura->getImport();
+							
+							$sortides += $import;
+						}
+					}
+					
+					// Consultar rebuts entrats dia current
+					$rebuts   = $this->rebutsEntre($desde, $current);
+					
+					foreach ($rebuts as $rebut) {
+						
+						if ($club->getCodi() == $rebut->getClub()->getCodi()) {
+							
+							$import = $rebut->getImport();
+							
+							$entrades += $import;
+						}
+					}				
+					
+					$saldos = new EntitySaldos($club, $entrades, $sortides);
+					$saldos->setRomanent( $club->getRomanent() );
+					$saldos->setTotalllicencies( $club->getTotalllicencies() );
+					$saldos->setTotalduplicats( $club->getTotalduplicats() );
+					$saldos->setTotalaltres( $club->getTotalaltres() );
+					$saldos->setTotalpagaments( $club->getTotalpagaments() ); 
+					$saldos->setAjustsubvencions( $club->getAjustsubvencions() );
+					
+					$saldos->setDataentrada( $current ); 
+				
+					$em->persist($saldos);
+				} else {
+					$this->logEntryAuth('ERROR REGISTRE SALDOS CLUB', 'Club sense registre anterior => '.$current->format('Y-m-d H:i:s').' => '.$club->getNom());	
+				}
+				
+			}
+			
+			$em->flush();
+
+			$this->logEntryAuth('REGISTRE SALDOS OK', $current->format('Y-m-d H:i:s'));		
+			
+		} catch (\Exception $e) {
+			
+			$this->logEntryAuth('ERROR REGISTRE SALDOS', $current->format('Y-m-d H:i:s').' => '.$e->getMessage());	
+        }
+		
+		return new Response('');
+	}	
 
 	public function checkrenovacioAction(Request $request) {
 		// Avís renovació partes: 30 dies, 15 dies i 2 dies

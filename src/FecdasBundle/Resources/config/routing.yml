@@ -238,6 +238,12 @@ FecdasBundle_tancamentanysaldos:
     defaults: { _controller: "FecdasBundle:Cron:tancamentanysaldos" }
     requirements:
         _method:  GET
+        
+FecdasBundle_registrarsaldos:
+    pattern:  /registrarsaldos
+    defaults: { _controller: "FecdasBundle:Cron:registrarsaldos" }
+    requirements:
+        _method:  GET        
 
 # ---------------------------------------------------------------------------
 # -----------------------  SEGURETAT ------------------------------------
@@ -455,6 +461,12 @@ FecdasBundle_apunts:
     requirements:
         _method:  GET
 
+FecdasBundle_registresaldos:
+    pattern:  /registresaldos
+    defaults: { _controller: "FecdasBundle:Facturacio:registresaldos" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_tramitarcistella:
     pattern:  /tramitarcistella
     defaults: { _controller: "FecdasBundle:Facturacio:tramitarcistella" }
@@ -602,6 +614,7 @@ FecdasBundle_notificaciotest:
     defaults: { _controller: "FecdasBundle:Facturacio:notificaciotest" }
     requirements:
         _method:  GET|POST
+
 
 # ---------------------------------------------------------------------------
 # ---------------------  SERVEIS EXTERNS  -----------------------------------

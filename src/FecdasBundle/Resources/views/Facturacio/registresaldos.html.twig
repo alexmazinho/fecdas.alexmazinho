@@ -1,0 +1,229 @@
+{# src/Fecdas/comandesBundle/Resources/views/Facturacio/registresaldos.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Registre saldos històric {% endblock %}
+
+{% block body %}
+	<header>
+		<div class="row">
+			<div class="col-md-8"><h1>Històric de saldos</h1></div>
+		    <div class="col-md-4 col-last-right">
+				{% if saldos|length > 0 %}
+					<div class="buttons-top-bootstrap">
+						<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_registresaldos', { 'format': 'csv' }) }}" alt="Exportar dades" 
+							title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
+					</div> 
+				{% endif %}
+			</div>
+		</div>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+    
+    <div class="row">
+		<div class="col-md-12">    
+		    <div id="registresaldos-main">
+			    <div id="list-forms">
+			    	<form id="form_registresaldos" action="{{ path('FecdasBundle_registresaldos') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+						<div class="row">
+							  <div class="col-md-4 col-xs-12">
+							  	<div class="form-group">
+							    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+									{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+								</div>
+							  </div>
+							  <div class="col-md-3 col-xs-4">
+							 	<div class="form-group">
+									<div class="input-group">
+										<span class="input-group-addon">Des de</span>
+										{{ form_widget(form.desde, { 'attr': {'class': 'form-control form-control-center'} }) }}
+										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+									</div>{{ form_errors(form.desde)  }}
+								</div>
+							  </div>
+							  <div class="col-md-3 col-xs-4">
+							 	<div class="form-group">
+									<div class="input-group">
+										<span class="input-group-addon">Fins</span>
+										{{ form_widget(form.fins, { 'attr': {'class': 'form-control form-control-center'} }) }}
+										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+									</div>{{ form_errors(form.fins)  }}
+								</div>
+							  </div>
+							  <div class="col-md-2 col-xs-4">
+							  	<label class="radio-inline">
+									{{ form_widget(form.grup[0], { 'attr': {'class': 'agrupar-dates'} }) }} Diari
+								</label>
+								<label class="radio-inline">
+									{{ form_widget(form.grup[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
+								</label>
+							   </div>							  
+						</div>
+				   	</form>
+			    </div>
+			    <div class="table-header">	
+				   	<div id="list-header">
+						<div id="header-saldos-id" class="col-listheader hidden">&nbsp;</div>
+						<div id="header-saldos-data" class="col-listheader collistheader-noorder">Data</div>
+				   		<div id="header-saldos-entrades" class="col-listheader collistheader-noorder">Entrades<br/>(Rebuts)</div>
+				   		<div id="header-saldos-sortides" class="col-listheader collistheader-noorder">Sortides<br/>(Factures)</div>
+				   		<div id="header-saldos-romanent" class="col-listheader collistheader-noorder">Romanent<br/>{{ club.romanent|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-pagaments" class="col-listheader collistheader-noorder">Pagaments<br/>{{ club.totalpagaments|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-llicencies" class="col-listheader collistheader-noorder">Llicències<br/>{{ club.totalllicencies|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-duplicats" class="col-listheader collistheader-noorder">Duplicats<br/>{{ club.totalduplicats|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-altres" class="col-listheader collistheader-noorder">Altres<br/>{{ club.totalaltres|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-subvencions" class="col-listheader collistheader-noorder">Subvencions<br/>{{ club.ajustsubvencions|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-saldo" class="col-listheader collistheader-noorder">Saldo<br/>{{ club.saldo|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-comentaris" class="col-listheader collistheader-noorder"><i class="fa fa-info-circle"></i></div>
+				   	</div>
+			   	</div>
+				<div class="table-scroll">
+				   	<ol id="list-data">
+				   	{% set registres = 0 %}
+					{% for saldo in saldos %} 
+						{% if saldo.entrades != 0 or
+							  saldo.sortides != 0 %}
+							{% set registres = registres + 1 %}  
+							<li class="data-detall">
+								<div class="data-detall-cell hidden">{{ saldo.id }}</div>
+								<div class="data-detall-cell saldos-data">{{ saldo.dataentrada }}</div>
+						   		<div class="data-detall-cell saldos-entrades {% if saldo.entrades != 0 %} green {% endif %}">{{ saldo.entrades|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-sortides {% if saldo.sortides != 0 %} red {% endif %}">{{ saldo.sortides|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-romanent">{{ saldo.romanent|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-pagaments">{{ saldo.totalpagaments|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-llicencies">{{ saldo.totalllicencies|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-duplicats">{{ saldo.totalduplicats|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-altres">{{ saldo.totalaltres|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-subvencions">{{ saldo.ajustsubvencions|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-saldo">{{ saldo.saldo|number_format(2, ',', '.') }}€</div>		   		
+								<div class="data-detall-cell saldos-comentaris">
+									{% if saldo.comentaris != '' %} 
+									<span class="fa fa-info-circle blue">
+										<span class="saldo-info">{{ saldo.comentaris|raw }}</span>
+									</span>
+									{% else %} 
+									&nbsp; 
+									{% endif %}
+								</div>	
+							</li>
+					   	{% endif %}
+				   	{% endfor %} 
+				   	{% if registres == 0 %}
+				   		<li class="data-detall" colspan="11">
+					    	<div class="sms-notice">No hi ha registres de saldos per mostrar</div>
+					    </li>
+				    {% endif %}
+					</ol>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12">
+			<p class="title-comment">Només es mostren les dates del registre on el club ha realitzat algun moviment</p>
+		</div>
+		
+		{# if saldos.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(saldos, null) }}</div>{% endif #}
+	   	
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+
+ 	{{ parent() }}
+
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+
+	<script type="text/javascript">
+
+	function reloadUrlParams() {
+		var grup = $(".agrupar-dates:checked").val();
+		
+		return 'cerca='+$( "#form_clubs" ).val()+'&desde='+$( '#form_desde' ).val()+'&fins='+$( '#form_fins' ).val()+'&grup='+grup;
+	    
+	}
+	
+	function reloadData() {
+		var url = $( "#form_registresaldos" ).attr('action');
+
+		window.location = url+'?'+reloadUrlParams();
+	}
+	
+	$(document).ready(function(){
+
+		setMenuActive("menu-admhistoricsaldos");
+
+		$("select#form_clubs").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: 'Seleccionar Club'
+		});
+
+		$("#form_clubs").change(function() {
+
+			reloadData();
+	    });
+
+		$(".agrupar-dates").click(function( e ) {
+			e.preventDefault();
+			reloadData();
+		});
+
+		$(".export-csv").click(function( e ) {
+			e.preventDefault();
+
+			var url = $( this ).attr('href');
+			
+			window.location = url+'&'+reloadUrlParams();
+		});
+
+		var current = new Date();
+		
+		var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
+		initDateTimePicker ( 
+			$( '#form_desde' ), 
+			mindate, 
+			current, 
+			current, 
+			'datadesde-picker', 
+			false,
+			function() {
+
+				reloadData();
+		    } 
+		);
+		
+		initDateTimePicker ( 
+			$( '#form_fins' ), 
+			mindate, 
+			current, 
+			current, 
+			'datafins-picker', 
+			false,
+			function() {
+
+				reloadData();
+		    }
+		);
+
+		if ($('#list-data').height() > $('.table-scroll').height()) {
+			// Scroll
+			$('.table-scroll').width($('.table-scroll').width() + 12 );
+		}
+
+		helpBubblesLlista("span.fa-info-circle", ".saldo-info"); 
+		
+	});
+	
+	</script>
+
+
+{% endblock %}
+

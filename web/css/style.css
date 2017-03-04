@@ -577,6 +577,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 #header-producte-limit { width: 6%; text-align: center; }
 #header-producte-stock { width: 6%; text-align: center; }
 #header-producte-actions { width: 10%; text-align: right;  color: #3c763d;  }
+
 	   	
 .data-detall-cell.producte-estat  { width: 4%; text-align: left; }
 .data-detall-cell.producte-codi  { width: 10%; text-align: center; }
@@ -2090,6 +2091,30 @@ select#parte_persona_addrnacionalitat {
 .panel-footer .checkbox-inline span { padding-right: 40px; }
 
 /************************************************ Llicències per mail Fi ******************************************************/
+
+/************************************************ Històric saldos ******************************************************/
+
+
+#header-saldos-data, .saldos-data { width: 14%;  text-align: left; }
+#header-saldos-entrades, .saldos-entrades { width: 9%;  text-align: right;  }
+#header-saldos-sortides, .saldos-sortides { width: 9%;  text-align: right;  }
+#header-saldos-romanent, .saldos-romanent, 
+#header-saldos-pagaments, .saldos-pagaments, 
+#header-saldos-llicencies, .saldos-llicencies,
+#header-saldos-duplicats, .saldos-duplicats,
+#header-saldos-altres, .saldos-altres,
+#header-saldos-subvencions, .saldos-subvencions { width: 9%; text-align: right;  }
+#header-saldos-saldo, .saldos-saldo { width: 9%; text-align: right;   }
+#header-saldos-comentaris, .saldos-comentaris { width: 4%; text-align: center; }
+
+.data-detall-cell.saldos-saldo { font-weight: bold; }
+
+.saldos-comentaris .saldo-info {
+	display: none;
+}
+
+
+/************************************************ Històric saldos Fi ******************************************************/
 
 
 /************************************************* Consulta Admin / Clubs ******************************************************/

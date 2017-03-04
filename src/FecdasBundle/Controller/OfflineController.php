@@ -19,15 +19,16 @@ class OfflineController extends BaseController {
 	
 	
 	public function historicsaldosAction(Request $request) {
-		// http://www.fecdas.dev/historicsaldos?desde=2015-12-31&fins=2016-03-01club=CATXXX
+		// http://www.fecdas.dev/historicsaldos?desde=2015-12-31&fins=2016-06-02&club=CAT127
+		// http://www.fecdas.dev/historicsaldos?desde=2016-06-01&fins=2016-11-02&club=CAT127
+		// http://www.fecdas.dev/historicsaldos?desde=2016-11-01&fins=2017-03-04&club=CAT127
 		// http://www.fecdas.dev/historicsaldos?desde=2015-12-31&fins=2016-03-02
 		// http://www.fecdas.dev/historicsaldos?desde=2016-03-01&fins=2016-05-02
 		// http://www.fecdas.dev/historicsaldos?desde=2016-05-01&fins=2016-07-02
 		// http://www.fecdas.dev/historicsaldos?desde=2016-07-01&fins=2016-09-02
 		// http://www.fecdas.dev/historicsaldos?desde=2016-09-01&fins=2016-11-02
 		// http://www.fecdas.dev/historicsaldos?desde=2016-11-01&fins=2017-01-02
-		// http://www.fecdas.dev/historicsaldos?desde=2017-01-01&fins=2017-02-02
-		// http://www.fecdas.dev/historicsaldos?desde=2017-02-01
+		// http://www.fecdas.dev/historicsaldos?desde=2017-01-01
 		// Script de migració. Executar per refer històric de saldos a partir del registre d'una data
 	
 		if (!$this->isAuthenticated())
@@ -46,7 +47,7 @@ class OfflineController extends BaseController {
 		
 		$strFins = $request->query->get('fins', '');  
 		
-		if ($strFins == '') $this->getCurrentDate('now');
+		if ($strFins == '') $final = $this->getCurrentDate('now');
 		else $final = \DateTime::createFromFormat('Y-m-d H:i:s', $strFins . " 23:59:59");
 		
 		
@@ -54,7 +55,7 @@ class OfflineController extends BaseController {
 		$current->add(new \DateInterval('P1D')); // Add 1 Day
 		$inicirevisio = clone $current;
 		
-		$codi = $request->query->get('club', '');  // opcionalment per un club
+		$codiclub = $request->query->get('club', '');  // opcionalment per un club
 
 		//if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
@@ -71,7 +72,7 @@ class OfflineController extends BaseController {
 
 		$strQuery  = " SELECT * FROM m_clubs c LEFT JOIN m_saldos s ON c.codi = s.club  ";
 		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > '".$desde->format('Y-m-d H:i:s')."') ";
-		if ($codi != '') $strQuery .= " AND c.codi = '".$codi."' ";
+		if ($codiclub != '') $strQuery .= " AND c.codi = '".$codiclub."' ";
 		$strQuery .= " AND s.dataentrada >= '".$desde->format('Y-m-d H:i:s')."' ";
 		$strQuery .= " AND s.dataentrada < '".$current->format('Y-m-d H:i:s')."' ";
 		$strQuery .= " ORDER BY c.codi ASC, s.dataentrada DESC";
@@ -79,8 +80,7 @@ class OfflineController extends BaseController {
 		$stmt = $em->getConnection()->prepare($strQuery);
 		$stmt->execute();
 		$clubssaldos = $stmt->fetchAll();
-		
-		
+
 		$i = 0;
 		$clubs = array();
 		// Preparar dades inicials
@@ -109,7 +109,9 @@ class OfflineController extends BaseController {
 		$seguent->add(new \DateInterval('P1D')); // Add 1 Day
 		
 		$totalFactures = 0;
+		$totalFacturesAnteriors = 0;
 		$totalRebuts = 0;
+		$totalRebutsAnteriors = 0;
 		
 		while($seguent->format('Y-m-d H:i:s') < $final->format('Y-m-d H:i:s')) {
 			
@@ -125,30 +127,39 @@ class OfflineController extends BaseController {
 			
 			// Consultar factures entrades entrats dia current
 			$factures = $this->facturesEntre($current, $seguent);
-			
+
 			$totalFactures += count($factures);
+
+			// Acumular factures del 2105 amb data factura 2016 
+			$facturesAnteriors = $this->facturesAnteriorsEntre($current, $seguent);
 			
+			$totalFacturesAnteriors += count($facturesAnteriors);
+			
+			$factures = array_merge($factures, $facturesAnteriors);
+
 			foreach ($factures as $factura) {
 				$comanda = $factura->esAnulacio()?$factura->getComandaAnulacio():$factura->getComanda();
 				$club = $comanda->getClub();
-				
+
 				if (isset($clubs[$club->getCodi()])) {
 					
 					if ($clubs[$club->getCodi()]['club'] == null)  $clubs[$club->getCodi()]['club'] = $club;
 					
 					$import = $factura->getImport();
-					
+
 					$clubs[$club->getCodi()]['sortides'] += $import;
 					
 					if ($factura->getDatafactura()->format('Y') < $current->format('Y')) {
-						$clubs[$club->getCodi()]['romanent'] -= $import;  // Romanent
+						// Només per a factures posteriors al recull dels saldos per inicialitzar 2016-04-01 => SELECT * FROM `m_factures` WHERE dataentrada >= '2016-04-01 00:00:00' AND YEAR(datafactura) < 2016; // 0  
+						
+						if ($factura->getDataentrada()->format('Y-m-d H:i:s') > '2016-04-01 00:00:00') $clubs[$club->getCodi()]['romanent'] -= $import;  // Romanent
 					} else {
 						if ($comanda->esParte()) $clubs[$club->getCodi()]['totalllicencies'] += $import;
 						if ($comanda->esDuplicat()) $clubs[$club->getCodi()]['totalduplicats'] += $import;
 						if ($comanda->esAltre()) $clubs[$club->getCodi()]['totalaltres'] += $import;
 					}			
 				} else {
-					$result .= "F".$factura->getId()." *********** CLUB NO EXISTEIX AL REGISTRE DE SALDOS ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
+					if ($codiclub == '') $result .= "F".$factura->getId()." *********** CLUB NO EXISTEIX AL REGISTRE DE SALDOS ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
 				}
 			}
 			
@@ -156,6 +167,13 @@ class OfflineController extends BaseController {
 			$rebuts   = $this->rebutsEntre($current, $seguent);
 			
 			$totalRebuts += count($rebuts);
+			
+			// Acumular rebuts del 2105 amb data factura 2016 
+			$rebutsAnteriors = $this->rebutsAnteriorsEntre($current, $seguent);
+			
+			$totalRebutsAnteriors += count($rebutsAnteriors);
+			
+			$rebuts = array_merge($rebuts, $rebutsAnteriors);
 			
 			foreach ($rebuts as $rebut) {
 				
@@ -170,13 +188,14 @@ class OfflineController extends BaseController {
 					$clubs[$club->getCodi()]['entrades'] += $import;
 					
 					if ($rebut->getDatapagament()->format('Y') < $current->format('Y')) {
-						$clubs[$club->getCodi()]['romanent'] += $import;  // Romanent
+						// Només per a rebuts posteriors al recull dels saldos per inicialitzar 2016-04-01 => SELECT * FROM `m_rebuts` WHERE dataentrada >= '2016-04-01 00:00:00' AND YEAR(datapagament) < 2016; // 0
+						if ($rebut->getDataentrada()->format('Y-m-d H:i:s') > '2016-04-01 00:00:00') $clubs[$club->getCodi()]['romanent'] += $import;  // Romanent
 					} else {
 						$clubs[$club->getCodi()]['totalpagaments'] += $import;
 					}
 					
 				} else {
-					$result .= "R".$rebut->getId()." *********** CLUB NO EXISTEIX AL REGISTRE DE SALDOS ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
+					if ($codiclub == '') $result .= "R".$rebut->getId()." *********** CLUB NO EXISTEIX AL REGISTRE DE SALDOS ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
 				}
 			}
 			
@@ -211,19 +230,25 @@ class OfflineController extends BaseController {
 		$result .= "Desde ".$desde->format('Y-m-d H:i:s')."<br/>";
 		$result .= "Total factures ".$totalFactures."<br/>";
 		$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE dataentrada >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "Total factures anteriors ".$totalFacturesAnteriors."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE YEAR(dataentrada) < YEAR(datafactura) AND datafactura >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND datafactura < '".$current->format('Y-m-d H:i:s')."';<br/>";
 		$result .= "Total rebuts ".$totalRebuts."<br/>";
 		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "Total rebuts anteriors ".$totalRebutsAnteriors."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE YEAR(dataentrada) < YEAR(datapagament) AND datapagament >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND datapagament < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		
 		
 		return new Response($result);
 	}
 	
-	private function facturesEntre($desde, $fins) {
+	protected function facturesAnteriorsEntre($desde, $fins) {
 		$em = $this->getDoctrine()->getManager();
 		
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
-		$strQuery .= " WHERE f.dataentrada >= :desde ";
-		$strQuery .= " AND   f.dataentrada <  :fins ";
+		$strQuery .= " WHERE f.datafactura >= :desde ";
+		$strQuery .= " AND   f.datafactura <  :fins ";
+		$strQuery .= " AND   f.dataentrada <  '2016-01-01 00:00:00' ";
 			
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
@@ -233,14 +258,15 @@ class OfflineController extends BaseController {
 		
 		return $factures;
 	}
-
-	private function rebutsEntre($desde, $fins) {
+	
+	protected function rebutsAnteriorsEntre($desde, $fins) {
 		$em = $this->getDoctrine()->getManager();
 		
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.dataentrada >= :desde ";
-		$strQuery .= " AND   r.dataentrada <  :fins ";
+		$strQuery .= " WHERE r.datapagament >= :desde ";
+		$strQuery .= " AND   r.datapagament <  :fins ";
+		$strQuery .= " AND   r.dataentrada <  '2016-01-01 00:00:00' ";
 			
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );

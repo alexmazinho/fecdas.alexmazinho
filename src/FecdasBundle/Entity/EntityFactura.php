@@ -1,7 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
-
+use FecdasBundle\Controller\BaseController;
 /**
  * @ORM\Entity
  * @ORM\Table(name="m_factures")
@@ -102,7 +102,7 @@ class EntityFactura {
 		$this->detalls = json_encode($detalls);
 		$this->comanda = $comanda;
 		$this->enviada = false;
-		$this->numcompte = ($numcompte != ''?$numcompte:BaseController::getIbanGeneral());
+		$this->numcompte = $numcompte;
 
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();

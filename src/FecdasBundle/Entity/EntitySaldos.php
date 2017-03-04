@@ -104,6 +104,26 @@ class EntitySaldos {
 	}
 	
 	/**
+	 * Retorna el saldo del registre 
+	 *
+	 * @return decimal
+	 */
+	public function getSaldo() {
+		return round($this->totalpagaments + $this->ajustsubvencions + $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
+	}
+	
+	/**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+	
+	
+	/**
      * Set club
      *
      * @param \FecdasBundle\Entity\EntityClub $club

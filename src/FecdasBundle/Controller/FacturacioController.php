@@ -1308,6 +1308,8 @@ class FacturacioController extends BaseController {
 		$transport = $request->query->get('transport', 1);
 		$transport = ($transport == 1?true:false);
 		$comentaris = $request->query->get('comentaris', '');
+		$comptefactura = $request->query->get('comptefactura', $this->getIbanGeneral());
+		
 		$club = null;
 		$datafacturacio = $this->getCurrentDate();
 		$strDatafacturacio = $request->query->get('datafacturacio', '');
@@ -1357,7 +1359,7 @@ class FacturacioController extends BaseController {
 				// Validacions comuns i anotacions stock
 				$this->tramitarComanda($comanda);
 
-				$factura = $this->crearFactura($datafacturacio, $comanda);
+				$factura = $this->crearFactura($datafacturacio, $comanda, $comptefactura);
 			
 				$em ->flush();
 			
@@ -2898,7 +2900,19 @@ class FacturacioController extends BaseController {
 		$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
 		if ($comanda != null) {
 
+			$factura = $comanda->getFactura();
+
 			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA);
+			
+			$tipuspagamentOk = $this->checkIbanTipusPagament($tipusPagament, $factura->getNumcompte());
+
+			if (!$tipuspagamentOk) {
+				$this->logEntryAuth('CONF. PAGAMENT TIPUS KO', $comandaId);
+				
+				$response = new Response('El pagament no es correspon amb el compte de la factura');
+				$response->setStatusCode(500);
+				return $response;
+			}
 			
 			$dataAux = $request->query->get('datapagament', '');
 			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();

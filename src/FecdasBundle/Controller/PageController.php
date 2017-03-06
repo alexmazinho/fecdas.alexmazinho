@@ -1344,6 +1344,8 @@ class PageController extends BaseController {
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'd.datapeticio');
 		$direction = $request->query->get('direction', 'desc');
+		$totes = $request->query->get('totes', 0) == 1?true:false;
+		
 		$currentClub = $this->getCurrentClub()->getCodi();
 		
 		if ($request->getMethod() != 'POST') $this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub);
@@ -1454,7 +1456,7 @@ class PageController extends BaseController {
 			}
 
 			/* reenvia pàgina per evitar F5 */
-			return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page)));
+			return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page, 'totes' => $totes)));
 		}
 		
 		$strQuery = "SELECT d, p, c FROM FecdasBundle\Entity\EntityDuplicat d JOIN d.persona p JOIN d.carnet c";
@@ -1464,7 +1466,10 @@ class PageController extends BaseController {
 			$query = $em->createQuery($strQuery)
 				->setParameter('club', $currentClub);
 		} else {
+			if ($totes == false) $strQuery .= " WHERE d.dataimpressio IS NULL AND d.databaixa IS NULL ";  
+
 			$strQuery .= " ORDER BY d.datapeticio";
+			
 			$query = $em->createQuery($strQuery);
 		}
 		
@@ -1474,6 +1479,7 @@ class PageController extends BaseController {
 				$page,
 				10 /*limit per page*/
 		);
+		$duplicats->setParam('totes',$totes);
 		
 		return $this->render('FecdasBundle:Page:duplicats.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats,

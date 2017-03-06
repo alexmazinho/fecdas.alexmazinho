@@ -14,17 +14,32 @@
         <h1>Petició de duplicats</h1>
     </header>
 
-   	<form id="formduplicats" action="{{ path('FecdasBundle_duplicats') }}" method="post"  enctype="multipart/form-data" class="appform">
-   		<div class="form-row clearfix">
-   			<div id="formduplicats-persones" class="form-left">
-				{{ form_widget(form.persona, { 'attr': {'class': 'forminput-inside ', 'style': 'width:100%'} }) }}
-			</div> 
-			<div id="formduplicats-carnets" class="form-left">
-				{{ form_widget(form.carnet, { 'attr': {'class': 'formfield-outside'} }) }}
-			</div>
-		</div>
-		<div id="formduplicats-dades" class="form-row clearfix"></div>
-    </form>
+	<div class="row">
+		<div class="col-md-12">
+		   	<form id="formduplicats" action="{{ path('FecdasBundle_duplicats') }}" method="post"  enctype="multipart/form-data" class="appform">
+		   		<div class="form-row clearfix">
+		   			<div id="formduplicats-persones" class="form-left">
+						{{ form_widget(form.persona, { 'attr': {'class': 'form-control'} }) }}
+					</div> 
+					<div id="formduplicats-carnets" class="form-left">
+						{{ form_widget(form.carnet, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+				<div id="formduplicats-dades" class="form-row clearfix"></div>
+		    </form>
+    	</div>
+    </div>
+    <div class="row">
+    	<div class="col-md-offset-8 col-md-4 col-last-right">
+    		{% if duplicats.params.totes == true %}
+    			<a class="duplicat-show-hide impres link" href="{{ path('FecdasBundle_duplicats', duplicats.params|merge({ 'totes': 0 })) }}" alt="Mostrar només peticions pendents" title="Mostrar només peticions pendents">
+			   							mostrar pendents <i class="fa fa-eye-slash"></i></a>
+    		{% else %}
+    			<a class="duplicat-show-hide impres link" href="{{ path('FecdasBundle_duplicats', duplicats.params|merge({ 'totes': 1 })) }}" alt="Mostrar totes les peticions" title="Mostrar totes les peticions">
+			   							mostrar totes <i class="fa fa-eye"></i></a>
+			{% endif %}
+    	</div>
+    </div>
 
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     

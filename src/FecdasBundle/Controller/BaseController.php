@@ -94,9 +94,11 @@ class BaseController extends Controller {
 	const TIPUS_PAGAMENT_CASH 				= 1;		// 5700000  Metàl·lic
 	const TIPUS_PAGAMENT_TPV				= 2;		// 5720001  La Caixa
 	const TIPUS_PAGAMENT_TRANS_LAIETANIA	= 3;		// 5720001  La Caixa
+	const TIPUS_PAGAMENT_TRANS_ESCOLA		= 4;		// ????  La Caixa Escola
 	const TEXT_PAGAMENT_CASH 				= 'METÀL.LIC';
 	const TEXT_PAGAMENT_TPV					= 'ON-LINE';
-	const TEXT_PAGAMENT_TRANS				= 'TRANSFERÈNCIA';	
+	const TEXT_PAGAMENT_TRANS				= 'TRANSFERÈNCIA GENERAL';	
+	const TEXT_PAGAMENT_TRANS_ESCOLA		= 'TRANSFERÈNCIA ESCOLA';
 
 	const TIPUS_COMANDA_LLICENCIES 		= 1;
 	const TIPUS_COMANDA_DUPLICATS 		= 2;
@@ -289,9 +291,10 @@ class BaseController extends Controller {
 	public static function getTipusDePagament() {
 		if (self::$tipuspagament == null) {
 			self::$tipuspagament = array(
-					self::TIPUS_PAGAMENT_TRANS_LAIETANIA => 'Transferència. La Caixa',
-					self::TIPUS_PAGAMENT_CASH 			 => 'Metàl·lic',
-					self::TIPUS_PAGAMENT_TPV 			 => 'On-Line TPV',
+					self::TIPUS_PAGAMENT_TRANS_LAIETANIA 	=> 'Transferència. La Caixa',
+					self::TIPUS_PAGAMENT_TRANS_ESCOLA 		=> 'Transferència compte Escola',
+					self::TIPUS_PAGAMENT_CASH 				=> 'Metàl·lic',
+					self::TIPUS_PAGAMENT_TPV 			 	=> 'On-Line TPV',
 					//self::TIPUS_PAGAMENT_TRANS_SARDENYA  => 'Transferència Sardenya',
 			);
 		}
@@ -324,6 +327,8 @@ class BaseController extends Controller {
 		if ($tipus == self::TEXT_PAGAMENT_TPV) return  self::TEXT_PAGAMENT_TPV;
 		
 		if ($tipus == self::TIPUS_PAGAMENT_TRANS_LAIETANIA) return  self::TEXT_PAGAMENT_TRANS;
+		
+		if ($tipus == self::TIPUS_PAGAMENT_TRANS_ESCOLA) return  self::TEXT_PAGAMENT_TRANS_ESCOLA;
 		
 		return  self::TEXT_PAGAMENT_CASH;
 	}
@@ -429,6 +434,15 @@ class BaseController extends Controller {
 	 */
 	public function getIbanEscola() {
 		return $this->getParameter('ibanescola');
+	}
+	
+	/**
+	 * Check IBAN i pagament 
+	 */
+	public function checkIbanTipusPagament($tipuspagament, $iban) {
+		if ($tipuspagament == self::TIPUS_PAGAMENT_TRANS_LAIETANIA && $iban == $this->getIbanGeneral()) return true;
+		if ($tipuspagament == self::TIPUS_PAGAMENT_TRANS_ESCOLA && $iban == $this->getIbanEscola()) return true;
+		return false;
 	}
 	
     protected function getComercRedsysParam( $param ) {
@@ -1070,11 +1084,13 @@ class BaseController extends Controller {
 	protected function crearFactura($data, $comanda = null, $concepte = '') { 
 		if ($data == null) $data = $this->getCurrentDate();
 		
+		if ($concepte == '') $concepte = $this->getIbanGeneral();
+		
 		$em = $this->getDoctrine()->getManager();
 
 		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 		
-		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte, null, $this->getIbanGeneral());
+		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte, null, $concepte);
 		
 		$em->persist($factura);
 		if ($comanda != null) {
@@ -1463,7 +1479,9 @@ class BaseController extends Controller {
 		$pdf->SetTextColor(0, 0, 0); // Negre
 		$pdf->SetFontSize(8);
 
-		$text = 'Número de compte corrent LA CAIXA IBAN '.$this->getParameter('iban');
+		$compte = $factura->getNumcompte() != ''?$factura->getNumcompte():$this->getIbanGeneral();
+
+		$text = 'Número de compte corrent LA CAIXA IBAN '.$compte;
 		
 		$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+31, $text, '', 1, false, true, 'L', false);
 
@@ -1705,14 +1723,23 @@ class BaseController extends Controller {
 		$txt .= '</span>&nbsp;&nbsp;&nbsp; Euros</p>';
 		$pdf->writeHTMLCell(0, 0, $x_total + $x_total_col2+11, $y_total + $y_total_offset_1 - 1, $txt, '', 1, false, true, 'L', false);
 		
-		$oldLocale = setlocale(LC_TIME, 'ca_ES.utf8');
+		/*$oldLocale = setlocale(LC_TIME, 'ca_ES.utf8');
 		$mesData = $rebut->getDatapagament()->format('m');
 		$litDe = 'de ';
 		if ($mesData == 4 || $mesData == 8 || $mesData == 10) $litDe = 'd\'';
 		
 		$dateFormated = utf8_encode( strftime('%A %e '.$litDe.'%B de %Y', $rebut->getDatapagament()->format('U') ) );
-		setlocale(LC_TIME, $oldLocale);
+		setlocale(LC_TIME, $oldLocale);*/
 		
+		$mesData = $rebut->getDatapagament()->format('m');
+		$litDe = "de ";
+		if ($mesData == 4 || $mesData == 8 || $mesData == 10) $litDe = "d''";
+		
+		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
+		$formatter->setPattern("eeee d '".$litDe."'MMMM "."'de'"." yyyy");
+		$dateFormated = $formatter->format($rebut->getDatapagament());
+
+
 		$pdf->setFontStretching(100);
 		
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">Sant Adrià del Besòs, &nbsp;&nbsp;&nbsp;';

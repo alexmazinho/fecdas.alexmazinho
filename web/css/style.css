@@ -2489,11 +2489,11 @@ p.info-bold {
 #header-duplicatid { width: 9%; }
 #header-duplicatpeticio { width: 7%; }
 #header-duplicatdni { width: 9%; }
-#header-duplicatnom { width: 18%; text-align: left; }
+#header-duplicatnom { width: 17%; text-align: left; }
 #header-duplicatcarnet { width: 14%; text-align: left; }
-#header-duplicatfoto { width: 5%; }
+#header-duplicatfoto { width: 7%; }
 #header-duplicatimpressio { width: 7%; }
-#header-duplicatextra { width: 15%; text-align: left; }
+#header-duplicatextra { width: 19%; text-align: left; }
 #header-duplicatactions { width: auto; text-align: right; position: relative }
 #header-duplicatactions a:hover { color:#2281CF; text-decoration: none; }
 #header-duplicatactions a,
@@ -2505,16 +2505,16 @@ p.info-bold {
 .duplicat-id { width: 9%; }
 .duplicat-peticio { width: 7%; }
 .duplicat-dni { width: 9%; }
-.duplicat-nom { width: 18%; text-align: left; }
+.duplicat-nom { width: 17%; text-align: left; }
 .duplicat-nom span { font-style: italic; font-size: 0.8em; }
-.duplicat-carnet { width: 14%; text-align: left; font-size: 0.9em; }
-.duplicat-foto { width: 5%; }
+.duplicat-carnet { width: 14%; text-align: left; font-size: 0.8em; }
+.duplicat-foto { width: 7%; }
 .duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
 .duplicat-foto img:hover { border-color: #7fcff6 }
 .duplicat-foto span.noimage-available { text-align: center; }
 .duplicat-impressio { width: 7%; }
 .duplicat-impressio .fa { width: 7%; font-size: 1.2em;  }
-.duplicat-extra { width: 15%; text-align: left; left; font-size: 0.9em; }
+.duplicat-extra { width: 19%; text-align: left; left; font-size: 0.8em; }
 .duplicat-actions { width: auto; text-align: right; font-size: 1.2em; }
 
 #dialeg { height: auto !important; }

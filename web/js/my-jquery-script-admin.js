@@ -167,6 +167,8 @@
 	
 	confirmarPagament = function(url, titol, urlok) {
 		
+		$(".alert").remove();
+		
 		$("#dialeg").dialog({
 			autoOpen: false,
 		    modal: true,

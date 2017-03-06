@@ -1398,17 +1398,11 @@
 	    });
 	};
 
-	pagamentComandaSMS = function(admin, iban) {
+	pagamentComandaSMS = function(admin, iban, ibanescola) {
 		
 		var dialegHtml = '';
 				
-		dialegHtml += "<div class='sms-pagament'><p>Per pagar la comanda ";
-		dialegHtml += " pot fer la transferència en qualsevol moment al número de compte:</p> "; 
-		dialegHtml += "   <p>"+iban+"</p> ";
-		dialegHtml += "   <ul><li>Amb targeta de crèdit o dèbit</li> ";
-		dialegHtml += "      <li>Amb un compte de \'La Caixa\'</li> ";
-		dialegHtml += "      <li>Mitjançant transferència des d\'una altra entitat</li></ul> ";
-		dialegHtml += "   <p>Gràcies</p>";
+		dialegHtml += "<div class='sms-pagament'> ";
 		
 		if (admin == true) {
 			dialegHtml += "   <div class='form-group'>";
@@ -1417,6 +1411,23 @@
 			dialegHtml += "	         <input type='text' id='datafacturacio' disabled='disabled'/>";
 			dialegHtml += "      </div>";
 			dialegHtml += "   </div>";
+			dialegHtml += "   <div class='form-group'>";
+			dialegHtml += "      <label for='comanda_comptefactura'>Núm. Compte Factura</label>";
+			dialegHtml += "      <div id='comanda_comptefactura'>";
+			dialegHtml += "	         <select id='comptefactura' class='form-control'>";
+			dialegHtml += "	              <option value='"+iban+"'>Núm compte general: "+iban+"</option>";
+			dialegHtml += "	              <option value='"+ibanescola+"'>Núm compte escola: "+ibanescola+"</option>";
+			dialegHtml += "          </select>";
+			dialegHtml += "      </div>";
+			dialegHtml += "   </div>";
+		} else {
+			dialegHtml += " <p>Per pagar la comanda ";
+			dialegHtml += " pot fer la transferència en qualsevol moment al número de compte:</p> "; 
+			dialegHtml += "   <p>"+iban+"</p> ";
+			dialegHtml += "   <ul><li>Amb targeta de crèdit o dèbit</li> ";
+			dialegHtml += "      <li>Amb un compte de \'La Caixa\'</li> ";
+			dialegHtml += "      <li>Mitjançant transferència des d\'una altra entitat</li></ul> ";
+			dialegHtml += "   <p>Gràcies</p>";
 		}
 		
 		dialegHtml += "   <div class='form-group'>";

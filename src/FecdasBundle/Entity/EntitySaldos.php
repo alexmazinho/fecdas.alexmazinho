@@ -41,6 +41,11 @@ class EntitySaldos {
 	protected $romanent;
 
 	/**
+	 * @ORM\Column(type="integer", nullable=false)
+	 */
+	protected $exercici; // Comptable
+
+	/**
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
 	protected $totalpagaments;
@@ -71,32 +76,32 @@ class EntitySaldos {
 	protected $comentaris;
 	
 	/**
+	 * @ORM\Column(type="date")
+	 */
+	protected $dataregistre;
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
 	
 
-	public function __construct($club = null, $entrades = 0, $sortides = 0 ) {
+	public function __construct($club = null, $dataregistre = null ) {
 		$this->id = 0;
 		$this->club = $club;
-		$this->entrades = $entrades;
-		$this->sortides = $sortides;
+		$this->entrades = 0;
+		$this->sortides = 0;
 		$this->romanent = 0;
 		$this->totalpagaments = 0;
 		$this->totalllicencies = 0;
 		$this->totalduplicats = 0;
 		$this->totalaltres = 0;
 		$this->ajustsubvencions = 0;
-		if ($club != null) {
-			$this->romanent = $club->getRomanent();
-			$this->totalpagaments = $club->getTotalpagaments();
-			$this->totalllicencies = $club->getTotalllicencies();
-			$this->totalduplicats = $club->getTotalduplicats();
-			$this->totalaltres = $club->getTotalaltres();
-			$this->ajustsubvencions = $club->getAjustsubvencions();
-		}
 		$this->comentaris = '';
-		$this->dataentrada = new \DateTime();
+		$this->dataregistre = ($dataregistre != null?$dataregistre:new \DateTime('today'));
+		$this->exercici = $this->dataregistre->format('Y');
+		$this->dataentrada = new \DateTime('now');
+		
 	}
 	
 	public function __toString() {
@@ -144,7 +149,7 @@ class EntitySaldos {
     }
 	
 	/**
-     * Set entrades
+     * Set entrades (comptables, segons data rebut i data factura)
      *
      * @param decimal $entrades
      */
@@ -154,7 +159,7 @@ class EntitySaldos {
     }
     
     /**
-     * Get entrades
+     * Get entrades (comptables, segons data rebut i data factura)
      *
      * @return decimal
      */
@@ -164,7 +169,7 @@ class EntitySaldos {
     }
 	
 	/**
-     * Set sortides
+     * Set sortides (comptables, segons data rebut i data factura)
      *
      * @param decimal $sortides
      */
@@ -174,7 +179,7 @@ class EntitySaldos {
     }
     
     /**
-     * Get sortides
+     * Get sortides (comptables, segons data rebut i data factura)
      *
      * @return decimal
      */
@@ -182,6 +187,27 @@ class EntitySaldos {
     {
     	return $this->sortides;
     }
+	
+	/**
+     * Set exercici
+     *
+     * @param integer $exercici
+     */
+    public function setExercici($exercici)
+    {
+    	$this->exercici = $exercici;
+    }
+    
+    /**
+     * Get exercici
+     *
+     * @return integer
+     */
+    public function getExercici()
+    {
+    	return $this->exercici;
+    }
+	
 	
     /**
      * Set romanent
@@ -322,6 +348,27 @@ class EntitySaldos {
     {
         return $this->comentaris;
     }
+
+	/**
+     * Set dataregistre
+     *
+     * @param date $dataregistre
+     */
+    public function setDataregistre($dataregistre)
+    {
+        $this->dataregistre = $dataregistre;
+    }
+
+    /**
+     * Get dataregistre
+     *
+     * @return date 
+     */
+    public function getDataregistre()
+    {
+        return $this->dataregistre;
+    }
+		
 
 	/**
      * Set dataentrada

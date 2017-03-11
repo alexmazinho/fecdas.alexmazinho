@@ -18,6 +18,7 @@ use FecdasBundle\Entity\EntityUserLog;
 use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Entity\EntityFactura;
 use FecdasBundle\Entity\EntityComanda;
+use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Entity\EntityComandaDetall;
 
 include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
@@ -87,14 +88,15 @@ class BaseController extends Controller {
 	const CODI_CLUBTEST					= 'CAT000';
 	const CODI_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
-	
+	const CODI_PAGAMENT_ESCOLA			= 5720002;		// 5720002  La Caixa Escola
+		
 	
 	//const CODI_PAGAMENT_SARDENYA			= 5720003;		// 5720003  Sardenya
 		
 	const TIPUS_PAGAMENT_CASH 				= 1;		// 5700000  Metàl·lic
 	const TIPUS_PAGAMENT_TPV				= 2;		// 5720001  La Caixa
 	const TIPUS_PAGAMENT_TRANS_LAIETANIA	= 3;		// 5720001  La Caixa
-	const TIPUS_PAGAMENT_TRANS_ESCOLA		= 4;		// ????  La Caixa Escola
+	const TIPUS_PAGAMENT_TRANS_ESCOLA		= 4;		// 5720002  La Caixa Escola
 	const TEXT_PAGAMENT_CASH 				= 'METÀL.LIC';
 	const TEXT_PAGAMENT_TPV					= 'ON-LINE';
 	const TEXT_PAGAMENT_TRANS				= 'TRANSFERÈNCIA GENERAL';	
@@ -316,6 +318,7 @@ class BaseController extends Controller {
 	 */
 	public static function getComptePagament($tipus) {
 		if ($tipus == self::TIPUS_PAGAMENT_CASH) return  self::CODI_PAGAMENT_CASH;
+		if ($tipus == self::TIPUS_PAGAMENT_TRANS_ESCOLA) return self::CODI_PAGAMENT_ESCOLA; 
 		return  self::CODI_PAGAMENT_CAIXA;
 	}
 	
@@ -3074,20 +3077,58 @@ class BaseController extends Controller {
         return $cart;
     }
 
+	
+	
+	/*
+	 * El saldo comptable per a dates posteriors a l'inici de l'exercici (Saldo al dia abans de la data indicada)
+	 * 
+	 * El romanent actual del club (aplicats tots els possibles moviments fins a data actual, p.e. factures amb data anterior a l'inici de l'exercici)
+	 * + Suma entrades comptables fins a la data (datapagament rebut) 
+	 * - Suma sortides comptables fins a la data (datafactura factura)
+	 * 
+	 * Aquestes entrades i sortides es troben a la taula de saldos
+	 */ 
+	protected function saldoComptableData($club, $data) {
+		$em = $this->getDoctrine()->getManager();
+		
+		if ($data == null || $club == null) return null;
+		
+		$iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici());
+		
+		if ($data->format('Y-m-d') < $iniciExercici->format('Y-m-d')) return null;  // No es pot consultar per dates anteriors a l'inici de l'exercici
+		
+		// Obtenir saldo comptable exercici actual d'un club a una data
+		$strQuery  = " SELECT SUM(s.entrades) - SUM(s.sortides) FROM FecdasBundle\Entity\EntitySaldos s ";
+		$strQuery .= " WHERE s.club = :club ";
+		$strQuery .= " AND   s.dataregistre >= :iniciexercici ";
+		$strQuery .= " AND   s.dataregistre <  :data ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('club', $club->getCodi() );
+		$query->setParameter('iniciexercici', $iniciExercici->format('Y-m-d') );
+		$query->setParameter('data',  $data->format('Y-m-d') );
+		
+		$variacio = $query->getSingleScalarResult();
+		if ($variacio == null) $variacio = 0;
+
+		return $club->getRomanent() + $variacio;
+	}
+	
+
 	protected function saldosEntre($desde, $fins, $club) {
 		$em = $this->getDoctrine()->getManager();
 		
 		// Consultar saldos entre dates per un club
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntitySaldos s ";
 		$strQuery .= " WHERE s.club = :club ";
-		$strQuery .= " AND   s.dataentrada >= :desde ";
-		$strQuery .= " AND   s.dataentrada <  :fins ";
-		$strQuery .= " ORDER BY s.dataentrada ASC ";
+		$strQuery .= " AND   s.dataregistre >= :desde ";
+		$strQuery .= " AND   s.dataregistre <=  :fins ";
+		$strQuery .= " ORDER BY s.dataregistre ASC ";
 			
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('club', $club->getCodi() );
-		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
-		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		$query->setParameter('desde', $desde->format('Y-m-d') );
+		$query->setParameter('fins',  $fins->format('Y-m-d') );
 		
 		$saldos = $query->getResult();
 		
@@ -3101,7 +3142,7 @@ class BaseController extends Controller {
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
 		$strQuery .= " WHERE f.dataentrada >= :desde ";
-		$strQuery .= " AND   f.dataentrada <  :fins ";
+		$strQuery .= " AND   f.dataentrada <=  :fins ";
 			
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
@@ -3112,21 +3153,104 @@ class BaseController extends Controller {
 		return $factures;
 	}
 
-	protected function rebutsEntre($desde, $fins) {
+	protected function rebutsEntre($desde, $fins, $codiclub = '') {
 		$em = $this->getDoctrine()->getManager();
 		
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
 		$strQuery .= " WHERE r.dataentrada >= :desde ";
-		$strQuery .= " AND   r.dataentrada <  :fins ";
+		$strQuery .= " AND   r.dataentrada <=  :fins ";
+		if ($codiclub != '') $strQuery .= " AND   r.club = :club ";
 			
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
 		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
+		if ($codiclub != '') $query->setParameter('club', $codiclub  );
 		
 		$rebuts = $query->getResult();
 		
 		return $rebuts;
+	}
+
+	protected function rebuts2016pagats2015($codiclub = '') {
+		$em = $this->getDoctrine()->getManager();
+		
+		$iniciSaldos = '2016-01-01 00:00:00';
+		
+		// Consultar factures entrades entrats dia current
+		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.dataentrada >= :canviany ";
+		$strQuery .= " AND   r.datapagament < :canviany ";
+		if ($codiclub != '') $strQuery .= " AND r.club = :club ";
+		$strQuery .= " ORDER BY r.num ";
+			
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('canviany', $iniciSaldos );
+		if ($codiclub != '') $query->setParameter('club', $codiclub  );
+		
+		$rebuts = $query->getResult();
+		
+		return $rebuts;
+	}
+
+	/**
+	 * $club
+	 * $dia del registre, desar els valors actuals 
+	 */
+	protected function registrarSaldoClub($club, $current = null) {
+		
+		if ($current == null) $current = new \DateTime('today');
+		
+		$em = $this->getDoctrine()->getManager();
+
+		// Comprovar si existeix registre
+		$registre = $this->getDoctrine()->getRepository('FecdasBundle:EntitySaldos')->findOneBy(array('club' => $club->getCodi(), 'dataregistre' => $current ));
+		
+		if ($registre == null) {
+			$registre = new EntitySaldos($club, $current);
+			$em->persist($registre);
+		} 
+
+		if (count($registre) > 1) $registre = $registre[0];
+		
+		// Indicar valors dels saldos actuals del club
+		$registre->setExercici( $club->getExercici() );
+		$registre->setRomanent( $club->getRomanent() );
+		$registre->setTotalllicencies( $club->getTotalllicencies() );
+		$registre->setTotalduplicats( $club->getTotalduplicats() );
+		$registre->setTotalaltres( $club->getTotalaltres() );
+		$registre->setTotalpagaments( $club->getTotalpagaments() ); 
+		$registre->setAjustsubvencions( $club->getAjustsubvencions() );
+		$registre->setComentaris('');
+
+	}
+
+	/**
+	 * 
+	 * $current => dia de procés
+	 * $club
+	 * $entrada / $sortida => imports (rebuts / factures)
+	 * $data => data del moviment
+	 * 
+	 */ 
+	protected function registrarMovimentClub($current, $club, $entrada, $sortida, $data) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Comprovar si existeix registre
+		$registre = $this->getDoctrine()->getRepository('FecdasBundle:EntitySaldos')->findOneBy(array('club' => $club->getCodi(), 'dataregistre' => $data ));
+				
+		if ($registre == null) {
+			if ($data->format('Y-m-d') < $current->format('Y-m-d')) {
+				// Moviment a data passada que no està registrada no es crea registre.
+				return;
+			} 		
+
+			$registre = new EntitySaldos($club, $data);
+			$em->persist($registre);
+		}
+
+		$registre->setEntrades( $registre->getEntrades() + $entrada);
+		$registre->setSortides( $registre->getSortides() + $sortides);
 	}
 
 	protected function exportCSV($request, $header, $data, $filename) {

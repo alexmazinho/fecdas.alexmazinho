@@ -2095,19 +2095,26 @@ select#parte_persona_addrnacionalitat {
 /************************************************ Històric saldos ******************************************************/
 
 
-#header-saldos-data, .saldos-data { width: 14%;  text-align: left; }
-#header-saldos-entrades, .saldos-entrades { width: 9%;  text-align: right;  }
-#header-saldos-sortides, .saldos-sortides { width: 9%;  text-align: right;  }
+#header-saldos-data, .saldos-data { width: 8%;  text-align: left; }
 #header-saldos-romanent, .saldos-romanent, 
 #header-saldos-pagaments, .saldos-pagaments, 
 #header-saldos-llicencies, .saldos-llicencies,
 #header-saldos-duplicats, .saldos-duplicats,
-#header-saldos-altres, .saldos-altres,
-#header-saldos-subvencions, .saldos-subvencions { width: 9%; text-align: right;  }
+#header-saldos-altres, .saldos-altres { width: 9%; text-align: right;  }
+#header-saldos-subvencions, .saldos-subvencions { display: none; text-align: right;  }
 #header-saldos-saldo, .saldos-saldo { width: 9%; text-align: right;   }
+#header-saldos-entrades, .saldos-entrades,
+#header-saldos-sortides, .saldos-sortides { width: 7%;  text-align: right; font-size: 0.85em; font-style: italic; }
+#header-saldos-saldocompta, .saldos-saldocompta { width: 9%; text-align: right;   }
 #header-saldos-comentaris, .saldos-comentaris { width: 4%; text-align: center; }
 
 .data-detall-cell.saldos-saldo { font-weight: bold; }
+
+#header-saldos-entrades, #header-saldos-sortides, #header-saldos-saldocompta {
+	background:  repeat-x scroll 0 0 #fad7a0;
+	color: #333333;
+    border-color: #82CFFA #E7F2FB #96C4EA;
+}
 
 .saldos-comentaris .saldo-info {
 	display: none;

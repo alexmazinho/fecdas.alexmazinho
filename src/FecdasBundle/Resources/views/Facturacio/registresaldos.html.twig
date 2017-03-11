@@ -33,7 +33,7 @@
 			    <div id="list-forms">
 			    	<form id="form_registresaldos" action="{{ path('FecdasBundle_registresaldos') }}" method="GET" {{ form_enctype(form) }}  class="appform">
 						<div class="row">
-							  <div class="col-md-4 col-xs-12">
+							  <div class="col-md-3 col-xs-12">
 							  	<div class="form-group">
 							    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
 									{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
@@ -57,30 +57,53 @@
 									</div>{{ form_errors(form.fins)  }}
 								</div>
 							  </div>
-							  <div class="col-md-2 col-xs-4">
+							  <div class="col-md-3 col-xs-4">
 							  	<label class="radio-inline">
 									{{ form_widget(form.grup[0], { 'attr': {'class': 'agrupar-dates'} }) }} Diari
 								</label>
 								<label class="radio-inline">
 									{{ form_widget(form.grup[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
 								</label>
+								<label class="radio-inline">
+									{{ form_widget(form.grup[2], { 'attr': {'class': 'agrupar-dates'} }) }} Anual
+								</label>
 							   </div>							  
 						</div>
+						{% if rebutscontrol|length > 0 %}
+						<div class="row">
+							<div class="col-md-12 col-xs-12">
+								<h4 class="blue">Rebuts entrats al 2016 amb data de pagament de 2015 !!!!!! POSSIBLES FONTS D'ERRADES</h4>  		
+							</div>
+							<div class="col-md-12 col-xs-12">
+								<div class="alert alert-danger">
+									<div class="row">
+									{% for rebut in rebutscontrol %} 
+										<div class="col-md-offset-1 col-md-11 col-xs-offset-2 col-xs-10"> 
+											- Rebut {{ rebut.numrebut  }}&nbsp;&nbsp;&nbsp;{{ rebut.datapagament|date('d/m/Y') }}&nbsp;&nbsp;&nbsp;
+												{{ rebut.import|number_format(2, ',', '.') }}€&nbsp;&nbsp;&nbsp;{{ rebut.concepteRebutCurt }}
+										</div>
+									{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>	
+						{% endif %}
 				   	</form>
 			    </div>
 			    <div class="table-header">	
 				   	<div id="list-header">
 						<div id="header-saldos-id" class="col-listheader hidden">&nbsp;</div>
 						<div id="header-saldos-data" class="col-listheader collistheader-noorder">Data</div>
-				   		<div id="header-saldos-entrades" class="col-listheader collistheader-noorder">Entrades<br/>(Rebuts)</div>
-				   		<div id="header-saldos-sortides" class="col-listheader collistheader-noorder">Sortides<br/>(Factures)</div>
 				   		<div id="header-saldos-romanent" class="col-listheader collistheader-noorder">Romanent<br/>{{ club.romanent|number_format(2, ',', '.') }}€</div>
 				   		<div id="header-saldos-pagaments" class="col-listheader collistheader-noorder">Pagaments<br/>{{ club.totalpagaments|number_format(2, ',', '.') }}€</div>
 				   		<div id="header-saldos-llicencies" class="col-listheader collistheader-noorder">Llicències<br/>{{ club.totalllicencies|number_format(2, ',', '.') }}€</div>
 				   		<div id="header-saldos-duplicats" class="col-listheader collistheader-noorder">Duplicats<br/>{{ club.totalduplicats|number_format(2, ',', '.') }}€</div>
 				   		<div id="header-saldos-altres" class="col-listheader collistheader-noorder">Altres<br/>{{ club.totalaltres|number_format(2, ',', '.') }}€</div>
 				   		<div id="header-saldos-subvencions" class="col-listheader collistheader-noorder">Subvencions<br/>{{ club.ajustsubvencions|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-saldo" class="col-listheader collistheader-noorder">Saldo<br/>{{ club.saldo|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-saldo" class="col-listheader collistheader-noorder">Saldo real<br/>{{ club.saldo|number_format(2, ',', '.') }}€</div>
+				   		<div id="header-saldos-entrades" class="col-listheader collistheader-noorder">Entrades<br/>(Rebuts)</div>
+				   		<div id="header-saldos-sortides" class="col-listheader collistheader-noorder">Sortides<br/>(Factures)</div>
+				   		<div id="header-saldos-saldocompta" class="col-listheader collistheader-noorder">Saldo<br/>Comptable</div>
 				   		<div id="header-saldos-comentaris" class="col-listheader collistheader-noorder"><i class="fa fa-info-circle"></i></div>
 				   	</div>
 			   	</div>
@@ -88,14 +111,12 @@
 				   	<ol id="list-data">
 				   	{% set registres = 0 %}
 					{% for saldo in saldos %} 
-						{% if saldo.entrades != 0 or
-							  saldo.sortides != 0 %}
+						{# if saldo.entrades != 0 or
+							  saldo.sortides != 0 #}
 							{% set registres = registres + 1 %}  
 							<li class="data-detall">
 								<div class="data-detall-cell hidden">{{ saldo.id }}</div>
-								<div class="data-detall-cell saldos-data">{{ saldo.dataentrada }}</div>
-						   		<div class="data-detall-cell saldos-entrades {% if saldo.entrades != 0 %} green {% endif %}">{{ saldo.entrades|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-sortides {% if saldo.sortides != 0 %} red {% endif %}">{{ saldo.sortides|number_format(2, ',', '.') }}€</div>
+								<div class="data-detall-cell saldos-data">{{ saldo.dataregistre }}</div>
 						   		<div class="data-detall-cell saldos-romanent">{{ saldo.romanent|number_format(2, ',', '.') }}€</div>
 						   		<div class="data-detall-cell saldos-pagaments">{{ saldo.totalpagaments|number_format(2, ',', '.') }}€</div>
 						   		<div class="data-detall-cell saldos-llicencies">{{ saldo.totalllicencies|number_format(2, ',', '.') }}€</div>
@@ -103,6 +124,9 @@
 						   		<div class="data-detall-cell saldos-altres">{{ saldo.totalaltres|number_format(2, ',', '.') }}€</div>
 						   		<div class="data-detall-cell saldos-subvencions">{{ saldo.ajustsubvencions|number_format(2, ',', '.') }}€</div>
 						   		<div class="data-detall-cell saldos-saldo">{{ saldo.saldo|number_format(2, ',', '.') }}€</div>		   		
+						   		<div class="data-detall-cell saldos-entrades {% if saldo.entrades != 0 %} green {% endif %}">{{ saldo.entrades|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-sortides {% if saldo.sortides != 0 %} red {% endif %}">{{ saldo.sortides|number_format(2, ',', '.') }}€</div>
+						   		<div class="data-detall-cell saldos-saldocompta">{{ saldo.saldocompta|number_format(2, ',', '.') }}€</div>
 								<div class="data-detall-cell saldos-comentaris">
 									{% if saldo.comentaris != '' %} 
 									<span class="fa fa-info-circle blue">
@@ -113,7 +137,7 @@
 									{% endif %}
 								</div>	
 							</li>
-					   	{% endif %}
+					   	{# endif #}
 				   	{% endfor %} 
 				   	{% if registres == 0 %}
 				   		<li class="data-detall" colspan="11">

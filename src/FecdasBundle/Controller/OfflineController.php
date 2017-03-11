@@ -19,6 +19,358 @@ class OfflineController extends BaseController {
 	
 	
 	public function historicsaldosAction(Request $request) {
+		// http://www.fecdas.dev/historicsaldos?desde=2016-01-01&fins=2016-12-31&club=CAT020   => Inici i fi inclosos
+		
+		// http://www.fecdas.dev/historicsaldos?desde=2016-01-01&club=CAT020					=> Inici i avui inclosos 
+			
+		
+		// http://www.fecdas.dev/historicsaldos?desde=2016-01-01&fins=2016-02-29
+		// http://www.fecdas.dev/historicsaldos?desde=2016-03-01&fins=2016-05-31
+		// http://www.fecdas.dev/historicsaldos?desde=2016-06-01&fins=2016-08-31
+		// http://www.fecdas.dev/historicsaldos?desde=2016-09-01&fins=2016-11-30
+		// http://www.fecdas.dev/historicsaldos?desde=2016-12-01&fins=2017-01-31
+		// http://www.fecdas.dev/historicsaldos?desde=2017-02-01
+			
+		// Script de migració. Executar per refer històric de saldos a partir del registre d'una data
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	
+		$result = '';
+	
+		$totalFactures = 0;
+		$totalRebuts = 0;
+	
+		$em = $this->getDoctrine()->getManager();
+
+		// Interval per gestionar
+		$strDesde = $request->query->get('desde', '2016-01-01');  
+		$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $strDesde . " 00:00:00");
+		
+		$strFins = $request->query->get('fins', '');  
+		if ($strFins == '') $final = $this->getCurrentDate('now');
+		else $final = \DateTime::createFromFormat('Y-m-d H:i:s', $strFins . " 23:59:59");
+
+		// Clubs per tractar
+		$codiclub = $request->query->get('club', '');  // opcionalment per un club
+		
+		$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+		//$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) AND c.activat = 1 ";
+		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) ";
+		$strQuery .= " AND c.codi <> :test ";
+		if ($codiclub != '') $strQuery .= " AND c.codi = :club ";
+		$strQuery .= " ORDER BY c.codi";
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('current', $desde->format('Y-m-d H:i:s') );
+		$query->setParameter('test', BaseController::CODI_CLUBTEST );
+		if ($codiclub != '') $query->setParameter('club', $codiclub );
+		
+		$clubs = $query->getResult();
+		
+		
+		// Saldos del dia anterior de partida
+		$anterior = \DateTime::createFromFormat('Y-m-d H:i:s', $desde->format('Y-m-d') . " 00:00:00");
+		$anterior->sub(new \DateInterval('P1D')); // Sub 1 Day
+		$posterior = \DateTime::createFromFormat('Y-m-d H:i:s', $desde->format('Y-m-d') . " 00:00:00");
+		$posterior->add(new \DateInterval('P1D')); // Add 1 Day
+		
+		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntitySaldos s ";
+		$strQuery .= " WHERE s.dataregistre = :anterior ";
+		if ($codiclub != '') $strQuery .= " AND s.club = :club ";
+		$strQuery .= " ORDER BY s.club";
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('anterior', $anterior->format('Y-m-d') );
+		if ($codiclub != '') $query->setParameter('club', $codiclub );
+		$saldosInici = $query->getResult();
+		
+		// Consultar últim registre anterior i inicialitzar array
+		$clubsArray = array();
+		// Preparar dades inicials
+		foreach ($clubs as $club) {
+					
+			$k = $this->getSaldoClubIndex($saldosInici, $club);
+			
+			if ($k != -1) {
+				// trobat
+				$saldo = $saldosInici[$k];
+				unset($saldosInici[$k]);
+				
+			} else {
+				$saldo = new EntitySaldos($club, $anterior);
+				$saldo->setDataentrada($desde);
+				$em->persist($saldo);
+			}
+			
+			$clubsArray[ $club->getCodi() ][ $anterior->format('Y-m-d') ] = $saldo;
+			
+			
+		}
+
+		$current = \DateTime::createFromFormat('Y-m-d H:i:s', $desde->format('Y-m-d') . " 00:00:00");
+		while($current->format('Y-m-d H:i:s') < $final->format('Y-m-d H:i:s')) {
+			
+			// Registrar nova entrada taula saldos si no existeix
+			foreach ($clubs as $club) {
+				
+				if (!isset($clubsArray[ $club->getCodi() ][ $anterior->format('Y-m-d') ])) {
+						
+					// Error. No hi ha dades del dia anterior per al club 		
+					$result .= " ERROR *********** SENSE DADES DEL DIA ANTERIOR ".$anterior->format('Y-m-d')." PER AL CLUB ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
+				
+				} else {
+					$saldoahir = $clubsArray[ $club->getCodi() ][ $anterior->format('Y-m-d') ];
+
+					$saldo = $this->getSaldoClubData($clubsArray, $club, $current);
+					
+					// inicialitzar amb les dades del dia anterior
+					$saldo->setExercici( $saldoahir->getExercici() );
+					$saldo->setRomanent( $saldoahir->getRomanent() );
+					$saldo->setTotalllicencies( $saldoahir->getTotalllicencies() );
+					$saldo->setTotalduplicats( $saldoahir->getTotalduplicats() );
+					$saldo->setTotalaltres( $saldoahir->getTotalaltres() );
+					$saldo->setTotalpagaments( $saldoahir->getTotalpagaments() ); 
+					$saldo->setAjustsubvencions( $saldoahir->getAjustsubvencions() );
+					
+					$clubsArray[ $club->getCodi() ][ $current->format('Y-m-d') ] = $saldo;
+				}
+			}	
+
+
+			// Tractament especial per al dia 01/01/2016. Acumula entrades i sortides moviments entrats al 2015 però amb data 2016
+			if ($current->format('Y-m-d') == '2016-01-01') { // Només una vegada a la càrrega inicial des de 01/01/2016
+				$result .= $this->acumular2016entrats2015($clubsArray, $codiclub);
+			} 
+
+			// Consultar factures i rebuts del dia			
+			$desdeCurrent = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 00:00:00'); 
+			$finsCurrent = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 23:59:59'); 
+			
+			// Revisar factures del dia i actualitzar entrada/sortida segons datafactura
+			$facturesTmp = $this->facturesEntre($desdeCurrent, $finsCurrent);
+			
+			$factures = $this->getFacturesClub($facturesTmp, $codiclub);
+			
+			$totalFactures += count($factures);
+
+			foreach ($factures as $factura) {
+				$comanda = $factura->esAnulacio()?$factura->getComandaAnulacio():$factura->getComanda();
+				$club = $comanda->getClub();
+				$import = $factura->getImport();
+				$data = $factura->getDatafactura();
+				
+				$saldo = $clubsArray[ $club->getCodi() ][ $current->format('Y-m-d') ]; // Ha d'existir
+				
+				// Simular canvi imports per entrada de factura 
+				if ($data->format('Y') <= 2015 && $data->format('Y') < $current->format('Y')) {
+						// Només per a factures posteriors al recull dels saldos per inicialitzar 2016-04-01 => SELECT * FROM `m_factures` WHERE dataentrada >= '2016-04-01 00:00:00' AND YEAR(datafactura) < 2016; // 0  
+					if ($factura->getDataentrada()->format('Y-m-d H:i:s') > '2016-04-01 00:00:00') {
+						$result .= " WARNING *********** FACTURA FACTURADA ANY ANTERIOR després del 2016-04-01 ".$factura->getId()." ".$factura->getImport()." ".$factura->getDatafactura()->format('Y-m-d')." PER AL CLUB ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";
+						
+						$saldo->setRomanent($saldo->getRomanent() - $import);  // Romanent
+							
+						$clubsArray[ $club->getCodi() ][ $current->format('Y-m-d') ] = $saldo;
+					}
+				} else {
+					if ($comanda->esParte()) $saldo->setTotalllicencies( $saldo->getTotalllicencies() + $import);
+					if ($comanda->esDuplicat()) $saldo->setTotalduplicats( $saldo->getTotalduplicats() + $import);
+					if ($comanda->esAltre()) $saldo->setTotalaltres( $saldo->getTotalaltres() + $import);
+					
+					// acumular sortides al dia indicat a datafactura
+					$saldo = $this->getSaldoClubData($clubsArray, $club, $data);
+
+					$saldo->setSortides($saldo->getSortides() + $import);
+					$clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ] = $saldo;
+				}	
+			}
+		
+			// Revisar rebuts dia  i actualitzar entrada/sortida segons datapagament
+			$rebuts   = $this->rebutsEntre($desdeCurrent, $finsCurrent, $codiclub);
+			$totalRebuts += count($rebuts);
+					
+			foreach ($rebuts as $rebut) {
+				$club = $rebut->getClub();
+				$import = $rebut->getImport();
+				$data = $rebut->getDatapagament();
+				
+				$saldo = $clubsArray[ $club->getCodi() ][ $current->format('Y-m-d') ]; // Ha d'existir
+				
+				// Simular canvi imports per entrada de rebut 
+				if ($data->format('Y') <= 2015 && $data->format('Y') < $current->format('Y')) {
+						// Només per a rebuts posteriors al recull dels saldos per inicialitzar 2016-04-01 => SELECT * FROM `m_rebuts` WHERE dataentrada >= '2016-04-01 00:00:00' AND YEAR(datapagament) < 2016; // 0  
+					if ($rebut->getDataentrada()->format('Y-m-d H:i:s') > '2016-04-01 00:00:00') {
+						$result .= " WARNING *********** REBUT PAGAT ANY ANTERIOR després del 2016-04-01 ".$rebut->getId()." ".$rebut->getImport()." ".$rebut->getDatapagament()->format('Y-m-d')." PER AL CLUB ".$club->getCodi()." - ".$club->getNom()." ***************<br/>";	
+							
+						$saldo->setRomanent($saldo->getRomanent() + $import);  // Romanent
+						
+						$clubsArray[ $club->getCodi() ][ $current->format('Y-m-d') ] = $saldo;
+					}
+				} else {
+					$saldo->setTotalpagaments( $saldo->getTotalpagaments() + $import);
+					
+					// acumular sortides al dia indicat a datafactura
+					$saldo = $this->getSaldoClubData($clubsArray, $club, $data);
+
+					$saldo->setEntrades($saldo->getEntrades() + $import);
+					$clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ] = $saldo;
+				}	
+			}
+ 		
+			$anterior = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d') . " 00:00:00");
+			
+			$current =  \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d') . " 00:00:00");  //=> Nova instància perquè sino manté la referència 
+			$current->add(new \DateInterval('P1D')); // Add 1 Day 
+			
+			$posterior =  \DateTime::createFromFormat('Y-m-d H:i:s', $posterior->format('Y-m-d') . " 00:00:00");  //=> Nova instància perquè sino manté la referència 
+			$posterior->add(new \DateInterval('P1D')); // Add 1 Day
+ 
+		}
+		
+		$em->flush();
+		
+		$result .= "Desde ".$desde->format('Y-m-d H:i:s')."<br/>";
+		$result .= "Total factures ".$totalFactures."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE dataentrada >= '".$desde->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "Total rebuts ".$totalRebuts."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada >= '".$desde->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		
+		return new Response($result);
+	}
+	
+	/* Saldos ordenats per codi club */
+	private function getSaldoClubIndex($saldos, $club) {
+				
+		$codi = $club->getCodi();	
+		foreach ($saldos as $k => $saldo) {
+			
+			$currentCodi = $saldo->getClub()->getCodi();
+			 
+			if ($currentCodi == $codi) return $k;
+			
+			if ($currentCodi > $codi) return -1; 	
+		}
+		
+		return -1;
+	}
+	
+	/* Obté el saldo d'un club en una data concreta o el crea si no existeix */
+	private function getSaldoClubData($clubsArray, $club, $data) {
+		$em = $this->getDoctrine()->getManager();	
+		
+		if (isset($clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ])) return $clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ];
+
+		$posterior = \DateTime::createFromFormat('Y-m-d H:i:s', $data->format('Y-m-d').' 00:05:00');
+		$posterior->add(new \DateInterval('P1D')); // Add 1 Day
+
+		// Encara no existeix el registre, crear 
+		$saldo = new EntitySaldos($club, $data);
+		$saldo->setDataentrada($posterior);
+		$em->persist($saldo);
+				
+		return $saldo; 
+	}
+	
+	/* Filtra factures per club  */
+	private function getFacturesClub($factures, $codiclub) {
+		
+		if ($codiclub == '') return $factures;
+		
+		// Filtrar factures club
+		$facturesClub = array();
+		foreach ($factures as $factura) {
+			$comanda = $factura->esAnulacio()?$factura->getComandaAnulacio():$factura->getComanda();
+			$club = $comanda->getClub();
+			if ($club->getCodi() == $codiclub) $facturesClub[] = $factura;
+		}
+		return $facturesClub;
+	}
+	
+	// Consulta moviments entrats amb dataentrada anterior 2016 però amb data moviment 2016 i acumular a les entrades i sortides d'inici d'any
+	// Opcionalment per un únic club
+	private function acumular2016entrats2015(&$clubsArray, $codiclub = '') {
+		$desdeTime = '2016-01-01 00:00:00';
+		$desdeDate = \DateTime::createFromFormat('Y-m-d', '2016-01-01');
+		$result = "";
+			
+		$em = $this->getDoctrine()->getManager();
+		
+		$strQuery  = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
+		$strQuery .= " WHERE f.dataentrada < :desde ";
+		$strQuery .= " AND   f.datafactura >= :desde ";
+				
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desdeTime );
+			
+		$facturesTmp = $query->getResult();
+
+		$facturesAcumularInici = $this->getFacturesClub($facturesTmp, $codiclub);
+		
+		if ($codiclub == '') {
+			$result .= "Total de factures per acumular a l'inici ".count($facturesAcumularInici)."<br/>";
+			$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE dataentrada < '".$desdeTime."' AND datafactura >= '".$desdeTime."'; <br/>";
+		} else {
+			$result .= "Total de factures club ".$codiclub." per acumular a l'inici ".count($facturesAcumularInici)."<br/>";
+			$result .= "        check: SELECT COUNT(f.id) FROM m_factures f INNER JOIN m_comandes c ON c.factura = f.id WHERE c.club = '".$codiclub."' AND f.dataentrada < '".$desdeTime."' AND datafactura >= '".$desdeTime."'; <br/>";
+			$result .= "               SELECT COUNT(f.id) FROM m_factures f INNER JOIN m_comandes c ON f.comandaanulacio = c.id WHERE c.club = '".$codiclub."' AND f.dataentrada < '".$desdeTime."' AND datafactura >= '".$desdeTime."'; <br/>";
+		}		
+			
+		foreach ($facturesAcumularInici as $facturaAcumularInici) {
+			
+			$comanda = $facturaAcumularInici->esAnulacio()?$facturaAcumularInici->getComandaAnulacio():$facturaAcumularInici->getComanda();
+			$club = $comanda->getClub();
+			$import = $facturaAcumularInici->getImport();
+			$data = $facturaAcumularInici->getDatafactura();
+
+			$saldo = $this->getSaldoClubData($clubsArray, $club, $desdeDate); // Acumular a dia 1 de gener
+			
+			if ($comanda->esParte()) $saldo->setTotalllicencies( $saldo->getTotalllicencies() + $import);
+			if ($comanda->esDuplicat()) $saldo->setTotalduplicats( $saldo->getTotalduplicats() + $import);
+			if ($comanda->esAltre()) $saldo->setTotalaltres( $saldo->getTotalaltres() + $import);
+			
+			$clubsArray[ $club->getCodi() ][ $desdeDate->format('Y-m-d') ] = $saldo;
+						
+			$saldo = $this->getSaldoClubData($clubsArray, $club, $data);
+
+			$saldo->setSortides($saldo->getSortides() + $import);
+			
+			$clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ] = $saldo;
+		}	
+		
+		//SELECT COUNT(*) FROM m_rebuts WHERE dataentrada < '2016-01-01 00:00:00' AND datapagament >= '2016-01-01 00:00:00'; ==> 0
+		/*	
+		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
+		$strQuery .= " WHERE r.dataentrada < :desde ";
+		$strQuery .= " AND   r.datapagament >= :desde ";
+		if ($codiclub != '') $strQuery .= " AND r.club = :club ";
+				
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desdeTime );
+		if ($codiclub != '') $query->setParameter('club', $codiclub );
+			
+		$rebutsAcumularInici = $query->getResult();			
+			
+		$result .= "Total de rebuts per acumular a l'inici ".count($rebutsAcumularInici)."<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada < '".$desdeTime."' AND datapagament >= '".$desdeTime."'; <br/>";
+		
+		foreach ($rebutsAcumularInici as $rebutAcumularInici) {
+			$club = $rebutAcumularInici->getClub();
+			$import = $rebutAcumularInici->getImport();
+			$data = $rebutAcumularInici->getDatapagament();
+				
+			$saldo = $this->getSaldoClubData($clubsArray, $club, $data);
+				
+			// Acumular entrades
+			$saldo->setEntrades($saldo->getEntrades() + $import);
+			$clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ] = $saldo;
+		}	
+		*/
+		
+		return $result;
+	}
+	
+	/*public function historicsaldosAction(Request $request) {
 		// http://www.fecdas.dev/historicsaldos?desde=2015-12-31&fins=2016-06-02&club=CAT127
 		// http://www.fecdas.dev/historicsaldos?desde=2016-06-01&fins=2016-11-02&club=CAT127
 		// http://www.fecdas.dev/historicsaldos?desde=2016-11-01&fins=2017-03-04&club=CAT127
@@ -57,24 +409,12 @@ class OfflineController extends BaseController {
 		
 		$codiclub = $request->query->get('club', '');  // opcionalment per un club
 
-		//if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
-		
-		/*$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
-		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :desde) ";
-		if ($codi != '') $strQuery .= " AND c.codi = :codi ";
-		$strQuery .= " ORDER BY c.codi";
-		
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
-		if ($codi != '') $query->setParameter('codi', $codi );
-		
-		$clubs = $query->getResult();*/
-
 		$strQuery  = " SELECT * FROM m_clubs c LEFT JOIN m_saldos s ON c.codi = s.club  ";
 		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > '".$desde->format('Y-m-d H:i:s')."') ";
 		if ($codiclub != '') $strQuery .= " AND c.codi = '".$codiclub."' ";
-		$strQuery .= " AND s.dataentrada >= '".$desde->format('Y-m-d H:i:s')."' ";
-		$strQuery .= " AND s.dataentrada < '".$current->format('Y-m-d H:i:s')."' ";
+		$strQuery .= " AND (s.dataentrada IS NULL OR ";
+		$strQuery .= " 	   (s.dataentrada >= '".$desde->format('Y-m-d H:i:s')."' ";
+		$strQuery .= "      AND s.dataentrada < '".$current->format('Y-m-d H:i:s')."')) ";
 		$strQuery .= " ORDER BY c.codi ASC, s.dataentrada DESC";
 		
 		$stmt = $em->getConnection()->prepare($strQuery);
@@ -206,19 +546,31 @@ class OfflineController extends BaseController {
 
 				//echo "fin ". $codi." => ".($club['dataentrada']==null || $club['dataentrada'] == ''?"null":$club['dataentrada']->format('Y-m-d H:i:s'))."<br/>";
 			
-				$saldos = new EntitySaldos($clubs[$codi]['club'], $club['entrades'], $club['sortides']);
-				$saldos->setRomanent( $club['romanent'] );
-				$saldos->setTotalllicencies( $club['totalllicencies'] );
-				$saldos->setTotalduplicats( $club['totalduplicats'] );
-				$saldos->setTotalaltres( $club['totalaltres'] );
-				$saldos->setTotalpagaments( $club['totalpagaments'] ); 
+				$thisclub = $clubs[$codi]['club'];
+				// Revisar si registre anterior a data d'alta i amb tots els imports a 0 => no registrar
+				if ($club['dataentrada']->format('Y-m-d') >= $thisclub->getDataalta()->format('Y-m-d') ||
+					$club['entrades'] != 0 ||
+					$club['sortides'] != 0 ||
+					$club['romanent'] != 0 ||
+					$club['totalllicencies'] != 0 ||
+					$club['totalduplicats'] != 0 ||
+					$club['totalaltres'] != 0 ||
+					$club['totalpagaments'] != 0) {
+			
+					$saldos = new EntitySaldos($clubs[$codi]['club'], $club['entrades'], $club['sortides']);
+					$saldos->setRomanent( $club['romanent'] );
+					$saldos->setTotalllicencies( $club['totalllicencies'] );
+					$saldos->setTotalduplicats( $club['totalduplicats'] );
+					$saldos->setTotalaltres( $club['totalaltres'] );
+					$saldos->setTotalpagaments( $club['totalpagaments'] ); 
+					
+					$saldos->setDataentrada( $club['dataentrada'] ); 
 				
-				$saldos->setDataentrada( $club['dataentrada'] ); 
-			
-				//echo ($saldos->getDataentrada()==null?"null":$saldos->getDataentrada()->format('Y-m-d H:i:s'));
-				//echo ('data => '.$saldos->getDataentrada());
-			
-				$em->persist($saldos);
+					//echo ($saldos->getDataentrada()==null?"null":$saldos->getDataentrada()->format('Y-m-d H:i:s'));
+					//echo ('data => '.$saldos->getDataentrada());
+				
+					$em->persist($saldos);
+				}
 			}
 			$em->flush();
 			
@@ -239,7 +591,7 @@ class OfflineController extends BaseController {
 		
 		
 		return new Response($result);
-	}
+	}*/
 	
 	protected function facturesAnteriorsEntre($desde, $fins) {
 		$em = $this->getDoctrine()->getManager();

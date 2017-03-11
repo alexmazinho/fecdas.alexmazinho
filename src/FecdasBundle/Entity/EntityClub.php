@@ -175,6 +175,11 @@ class EntityClub {
 	protected $limitnotificacio;
 
 	/**
+	 * @ORM\Column(type="integer", nullable=false)
+	 */
+	protected $exercici; // Comptable, validesa dels imports següents
+
+	/**
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
 	protected $romanent;
@@ -259,6 +264,7 @@ class EntityClub {
 		$this->totalaltres = 0;
 		$this->ajustsubvencions = 0;
 		$this->dataalta = new \DateTime();
+		$this->exercici = $this->dataalta->format('Y');
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->ingresos = new \Doctrine\Common\Collections\ArrayCollection();
@@ -1331,6 +1337,26 @@ class EntityClub {
     	return $this->limitnotificacio;
     }
     
+	/**
+     * Set exercici
+     *
+     * @param integer $exercici
+     */
+    public function setExercici($exercici)
+    {
+    	$this->exercici = $exercici;
+    }
+    
+    /**
+     * Get exercici
+     *
+     * @return integer
+     */
+    public function getExercici()
+    {
+    	return $this->exercici;
+    }
+	
     /**
      * Set romanent
      *

@@ -18,8 +18,74 @@ class CronController extends BaseController {
 
 	public function registrarsaldosAction(Request $request) {
 		// Registre diari de saldos
-		/* Planificar cron diari a les 23:45
+		/* Planificar cron diari a les 00:05 => entrades dia anterior
 		 * wget -O - -q http://fecdas.dev/registrarsaldos?secret=abc...  */
+		
+		$current = $this->getCurrentDate('now');
+		
+		$current->sub(new \DateInterval('P1D')); // Sub 1 dia;
+	
+		try {
+			$em = $this->getDoctrine()->getManager();
+			
+			$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+			//$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) AND c.activat = 1 ";
+			$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) ";
+			$strQuery .= " AND c.codi <> :test ";
+			$strQuery .= " ORDER BY c.codi";
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('current', $current->format('Y-m-d H:i:s') );
+			$query->setParameter('test', BaseController::CODI_CLUBTEST );
+			
+			$clubs = $query->getResult();
+			
+			// Registrar nova entrada taula saldos real per dia anterior
+			foreach ($clubs as $club) {
+				$this->registrarSaldoClub($club, $current);
+			}
+			$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 00:00:00'); 
+			$fins = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 23:59:59'); 
+			
+			// Revisar factures dia anterior i actualitzar entrada/sortida segons datafactura
+			$factures = $this->facturesEntre($desde, $fins);
+			foreach ($factures as $factura) {
+				$comanda = $factura->esAnulacio()?$factura->getComandaAnulacio():$factura->getComanda();
+				
+				$import = $factura->getImport();
+				$data = $factura->getDatafactura();
+				
+				$this->registrarMovimentClub($current, $comanda->getClub(), 0, $import, $data);
+			}
+			// Revisar rebuts dia anterior i actualitzar entrada/sortida segons datapagament
+			$rebuts   = $this->rebutsEntre($desde, $fins);
+					
+			foreach ($rebuts as $rebut) {
+				
+				$import = $rebut->getImport();
+				$data = $factura->getDatapagament();
+				
+				$this->registrarMovimentClub($current, $rebut->getClub(), $import, 0, $data);
+			}
+			
+			$em->flush();
+
+			$this->logEntryAuth('REGISTRE SALDOS OK', $current->format('Y-m-d H:i:s'));		
+			
+		} catch (\Exception $e) {
+			
+			$this->logEntryAuth('ERROR REGISTRE SALDOS', $current->format('Y-m-d H:i:s').' => '.$e->getMessage());	
+        }
+		
+		return new Response('OK');
+	}	
+
+	
+				
+	/*
+	public function registrarsaldosAction(Request $request) {
+		// Registre diari de saldos
+		// Planificar cron diari a les 23:45
+		// wget -O - -q http://fecdas.dev/registrarsaldos?secret=abc...  
 		
 		$current = $this->getCurrentDate('now');
 		
@@ -29,10 +95,12 @@ class CronController extends BaseController {
 			$current->sub(new \DateInterval('PT1S')); // Sub 1 segon;
 			
 			$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
-			$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) ";
+			$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > :current) AND c.activat = 1 ";
+			$strQuery .= " AND c.codi <> :test ";
 			$strQuery .= " ORDER BY c.codi";
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('current', $current->format('Y-m-d H:i:s') );
+			$query->setParameter('test', BaseController::CODI_CLUBTEST );
 			
 			$clubs = $query->getResult();
 			
@@ -44,13 +112,24 @@ class CronController extends BaseController {
 				$query->setParameter('club', $club->getCodi() );
 				
 				$ultimRegistre = $query->getSingleScalarResult();
+				$comentaris = "";
 				
 				if ($ultimRegistre != null) {
+					$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $ultimRegistre);
+				} else {
+					// Nou club. Crear registre a 0
+					$this->logEntryAuth('REGISTRE SALDOS NOU CLUB', 'Club sense registre anterior => '.$current->format('Y-m-d H:i:s').' => '.$club->getNom());	
+					
+					$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 00:00:00'); // Des d'avui
+					
+					$comentaris = "Registre saldo inicial";
+				}
+				
+				if ($desde->format('Y-m-d') < $current->format('Y-m-d')) {  // Només 1 registre per dia
+				
 					// Consultar factures entrades entrats dia current
 					$entrades = 0;
 					$sortides = 0;
-					
-					$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $ultimRegistre);
 					
 					$factures = $this->facturesEntre($desde, $current);
 					
@@ -85,14 +164,14 @@ class CronController extends BaseController {
 					$saldos->setTotalaltres( $club->getTotalaltres() );
 					$saldos->setTotalpagaments( $club->getTotalpagaments() ); 
 					$saldos->setAjustsubvencions( $club->getAjustsubvencions() );
+					$saldos->setComentaris($comentaris);
 					
 					$saldos->setDataentrada( $current ); 
 				
 					$em->persist($saldos);
 				} else {
-					$this->logEntryAuth('ERROR REGISTRE SALDOS CLUB', 'Club sense registre anterior => '.$current->format('Y-m-d H:i:s').' => '.$club->getNom());	
+					$this->logEntryAuth('REGISTRE SALDOS EXISTENT', 'Registre club existent => actual: '.$current->format('Y-m-d H:i:s').', existent '.$desde->format('Y-m-d H:i:s').', club: '.$club->getNom());	
 				}
-				
 			}
 			
 			$em->flush();
@@ -105,7 +184,7 @@ class CronController extends BaseController {
         }
 		
 		return new Response('');
-	}	
+	}	*/
 
 	public function checkrenovacioAction(Request $request) {
 		// Avís renovació partes: 30 dies, 15 dies i 2 dies
@@ -379,13 +458,14 @@ class CronController extends BaseController {
 		
 		$club = $rebut->getClub();
 		
+		$subject = ""; 
 		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMail();
 		else {
 			$tomails = self::getCarnetsMails();
-			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';
+			$subject .= " (CLUB SENSE CORREU DE CONTACTE) ";
 		}
 		
-		$subject = "Federació Catalana d'Activitats Subaquàtiques. Notificació ingrès ".$rebut->getNumRebut();
+		$subject .= "Federació Catalana d'Activitats Subaquàtiques. Notificació ingrès ".$rebut->getNumRebut();
 		
 		$log = 'ingrès: '.$rebut->getNumRebut();
 		

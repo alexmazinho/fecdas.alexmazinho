@@ -112,7 +112,10 @@ class EntityFactura {
 				//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE); // Desar estat detalls a la factura
 				$this->detalls = json_encode($detalls); // Desar estat detalls a la factura
 			}
-			if ($datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($this->import);
+			$club = $comanda->getClub();
+			
+			//if ($datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($this->import);
+			if ($club != null && $datafactura->format('Y') < $club->getExercici()) $this->comanda->updateClubRomanent($this->import);
 			else $this->comanda->updateClubSaldos($this->import);
 		}
 	}
@@ -270,7 +273,10 @@ class EntityFactura {
 	public function setImport($import) {
 		// Update import comanda
 		if ($this->comanda != null) {
-			if ($this->datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($import - $this->import);
+			$club = $comanda->getClub();
+			
+			//if ($this->datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($import - $this->import);
+			if ($club != null && $datafactura->format('Y') < $club->getExercici()) $this->comanda->updateClubRomanent($this->import);
 			else $this->comanda->updateClubSaldos($import - $this->import);
 		}
 

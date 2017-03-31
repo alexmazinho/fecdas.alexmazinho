@@ -2121,6 +2121,32 @@ select#parte_persona_addrnacionalitat {
 }
 
 
+.table-scroll-vertical {
+	overflow-x: auto;
+}
+
+
+.table-scroll-vertical .header-saldos-club,
+.table-scroll-vertical .saldos-club { width: 200px; font-size: 0.9em; text-align: left; }
+.table-scroll-vertical .header-saldos-exercici,
+.table-scroll-vertical .saldos-exercici,
+.table-scroll-vertical .header-saldos-compte,
+.table-scroll-vertical .saldos-compte { width: 70px; font-size: 0.9em; text-align: center; }
+.table-scroll-vertical .header-saldos-romanent,
+.table-scroll-vertical .header-saldos-acumulat,
+.table-scroll-vertical .header-saldos-entrades,
+.table-scroll-vertical .header-saldos-sortides,
+.table-scroll-vertical .header-saldos-saldo,
+.table-scroll-vertical .saldos-romanent,
+.table-scroll-vertical .saldos-acumulat,
+.table-scroll-vertical .saldos-entrades,
+.table-scroll-vertical .saldos-sortides,
+.table-scroll-vertical .saldos-saldocompta { width: 100px; font-size: 0.9em; text-align: right; }
+
+.table-scroll-vertical  #list-data { display: table-row-group; }
+
+.table-scroll-vertical table { table-layout: fixed; width: 100%; }
+
 /************************************************ Històric saldos Fi ******************************************************/
 
 

@@ -45,6 +45,14 @@ class FacturacioController extends BaseController {
 		$strFins = $request->query->get('fins', '');
 		$format = $request->query->get('format', '');
 		$page = $request->query->get('page', 1);
+
+		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		
+		if ($club == null && $grup == 'D') { // Diari sempre per club   
+			$club = $this->getCurrentClub();
+		}
+		
+		$saldosArray = array();
 		
 		if ($strFins != '') $fins = \DateTime::createFromFormat('d/m/Y', $strFins);
 		else $fins = $this->getCurrentDate('today');
@@ -54,6 +62,8 @@ class FacturacioController extends BaseController {
 		    // Diari
 		    if ($strDesde != '') $desde = \DateTime::createFromFormat('d/m/Y', $strDesde);
 			else $desde = \DateTime::createFromFormat('d/m/Y', "01/01/".date('Y'));
+			
+			$saldosArray = $this->saldosEntreClub($desde, $fins, $club);
 			
 			break;
 			
@@ -66,6 +76,8 @@ class FacturacioController extends BaseController {
 			
 			$fins = \DateTime::createFromFormat('d/m/Y', $daysOfMonth.'/'.$fins->format('m/Y'));	// Final de mes
 			
+			$saldosArray = $this->saldosEntreAcumulats($desde, $fins, $club, $grup);
+			
 			break;
 			
 		case 'A':
@@ -75,191 +87,77 @@ class FacturacioController extends BaseController {
 			
 			$fins = \DateTime::createFromFormat('d/m/Y', '31/12/'.$fins->format('Y'));	// Final d'any
 			
+			$saldosArray = $this->saldosEntreAcumulats($desde, $fins, $club, $grup);
+			
 		    break;
 		}					
+		$this->logEntryAuth('REGISTRE SALDOS', ($club != null?$club->getCodi():"TOTS")." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
 		
-		
-		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
-		
-		if ($club == null) {   
-			$club = $this->getCurrentClub();
-			$codi = $club->getCodi(); 
-		}	
-	
-		$this->logEntryAuth('REGISTRE SALDOS', $club->getCodi()." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
-		
-		
-		// Obtenir saldo comptable des de l'inici de l'exercici fins al dia anterior a la data desde 
-		
-		$saldoComptableCurrent = $this->saldoComptableData($club, $desde); // $desde no inclosa
-		
-		$saldos = $this->saldosEntre($desde, $fins, $club);
-
-		$saldosArray = array();
-		
-		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
-		$formatter->setPattern('yyyy MMMM');
-		
-		$keyAnterior = '';
-		foreach ($saldos as $saldo) {
-				if ($saldoComptableCurrent === null && $saldo->getDataregistre()->format('Y') >= $club->getExercici()) {
-					$saldoComptableCurrent = $club->getRomanent();
-				}
-					
-				if ($saldoComptableCurrent !== null) {
-					$saldoComptableCurrent += $saldo->getEntrades();  // Acumular dia
-					$saldoComptableCurrent -= $saldo->getSortides();	
-				} 
-
-				switch ($grup) {
-			    case 'D':
-			        // Diari
-					
-					$registreAnterior = null;
-					if (isset($saldosArray[$keyAnterior])) $registreAnterior = $saldosArray[$keyAnterior]; 
-
-					$canvi = $this->detectarCanvisRegistreSaldos($registreAnterior, $saldo, $saldoComptableCurrent);
-
-					// Si és el primer registre o hi ha algun canvi en alguna dada el registre es mostra
-					if ( $canvi ) {
-					
-						$keyActual = $saldo->getId().$saldo->getDataregistre()->format('Y-m-d');
-					
-						$saldosArray[$keyActual] = array(
-							'id' 				=> $saldo->getId(),
-							'dataregistre' 		=> $saldo->getDataregistre()->format('d/m/Y'),
-							'romanent' 			=> $saldo->getRomanent(),
-							'totalpagaments' 	=> $saldo->getTotalpagaments(),
-							'totalllicencies' 	=> $saldo->getTotalllicencies(),
-							'totalduplicats' 	=> $saldo->getTotalduplicats(),
-							'totalaltres' 		=> $saldo->getTotalaltres(),
-							'ajustsubvencions' 	=> $saldo->getAjustsubvencions(),
-							'saldo' 			=> $saldo->getSaldo(),
-							'entrades' 			=> $saldo->getEntrades(),
-							'sortides' 			=> $saldo->getSortides(),
-							'saldocompta'		=> $saldoComptableCurrent,
-							'comentaris' 		=> $saldo->getComentaris()
-						);
-						
-						$keyAnterior = $keyActual;
-					
-					}
-					
-			        break;
-			    case 'M':
-			    	// Mensual
-					
-					if (isset($saldosArray[$saldo->getDataregistre()->format('Y-m')])) {
-							
-						$saldosArray[$saldo->getDataregistre()->format('Y-m')]['entrades'] += $saldo->getEntrades();
-						$saldosArray[$saldo->getDataregistre()->format('Y-m')]['sortides'] += $saldo->getSortides();
-						
-					} else {
-						$saldosArray[$saldo->getDataregistre()->format('Y-m')] = array(
-							'id' 				=> 0,
-							'dataregistre' 		=> ucwords($formatter->format($saldo->getDataregistre())),
-							'romanent'			=> 0,
-							'totalpagaments'	=> 0,
-							'totalllicencies' 	=> 0,
-							'totalduplicats' 	=> 0,
-							'totalaltres' 		=> 0,
-							'ajustsubvencions' 	=> 0,
-							'saldo' 			=> 0,
-							'entrades' 			=> $saldo->getEntrades(),
-							'sortides' 			=> $saldo->getSortides(),
-							'saldocompta'		=> 0,
-							'comentaris' 		=> ''
-						);
-					}
-					
-					// Ordenat per dataentrada, sempre posa la última
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['romanent'] = $saldo->getRomanent();
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['totalpagaments']	= $saldo->getTotalpagaments();
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['totalllicencies'] = $saldo->getTotalllicencies();
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['totalduplicats']	= $saldo->getTotalduplicats();
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['totalaltres'] = $saldo->getTotalaltres();
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['ajustsubvencions'] = $saldo->getAjustsubvencions();
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['saldo'] = $saldo->getSaldo();
-
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['saldocompta'] = $saldoComptableCurrent;
-					$saldosArray[$saldo->getDataregistre()->format('Y-m')]['comentaris'] = '';
-					
-			        break;
-			    case 'A':
-					// Anula
-					
-					if (isset($saldosArray[$saldo->getDataregistre()->format('Y')])) {
-							
-						$saldosArray[$saldo->getDataregistre()->format('Y')]['entrades'] += $saldo->getEntrades();
-						$saldosArray[$saldo->getDataregistre()->format('Y')]['sortides'] += $saldo->getSortides();
-						
-					} else {
-						$saldosArray[$saldo->getDataregistre()->format('Y')] = array(
-							'id' 				=> 0,
-							'dataregistre' 		=> ucwords($formatter->format($saldo->getDataregistre())),
-							'romanent'			=> 0,
-							'totalpagaments'	=> 0,
-							'totalllicencies' 	=> 0,
-							'totalduplicats' 	=> 0,
-							'totalaltres' 		=> 0,
-							'ajustsubvencions' 	=> 0,
-							'saldo' 			=> 0,
-							'entrades' 			=> $saldo->getEntrades(),
-							'sortides' 			=> $saldo->getSortides(),
-							'saldocompta'		=> 0,
-							'comentaris' 		=> ''
-						);
-					}
-					
-					// Ordenat per dataentrada, sempre posa la última
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['romanent'] = $saldo->getRomanent();
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['totalpagaments']	= $saldo->getTotalpagaments();
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['totalllicencies'] = $saldo->getTotalllicencies();
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['totalduplicats']	= $saldo->getTotalduplicats();
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['totalaltres'] = $saldo->getTotalaltres();
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['ajustsubvencions'] = $saldo->getAjustsubvencions();
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['saldo'] = $saldo->getSaldo();
-
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['saldocompta'] = $saldoComptableCurrent;
-					$saldosArray[$saldo->getDataregistre()->format('Y')]['comentaris'] = '';
-					
-					
-			        break;
-				}
-		}
 		
 		if ($format == 'csv') {
 			
 			$strGrup = '';
-			if ($grup != 'D') $strGrup = 'diari';
-			if ($grup != 'M') $strGrup = 'mensual';
-			if ($grup != 'A') $strGrup = 'anual';
-			
-			$filename = "export_saldos_".$strGrup."_".Funcions::netejarPath($club->getNom())."_".$desde->format('Y-m-d')."_".$fins->format('Y-m-d')."_".date('Hms').".csv";
-			
-			$header = array('id', 'Data', 'Romanent', 'Pagaments', 'Llicències', 'Duplicats', 'Altres', 'Subvencions', 'Saldo', 'Entrades', 'Sortides', 'Saldo Comptable', 'Comentaris' ); 
-			
-			$data = array(); // Get only data matrix
-			foreach ($saldosArray as &$row) {
-				$row['romanent'] = number_format($row['romanent'], 2, ',', '');
-				$row['totalpagaments'] = number_format($row['totalpagaments'], 2, ',', '');
-				$row['totalllicencies'] = number_format($row['totalllicencies'], 2, ',', '');
-				$row['totalduplicats'] = number_format($row['totalduplicats'], 2, ',', '');
-				$row['totalaltres'] = number_format($row['totalaltres'], 2, ',', '');
-				$row['ajustsubvencions'] = number_format($row['ajustsubvencions'], 2, ',', '');
-				$row['saldo'] = number_format($row['saldo'], 2, ',', '');
-				$row['entrades'] = number_format($row['entrades'], 2, ',', '');
-				$row['sortides'] = number_format($row['sortides'], 2, ',', '');
-				$row['saldocompta'] = ($row['saldocompta']!=null?number_format($row['saldocompta'], 2, ',', ''):'');
-			}
+			if ($grup == 'D') {
+				$strGrup = 'diari';
+				$header = $saldosArray['header'];
 				
-			$response = $this->exportCSV($request, $header, $saldosArray, $filename);
+				$data = array();
+				foreach ($saldosArray['data'] as $saldo) {
+					$row = array('id' => $saldo['id'], 'Data' => $saldo['dataregistre']);
+					$row['romanent'] = number_format($saldo['romanent'], 2, ',', '');
+					$row['totalpagaments'] = number_format($saldo['totalpagaments'], 2, ',', '');
+					$row['totalllicencies'] = number_format($saldo['totalllicencies'], 2, ',', '');
+					$row['totalduplicats'] = number_format($saldo['totalduplicats'], 2, ',', '');
+					$row['totalaltres'] = number_format($saldo['totalaltres'], 2, ',', '');
+					$row['ajustsubvencions'] = number_format($saldo['ajustsubvencions'], 2, ',', '');
+					$row['saldo'] = number_format($saldo['saldo'], 2, ',', '');
+					$row['entrades'] = number_format($saldo['entrades'], 2, ',', '');
+					$row['sortides'] = number_format($saldo['sortides'], 2, ',', '');
+					$row['saldocompta'] = ($saldo['saldocompta']!=null?number_format($saldo['saldocompta'], 2, ',', ''):'');
+					$row['comentaris'] = $saldo['comentaris']; 
+					
+					$data[] = $row;
+				}
+			} else {
+				
+				if ($grup != 'M') $strGrup = 'mensual';
+				if ($grup != 'A') $strGrup = 'anual';
+				
+				$header = array();
+				foreach ($saldosArray['header'] as $head) {
+					$header[] = $head['text'];
+				}
+				
+				$data = array();
+				foreach ($saldosArray['data'] as $saldo) {
+					$row = array();
+					$row['compte'] = $saldo['compte'];
+					$row['club'] = $saldo['club'];
+					$row['exercici'] = $saldo['exercici'];
+					$row['romanent'] = number_format($saldo['romanent'], 2, ',', '');
+					$row['acumulat'] = number_format($saldo['acumulat'], 2, ',', '');
+
+					foreach ($saldo['saldos'] as $saldoPeriode) {
+						$row[] = number_format($saldoPeriode['entrades'], 2, ',', '');
+						$row[] = number_format($saldoPeriode['sortides'], 2, ',', '');
+						$row[] = number_format($saldoPeriode['saldocompta'], 2, ',', '');
+					}
+					
+					$data[] = $row;
+				}
+				
+			}
+			
+			$filename = "export_saldos_".$strGrup."_".Funcions::netejarPath(($club != null?$club->getNom():"tots_els_clubs"))."_".$desde->format('Y-m-d')."_".$fins->format('Y-m-d')."_".date('Hms').".csv";
+				
+			$response = $this->exportCSV($request, $header, $data, $filename);
 			
 			return $response;
 		}
 		
 		// !!!!!!!!!!! CONSULTAR I MOSTRAR REBUTS ENTRATS AL 2016 AMB DATA PAGAMENT 2015 !!!!!! POSSIBLES FONTS D'ERRADES
-		$rebutsControlar = $this->rebuts2016pagats2015($codi);
+		$rebutsControlar = array();
+		if ($club != null) $rebutsControlar = $this->rebuts2016pagats2015($club->getCodi());
 		
 		
 		$formBuilder = $this->createFormBuilder()
@@ -286,13 +184,202 @@ class FacturacioController extends BaseController {
 		
 		$this->addClubsActiusForm($formBuilder, $club);
 		
-		return $this->render('FecdasBundle:Facturacio:registresaldos.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-						'saldos' => $saldosArray, 'club' => $club, 'rebutscontrol' => $rebutsControlar)
-				));
-	}	
+		if ($grup == 'D') return $this->render('FecdasBundle:Facturacio:registresaldos.html.twig',
+							$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+									'saldos' => $saldosArray, 'club' => $club, 'rebutscontrol' => $rebutsControlar)
+							));
 		
-	private function detectarCanvisRegistreSaldos($anterior, $actual, $saldoComptableCurrent = null) {
+		return $this->render('FecdasBundle:Facturacio:registresaldosvertical.html.twig',
+					$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+							'saldos' => $saldosArray, 'club' => $club, 'rebutscontrol' => $rebutsControlar)
+					));
+	}	
+	
+	private function saldosEntreClub($desde, $fins, $club) {
+		$saldosArray = array(
+			'header' => array('id', 'Data', 'Romanent', 'Pagaments', 'Llicències', 'Duplicats', 'Altres', 'Subvencions', 'Saldo', 'Entrades', 'Sortides', 'Saldo Comptable', 'Comentaris'),
+			'data' => array() 
+		);
+		
+		if ($club == null) return $saldosArray;  // Consulta detall diari dels saldo sempre per club sinó triga mass
+		
+		// Obtenir saldo comptable des de l'inici de l'exercici fins al dia anterior a la data desde 
+		$saldosComptables = $this->saldosComptablesData($desde, $club); // $desde no inclosa
+		
+		$saldos = $this->saldosEntre($desde, $fins, $club);
+
+		$keyAnterior = '';
+		$saldoComptableClub = 0;
+		
+		if (isset($saldosComptables[$club->getCodi()])) {
+			$saldoComptableClub = $saldosComptables[$club->getCodi()];
+		} else {
+			if ($fins->format('Y') >= $club->getExercici()) {
+				$saldoComptableClub = $club->getRomanent();
+			}
+		}
+		
+		foreach ($saldos as $saldo) {
+			$keyAnterior = '';
+					
+			$saldoComptableClub += $saldo->getEntrades();  // Acumular dia
+			$saldoComptableClub -= $saldo->getSortides();	
+
+			$registreAnterior = null;
+			if (isset($saldosArray['data'][$keyAnterior])) $registreAnterior = $saldosArray['data'][$keyAnterior]; 
+
+			$canvi = $this->detectarCanvisRegistreSaldos($registreAnterior, $saldo, $saldoComptableClub);
+
+			// Si és el primer registre o hi ha algun canvi en alguna dada el registre es mostra
+			if ( $canvi ) {
+					
+				$keyActual = $saldo->getId().$saldo->getDataregistre()->format('Y-m-d');
+					
+				$saldosArray['data'][$keyActual] = array(
+					'id' 				=> $saldo->getId(),
+					'dataregistre' 		=> $saldo->getDataregistre()->format('d/m/Y'),
+					'romanent' 			=> $saldo->getRomanent(),
+					'totalpagaments' 	=> $saldo->getTotalpagaments(),
+					'totalllicencies' 	=> $saldo->getTotalllicencies(),
+					'totalduplicats' 	=> $saldo->getTotalduplicats(),
+					'totalaltres' 		=> $saldo->getTotalaltres(),
+					'ajustsubvencions' 	=> $saldo->getAjustsubvencions(),
+					'saldo' 			=> $saldo->getSaldo(),
+					'entrades' 			=> $saldo->getEntrades(),
+					'sortides' 			=> $saldo->getSortides(),
+					'saldocompta'		=> $saldoComptableClub,
+					'comentaris' 		=> $saldo->getComentaris()
+				);
+						
+				$keyAnterior = $keyActual;
+					
+			}
+		}
+		return $saldosArray;
+	}
+	
+	private function saldosEntreAcumulats($desde, $fins, $club, $grup) {
+		$saldosArray = array(
+			'header' => array('compte' => array('text' => 'Compte', 'class' => 'compte'),
+							'club' => array('text' => 'Club', 'class' => 'club'), 
+							'exercici' => array('text' => 'Exercici', 'class' => 'exercici'),
+							'romanent' => array('text' => 'Romanent', 'class' => 'romanent'),
+							'acumulat' => array('text' => 'Acumulat', 'class' => 'acumulat')),
+			'data' => array() 
+		);
+		
+		$acumulats = $this->acumulatsEntreMensuals($fins, $club); // Exercici en curs
+
+		// $acumulats => 'codi','romanent', 'exercici', 'nom', 'anyregistre', 'mesregistre', 'variacio' 
+
+		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
+		$formatter->setPattern('MMMM yyyy');
+		
+		$clubAnterior = '';
+		$clubNom = '';
+		$saldoComptableCurrent = 0;
+		foreach ($acumulats as $saldo) {
+			$clubCurrent = $saldo['codi'];
+			
+				
+			if ($clubAnterior != $clubCurrent) {
+				// Canvi de club 
+				$saldoComptableCurrent = $saldo['romanent'];
+				
+				// Primer resgistre saldo inici exercici
+				$saldosArray['data'][$clubCurrent] = array(
+					'club'		=> $saldo['nom'],
+					'compte' 	=> $saldo['compte'],
+					'exercici' 	=> $saldo['exercici'],
+					'romanent'	=> $saldoComptableCurrent,
+					'acumulat'	=> 0,
+					'saldos'	=> array()
+				);
+				
+			}
+				
+			
+
+			switch ($grup) {
+			    case 'M':
+			    	// Mensual
+			    	if ($saldo['anyregistre'] < $desde->format('Y') ||
+						($saldo['anyregistre'] == $desde->format('Y') && $saldo['mesregistre'] < $desde->format('n'))) {
+						// Registre anterior inici consulta. Acumula i Continua
+						$saldoComptableCurrent += $saldo['entrades'];  // Acumular saldo
+						$saldoComptableCurrent -= $saldo['sortides'];		
+					} else {
+				    	if ($saldo['anyregistre'] == $desde->format('Y') && $saldo['mesregistre'] == $desde->format('n')) {
+							// Registre inici consulta. Afegir acumulat 
+							$saldosArray['data'][$clubCurrent]['acumulat'] = $saldoComptableCurrent;	
+						} 
+						$saldoComptableCurrent += $saldo['entrades'];  // Acumular saldo
+						$saldoComptableCurrent -= $saldo['sortides'];	
+							
+						$saldosArray['data'][$clubCurrent]['saldos'][$saldo['anyregistre'].'-'.$saldo['mesregistre']] = array(
+							'entrades' 			=> $saldo['entrades'],
+							'sortides' 			=> $saldo['sortides'],
+							'saldocompta'		=> $saldoComptableCurrent,
+						);
+							
+						$key = $saldo['anyregistre'].'-'.$saldo['mesregistre'];
+						if (!isset($saldosArray['header'][$key])) {
+							$dataux = \DateTime::createFromFormat('Y-n-j', $saldo['anyregistre'].'-'.$saldo['mesregistre'] . "-1");
+							
+							$saldosArray['header'][$key.'_in'] = array('text' => 'Entrades', 'class' => 'entrades');
+							$saldosArray['header'][$key.'_out'] = array('text' => 'Sortides', 'class' => 'sortides');
+							$saldosArray['header'][$key] = array('text' => ucfirst($formatter->format($dataux)), 'class' => 'saldo');	
+						}
+
+					}
+			    	
+			        break;
+			    case 'A':
+					// Anual
+					if ($saldo['anyregistre'] < $desde->format('Y')) {
+						// Registre anterior inici consulta. Acumula i Continua
+						$saldoComptableCurrent += $saldo['entrades'];  // Acumular saldo
+						$saldoComptableCurrent -= $saldo['sortides'];	
+					} else {
+						if ($saldo['anyregistre'] == $desde->format('Y') && $saldo['mesregistre'] == 1) {
+							// Registre inici consulta. Afegir acumulat 
+							$saldosArray['data'][$clubCurrent]['acumulat'] = $saldoComptableCurrent;	
+						} 
+					
+						$saldoComptableCurrent += $saldo['entrades'];  // Acumular saldo
+						$saldoComptableCurrent -= $saldo['sortides'];
+						
+						if (isset($saldosArray['data'][$clubCurrent]['saldos'][$saldo['anyregistre']])) {
+							$saldosArray['data'][$clubCurrent]['saldos'][$saldo['anyregistre']]['entrades'] += $saldo['entrades'];
+							$saldosArray['data'][$clubCurrent]['saldos'][$saldo['anyregistre']]['sortides'] += $saldo['sortides'];
+							$saldosArray['data'][$clubCurrent]['saldos'][$saldo['anyregistre']]['saldocompta'] = $saldoComptableCurrent;
+						} else {
+							$saldosArray['data'][$clubCurrent]['saldos'][$saldo['anyregistre']] = array(
+								'entrades' 			=> $saldo['entrades'],
+								'sortides' 			=> $saldo['sortides'],
+								'saldocompta'		=> $saldoComptableCurrent,
+							);
+							
+							$key = $saldo['anyregistre'];
+							if (!isset($saldosArray['header'][$key])) {
+								$saldosArray['header'][$key.'_in'] = array('text' => 'Entrades', 'class' => 'entrades');
+								$saldosArray['header'][$key.'_out'] = array('text' => 'Sortides', 'class' => 'sortides');
+								$saldosArray['header'][$key] = array('text' => 'Saldo '.$saldo['anyregistre'], 'class' => 'saldo');	
+							}
+							
+						}
+					}
+					
+			        break;
+			}
+
+			$clubAnterior = $clubCurrent;
+		}
+		
+		return $saldosArray;
+	}
+		
+	private function detectarCanvisRegistreSaldos($anterior, $actual, $saldoComptableCurrent = 0) {
 		
 		if ($anterior == null) return true; // Actual és el primer
 		
@@ -307,7 +394,7 @@ class FacturacioController extends BaseController {
 		if ($anterior['entrades'] 	!= $actual->getEntrades() ||
 			$anterior['sortides'] 	!= $actual->getSortides() ) return true;	
 
-		if ($saldoComptableCurrent != null && $anterior['saldocompta'] != $saldoComptableCurrent) return true;
+		if ($saldoComptableCurrent > 0 && $anterior['saldocompta'] != $saldoComptableCurrent) return true;
 		
 		return false;
 	}	
@@ -1478,6 +1565,10 @@ class FacturacioController extends BaseController {
 				foreach ($cart['productes'] as $id => $info) {
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
 					
+					if (!$this->isCurrentAdmin() && $this->esProducteEscola($id)) { // Admin pot escollir compte
+						$comptefactura = $this->getIbanEscola();
+					}
+					
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
 		
 					$detall = $this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
@@ -1500,7 +1591,7 @@ class FacturacioController extends BaseController {
 				// Validacions comuns i anotacions stock
 				$this->tramitarComanda($comanda);
 
-				$factura = $this->crearFactura($datafacturacio, $comanda, $comptefactura);
+				$factura = $this->crearFactura($datafacturacio, $comanda, '', $comptefactura);
 			
 				$em ->flush();
 			
@@ -3045,6 +3136,8 @@ class FacturacioController extends BaseController {
 
 			$tipusPagament = $request->query->get('tipuspagament', BaseController::TIPUS_PAGAMENT_TRANS_LAIETANIA);
 			
+			/* Permetre factura i rebut a comptes diferents
+			
 			$tipuspagamentOk = $this->checkIbanTipusPagament($tipusPagament, $factura->getNumcompte());
 
 			if (!$tipuspagamentOk) {
@@ -3053,7 +3146,7 @@ class FacturacioController extends BaseController {
 				$response = new Response('El pagament no es correspon amb el compte de la factura');
 				$response->setStatusCode(500);
 				return $response;
-			}
+			}*/
 			
 			$dataAux = $request->query->get('datapagament', '');
 			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();

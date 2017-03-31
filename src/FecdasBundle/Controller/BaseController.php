@@ -89,6 +89,8 @@ class BaseController extends Controller {
 	const CODI_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
 	const CODI_PAGAMENT_ESCOLA			= 5720002;		// 5720002  La Caixa Escola
+	
+	const PRODUCTE_262_CARNET_CMAS		= 262;		// 262 Carnet CMAS sense llicència
 		
 	
 	//const CODI_PAGAMENT_SARDENYA			= 5720003;		// 5720003  Sardenya
@@ -335,6 +337,17 @@ class BaseController extends Controller {
 		
 		return  self::TEXT_PAGAMENT_CASH;
 	}
+	
+	
+	/**
+	 * Obté productes que van per defecte al compte escola
+	 */
+	public static function esProducteEscola($idProducte) {
+			
+		if ($idProducte == self::PRODUCTE_262_CARNET_CMAS) return true;	
+	}
+	
+	
 	
 	/**
 	 * Array possibles tipus de comanda
@@ -1084,16 +1097,16 @@ class BaseController extends Controller {
 		return $rebut;
 	}
 
-	protected function crearFactura($data, $comanda = null, $concepte = '') { 
+	protected function crearFactura($data, $comanda = null, $concepte = '', $compte = '') { 
 		if ($data == null) $data = $this->getCurrentDate();
 		
-		if ($concepte == '') $concepte = $this->getIbanGeneral();
+		if ($compte == '') $compte = $this->getIbanGeneral();
 		
 		$em = $this->getDoctrine()->getManager();
 
 		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
 		
-		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte, null, $concepte);
+		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte, null, $compte);
 		
 		$em->persist($factura);
 		if ($comanda != null) {
@@ -3088,30 +3101,73 @@ class BaseController extends Controller {
 	 * 
 	 * Aquestes entrades i sortides es troben a la taula de saldos
 	 */ 
-	protected function saldoComptableData($club, $data) {
+	protected function saldosComptablesData($data, $club) {
 		$em = $this->getDoctrine()->getManager();
 		
-		if ($data == null || $club == null) return null;
+		$saldosComptables = array();
 		
-		$iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici());
+		if ($data == null || $club == null) return $saldosComptables;
+		
+		if ($data->format('Y') < $club->getExercici()) return $saldosComptables; // No es pot consultar per dates anteriors a l'inici de l'exercici
+		
+		/*$iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici()); 
 		
 		if ($data->format('Y-m-d') < $iniciExercici->format('Y-m-d')) return null;  // No es pot consultar per dates anteriors a l'inici de l'exercici
 		
 		// Obtenir saldo comptable exercici actual d'un club a una data
-		$strQuery  = " SELECT SUM(s.entrades) - SUM(s.sortides) FROM FecdasBundle\Entity\EntitySaldos s ";
-		$strQuery .= " WHERE s.club = :club ";
-		$strQuery .= " AND   s.dataregistre >= :iniciexercici ";
+		$strQuery  = " SELECT c, SUM(s.entrades) - SUM(s.sortides) as variacio FROM FecdasBundle\Entity\EntitySaldos s JOIN s.club c ";
+		$strQuery .= " WHERE s.dataregistre >= :iniciexercici ";
 		$strQuery .= " AND   s.dataregistre <  :data ";
-			
+		if ($club != null) $strQuery .= " AND   s.club = :club ";
+		$strQuery .= " GROUP BY c.codi ";
+		$strQuery .= " ORDER BY c.codi ";
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('club', $club->getCodi() );
+		if ($club != null) $query->setParameter('club', $club->getCodi() );
 		$query->setParameter('iniciexercici', $iniciExercici->format('Y-m-d') );
 		$query->setParameter('data',  $data->format('Y-m-d') );
 		
-		$variacio = $query->getSingleScalarResult();
-		if ($variacio == null) $variacio = 0;
+		//$variacions = $query->getArrayResult();
+		$variacions = $query->getResult(); 
+		*/ 
 
-		return $club->getRomanent() + $variacio;
+		
+		// Consulta dades exercici actual o encara no tancat. Acumular des de romanent actual del club
+			
+		$strQuery  = " SELECT c.codi, c.romanent, SUM(s.entrades) - SUM(s.sortides) as variacio FROM m_clubs c INNER JOIN m_saldos s ON c.codi = s.club ";
+		$strQuery .= " WHERE YEAR(s.dataregistre) >= c.exercici ";
+		$strQuery .= " AND   s.dataregistre <  '".$data->format('Y-m-d')."' ";
+		$strQuery .= " AND   s.club = '".$club->getCodi()."' ";
+		$strQuery .= " GROUP BY c.codi, c.romanent ";
+		$strQuery .= " ORDER BY c.codi ";
+			
+	    $stmt = $em->getConnection()->prepare($strQuery);
+	    $stmt->execute();
+    	$variacions = $stmt->fetchAll();
+		
+		foreach ($variacions as $variacio) {
+			$currentClub = $variacio['codi'];
+			$saldosComptables[$variacio['codi']] = $variacio['romanent'] + $variacio['variacio'];
+		}		
+		
+		return $saldosComptables;
+	}
+	
+	protected function acumulatsEntreMensuals($fins, $club) {
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar saldos entre dates acumulats per mes per a l'exercici en curs
+		$strQuery  = " SELECT c.codi, c.romanent, c.exercici, c.nom, c.compte, YEAR(s.dataregistre) as anyregistre, MONTH(s.dataregistre) as mesregistre, SUM(s.entrades) as entrades, SUM(s.sortides) as sortides FROM m_clubs c INNER JOIN m_saldos s ON c.codi = s.club ";
+		$strQuery .= " WHERE (c.databaixa IS NULL OR c.databaixa > '".$fins->format('Y-m-d H:i:s')."') AND c.compte IS NOT NULL AND YEAR(s.dataregistre) >= c.exercici ";
+		$strQuery .= " AND   s.dataregistre <=  '".$fins->format('Y-m-d')."' ";
+		if ($club != null) $strQuery .= " AND   s.club = '".$club->getCodi()."' ";
+		$strQuery .= " GROUP BY c.codi, c.romanent, c.exercici, c.nom, c.compte, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
+		$strQuery .= " ORDER BY c.compte, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
+	    
+	    $stmt = $em->getConnection()->prepare($strQuery);
+	    $stmt->execute();
+    	$acumulats = $stmt->fetchAll();
+		
+		return $acumulats; 
 	}
 	
 
@@ -3120,13 +3176,13 @@ class BaseController extends Controller {
 		
 		// Consultar saldos entre dates per un club
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntitySaldos s ";
-		$strQuery .= " WHERE s.club = :club ";
-		$strQuery .= " AND   s.dataregistre >= :desde ";
+		$strQuery .= " WHERE s.dataregistre >= :desde ";
 		$strQuery .= " AND   s.dataregistre <=  :fins ";
+		if ($club != null) $strQuery .= " AND   s.club = :club ";
 		$strQuery .= " ORDER BY s.dataregistre ASC ";
 			
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('club', $club->getCodi() );
+		if ($club != null) $query->setParameter('club', $club->getCodi() );
 		$query->setParameter('desde', $desde->format('Y-m-d') );
 		$query->setParameter('fins',  $fins->format('Y-m-d') );
 		
@@ -3250,7 +3306,7 @@ class BaseController extends Controller {
 		}
 
 		$registre->setEntrades( $registre->getEntrades() + $entrada);
-		$registre->setSortides( $registre->getSortides() + $sortides);
+		$registre->setSortides( $registre->getSortides() + $sortida);
 	}
 
 	protected function exportCSV($request, $header, $data, $filename) {

@@ -90,67 +90,47 @@
 						{% endif %}
 				   	</form>
 			    </div>
-			    <div class="table-header">	
-				   	<div id="list-header">
-						<div id="header-saldos-id" class="col-listheader hidden">&nbsp;</div>
-						<div id="header-saldos-data" class="col-listheader collistheader-noorder">Data</div>
-				   		<div id="header-saldos-romanent" class="col-listheader collistheader-noorder">Romanent<br/>{{ club.romanent|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-pagaments" class="col-listheader collistheader-noorder">Pagaments<br/>{{ club.totalpagaments|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-llicencies" class="col-listheader collistheader-noorder">Llicències<br/>{{ club.totalllicencies|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-duplicats" class="col-listheader collistheader-noorder">Duplicats<br/>{{ club.totalduplicats|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-altres" class="col-listheader collistheader-noorder">Altres<br/>{{ club.totalaltres|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-subvencions" class="col-listheader collistheader-noorder">Subvencions<br/>{{ club.ajustsubvencions|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-saldo" class="col-listheader collistheader-noorder">Saldo real<br/>{{ club.saldo|number_format(2, ',', '.') }}€</div>
-				   		<div id="header-saldos-entrades" class="col-listheader collistheader-noorder">Entrades<br/>(Rebuts)</div>
-				   		<div id="header-saldos-sortides" class="col-listheader collistheader-noorder">Sortides<br/>(Factures)</div>
-				   		<div id="header-saldos-saldocompta" class="col-listheader collistheader-noorder">Saldo<br/>Comptable</div>
-				   		<div id="header-saldos-comentaris" class="col-listheader collistheader-noorder"><i class="fa fa-info-circle"></i></div>
-				   	</div>
-			   	</div>
-				<div class="table-scroll">
-				   	<ol id="list-data">
-				   	{% set registres = 0 %}
-					{% for saldo in saldos.data %} 
-						{# if saldo.entrades != 0 or
-							  saldo.sortides != 0 #}
+			    <div class="table-scroll table-scroll-vertical">
+			    	<table>	
+				    	<thead id="list-header">
+						   	<tr>
+						   		{% for headcol in saldos.header %}
+						   			 <th class="header-saldos-{{ headcol.class }} col-listheader collistheader-noorder">{{ headcol.text }}</th>
+						   		{% endfor %}
+						   	</tr>
+					   	</thead>
+					   	<tbody id="list-data">
+					   	{% set registres = 0 %}
+						{% for saldo in saldos.data %} 
 							{% set registres = registres + 1 %}  
-							<li class="data-detall">
-								<div class="data-detall-cell hidden">{{ saldo.id }}</div>
-								<div class="data-detall-cell saldos-data">{{ saldo.dataregistre }}</div>
-						   		<div class="data-detall-cell saldos-romanent">{{ saldo.romanent|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-pagaments">{{ saldo.totalpagaments|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-llicencies">{{ saldo.totalllicencies|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-duplicats">{{ saldo.totalduplicats|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-altres">{{ saldo.totalaltres|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-subvencions">{{ saldo.ajustsubvencions|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-saldo">{{ saldo.saldo|number_format(2, ',', '.') }}€</div>		   		
-						   		<div class="data-detall-cell saldos-entrades {% if saldo.entrades != 0 %} green {% endif %}">{{ saldo.entrades|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-sortides {% if saldo.sortides != 0 %} red {% endif %}">{{ saldo.sortides|number_format(2, ',', '.') }}€</div>
-						   		<div class="data-detall-cell saldos-saldocompta">{{ saldo.saldocompta|number_format(2, ',', '.') }}€</div>
-								<div class="data-detall-cell saldos-comentaris">
-									{% if saldo.comentaris != '' %} 
-									<span class="fa fa-info-circle blue">
-										<span class="saldo-info">{{ saldo.comentaris|raw }}</span>
-									</span>
-									{% else %} 
-									&nbsp; 
-									{% endif %}
-								</div>	
-							</li>
-					   	{# endif #}
-				   	{% endfor %} 
-				   	{% if registres == 0 %}
-				   		<li class="data-detall" colspan="11">
-					    	<div class="sms-notice">No hi ha registres de saldos per mostrar</div>
-					    </li>
-				    {% endif %}
-					</ol>
+								<tr class="data-detall">
+									<td class="data-detall-cell saldos-compte">{{ saldo.compte }}</td>
+									<td class="data-detall-cell saldos-club">{{ saldo.club }}</td>
+									<td class="data-detall-cell saldos-exercici">{{ saldo.exercici }}</td>
+									<td class="data-detall-cell saldos-romanent">{{ saldo.romanent|number_format(2, ',', '.') }}€</td>
+									<td class="data-detall-cell saldos-acumulat">{{ saldo.acumulat|number_format(2, ',', '.') }}€</td>
+									{% for saldoPeriode in saldo.saldos %}
+										<td class="data-detall-cell saldos-entrades {% if saldoPeriode.entrades != 0 %} green {% endif %}">{{ saldoPeriode.entrades|number_format(2, ',', '.') }}€</td>
+							   			<td class="data-detall-cell saldos-sortides {% if saldoPeriode.sortides != 0 %} red {% endif %}">{{ saldoPeriode.sortides|number_format(2, ',', '.') }}€</td>
+										<td class="data-detall-cell saldos-saldocompta">{{ saldoPeriode.saldocompta|number_format(2, ',', '.') }}€</td>
+									{% endfor %}
+								</tr>
+					   	{% endfor %} 
+					   	{% if registres == 0 %}
+					   		<tr class="data-detall">
+						    	<td colspan="{{ saldos.header|length }}"><div class="sms-notice">No hi ha registres de saldos per mostrar</div></td>
+						    </tr>
+					    {% endif %}
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>
+		{% if saldos.data|length > 1 %}
 		<div class="col-md-12">
-			<p class="title-comment">Només es mostren les dates del registre on el club ha realitzat algun moviment</p>
+			<p class="title-comment">Només es mostren clubs actius i amb compte comptable informat</p>
 		</div>
+		{% endif %}
 		
 		{# if saldos.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(saldos, null) }}</div>{% endif #}
 	   	

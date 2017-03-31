@@ -43,6 +43,9 @@ class CronController extends BaseController {
 			foreach ($clubs as $club) {
 				$this->registrarSaldoClub($club, $current);
 			}
+			
+			$em->flush();
+			
 			$desde = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 00:00:00'); 
 			$fins = \DateTime::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d').' 23:59:59'); 
 			
@@ -62,7 +65,7 @@ class CronController extends BaseController {
 			foreach ($rebuts as $rebut) {
 				
 				$import = $rebut->getImport();
-				$data = $factura->getDatapagament();
+				$data = $rebut->getDatapagament();
 				
 				$this->registrarMovimentClub($current, $rebut->getClub(), $import, 0, $data);
 			}

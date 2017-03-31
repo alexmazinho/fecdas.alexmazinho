@@ -149,7 +149,8 @@ class EntityRebut {
 			
 		if ($this->club == null) return false;
 		
-		if ($this->datapagament != null && $this->datapagament->format('Y') < date('Y')) $this->club->setRomanent($this->club->getRomanent() + $import);
+		//if ($this->datapagament != null && $this->datapagament->format('Y') < date('Y')) $this->club->setRomanent($this->club->getRomanent() + $import);
+		if ($this->datapagament != null && $this->datapagament->format('Y') < $this->club->getExercici()) $this->club->setRomanent($this->club->getRomanent() + $import);
 		else $this->club->setTotalpagaments($this->club->getTotalpagaments() + $import);
 		
 		return true; 

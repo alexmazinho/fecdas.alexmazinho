@@ -28,6 +28,203 @@ use FecdasBundle\Classes\Funcions;
 
 class FacturacioController extends BaseController {
 		
+	public function stockAction(Request $request) {
+		// Llista de productes i edició massiva
+
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+
+		if (!$this->isCurrentAdmin()) 
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$idproducte = $request->query->get('cerca', 0);
+
+		$this->logEntryAuth('CONSULTA STOCK', $this->get('session')->get('username').' - producte: '.$idproducte);
+
+		$page = $request->query->get('page', 1);
+		
+		$query = $this->consultaStock($idproducte);
+			
+		$paginator  = $this->get('knp_paginator');
+			
+		$stock = $paginator->paginate(
+			$query,
+			$page,
+			10/*limit per page*/
+		);
+			
+		$formBuilder = $this->createFormBuilder()
+			->add('cerca', 'hidden', array(
+				'data' => ($idproducte>0?$idproducte:"")
+		));
+		
+		return $this->render('FecdasBundle:Facturacio:stock.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+						'stock' => $stock)
+						));
+	}
+	
+	public function registrestockAction(Request $request) {
+		// Formulari introducció / edició / baixa registre d'stock
+		//$this->get('session')->getFlashBag()->clear();
+    	
+    	if ($this->isAuthenticated() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+    
+    	/* De moment administradors */
+    	if ($this->isCurrentAdmin() != true)
+    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	
+    	$registreStock = null;
+    	
+    	if ($request->getMethod() != 'POST') {
+    		$id = $request->query->get('id', 0);
+    		$anypreu = $request->query->get('anypreu', date('y'));
+    		
+    		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
+    		 
+    		if ($producte == null) {
+    			// No trobat
+    			$this->logEntryAuth('PRODUCTE EDIT KO',	'producte : ' . $request->query->get('id', 0));
+    			$this->get('session')->getFlashBag()->add('error-notice', 'Producte no trobat ');
+    			return $this->redirect($this->generateUrl('FecdasBundle_productes'));
+    		}
+    		
+    		$this->logEntryAuth('PRODUCTE EDIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
+    		
+    		$preu = $producte->getPreu($anypreu);
+    		if ($preu == null) {
+    			// Crear nou
+    			$preu = new EntityPreu($anypreu, 0, 0, $producte);
+    			$em->persist($preu);
+    			$producte->addPreus($preu);
+    		}
+    	} else {
+   			/* Alta o modificació de preus */
+    		$data = $request->request->get('producte');
+    		$id = (isset($data['id'])?$data['id']:0);
+    		
+    		if ($id > 0) $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
+    		
+    		if ($producte == null) {
+    			$producte = new EntityProducte();
+    			$em->persist($producte);
+    		}
+    	}	
+    	$form = $this->createForm(new FormStock(), $registreStock);
+    	
+    	if ($request->getMethod() == 'POST') {
+    		try {
+    			$form->handleRequest($request);
+    			$anypreu 	= $form->get('anypreus')->getData();
+    			$importpreu = $form->get('preu')->getData();
+    			$iva 		= $form->get('iva')->getData();
+    			
+    			/*if ($importpreu == null) {
+    				$form->get('preu')->addError(new FormError('Indicar un valor'));
+    				throw new \Exception('Cal indicar un preu vàlid 0 '.$importpreu  );
+    			}*/
+    			
+    			if (doubleval($importpreu) < 0) {
+    				$form->get('preu')->addError(new FormError('Valor incorrecte'));
+    				throw new \Exception('Cal indicar un preu vàlid 1'.$importpreu  );
+    			}
+    			
+    			if ($form->isValid()) {
+    				if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
+    				
+    				/* NO ES VALIDA CODIS DIFERENTS, ara varis productes poden tenir mateix codi Agost 2016
+                    $codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
+    				
+    				if ($codiExistent != null && $codiExistent != $producte) {
+    					$form->get('codi')->addError(new FormError('Codi existent'));
+    					throw new \Exception('El codi indicat ja existeix pel producte: ' .$codiExistent->getDescripcio() );
+    				}*/
+    				
+    				if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
+    					$form->get('codi')->addError(new FormError('Codi incorrecte'));
+    					throw new \Exception('El codi ha de tenir 7 dígits ' );
+    				}
+    				
+    				if ($producte->getMinim() < 0) {
+    					$form->get('minim')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
+    				}
+    				
+    				if ($producte->getStockable() == true) {
+    					if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
+    						$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
+    						throw new \Exception('Cal indicar el límit de notificació ' );
+    					}
+    						
+    					if ($producte->getStock() == null || $producte->getStock() < 0) {
+    						$form->get('stock')->addError(new FormError('Valor incorrecte'));
+    						throw new \Exception('Cal indicar l\'stock disponible ' );
+    					}
+    				} else {
+    					$producte->setLimitnotifica(null);
+						$producte->setStock(null);
+    				}
+    				
+					if ($producte->getTransport() == true) {
+						if ($producte->getPes() == null || $producte->getPes() < 0) {
+    						$form->get('pes')->addError(new FormError('Valor incorrecte'));
+    						throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
+    					}
+					} else {
+						$producte->setPes(0);
+					}
+    				
+    				$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
+    				
+    				if ($iva == 0) $iva = null;
+    				
+    				$preu = $producte->getPreu($anypreu);
+    				if ($preu == null) {
+    					// Crear nou
+    					$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
+    					$em->persist($preu);
+						$producte->addPreus($preu);
+    				} else {
+    					$preu->setPreu($importpreu);
+    					$preu->setIva($iva);
+    				}
+    				
+    				
+    			} else {
+    				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString()); 
+    			}
+
+				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
+					$activat = $form->get('activat')->getData();
+					if ($producte->getCategoria() != null && 
+						$producte->getCategoria()->getTipusparte() != null) {
+							$producte->getCategoria()->getTipusparte()->setActiu($activat);
+						}
+				}
+
+
+    			$em->flush();
+    			 
+    			$this->get('session')->getFlashBag()->add('sms-notice',	'El producte s\'ha desat correctament');
+    			
+    			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
+    			// Ok, retorn form sms ok
+    			return $this->redirect($this->generateUrl('FecdasBundle_editarproducte', 
+    					array( 'id' => $producte->getId(), 'anypreu' => $anypreu )));
+    			
+    		} catch (\Exception $e) {
+    			// Ko, mostra form amb errors
+    			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+    		}
+   		} 
+    	return $this->render('FecdasBundle:Facturacio:registrestock.html.twig', 
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'producte' => $producte))); 
+	}		
+		
+		
 	public function registresaldosAction(Request $request) {
 		// Llistat de comandes
 	

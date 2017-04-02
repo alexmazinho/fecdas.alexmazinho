@@ -443,6 +443,18 @@ FecdasBundle_baixapreu:
     requirements:
         _method:  GET
 
+FecdasBundle_stock:
+    pattern:  /stock
+    defaults: { _controller: "FecdasBundle:Facturacio:stock" }
+    requirements:
+        _method:  GET
+
+FecdasBundle_registrestock:
+    pattern:  /registrestock
+    defaults: { _controller: "FecdasBundle:Facturacio:registrestock" }
+    requirements:
+        _method:  GET|POST
+
 FecdasBundle_comandes:
     pattern:  /comandes
     defaults: { _controller: "FecdasBundle:Facturacio:comandes" }

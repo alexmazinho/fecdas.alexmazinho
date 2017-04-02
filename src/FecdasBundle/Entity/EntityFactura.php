@@ -1,7 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
-use FecdasBundle\Controller\BaseController;
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="m_factures")
@@ -273,10 +273,10 @@ class EntityFactura {
 	public function setImport($import) {
 		// Update import comanda
 		if ($this->comanda != null) {
-			$club = $comanda->getClub();
+			$club = $this->comanda->getClub();
 			
 			//if ($this->datafactura->format('Y') < date('Y')) $this->comanda->updateClubRomanent($import - $this->import);
-			if ($club != null && $datafactura->format('Y') < $club->getExercici()) $this->comanda->updateClubRomanent($this->import);
+			if ($club != null && $this->datafactura->format('Y') < $club->getExercici()) $this->comanda->updateClubRomanent($import - $this->import);
 			else $this->comanda->updateClubSaldos($import - $this->import);
 		}
 

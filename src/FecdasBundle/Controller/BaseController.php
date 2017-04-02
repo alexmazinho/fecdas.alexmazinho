@@ -60,6 +60,8 @@ class BaseController extends Controller {
     const INDEX_NOENVIARLLICENCIA = 0;
     
 	//const TIPUS_CLUBS_NO_COMANDES = array(6, 7);
+	const REGISTRE_STOCK_ENTRADA = 'E';
+	const REGISTRE_STOCK_SORTIDA = 'S';
 	
 	const TARIFA_MINPES3 = 10000; // 10 Kg
 	const TARIFA_MINPES2 = 5000; // 5 Kg

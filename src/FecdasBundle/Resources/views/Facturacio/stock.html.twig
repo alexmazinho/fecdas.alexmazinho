@@ -1,0 +1,160 @@
+{# src/Fecdas/productesBundle/Resources/views/Facturacio/productes.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block javascriptshead %}
+ 	
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Llistat de productes {% endblock %}
+
+{% block body %}
+	<header>
+        <h1>Llistat de productes</h1>
+    </header>
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+        
+    <div id="productes-main">
+	    <div id="list-forms">
+	    	<form id="form_productes" action="{{ path('FecdasBundle_nouproducte') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+		    	<div class="row">
+		    	  <div class="col-md-3">
+				  	<div class="form-group">
+				    	{{ form_label(form.compte, 'Compte', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.compte, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				  </div>
+				  <div class="col-md-3">
+				  	<div class="form-group">
+				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				  </div>
+				  <div class="col-md-3">
+				    <div class="form-group">
+				    	{{ form_label(form.tipus, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
+					</div>
+				  </div>
+				  <div class="col-md-3 col-last-right">
+						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
+				  </div>
+				</div>
+		   	</form>
+	    </div>
+	    <div class="table-header">	
+		   	<div id="list-header">
+				<div id="header-producte-id" class="col-listheader hidden">&nbsp;</div>
+				<div id="header-producte-estat" class="col-listheader collistheader-noorder">Estat</div>
+		   		<div id="header-producte-codi" class="col-listheader">{{ knp_pagination_sortable(productes, 'Codi', 'p.codi') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-nomcurt" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Abr.', 'p.abreviatura') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.abreviatura') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-descripcio" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Descripcio', 'p.descripcio') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.descripcio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-tipus" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Tipus', 'p.tipus') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.tipus') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-import" class="col-listheader collistheader-noorder">Preu</div>
+		   		<!-- <div id="header-producte-iva" class="col-listheader collistheader-noorder">IVA</div> -->
+		   		<!-- <div id="header-producte-total" class="col-listheader collistheader-noorder">Total</div> -->
+		   		<div id="header-producte-transport" class="col-listheader col-listheader-noorder"><i class="fa fa-truck"></i></div>
+		   		<div id="header-producte-minim" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Uds. mín.', 'p.minim') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.minim') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-limit" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Avís', 'p.stockable') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.stockable') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-stock" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Stock', 'p.stock') }}
+		   			<span class="listheader-icon {% if productes.isSorted('p.stock') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-producte-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ productes.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   	</div>
+	   	</div>
+		{% if productes|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for producte in productes %} 
+		   		<li class="data-detall {% if producte.esBaixa %} data-detall-fosc {% endif %}">
+		   			<div class="data-detall-cell producte-id hidden">{{ producte.id }}</div>
+		   			<div class="data-detall-cell producte-estat">{{ producte.estat }}</div>
+		   			<div class="data-detall-cell producte-codi">{{ producte.codi }}</div>
+		   			<div class="data-detall-cell producte-nomcurt">{{ producte.abreviatura }}</div>
+		   			<div class="data-detall-cell producte-descripcio">{{ producte.descripcio }}</div>
+		   			<div class="data-detall-cell producte-tipus">{{ producte.tipustext }}</div>
+		   			<div class="data-detall-cell producte-import">{{ producte.currentPreu|number_format(2, ',', '.') }}€ ({{ producte.currentAny }})</div>
+		   			<!-- <div class="data-detall-cell producte-iva">{# (producte.currentIva*100)|number_format(0, ',', '.') #}%</div> -->
+		   			<!-- <div class="data-detall-cell producte-total">{# (producte.currentPreu * (1+producte.currentIva))|number_format(2, ',', '.') #}€</div> -->
+		   			<div class="data-detall-cell producte-transport">{% if producte.transport == 1 %}<i class="fa fa-check-circle"></i>{% endif %}</div>
+		   			<div class="data-detall-cell producte-minim">{{ producte.minim }}</div>
+		   			<div class="data-detall-cell producte-limit">{{ producte.limitnotifica }}</div>
+		   			<div class="data-detall-cell producte-stock">{{ producte.stock }}</div>
+		   			<div class="data-detall-cell producte-actions">
+		   				<a class="producte-action-edit link" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil blue"></i></a>			
+						{% if not producte.esBaixa %}
+		   				<a class="producte-action-baixa link" href="{{ path('FecdasBundle_baixaproducte', { 'id': producte.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o red"></i></a>
+		   				{% else %}
+		   				<i class="fa fa-trash-o transparent"></i>
+		   				{% endif %}
+		   			</div>
+		   		</li>
+		   		{% endfor %}
+			</ol>
+		</div>
+		{% if productes.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(productes, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha productes per mostrar</div>
+	    {% endif %}
+	</div>
+    <div id="dialeg-edicio-producte" class="finestra-overlay"></div>
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+	<script type="text/javascript">
+	
+	filtreLlistaProductes = function(id, tipusproducte, baixes) {
+		
+		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+id+"&tipus="+tipusproducte+"&baixes="+baixes;
+	}; 
+	
+	$(document).ready(function(){
+		setMenuActive("menu-admproductes");
+		
+		$("#form_tipus").change(function() {
+			var id = 0;
+			if ($( "#form_cerca" ).val() > 0) id = $( "#form_cerca" ).val();
+			if ($( "#form_compte" ).val() > 0) id = $( "#form_compte" ).val();
+			filtreLlistaProductes(id, $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+
+		$("#form_compte").change(function() {
+			filtreLlistaProductes($( "#form_compte" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+		
+		$("#form_cerca").change(function() {
+			filtreLlistaProductes($( "#form_cerca" ).val(), "", $( "#form_tipus" ).val(), $(this).is(':checked'));
+	    });
+	
+		$( '#form_baixes' ).change(function(e) {
+			var id = 0;
+			if ($( "#form_cerca" ).val() > 0) id = $( "#form_cerca" ).val();
+			if ($( "#form_compte" ).val() > 0) id = $( "#form_compte" ).val();
+			filtreLlistaProductes(id, $( "#form_tipus" ).val(), $(this).is(':checked'));
+		});
+		
+		// Descripcio producte
+		init_cercaproducte_JSON('#form_cerca', 'descripcio', 'Cercar descripció del producte', "{{  path('FecdasBundle_jsonproductes') }}");
+
+		// Compte contable producte
+		init_cercaproducte_JSON('#form_compte', 'compte', 'Compte...', "{{  path('FecdasBundle_jsonproductes') }}");
+	});
+	
+	</script>
+
+
+{% endblock %}
+

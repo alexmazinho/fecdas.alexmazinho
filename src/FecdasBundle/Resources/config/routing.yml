@@ -521,6 +521,12 @@ FecdasBundle_jsonproductes:
     requirements:
         _method:  GET
 
+FecdasBundle_jsonfactures:
+    pattern:  /jsonfactures
+    defaults: { _controller: "FecdasBundle:Facturacio:jsonfactures" }
+    requirements:
+        _method:  GET
+
 FecdasBundle_jsonpreu:
     pattern:  /jsonpreu
     defaults: { _controller: "FecdasBundle:Facturacio:jsonpreu" }

@@ -308,7 +308,7 @@
 		
         return $this.get(0) ? $this.get(0).scrollHeight > this.innerHeight() : false;
     };
-	
+    
     reloadScrollTable = function( scroll, header, colHeader, lastColHeader  ) { 
     					// per exemple $('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions') 
  	
@@ -327,6 +327,46 @@
 			//header.width( $('.table-header').width( ) - 15 );
 		};
 	};
+	
+	
+	//Cercador select2 genèric cal que existeixi mètode al Controller que gestioni params 'cerca' i 'id'
+	init_cercagenerica_JSON = function(elem_sel, placeholder_txt, url) {
+		
+		// Inicialitza el control de cerca (input hidden) 
+		$(elem_sel).select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			multiple: false,
+			placeholder: placeholder_txt,
+	
+			query: function (query) {
+				var data = { results: [] };
+				var params = { 	'cerca': query.term };
+				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
+				$.get(url,	params, function(jdata) {
+					data.results = jdata;
+					query.callback(data);
+				}).fail(function() {
+					query.callback(data);
+				});
+			},
+			initSelection: function(element, callback) {  // value del input ==> carrega per defecte
+				//if (element.val() !== undefined && element.val() > 0) {
+					var data = [];
+					var params = { 	'id': element.val() };
+					$.get(url,	params, function(jdata) {
+						//callback(jdata['id']);
+						callback(jdata);
+					}).fail(function() {
+						callback(data);
+					});
+					
+			        callback(data);
+				//}
+			} 
+		});
+	};
+	
     
 	/********** Selectors de dates ***************/
 	

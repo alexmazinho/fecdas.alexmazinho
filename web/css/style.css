@@ -562,6 +562,33 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .yellow { color: #FFD700; }
 .transparent { color: transparent; cursor: default; }
 
+/*************** FECDAS stock ****************/
+
+#header-registrestock-dataregistre { width: 9%; text-align: center; }
+#header-registrestock-comentaris { width: 17%; text-align: left; }
+#header-registrestock-factura { width: 10%; text-align: center; }
+#header-registrestock-producte { width: 17%; text-align: left; }
+#header-registrestock-entrada  { width: 6%; text-align: center; }
+#header-registrestock-sortida { width: 6%; text-align: center;  }
+#header-registrestock-preuunitat { width: 6%; text-align: right; }
+#header-registrestock-total { width: 9%; text-align: right; }
+#header-registrestock-stock { width: 7%; text-align: center; }
+#header-registrestock-actions { width: 8%; text-align: right;  color: #3c763d; }
+	   	
+.data-detall-cell.registrestock-dataregistre  { width: 9%; text-align: center; }
+.data-detall-cell.registrestock-comentaris  { width: 17%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.registrestock-factura { width: 10%; text-align: center; }
+.data-detall-cell.registrestock-producte  { width: 17%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.registrestock-entrada  { width: 6%; text-align: center; }
+.data-detall-cell.registrestock-sortida { width: 6%; text-align: center; }
+.data-detall-cell.registrestock-preuunitat { width: 6%; text-align: right; }
+.data-detall-cell.registrestock-total { width: 9%; text-align: right; }
+.data-detall-cell.registrestock-stock { width: 7%; text-align: center; }
+.data-detall-cell.registrestock-actions { width: 8%; text-align: right;}
+.data-detall-cell.registrestock-actions .fa { font-size: 1.2em; }
+.data-detall-cell.registrestock-actions a:hover { cursor: default;  } 
+
+
 /*************** FECDAS NOU productes ****************/
 
 #header-producte-estat { width: 4%; text-align: left; }

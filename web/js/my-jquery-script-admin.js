@@ -47,18 +47,18 @@
 	};
 
 	//Cercador de productes
-	init_cercaproducte_JSON = function(elem_sel, tipus, placeholder_txt, url) {
+	init_cercaproducte_JSON = function(elem_sel, tipus, placeholder_txt, url, baixes) {
 		
 		/* Inicialitza el control de cerca (input hidden) */
 		$(elem_sel).select2({
 			minimumInputLength: 2,
-			allowClear: false,
+			allowClear: true,
 			multiple: false,
 			placeholder: placeholder_txt,
 	
 			query: function (query) {
 				var data = { results: [] };
-				var params = { 	'cerca': query.term, 'tipus': tipus };
+				var params = { 	'cerca': query.term, 'tipus': tipus, 'baixes': baixes };
 				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
 				$.get(url,	params, function(jdata) {
 					data.results = jdata;

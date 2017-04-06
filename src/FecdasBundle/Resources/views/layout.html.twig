@@ -162,7 +162,7 @@
 			          	<li id="menu-admrebut"><a href="{{ path('FecdasBundle_nouingres') }}">Nou ingrès</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admproductes" class="separator"><a href="{{ path('FecdasBundle_productes', { 'sort': 'p.descripcio', 'direction':'asc' }) }}">Llistat de productes</a></li>
-			          	<li id="menu-admproducte"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
+			          	<li id="menu-admproducte" class="separator"><a href="{{ path('FecdasBundle_nouproducte') }}">Nou producte</a></li>
 			          	<li id="menu-admstock"><a href="{{ path('FecdasBundle_stock') }}">Stock</a></li>
 			          	<li class="divider"></li>
 			          	<li id="menu-admcomandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
@@ -209,8 +209,8 @@
  	
 	{{ parent() }}
 
-	<script src="{{ asset('js/my-jquery-script.js?v=2.20') }}" type="text/javascript"></script>	
-    <script src="{{ asset('js/my-jquery-script-admin.js?v=2.08') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/my-jquery-script.js?v=2.21') }}" type="text/javascript"></script>	
+    <script src="{{ asset('js/my-jquery-script-admin.js?v=2.09') }}" type="text/javascript"></script>
     
     <script src="{{ asset('js/genemu/select2-3.4.5/select2.min.js') }}" type="text/javascript"></script>
 	<script src="{{ asset('js/genemu/select2-3.4.5/select2_locale_ca.js') }}" type="text/javascript"></script>

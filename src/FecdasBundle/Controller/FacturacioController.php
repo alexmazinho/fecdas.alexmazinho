@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use FecdasBundle\Form\FormProducte;
 use FecdasBundle\Entity\EntityProducte;
+use FecdasBundle\Form\FormStock;
+use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Form\FormRebut;
 use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormComanda;
@@ -66,7 +68,7 @@ class FacturacioController extends BaseController {
 	
 	public function registrestockAction(Request $request) {
 		// Formulari introducció / edició / baixa registre d'stock
-		//$this->get('session')->getFlashBag()->clear();
+		$this->get('session')->getFlashBag()->clear();
     	
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -76,154 +78,161 @@ class FacturacioController extends BaseController {
     		return $this->redirect($this->generateUrl('FecdasBundle_home'));
     	
     	$em = $this->getDoctrine()->getManager();
-    	
+		
     	$registreStock = null;
-    	
-    	if ($request->getMethod() != 'POST') {
-    		$id = $request->query->get('id', 0);
-    		$anypreu = $request->query->get('anypreu', date('y'));
-    		
-    		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
-    		 
-    		if ($producte == null) {
-    			// No trobat
-    			$this->logEntryAuth('PRODUCTE EDIT KO',	'producte : ' . $request->query->get('id', 0));
-    			$this->get('session')->getFlashBag()->add('error-notice', 'Producte no trobat ');
-    			return $this->redirect($this->generateUrl('FecdasBundle_productes'));
-    		}
-    		
-    		$this->logEntryAuth('PRODUCTE EDIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
-    		
-    		$preu = $producte->getPreu($anypreu);
-    		if ($preu == null) {
-    			// Crear nou
-    			$preu = new EntityPreu($anypreu, 0, 0, $producte);
-    			$em->persist($preu);
-    			$producte->addPreus($preu);
-    		}
-    	} else {
-   			/* Alta o modificació de preus */
-    		$data = $request->request->get('producte');
-    		$id = (isset($data['id'])?$data['id']:0);
-    		
-    		if ($id > 0) $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
-    		
-    		if ($producte == null) {
-    			$producte = new EntityProducte();
-    			$em->persist($producte);
-    		}
-    	}	
-    	$form = $this->createForm(new FormStock(), $registreStock);
-    	
-    	if ($request->getMethod() == 'POST') {
-    		try {
-    			$form->handleRequest($request);
-    			$anypreu 	= $form->get('anypreus')->getData();
-    			$importpreu = $form->get('preu')->getData();
-    			$iva 		= $form->get('iva')->getData();
-    			
-    			/*if ($importpreu == null) {
-    				$form->get('preu')->addError(new FormError('Indicar un valor'));
-    				throw new \Exception('Cal indicar un preu vàlid 0 '.$importpreu  );
-    			}*/
-    			
-    			if (doubleval($importpreu) < 0) {
-    				$form->get('preu')->addError(new FormError('Valor incorrecte'));
-    				throw new \Exception('Cal indicar un preu vàlid 1'.$importpreu  );
-    			}
-    			
-    			if ($form->isValid()) {
-    				if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
-    				
-    				/* NO ES VALIDA CODIS DIFERENTS, ara varis productes poden tenir mateix codi Agost 2016
-                    $codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
-    				
-    				if ($codiExistent != null && $codiExistent != $producte) {
-    					$form->get('codi')->addError(new FormError('Codi existent'));
-    					throw new \Exception('El codi indicat ja existeix pel producte: ' .$codiExistent->getDescripcio() );
-    				}*/
-    				
-    				if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
-    					$form->get('codi')->addError(new FormError('Codi incorrecte'));
-    					throw new \Exception('El codi ha de tenir 7 dígits ' );
-    				}
-    				
-    				if ($producte->getMinim() < 0) {
-    					$form->get('minim')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
-    				}
-    				
-    				if ($producte->getStockable() == true) {
-    					if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
-    						$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar el límit de notificació ' );
-    					}
-    						
-    					if ($producte->getStock() == null || $producte->getStock() < 0) {
-    						$form->get('stock')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar l\'stock disponible ' );
-    					}
-    				} else {
-    					$producte->setLimitnotifica(null);
-						$producte->setStock(null);
-    				}
-    				
-					if ($producte->getTransport() == true) {
-						if ($producte->getPes() == null || $producte->getPes() < 0) {
-    						$form->get('pes')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
-    					}
-					} else {
-						$producte->setPes(0);
-					}
-    				
-    				$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
-    				
-    				if ($iva == 0) $iva = null;
-    				
-    				$preu = $producte->getPreu($anypreu);
-    				if ($preu == null) {
-    					// Crear nou
-    					$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
-    					$em->persist($preu);
-						$producte->addPreus($preu);
-    				} else {
-    					$preu->setPreu($importpreu);
-    					$preu->setIva($iva);
-    				}
-    				
-    				
-    			} else {
-    				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString()); 
-    			}
 
-				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
-					$activat = $form->get('activat')->getData();
-					if ($producte->getCategoria() != null && 
-						$producte->getCategoria()->getTipusparte() != null) {
-							$producte->getCategoria()->getTipusparte()->setActiu($activat);
-						}
+		try {
+	    	if ($request->getMethod() != 'POST') {
+	    		$id = $request->query->get('id', 0);
+				$action = $request->query->get('action', '');
+				if ($action == 'remove') { 
+				 
+					$registreStock = $this->getDoctrine()->getRepository('FecdasBundle:EntityStock')->find($id);
+					 
+					if ($registreStock == null) {
+						$this->logEntryAuth('BAIXA STOCK KO', ' Registre '.$id);
+						throw new \Exception("No s'ha pogut esborrar el registre");
+					} 
+					
+					$registreStock->setDatabaixa(new \DateTime('now'));
+
+					$this->recalcularStockProducte($producte, $registreStock);
+				
+					$em->flush(); 
+										
+					$this->logEntryAuth('BAIXA STOCK OK', ' Registre '.$id);
+					
+					$response = new Response("Registre esborrat correctament");
+					return $response;
 				}
+				
+				$this->logEntryAuth('PRODUCTE '+$action+' FORM', 'registre : ' . $id);
+	    		
+	    	} else {
+	   			/* Alta o modificació */
+	   			$this->logEntryAuth('PRODUCTE SUBMIT FORM');
+	   			
+	    		$data = $request->request->get('registrestock');
+				
+	    		$id = (isset($data['id'])?$data['id']:0);
+	    	}
+   	
+	    	if ($id > 0) $registreStock = $this->getDoctrine()->getRepository('FecdasBundle:EntityStock')->find($id);
+	    		
+	    	if ($registreStock == null) {
+	    		$registreStock = new EntityStock();
+	    		$em->persist($registreStock);
+	    	}
+		
+	    	$form = $this->createForm(new FormStock(), $registreStock);
+    	
+    		if ($request->getMethod() == 'POST') {
+    			$form->handleRequest($request);
+    			
+    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del registre ' .$form->getErrorsAsString()); 
 
-
+				if ($registreStock->getProducte() == null || $registreStock->getProducte() == '') {
+    				throw new \Exception('Cal indicar algun producte' );
+    			}
+					
+    			if ($registreStock->getPreuunitat() <= 0) {
+    				throw new \Exception('Cal indicar el preu per unitat > 0' );
+    			}
+    				
+    			if ($registreStock->getDataregistre() == null || $registreStock->getDataregistre() == '') {
+    				throw new \Exception('Cal indicar la data del registre' );
+    			}
+    				
+    			if ($registreStock->getUnitats() == 0) {
+    				throw new \Exception('Cal indicar les unitats' );
+    			}
+    				
     			$em->flush();
+    			
+    			$this->logEntryAuth('PRODUCTE SUBMIT',	'registre : ' . $registreStock->getId().' '.$registreStock->getProducte()->getDescripcio().' '.$registreStock->getTipus().' '.$registreStock->getUnitats()); 
     			 
-    			$this->get('session')->getFlashBag()->add('sms-notice',	'El producte s\'ha desat correctament');
-    			
-    			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
-    			// Ok, retorn form sms ok
-    			return $this->redirect($this->generateUrl('FecdasBundle_editarproducte', 
-    					array( 'id' => $producte->getId(), 'anypreu' => $anypreu )));
-    			
-    		} catch (\Exception $e) {
-    			// Ko, mostra form amb errors
-    			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-    		}
-   		} 
+    			$response = new Response("El registre s'ha desat correctament");
+				return $response;
+   			} 
+
+		} catch (\Exception $e) {
+    		// Ko, mostra form amb errors
+    		//$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+			
+			$response = new Response($e->getMessage());
+			$response->setStatusCode(500);
+			return $response;
+    	}
+	
     	return $this->render('FecdasBundle:Facturacio:registrestock.html.twig', 
-    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'producte' => $producte))); 
+    			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'registre' => $registreStock))); 
 	}		
 		
+	public function recalcularStockProducte($producte, $registreStock) {
+		
+		if ($producte == null) throw new \Exception('Producte incorrecte' );
+		
+		if ($registreStock == null) throw new \Exception('Registre incorrecte' );
+
+		$desde = $registreStock->getDataregistre();
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		// Consultar últim stock abans de $desde
+		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
+		$strQuery .= " WHERE 1 = 1 ";
+		$strQuery .= " AND s.producte = :idproducte ";
+		$strQuery .= " AND s.databaixa IS NULL ";
+		$strQuery .= " AND (s.dataregistre < :desde ";
+		$strQuery .= " OR (s.dataregistre = :desde AND s.id < :id)) ";
+		$strQuery .= " ORDER BY s.dataregistre DESC, s.id DESC ";
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d'));
+		$query->setParameter('id', $registreStock->getId());
+		$query->setMaxResults( 1 );
+		
+		$ultimRegistre = $query->getSingleResult();
+		
+		// No es pot esborrar el primer registre d'un producte (stock inicial)
+		if ($ultimRegistre == null) throw new \Exception('No es pot esborrar el primer registre del producte' );
+		
+		$stock = $ultimRegistre->getStock();
+		
+		// Actualitzar següents stock registres posteriors o iguals a $desde 
+		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
+		$strQuery .= " WHERE 1 = 1 ";
+		$strQuery .= " AND s.producte = :idproducte ";
+		$strQuery .= " AND s.databaixa IS NULL ";
+		$strQuery .= " AND (s.dataregistre >= :desde ";
+		$strQuery .= " OR (s.dataregistre = :desde AND s.id >= :id)) ";
+		$strQuery .= " ORDER BY s.dataregistre, s.id ";
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('desde', $desde->format('Y-m-d'));
+		$query->setParameter('id', $registreStock->getId());
+		
+		$registres = $query->getResults();
+		
+		if ($registreStock->getId() == 0) {
+			// Altes
+			if ($registreStock->esEntrada()) $stock += $registreStock->getUnitats();
+			else $stock -= $registreStock->getUnitats();
+		}
+		
+		foreach ($registres as $registre) {
+			if ($registreStock->getId() == $registre->getId() && $registreStock->anulat()) {
+				// $registre segur que no està anulat
+				// Baixes => no tenir en compte
+				
+			} else {	
+				if ($registre->esEntrada()) $stock += $registre->getUnitats();
+				else $stock -= $registre->getUnitats();
+				
+				$registre->setStock($stock);
+			}			
+		}		
+		
+		// => Crear producte stockable afegir registre stock
+	}
 		
 	public function registresaldosAction(Request $request) {
 		// Llistat de comandes
@@ -2540,7 +2549,7 @@ class FacturacioController extends BaseController {
 	}
 	
 	public function jsonpreuAction(Request $request) {
-		//foment.dev/jsonpreu?id=32&anypreu=2015
+		//fecdas.dev/jsonpreu?id=32&anypreu=2015
 		$response = new Response();
 	
 		$id = $request->get('id', 0);
@@ -2564,12 +2573,59 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
+	public function jsonfacturesAction(Request $request) {
+		//fecdas.dev/jsonfactures?cerca=numfactura
+		$response = new Response();
+	
+		$cerca = $request->get('cerca', '');
+		
+		$id = $request->get('id', 0);
+		$em = $this->getDoctrine()->getManager();
+		
+		if ($id > 0) {
+			$factura = $em->getRepository('FecdasBundle:EntityFactura')->find($id);
+			if ($factura != null) {
+				$response->headers->set('Content-Type', 'application/json');
+				$response->setContent(json_encode(array("id" => $factura->getId(), "text" => $factura->getNumfactura()." ".$factura->getConcepte()) ) );
+				return $response;
+			}
+		}
+		
+		if ($id == 0 && $cerca == "") {
+			// Res a cercar
+			$response->headers->set('Content-Type', 'application/json');
+			$response->setContent(json_encode(array()));
+			return $response;
+		}
+		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f WHERE ";
+		$strQuery .= " (f.num LIKE :cerca OR f.concepte LIKE :cerca) ";
+		$strQuery .= " ORDER BY f.datafactura, f.num";  
+	
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('cerca', '%'.$cerca.'%');
+		
+		$search = array();
+		if ($query != null) {
+			$result = $query->getResult();
+			foreach ($result as $factura) {
+				$search[] = array("id" => $factura->getId(), "text" => $factura->getNumfactura()." ".$factura->getConcepte());
+			}
+		}
+		
+		$response->headers->set('Content-Type', 'application/json');
+		$response->setContent(json_encode($search));
+		
+		return $response;
+	}
+	
 	public function jsonproductesAction(Request $request) {
 		//foment.dev/jsonproductes?cerca=textcerca
 		$response = new Response();
 	
 		$cerca = $request->get('cerca', '');
 		$tipus = $request->get('tipus', 'compte');
+		$baixes = ($request->get('baixes', 1) == 1?true:false);
+		
 		$id = $request->get('id', 0);
 		$em = $this->getDoctrine()->getManager();
 		
@@ -2591,8 +2647,8 @@ class FacturacioController extends BaseController {
 			return $response;
 		}
 		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityProducte p WHERE ";
-		//$strQuery .= " WHERE p.databaixa IS NULL ";
-		if  ($tipus != 'compte') $strQuery .= " p.descripcio LIKE :cerca";
+		if (!$baixes) $strQuery .= " p.databaixa IS NULL AND ";
+		if  ($tipus != 'compte') $strQuery .= " p.descripcio LIKE :cerca ";
 		else $strQuery .= " p.codi >= :min AND p.codi <= :max ";
 		$strQuery .= " ORDER BY p.descripcio";  
 	
@@ -2618,6 +2674,19 @@ class FacturacioController extends BaseController {
 		$response->setContent(json_encode($search));
 		
 		return $response;
+	}
+	
+	protected function consultaStock($idproducte, $baixes = true) {
+		$em = $this->getDoctrine()->getManager();
+	
+		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
+		$strQuery .= " WHERE 1 = 1 ";
+		if ($idproducte > 0) $strQuery .= " AND s.producte = :idproducte ";
+		if (! $baixes) $strQuery .= " AND s.databaixa IS NULL ";
+		$strQuery .= " ORDER BY s.dataregistre ASC ";
+		$query = $em->createQuery($strQuery);
+		if ($idproducte > 0) $query->setParameter('idproducte', $idproducte);
+		return $query;
 	}
 	
 	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
@@ -2647,6 +2716,7 @@ class FacturacioController extends BaseController {
 		if ($compte != '') $query->setParameter('compte', $compte);
 		return $query;
 	}
+	
 	
 	protected function consultaIngresos($codi, $nr, $ar, $strOrderBY = 'r.datapagament', $direction = 'desc' ) {
 		$em = $this->getDoctrine()->getManager();

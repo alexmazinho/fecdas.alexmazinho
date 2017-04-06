@@ -73,14 +73,13 @@ class EntityStock {
     protected $databaixa;
 	
 
-	public function __construct($producte = null, $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $unitats = 0, $stock = 0, $factura = null, $comentaris = '' ) {
+	public function __construct($producte = null, $unitats = 0, $comentaris = '', $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $factura = null ) {
 		$this->id = 0;
 		$this->producte = $producte;
 		$this->dataregistre = ($dataregistre != null?$dataregistre:new \DateTime('today'));
 		$this->tipus = $tipus;
 		$this->unitats = $unitats;
-		$this->stock = $stock;
-		$this->preuunitat = ($producte!=null?$producte->getPreu($this->dataregistre->format('Y')):0);
+		$this->preuunitat = ($producte!=null?$producte->getPreuAny($this->dataregistre->format('Y')):0);
 		$this->factura = $factura;
 		$this->comentaris = $comentaris;
 		$this->dataentrada = new \DateTime('now');

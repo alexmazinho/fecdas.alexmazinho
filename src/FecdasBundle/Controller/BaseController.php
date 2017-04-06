@@ -2830,10 +2830,8 @@ class BaseController extends Controller {
 		
 		//if ($persist == true) $em->flush();	// Si d'ha canviat el num factura	
 	}
-	
 
 	protected function tramitarComanda($comanda, $originalDetalls = null, $informarPagament = false, $form = null) {
-	//protected function tramitarComanda($comanda, $form = null) {
 		$em = $this->getDoctrine()->getManager();
 		
 		if ($originalDetalls == null) $originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
@@ -2872,7 +2870,6 @@ class BaseController extends Controller {
 			
 			$producte = $detall->getProducte();	
 			$unitats = $detall->getUnitats();
-			$stock = (is_numeric($producte->getStock())?$producte->getStock():0);
 			
 			if ($producte == null) {
 				$camp = $this->cercarCampColleccio($formdetalls, $detall, 'producte');
@@ -2887,15 +2884,7 @@ class BaseController extends Controller {
 					if ($camp != null) $camp->addError(new FormError('?'));
 					throw new \Exception('Cal afegir mínim una unitat del producte'  );
 				}
-				if ($producte->getStockable() == true) {
-					
-					if ($unitats > $stock) {
-						$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
-						if ($camp != null) $camp->addError(new FormError('?'));
-						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
-					}
-				}
-
+				
 				if ($producte->getMinim() != null && $unitats < $producte->getMinim()) {
 					$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
 					if ($camp != null) $camp->addError(new FormError('?'));
@@ -2903,21 +2892,9 @@ class BaseController extends Controller {
 							$producte->getDescripcio().'\' es '.$producte->getMinim());
 				}
 				
-				// Actualitzar stock. Descomptar unitats de stock producte
-				
-				$stock -= $unitats;
-				if ($stock < 0) $stock = 0;
-				$producte->setStock($stock); // Nou stock
-				
-				// Control notificació stock
-				if ($producte->getStock() < $producte->getLimitnotifica()) {
-					$productesNotificacio[] = $producte; // Afegir a la llista de productes per notificar manca stock
-				} 
-				
 			} else {
 				// Cercar original corresponent per veure canvis
 				// Només es pot treure productes (anul·lacions) de la comanda. No cal controlar stock
-				
 				$detallOriginal = null;
 				
 				foreach ($originalDetalls as $d) {
@@ -2940,8 +2917,6 @@ class BaseController extends Controller {
 				
 				// La diferència retorna a l'stock
 				if ($unitatsDiferencia > 0) { 
-					$stock += $unitatsDiferencia;
-					
 					$detall->setUnitatsBaixa($detall->getUnitatsbaixa() + $unitatsDiferencia);
 					$anotacioModificada = $detall->getUnitats().'x'.($producte != null?$producte->getDescripcio():'');
 					$detall->setAnotacions($anotacioModificada);
@@ -2949,8 +2924,6 @@ class BaseController extends Controller {
 					$detallsPerAnulacio[] = new EntityComandaDetall($comanda, $producte, $unitatsDiferencia*(-1), $detall->getDescomptedetall(), $anotacioModificada);
 				}
 			}
-
-			$producte->setStock($stock); // Nou stock	
 			
 			$detall->setDatamodificacio(new \DateTime());
 			
@@ -2959,24 +2932,6 @@ class BaseController extends Controller {
 		if (count($detallsPerAnulacio) > 0) {
 			$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $comanda, $detallsPerAnulacio, $maxNumFactura, $maxNumRebut);
 		}
-
-		// Enviar notificacions
-		$body = '';
-		foreach ($productesNotificacio as $producte) {
-			$body .= '<li>El producte \''.$producte->getDescripcio().'\' té '.$producte->getStock().
-						' en stock (valor de notificació '.$producte->getLimitNotifica().'). </li>'; 
-		}
-		
-		if ($body != '') {
-			$body = '<p>Cal revisar l\'stock dels següents productes</p>'. 
-					 '<ul>'.$body.'</ul>';
-
-			$subject = "Revisió stock. Federació Catalana d'Activitats Subaquàtiques";
-			
-			$tomails = self::getCarnetsMails();
-			
-			$this->buildAndSendMail($subject, $tomails, $body);
-		}	
 		
 		return $comanda;
 	}

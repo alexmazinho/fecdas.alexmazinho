@@ -344,6 +344,20 @@ class EntityComanda {
 	}
 	
 	/**
+	 * Get factura anulacio nova
+	 *
+	 * @return EntityFactura
+	 */
+	public function getFacturaAnulacioNova()
+	{
+		foreach ($this->facturesanulacions as $factura) {
+			if ($factura->getId() == 0) return $factura;
+		}	
+		return null;		
+	}
+	
+	
+	/**
 	 * Get nums rebuts totes 
 	 *
 	 * @return string

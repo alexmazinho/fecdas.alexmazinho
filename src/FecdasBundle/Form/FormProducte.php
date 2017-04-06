@@ -91,7 +91,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'required' 		=> false,
 					'scale' 		=> 0,
 					//'disabled' 	=> $producte->getStockable() != true
-					'read_only' 	=> $producte->getStockable() != true
+					'read_only' 	=> $producte->getId() != 0 || $producte->getStockable() != true   // NO modificar stock. Només indicar quan es crea
 			));
 			
 			$form->add ('pes', 'integer', array (

@@ -54,11 +54,31 @@ class FacturacioController extends BaseController {
 			$page,
 			10/*limit per page*/
 		);
+		
+		if ($request->isXmlHttpRequest()) {
+			return $this->render('FecdasBundle:Facturacio:taulastock.html.twig',
+				$this->getCommonRenderArrayOptions(array('stock' => $stock)));
+		}
 			
-		$formBuilder = $this->createFormBuilder()
+		/*$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'hidden', array(
 				'data' => ($idproducte>0?$idproducte:"")
-		));
+		));*/
+		
+		$formBuilder = $this->createFormBuilder()
+			->add('cerca', 'entity', array(
+							'class' => 'FecdasBundle:EntityProducte',
+							'query_builder' => function($repository) {
+								return $repository->createQueryBuilder('p')
+										->where('p.stockable = 1')
+										->andWhere('p.databaixa IS NULL')
+										->orderBy('p.descripcio', 'ASC');
+									},
+							'choice_label' => 'descripcio',
+							'empty_value' => '',
+							'required'  => true,
+							'data' => ($idproducte>0?$idproducte:"")
+				));
 		
 		return $this->render('FecdasBundle:Facturacio:stock.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
@@ -80,7 +100,7 @@ class FacturacioController extends BaseController {
     	$em = $this->getDoctrine()->getManager();
 		
     	$registreStock = null;
-
+		
 		try {
 	    	if ($request->getMethod() != 'POST') {
 	    		$id = $request->query->get('id', 0);
@@ -96,14 +116,13 @@ class FacturacioController extends BaseController {
 					
 					$registreStock->setDatabaixa(new \DateTime('now'));
 
-					$this->recalcularStockProducte($producte, $registreStock);
+					$this->recalcularStockProducte($registreStock);
 				
 					$em->flush(); 
 										
 					$this->logEntryAuth('BAIXA STOCK OK', ' Registre '.$id);
 					
-					$response = new Response("Registre esborrat correctament");
-					return $response;
+					return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId())));
 				}
 				
 				$this->logEntryAuth('PRODUCTE '+$action+' FORM', 'registre : ' . $id);
@@ -124,6 +143,7 @@ class FacturacioController extends BaseController {
 	    		$em->persist($registreStock);
 	    	}
 		
+			$unitatsOriginal =  $registreStock->getUnitats();
 	    	$form = $this->createForm(new FormStock(), $registreStock);
     	
     		if ($request->getMethod() == 'POST') {
@@ -146,18 +166,20 @@ class FacturacioController extends BaseController {
     			if ($registreStock->getUnitats() == 0) {
     				throw new \Exception('Cal indicar les unitats' );
     			}
-    				
+
+				if ($registreStock->getId() == 0) $registreStock->setComentaris('Entrada stock '.$registreStock->getUnitats().'x'.$registreStock->getProducte()->getDescripcio().". ".$registreStock->getComentaris());
+				else if ($unitatsOriginal != $registreStock->getUnitats()) $registreStock->setComentaris(str_replace($unitatsOriginal.'x', $registreStock->getUnitats().'x', $registreStock->getComentaris())); // Canvi unitats, modificar comentaris
+				
+				$this->recalcularStockProducte($registreStock);
+					
     			$em->flush();
     			
     			$this->logEntryAuth('PRODUCTE SUBMIT',	'registre : ' . $registreStock->getId().' '.$registreStock->getProducte()->getDescripcio().' '.$registreStock->getTipus().' '.$registreStock->getUnitats()); 
     			 
-    			$response = new Response("El registre s'ha desat correctament");
-				return $response;
+				return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId())));
    			} 
 
 		} catch (\Exception $e) {
-    		// Ko, mostra form amb errors
-    		//$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 			
 			$response = new Response($e->getMessage());
 			$response->setStatusCode(500);
@@ -168,11 +190,11 @@ class FacturacioController extends BaseController {
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'registre' => $registreStock))); 
 	}		
 		
-	public function recalcularStockProducte($producte, $registreStock) {
-		
-		if ($producte == null) throw new \Exception('Producte incorrecte' );
+	public function recalcularStockProducte($registreStock) {
 		
 		if ($registreStock == null) throw new \Exception('Registre incorrecte' );
+
+		$producte = $registreStock->getProducte();
 
 		$desde = $registreStock->getDataregistre();
 		
@@ -184,18 +206,24 @@ class FacturacioController extends BaseController {
 		$strQuery .= " AND s.producte = :idproducte ";
 		$strQuery .= " AND s.databaixa IS NULL ";
 		$strQuery .= " AND (s.dataregistre < :desde ";
-		$strQuery .= " OR (s.dataregistre = :desde AND s.id < :id)) ";
+		if ($registreStock->getId() != 0) $strQuery .= " OR (s.dataregistre = :desde AND s.id < :id) "; // Anteriors a registre existent
+		else $strQuery .= " OR (s.dataregistre = :desde) ";	// Nou registre sempre id major
+		$strQuery .= " ) ";
 		$strQuery .= " ORDER BY s.dataregistre DESC, s.id DESC ";
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d'));
-		$query->setParameter('id', $registreStock->getId());
+		$query->setParameter('idproducte', $producte->getId());
+		if ($registreStock->getId() != 0) $query->setParameter('id', $registreStock->getId());
 		$query->setMaxResults( 1 );
 		
-		$ultimRegistre = $query->getSingleResult();
-		
-		// No es pot esborrar el primer registre d'un producte (stock inicial)
-		if ($ultimRegistre == null) throw new \Exception('No es pot esborrar el primer registre del producte' );
-		
+		$ultimRegistre = $query->getResult();
+
+		if ($ultimRegistre == null || count($ultimRegistre) == 0) {
+			// No es pot esborrar el primer registre d'un producte (stock inicial)
+			if ($registreStock->anulat()) throw new \Exception('No es pot esborrar el primer registre del producte' );
+			else throw new \Exception('No es poden afegir registres abans del primer registre que conté l\'stock inicial' );
+		}
+		$ultimRegistre = $ultimRegistre[0];
 		$stock = $ultimRegistre->getStock();
 		
 		// Actualitzar següents stock registres posteriors o iguals a $desde 
@@ -203,22 +231,26 @@ class FacturacioController extends BaseController {
 		$strQuery .= " WHERE 1 = 1 ";
 		$strQuery .= " AND s.producte = :idproducte ";
 		$strQuery .= " AND s.databaixa IS NULL ";
-		$strQuery .= " AND (s.dataregistre >= :desde ";
-		$strQuery .= " OR (s.dataregistre = :desde AND s.id >= :id)) ";
+		$strQuery .= " AND (s.dataregistre > :desde ";
+		if ($registreStock->getId() != 0) $strQuery .= " OR (s.dataregistre = :desde AND s.id >= :id) ";
+		$strQuery .= " ) ";
 		$strQuery .= " ORDER BY s.dataregistre, s.id ";
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d'));
-		$query->setParameter('id', $registreStock->getId());
+		$query->setParameter('idproducte', $producte->getId());
+		if ($registreStock->getId() != 0) $query->setParameter('id', $registreStock->getId());
 		
-		$registres = $query->getResults();
+		$registres = $query->getResult();
 		
 		if ($registreStock->getId() == 0) {
 			// Altes
 			if ($registreStock->esEntrada()) $stock += $registreStock->getUnitats();
 			else $stock -= $registreStock->getUnitats();
+			$registreStock->setStock($stock);
 		}
-		
+
 		foreach ($registres as $registre) {
+			
 			if ($registreStock->getId() == $registre->getId() && $registreStock->anulat()) {
 				// $registre segur que no està anulat
 				// Baixes => no tenir en compte
@@ -229,9 +261,9 @@ class FacturacioController extends BaseController {
 				
 				$registre->setStock($stock);
 			}			
-		}		
+		}
 		
-		// => Crear producte stockable afegir registre stock
+		$producte->setStock($stock);		
 	}
 		
 	public function registresaldosAction(Request $request) {
@@ -1799,8 +1831,10 @@ class FacturacioController extends BaseController {
 
 				$factura = $this->crearFactura($datafacturacio, $comanda, '', $comptefactura);
 			
-				$em ->flush();
+				// Gestionar stock
+				$this->registreComanda($comanda);
 			
+				$em ->flush();
 			
 				// Enviar notificació mail Albert si és una comanda de Kits
 				if ($comanda->comandaKits()) {
@@ -1865,6 +1899,69 @@ class FacturacioController extends BaseController {
 		}
 		
 		return $this->redirect($this->generateUrl('FecdasBundle_graellaproductes', array( 'tipus' => $tipus, 'club' => $club->getCodi())));
+	}
+
+	public function registreComanda($comanda, $originalDetalls = null) {
+		$em = $this->getDoctrine()->getManager();
+		
+		if ($originalDetalls == null) $originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
+
+		$productesNotificacio = array();
+		foreach ($comanda->getDetalls() as $detall) {
+
+			$producte = $detall->getProducte();	
+			$unitats = $detall->getUnitats();
+
+			if ($producte->getStockable() == true) {
+
+				$factura = $comanda->getFactura();
+				if (!$comanda->esNova()) {
+					$ultimafactura = $comanda->getFacturaAnulacioNova();
+					if ($ultimafactura != null) $factura = $ultimafactura; // Cercar factura anul·lació corresponent
+					
+					// Cercar original corresponent per veure canvis unitats comanda
+					foreach ($originalDetalls as $detallOriginal) {
+						if ($detallOriginal->getId() == $detall->getId()) $unitats = $detall->getUnitats() - $detallOriginal->getUnitats();
+					}
+				}
+				
+				if ($unitats != 0) {
+					// Afegir registre i actualitzar stock
+					$comentaris = 'Sortida stock '.$unitats.'x'.$producte->getDescripcio();
+						
+					$registreStock = new EntityStock($producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
+					$em->persist($registreStock);
+						
+					$this->recalcularStockProducte($registreStock);
+						
+					if ($unitats > $producte->getStock()) {
+						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
+					}
+	
+					// Control notificació stock
+					if ($producte->getStock() < $producte->getLimitnotifica()) {
+						$productesNotificacio[] = $producte; // Afegir a la llista de productes per notificar manca stock
+					} 
+				}
+			}
+		}
+
+		if (count($productesNotificacio) > 0) {
+			// Enviar notificacions
+			$body = '';
+			foreach ($productesNotificacio as $producte) {
+				$body .= '<li>El producte \''.$producte->getDescripcio().'\' té '.$producte->getStock().
+							' en stock (valor de notificació '.$producte->getLimitNotifica().'). </li>'; 
+			}
+			$body = '<p>Cal revisar l\'stock dels següents productes</p>'. 
+					 '<ul>'.$body.'</ul>';
+	
+			$subject = "Revisió stock. Federació Catalana d'Activitats Subaquàtiques";
+				
+			$tomails = self::getCarnetsMails();
+				
+			$this->buildAndSendMail($subject, $tomails, $body);
+		}		
 	}
 
 	public function afegircistellaAction(Request $request) {
@@ -2098,6 +2195,9 @@ class FacturacioController extends BaseController {
 					} 
 
 					if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
+					
+					// Gestionar stock
+					$this->registreComanda($comanda, $originalDetalls);
 		
 				} else {
 					throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda ' ); //$form->getErrorsAsString()
@@ -2302,6 +2402,7 @@ class FacturacioController extends BaseController {
     	
     	$producte = null;
     	$anypreu = date('y');
+		$stockOriginal = 0;
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
     		$anypreu = $request->query->get('anypreu', date('y'));
@@ -2335,6 +2436,8 @@ class FacturacioController extends BaseController {
     			$producte = new EntityProducte();
     			$em->persist($producte);
     		}
+			
+			$stockOriginal = $producte->getStock();
     	}	
     	$form = $this->createForm(new FormProducte($anypreu), $producte);
     	
@@ -2355,70 +2458,91 @@ class FacturacioController extends BaseController {
     				throw new \Exception('Cal indicar un preu vàlid 1'.$importpreu  );
     			}
     			
-    			if ($form->isValid()) {
-    				if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
+    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString());
     				
-    				/* NO ES VALIDA CODIS DIFERENTS, ara varis productes poden tenir mateix codi Agost 2016
-                    $codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
+    			if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
     				
-    				if ($codiExistent != null && $codiExistent != $producte) {
-    					$form->get('codi')->addError(new FormError('Codi existent'));
-    					throw new \Exception('El codi indicat ja existeix pel producte: ' .$codiExistent->getDescripcio() );
-    				}*/
+    			/* NO ES VALIDA CODIS DIFERENTS, ara varis productes poden tenir mateix codi Agost 2016
+                $codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
     				
-    				if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
-    					$form->get('codi')->addError(new FormError('Codi incorrecte'));
-    					throw new \Exception('El codi ha de tenir 7 dígits ' );
-    				}
+    			if ($codiExistent != null && $codiExistent != $producte) {
+    				$form->get('codi')->addError(new FormError('Codi existent'));
+    				throw new \Exception('El codi indicat ja existeix pel producte: ' .$codiExistent->getDescripcio() );
+    			}*/
     				
-    				if ($producte->getMinim() < 0) {
-    					$form->get('minim')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
-    				}
-    				
-    				if ($producte->getStockable() == true) {
-    					if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
-    						$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar el límit de notificació ' );
-    					}
-    						
-    					if ($producte->getStock() == null || $producte->getStock() < 0) {
-    						$form->get('stock')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar l\'stock disponible ' );
-    					}
-    				} else {
-    					$producte->setLimitnotifica(null);
-						$producte->setStock(null);
-    				}
-    				
-					if ($producte->getTransport() == true) {
-						if ($producte->getPes() == null || $producte->getPes() < 0) {
-    						$form->get('pes')->addError(new FormError('Valor incorrecte'));
-    						throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
-    					}
-					} else {
-						$producte->setPes(0);
-					}
-    				
-    				$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
-    				
-    				if ($iva == 0) $iva = null;
-    				
-    				$preu = $producte->getPreu($anypreu);
-    				if ($preu == null) {
-    					// Crear nou
-    					$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
-    					$em->persist($preu);
-						$producte->addPreus($preu);
-    				} else {
-    					$preu->setPreu($importpreu);
-    					$preu->setIva($iva);
-    				}
-    				
-    				
-    			} else {
-    				throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString()); 
+    			if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
+    				$form->get('codi')->addError(new FormError('Codi incorrecte'));
+    				throw new \Exception('El codi ha de tenir 7 dígits ' );
     			}
+    				
+    			if ($producte->getMinim() < 0) {
+    				$form->get('minim')->addError(new FormError('Valor incorrecte'));
+    				throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
+    			}
+    				
+    			if ($producte->getStockable() == true) {
+    				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
+    					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('Cal indicar el límit de notificació ' );
+    				}
+    					
+    				if ($producte->getStock() == null || $producte->getStock() < 0) {
+    					$form->get('stock')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('Cal indicar l\'stock disponible ' );
+    				}
+    			} else {
+    				$producte->setLimitnotifica(null);
+					$producte->setStock(null);
+    			}
+    				
+				if ($producte->getTransport() == true) {
+					if ($producte->getPes() == null || $producte->getPes() < 0) {
+    					$form->get('pes')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
+    				}
+				} else {
+					$producte->setPes(0);
+				}
+    				
+    			$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
+    				
+    			if ($iva == 0) $iva = null;
+    				
+    			$preu = $producte->getPreu($anypreu);
+    			if ($preu == null) {
+    				// Crear nou
+    				$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
+    				$em->persist($preu);
+					$producte->addPreus($preu);
+    			} else {
+    				$preu->setPreu($importpreu);
+    				$preu->setIva($iva);
+    			}
+
+				// Stock
+				if ($producte->getStockable() == true) {
+					if ($producte->getId() == 0) {
+						// => Crear producte stockable afegir registre stock
+						$registreStock = new EntityStock($producte, $producte->getStock(), 'Registre inicial stock');
+						$registreStock->setStock($producte->getStock()); // Stock inicial
+						$em->persist($registreStock);
+					} else {
+						// Si no existeix stock pel producte es crea.   
+						$query = $this->consultaStock($producte->getId());
+						$registres = $query->getResult();
+						if ($registres == null || count($registres) == 0) {
+							$registreStock = new EntityStock($producte, $producte->getStock(), 'Registre inicial stock');
+							$registreStock->setStock($producte->getStock()); // Stock inicial
+							$em->persist($registreStock);
+						} else {
+							// Si existeix stock no permet canviar-lo
+							if ($stockOriginal != $producte->getStock()) {
+								$form->get('stock')->addError(new FormError('No es pot modificar'));
+	    						throw new \Exception('No es pot modificar l\'stock d\'aquest producte directament, cal fer-ho a través de la gestió d\'stock' );
+							}
+						}
+					}
+				}
 
 				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
 					$activat = $form->get('activat')->getData();

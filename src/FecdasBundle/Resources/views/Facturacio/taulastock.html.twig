@@ -1,0 +1,50 @@
+{# src/Fecdas/productesBundle/Resources/views/Facturacio/taulastock.html.twig #}
+	<div class="table-stock">
+	    <div class="table-header">	
+		   	<div id="list-header">
+				<div id="header-registrestock-id" class="col-listheader hidden">&nbsp;</div>
+				<div id="header-registrestock-dataregistre" class="col-listheader collistheader-noorder">Data</div>
+				<div id="header-registrestock-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
+				<div id="header-registrestock-factura" class="col-listheader collistheader-noorder">Factura</div>
+				<div id="header-registrestock-producte" class="col-listheader collistheader-noorder">Producte</div>
+		   		<div id="header-registrestock-entrada" class="col-listheader collistheader-noorder">Entrada</div>
+		   		<div id="header-registrestock-sortida" class="col-listheader collistheader-noorder">Sortida</div>
+		   		<div id="header-registrestock-preuunitat" class="col-listheader collistheader-noorder">Preu ud.</div>
+		   		<div id="header-registrestock-total" class="col-listheader collistheader-noorder">Preu ud.</div>
+		   		<div id="header-registrestock-stock" class="col-listheader collistheader-noorder">Stock</div>
+		   		<div id="header-registrestock-actions" class="col-listheader collistheader-noorder total-rowcount">Total: {{ stock.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   	</div>
+	   	</div>
+		{% if stock|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for registre in stock %} 
+		   		<li class="data-detall {% if registre.anulat %} data-detall-fosc {% endif %}">
+		   			<div class="data-detall-cell registrestock-id hidden">{{ registre.id }}</div>
+		   			<div class="data-detall-cell registrestock-dataregistre">{{ registre.dataregistre|date('d/m/Y') }}</div>
+		   			<div class="data-detall-cell registrestock-comentaris">{{ registre.comentaris }}</div>
+		   			<div class="data-detall-cell registrestock-factura">{% if registre.factura != null %}{{ registre.factura.numfactura }} {% endif %}</div>
+		   			<div class="data-detall-cell registrestock-producte">{{ registre.producte.descripcio }}</div>
+		   			<div class="data-detall-cell registrestock-entrada">{% if (registre.tipus == constant('FecdasBundle\\Controller\\BaseController::REGISTRE_STOCK_ENTRADA')) %} {{ registre.unitats }}  {% endif %}</div>
+		   			<div class="data-detall-cell registrestock-sortida">{% if (registre.tipus == constant('FecdasBundle\\Controller\\BaseController::REGISTRE_STOCK_SORTIDA')) %} {{ registre.unitats }}  {% endif %}</div>
+		   			<div class="data-detall-cell registrestock-preuunitat">{{ registre.preuunitat|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell registrestock-total">{{ (registre.preuunitat*registre.unitats)|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell registrestock-stock">{{ registre.stock }}</div>
+		   			<div class="data-detall-cell registrestock-actions">
+		   				<a class="registrestock-action-edit link" href="{{ path('FecdasBundle_registrestock', { 'action': 'edit', 'id': registre.id }) }}" alt="Editar" title="Editar"><i class="fa fa-pencil blue"></i></a>			
+						{% if not registre.anulat %}
+		   				<a class="registrestock-action-baixa link" href="{{ path('FecdasBundle_registrestock', { 'action': 'remove', 'id': registre.id }) }}" alt="Baixa" title="Baixa"><i class="fa fa-trash-o red"></i></a>
+		   				{% else %}
+		   				<i class="fa fa-trash-o transparent"></i>
+		   				{% endif %}
+		   			</div>
+		   		</li>
+		   		{% endfor %}
+			</ol>
+		</div>
+		{% if stock.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(stock, null, [] ) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha stock per mostrar</div>
+	    {% endif %}
+	</div>
+

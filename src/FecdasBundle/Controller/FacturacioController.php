@@ -40,30 +40,119 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
 		$idproducte = $request->query->get('cerca', 0);
-
-		$this->logEntryAuth('CONSULTA STOCK', $this->get('session')->get('username').' - producte: '.$idproducte);
-
+		$format = $request->query->get('format', 'html');
+		$vista = $request->query->get('view', 'M'); // Mensual
+		$strDesde = $request->query->get('desde', ''); 
+		if ($strDesde != '') $desde = \DateTime::createFromFormat('d/m/Y', '01'.substr($strDesde,2, strlen($strDesde)));  // Dia 1 del mes
+		else $desde = \DateTime::createFromFormat('d/m/Y', "01/01/".date('Y'));			
+		
+		
 		$page = $request->query->get('page', 1);
 		
-		$query = $this->consultaStock($idproducte);
+		if ($vista == 'M' || $idproducte == 0) {
+			if ($vista != 'M') $this->get('session')->getFlashBag()->add('error-notice', 'Per veure el detall cal escollir un producte'); // EScollir detall sense producte
 			
-		$paginator  = $this->get('knp_paginator');
+			$vista = 'M';
+			$stockAcumulat = $this->consultaStockAcumulat($idproducte, $desde);
 			
-		$stock = $paginator->paginate(
-			$query,
-			$page,
-			10/*limit per page*/
-		);
-		
-		if ($request->isXmlHttpRequest()) {
-			return $this->render('FecdasBundle:Facturacio:taulastock.html.twig',
-				$this->getCommonRenderArrayOptions(array('stock' => $stock)));
+			if ($format == 'csv') {
+				$this->logEntryAuth('CSV STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
+							
+				$header = array($stockAcumulat['header']['abreviatura']['text'], $stockAcumulat['header']['producte']['text'], $stockAcumulat['header']['inicial']['text'], $stockAcumulat['header']['import']['text']  );
+				foreach ($stockAcumulat['header']['acumulats'] as $head) {
+					$current = $head['current']['text'];
+					$header[] = $head['entrades']['text'].' '.$current; 
+					$header[] = $head['importentrades']['text'].' '.$current;
+					$header[] = $head['sortides']['text'].' '.$current;
+					$header[] = $head['importsortides']['text'].' '.$current;
+					$header[] = $head['total']['text'].' '.$current;
+					$header[] = $head['importtotal']['text'].' '.$current;
+				}
+				$header[] = $stockAcumulat['header']['stock']['text'];
+				
+				$data = array();
+				foreach ($stockAcumulat['data'] as $acumulat) {
+					$row = array();
+					$row['abreviatura'] = $acumulat['abreviatura'];
+					$row['producte'] = $acumulat['producte'];
+					$row['inicial'] = $acumulat['inicial'];
+					$row['import'] = number_format($acumulat['import'], 2, ',', '');
+
+					foreach ($acumulat['acumulats'] as $acumulatPeriode) {
+						$row[] = $acumulatPeriode['entrades'];
+						$row[] = number_format($acumulatPeriode['importentrades'], 2, ',', '');
+						$row[] = $acumulatPeriode['sortides'];
+						$row[] = number_format($acumulatPeriode['importsortides'], 2, ',', '');
+						$row[] = $acumulatPeriode['total'];
+						$row[] = number_format($acumulatPeriode['importtotal'], 2, ',', '');
+					}
+					
+					if (count($stockAcumulat['header']['acumulats']) > count($acumulat['acumulats'])) {
+						$totalVoid = count($stockAcumulat['header']['acumulats']) - count($acumulat['acumulats']);
+						for ($i=0; $i < (6 * $totalVoid); $i++) $row[] = "";
+					}
+					$row['stock'] = $acumulat['stock'];
+					
+					$data[] = $row;
+				}
+			
+				$filename = "export_stock_acumulat_".($idproducte != 0?$idproducte:"tots")."_".$desde->format('Y-m-d')."_".date('Hms').".csv";
+				$response = $this->exportCSV($request, $header, $data, $filename);
+				return $response;
+			}
+			
+			$this->logEntryAuth('CONSULTA STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
+			
+			if ($request->isXmlHttpRequest()) {
+				return $this->render('FecdasBundle:Facturacio:taulastockacumulat.html.twig',
+					$this->getCommonRenderArrayOptions(array('stockacumulat' => $stockAcumulat)));
+			}
+		} else {
+			$query = $this->consultaStock($idproducte, $desde);
+			
+			if ($format == 'csv') {
+			
+				$stock = $query->getResult();
+				
+				$header = array('id', 'dataregistre', 'comentaris', 'factura', 'producte', 'entrades', 'sortides', 'preu unitat', 'total', 'stock');
+				
+				$data = array();
+				foreach ($stock as $registre) {
+					$row = array('id' => $registre->getId(), 'data' => $registre->getDataregistre()->format('d/m/Y'));
+					$row['comentaris'] = $registre->getComentaris(); 
+					$row['factura'] = $registre->getFactura() != null?$registre->getFactura()->getNumfactura():"";
+					$row['producte'] = $registre->getProducte() != null?$registre->getProducte()->getDescripcio():"";
+					$row['entrades'] = ($registre->getTipus() == BaseController::REGISTRE_STOCK_ENTRADA?$registre->getUnitats():"");
+					$row['sortides'] = ($registre->getTipus() == BaseController::REGISTRE_STOCK_SORTIDA?$registre->getUnitats():"");
+					$row['preuunitat'] = number_format($registre->getPreuunitat(), 2, ',', '');
+					$row['total'] = number_format($registre->getUnitats()*$registre->getPreuunitat(), 2, ',', '');
+					$row['stock'] = $registre->getStock();
+
+					$data[] = $row;
+				}
+				
+				$filename = "export_stock_detall_".$idproducte."_".$desde->format('Y-m-d')."_".date('Hms').".csv";
+				$response = $this->exportCSV($request, $header, $data, $filename);
+				return $response;
+			} 	
+					
+			$paginator  = $this->get('knp_paginator');
+					
+			$stock = $paginator->paginate(
+				$query,
+				$page,
+				10/*limit per page*/
+			);
+			
+			
+			$this->logEntryAuth('CONSULTA STOCK DETALL', ' producte: '.$idproducte.' desde '.$strDesde);
+			
+			if ($request->isXmlHttpRequest()) {
+				return $this->render('FecdasBundle:Facturacio:taulastock.html.twig',
+					$this->getCommonRenderArrayOptions(array('stock' => $stock)));
+			}
 		}
-			
-		/*$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'hidden', array(
-				'data' => ($idproducte>0?$idproducte:"")
-		));*/
+		
 		
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'entity', array(
@@ -77,9 +166,28 @@ class FacturacioController extends BaseController {
 							'choice_label' => 'descripcio',
 							'empty_value' => '',
 							'required'  => true,
-							'data' => ($idproducte>0?$idproducte:"")
-				));
+							'data' => ($idproducte>0?$this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte):"")))
+			->add('desde', 'date', array(
+				'disabled' 		=> false,
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'required'		=>	false,
+				'data'			=> $desde,
+				'format' 		=> 'dd/MM/yyyy'))				
+			->add('view', 'choice', array(
+				'choices'   	=> array('D' => 'detall', 'M' => 'mensual'),
+				'multiple'  	=> false,
+				'expanded' 		=> true,
+				'data'			=> $vista
+		));
 		
+		if ($vista == 'M' || $idproducte == 0) {
+			return $this->render('FecdasBundle:Facturacio:stockacumulat.html.twig',
+					$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+							'stockacumulat' => $stockAcumulat)
+							));
+		
+		}
 		return $this->render('FecdasBundle:Facturacio:stock.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'stock' => $stock)
@@ -100,10 +208,11 @@ class FacturacioController extends BaseController {
     	$em = $this->getDoctrine()->getManager();
 		
     	$registreStock = null;
-		
+		$producteId = 0;
 		try {
 	    	if ($request->getMethod() != 'POST') {
 	    		$id = $request->query->get('id', 0);
+				$producteId = $request->query->get('producte', 0);
 				$action = $request->query->get('action', '');
 				if ($action == 'remove') { 
 				 
@@ -140,6 +249,11 @@ class FacturacioController extends BaseController {
 	    		
 	    	if ($registreStock == null) {
 	    		$registreStock = new EntityStock();
+				if ($producteId > 0) {
+					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($producteId);
+					if ($producte != null) $registreStock->setProducte($producte);
+				}
+				
 	    		$em->persist($registreStock);
 	    	}
 		
@@ -329,10 +443,11 @@ class FacturacioController extends BaseController {
 			
 		    break;
 		}					
-		$this->logEntryAuth('REGISTRE SALDOS', ($club != null?$club->getCodi():"TOTS")." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
 		
 		
 		if ($format == 'csv') {
+			
+			$this->logEntryAuth('REGISTRE SALDOS CSV', ($club != null?$club->getCodi():"TOTS")." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
 			
 			$strGrup = '';
 			if ($grup == 'D') {
@@ -392,6 +507,8 @@ class FacturacioController extends BaseController {
 			
 			return $response;
 		}
+		
+		$this->logEntryAuth('REGISTRE SALDOS', ($club != null?$club->getCodi():"TOTS")." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
 		
 		// !!!!!!!!!!! CONSULTAR I MOSTRAR REBUTS ENTRATS AL 2016 AMB DATA PAGAMENT 2015 !!!!!! POSSIBLES FONTS D'ERRADES
 		$rebutsControlar = array();
@@ -2807,11 +2924,155 @@ class FacturacioController extends BaseController {
 		$strQuery .= " WHERE 1 = 1 ";
 		if ($idproducte > 0) $strQuery .= " AND s.producte = :idproducte ";
 		if (! $baixes) $strQuery .= " AND s.databaixa IS NULL ";
-		$strQuery .= " ORDER BY s.dataregistre ASC ";
+		$strQuery .= " ORDER BY s.dataregistre ASC, s.id ASC ";
 		$query = $em->createQuery($strQuery);
 		if ($idproducte > 0) $query->setParameter('idproducte', $idproducte);
 		return $query;
 	}
+	
+	private function consultaStockInicialProducte($idproducte) {
+		$em = $this->getDoctrine()->getManager();
+	
+		if ($idproducte == null || $idproducte == 0) return null;
+	
+		$query = $this->consultaStock($idproducte, false);
+		
+		$stock = $query->getResult();
+		
+		return ($stock != null  && count($stock) > 0?$stock[0]:null);
+	}
+	
+	protected function consultaStockAcumulat($idproducte, $desde) {
+		$em = $this->getDoctrine()->getManager();
+	
+		// Consultar saldos entre dates acumulats per mes per a l'exercici en curs
+		$strQuery  = " SELECT s.tipus, s.producte, p.abreviatura, p.descripcio, p.stock, YEAR(s.dataregistre) as anyregistre, MONTH(s.dataregistre) as mesregistre, ";
+		$strQuery .= " SUM(s.unitats) as total, SUM(s.unitats * s.preuunitat) as importtotal ";
+		$strQuery .= " FROM m_stock s INNER JOIN m_productes p ON s.producte = p.id ";
+		$strQuery .= " WHERE s.databaixa IS NULL ";
+		$strQuery .= " GROUP BY s.tipus, s.producte, p.abreviatura, p.descripcio, p.stock, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
+		$strQuery .= " ORDER BY p.descripcio, s.tipus, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
+	    
+	    $stmt = $em->getConnection()->prepare($strQuery);
+	    $stmt->execute();
+    	$acumulats = $stmt->fetchAll();
+		
+		// $acumulats => 'codi','romanent', 'exercici', 'nom', 'anyregistre', 'mesregistre', 'variacio'
+		//					Inicial 	Gener						Febrer		 				Març ... 	 Stock
+		//								IN  €  OUT 	€	TOTAL  €	IN  €  OUT 	€	TOTAL  €
+		// Producte 1		10			
+		// Producte 2
+
+		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
+		$formatter->setPattern('MMMM yyyy');
+		
+		$stockArray = array(
+			'header' => array(	'abreviatura' 	=> array('text' => 'Abr.', 'class' => 'abreviatura'),
+								'producte' 		=> array('text' => 'Producte', 'class' => 'producte'),
+								'inicial' 		=> array('text' => 'Inicial', 'class' => 'inicial'),
+								'import' 		=> array('text' => 'Import inicial', 'class' => 'import'),
+								'acumulats'		=> array(),
+								'stock' 		=> array('text' => 'Stock', 'class' => 'stock')),
+			'data' => array() 
+		);
+		
+		$producteAnterior = '';
+		$clubNom = '';
+		$saldoComptableCurrent = 0;
+		foreach ($acumulats as $acumulatMensual) {
+			$producteCurrent = $acumulatMensual['producte'];
+				
+			if ($producteAnterior != $producteCurrent) {
+				$registreInicial = $this->consultaStockInicialProducte($producteCurrent);
+				$stockInicial = ($registreInicial!=null?$registreInicial->getStock():0);
+				$stockAcumulat = $stockInicial;
+				
+				$inicialDescomptat = false; // L'stock inicial cal descomptar-lo del acumulat del mes corresponent
+				
+				// Primer resgistre saldo inici exercici
+				$stockArray['data'][$producteCurrent] = array(
+					'abreviatura'	=> $acumulatMensual['abreviatura'],
+					'producte'		=> $acumulatMensual['descripcio'],
+					'inicial'		=> $stockInicial,
+					'import'		=> $stockInicial*$registreInicial->getPreuunitat(),
+					'acumulats'		=> array(),
+					'stock'			=> $acumulatMensual['stock'],
+				);
+			}
+				
+		   	// Mensual
+		   	
+			if ($acumulatMensual['anyregistre'] < $desde->format('Y') ||
+				($acumulatMensual['anyregistre'] == $desde->format('Y') && $acumulatMensual['mesregistre'] < $desde->format('n'))) {
+					
+				// Registre anterior inici consulta. Acumula i Continua
+				$currentAnyMesKey = 'previ';	
+				
+				$inicialDescomptat = $this->acumularStock($currentAnyMesKey, $currentAnyMesKey, $stockArray, $producteCurrent, $acumulatMensual, $inicialDescomptat, $registreInicial);	
+			} else {
+				// Registre mes+any acumulat
+
+				$currentAnyMesKey = $acumulatMensual['anyregistre'].'-'.$acumulatMensual['mesregistre'];
+				
+				$dataux = \DateTime::createFromFormat('Y-n-j', $currentAnyMesKey . "-1");
+				
+				$inicialDescomptat = $this->acumularStock($currentAnyMesKey, ucfirst($formatter->format($dataux)), $stockArray, $producteCurrent, $acumulatMensual, $inicialDescomptat, $registreInicial);
+			}
+
+			$producteAnterior = $producteCurrent;
+		}
+		
+		$stockArray['header']['stock'] = array('text' => 'Stock', 'class' => 'stock');
+		
+		return $stockArray;
+		
+	}
+	
+	private function acumularStock($currentAnyMesKey, $currentText, &$stockArray, $producteCurrent, $acumulatMensual, $inicialDescomptat, $registreInicial){
+		if (!isset($stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey])) {
+				$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey] = array('entrades' => 0, 'importentrades' => 0, 'sortides' => 0, 'importsortides' => 0, 'total' => 0, 'importtotal' => 0);
+		}
+				
+		if ($acumulatMensual['tipus'] == BaseController::REGISTRE_STOCK_ENTRADA) {
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['entrades'] += $acumulatMensual['total'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importentrades'] += $acumulatMensual['importtotal'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] += $acumulatMensual['total'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importtotal'] += $acumulatMensual['importtotal'];
+		} else {
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['sortides'] += $acumulatMensual['total'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importsortides'] += $acumulatMensual['importtotal'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] -= $acumulatMensual['total'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importtotal'] -= $acumulatMensual['importtotal'];
+		}
+				
+		if (!$inicialDescomptat && $registreInicial!=null && 
+			$registreInicial->getDataregistre()->format('Y') == $acumulatMensual['anyregistre'] &&
+			$registreInicial->getDataregistre()->format('n') == $acumulatMensual['mesregistre']) {
+				
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['entrades'] -= $stockArray['data'][$producteCurrent]['inicial'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importentrades'] -= $stockArray['data'][$producteCurrent]['import'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] -= $stockArray['data'][$producteCurrent]['inicial'];
+			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importtotal'] -= $stockArray['data'][$producteCurrent]['import'];
+					
+			$inicialDescomptat = true;
+		}
+				
+		// Add header first time
+		if (!isset($stockArray['header']['acumulats'][$currentAnyMesKey])) {
+			$stockArray['header']['acumulats'][$currentAnyMesKey] = array(
+				'current' => array('text' => $currentText, 'class' => 'current'),
+				'entrades' => array('text' => 'Entrades', 'class' => 'entrades'), 
+				'importentrades' => array('text' => 'Import entrades', 'class' => 'importentrades'), 
+				'sortides' => array('text' => 'Sortides', 'class' => 'sortides'), 
+				'importsortides' => array('text' => 'Import sortides', 'class' => 'importsortides'), 
+				'total' => array('text' => 'total', 'class' => 'total'), 
+				'importtotal' => array('text' => 'Import total', 'class' => 'importtotal')
+			);
+		}
+	
+		return $inicialDescomptat;
+	}					
+	
 	
 	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
 		$em = $this->getDoctrine()->getManager();

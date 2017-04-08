@@ -47,7 +47,8 @@
 		{{ form_widget(llicencia.enviarllicencia) }}
 	{% endif %}
 	<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
-	<div class="form-row clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
+	
+	<div class="form-row clearfix hidden" {% if (asseguranca == true) %} style="display:none" {% endif %}>
 		{% if llicenciadades.parte.allowEdit == true or admin == true%}
 		<div class="llicencia-check seleccionar-tot">
 	 		<label class="formlabel-lefttocheckbox"  for="llicencia_seleccionat-tot">Seleccionar tot</label>
@@ -55,7 +56,7 @@
 		</div>
 		{% endif %}
 	</div>
-	<div class="form-row clearfix" {% if (asseguranca == true) %} style="display:none" {% endif %}>
+	<div class="form-row clearfix hidden" {% if (asseguranca == true) %} style="display:none" {% endif %}>
 		<div class="llicencia-check">
 		{{ form_label(llicencia.apnea, 'Apnea', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 		{{ form_widget(llicencia.apnea, { 'attr': {'class': 'formcheckbox-right'} }) }}

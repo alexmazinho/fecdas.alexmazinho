@@ -387,7 +387,8 @@ class PDFController extends BaseController {
 				
 				$pdf->Ln(10);	
 				
-				$w = array(26, 44, 28, 26, 50, 16, 30, 10, 35); // Amplades
+				/*$w = array(26, 44, 28, 26, 50, 16, 30, 10, 35);*/ // Amplades
+				$w = array(8, 26+3, 44+6, 28+3, 26+3, 50+8, 16+2, 30+4, 10); // Amplades
 				$this->parteHeader($pdf, $w);
 				
 				$pdf->SetFillColor(255, 255, 255); //Blanc
@@ -396,11 +397,12 @@ class PDFController extends BaseController {
 				
 				$llicenciesSorted = $parte->getLlicenciesSortedByName();
 				
+				$row = 1;
 				foreach ($llicenciesSorted as $llicencia_iter) {
 					$num_pages = $pdf->getNumPages();
 					$pdf->startTransaction();
 					
-					$this->parteRow($pdf, $w, $llicencia_iter);
+					$this->parteRow($pdf, $w, $llicencia_iter, $row);
 					
 					if($num_pages < $pdf->getNumPages()) {
 						//Undo adding the row.
@@ -411,18 +413,20 @@ class PDFController extends BaseController {
 						$pdf->SetFillColor(255, 255, 255); //Blanc
 						$pdf->SetFont('dejavusans', '', 9, '', true);
 						
-						$this->parteRow($pdf, $w, $llicencia_iter);
+						$this->parteRow($pdf, $w, $llicencia_iter, $row);
 						
 					} else {
 						//Otherwise we are fine with this row, discard undo history.
 						$pdf->commitTransaction();
 					}
+					$row++;
 				}
 				
 				$pdf->Ln();
 				
 				$y = $pdf->getY();
 				
+				/* Treure activitats
 				$pdf->SetFont('dejavusans', '', 8, '', true);
 				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
 				<tr nobr="true">
@@ -449,7 +453,8 @@ class PDFController extends BaseController {
 				$tbl .= '</table>';
 				
 				$pdf->writeHTML($tbl, false, false, false, false, '');
-				
+				*/
+				  
 				// reset pointer to the last page
 				$pdf->lastPage();
 			
@@ -466,31 +471,33 @@ class PDFController extends BaseController {
 	private function parteHeader($pdf, $w) { 
 		$pdf->SetFont('dejavusans', 'B', 10, '', true);
 		$pdf->SetFillColor(221, 221, 221); //Gris
-		$pdf->Cell($w[0], 7, 'DNI', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
-		$pdf->Cell($w[1], 7, 'COGNOMS', 1, 0, 'C', 1);
-		$pdf->Cell($w[2], 7, 'NOM', 1, 0, 'C', 1);
-		$pdf->Cell($w[3], 7, 'D NAIXEMENT', 1, 0, 'C', 1, '', 1);
-		$pdf->Cell($w[4], 7, 'DOMICILI', 1, 0, 'C', 1);
-		$pdf->Cell($w[5], 7, 'CP', 1, 0, 'C', 1);
-		$pdf->Cell($w[6], 7, 'POBLACIO', 1, 0, 'C', 1);
-		$pdf->Cell($w[7], 7, 'CAT', 1, 0, 'C', 1);
-		$pdf->Cell($w[8], 7, 'ACTIVITATS', 1, 0, 'C', 1);
+		$pdf->Cell($w[0], 7, '#', 1, 0, 'C', 1); 
+		$pdf->Cell($w[1], 7, 'DNI', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
+		$pdf->Cell($w[2], 7, 'COGNOMS', 1, 0, 'C', 1);
+		$pdf->Cell($w[3], 7, 'NOM', 1, 0, 'C', 1);
+		$pdf->Cell($w[4], 7, 'D NAIXEMENT', 1, 0, 'C', 1, '', 1);
+		$pdf->Cell($w[5], 7, 'DOMICILI', 1, 0, 'C', 1);
+		$pdf->Cell($w[6], 7, 'CP', 1, 0, 'C', 1);
+		$pdf->Cell($w[7], 7, 'POBLACIO', 1, 0, 'C', 1);
+		$pdf->Cell($w[8], 7, 'CAT', 1, 0, 'C', 1);
+		/*$pdf->Cell($w[8], 7, 'ACTIVITATS', 1, 0, 'C', 1);*/
 		$pdf->Ln();
 	}
 	
-	private function parteRow($pdf, $w, $llicencia) {
+	private function parteRow($pdf, $w, $llicencia, $row) {
 		
 		$persona = $llicencia->getPersona();
-		 
-		$pdf->Cell($w[0], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-		$pdf->Cell($w[1], 6, $persona->getCognoms(), 'LRB', 0, 'L', 0, '', 1); 
-		$pdf->Cell($w[2], 6, $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);  
-		$pdf->Cell($w[3], 6, $persona->getDatanaixement()->format("d/m/y") , 'LRB', 0, 'C', 0, '', 1); 
-		$pdf->Cell($w[4], 6, $persona->getAddradreca(), 'LRB', 0, 'L', 0, '', 1); 
-		$pdf->Cell($w[5], 6, $persona->getAddrcp(), 'LRB', 0, 'C', 0, '', 1);  
-		$pdf->Cell($w[6], 6, $persona->getAddrpob(), 'LRB', 0, 'L', 0, '', 1);
-		$pdf->Cell($w[7], 6, $llicencia->getCategoria()->getSimbol(), 'LRB', 0, 'C', 0, '', 1);  
-		$pdf->Cell($w[8], 6, $llicencia->getActivitats(), 'LRB', 0, 'C', 0, '', 1); 
+		
+		$pdf->Cell($w[0], 6, $row, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign 
+		$pdf->Cell($w[1], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1); 
+		$pdf->Cell($w[2], 6, $persona->getCognoms(), 'LRB', 0, 'L', 0, '', 1); 
+		$pdf->Cell($w[3], 6, $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);  
+		$pdf->Cell($w[4], 6, $persona->getDatanaixement()->format("d/m/y") , 'LRB', 0, 'C', 0, '', 1); 
+		$pdf->Cell($w[5], 6, $persona->getAddradreca(), 'LRB', 0, 'L', 0, '', 1); 
+		$pdf->Cell($w[6], 6, $persona->getAddrcp(), 'LRB', 0, 'C', 0, '', 1);  
+		$pdf->Cell($w[7], 6, $persona->getAddrpob(), 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[8], 6, $llicencia->getCategoria()->getSimbol(), 'LRB', 0, 'C', 0, '', 1);  
+		/*$pdf->Cell($w[8], 6, $llicencia->getActivitats(), 'LRB', 0, 'C', 0, '', 1);*/ 
 		$pdf->Ln();
 	}
 	

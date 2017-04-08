@@ -1,0 +1,25 @@
+{# src/Fecdas/comandesBundle/Resources/views/Facturacio/stockacumulat.html.twig #}
+{% extends 'FecdasBundle:Facturacio:stock.html.twig' %}
+
+{% block stockpagetitle %}Registre d'inventari dades acumulades{% endblock %}
+
+{% block stocktaula %}{% include 'FecdasBundle:Facturacio:taulastockacumulat.html.twig' %}{% endblock %}
+
+
+{% block javascripts %}
+
+ 	{{ parent() }}
+
+	
+	<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		
+	});
+	
+	</script>
+
+
+{% endblock %}
+

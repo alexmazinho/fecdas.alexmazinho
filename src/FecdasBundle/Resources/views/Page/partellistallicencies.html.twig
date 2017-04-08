@@ -30,8 +30,8 @@
 	   	</li>
 		<li class="data-totals data-detall">
 			<div class="data-detall-cell parte-totals" style="text-align:left">   	
-			<a id="parte-resum-more-show" href="javascript:void(0);"><img style="cursor: pointer;" src="{{ asset('images/icon_dropdown.png') }}"></a>
-	   		<a id="parte-resum-more-hide" href="javascript:void(0);" style="display:none"><img style="cursor: pointer;" src="{{ asset('images/icon_dropup.png') }}"></a>
+			<!-- <a id="parte-resum-more-show" href="javascript:void(0);"><img style="cursor: pointer;" src="{{ asset('images/icon_dropdown.png') }}"></a>
+	   		<a id="parte-resum-more-hide" href="javascript:void(0);" style="display:none"><img style="cursor: pointer;" src="{{ asset('images/icon_dropup.png') }}"></a> -->
 			</div>
 	  		<div class="data-detall-cell parte-totals">{{ parte.numAficionats }}</div>
 	   		<div class="data-detall-cell parte-totals">{{ parte.numInfantils }}</div>
@@ -80,6 +80,7 @@
 		<!-- recull parte id, per informar input parte_id quan es fa l'alta de la 
 		primera llicència que crea el parte. Veure my-jquery-scripts / addLlicenciaClick -->
 	   	<div id="header-llicenciapersona" class="col-listheader">Llicències<span class="listheader-order"></span></div>
+	   	<div id="header-llicenciamail" class="col-listheader">Correu<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
@@ -98,6 +99,7 @@
 	  				<div class="data-detall-cell llicencia-id">{{ llicencia.id }}</div>
 	  				<div class="data-detall-cell llicencia-index hidden">{{ loop.index }}</div>
 					<div class="data-detall-cell llicencia-persona">{{ llicencia.persona.cognomsNom }}</div>
+					<div class="data-detall-cell llicencia-mail">{{ llicencia.persona.mail }}</div>
 					<div class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</div>
 					<div class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
 					<div class="data-detall-cell llicencia-activitats">{{ llicencia.activitats }}</div>

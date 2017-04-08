@@ -62,9 +62,10 @@
 					<div id="list-header">
 					   	<div id="header-llicenciapersonaid" class="col-listheader hidden">&nbsp;</div>
 					   	<div id="header-llicenciapersona" class="col-listheader">Persona</div>
+					   	<div id="header-llicenciamail" class="col-listheader">Correu</div>
 					   	<div id="header-llicenciadni" class="col-listheader">DNI</div>
 					   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
-					   	<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>
+					   	<!--<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>-->
 					   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
 			   			{% if parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
 					   	<div id="header-llicenciaactions" class="col-listheader  {% if form.llicencies|length > 6 %} header-llicenciaactions-scroll {% endif %}">Renovar?</div>
@@ -76,9 +77,10 @@
 						<li class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %}">
 							<div class="data-detall-cell llicencia-personaid hidden">{{  parte.llicencies[loop.index0].persona.id }}</div>
 							<div class="data-detall-cell llicencia-persona">{{  parte.llicencies[loop.index0].persona.cognomsNom|cut(30, false, '...') }}</div>
+							<div class="data-detall-cell llicencia-mail">{{  parte.llicencies[loop.index0].persona.mail }}</div>
 							<div class="data-detall-cell llicencia-dni">{{  parte.llicencies[loop.index0].persona.dni }}</div>
 							<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
-							<div class="data-detall-cell llicencia-activitatslong">{{ parte.llicencies[loop.index0].activitats }}</div>
+							<!-- <div class="data-detall-cell llicencia-activitatslong">{# parte.llicencies[loop.index0].activitats #}</div> -->
 							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}€</div>
 							{% if parte.perEnviarFederat != true %}
 							<div class="data-detall-cell llicencia-enviarllicencia">		

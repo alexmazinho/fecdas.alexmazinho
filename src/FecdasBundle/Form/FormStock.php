@@ -23,27 +23,12 @@ class FormStock extends AbstractType {
 			/* Check we're looking at the right data/form */
 			if ($registreStock instanceof EntityStock) {
 				
-				/*$form->add( 'dataregistre', 'text', array(
-							'required' => true,
-							'data' 		=> $registreStock->getDataregistre()->format('d/m/Y'),
-				));*/
-				
 				$form->add('dataregistre', 'date',	array(
 						'required' => true,
 						'widget' 	=> 'single_text',
 						'format' => 'dd/MM/yyyy',
-						//'data' 		=> $registreStock->getDataregistre()->format('d/m/Y'),
 				));
 				
-				/*$form->add(	'factura', 'entity', array (
-							'class' => 'FecdasBundle:EntityFactura',
-							'choice_label' 	=> 'numFactura',
-							'empty_value' => '',
-							'required'  => false,
-							'data' 		=> $registreStock->getFactura(),
-							//'property_path' => 'numFactura',
-				));*/
-			
 				$form->add(	'factura', 'hidden', array (
 							'data' 		=> $registreStock->getFactura()!=null?$registreStock->getFactura()->getId():'',
 				));
@@ -59,7 +44,6 @@ class FormStock extends AbstractType {
 							'choice_label' => 'descripcio',
 							'empty_value' => '',
 							'required'  => true,
-							//'property_path' => 'descripcio',
 				));
 				
 				if (!$registreStock->anulat()) {
@@ -67,16 +51,10 @@ class FormStock extends AbstractType {
 						'required' 	=> false,
 					));
 				} else {
-					/*$form->add( 'databaixa', 'text', array(
-								'required' 	=> false,
-								'data' 		=> $registreStock->anulat()?$registreStock->getDatabaixa()->format('d/m/Y'):'',
-					));*/
-					
 					$form->add('databaixa', 'date',	array(
 						'required' => true,
 						'widget' 	=> 'single_text',
 						'format' => 'dd/MM/yyyy',
-						//'data' 		=> $registreStock->getDatabaixa()->format('d/m/Y')
 					));
 				}
 			}

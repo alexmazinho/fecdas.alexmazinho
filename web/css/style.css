@@ -589,6 +589,51 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall-cell.registrestock-actions a:hover { cursor: default;  } 
 
 
+.table-scroll-vertical .header-stockacumulat-abreviatura,
+.table-scroll-vertical .stockacumulat-abreviatura { width: 50px; text-align: center; }
+.table-scroll-vertical .header-stockacumulat-producte,
+.table-scroll-vertical .stockacumulat-producte { width: 200px; font-size: 0.9em; text-align: left; }
+.table-scroll-vertical .header-stockacumulat-inicial,
+.table-scroll-vertical .stockacumulat-inicial { width: 70px; text-align: center; font-weight: bold; }
+.table-scroll-vertical .header-stockacumulat-import,
+.table-scroll-vertical .stockacumulat-import { width: 70px; font-size: 0.9em; text-align: right; font-style: italic; font-weight: bold; }
+
+.table-scroll-vertical .header-stockacumulat-entrades,
+.table-scroll-vertical .stockacumulat-entrades,
+.table-scroll-vertical .header-stockacumulat-sortides,
+.table-scroll-vertical .stockacumulat-sortides,
+.table-scroll-vertical .header-stockacumulat-total,
+.table-scroll-vertical .stockacumulat-total { width: 70px; text-align: center; }
+
+.table-scroll-vertical .header-stockacumulat-importentrades,
+.table-scroll-vertical .stockacumulat-importentrades,
+.table-scroll-vertical .header-stockacumulat-importsortides,
+.table-scroll-vertical .stockacumulat-importsortides  { width: 70px; font-size: 0.9em; text-align: right; font-style: italic; }
+.table-scroll-vertical .header-stockacumulat-importtotal,
+.table-scroll-vertical .stockacumulat-importtotal { font-weight: bold; width: 70px; font-size: 0.9em; text-align: right; font-style: italic; }
+
+.table-scroll-vertical .header-stockacumulat-stock,
+.table-scroll-vertical .stockacumulat-stock { width: 70px; text-align: center; font-weight: bold; }
+
+
+.table-scroll-vertical .col-listheader { vertical-align: bottom; }
+
+.table-scroll-vertical .header-stockacumulat-current { font-size: 1.6em; border-bottom: none; border-left: 1px solid #96c4ea; border-right: 1px solid #96c4ea;  }
+.table-scroll-vertical .header-stockacumulat-entrades,
+.table-scroll-vertical .header-stockacumulat-sortides,
+.table-scroll-vertical .header-stockacumulat-total,
+.table-scroll-vertical .header-stockacumulat-importentrades,
+.table-scroll-vertical .header-stockacumulat-importsortides,
+.table-scroll-vertical .header-stockacumulat-importtotal { border-top: none;   }
+
+.table-scroll-vertical .header-stockacumulat-entrades { border-left: 1px solid #96c4ea; }
+.table-scroll-vertical .stockacumulat-entrades  { border-left: 1px solid #cccccc; }
+.table-scroll-vertical .header-stockacumulat-importtotal { border-right: 1px solid #96c4ea; }
+.table-scroll-vertical .stockacumulat-importtotal,
+.table-scroll-vertical .stockacumulat-void  { border-right: 1px solid #cccccc; }
+
+
+
 /*************** FECDAS NOU productes ****************/
 
 #header-producte-estat { width: 4%; text-align: left; }
@@ -1559,11 +1604,12 @@ input#form_dni {
 
 #header-llicenciaparteid { display:none}
 #header-llicenciapersona {	width: 23%; text-align: left;}
-#header-llicenciapersonalong {	width: 35%; text-align: left;}
-#header-llicenciadni {	width: 10%;  }
+#header-llicenciamail {	width: 20%; text-align: left;}
+#header-llicenciapersonalong {	width: 35%; text-align: left;}	/* Import CSV */
+#header-llicenciadni {	width: 10%; }
 #header-llicenciacategoria {	width: 13%;  }
-#header-llicenciaactivitats {	width: 20%;  }
-#header-llicenciaactivitatslong {	width: 30%;  }
+#header-llicenciaactivitats {	/* width: 20%; */ display: none; }
+#header-llicenciaactivitatslong {	width: 30%;  }  /* Renovar */
 #header-llicenciapreu {	width: 6%; text-align: right;  }
 #header-llicenciaenviarllicencia {	width: 4%; text-align: center; }
 #header-llicenciaenviarllicencia img {	
@@ -1576,10 +1622,11 @@ input#form_dni {
 
 .llicencia-id {	display:none}
 .llicencia-persona { width: 23%; text-align: left; font-size: 0.9em;}
+.llicencia-mail { width: 20%; text-align: left; font-size: 0.9em;}
 .llicencia-personalong { width: 35%; text-align: left; }
 .llicencia-dni { width: 10%; }
 .llicencia-categoria { width: 13%; }
-.llicencia-activitats {	width: 20%; font-size: 9px; letter-spacing: 0; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.llicencia-activitats {	/*width: 20%;*/ display: none;  font-size: 9px; letter-spacing: 0; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
 .llicencia-preu { width: 6%; text-align: right;}
 .llicencia-enviarllicencia { width: 4%; text-align: center; font-size: 0.9em; white-space: nowrap; overflow: visible; }
@@ -2172,7 +2219,7 @@ select#parte_persona_addrnacionalitat {
 
 .table-scroll-vertical  #list-data { display: table-row-group; }
 
-.table-scroll-vertical table { table-layout: fixed; width: 100%; }
+.table-scroll-vertical table { table-layout: fixed; width: 100%; display: block;  }
 
 /************************************************ Històric saldos Fi ******************************************************/
 

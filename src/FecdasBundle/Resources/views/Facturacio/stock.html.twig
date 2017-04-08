@@ -18,17 +18,18 @@
 {% block body %}
 	<header>
         <div class="row">
-			<div class="col-md-8"><h1>Registre d'inventari</h1></div>
+			<div class="col-md-8"><h1>{% block stockpagetitle %}Registre d'inventari detall producte{% endblock %}</h1></div>
 		    <div class="col-md-4 col-last-right">
 				<div class="buttons-top-bootstrap">
-					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_stock', { 'format': 'csv' }) }}" alt="Exportar dades" 
+					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_stock') }}" alt="Exportar dades" 
 						title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
 				</div> 
 			</div>
 		</div>
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
-        
+    <div class="row">
+	<div class="col-md-12">    
     <div id="stock-main">
 	    <div id="list-forms">
 	    	<div class="row">
@@ -38,12 +39,31 @@
 						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				</div>
-				<div class="col-md-8 col-last-right">
+				<div class="col-md-3">
+					<div class="form-group">
+						<div class="input-group">
+							<span class="input-group-addon">Des de</span>
+							{{ form_widget(form.desde, { 'attr': {'class': 'form-control form-control-center'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+				  	<label class="radio-inline">
+						{{ form_widget(form.view[0], { 'attr': {'class': 'agrupar-dates'} }) }} Detall
+					</label>
+					<label class="radio-inline">
+						{{ form_widget(form.view[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
+					</label>
+				</div>	
+				<div class="col-md-2 col-last-right">
 					<a type="submit" class="btn btn-default btn-lg registrestock-action-new" href="{{ path('FecdasBundle_registrestock', { 'action': 'new', 'id': 0 }) }}" alt="Nou registre" title="Nou registre"><i class="fa fa-plus-circle"></i> afegir</a>
 				</div>
 			</div>
 	    </div>
-		{% include 'FecdasBundle:Facturacio:taulastock.html.twig' %}
+	    {% block stocktaula %}{% include 'FecdasBundle:Facturacio:taulastock.html.twig' %}{% endblock %}
+	</div>
+	</div>
 	</div>
     <div id="dialeg-edicio-producte" class="finestra-overlay"></div>
 {% endblock %}
@@ -56,27 +76,49 @@
 	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
 	
 	<script type="text/javascript">
-	
+
+	function getUrlStock() {
+		var url = "{{ path('FecdasBundle_stock') }}";
+
+		var view = $(".agrupar-dates:checked").val();
+
+		url += "?view="+view;
+		
+		if ($('#form_cerca').val() != '') url += "&cerca="+$('#form_cerca').val();
+
+		if ($('#form_desde').val() != '') url += "&desde="+$('#form_desde').val();
+		
+		return url;
+	}
+
 	$(document).ready(function(){
 		setMenuActive("menu-admstock");
 
+		var current = new Date();
+		var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
+		
 		$("#form_cerca").change(function() {
 
-			var url = "{{ path('FecdasBundle_stock', { 'action': 'list' }) }}";
-
-			if ($(this).val() != '') {
-				url += "&cerca="+$(this).val();
-			}
-			
+			url = getUrlStock();
 			window.location = url;
 	    });
 
+		$(".agrupar-dates").click(function( e ) {
+			e.preventDefault();
+			url = getUrlStock();
+			window.location = url;
+		});
+		
 		// Delegate event
 		$( "#stock-main" ).on( "click", ".registrestock-action-new, .registrestock-action-edit", function( e ) {
 			e.preventDefault();
 			
 			var url = $(this).attr("href");
 
+			if ($(this).hasClass('registrestock-action-new') && $('#form_cerca').val() != '') {
+				url += '&producte='+$('#form_cerca').val();
+			}
+			
 			$('.alert').remove();
 			
 			showMask();
@@ -147,8 +189,6 @@
 							placeholder: 'Escollir producte'
 						});
 
-						var current = new Date();
-						var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
 						var maxdate = new Date (current.getFullYear(), current.getMonth()+2, current.getDay());
 								
 						initDateTimePicker ( 
@@ -223,15 +263,12 @@
 		});
 
 		
-		$("a.export-csv").change(function(e) {
+		$("a.export-csv").click(function(e) {
 			e.preventDefault();
 
-			var url = $( this ).attr('href');
-
-			if ($("#form_cerca").val() != '') {
-				url += "&cerca="+$("#form_cerca").val();
-			}
-
+			url = getUrlStock();
+			url += "&format=csv";
+			
 			window.location = url;
 		});
 
@@ -241,7 +278,25 @@
 			allowClear: true,
 			placeholder: 'Escollir producte'
 		});
-		
+
+		initDateTimePicker ( 
+			$( '#form_desde' ), 
+			mindate, 
+			current, 
+			current, 
+			'datadesde-picker', 
+			false,
+			function() {
+				url = getUrlStock();
+				window.location = url;
+		    } 
+		);
+
+
+		if ($('#list-data').height() > $('.table-scroll').height()) {
+			// Scroll
+			$('.table-scroll').width($('.table-scroll').width() + 12 );
+		}
 	});
 	
 	</script>

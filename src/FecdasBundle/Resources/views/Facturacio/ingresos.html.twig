@@ -18,7 +18,7 @@
         
     <div id="ingresos-main">
 	    <div id="list-forms">
-	    	<form id="form_ingresos" action="{{ path('FecdasBundle_nouingres') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+	    	{{ form_start(form, {'action': path('FecdasBundle_nouingres'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_ingresos'}}) }}
 		    	<div class="row">
 		    	  {% if admin == true %}
 				  <div class="col-md-6">
@@ -45,7 +45,7 @@
 				  </div>
 				  {% endif %}
 				</div>
-		   	</form>
+		   	{{ form_end(form) }}
 	    </div>
 	    <div class="table-header">	
 		   	<div id="list-header">

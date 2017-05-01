@@ -39,7 +39,7 @@ class FormComanda extends AbstractType {
 									//->where('c.activat = 1');
 								}, 
 						'choice_label' 	=> 'nom',
-						'empty_value' 	=> 'Seleccionar Club',
+						'placeholder' 	=> 'Seleccionar Club',
 						'required'  	=> false,
 						'disabled' 		=> !$comanda->esNova(),
 				));
@@ -55,14 +55,14 @@ class FormComanda extends AbstractType {
 							'mapped'		=> false,
 							'widget' 		=> 'single_text',
 							'input' 		=> 'datetime',
-							'empty_value' 	=> false,
+							'placeholder' 	=> false,
 							'format' 		=> 'dd/MM/yyyy',
 					));
 					$form->add('tipuspagament', 'choice', array(
 							'required' 		=> false,
 							'mapped'		=> false,
 							'choices' 		=> BaseController::getTipusDePagament(),
-							'empty_value' 	=> ''
+							'placeholder' 	=> ''
 					));
 				} else {
 					$rebut = $comanda->getRebut();
@@ -115,7 +115,7 @@ class FormComanda extends AbstractType {
 				'read_only' 	=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'format' 		=> 'dd/MM/yyyy',
 		));
 		

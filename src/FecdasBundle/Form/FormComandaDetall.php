@@ -50,7 +50,7 @@ class FormComandaDetall extends AbstractType {
 					$form->add('producte', 'entity', array(
 							'class' 		=> 'FecdasBundle:EntityProducte',
 							'choice_label' 	=> 'descripcio',
-							'empty_value' 	=> 'Seleccionar Producte',
+							'placeholder' 	=> 'Seleccionar Producte',
 							'required'  	=> false,
 							'disabled' 		=> $disabledFields,
 					));

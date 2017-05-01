@@ -38,7 +38,7 @@ class FormParte extends AbstractType {
 								}, 
 							'choice_label' => 'descripcio', 
 							'required'  => count($llistatipus) == 1, 
-							'empty_value' => 'Selecciona una...',
+							'placeholder' => 'Selecciona una...',
 					);
 				} else {
 					$tipusparteoptions = array('class' => 'FecdasBundle:EntityParteType',
@@ -85,7 +85,7 @@ class FormParte extends AbstractType {
 				'read_only' => true,
 				'widget' => 'single_text',
 				'input' => 'datetime',
-				'empty_value' => false,
+				'placeholder' => false,
 				'format' => 'dd/MM/yyyy HH:mm',
 		));
 		

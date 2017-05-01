@@ -18,7 +18,7 @@
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
-	<form id="formcomanda" action="{{ path('FecdasBundle_editarcomanda') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_editarcomanda'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formcomanda'}}) }}
 		<div class="row">
 			<div class="col-md-12">
 				<h3 class="blue">
@@ -76,7 +76,7 @@
 		
 		<div id="error" class="sms-notice sr-only"> </div>
 		
-    </form>
+    {{ form_end(form) }}
 
 {% endblock %}
 

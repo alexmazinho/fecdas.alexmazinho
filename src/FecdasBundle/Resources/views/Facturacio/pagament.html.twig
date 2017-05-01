@@ -58,7 +58,7 @@
 	   		   	</li>
 	   		</ol>
 	   		
-	   		<form id="formpayment" action="{{ payment.url }}" method="post" {{ form_enctype(formpayment) }}  class="appform">
+	   		{{ form_start(formpayment, {'action': payment.url, 'method': 'POST', 'attr': {'class': 'appform', 'id':'formpayment'}}) }}
 	   			{# form_widget(formpayment.preu, { 'name': 'Ds_Merchant_Amount'} ) }}
 	   			{{ form_widget(formpayment.numordre, { 'name': 'Ds_Merchant_Order'} ) }}
 	   			{{ form_widget(formpayment.codi, { 'name': 'Ds_Merchant_MerchantCode'} ) }}
@@ -78,7 +78,7 @@
 	   			<div id="formpayment-buttons" class="payment-submit">
 					<input type="submit" id="formpayment-button-payment" class="forminput-inside" value="Confirmar" name="formpayment-button-payment"/>
 				</div> 
-	   		</form>
+	   		{{ form_end(formpayment) }}
 	   	</div>
     </div>
    

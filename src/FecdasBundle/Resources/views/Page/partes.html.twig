@@ -14,7 +14,7 @@
 
 {% block body %}
     <div id="partes-main">
-    	<form id="form_partes" action="{{ path('FecdasBundle_partes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+    	{{ form_start(form, {'action': path('FecdasBundle_partes'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_partes'}}) }}
 			<header>
 		        <h1>Llistes de comunicacions</h1>
 		    </header>
@@ -59,7 +59,7 @@
 					<button id="form_nouparte"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou comunicat</button>
 			    </div>
 			</div> 
-	   	</form>
+	   	{{ form_end(form) }}
 	    <div class="sms-header-info clearfix">{{ club.infoLlistat|nl2br }}</div>
 	    <div class="table-header">
 			<div id="summary-header">

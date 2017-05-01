@@ -8,13 +8,13 @@ use FecdasBundle\Classes\Funcions;
 use FecdasBundle\Controller\BaseController;
 
 /**
- * @ORM\Entity
- * @ORM\Table(name="m_imatges")
+ * @ORM\Entity 
+ * @ORM\Table(name="m_arxius")
  * 
  * @author alex	
  *
  */
-class EntityImatge {
+class EntityArxiu {
 	
 	/**
 	 * @ORM\Id
@@ -34,15 +34,34 @@ class EntityImatge {
 	protected $titol;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $imatge;
+	
+	/**
 	 * @Assert\File(maxSize="2000000")
 	 */
 	protected $file;
 	
 	/**
+	 * @ORM\ManyToOne(targetEntity="EntityPersona", inversedBy="arxius")
+	 * @ORM\JoinColumn(name="persona", referencedColumnName="id")
+	 */
+	protected $persona;
+	
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $dataentrada;
+	
+	/**
 	 * Constructor
 	 */
-	public function __construct($file)
+	public function __construct($file, $imatge = true)
 	{
+		$this->id = 0;	
+		$this->dataentrada = new \DateTime();
+		$this->imatge = $imatge;
 		$this->file = $file;
 	}
 	
@@ -50,24 +69,19 @@ class EntityImatge {
 		return $this->path;
 	}
 
-	public function getWidth() {
-		if (!file_exists($this->getAbsolutePath())) return 0;
-		try {
-			$image_info = getimagesize($this->getAbsolutePath());
-		} catch (\Exception $e) {
-			return 0; 
-		}
-		return $image_info[0];
+	public function esNova()
+	{
+		return ($this->id == 0);
 	}
 	
-	public function getHeight() {
-		if (!file_exists($this->getAbsolutePath())) return 0;
-		try {
-			$image_info = getimagesize($this->getAbsolutePath());
-		} catch (\Exception $e) {
-			return 0; 
-		}
-		return $image_info[1];
+	public function esBaixa()
+	{
+		return $this->databaixa != null;
+	}
+	
+	public function esImatge()
+	{
+		return $this->imatge == true;
 	}
 
 	public function upload($name = null)
@@ -80,14 +94,10 @@ class EntityImatge {
 		// use the original file name here but you should
 		// sanitize it at least to avoid any security issues
 	
-		// move takes the target directory and then the
-		// target filename to move to
-		$extension = $this->getFile()->guessExtension(); 
+
+		$extension = $this->getValidExtension();
 		
-		if ($extension == null or ($extension != "png" and $extension != "jpg" 
-								and $extension != "jpeg" and $extension != "gif")) {
-			return false;
-		} 
+		if ($extension == null) return false;
 		
 		// 	set the path property to the filename where you've saved the file
 		// Màxim 50 amb extensió. Mida de path  time 10 + _ + nom + .ext 5 => nom <= 50-16= 34
@@ -107,6 +117,21 @@ class EntityImatge {
 			
 		return true;
 	}
+
+	public function getValidExtension()
+	{
+		// move takes the target directory and then the
+		// target filename to move to
+		$extension = $this->getFile()->guessExtension(); 
+		
+		if ($extension == null ||  ($extension != "pdf" && 
+									$extension != "png" && $extension != "jpg" && 
+									$extension != "jpeg" && $extension != "gif")) {
+			return null;
+		} 
+								
+		return $extension;						
+	} 
 
 	public function getAbsolutePath()
 	{
@@ -130,6 +155,16 @@ class EntityImatge {
 	}
 	
     /**
+     * Set id
+     *
+     * @param integer $id
+     */
+    public function setId($id)
+    {
+    	$this->id = $id;
+    }
+	
+    /**
      * Get id
      *
      * @return integer 
@@ -143,13 +178,10 @@ class EntityImatge {
      * Set path
      *
      * @param string $path
-     * @return EntityImatge
      */
     public function setPath($path)
     {
         $this->path = $path;
-    
-        return $this;
     }
 
     /**
@@ -166,13 +198,10 @@ class EntityImatge {
      * Set titol
      *
      * @param string $titol
-     * @return EntityImatge
      */
     public function setTitol($titol)
     {
         $this->titol = $titol;
-    
-        return $this;
     }
 
     /**
@@ -184,7 +213,21 @@ class EntityImatge {
     {
         return $this->titol;
     }
-    
+	
+	/**
+	 * @return boolean
+	 */
+	public function getImatge() {
+		return $this->imatge;
+	}
+
+	/**
+	 * @param boolean $imatge
+	 */
+	public function setImatge($imatge) {
+		$this->imatge = $imatge;
+	}
+	
     /**
      * Sets file.
      *
@@ -205,4 +248,37 @@ class EntityImatge {
     	return $this->file;
     }
     
+	/**
+	 * @return FecdasBundle\Entity\EntityPersona
+	 */
+	public function getPersona() {
+		return $this->persona;
+	}
+
+	/**
+	 * @param FecdasBundle\Entity\EntityPersona $persona
+	 */
+	public function setPersona(\FecdasBundle\Entity\EntityPersona $persona) {
+		$this->persona = $persona;
+	}
+	
+	/**
+     * Set dataentrada
+     *
+     * @param datetime $dataentrada
+     */
+    public function setDataentrada($dataentrada)
+    {
+        $this->dataentrada = $dataentrada;
+    }
+
+    /**
+     * Get dataentrada
+     *
+     * @return datetime 
+     */
+    public function getDataentrada()
+    {
+        return $this->dataentrada;
+    }
 }

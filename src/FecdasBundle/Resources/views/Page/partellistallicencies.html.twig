@@ -84,7 +84,7 @@
 	   	<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
 	   	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
-	   	{% if parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
+	   	{% if parte.perImprimir == true and parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
 	   	<div id="header-llicenciacheck" class="col-listheader">{% if admin == true %}<i class="fa fa-check-square-o fa-1x"></i>{% endif %}</div>
 	   	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
 	</div>
@@ -103,7 +103,7 @@
 					<div class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</div>
 					<div class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
 					<div class="data-detall-cell llicencia-activitats">{{ llicencia.activitats }}</div>
-					{% if parte.perEnviarFederat != true %}
+					{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
 						<div class="data-detall-cell llicencia-enviarllicencia">		
 						{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
 						</div>

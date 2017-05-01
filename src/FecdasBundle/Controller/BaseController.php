@@ -171,6 +171,25 @@ class BaseController extends Controller {
     const INDEX_SUBDPT_INGRESOS_VARIS_TRANSPORT         = 4;
 	
 	
+	// Titulacions
+	const TIPUS_TITOL_BUSSEIG	= 'BU';
+	const TIPUS_TITOL_TECNIC	= 'TE';
+	const TIPUS_ESPECIALITAT	= 'ES';
+	const TIPUS_MONITOR			= 'MO';
+	const ORGANISME_CMAS		= 'CMAS';
+	
+	// Rols docents
+	const DOCENT_DIRECTOR		= 'Director';
+	const DOCENT_CODIRECTOR		= 'Co-director';
+	const DOCENT_INSTRUCTOR		= 'Instructor';
+	const DOCENT_COLABORADOR	= 'col·laborador';
+	
+	// Context requeriments títols 
+	const CONTEXT_REQUERIMENT_ALUMNES	= 'alumnes';	// Aplica als alumnes del curs
+	const CONTEXT_REQUERIMENT_GENERAL	= 'general';	// Aplica a les dades del curs 
+	const CONTEXT_REQUERIMENT_DOCENTS	= 'docents';	// Aplica als docents del curs
+
+	
 	protected static $tipusproducte; // Veure getTipusDeProducte()
 	protected static $tipuspagament; // Veure getTipusDePagament()
 	protected static $tipuscomanda; // Veure getTipusDeComanda()
@@ -508,8 +527,7 @@ class BaseController extends Controller {
 								->where('c.activat = 1');
 						}, 
 				'choice_label' 	=> 'nom',
-				//'empty_value' 	=> 'Seleccionar club',
-				'empty_value' 	=> '',	// Important deixar en blanc pel bon comportament del select2
+				'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
 				'required'  	=> false,
 				'data' 			=> $clubs,
 		));
@@ -3423,8 +3441,24 @@ class BaseController extends Controller {
 	
 	public static function esDNIvalid ($cadena)
 	{
+		//Comprovar DNI
+		if (strlen($dnisenselletra) != 9 || !preg_match('/^[0-9]{8}[A-Z]$/i', $cadena)) return false;	// Format incorrecte
+		
+		$dnisenselletra = (int) substr($cadena, 0, strlen($cadena) - 1);		
+			
+		// Lletra
+		$lletra = BaseController::getLletraDNI ($dnisenselletra); 		
+		
+		if (strtoupper($cadena[strlen($cadena) - 1]) != $lletra) return false;
+			
+		//Ok
+		return true;
+	}
+	
+	public static function getLletraDNI ($dnisenselletra)
+	{
 		// longitud
-		if (strlen($cadena) != 9) return false;
+		if ($dnisenselletra > 99999999) return '';
 	
 		// valors letra
 		$lletres = array(
@@ -3434,20 +3468,7 @@ class BaseController extends Controller {
 				18 => 'H', 19 => 'L', 20 => 'C', 21 => 'K',22 => 'E'
 		);
 	
-		//Comprovar DNI
-		if (preg_match('/^[0-9]{8}[A-Z]$/i', $cadena))
-		{
-			//Comprovar lletra
-			$dnisenselletra = (int) substr($cadena, 0, strlen($cadena) - 1);
-			$illetra =  $dnisenselletra % 23 ; 
-			
-			if (strtoupper($cadena[strlen($cadena) - 1]) != $lletres[$illetra]) return false;
-				
-			//Ok
-			return true;
-		}
-		//ko
-		return false;
+		return $lletres[ $dnisenselletra % 23 ];  //Calcular lletra
 	}
 	
 	

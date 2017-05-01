@@ -68,7 +68,7 @@ class AdminController extends BaseController {
 								'mapped'		=> false,
 								'widget' 		=> 'single_text',
 								'input' 		=> 'datetime',
-								'empty_value' 	=> false,
+								'placeholder' 	=> false,
 								'format' 		=> 'dd/MM/yyyy',
 								'data'			=> $emissio
 						));	
@@ -78,7 +78,7 @@ class AdminController extends BaseController {
 								'mapped'		=> false,
 								'widget' 		=> 'single_text',
 								'input' 		=> 'datetime',
-								'empty_value' 	=> false,
+								'placeholder' 	=> false,
 								'format' 		=> 'dd/MM/yyyy',
 								'data'			=> $caducitat
 						));	
@@ -927,7 +927,7 @@ GROUP BY c.nom
 				'required' 		=> false,
 				'expanded'		=> false,
 				'multiple'		=> true,
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data' 			=> $categoria
 		));
 		
@@ -936,7 +936,7 @@ GROUP BY c.nom
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'required' 		=> false,
-				'empty_value' 	=> null,
+				'placeholder' 	=> null,
 				'format' 		=> 'dd/MM/yyyy',
 				'data' 			=> $datainici
 		));
@@ -945,7 +945,7 @@ GROUP BY c.nom
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'required' 		=> false,
-				'empty_value' 	=> null,
+				'placeholder' 	=> null,
 				'format' 		=> 'dd/MM/yyyy',
 				'data' 			=> $datafinal
 		));
@@ -961,7 +961,7 @@ GROUP BY c.nom
 				'required' 		=> false,
 				'expanded'		=> true,
 				'multiple'		=> false,
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'disabled'		=> $intervals == false,
 				'data' 			=> $intervaldata
 		));
@@ -978,7 +978,7 @@ GROUP BY c.nom
 				'required' 		=> false,
 				'expanded'		=> true,
 				'multiple'		=> false,
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'disabled'		=> $edats == false,
 				'data' 			=> $edatsdata
 		));
@@ -1032,7 +1032,7 @@ GROUP BY c.nom
 				'required' 		=> false,
 				'expanded'		=> true,
 				'multiple'		=> false,
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data' 			=> $baixes
 		));
 		
@@ -1459,7 +1459,7 @@ GROUP BY c.nom
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'required' 		=> false,
-				'empty_value' 	=> null,
+				'placeholder' 	=> null,
 				'format' 		=> 'dd/MM/yyyy',
 				'data' 			=> $dataalta
 		));
@@ -1468,7 +1468,7 @@ GROUP BY c.nom
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'required' 		=> false,
-				'empty_value' 	=> null,
+				'placeholder' 	=> null,
 				'format' 		=> 'dd/MM/yyyy',
 				'data' 			=> $datajunta
 		));
@@ -1476,7 +1476,7 @@ GROUP BY c.nom
 		$formBuilder->add('municipi', 'choice', array(
 				'choices' => $this->getMunicipis(),
 				//'preferred_choices' => array(''),
-				'empty_value' 	=> 'Municipi ...',
+				'placeholder' 	=> 'Municipi ...',
 				'required'  	=> false,
 				'data' 			=> $municipi
 		));
@@ -1484,7 +1484,7 @@ GROUP BY c.nom
 		$formBuilder->add('comarca', 'choice', array(
 				'choices' => $this->getComarques(),
 				//'preferred_choices' => array(''),
-				'empty_value' 	=> 'Comarca ...',
+				'placeholder' 	=> 'Comarca ...',
 				'required'  	=> false,
 				'data' 			=> $comarca
 		));
@@ -1492,7 +1492,7 @@ GROUP BY c.nom
 		$formBuilder->add('provincia', 'choice', array(
 				'choices' => array('Barcelona' => 'Barcelona','Girona' => 'Girona','Tarragona' => 'Tarragona','Lleida' => 'Lleida' ),
 				//'preferred_choices' => array('Barcelona','Girona','Tarragona','Lleida' ),
-				'empty_value' 	=> 'Província...',
+				'placeholder' 	=> 'Província...',
 				'required'  	=> false,
 				'data' 			=> $provincia
 		));
@@ -1551,7 +1551,7 @@ GROUP BY c.nom
 				'required' 		=> false,
 				'expanded'		=> true,
 				'multiple'		=> false,
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data' 			=> $baixes
 		));
 		

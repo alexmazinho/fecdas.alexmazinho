@@ -139,11 +139,6 @@ class EntityClub {
 	 */
 	protected $ingresos;	// Owning side of the relationship
 	
-	/*
-	 * @ORM\OneToMany(targetEntity="EntityDuplicat", mappedBy="club")
-	 */
-	/*protected $duplicats;*/	// Owning side of the relationship
-	
 	/**
 	 * @ORM\ManyToMany(targetEntity="EntityParteType", cascade={"remove", "persist"})
 	 * @ORM\JoinTable(name="m_clubs_tipusparte",
@@ -250,6 +245,11 @@ class EntityClub {
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $comptabilitat;
+	
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityCurs", mappedBy="club")
+	 */
+	protected $cursos;	// Owning side of the relationship
 
 
 	public function __construct() {
@@ -268,7 +268,7 @@ class EntityClub {
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->ingresos = new \Doctrine\Common\Collections\ArrayCollection();
-		/*$this->duplicats = new \Doctrine\Common\Collections\ArrayCollection();*/
+		$this->cursos = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->tipusparte = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
@@ -1199,26 +1199,6 @@ class EntityClub {
     	}
     }
     
-	
-	
-    /**
-     * Get duplicats
-     *
-     * @return Doctrine\Common\Collections\ArrayCollection
-     */
-    /*public function getDuplicats()
-    {
-    	return $this->duplicats;
-    }*/
-    
-    /*public function setDuplicats(\Doctrine\Common\Collections\ArrayCollection $duplicats)
-    {
-    	$this->duplicats = $duplicats;
-    	foreach ($duplicats as $duplicat) {
-    		$duplicat->setClub($this);
-    	}
-    }*/
-    
     /**
      * Get tipusparte
      *
@@ -1684,4 +1664,25 @@ class EntityClub {
     {
         $this->comandes->removeElement($comandes);
     }
+	
+	/**
+     * Get cursos
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getCursos()
+    {
+    	return $this->cursos;
+    }
+    
+	/**
+     * Add cursos
+     *
+     * @param FecdasBundle\Entity\EntityCurs $curs
+     */
+    public function addCursos(\FecdasBundle\Entity\EntityCurs $curs)
+    {
+        $this->cursos->add($curs);
+    }
+	
 }

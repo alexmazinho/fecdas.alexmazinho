@@ -19,7 +19,7 @@
     
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
 	
-	<form id="formingres" action="{{ path('FecdasBundle_editarrebut') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_editarrebut'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formingres'}}) }}
 		<div class="row">
 			{{ form_widget(form.id) }}{{ form_widget(form.num) }}
 			 <div class="col-md-5">
@@ -157,7 +157,7 @@
 		
 		<div id="error" class="sms-notice" style="display:none"> </div>
 		
-    </form>
+    {{ form_end(form) }}
 
 {% endblock %}
 

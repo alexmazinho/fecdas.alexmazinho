@@ -26,7 +26,7 @@
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
 		 	<div id="list-forms">
-		    	<form id="formconsultaclubs" action="{{ path('FecdasBundle_consultaclubs') }}" method="get" {{ form_enctype(form) }}  class="appform">
+		    	{{ form_start(form, {'action': path('FecdasBundle_consultaclubs'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'formconsultaclubs'}}) }}
 		    		<div class="row">
 						<div class="col-md-3">
 						    <div class="form-group">
@@ -180,7 +180,7 @@
 							<button type="submit" id="consulta-button-submit" class="btn btn-default btn-lg"><i class="fa fa-search"></i> Consultar</button>
 						</div>	
 					</div>
-			   	</form>
+			   	{{ form_end(form) }}
 		    </div>
     <br/>
     

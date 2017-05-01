@@ -11,11 +11,180 @@ use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityComanda;
 use FecdasBundle\Entity\EntitySaldos;
+use FecdasBundle\Entity\EntityCurs;
+use FecdasBundle\Entity\EntityTitulacio;
 use FecdasBundle\Controller\BaseController;
 
 
 
 class OfflineController extends BaseController {
+	
+	public function historictitolsAction(Request $request) {
+		// http://www.fecdas.dev/historictitols?desde=1&fins=40
+		// Script de migració. Executar per migrar i desactivar
+	
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		if (!$this->isCurrentAdmin())
+			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	
+		$em = $this->getDoctrine()->getManager();
+	
+		$desde = $request->query->get('desde', 0);
+		$fins = $request->query->get('fins', 0);
+		
+		//$batchSize = 20;
+		
+		$strQuery  = " SELECT id, federado, dni, numcurso, iniciocurso, fincurso, ";
+		$strQuery .= " club, abreviatura, numtitulo ";
+		$strQuery .= " FROM importtitulacions ";
+		$strQuery .= " WHERE id >= ".$desde." AND id <= ".$fins." ";
+		$strQuery .= " ORDER BY id ASC ";
+		$stmt = $em->getConnection()->prepare($strQuery);
+		$stmt->execute();
+		$titols = $stmt->fetchAll();
+
+		$cursosNous = 0;
+		$titulacions = 0;
+		
+		$cursos = array();
+		$errors = array();
+
+		for ($i = 0; $i < count($titols); $i++) {
+			$currentTitol = $titols[$i]; 
+				
+			$id = $currentTitol['id'];
+			$dni = $currentTitol['dni'];
+			
+			try {
+	
+				// Cercar persona (NO pot ser null, pero poden ser vàries amb el mateix DNI)
+				$persones = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->findBy(array('dni' => $currentTitol['dni'].""));	// Consulta directament com text
+				
+				if ($persones == null || count($persones) == 0) {
+					
+					$dniLletra = $dni;
+					if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
+					  
+					$persones = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->findBy(array('dni' => $dni));			
+					if ($dni != $dniLletra) {
+						// Consulta amb i sense lletra i merge
+						$personesLletra = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->findBy(array('dni' => $dniLletra));
+						$persones = array_merge($persones, $personesLletra);
+					}
+				}
+				
+				if ($persones == null || count($persones) == 0) {
+					if ($currentTitol['abreviatura'] == 'RCP' || $currentTitol['abreviatura'] == 'AO') {
+						// No requereixen llicència
+						throw new \Exception($id.'#WARN. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
+					} else {	
+						throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
+					}					
+				}
+				
+				// Cercar títol (NO pot ser null i només pot trobar un) 
+				$titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->findOneBy(array('codi' => $currentTitol['abreviatura']));
+				
+				if ($titol == null || count($titol) != 1) throw new \Exception($id.'#ERROR. Títol no trobat: #'.$currentTitol['abreviatura']); //ERROR
+				
+				// Cercar club (pot ser null i només pot trobar un) 
+				//$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->findOneBy(array('nom' => $currentTitol['club']));	
+				$club = null;
+				$clubhistoric = '';
+				if ($currentTitol['club'] != '') {
+					
+					$nomClub = str_replace(".", "", $currentTitol['club']);
+					
+					$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+					$strQuery .= " WHERE  c.nom LIKE :club ";
+					$query = $em->createQuery($strQuery);
+					$query->setParameter('club', '%'.$nomClub.'%' );
+					$clubs = $query->getResult();
+					
+					if ($clubs != null && count($clubs) == 1) {
+						$clubs = array_values($clubs);
+						$club = $clubs[0];
+					} else {
+						 $errors[ $id ] = $id.'#WARN. Club no trobat: '.$currentTitol['club'];// WARN CONTINUA
+						 $clubhistoric = $currentTitol['club'];
+					}
+				} else {
+					$clubhistoric = 'Sense informació del club';
+				}
+				
+				
+				$datadesde = $currentTitol['iniciocurso'] != ''?\DateTime::createFromFormat('Y-m-d', $currentTitol['iniciocurso']):null;
+				$datafins = $currentTitol['fincurso'] != ''?\DateTime::createFromFormat('Y-m-d', $currentTitol['fincurso']):null;  
+				
+				if ($datadesde == null || $datafins == null) throw new \Exception($id.'#ERROR. Dates del curs incorrectes: '.$currentTitol['iniciocurso'].'-'.$currentTitol['fincurso']); //ERROR
+				
+				// Cercar existent o crear curs sense docents
+				$num = $currentTitol['numcurso'];
+				if (!isset($cursos[ $num ])) {
+					/*$pos = strpos($currentTitol['numcurso'], "/");
+					if ($pos === false) throw new \Exception($id.'#ERROR. Número curs format KO: '.$titol); //ERROR
+					$num = substr( $currentTitol['numcurso'], $pos+1 ); // Treure any */
+
+					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
+					
+					if ($curs == null) {
+						$curs = new EntityCurs($titol, $datadesde, $datafins, $club, $clubhistoric);			
+						$curs->setNum($num);
+						$curs->setValidat(true);
+						$curs->setFinalitzat(true);
+						
+						$em->persist($curs);
+						
+						$cursosNous++;
+					}
+					$cursos[$curs->getNumActa()] = $curs;  // Afegir als cursos consultats
+					
+				} else {
+					$curs = $cursos[ $num ];
+				}
+
+				// Crear titulacions 
+				foreach ($persones as $persona) {
+					$titulacio = new EntityTitulacio($persona, $curs);
+					$titulacio->setNum($currentTitol['numtitulo']);
+					$titulacio->setDatasuperacio($datafins);
+					
+					$em->persist($titulacio); 
+					
+					$titulacions++;
+				}
+			
+			} catch (\Exception $e) {
+				//$em->getConnection()->rollback();
+				//echo "Problemes durant la transacció : ". $e->getMessage();
+				
+				$errors[ $id ] = $e->getMessage();
+			}
+			
+		}
+		
+		if (count($errors) != 0) {
+			
+			$sql = "UPDATE importtitulacions SET error = null WHERE id >= ".$desde." AND id <= ".$fins." ";
+			$stmt = $em->getConnection()->prepare($sql);
+			$stmt->execute();
+				
+			foreach ($errors as $id => $error) {
+					
+				$sql = "UPDATE importtitulacions SET error = '".$error."' WHERE id = ".$id;
+				$stmt = $em->getConnection()->prepare($sql);
+				$stmt->execute();
+			}
+			$em->flush();	
+			return new Response("KO <br/>".implode("<br/>",$errors));
+		}
+		
+		$em->flush();
+			
+		return new Response("OK cursos nous ".$cursosNous." i titulacions ".$titulacions );
+	}
 	
 	
 	public function historicsaldosAction(Request $request) {

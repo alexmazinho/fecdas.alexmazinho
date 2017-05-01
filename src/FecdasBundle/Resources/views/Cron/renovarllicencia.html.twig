@@ -13,8 +13,8 @@
   			{{ flashMessage }}
   		</div>	 
 	{% endfor %}    
-    
-	<form id="formrenovar" action="{{ path('FecdasBundle_renovarllicencia') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	
+    {{ form_start(form, {'action': path('FecdasBundle_renovarllicencia'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formrenovar'}}) }}
 		<div class="table-header">	
 	    	<div id="list-header">
 				<div class="col-listheader">Tipus: {{ parte.tipus.descripcio }} - {{ parte.club.nom }}</div>
@@ -38,7 +38,7 @@
 					{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 				</div>
 	    	</div>
-		 	{% if parte.perEnviarFederat != true %}
+		 	{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
 			<div class="form-row clearfix">
 				<div class="llicencia-check check-correu" class="form-left">
 					<label>
@@ -124,7 +124,7 @@
 	        </div>
         
         </div>
-    </form>
+    {{ form_end(form) }}
      
 {% endblock %}
 

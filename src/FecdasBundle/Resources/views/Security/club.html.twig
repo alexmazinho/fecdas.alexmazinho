@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block body %}
-	<form id="formclub" action="{{ path('FecdasBundle_club') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_club'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formclub'}}) }}
 	    <header>
 			<div class="row">
 				<div class="col-md-8"><h1>Gestió de clubs i usuaris</h1></div>
@@ -596,7 +596,7 @@
 			</div>
 		</div> 
 
-    </form>
+    {{ form_end(form) }}
 
     <div id="edicio-persona" class="finestra-overlay"></div> 
 {% endblock %}

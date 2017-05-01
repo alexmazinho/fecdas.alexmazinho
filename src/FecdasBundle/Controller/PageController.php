@@ -24,7 +24,7 @@ use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityCarnet;
-use FecdasBundle\Entity\EntityImatge; 
+use FecdasBundle\Entity\EntityArxiu; 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
@@ -390,7 +390,7 @@ class PageController extends BaseController {
 							'choice_label' => 'descripcio', */
 							'choices' => $tipusSearch,
 							'required'  => false, 
-							'empty_value' => 'Qualsevol...',
+							'placeholder' => 'Qualsevol...',
 							'data' => $tipus,
 		));
 		
@@ -1384,7 +1384,7 @@ class PageController extends BaseController {
 						
 						$uploaded = $this->uploadAndScale($file, $duplicat->getPersona()->getDni(), 300, 200);
 						
-						$foto = new EntityImatge($uploaded['path']);
+						$foto = new EntityArxiu($uploaded['path'], true);
 						$foto->setPath($uploaded['name']);
 						$foto->setTitol("Foto carnet federat " . $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms());
 						$em->persist($foto);

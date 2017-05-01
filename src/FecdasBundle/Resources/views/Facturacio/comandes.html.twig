@@ -18,7 +18,7 @@
         
     <div id="comandes-main">
 	    <div id="list-forms">
-	    	<form id="form_comandes" action="{{ path('FecdasBundle_comandes') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+	    	{{ form_start(form, {'action': path('FecdasBundle_comandes'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_comandes'}}) }}
 				{% if admin == true %}
 				<div class="row">
 					  <div class="col-md-6  col-xs-12">
@@ -79,7 +79,7 @@
 				  </div>
 				 
 				</div>
-		   	</form>
+		   	{{ form_end(form) }}
 	    </div>
 	    <div class="table-header">	
 		   	<div id="list-header" class="{% if admin == true  %}list-header-adm{% endif %}">

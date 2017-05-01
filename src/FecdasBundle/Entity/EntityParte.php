@@ -155,6 +155,8 @@ class EntityParte extends EntityComanda {
 	 */
 	public function perImprimir()
 	{
+		if ($this->tipus->esLlicenciaDia()) return false;
+		
 		return $this->tipus->getTemplate() != '';
 	}
 	

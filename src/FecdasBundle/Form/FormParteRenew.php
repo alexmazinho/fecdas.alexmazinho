@@ -61,7 +61,7 @@ class FormParteRenew extends AbstractType {
 				'read_only' => true,
 				'widget' => 'single_text',
 				'input' => 'datetime',
-				'empty_value' => false,
+				'placeholder' => false,
 				'format' => 'dd/MM/yyyy HH:mm',
 		));
 		

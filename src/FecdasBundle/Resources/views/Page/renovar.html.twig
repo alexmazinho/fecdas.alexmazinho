@@ -10,7 +10,7 @@
    
     {% include 'FecdasBundle:Includes:messages.html.twig' %}
    
-	<form id="formrenovar" action="{{ path('FecdasBundle_renovar') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_renovar'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formrenovar'}}) }}
 		<div class="row">
 			<div class="col-md-1 col-xs-2">
 				<div id="formparte-any">
@@ -67,7 +67,7 @@
 					   	<div id="header-llicenciacategoria" class="col-listheader">Categoria</div>
 					   	<!--<div id="header-llicenciaactivitatslong" class="col-listheader">Activitats</div>-->
 					   	<div id="header-llicenciapreu" class="col-listheader">Preu</div>
-			   			{% if parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
+			   			{% if parte.perImprimir == true and parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
 					   	<div id="header-llicenciaactions" class="col-listheader  {% if form.llicencies|length > 6 %} header-llicenciaactions-scroll {% endif %}">Renovar?</div>
 					</div>
 				</div>
@@ -82,7 +82,7 @@
 							<div class="data-detall-cell llicencia-categoria">{{  parte.llicencies[loop.index0].categoria.categoria }}</div>
 							<!-- <div class="data-detall-cell llicencia-activitatslong">{# parte.llicencies[loop.index0].activitats #}</div> -->
 							<div class="data-detall-cell llicencia-preu">{{  parte.llicencies[loop.index0].categoria.preuany(parte.any)|number_format(2, ',') }}€</div>
-							{% if parte.perEnviarFederat != true %}
+							{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
 							<div class="data-detall-cell llicencia-enviarllicencia">		
 							    {# if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif #}
 								<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
@@ -113,7 +113,7 @@
 			<div class="formparte-id">{{ form_widget(form.id) }}</div>
 			<div class="formparte-id">{{ form_widget(form.cloneid) }}</div>
         	{{ form_rest(form) }}</div>
-    </form>
+    {{ form_end(form) }}
      
 {% endblock %}
 

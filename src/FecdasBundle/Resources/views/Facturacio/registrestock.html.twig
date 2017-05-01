@@ -1,7 +1,7 @@
 {# src/Fecdas/PartesBundle/Resources/views/Facturacio/registrestock.html.twig #}
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
-	<form id="formregistrestock" action="{{ path('FecdasBundle_registrestock') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_registrestock'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formregistrestock'}}) }}
 		<div class="row">
 			<div class="col-md-8">
 				{{ form_label(form.producte, 'Producte') }}
@@ -67,6 +67,6 @@
 		
 		<div id="formregistrestock-rest" class="hidden">{{ form_rest(form) }}</div>
 		
-    </form>
+    {{ form_end(form) }}
 
 

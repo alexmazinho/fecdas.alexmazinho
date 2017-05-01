@@ -22,7 +22,7 @@
         
     <div id="productes-main">
 	    <div id="list-forms">
-	    	<form id="form_productes" action="{{ path('FecdasBundle_nouproducte') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+	    	{{ form_start(form, {'action': path('FecdasBundle_nouproducte'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_productes'}}) }}
 		    	<div class="row">
 		    	  <div class="col-md-3">
 				  	<div class="form-group">
@@ -46,7 +46,7 @@
 						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
 				  </div>
 				</div>
-		   	</form>
+		   	{{ form_end(form) }}
 	    </div>
 	    <div class="table-header">	
 		   	<div id="list-header">

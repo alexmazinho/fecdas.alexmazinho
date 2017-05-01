@@ -29,7 +29,7 @@ class FormDuplicat extends AbstractType {
 				'multiple' => false,
 				'required'  => false,
 				'preferred_choices' => array(),
-				'empty_value' => ' ... selecciona el carnet ',
+				'placeholder' => ' ... selecciona el carnet ',
 		));
 		
 		$personesSelectOptions = array('class' => 'FecdasBundle:EntityPersona',
@@ -60,7 +60,7 @@ class FormDuplicat extends AbstractType {
 						'choice_label' => 'llistaText',
 						'multiple' => false,
 						'required'  => false,
-						'empty_value' => ' ... escull un títol ', 
+						'placeholder' => ' ... escull un títol ', 
 							'query_builder' => function($repository)  use ($duplicat) {
 								return $repository->createQueryBuilder('t')
 									->where('t.carnet = :carnet AND t.actiu = 1')
@@ -85,7 +85,7 @@ class FormDuplicat extends AbstractType {
 								'choice_label' => 'llistaText',
 								'multiple' => false,
 								'required'  => false,
-								'empty_value' => ' ... escull un títol ',
+								'placeholder' => ' ... escull un títol ',
 								'query_builder' => function($repository)  use ($duplicat) {
 									return $repository->createQueryBuilder('t')
 										->where('t.carnet = :carnet AND t.actiu = 1')

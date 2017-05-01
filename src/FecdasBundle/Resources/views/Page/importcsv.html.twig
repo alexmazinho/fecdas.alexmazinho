@@ -17,7 +17,7 @@
 
 	<div class="formcsv-main">
     {% include 'FecdasBundle:Includes:messages.html.twig' %}
-		<form id="formcsv-import" action="{{ path('FecdasBundle_importcsv') }}" method="post" {{ form_enctype(form) }}  class="appform">
+		{{ form_start(form, {'action': path('FecdasBundle_importcsv'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formcsv-import'}}) }}
 			<div class="row">
 				<div class="col-md-2">
 					<div class="form-group">
@@ -68,7 +68,7 @@
 			</div>
 			
 			{{ form_rest(form) }}
-	    </form>
+	    {{ form_end(form) }}
 		
 		
 		<div class="info-bloc">

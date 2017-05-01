@@ -36,7 +36,7 @@ class FormRebut extends AbstractType {
 				$form->add('comptabilitat', 'text', array(
 						/*'class' 		=> 'FecdasBundle:EntityComptabilitat',
 						'choice_label' 	=> 'InfoComptabilitat',
-						'empty_value' 	=> 'pendent',*/
+						'placeholder' 	=> 'pendent',*/
 						'required'  	=> false,
 						'disabled' 		=> true,
 						'data'		=> (!$rebut->estaComptabilitzat()?'no enviat':$rebut->getComptabilitat()->getInfoComptabilitat()),
@@ -52,7 +52,7 @@ class FormRebut extends AbstractType {
 				$form->add('tipuspagament', 'choice', array(
 						'required' 		=> true,
 						'choices' 		=> BaseController::getTipusDePagament(),
-						'empty_value' 	=> '',
+						'placeholder' 	=> '',
 						//'disabled' 		=> $rebut->estaComptabilitzat(),
 						'disabled'		=> !$editable || $rebut->estaComptabilitzat()
 				));
@@ -71,8 +71,8 @@ class FormRebut extends AbstractType {
 										->where('c.activat = 1');
 								}, 
 						'choice_label' 	=> 'nom',
-						//'empty_value' 	=> 'Seleccionar club',  
-						'empty_value' 	=> '',	// Important deixar en blanc pel bon comportament del select2
+						//'placeholder' 	=> 'Seleccionar club',  
+						'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
 						'required'  	=> false,
 						'data'			=> $rebut->getClub(),
 						'disabled' 		=> $rebut->getId() > 0,
@@ -82,7 +82,7 @@ class FormRebut extends AbstractType {
 						'required'  	=> true,
 						'widget' 		=> 'single_text',
 						'input' 		=> 'datetime',
-						'empty_value' 	=> false,
+						'placeholder' 	=> false,
 						'format' 		=> 'dd/MM/yyyy',
 						//'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
 						'disabled' 		=>  !$editable || $rebut->estaComptabilitzat(),		

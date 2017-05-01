@@ -19,7 +19,7 @@
 	
     {% include 'FecdasBundle:Includes:messages.html.twig' %}
     <div id="form-notificaciotest">    
-	   	<form id="testform" action="{{ path('FecdasBundle_notificaciotest') }}" method="post" {{ form_enctype(form) }} class="appform">
+	   	{{ form_start(form, {'action': path('FecdasBundle_notificaciotest'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'testform'}}) }}
 	   		{{ form_errors(form) }}
 	
 			<div class="error-box"></div>
@@ -53,7 +53,7 @@
 		
 		    <div><input type="submit" class="forminput-inside" value="Crear resposta" /></div>        
 	   
-		</form> 
+		{{ form_end(form) }}
     </div>
     <a href="{{ path('FecdasBundle_notificaciotest') }}">reiniciar</a>
    	

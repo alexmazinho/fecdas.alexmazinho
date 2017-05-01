@@ -6,8 +6,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
-use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityStock;
 
 
@@ -42,7 +40,7 @@ class FormStock extends AbstractType {
 										->orderBy('p.descripcio', 'ASC');
 									},
 							'choice_label' => 'descripcio',
-							'empty_value' => '',
+							'placeholder' => '',
 							'required'  => true,
 				));
 				

@@ -3,7 +3,6 @@
 
 {% block javascriptshead %}
  	{{ parent() }}
-   	 {{ form_javascript(form) }}
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Consulta Llicència Activa per DNI{% endblock %}
@@ -19,7 +18,7 @@
   	</div>	
 	{% endfor %}
     <div class="formdni-main">
-		<form id="form-consultadni" action="{{ path('FecdasBundle_busseig') }}" method="post" {{ form_enctype(form) }}  class="appform">
+		{{ form_start(form, {'action': path('FecdasBundle_busseig'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-consultadni'}}) }}
 	    	<div id="formdni-dni">
 				{{ form_label(form.dni, 'Indica el dni (amb lletra)', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.dni, { 'attr': {'class': 'forminput-inside'} }) }}
@@ -28,7 +27,7 @@
 				<input type="submit" id="formdni-dni-button-submit" class="forminput-inside" value="Consulta" name="formdni-dni-button-submit"/>
 				<img width="21" id="help-querydni" src="{{ asset('images/icon-query.png') }}">
 			</div>
-	    </form>
+	    {{ form_end(form) }}
 		<div class="sms-footer">Consulta si una persona té una llicència / assegurança vigent a data d'avui.
 		Per garantir la protecció de les dades personals el resultat només serà afirmatiu o negatiu.
 		En cas de dubte poseu-vos en contacte directament amb la federació</div>

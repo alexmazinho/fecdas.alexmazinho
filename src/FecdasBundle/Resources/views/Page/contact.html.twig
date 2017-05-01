@@ -20,7 +20,7 @@
 		  	</div>	
 			{% endfor %}
 		    
-			<form action="{{ path('FecdasBundle_contact') }}" method="post" {{ form_enctype(form) }}  class="appform">
+			{{ form_start(form, {'action': path('FecdasBundle_contact'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-contact'}}) }}
 		    	{{ form_errors(form) }}
 				<div id="formcontact-name">
 					{{ form_label(form.name, 'Nom', { 'label_attr': {'class': 'formlabel-inside'} }) }}
@@ -43,7 +43,7 @@
 		        <div id="formcontact-submit">	
 					<input type="submit" class="forminput-inside" value="Tramet la consulta" />
 				</div>        
-		    </form> 
+		    {{ form_end(form) }}
 		</div>
     </div>
 {% endblock %}

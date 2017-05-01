@@ -13,7 +13,8 @@ class FecdasExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            'cut' => new \Twig_Filter_Method($this, 'cutFilter', array('length' => false, $wordCut = false, 'appendix' => false)),
+            //'cut' => new \Twig_Filter_Method($this, 'cutFilter', array('length' => false, $wordCut = false, 'appendix' => false)),
+            new \Twig_SimpleFilter('cut', array($this, 'cutFilter', array('length' => false, $wordCut = false, 'appendix' => false))),
         );
     }
    

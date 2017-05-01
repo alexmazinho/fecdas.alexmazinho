@@ -24,7 +24,7 @@
 		  	</div>	
 			{% endfor %}
 	   	 
-	   		<form action="{{ path('FecdasBundle_pwdrecovery') }}" method="post" {{ form_enctype(form) }} class="appform">
+	   		{{ form_start(form, {'action': path('FecdasBundle_pwdrecovery'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-recovery'}}) }}
 	   			<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
 	
 		   		<div id="formlogin-user">
@@ -38,7 +38,7 @@
 					<input type="submit" class="forminput-inside" value="Envia" />
 				</div>        
 	   
-			</form> 
+			{{ form_end(form) }}
 	   	
 	   	</div>
    	</div>

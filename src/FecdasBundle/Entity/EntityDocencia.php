@@ -1,0 +1,227 @@
+<?php
+namespace FecdasBundle\Entity;
+use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="m_docencies")
+ * 
+ * @author alex
+ *
+ */
+class EntityDocencia {
+
+	/**
+	 * @ORM\Id
+	 * @ORM\Column(type="integer")
+	 * @ORM\GeneratedValue(strategy="AUTO")
+	 */
+	protected $id;
+
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityPersona", inversedBy="docencies")
+	 * @ORM\JoinColumn(name="docent", referencedColumnName="id")
+	 */
+	protected $docent;	// FK taula m_persones
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityCurs", inversedBy="docents")
+	 * @ORM\JoinColumn(name="curs", referencedColumnName="id")
+	 */
+	protected $curs;	// FK taula m_cursos
+	
+	/**
+	 * @ORM\Column(type="string", length=20)
+	 */
+	protected $rol;	// director, co-director, instructor, colaborador
+	
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $hteoria;	// Hores teoria
+
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $haula;  // Hores aula
+	
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $hpiscina;  // Hores piscina
+	
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $hmar; // Hores mar
+	
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $dataentrada;
+
+	/**
+	 * @ORM\Column(type="datetime")
+	 */
+	protected $datamodificacio;
+	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $databaixa;
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->id = 0;
+		$this->rol = BaseController::DOCENT_INSTRUCTOR;  // pendent
+		$this->hteoria = 0;
+		$this->haula = 0;
+		$this->hpiscina = 0;
+		$this->hmar = 0;
+		
+		$this->dataentrada = new \DateTime();
+		$this->datamodificacio = new \DateTime();
+
+	}
+	
+	public function __toString() {
+		return $this->getId() . "-" . $this->getNum();
+	}
+	
+	/**
+	 * @param integer $id
+	 */
+	public function setId($id) {
+		$this->id = $id;
+	}
+
+	/**
+	 * @return integer
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
+	/**
+	 * Set docent
+	 *
+	 * @param \FecdasBundle\Entity\EntityPersona $docent
+	 */
+	public function setDocent(\FecdasBundle\Entity\EntityPersona $docent = null)
+	{
+		$this->docent = $docent;
+	}
+	
+	/**
+	 * Get docent
+	 *
+	 * @return \FecdasBundle\Entity\EntityPersona
+	 */
+	public function getDocent()
+	{
+		return $this->docent;
+	}
+
+
+	/**
+	 * Set curs
+	 *
+	 * @param \FecdasBundle\Entity\EntityCurs $curs
+	 */
+	public function setClub(\FecdasBundle\Entity\EntityCurs $curs = null)
+	{
+		$this->curs = $curs;
+	}
+	
+	/**
+	 * Get curs
+	 *
+	 * @return \FecdasBundle\Entity\EntityCurs
+	 */
+	public function getCurs()
+	{
+		return $this->curs;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRol() {
+		return $this->rol;
+	}
+	
+	/**
+	 * @param string $rol
+	 */
+	public function setRol($rol) {
+		$this->rol = $rol;
+	}
+
+	
+	
+	
+
+	/**
+     * Set dataentrada
+     *
+     * @param datetime $dataentrada
+     */
+    public function setDataentrada($dataentrada)
+    {
+        $this->dataentrada = $dataentrada;
+    }
+
+    /**
+     * Get dataentrada
+     *
+     * @return datetime 
+     */
+    public function getDataentrada()
+    {
+        return $this->dataentrada;
+    }
+
+    /**
+     * Set datamodificacio
+     *
+     * @param datetime $datamodificacio
+     */
+    public function setDatamodificacio($datamodificacio)
+    {
+        $this->datamodificacio = $datamodificacio;
+    }
+
+    /**
+     * Get datamodificacio
+     *
+     * @return datetime 
+     */
+    public function getDatamodificacio()
+    {
+        return $this->datamodificacio;
+    }
+
+    /**
+     * Set databaixa
+     *
+     * @param datetime $databaixa
+     */
+    public function setDatabaixa($databaixa)
+    {
+    	$this->databaixa = $databaixa;
+    }
+    
+    /**
+     * Get databaixa
+     *
+     * @return datetime
+     */
+    public function getDatabaixa()
+    {
+    	return $this->databaixa;
+    }
+}

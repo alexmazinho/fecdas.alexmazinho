@@ -1,4 +1,4 @@
-<form action="{{ path('FecdasBundle_login') }}" method="post" {{ form_enctype(form) }} class="appform">
+{{ form_start(form, {'action': path('FecdasBundle_login'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-login'}}) }}
    	{{ form_errors(form) }}
 
    	<div id="formlogin-user">
@@ -20,4 +20,4 @@
 		<input type="submit" class="forminput-inside" value="Entra" />
 	</div>        
    
-</form> 
+{{ form_end(form) }}

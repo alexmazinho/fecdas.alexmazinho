@@ -56,27 +56,22 @@ class FormPersona extends AbstractType {
 		$builder->add('addrpob', 'search', array(
     	    'required'  => false,
 			));
-		/*$builder->add('addrpob', 'genemu_jqueryautocompleter', array(
-				'route_name' => 'FecdasBundle_ajaxpoblacions',
-		));*/
+		
 		$builder->add('addrcp', 'text', array(
     	    'required'  => false,
 			));
-		/*$builder->add('addrcp', 'genemu_jqueryautocompleter', array(
-				'route_name' => 'FecdasBundle_ajaxcodispostals',
-		));*/
 		
 		$builder->add('addrprovincia', 'choice', array(
 				'choices' => $this->options['provincies'],
 				'preferred_choices' => array('Barcelona','Girona','Tarragona','Lleida' ),
-				//'empty_value' => 'Província...',
+				//'placeholder' => 'Província...',
 				'required'  => false,
 		));
 		
 		$builder->add('addrcomarca', 'choice', array(
 				'choices' => $this->options['comarques'],
 				//'preferred_choices' => array(''),
-				//'empty_value' => 'Comarca ...',
+				//'placeholder' => 'Comarca ...',
 				'required'  => false,
 		));
 		

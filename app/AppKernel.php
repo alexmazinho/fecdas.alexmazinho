@@ -16,13 +16,12 @@ class AppKernel extends Kernel
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
-        		
-        	new Knp\Bundle\PaginatorBundle\KnpPaginatorBundle(),
-        	new Genemu\Bundle\FormBundle\GenemuFormBundle(),
-            new FecdasBundle\FecdasBundle(),
+            
+            new Knp\Bundle\PaginatorBundle\KnpPaginatorBundle(),
+    		new FecdasBundle\FecdasBundle(),
         );
 
-        if (in_array($this->getEnvironment(), array('dev', 'test'))) {
+        if (in_array($this->getEnvironment(), array('dev', 'test'), true)) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
             $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
             $bundles[] = new Sensio\Bundle\DistributionBundle\SensioDistributionBundle();

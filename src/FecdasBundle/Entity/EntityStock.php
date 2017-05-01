@@ -63,6 +63,12 @@ class EntityStock {
 	protected $comentaris;
 	
 	/**
+	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="usuaris")
+	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
+	 */
+	protected $club;  // FK m_clubs
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -309,6 +315,26 @@ class EntityStock {
     public function getComentaris()
     {
         return $this->comentaris;
+    }
+
+	/**
+     * Set club
+     *
+     * @param FecdasBundle\Entity\EntityClub $club
+     */
+    public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+    {
+        $this->club = $club;
+    }
+
+    /**
+     * Get club
+     *
+     * @return FecdasBundle\Entity\EntityClub 
+     */
+    public function getClub()
+    {
+        return $this->club;
     }
 
 	/**

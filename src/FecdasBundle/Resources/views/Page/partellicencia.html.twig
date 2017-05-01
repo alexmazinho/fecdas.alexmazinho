@@ -32,7 +32,7 @@
 			{{ form_widget(llicencia.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 		</div> 
 	</div>
-	{% if llicenciadades.parte.perEnviarFederat != true %}
+	{% if llicenciadades.parte.perImprimir == true and llicenciadades.parte.perEnviarFederat != true %}
 		<div class="form-row clearfix">
 			<div class="llicencia-check check-correu">
 			    <label>

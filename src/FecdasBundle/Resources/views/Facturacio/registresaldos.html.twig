@@ -31,7 +31,7 @@
 		<div class="col-md-12">    
 		    <div id="registresaldos-main">
 			    <div id="list-forms">
-			    	<form id="form_registresaldos" action="{{ path('FecdasBundle_registresaldos') }}" method="GET" {{ form_enctype(form) }}  class="appform">
+			    	{{ form_start(form, {'action': path('FecdasBundle_registresaldos'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_registresaldos'}}) }}
 						<div class="row">
 							  <div class="col-md-3 col-xs-12">
 							  	<div class="form-group">
@@ -88,7 +88,7 @@
 							</div>
 						</div>	
 						{% endif %}
-				   	</form>
+				   	{{ form_end(form) }}
 			    </div>
 			    <div class="table-header">	
 				   	<div id="list-header">

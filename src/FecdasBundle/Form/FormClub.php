@@ -42,7 +42,7 @@ class FormClub extends AbstractType {
 							->setParameter('codiclub', $club->getCodi());
 						},
 					'choice_label' 	=> 'nomCognoms',
-					'empty_value' 	=> '',
+					'placeholder' 	=> '',
 					'required'  	=> false,
 					'mapped'		=> false,
 					'property_path' => 'persona',
@@ -52,7 +52,7 @@ class FormClub extends AbstractType {
 					'required' 		=> false,
 					'mapped'		=> false,
 					'choices' 		=> BaseController::getCarrecs(),
-					'empty_value' 	=> 'Escollir càrrec...',
+					'placeholder' 	=> 'Escollir càrrec...',
 				));
 
 				$form->add('nommembre', 'text', array(
@@ -144,7 +144,7 @@ class FormClub extends AbstractType {
 				'required'  	=> true,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> '',
+				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
 				'read_only' 	=> true
 		));
@@ -153,7 +153,7 @@ class FormClub extends AbstractType {
 				'required'  	=> true,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> '',
+				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
 				'read_only' 	=> true
 		));
@@ -162,7 +162,7 @@ class FormClub extends AbstractType {
 				'required'  	=> true,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> '',
+				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy'
 		));
 
@@ -170,7 +170,7 @@ class FormClub extends AbstractType {
 				'required'  	=> true,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> '',
+				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy'
 		));
 		

@@ -51,7 +51,7 @@ class EntityDuplicat extends EntityComanda {
 	protected $dataimpressio;
 
 	/**
-	 * @ORM\OneToOne(targetEntity="EntityImatge")
+	 * @ORM\OneToOne(targetEntity="EntityArxiu")
 	 * @ORM\JoinColumn(name="foto", referencedColumnName="id")
 	 */
 	protected $foto;
@@ -240,10 +240,10 @@ class EntityDuplicat extends EntityComanda {
 	/**
 	 * Set foto
 	 *
-	 * @param FecdasBundle\Entity\EntityImatge $imatge
-	 * @return EntityImatge
+	 * @param FecdasBundle\Entity\EntityArxiu $imatge
+	 * @return EntityArxiu
 	 */
-	public function setFoto(\FecdasBundle\Entity\EntityImatge $foto = null)
+	public function setFoto(\FecdasBundle\Entity\EntityArxiu $foto = null)
 	{
 		$this->foto = $foto;
 	}
@@ -251,7 +251,7 @@ class EntityDuplicat extends EntityComanda {
 	/**
 	 * Get foto
 	 *
-	 * @return FecdasBundle\Entity\EntityImatge
+	 * @return FecdasBundle\Entity\EntityArxiu
 	 */
 	public function getFoto()
 	{

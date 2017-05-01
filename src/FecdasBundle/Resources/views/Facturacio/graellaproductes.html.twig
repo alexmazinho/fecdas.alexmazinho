@@ -29,8 +29,7 @@
     	
     	{% if productes|length > 0 %}
    		<div class="grid-productes-header">
-   			
-			<form id="form_productes" action="{{ path('FecdasBundle_graellaproductes') }}" method="POST" {{ form_enctype(form) }}  class="appform">
+			{{ form_start(form, {'action': path('FecdasBundle_graellaproductes'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_productes'}}) }}
 				<div class="row">		
 					{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
 					<div class="{% if admin != true %}hidden{% else %}col-md-5 col-xs-12{% endif %}">
@@ -50,7 +49,7 @@
 						<p class="total-productes-grid">Total productes: <span>{{ productes|length }}</span></p>
 					</div>
 				</div>	
-		   	</form>
+		   	{{ form_end(form) }}
 		   	
 		</div>
 	    <div class="row grid-productes gutter-10">	

@@ -121,7 +121,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'choices'   => BaseController::getDepartamentsConta( 0 ),
 					'multiple'  => false,
 					'expanded'  => false,
-					'empty_value' => '',
+					'placeholder' => '',
 					'data' 		=> $producte->getDepartament(),
 			));*/
 			
@@ -240,7 +240,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 				'read_only' => false,
 				'widget' => 'single_text',
 				'input' => 'datetime',
-				'empty_value' => false,
+				'placeholder' => false,
 				'format' => 'dd/MM/yyyy HH:mm',
 		));
 		
@@ -248,7 +248,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 				'choices'   => BaseController::getDepartamentsConta( 0 ),
 				'multiple'  => false,
 				'expanded'  => false,
-				'empty_value' => '',
+				'placeholder' => '',
 				//'data' 		=> $producte->getDepartament(),
 		));
 		

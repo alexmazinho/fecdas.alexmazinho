@@ -1,4 +1,4 @@
-<form id="formpersona" action="{{ path('FecdasBundle_persona') }}" method="post" {{ form_enctype(formpersona) }}  class="modalform appform container-fluid">
+{{ form_start(form, {'action': path('FecdasBundle_persona'), 'method': 'POST', 'attr': {'class': 'modalform appform container-fluid', 'id':'formpersona'}}) }}
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
 	<h1>Dades personals<div id="sms-mailpersona">* Cal omplir <strong>l'adreça de correu</strong> per poder fer la tramitació</div></h1>
 	<div class="row">
@@ -144,4 +144,4 @@
 	<div id="error-persona"></div>
 	<a id="formpersona-autocompleters" href="{{ path('FecdasBundle_ajaxpoblacions') }}" style="display:none">
 	<div id="formpersona-rest">	{{ form_rest(formpersona) }}</div>
-</form>
+{{ form_end(form) }}

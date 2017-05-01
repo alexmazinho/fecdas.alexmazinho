@@ -97,6 +97,23 @@ class EntityPersona {
 	protected $addrnacionalitat;
 	
 	/**
+	 * @ORM\OneToOne(targetEntity="EntityArxiu")
+	 * @ORM\JoinColumn(name="foto", referencedColumnName="id")
+	 */
+	protected $foto;
+	
+	/**
+	 * @ORM\OneToOne(targetEntity="EntityArxiu")
+	 * @ORM\JoinColumn(name="certificat", referencedColumnName="id")
+	 */
+	protected $certificat;
+	
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityArxiu", mappedBy="persona")
+	 */
+	protected $arxius;	// Altres arxius, baixes, esborrats, obsolets
+	
+	/**
 	 * @ORM\ManyToOne(targetEntity="EntityClub")
 	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
 	 */
@@ -132,12 +149,38 @@ class EntityPersona {
 	 */
 	protected $llicencies;
 
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityTitulacio", mappedBy="persona")
+	 */
+	protected $titulacions;
+
+	/**
+     * @ORM\ManyToMany(targetEntity="EntityTitol")
+     * @ORM\JoinTable(name="m_titulacionsexternes",
+     *      joinColumns={@ORM\JoinColumn(name="persona", referencedColumnName="id")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="titol", referencedColumnName="id")}
+     *      )
+     */
+	protected $altrestitulacions;
+
+	/**
+	 * @ORM\OneToMany(targetEntity="EntityDocencia", mappedBy="docent")
+	 */
+	protected $docencies;
+	
+	
 	public function __construct($currentDate) {
 		$this->id = 0;
 		$this->setDataentrada($currentDate);
 		$this->web = true;
 		$this->validat = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->arxius = new \Doctrine\Common\Collections\ArrayCollection();
+		
+		$this->titulacions = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->altrestitulacions = new \Doctrine\Common\Collections\ArrayCollection();
+		
+		$this->docencies = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
 	public function __toString() {
@@ -657,6 +700,70 @@ class EntityPersona {
     	return $this->cognoms . ", " . $this->nom;
     }
 
+
+	/**
+	 * Set foto
+	 *
+	 * @param FecdasBundle\Entity\EntityArxiu $foto
+	 * @return EntityArxiu
+	 */
+	public function setFoto(\FecdasBundle\Entity\EntityArxiu $foto = null)
+	{
+		$this->foto = $foto;
+	}
+	
+	/**
+	 * Get foto
+	 *
+	 * @return FecdasBundle\Entity\EntityArxiu
+	 */
+	public function getFoto()
+	{
+		return $this->foto;
+	}
+
+	/**
+	 * Set certificat
+	 *
+	 * @param FecdasBundle\Entity\EntityArxiu $certificat
+	 * @return EntityArxiu
+	 */
+	public function setCertificat(\FecdasBundle\Entity\EntityArxiu $certificat = null)
+	{
+		$this->certificat = $certificat;
+	}
+	
+	/**
+	 * Get certificat
+	 *
+	 * @return FecdasBundle\Entity\EntityArxiu
+	 */
+	public function getCertificat()
+	{
+		return $this->certificat;
+	}
+
+
+	/**
+     * Add arxius
+     *
+     * @param FecdasBundle\Entity\EntityArxiu $arxiu
+     */
+    public function addArxius(\FecdasBundle\Entity\EntityArxiu $arxiu)
+    {
+        $this->arxius->add($arxiu);
+    }
+
+    /**
+     * Get arxius
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getArxius()
+    {
+        return $this->arxius;
+    }
+
     /**
      * Set dataentrada
      *
@@ -777,4 +884,65 @@ class EntityPersona {
     	return $this->web;
     }
     
+	
+	/**
+     * Add titulacions
+     *
+     * @param FecdasBundle\Entity\EntityTitulacio $titulacio
+     */
+    public function addTitulacions(\FecdasBundle\Entity\EntityTitulacio $titulacio)
+    {
+        $this->titulacions->add($titulacio);
+    }
+
+    /**
+     * Get titulacions
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getTitulacions()
+    {
+        return $this->titulacions;
+    }
+	
+	/**
+     * Add altrestitulacions
+     *
+     * @param FecdasBundle\Entity\EntityTitol $titolextern
+     */
+    public function addAltrestitulacions(\FecdasBundle\Entity\EntityTitol $titolextern)
+    {
+        $this->altrestitulacions->add($titolextern);
+    }
+
+    /**
+     * Get altrestitulacions
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getAltrestitulacions()
+    {
+        return $this->altrestitulacions;
+    }
+	
+	
+	/**
+     * Add docencies
+     *
+     * @param FecdasBundle\Entity\EntityDocencia $docencia
+     */
+    public function addDocencies(\FecdasBundle\Entity\EntityDocencia $docencia)
+    {
+        $this->docencies->add($docencia);
+    }
+
+    /**
+     * Get docencies
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getDocencies()
+    {
+        return $this->docencies;
+    }
 }

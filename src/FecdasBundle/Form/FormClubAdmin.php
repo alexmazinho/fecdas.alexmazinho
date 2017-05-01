@@ -21,19 +21,20 @@ class FormClubAdmin extends FormClub {
 			/* Check we're looking at the right data/form */
 			if ($club instanceof EntityClub) {
 				
-				$form->add('clubs', 'genemu_jqueryselect2_entity', array(
-					'class' 	=> 'FecdasBundle:EntityClub',
-					'choice_label' => 'nom',
-					'label' 	=> 'Filtre per club: ',
-					'mapped' 	=> false,
-					'required'  => false,
-					'data'		=> $club
+				$form->add('clubs', 'entity', array(
+					'class' 		=> 'FecdasBundle:EntityClub',
+					'choice_label' 	=> 'nom',
+					'label' 		=> 'Filtre per club: ',
+					'mapped' 		=> false,
+					'required'  	=> false,
+					'data'			=> $club
 				));
+				
 				
 				$form->add('saldoclub', 'number', array(
 					'read_only'  => true,
 					'grouping' => true,
-					'precision' => 2,
+					'scale' => 2,
 					'mapped' => false,
 					'data'	=> $club->getSaldo()
 				));
@@ -56,7 +57,7 @@ class FormClubAdmin extends FormClub {
 				'required'  	=> true,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> '',
+				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
 				'read_only' 	=> false
 		));
@@ -87,14 +88,14 @@ class FormClubAdmin extends FormClub {
 			
 		$builder->add('limitcredit', 'number', array(
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 			
 		$builder->add('limitnotificacio', 'datetime', array(
 				'read_only' => true,
 				'widget' => 'single_text',
 				'input' => 'datetime',
-				'empty_value' => false,
+				'placeholder' => false,
 				'format' => 'dd/MM/yyyy',
 		));
 		
@@ -139,37 +140,37 @@ class FormClubAdmin extends FormClub {
 		$builder->add('romanent', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 			
 		$builder->add('totalpagaments', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 		
 		$builder->add('totalllicencies', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 		
 		$builder->add('totalduplicats', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 		
 		$builder->add('totalaltres', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 		
 		$builder->add('ajustsubvencions', 'number', array(
 				'read_only'  => true,
 				'grouping' => true,
-				'precision' => 2
+				'scale' => 2
 		));
 		
 	}

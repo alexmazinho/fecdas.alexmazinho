@@ -2,6 +2,7 @@
 namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -94,7 +95,19 @@ class EntityParteType {
 		return true;
 	}
 	
+	
+	/**
+	 * és llicència dia
+	 *
+	 * @return boolean
+	 */
+	public function esLlicenciaDia()
+	{
+		return $this->id == BaseController::ID_LLICENCIES_DIA;
+	}
 
+	
+	
     /**
      * Set id
      *

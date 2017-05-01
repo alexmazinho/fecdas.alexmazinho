@@ -164,7 +164,7 @@ class FacturacioController extends BaseController {
 										->orderBy('p.descripcio', 'ASC');
 									},
 							'choice_label' => 'descripcio',
-							'empty_value' => '',
+							'placeholder' => '',
 							'required'  => true,
 							'data' => ($idproducte>0?$this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte):"")))
 			->add('desde', 'date', array(
@@ -527,7 +527,7 @@ class FacturacioController extends BaseController {
 				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data'			=> $fins,
 				'format' 		=> 'dd/MM/yyyy'))
 			->add('grup', 'choice', array(
@@ -817,13 +817,13 @@ class FacturacioController extends BaseController {
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'required'		=>	false,
-				//'empty_value' 	=> false,
+				//'placeholder' 	=> false,
 				'format' 		=> 'dd/MM/yyyy'))
 			->add('datafins', 'date', array(
 				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data'			=> $this->getCurrentDate('now'),
 				'format' 		=> 'dd/MM/yyyy',
 			));
@@ -1719,14 +1719,14 @@ class FacturacioController extends BaseController {
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'required'		=>	false,
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data'			=> $datadesde,
 				'format' 		=> 'dd/MM/yyyy'))
 			->add('datafins', 'date', array(
 				'disabled' 		=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
-				'empty_value' 	=> false,
+				'placeholder' 	=> false,
 				'data'			=> $datafins,
 				'format' 		=> 'dd/MM/yyyy'
 		));
@@ -2044,6 +2044,10 @@ class FacturacioController extends BaseController {
 				
 				if ($unitats != 0) {
 					// Afegir registre i actualitzar stock
+					if ($unitats > $producte->getStock()) {
+						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
+					}
+					
 					$comentaris = 'Sortida stock '.$unitats.'x'.$producte->getDescripcio();
 						
 					$registreStock = new EntityStock($producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
@@ -2051,10 +2055,6 @@ class FacturacioController extends BaseController {
 						
 					$this->recalcularStockProducte($registreStock);
 						
-					if ($unitats > $producte->getStock()) {
-						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
-					}
-	
 					// Control notificació stock
 					if ($producte->getStock() < $producte->getLimitnotifica()) {
 						$productesNotificacio[] = $producte; // Afegir a la llista de productes per notificar manca stock
@@ -2482,7 +2482,7 @@ class FacturacioController extends BaseController {
 			->add('tipus', 'choice', array(
 				'choices' => BaseController::getTipusDeProducte(),
 				'required'  => false, 
-				'empty_value' => 'Qualsevol...',
+				'placeholder' => 'Qualsevol...',
 				'data' => $tipus,
 		));
 		

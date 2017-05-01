@@ -18,7 +18,7 @@
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
-	<form id="formproducte" action="{{ path('FecdasBundle_editarproducte') }}" method="post" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_editarproducte'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formproducte'}}) }}
 		<div class="row">
 			<div class="col-md-2">
 				<div class="form-group">
@@ -240,7 +240,7 @@
 			 
 			 
 		</div>
-    </form>
+    {{ form_end(form) }}
 
 {% endblock %}
 

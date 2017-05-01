@@ -38,7 +38,7 @@ class FormLlicencia extends AbstractType {
 									->setParameter('codiclub', $club->getCodi());
 								},
 							'choice_label' => 'llistaText',
-							'empty_value' => '',
+							'placeholder' => '',
 							'required'  => false,
 							'read_only' => !$parte->isAllowEdit(),
 							'property_path' => 'persona',
@@ -146,7 +146,7 @@ class FormLlicencia extends AbstractType {
                         'data'      => ($llicencia->esNova()?false:!$llicencia->getEnviarllicencia()) 
                 ));*/
                 
-                if ($parte->perEnviarFederat() != true) { 
+                if ($parte->perImprimir() && !$parte->perEnviarFederat()) { 
 	                $form->add('enviarllicencia', 'choice', array(
 	                        'required'  => true,
 	                        'multiple'  => false,

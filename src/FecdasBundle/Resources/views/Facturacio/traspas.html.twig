@@ -18,7 +18,7 @@
     </header>
     
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}    
-	<form id="formtraspas" action="{{ path('FecdasBundle_fitxercomptabilitat') }}" method="get" {{ form_enctype(form) }}  class="appform">
+	{{ form_start(form, {'action': path('FecdasBundle_fitxercomptabilitat'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'formtraspas'}}) }}
 		<div class="row">
 			{% if enviaments|length > 0 %}
 			<h4 class="col-md-12">Darrer enviament apunts fins a <span class="blue">{{ enviaments[0].datafins|date('d/m/Y H:m:s') }}</span></h4>
@@ -92,7 +92,7 @@
 		<div id="error" class="sms-notice" style="display:none"> </div>
 		
 		<div class="row"></div>
-    </form>
+    {{ form_end(form) }}
 
 {% endblock %}
 

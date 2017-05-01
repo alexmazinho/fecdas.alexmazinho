@@ -3,8 +3,6 @@
 
 {% block javascriptshead %}
  	{{ parent() }}
-
-  	{{ form_javascript(form) }}
 {% endblock %}
 
 {% block title %}Aplicació gestió FECDAS. Comunicacions recents{% endblock %}
@@ -17,7 +15,7 @@
     {% include 'FecdasBundle:Includes:messages.html.twig' %}
     
     <div id="list-forms">
-    	<form id="formrecents" action="{{ path('FecdasBundle_recents') }}" method="post" {{ form_enctype(form) }}  class="appform">
+    	{{ form_start(form, {'action': path('FecdasBundle_recents'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formrecents'}}) }}
     		<div class="row">
 				<div class="col-md-3">
 				  	<div class="form-group">
@@ -78,7 +76,7 @@
 						title="Imprimir pendents">Imprimir pendents BORRAR <i class="fa fa-print blue fa-2x"></i></a>
 				</div>#}	
 			</div>
-	   	</form>
+	   	{{ form_end(form) }}
     </div>
     <!--  <div id="list-header" class="clearfix"> -->
     <br/>

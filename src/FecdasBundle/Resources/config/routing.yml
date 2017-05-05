@@ -312,6 +312,48 @@ FecdasBundle_usuariclub:
 
 
 # ---------------------------------------------------------------------------
+# -------------------------  TITULACIONS ------------------------------------
+# ---------------------------------------------------------------------------
+   
+
+FecdasBundle_cursos:
+    path:  /cursos
+    defaults: { _controller: "FecdasBundle:Titulacions:cursos" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_curs:
+    path:  /curs
+    defaults: { _controller: "FecdasBundle:Titulacions:curs" }
+    requirements:
+        methods:  GET|POST
+
+FecdasBundle_dadespersonals:
+    path:  /dadespersonals
+    defaults: { _controller: "FecdasBundle:Titulacions:dadespersonals" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_titulacionstopdf:
+    path:  /titulacionstopdf
+    defaults: { _controller: "FecdasBundle:Titulacions:titulacionstopdf" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_exportcursos:
+    path:  /exportcursos
+    defaults: { _controller: "FecdasBundle:Titulacions:exportcursos" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_cursostopdf:
+    path:  /cursostopdf
+    defaults: { _controller: "FecdasBundle:Titulacions:cursostopdf" }
+    requirements:
+        methods:  GET
+
+
+# ---------------------------------------------------------------------------
 # -----------------------  ADMINISTRACIÓ ------------------------------------
 # ---------------------------------------------------------------------------
    

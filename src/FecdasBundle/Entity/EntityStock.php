@@ -79,8 +79,9 @@ class EntityStock {
     protected $databaixa;
 	
 
-	public function __construct($producte = null, $unitats = 0, $comentaris = '', $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $factura = null ) {
+	public function __construct($club = null, $producte = null, $unitats = 0, $comentaris = '', $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $factura = null ) {
 		$this->id = 0;
+		$this->club = $club;
 		$this->producte = $producte;
 		$this->dataregistre = ($dataregistre != null?$dataregistre:new \DateTime('today'));
 		$this->tipus = $tipus;
@@ -93,7 +94,7 @@ class EntityStock {
 	}
 	
 	public function __toString() {
-		return $this->id.$this->producte->getDescripcio().$this->dataregistre->format('Y-m-d H:i');
+		return $this->id.($this->club != null?$this->club->getNom():'').($this->producte != null?$this->producte->getDescripcio():'').$this->dataregistre->format('Y-m-d H:i');
 	}
 	
 	

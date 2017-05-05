@@ -1,0 +1,59 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Relació de cursos del Club{% endblock %}
+
+{% block body %}
+   	<header>
+		<div class="row">
+			<div class="col-md-8"><h1>Relació de cursos</h1></div>
+	        <div class="col-md-4 col-last-right">
+				<div class="buttons-top-bootstrap">
+					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_cursostopdf') }}" alt="Descarregar els cursos" 
+							title="Descarregar els cursos"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
+					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_exportcursos') }}" alt="Exportar dades dels cursos" 
+							title="Exportar dades dels cursos"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
+				</div> 
+			</div>
+		</div>
+   	</header>
+   	
+   	<section id="form-filtre-cursos">
+   		<div class="row">
+	    	<div class="col-md-3 col-md-offset-9 col-last-right">
+				<label>&nbsp;</label>
+				<button id="form_crearcurs"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou curs</button>
+		    </div>
+		</div> 
+	</section>
+	
+	<section id="llista-cursos">
+		<div class="row">
+			<div class="col-md-12">	PENDENT </div>
+		</div>
+	</section>
+   		
+    
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+
+	<script type="text/javascript">
+	
+	$(document).ready(function(){
+		setMenuActive("menu-cursos");
+		
+	});
+	
+	</script>		
+
+{% endblock %}

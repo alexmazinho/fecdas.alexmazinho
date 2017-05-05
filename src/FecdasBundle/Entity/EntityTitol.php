@@ -63,11 +63,6 @@ class EntityTitol {
 	protected $equivalentcmas; // FK taula m_titols  self referencing
 
 	/**
-	 * @ORM\Column(type="boolean")
-	 */
-	protected $llicenciavigent;  // Requeriment
-	
-	/**
 	 * @ORM\OneToMany(targetEntity="EntityRequeriment", mappedBy="titol" )
 	 */
 	protected $requeriments;	// FK taula m_requeriments
@@ -79,7 +74,6 @@ class EntityTitol {
 
 	public function __construct() {
 		$this->actiu = true;
-		$this->llicenciavigent = true;
 		
 		$this->requeriments = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -106,7 +100,7 @@ class EntityTitol {
 	 */
 	public function getLlistaText()
 	{
-		return $this->getOrganisme()." ".$this->getCodi()." - ".$this->getTitol();
+		return ($this->esCMAS()?"":$this->getOrganisme())." ".$this->getCodi()." - ".$this->getTitol();
 	}
 	
 	/**
@@ -259,20 +253,6 @@ class EntityTitol {
 		return $this->equivalentcmas;
 	}
 
-
-	/**
-	 * @return boolean
-	 */
-	public function getLlicenciavigent() {
-		return $this->llicenciavigent;
-	}
-
-	/**
-	 * @param boolean $llicenciavigent
-	 */
-	public function setLlicenciavigent($llicenciavigent) {
-		$this->llicenciavigent = $llicenciavigent;
-	}
 
 	/**
      * Add requeriments

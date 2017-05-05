@@ -21,6 +21,8 @@ class OfflineController extends BaseController {
 	
 	public function historictitolsAction(Request $request) {
 		// http://www.fecdas.dev/historictitols?desde=1&fins=40
+		// http://www.fecdas.dev/historictitols?max=10&pag=1
+		// http://www.fecdas.dev/historictitols?id=1234
 		// Script de migració. Executar per migrar i desactivar
 	
 		if (!$this->isAuthenticated())
@@ -31,16 +33,19 @@ class OfflineController extends BaseController {
 	
 		$em = $this->getDoctrine()->getManager();
 	
-		$desde = $request->query->get('desde', 0);
-		$fins = $request->query->get('fins', 0);
+		$id = $request->query->get('id', 0);
+		$max = $request->query->get('max', 1000);
+		$pag = $request->query->get('pag', 1);
+		$offset = $max * ($pag -1);
 		
 		//$batchSize = 20;
 		
 		$strQuery  = " SELECT id, federado, dni, numcurso, iniciocurso, fincurso, ";
 		$strQuery .= " club, abreviatura, numtitulo ";
 		$strQuery .= " FROM importtitulacions ";
-		$strQuery .= " WHERE id >= ".$desde." AND id <= ".$fins." ";
-		$strQuery .= " ORDER BY id ASC ";
+		if ($id > 0) $strQuery .= " WHERE id = ".$id;
+		$strQuery .= " ORDER BY numcurso, numtitulo ";
+		if ($id == 0) $strQuery .= " LIMIT ".$max. " OFFSET ".$offset;
 		$stmt = $em->getConnection()->prepare($strQuery);
 		$stmt->execute();
 		$titols = $stmt->fetchAll();
@@ -50,13 +55,15 @@ class OfflineController extends BaseController {
 		
 		$cursos = array();
 		$errors = array();
+		$ids = array();
 
 		for ($i = 0; $i < count($titols); $i++) {
 			$currentTitol = $titols[$i]; 
 				
 			$id = $currentTitol['id'];
+			$ids[] = $id; 
 			$dni = $currentTitol['dni'];
-			
+			$personesLletra = array();
 			try {
 	
 				// Cercar persona (NO pot ser null, pero poden ser vàries amb el mateix DNI)
@@ -76,12 +83,7 @@ class OfflineController extends BaseController {
 				}
 				
 				if ($persones == null || count($persones) == 0) {
-					if ($currentTitol['abreviatura'] == 'RCP' || $currentTitol['abreviatura'] == 'AO') {
-						// No requereixen llicència
-						throw new \Exception($id.'#WARN. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
-					} else {	
-						throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
-					}					
+					throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
 				}
 				
 				// Cercar títol (NO pot ser null i només pot trobar un) 
@@ -165,15 +167,13 @@ class OfflineController extends BaseController {
 			
 		}
 		
+		$sql = "UPDATE importtitulacions SET error = null WHERE id IN (".implode(",", $ids).") ";
+		$stmt = $em->getConnection()->prepare($sql);
+		$stmt->execute();
 		if (count($errors) != 0) {
-			
-			$sql = "UPDATE importtitulacions SET error = null WHERE id >= ".$desde." AND id <= ".$fins." ";
-			$stmt = $em->getConnection()->prepare($sql);
-			$stmt->execute();
-				
 			foreach ($errors as $id => $error) {
 					
-				$sql = "UPDATE importtitulacions SET error = '".$error."' WHERE id = ".$id;
+				$sql = "UPDATE importtitulacions SET error = \"".$error."\" WHERE id = ".$id;
 				$stmt = $em->getConnection()->prepare($sql);
 				$stmt->execute();
 			}

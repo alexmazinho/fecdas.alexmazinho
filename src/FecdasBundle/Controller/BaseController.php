@@ -533,6 +533,29 @@ class BaseController extends Controller {
 		));
 		
 	}
+
+	protected function addTitolsForm($formBuilder, $titol, $cmas = true, $nom = 'titols') {
+			
+		$formBuilder->add($nom, 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityTitol',
+				'query_builder' => function($repository) use ($cmas) {
+						if ($cmas) {
+							return $repository->createQueryBuilder('t')
+									->orderBy('t.titol', 'ASC')
+									->where('t.organisme = \''.BaseController::ORGANISME_CMAS.'\'')
+									->where('t.actiu = 1');
+						}
+						return $repository->createQueryBuilder('t')
+								->orderBy('t.titol', 'ASC')
+								->where('t.organisme <>  \''.BaseController::ORGANISME_CMAS.'\'');
+						}, 
+				'choice_label' 	=> 'LlistaText',
+				'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
+				'required'  	=> false,
+				'data' 			=> $titol,
+		));
+		
+	}
 	
 	
 	protected function getCurrentDate($time = null) {
@@ -574,6 +597,10 @@ class BaseController extends Controller {
 		if ($this->get('session')->has('adminasuser')) return false;
 		
 		return true;
+	}
+
+	protected function esFederacio($club) {
+		return $club->getCodi() == self::CODI_FECDAS;
 	}
 
 	protected function getCurrentClub() {
@@ -2903,7 +2930,7 @@ class BaseController extends Controller {
 					throw new \Exception('Cal afegir mínim una unitat del producte'  );
 				}
 				
-				if ($producte->getMinim() != null && $unitats < $producte->getMinim()) {
+				if ($unitats > 0 && $producte->getMinim() != null && $unitats < $producte->getMinim()) {
 					$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');
 					if ($camp != null) $camp->addError(new FormError('?'));
 					throw new \Exception('El mínim d\'unitats que cal demanar del producte \''.

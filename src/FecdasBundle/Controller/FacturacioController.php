@@ -248,12 +248,10 @@ class FacturacioController extends BaseController {
 	    	if ($id > 0) $registreStock = $this->getDoctrine()->getRepository('FecdasBundle:EntityStock')->find($id);
 	    		
 	    	if ($registreStock == null) {
-	    		$registreStock = new EntityStock();
-				if ($producteId > 0) {
-					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($producteId);
-					if ($producte != null) $registreStock->setProducte($producte);
-				}
-				
+	    		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($producteId);
+				$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+				$registreStock = new EntityStock($fede, $producte);
+
 	    		$em->persist($registreStock);
 	    	}
 		
@@ -309,6 +307,7 @@ class FacturacioController extends BaseController {
 		if ($registreStock == null) throw new \Exception('Registre incorrecte' );
 
 		$producte = $registreStock->getProducte();
+		$club = $registreStock->getClub();
 
 		$desde = $registreStock->getDataregistre();
 		
@@ -318,6 +317,7 @@ class FacturacioController extends BaseController {
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
 		$strQuery .= " WHERE 1 = 1 ";
 		$strQuery .= " AND s.producte = :idproducte ";
+		$strQuery .= " AND s.club = :codiclub ";
 		$strQuery .= " AND s.databaixa IS NULL ";
 		$strQuery .= " AND (s.dataregistre < :desde ";
 		if ($registreStock->getId() != 0) $strQuery .= " OR (s.dataregistre = :desde AND s.id < :id) "; // Anteriors a registre existent
@@ -327,23 +327,29 @@ class FacturacioController extends BaseController {
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d'));
 		$query->setParameter('idproducte', $producte->getId());
+		$query->setParameter('codiclub', $club->getCodi());
 		if ($registreStock->getId() != 0) $query->setParameter('id', $registreStock->getId());
 		$query->setMaxResults( 1 );
 		
 		$ultimRegistre = $query->getResult();
 
+		$stock = 0; // Primer registre, assumir stock 0
 		if ($ultimRegistre == null || count($ultimRegistre) == 0) {
+			/*	
 			// No es pot esborrar el primer registre d'un producte (stock inicial)
 			if ($registreStock->anulat()) throw new \Exception('No es pot esborrar el primer registre del producte' );
 			else throw new \Exception('No es poden afegir registres abans del primer registre que conté l\'stock inicial' );
+			 */ 
+		} else {
+			$ultimRegistre = $ultimRegistre[0];
+			$stock = $ultimRegistre->getStock();
 		}
-		$ultimRegistre = $ultimRegistre[0];
-		$stock = $ultimRegistre->getStock();
 		
 		// Actualitzar següents stock registres posteriors o iguals a $desde 
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
 		$strQuery .= " WHERE 1 = 1 ";
 		$strQuery .= " AND s.producte = :idproducte ";
+		$strQuery .= " AND s.club = :codiclub ";
 		$strQuery .= " AND s.databaixa IS NULL ";
 		$strQuery .= " AND (s.dataregistre > :desde ";
 		if ($registreStock->getId() != 0) $strQuery .= " OR (s.dataregistre = :desde AND s.id >= :id) ";
@@ -352,6 +358,7 @@ class FacturacioController extends BaseController {
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d'));
 		$query->setParameter('idproducte', $producte->getId());
+		$query->setParameter('codiclub', $club->getCodi());
 		if ($registreStock->getId() != 0) $query->setParameter('id', $registreStock->getId());
 		
 		$registres = $query->getResult();
@@ -377,7 +384,7 @@ class FacturacioController extends BaseController {
 			}			
 		}
 		
-		$producte->setStock($stock);		
+		if (BaseController::esFederacio($club)) $producte->setStock($stock);  // Si és la federació actualitza stock de productes	
 	}
 		
 	public function registresaldosAction(Request $request) {
@@ -2049,11 +2056,20 @@ class FacturacioController extends BaseController {
 					}
 					
 					$comentaris = 'Sortida stock '.$unitats.'x'.$producte->getDescripcio();
+					
+					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 						
-					$registreStock = new EntityStock($producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
+					$registreStock = new EntityStock($fede, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
 					$em->persist($registreStock);
 						
 					$this->recalcularStockProducte($registreStock);
+					
+					$club = $comanda->getClub();
+					
+					if ($club != $fede) {
+						$registreStockClub = new EntityStock($club, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_ENTRADA, $factura);
+						$em->persist($registreStockClub);
+					}
 						
 					// Control notificació stock
 					if ($producte->getStock() < $producte->getLimitnotifica()) {
@@ -2638,9 +2654,10 @@ class FacturacioController extends BaseController {
 
 				// Stock
 				if ($producte->getStockable() == true) {
+					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 					if ($producte->getId() == 0) {
 						// => Crear producte stockable afegir registre stock
-						$registreStock = new EntityStock($producte, $producte->getStock(), 'Registre inicial stock');
+						$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
 						$registreStock->setStock($producte->getStock()); // Stock inicial
 						$em->persist($registreStock);
 					} else {
@@ -2648,7 +2665,7 @@ class FacturacioController extends BaseController {
 						$query = $this->consultaStock($producte->getId());
 						$registres = $query->getResult();
 						if ($registres == null || count($registres) == 0) {
-							$registreStock = new EntityStock($producte, $producte->getStock(), 'Registre inicial stock');
+							$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
 							$registreStock->setStock($producte->getStock()); // Stock inicial
 							$em->persist($registreStock);
 						} else {

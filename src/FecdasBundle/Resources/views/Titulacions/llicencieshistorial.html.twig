@@ -1,6 +1,7 @@
 <div class="taula-historial llicencies-historial">
 	<a class="close" href="#"><img style="cursor: pointer;" src="/images/close.png"></a>
 	<div class="historial-titol">Historial de llicències</div>
+	<div class="historial-items">
 {% for llicencia in llicencies %}
 	<div class="item-historial {% if llicencia.isBaixa %}data-detall-fosc{% endif %}">
 		<div class="historial-camp historial-vigencia">
@@ -14,10 +15,10 @@
 				<i class="fa fa-search fa-1x blue"></i></a></div>
 		{% endif %}
 	</div>
-
 {% else %}
-	Historial sense dades
+	<div class="item-historial">Historial sense dades</div>
 {% endfor %}
+	</div>
 </div>
 
 

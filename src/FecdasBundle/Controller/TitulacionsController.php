@@ -151,6 +151,7 @@ class TitulacionsController extends BaseController {
 		} else {
 			 $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($id);
 		}
+		
 		if (!$persona) return new Response("");
 						
 		$llicencies = $persona->getLlicenciesSortedByDate(true); // Incloure baixes
@@ -266,8 +267,8 @@ class TitulacionsController extends BaseController {
 	
 		$current = $this->getCurrentDate();
 		
-		if ($club != null) $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
-		else $strQuery = "SELECT m FROM FecdasBundle\Entity\EntityMetaPersona m JOIN m.persones e ";
+		if ($this->isCurrentAdmin()) $strQuery = "SELECT m FROM FecdasBundle\Entity\EntityMetaPersona m JOIN m.persones e ";
+		else $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
 		
 		if ($titol != null) $strQuery .= " JOIN e.titulacions t JOIN t.curs c ";
 		if ($titolExtern != null) $strQuery .= " JOIN e.altrestitulacions at ";

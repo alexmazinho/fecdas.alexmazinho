@@ -138,7 +138,7 @@
 		   		<div id="header-dadespersonalsnaixement" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nascut/da', 'e.datanaixement') }}
 		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-dadespersonalshistorialllicencies" class="col-listheader listheader-noorder">Llicències</div>
-		   		<div id="header-dadespersonalshistorialtitulacions" class="col-listheader listheader-noorder">Titulacions</div>
+		   		<div id="header-dadespersonalshistorialtitulacions" class="col-listheader listheader-noorder">Titulacions i docències</div>
 		   		<div id="header-dadespersonalsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 	   	</div>
@@ -226,11 +226,12 @@
 		</div>
 		{% if persones.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(persones, null, sortparams) }}</div>{% endif %}		
 	   	{% else %}
-	   		
 	        <div class="sms-notice">Cerca sense resultats</div>
 	    {% endif %}
+	    <div id="historial-overlay" class="finestra-overlay"></div>
 	</div>
     
+   
     <div id="edicio-persona" class="finestra-overlay"></div>
     
 {% endblock %}

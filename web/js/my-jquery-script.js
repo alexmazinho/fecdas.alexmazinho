@@ -757,49 +757,53 @@
 	        $('.alert').remove();
 	        
 	        var current = $(this).parents(".data-detall");
-  	
-	        if ($.browser.msie) $('.taula-historial').hide(); 
-	    	else $('.taula-historial').slideUp('slow');
+	        var index = $( "li.data-detall" ).index( current );
+	        index++;
+	        
+	        /*if ($.browser.msie) $('.taula-historial').hide(); 
+	    	else $('.taula-historial').slideUp('slow');*/
+	        if ($.browser.msie) $('#historial-overlay').hide(); 
+	    	else $('#historial-overlay').fadeOut('fast');
+	        $('#historial-overlay').html('');
 
 	        tancarMascaraBlock( '' );
 	        
-	        if ( current.hasClass('data-detall-historic')) {
-		        if ($.browser.msie) current.children('.taula-historial').show(); 
-		    	else current.children('.taula-historial').slideDown('slow');
+	        var url = $(this).attr("href");
 		        
+	        $.get(url, function(data, textStatus) {
+	        	$('#historial-overlay').append(data);
+		        	
+	        	if ($.browser.msie) $('#historial-overlay').show(); 
+		    	else $('#historial-overlay').fadeIn('fast');
+		        	
+	        	var cssTop = (index * 35);
+	        	if ($('#historial-overlay').height() + cssTop > $('#llista-dadespersonals').height() ) {
+	        		cssTop = $('#llista-dadespersonals').height() - ($('#historial-overlay').height() + cssTop); // Negatiu
+	        	}
+	        	$('#historial-overlay').css({'top': cssTop });
+	        	
 		        obrirMascaraBlock(  $('.llista-dadespersonals .table-scroll') );
-	        } else {
-		        var url = $(this).attr("href");
 		        
-		        $.get(url, function(data, textStatus) {
-		        	current.addClass('data-detall-historic');
-		        	current.append(data);
-			        if ($.browser.msie) current.children('.taula-historial').show(); 
-			    	else current.children('.taula-historial').slideDown('slow');
-
-			        obrirMascaraBlock(  $('.llista-dadespersonals .table-scroll') );
+		        actionsModalOverlay();
 			        
-			        //if close button is clicked
-				    $('.taula-historial .close').click(function (e) {
-				        //Cancel the link behavior
-				        e.preventDefault();
-				        
-				        tancarMascaraBlock( '' );
-				        
-				        current.removeClass('data-detall-historic');
-				        if ($.browser.msie) current.children('.taula-historial').hide(); 
-				    	else current.children('.taula-historial').slideUp('slow');
-				    }); 
-	        	}).fail( function(xhr, status, error) {
-	        		// xhr.status + " " + xhr.statusText, status, error
-		        	var sms = smsResultAjax('KO', xhr.responseText);
-		    			 
-		   			$('#form_dadespersonals').append(sms);
-	        	});
-	        };
+		        //if close button is clicked
+			    $('.taula-historial .close').click(function (e) {
+			        //Cancel the link behavior
+			        e.preventDefault();
+			        
+			        tancarMascaraBlock( '' );
+			        
+			        if ($.browser.msie) $('#historial-overlay').hide(); 
+			    	else $('#historial-overlay').fadeOut('fast');
+			        $('#historial-overlay').html('');
+			    }); 
+        	}).fail( function(xhr, status, error) {
+        		// xhr.status + " " + xhr.statusText, status, error
+	        	var sms = smsResultAjax('KO', xhr.responseText);
+	    			 
+	   			$('#form_dadespersonals').append(sms);
+        	});
 	    });
-		
-		  
 	};
 	
 	showMask = function() {

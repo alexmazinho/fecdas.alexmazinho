@@ -1,0 +1,39 @@
+<div class="taula-historial titulacions-historial">
+	<a class="close" href="#"><img style="cursor: pointer;" src="/images/close.png"></a>
+{% if titulacions|length > 0 %}
+	<div class="historial-titol">Historial de titulacions</div>
+{% endif %}
+{% for titulacio in titulacions %}
+	<div class="item-historial {% if titulacio.anulada %}data-detall-fosc{% endif %}">
+		<div class="historial-camp historial-titulacio">{{ titulacio.titol.llistaText }}</div> 
+		<div class="historial-camp historial-num">{{ titulacio.num }}</div>
+		<div class="historial-camp historial-superacio">
+			{% if titulacio.consolidada %} 
+				{{ titulacio.datasuperacio|date('d/m/Y') }}
+			{% else %}
+				pendent de finalitzar
+			{% endif %}
+		</div>
+		
+		{% if admin == true or titulacio.checkClub(club) == true %}
+			{% if admin == true %}<div class="historial-camp historial-club">({{ titulacio.club }})</div>{% endif %}
+			<div class="historial-camp historial-curs">
+				CURS: {{ titulacio.curs.num }} {{ titulacio.curs.datadesde|date('d/m/y') }} - {{  titulacio.curs.datafins|date('d/m/y') }}
+			</div>
+			<div class="historial-camp historial-action"><a class="curs-action-view link" href="{{ path('FecdasBundle_curs', { 'id': titulacio.curs.id, 'action':'view' }) }}" alt="Veure curs" title="Veure curs">
+				<i class="fa fa-search fa-1x blue"></i></a></div>
+		{% endif %}
+	</div>
+{% endfor %}
+{% if altrestitulacions|length > 0 %}
+	<div class="historial-titol">Altres titulacions</div>
+{% endif %}
+{% for titulacio in altrestitulacions %}
+	<div class="item-historial">
+		<div class="historial-camp historial-titulacio">{{ titulacio.llistaText }}</div> 
+	</div>
+{% endfor %}
+</div>
+
+
+

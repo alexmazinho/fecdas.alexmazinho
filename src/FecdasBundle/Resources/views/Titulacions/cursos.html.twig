@@ -1,4 +1,4 @@
-{# src/Fecdas/PartesBundle/Resources/views/Page/index.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Titulacions/cursos.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
 {% block stylesheets %}
@@ -26,32 +26,225 @@
    	</header>
    	
    	<section id="form-filtre-cursos">
-   		<div class="row">
-	    	<div class="col-md-3 col-md-offset-9 col-last-right">
+		{{ form_start(form, {'action': path('FecdasBundle_cursos'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_cursos'}}) }}
+    	{% if admin == true %}
+    		<div class="row">
+				<div class="col-md-3  col-xs-12">
+				  	<div class="form-group">
+				    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+		{% endif %}
+		<div class="row">
+			<div class="col-md-4 col-xs-6">
+				<div class="form-group">
+				   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
+					{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
+				</div>
+			</div>
+			<div class="col-md-2 col-xs-4">
+				<div class="form-group">
+					{{ form_label(form.desde, 'des de') }}
+					<div class="input-group" >
+						{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+		   	<div class="col-md-2 col-xs-4">
+				<div class="form-group">
+					{{ form_label(form.fins, 'fins') }}
+					<div class="input-group" >
+						{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2 col-xs-6">
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<div class="checkbox">
+				    	<label>
+				      		{{ form_widget(form.pervalidar) }} Pendents de validació
+				    	</label>
+					</div>
+				</div>
+			</div>
+	    	<div class="col-md-2 col-xs-4 col-last-right">
 				<label>&nbsp;</label>
 				<button id="form_crearcurs"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou curs</button>
 		    </div>
 		</div> 
+		{{ form_end(form) }}
 	</section>
 	
 	<section id="llista-cursos">
 		<div class="row">
-			<div class="col-md-12">	PENDENT </div>
+			<div class="col-md-12">
+				<div class="table-header">	
+				   	<div id="list-header">
+						<div id="header-curs-id" class="col-listheader hidden">&nbsp;</div>
+				   		<div id="header-curs-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(cursos, 'Num.', 'c.num') }}
+				   			<span class="listheader-icon {% if cursos.isSorted('c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+				   		<div id="header-curs-titol" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(cursos, 'Títol', 't.titol') }}
+				   			<span class="listheader-icon {% if cursos.isSorted('t.titol') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+				   		<div id="header-curs-dates" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(cursos, 'Durada', 'c.datadesde') }}
+				   			<span class="listheader-icon {% if cursos.isSorted('c.datadesde') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+				   		<div id="header-curs-alumnes" class="col-listheader collistheader-noorder">Alumnes</div>
+				   		<div id="header-curs-docents" class="col-listheader collistheader-noorder">Docents</div>
+				   		<div id="header-curs-estat" class="col-listheader collistheader-noorder">Estat</div>
+				   		<div id="header-curs-actions" class="col-listheader collistheader-noorder">
+				   			{% if admin == true  %}&nbsp;{% else %}Pagament<br/>On-line{% endif %}
+				   		</div>
+				   	</div>
+			   	</div>
+		{% if cursos|length > 0 %}
+		<div class="table-scroll">
+		   	<ol id="list-data">
+			{% for curs in cursos %} 
+		   		<li class="data-detall {% if curs.anulat %} data-detall-fosc {% endif %}">
+		   			<div class="data-detall-cell curs-id hidden">{{ curs.id }}</div>
+		   			<div class="data-detall-cell curs-num">{{ curs.num }}</div>
+		   			<div class="data-detall-cell curs-titol">
+		   				{{ curs.titol.llistaText }}
+		   				{% if admin == true  %}	
+		   					<br/><span class="curs-club">
+		   					{% if not curs.historic %}	
+		   						<a href="/club?codiclub={{ curs.club.codi }}" title="Veure dades del club" alt="Veure dades del club">{{ curs.clubInfo }}</a>
+		   					{% else %}
+		   						{{ curs.clubInfo }}
+		   					{% endif %}
+		   					</span>
+			   			{% endif %}
+	   				</div>
+		   			<div class="data-detall-cell curs-dates">{{ curs.datadesde|date('d/m/y') }} a<br/>{{ curs.datafins|date('d/m/y') }}</div>
+		   			<div class="data-detall-cell curs-alumnes {{ curs.estatcolor }}">{{ curs.alumnes(admin)|nl2br }}</div>
+		   			<div class="data-detall-cell curs-docents {{ curs.estatcolor }}">{{ curs.equipdocent|nl2br }}</div>
+		   			<div class="data-detall-cell curs-estat {{ curs.estatcolor }}">{{ curs.estat }}</div>
+		   			<div class="data-detall-cell curs-actions">
+						<a class="curs-action-edit link" href="{{ path('FecdasBundle_curs', { 'id': curs.id }) }}" alt="Accedir al curs" title="Accedir al curs">
+							<i class="fa fa-pencil text-info blue"></i></a>
+						{% if admin == true and not curs.anulat %}
+							<a class="curs-action-baixa link" href="{{ path('FecdasBundle_curs', sortparams|merge({ 'id': curs.id, 'action': 'baixa' }) ) }}" alt="Baixa" title="Baixa">
+		   						<i class="fa fa-trash-o text-danger red"></i></a>
+	   					{% endif %}
+		   			</div>
+		   		</li>
+		   		{% endfor %} 
+			</ol>
+		</div>			 
+		{% if cursos.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(cursos, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha cursos per mostrar</div>
+	    {% endif %}	
+			
+			</div>
 		</div>
 	</section>
-   		
-    
 {% endblock %}
 
 {% block javascripts %}
 
 	{{ parent() }}
 
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
+
 	<script type="text/javascript">
 	
+	getUrlWithFilterParams = function(url) {
+		var club = $( "#form_clubs" ).val();
+		var pervalidar = ($( '#form_pervalidar' ).is(':checked')?1:0);
+		var desde = $( "#form_desde" ).val();
+		var fins = $( "#form_fins" ).val();
+		var titol = $( "#form_titols" ).val();  
+
+		return url + "&clubs="+club+"&pervalidar="+pervalidar+"&desde="+desde+"&fins="+fins+"&titols="+titol;
+	}
+
+	filtreLlistacursos = function() {
+
+		window.location = getUrlWithFilterParams("{{ path('FecdasBundle_cursos', sortparams)|raw }}");
+	}
+
 	$(document).ready(function(){
+
 		setMenuActive("menu-cursos");
 		
+		$( ".pagar-curs" ).click( function(e) {
+			e.preventDefault();	
+			var url = $(this).attr("href");
+			
+			dialegConfirmacio( pagamentcursSMS( false, "{{ iban }}", "{{ ibanescola }}" ), "Abans de continuar...", 0, 550, function() {
+	        	window.location = url+'&comentaris='+$('#curs_comentaris').val();
+	        }, function() {}, function() {});
+		});
+
+		
+		$("#form_clubs, #form_titols, #form_desde, #form_fins, #form_pervalidar ").change(function() {
+			filtreLlistacursos();
+	    });
+
+		$("select#form_titols").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: 'Escollir títol'
+		});
+
+		var current = new Date();
+		var mindate = new Date (current.getFullYear()-5, current.getMonth(), current.getDay());
+		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+		initDateTimePicker ( 
+			$( '#form_desde' ), 
+			mindate, 
+			maxdate, 
+			current, 
+			'desde-picker', 
+			false,
+			function (selectedDateTime) {
+				//filtreLlistacursos();  
+			}
+		);
+	
+		initDateTimePicker ( 
+			$( '#form_fins' ), 
+			mindate, 
+			maxdate, 
+			current, 
+			'fins-picker', 
+			false,
+			function (selectedDateTime) {
+				//filtreLlistacursos();
+			}
+		);
+		
+		// filtre clubs disponible per admins
+		{% if admin == true  %} 
+
+			$("select#form_clubs").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: 'Escollir club'
+			});
+		
+			$('.curs-action-baixa').click( function(e) {
+				e.preventDefault();
+	
+				var url = getUrlWithFilterParams($(this).attr('href'));
+				
+				var strHtml = '<p>Segur que vols anul·lar el curs?</p>';
+				
+				dialegConfirmacio(strHtml, 'Baixa curs', 'auto', 400, function() { 
+					
+					window.location = url;
+					 
+				}, function() { }, function() { });
+			});
+		    
+			
+		{% endif %}
 	});
 	
 	</script>		

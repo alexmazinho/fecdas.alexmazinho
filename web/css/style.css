@@ -433,6 +433,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .link i.fa.gray:hover { background-color: #CCCCCC; }
 
 
+.data-detall .data-detall-cell .nolink i.fa:hover, .nolink i.fa:hover { color: inherit; background-color: inherit } 
+
 .data-detall .data-detall-cell i.fa.transparent:hover { background-color: transparent; color: transparent;  } 
   
  
@@ -1280,6 +1282,10 @@ ul.detalls li .alert { margin: 10px 0; }
     width: 100%;
 }
 
+.table-noscroll-large {
+	min-height: 200px;
+}
+
 
 .table-scroll {
 	max-height: 450px;
@@ -1401,6 +1407,7 @@ ul.detalls li .alert { margin: 10px 0; }
 	}
 }
 
+
 #header-asseguratid { display:none}
 #header-asseguratcompacte { width: 40%; }
 #header-asseguratdni {	width: 10%;  }
@@ -1451,53 +1458,6 @@ ul.detalls li .alert { margin: 10px 0; }
 #llista-assegurats .llicencia-historial:hover  { color: #2281CF; }
 
 .llicencia-historial img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
-
-.assegurat-historial { 
-	display:inline; 
-	/*position: relative;*/
-	position: absolute;
-	left: 0;
-	top: 60px;
-	z-index: 300;
-	width: auto; 
-	margin: auto;  
-	max-height: 350px;
-    overflow-y: auto;
-    overflow-x: hidden;
-	border: 1px solid #81C6FF;
-    box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2), 10px 0 10px -5px rgba(0, 0, 0, 0.2); 
-    line-height: 24px;
-    padding: 5px 20px;
-    margin: 5px 15%;
-    background-color: #fff;
-}
-
-.assegurat-historial .close {
-    cursor: pointer;
-    height: 35px;
-    position: absolute;
-    right: -2px;
-    top: -2px;
-    width: 35px;
-}
-
-.assegurat-historial-titol { color: #2281CF; font-weight: bold; font-size: 1.1em }
-.assegurat-llicencia { 
-	display:block;
-	border-top: 1px solid #EDF1F5;
-	position: relative;
-	padding-right: 15px;
-}
-
-.assegurat-llicencia-camp { display:inline;  }
-.assegurat-llicencia-vigencia {   }
-.assegurat-llicencia-categoria {  }
-.assegurat-llicencia-club {  }
-.assegurat-llicencia-desc {  }
-.assegurat-llicencia-action { /*float:right;*/ position: absolute; right: -10px; top: 0; }
-
-.data-detall-historic { /*display:inline*/ }
-
 
 /*
 input#form_nom,
@@ -1880,6 +1840,140 @@ select#parte_renovar_tipus { width: 240px; }
 }*/
 
 /******************************************** Renovació llicència Fi *************************************************/
+
+
+/********************************************* Llista persones ****************************************************/
+
+
+#header-dadespersonalsid { display:none}
+#header-dadespersonalsdni {	width: 10%;  }
+#header-dadespersonalscognomsnom {	width: 20%; text-align: left;}
+#header-dadespersonalsnaixement { width: 10%;text-align: center; }
+#header-dadespersonalshistorialllicencies { width: 29%;text-align: left; }
+#header-dadespersonalshistorialtitulacions { width: 19%;text-align: left; }
+#header-dadespersonalsactions { width: 12%;text-align: right; }
+
+.dadespersonals-id {	display:none}
+.dadespersonals-dni { width: 10%;  }
+.dadespersonals-cognomsnom { width: 20%; text-align: left; }
+.dadespersonals-naixement { width: 10%; text-align:center;}
+.dadespersonals-historialllicencies { width: 29%; text-align:left; }
+.dadespersonals-historialtitulacions { width: 19%; text-align:left; }
+.dadespersonals-actions { width: 12%; text-align: right;   }
+
+#llista-dadespersonals { position: relative; }
+
+#llista-dadespersonals #list-header  { position: relative;  }
+#llista-dadespersonals .data-detall { /*display:inline*/ /*display: inline-block;*/  width: 100%; /*position: relative; */ } /* Permet afegir historial*/
+
+#llista-dadespersonals .historial-llicencies, #llista-dadespersonals .historial-titulacions  { color: #555555; }
+
+#llista-dadespersonals .historial-llicencies:hover, #llista-dadespersonals .historial-titulacions:hover  { color: #2281CF; }
+
+.taula-historial img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
+
+.taula-historial { 
+	display:inline; 
+	/*position: relative;*/
+	position: absolute;
+	left: 0;
+	top: 60px;
+	z-index: 3000;
+	width: auto; 
+	margin: auto;  
+	max-height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+	border: 1px solid #81C6FF;
+    box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2), 10px 0 10px -5px rgba(0, 0, 0, 0.2); 
+    line-height: 24px;
+    padding: 5px 20px;
+    margin: 5px 15%;
+    background-color: #fff;
+}
+
+.taula-historial .close {
+    cursor: pointer;
+    height: 35px;
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    width: 35px;
+}
+
+.historial-titol { color: #2281CF; font-weight: bold; font-size: 1.1em }
+.item-historial { 
+	display:block;
+	border-top: 1px solid #EDF1F5;
+	position: relative;
+	padding-right: 15px;
+}
+
+.historial-camp { display:inline;  }
+.historial-vigencia {   }
+.historial-categoria {  }
+.historial-club {  }
+.historial-desc {  }
+.historial-action { /*float:right;*/ position: absolute; right: -10px; top: 0; }
+
+.historial-titulacio { font-weight: bold; }
+
+
+#tabs-persona { margin-bottom: 15px;}
+
+#tabs-persona .historial-titol { display:none;  }
+
+#tabs-persona .historial-titol-outer { background-color: rgba(223,​ 239,​ 252, 0.7); width: 100%; display: block;  color: #2281CF; font-weight: bold; font-size: 1.1em }
+
+#tabs-persona .taula-historial img { display:none  }
+
+#tabs-persona  .taula-historial { 
+	display:block; 
+	position: relative;
+	z-index: 3000;
+	width: auto; 
+	margin: auto;  
+	top:0;
+	left:0;
+	max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+	border: 1px solid #81C6FF;
+    box-shadow: none; 
+    line-height: 24px;
+    padding: 5px 10px;
+    margin: 0;
+    background-color: #fff;
+    position: relative;
+}
+#tabs-persona  .taula-historial .historial-camp { font-size: 0.9em }
+
+
+
+/********************************************* Llista persones Fi ****************************************************/
+
+
+/*************** cursos ****************/
+
+#header-curs-num { width: 7%; text-align: center; }
+#header-curs-titol { width: 22%; text-align: left; }
+#header-curs-dates { width: 10%; text-align: center; }
+#header-curs-alumnes { width: 21%; text-align: left; }
+#header-curs-docents { width: 21%; text-align: left; }
+#header-curs-estat { width: 11%; text-align: center; }
+#header-curs-actions { width: 6%; text-align: right; }
+
+.data-detall-cell.curs-num { width: 7%; text-align: center; }
+.data-detall-cell.curs-titol { width: 22%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-detall-cell.curs-dates { width: 10%; text-align: center; }
+.data-detall-cell.curs-alumnes { width: 21%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-detall-cell.curs-docents { width: 21%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-detall-cell.curs-estat { width: 11%; text-align: center; }
+.data-detall-cell.curs-actions { width: 6%; text-align: right; }
+
+.data-detall-cell.curs-titol .curs-club { font-style: italic; }
+
+/*************** cursos Fi ****************/
 
 /********************************************* Clubs i users ****************************************************/
 

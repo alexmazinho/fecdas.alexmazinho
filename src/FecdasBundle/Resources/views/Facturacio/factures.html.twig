@@ -21,15 +21,16 @@
 	    	{{ form_start(form, {'action': path('FecdasBundle_factures'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_factures'}}) }}
 				<div class="row">
 					{% if admin == true %}
-						  <div class="col-md-4 col-xs-12">
+						  <div class="col-md-3 col-xs-12">
 						  	<div class="form-group">
-						    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 								{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 							</div>
 						  </div>
 					{% endif %}
 					<div class="col-md-3 col-xs-4">
 						<div class="form-group">
+							{% if admin == true %}<label class="" for="form_numfactura">&nbsp;</label>{% endif %}
 					    	<div class="input-group">
 						    	<span class="input-group-addon"># Factura</span>
 								{{ form_widget(form.numfactura, { 'attr': {'class': 'form-control'} }) }}
@@ -41,6 +42,7 @@
 					</div>
 					<div class="col-md-3 col-xs-4">
 					  	<div class="form-group">
+					  		{% if admin == true %}<label class="" for="form_numcomanda">&nbsp;</label>{% endif %}
 					    	<div class="input-group">
 						    	<span class="input-group-addon"># Comanda</span>
 								{{ form_widget(form.numcomanda, { 'attr': {'class': 'form-control'} }) }}
@@ -51,11 +53,14 @@
 						</div>
 					</div>				   
 					{% if admin == true %}
-						<div class="col-md-2  col-xs-4">
-							<div class="checkbox">
-								<label>
-							    	{{ form_widget(form.pendents) }} Pendents pagament
-							    </label>
+						<div class="col-md-3  col-xs-4">
+							<div class="form-group">
+								<label class="" for="form_pendents">&nbsp;</label>
+								<div class="checkbox">
+									<label>
+								    	{{ form_widget(form.pendents) }} Pendents pagament
+								    </label>
+								</div>
 							</div>
 						</div>
 					{% endif %}
@@ -185,7 +190,7 @@
 			$("select#form_clubs").select2({
 				minimumInputLength: 2,
 				allowClear: true,
-				placeholder: 'Seleccionar Club'
+				placeholder: 'Escollir club'
 			});
 		{% endif %}
 	});

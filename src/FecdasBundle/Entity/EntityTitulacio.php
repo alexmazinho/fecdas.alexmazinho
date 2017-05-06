@@ -19,7 +19,7 @@ class EntityTitulacio {
 	protected $id;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityPersona", inversedBy="titulacions")
+	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona", inversedBy="titulacions")
 	 * @ORM\JoinColumn(name="persona", referencedColumnName="id")
 	 */
 	protected $persona;	// FK taula m_persones
@@ -74,6 +74,42 @@ class EntityTitulacio {
 	}
 	
 	/**
+	 * @return titol del curs
+	 */
+	public function getTitol() {
+		return $this->curs->getTitol();
+	}
+	
+	/**
+	 * @return Nom del club
+	 */
+	public function getClub() {
+		return $this->curs->getClubInfo();
+	}
+	
+	/**
+	 * @return pertany al club?
+	 */
+	public function checkClub($club) {
+		if ($this->curs->getClub() == null) return false;
+		return $this->curs->getClub()->getCodi() == $club->getCodi();
+	}
+	
+	/**
+	 * @return titulacio anul·lada?
+	 */
+	public function anulada() {
+		return $this->databaixa != null;
+	}
+	
+	/**
+	 * @return titulacio consolidada?
+	 */
+	public function consolidada() {
+		return !$this->anulada() && $this->datasuperacio != null;
+	}
+	
+	/**
 	 * @param integer $id
 	 */
 	public function setId($id) {
@@ -90,9 +126,9 @@ class EntityTitulacio {
 	/**
 	 * Set persona
 	 *
-	 * @param \FecdasBundle\Entity\EntityPersona $persona
+	 * @param \FecdasBundle\Entity\EntityMetaPersona $persona
 	 */
-	public function setPersona(\FecdasBundle\Entity\EntityPersona $persona = null)
+	public function setPersona(\FecdasBundle\Entity\EntityMetaPersona $persona = null)
 	{
 		$this->persona = $persona;
 	}
@@ -100,7 +136,7 @@ class EntityTitulacio {
 	/**
 	 * Get persona
 	 *
-	 * @return \FecdasBundle\Entity\EntityPersona
+	 * @return \FecdasBundle\Entity\EntityMetaPersona
 	 */
 	public function getPersona()
 	{

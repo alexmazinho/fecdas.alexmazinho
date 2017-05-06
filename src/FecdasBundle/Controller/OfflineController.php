@@ -63,26 +63,24 @@ class OfflineController extends BaseController {
 			$id = $currentTitol['id'];
 			$ids[] = $id; 
 			$dni = $currentTitol['dni'];
-			$personesLletra = array();
 			try {
 	
-				// Cercar persona (NO pot ser null, pero poden ser vàries amb el mateix DNI)
-				$persones = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->findBy(array('dni' => $currentTitol['dni'].""));	// Consulta directament com text
+				// Cercar meta persona
+				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $currentTitol['dni'].""));	// Consulta directament com text
 				
-				if ($persones == null || count($persones) == 0) {
+				if ($persona == null) {
 					
 					$dniLletra = $dni;
 					if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
 					  
-					$persones = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->findBy(array('dni' => $dni));			
+							
 					if ($dni != $dniLletra) {
-						// Consulta amb i sense lletra i merge
-						$personesLletra = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->findBy(array('dni' => $dniLletra));
-						$persones = array_merge($persones, $personesLletra);
+						// Consulta amb lletra
+						$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dniLletra));	
 					}
 				}
 				
-				if ($persones == null || count($persones) == 0) {
+				if ($persona == null) {
 					throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
 				}
 				
@@ -148,15 +146,13 @@ class OfflineController extends BaseController {
 				}
 
 				// Crear titulacions 
-				foreach ($persones as $persona) {
-					$titulacio = new EntityTitulacio($persona, $curs);
-					$titulacio->setNum($currentTitol['numtitulo']);
-					$titulacio->setDatasuperacio($datafins);
+				$titulacio = new EntityTitulacio($persona, $curs);
+				$titulacio->setNum($currentTitol['numtitulo']);
+				$titulacio->setDatasuperacio($datafins);
+				
+				$em->persist($titulacio); 
 					
-					$em->persist($titulacio); 
-					
-					$titulacions++;
-				}
+				$titulacions++;
 			
 			} catch (\Exception $e) {
 				//$em->getConnection()->rollback();
@@ -166,21 +162,23 @@ class OfflineController extends BaseController {
 			}
 			
 		}
-		
-		$sql = "UPDATE importtitulacions SET error = null WHERE id IN (".implode(",", $ids).") ";
-		$stmt = $em->getConnection()->prepare($sql);
-		$stmt->execute();
-		if (count($errors) != 0) {
-			foreach ($errors as $id => $error) {
-					
-				$sql = "UPDATE importtitulacions SET error = \"".$error."\" WHERE id = ".$id;
-				$stmt = $em->getConnection()->prepare($sql);
-				$stmt->execute();
+	
+		if (count($ids) != 0) {	
+			$sql = "UPDATE importtitulacions SET error = null WHERE id IN (".implode(",", $ids).") ";
+			$stmt = $em->getConnection()->prepare($sql);
+			$stmt->execute();
+			
+			if (count($errors) != 0) {
+				foreach ($errors as $id => $error) {
+						
+					$sql = "UPDATE importtitulacions SET error = \"".$error."\" WHERE id = ".$id;
+					$stmt = $em->getConnection()->prepare($sql);
+					$stmt->execute();
+				}
+				$em->flush();	
+				return new Response("KO <br/>".implode("<br/>",$errors));
 			}
-			$em->flush();	
-			return new Response("KO <br/>".implode("<br/>",$errors));
 		}
-		
 		$em->flush();
 			
 		return new Response("OK cursos nous ".$cursosNous." i titulacions ".$titulacions );

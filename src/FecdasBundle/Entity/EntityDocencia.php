@@ -20,7 +20,7 @@ class EntityDocencia {
 	protected $id;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityPersona", inversedBy="docencies")
+	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona", inversedBy="docencies")
 	 * @ORM\JoinColumn(name="docent", referencedColumnName="id")
 	 */
 	protected $docent;	// FK taula m_persones
@@ -88,6 +88,13 @@ class EntityDocencia {
 
 	}
 	
+	/**
+	 * @return docència anul·lada?
+	 */
+	public function anulada() {
+		return $this->databaixa != null;
+	}
+	
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}
@@ -109,9 +116,9 @@ class EntityDocencia {
 	/**
 	 * Set docent
 	 *
-	 * @param \FecdasBundle\Entity\EntityPersona $docent
+	 * @param \FecdasBundle\Entity\EntityMetaPersona $docent
 	 */
-	public function setDocent(\FecdasBundle\Entity\EntityPersona $docent = null)
+	public function setDocent(\FecdasBundle\Entity\EntityMetaPersona $docent = null)
 	{
 		$this->docent = $docent;
 	}
@@ -119,7 +126,7 @@ class EntityDocencia {
 	/**
 	 * Get docent
 	 *
-	 * @return \FecdasBundle\Entity\EntityPersona
+	 * @return \FecdasBundle\Entity\EntityMetaPersona
 	 */
 	public function getDocent()
 	{

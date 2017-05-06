@@ -309,7 +309,7 @@
 		var params = []; 
 		params.push( {'name':'estat','value': $('#form_estat').val()} );
 
-		llistaPaginationAndSort(url, params);
+		redirectLocationUrlParams(url, params);
 	};
 
 	

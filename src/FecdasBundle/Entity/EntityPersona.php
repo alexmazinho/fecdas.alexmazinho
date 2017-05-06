@@ -120,6 +120,12 @@ class EntityPersona {
 	protected $club;	// FK taula m_clubs
 	
 	/**
+	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona", inversedBy="persones")
+	 * @ORM\JoinColumn(name="metapersona", referencedColumnName="id")
+	 */
+	protected $metapersona;	// FK taula m_metapersones
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -149,38 +155,15 @@ class EntityPersona {
 	 */
 	protected $llicencies;
 
-	/**
-	 * @ORM\OneToMany(targetEntity="EntityTitulacio", mappedBy="persona")
-	 */
-	protected $titulacions;
-
-	/**
-     * @ORM\ManyToMany(targetEntity="EntityTitol")
-     * @ORM\JoinTable(name="m_titulacionsexternes",
-     *      joinColumns={@ORM\JoinColumn(name="persona", referencedColumnName="id")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="titol", referencedColumnName="id")}
-     *      )
-     */
-	protected $altrestitulacions;
-
-	/**
-	 * @ORM\OneToMany(targetEntity="EntityDocencia", mappedBy="docent")
-	 */
-	protected $docencies;
-	
-	
-	public function __construct($currentDate) {
+	public function __construct($metapersona = null, $club = null) {
 		$this->id = 0;
-		$this->setDataentrada($currentDate);
+		$this->setDataentrada(new \DateTime());
+		$this->metapersona = $metapersona;
+		$this->club = $club;
 		$this->web = true;
 		$this->validat = false;
 		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->arxius = new \Doctrine\Common\Collections\ArrayCollection();
-		
-		$this->titulacions = new \Doctrine\Common\Collections\ArrayCollection();
-		$this->altrestitulacions = new \Doctrine\Common\Collections\ArrayCollection();
-		
-		$this->docencies = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
 	public function __toString() {
@@ -229,6 +212,21 @@ class EntityPersona {
 				 		$this->getAddrnacionalitat() );
     }
 	
+	/**
+	 * @return titulacio baixa?
+	 */
+	public function esBaixa() {
+		return $this->databaixa != null;
+	}
+	
+	/**
+	 * @return pertany al club?
+	 */
+	public function checkClub($club) {
+		if ($this->club == null) return false;
+		return $this->club->getCodi() == $club->getCodi();
+	}
+	
     /**
      * Get nom i cognoms "COGNOMS, nom
      *
@@ -266,18 +264,15 @@ class EntityPersona {
     	
     	return  $strAdreca;
     }
-    
-    public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)
+	
+	public static function getLlicenciesSortedByDateStatic($llicencies, $baixes = false, $desde = null, $fins = null)
     {
     	/* Ordenades de última a primera */
     	$arr = array();
-    	foreach ($this->llicencies as $llicencia) {
+    	foreach ($llicencies as $llicencia) {
     		if ($llicencia->isValida() || $baixes == true) {
     			$parte = $llicencia->getParte();
 				
-				/*if ($parte != null && 
-					($desde == null || $desde->format('Y-m-d') <= $parte->getDataalta()->format('Y-m-d') ) && 
-					($fins == null  || $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d') )  ) $arr[] = $llicencia;*/
 				if ($parte != null && 
 					($desde == null || $desde->format('Y-m-d') <= $parte->getDatacaducitat()->format('Y-m-d') ) && 
 					($fins == null  || $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d') )  ) $arr[] = $llicencia;
@@ -292,39 +287,58 @@ class EntityPersona {
     	});
     	return $arr;
     }
+    
+    public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)
+    {
+    	/* Ordenades de última a primera */
+    	return EntityPersona::getLlicenciesSortedByDateStatic($this->llicencies, $baixes, $desde, $fins);
+    }
 
-    /**
+	/**
      * 
      * @return FecdasBundle\Entity\EntityLlicencia
      */
-    public function getLlicenciaVigent() {
-    	foreach ($this->llicencies as $llicencia) {
+    public static function getLlicenciaVigentStatic($llicencies) {
+    	foreach ($llicencies as $llicencia) {
     		if ($llicencia->isVigent() == true) return $llicencia;
     	} 
     	return null;
     }
+	
+    public function getLlicenciaVigent() {
+    	return EntityPersona::getLlicenciaVigentStatic($this->llicencies);
+    }
     
-    public function getLastLlicencia($desde = null, $fins = null) {
-    	$llicenciesOrdenades = $this->getLlicenciesSortedByDate(false, $desde, $fins);
+	public static function getLastLlicenciaStatic($llicencies, $desde = null, $fins = null) {
+    	$llicenciesOrdenades = EntityPersona::getLlicenciesSortedByDateStatic($llicencies, false, $desde, $fins);
     	
     	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
     	
     	return null;
     }
     
+    public function getLastLlicencia($desde = null, $fins = null) {
+    	return EntityPersona::getLastLlicenciaStatic($this->llicencies, $desde, $fins);
+    }
+    
     /**
-     * Missatges llista assegurats
+     * Info historial llicències llista dadespersonals
      *
      * @return string
      */
-    public function getInfoAssegurats($admin = false, $desde = null, $fins = null) {
+    public static function getInfoHistorialLlicenciesStatic($llicencies, $admin = false, $desde = '', $fins = '') {
     	$txtClub = "";
-    	if ($admin) $txtClub = "(".$this->club->getNom().") ";  
-    	
-		if ($desde != null || $fins != null) {
-			$llicenciaLast = $this->getLastLlicencia($desde, $fins);
+    	  
+		if ($desde != '' || $fins != '') {
+			$desde = ($desde != ''?\DateTime::createFromFormat('Y-m-d', $desde):null);
+			$fins = ($fins != ''?\DateTime::createFromFormat('Y-m-d', $fins):null);
+			
+			
+			$llicenciaLast = EntityPersona::getLastLlicenciaStatic($llicencies, $desde, $fins);
 	    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null )  {
 	    		$parte = $llicenciaLast->getParte();
+				if ($admin) $txtClub = "(".$parte->getClub()->getNom().") ";
+				
     			if ($fins != null && $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d')) return $txtClub . $llicenciaLast->getCategoria()->getDescripcio() . " fins al " . $parte->getDatacaducitat()->format('d/m/Y');
 				return $txtClub . "Darrera llicència finalitzada en data " . $parte->getDatacaducitat()->format('d/m/Y');	
 			}
@@ -332,24 +346,76 @@ class EntityPersona {
 			return $txtClub . "Persona sense llicències en aquestes dates";		
 		}
 		
-		$llicenciaVigent = $this->getLlicenciaVigent(); 
-    	if ($llicenciaVigent != null && $llicenciaVigent->getParte() != null)
-    		return  $txtClub . $llicenciaVigent->getCategoria()->getDescripcio() . " fins al " . $llicenciaVigent->getParte()->getDatacaducitat()->format('d/m/Y');
+		$llicenciaVigent = EntityPersona::getLlicenciaVigentStatic($llicencies);
+    	if ($llicenciaVigent != null && $llicenciaVigent->getParte() != null) {
+    		$parte = $llicenciaVigent->getParte();
+    		if ($admin) $txtClub = "(".$parte->getClub()->getNom().") ";
+    		return  $txtClub . $llicenciaVigent->getCategoria()->getDescripcio() . " fins al " . $parte->getDatacaducitat()->format('d/m/Y');
+		}
     		
-    	$llicenciaLast = $this->getLastLlicencia();
-    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null )  
-    		return $txtClub . "Darrera llicència finalitzada en data " . $llicenciaLast->getParte()->getDatacaducitat()->format('d/m/Y');
+		$llicenciaLast = EntityPersona::getLastLlicenciaStatic($llicencies);
+    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null ) {
+    		$parte = $llicenciaLast->getParte();
+			if ($admin) $txtClub = "(".$parte->getClub()->getNom().") ";
+    		return $txtClub . "Darrera llicència finalitzada en data " . $parte->getDatacaducitat()->format('d/m/Y');
+		}
     	
     	return $txtClub . "Persona sense historial de llicències";
     }
 
+    public function getInfoHistorialLlicencies($admin = false, $desde = '', $fins = '') {
+    	return EntityPersona::getInfoHistorialLlicenciesStatic($this->llicencies, $admin, $desde, $fins);
+	}
+
+
+    /**
+     * Info historial llicències llista dadespersonals
+     *
+     * @return string
+     */
+    public function getInfoHistorialTitulacions() {
+		return $this->metapersona!=null?$this->metapersona->getInfoHistorialTitulacions():''; 
+    }
+
+
+	public function getTitulacionsSortedByDate($baixes = false)
+    {
+    	return $this->metapersona!=null?$this->metapersona->getTitulacionsSortedByDate($baixes):array(); 
+    }
+
+	/**
+     * Get altrestitulacions
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getAltrestitulacions()
+    {
+        return $this->metapersona!=null?$this->metapersona->getAltrestitulacions():array();
+    }
+	
+	public function teTitulacions() {
+		return $this->metapersona!=null?$this->metapersona->teTitulacions():false;
+	}
+
+	public function getDocenciesSortedByDate($baixes = false)
+    {
+    	return $this->metapersona!=null?$this->metapersona->getDocenciesSortedByDate($baixes):array();
+	}
+	
+	public function teDocencies() {
+		return $this->metapersona!=null?$this->metapersona->teDocencies():false;
+	}
+	
 	/**
      * És estranger?
      *
      * @return boolean
      */
 	public function esEstranger() {
-		$dniCheck = $this->dni;
+		if ($this->metapersona==null) return true;
+		
+		//$dniCheck = $this->dni;
+		$dniCheck = $this->metapersona->getDni();
 		/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
 		if ( substr ($dniCheck, 0, 1) == 'P' || substr ($dniCheck, 0, 1) == 'M' ) $dniCheck = substr ($dniCheck, 1,  strlen($dniCheck) - 1);
 						
@@ -437,6 +503,7 @@ class EntityPersona {
      */
     public function setDni($dni)
     {
+        $this->metapersona->setDni($dni);	
         $this->dni = $dni;
     }
 
@@ -447,7 +514,8 @@ class EntityPersona {
      */
     public function getDni()
     {
-        return $this->dni;
+        //return $this->dni;
+        return $this->metapersona->getDni();
     }
 
     /**
@@ -844,6 +912,26 @@ class EntityPersona {
         return $this->club;
     }
     
+	/**
+     * Set metapersona
+     *
+     * @param FecdasBundle\Entity\EntityMetaPersona $metapersona
+     */
+    public function setMetapersona(\FecdasBundle\Entity\EntityMetaPersona $metapersona)
+    {
+        $this->metapersona = $metapersona;
+    }
+
+    /**
+     * Get metapersona
+     *
+     * @return FecdasBundle\Entity\EntityMetaPersona 
+     */
+    public function getMetapersona()
+    {
+        return $this->metapersona;
+    }	
+	
     /**
      * Set validat
      *
@@ -882,67 +970,5 @@ class EntityPersona {
     public function getWeb()
     {
     	return $this->web;
-    }
-    
-	
-	/**
-     * Add titulacions
-     *
-     * @param FecdasBundle\Entity\EntityTitulacio $titulacio
-     */
-    public function addTitulacions(\FecdasBundle\Entity\EntityTitulacio $titulacio)
-    {
-        $this->titulacions->add($titulacio);
-    }
-
-    /**
-     * Get titulacions
-     *
-     * @return Doctrine\Common\Collections\Collection 
-     */
-    public function getTitulacions()
-    {
-        return $this->titulacions;
-    }
-	
-	/**
-     * Add altrestitulacions
-     *
-     * @param FecdasBundle\Entity\EntityTitol $titolextern
-     */
-    public function addAltrestitulacions(\FecdasBundle\Entity\EntityTitol $titolextern)
-    {
-        $this->altrestitulacions->add($titolextern);
-    }
-
-    /**
-     * Get altrestitulacions
-     *
-     * @return Doctrine\Common\Collections\Collection 
-     */
-    public function getAltrestitulacions()
-    {
-        return $this->altrestitulacions;
-    }
-	
-	
-	/**
-     * Add docencies
-     *
-     * @param FecdasBundle\Entity\EntityDocencia $docencia
-     */
-    public function addDocencies(\FecdasBundle\Entity\EntityDocencia $docencia)
-    {
-        $this->docencies->add($docencia);
-    }
-
-    /**
-     * Get docencies
-     *
-     * @return Doctrine\Common\Collections\Collection 
-     */
-    public function getDocencies()
-    {
-        return $this->docencies;
     }
 }

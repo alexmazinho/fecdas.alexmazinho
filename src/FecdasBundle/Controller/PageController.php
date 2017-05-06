@@ -21,6 +21,7 @@ use FecdasBundle\Entity\EntityParteType;
 use FecdasBundle\Entity\EntityContact;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityPersona;
+use FecdasBundle\Entity\EntityMetaPersona;
 use FecdasBundle\Entity\EntityLlicencia;
 use FecdasBundle\Entity\EntityDuplicat;
 use FecdasBundle\Entity\EntityCarnet;
@@ -277,13 +278,21 @@ class PageController extends BaseController {
 				if ($categoria == null) throw new \Exception('No existeix aquesta categoria per al tipus de llista indicat');
 				
 				/* Gestionar dades personals */
-				$persona = $em->getRepository('FecdasBundle:EntityPersona')->findOneBy(array('dni' => $row['dni'], 'club' => $parte->getClub()->getCodi()));
-	
+				$persona = null;
+				
+				/* Revisar si existeix metapersona */
+				$metapersona = $em->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $row['dni']));
+				
+				if ($metapersona == null) {
+					$metapersona = new EntityMetaPersona( $row['dni'] );
+				} else {
+					$persona = $metapersona->getPersonaClub($parte->getClub());	
+				}	
 	
 				if ($persona == null) {
-					$persona = new EntityPersona($this->getCurrentDate());
-					$persona->setClub($parte->getClub());
-					$persona->setDni($row['dni']);
+					$persona = new EntityPersona($metapersona, $parte->getClub());
+					
+					$persona = new EntityPersona($metapersona, $this->getCurrentClub());
 	
 					$persona->setNom(mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8"));
 					$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
@@ -485,8 +494,6 @@ class PageController extends BaseController {
 				10 /*limit per page*/
 		); 
 		/* Paràmetres URL sort i pagination */
-		$persones->setParam('datadesde',$desde);
-		$persones->setParam('datafins',$fins);
 		if ($desde != null) $persones->setParam('desde',$desde->format('d/m/Y'));
 		if ($fins != null) $persones->setParam('fins',$fins->format('d/m/Y'));
 		if ($currentDNI != '') $persones->setParam('dni',$currentDNI);
@@ -544,7 +551,7 @@ class PageController extends BaseController {
 			
 			$rowLic = array();
 			if ($this->isCurrentAdmin()) $rowLic = array( $persona->getClub()->getNom() );
-			$rowLic[] = $persona->getInfoAssegurats($this->isCurrentAdmin(), $desde, $fins);	
+			$rowLic[] = $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d"));	
 			
 			
 			$rowdata = array_merge(array ( $i ), $persona->csvRow(), $rowLic);
@@ -554,55 +561,6 @@ class PageController extends BaseController {
 			
 		$response = $this->exportCSV($request, $header, $data, $filename);
 		return $response;
-	}
-	
-	public function historialLlicenciesAction(Request $request) {
-		
-		if ($this->isAuthenticated() != true) return new Response("");
-
-		if (!$request->query->has('id')) return new Response("");
-		
-		$em = $this->getDoctrine()->getManager();
-				
-		$asseguratId = $request->query->get('id');
-		
-		$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($asseguratId);
-			
-		if (!$persona) return new Response("");
-			
-		if ($this->isCurrentAdmin()) {
-			/* !!!!!!!!!!!! Administradors historia de tots els clubs per DNI !!!!!!!!!!!!!!!!!!!! */
-			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
-			$strQuery .= " WHERE p.dni = :dni ";
-			$strQuery .= " AND p.databaixa IS NULL ";
-				
-			$query = $em->createQuery($strQuery)->setParameter('dni', $persona->getDni()); 
-			$persones = $query->getResult();
-
-			$llicencies = array();
-			foreach ($persones as $persona_iter) {
-				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate(true));  // Incloure baixes
-			}
-			
-			/* Ordenades de última a primera 
-			 * SELECT e.dni, COUNT(DISTINCT p.club) FROM m_partes p 
-			 * INNER JOIN m_llicencies l ON p.id = l.parte 
-			 * INNER JOIN m_persones e ON l.persona = e.id 
-			 * GROUP BY e.dni HAVING COUNT(DISTINCT p.club) > 1
-			 * */
-		} else {
-			$llicencies = $persona->getLlicenciesSortedByDate(true); // Incloure baixes			
-		}
-		// Ordre
-		usort($llicencies, function($a, $b) {
-			if ($a === $b) {
-				return 0;
-			}
-			return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
-		});
-
-		return $this->render('FecdasBundle:Page:assegurathistorial.html.twig', array('llicencies' => $llicencies, 'admin' => $this->isCurrentAdmin()));
-		
 	}
 	
 	public function busseigAction(Request $request) {
@@ -619,52 +577,26 @@ class PageController extends BaseController {
 			
 			$em = $this->getDoctrine()->getManager();
 			
-			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
-			$strQuery .= " WHERE p.dni = :dni ";
-			$strQuery .= " AND p.databaixa IS NULL ";
+			$metapersona = $em->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dni));
 			
-			$query = $em->createQuery($strQuery)->setParameter('dni', $dni);
-			$persones = $query->getResult();
-
-			$trobada = false;
-
-			if (count($persones) == 0) {
+			if ($metapersona == null) {
 				$lastletter = substr($dni, -1);
 				$dniprefix = substr($dni, 0, -1);
 				if (!is_numeric($lastletter)) {
-					// Si el darrer dígit és una lletra es torna a fer la cerca sense lletra
-					$query = $em->createQuery($strQuery)->setParameter('dni', $dniprefix);
-					$persones = $query->getResult();
+					$metapersona = $em->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dniprefix));
+				}
+			}
+				
+			$trobada = false;
+			if ($metapersona != null) {
+				$vigent = $metapersona->getLlicenciaVigent();
+				
+				if ($vigent != null) {
+					$trobada = true;
+					$smsok .= $vigent->getParte()->getDatacaducitat($this->getLogMailUserData("busseigAction "))->format('d/m/Y');
 				}
 			}
 			
-			if (count($persones) > 0) {
-				foreach ($persones as $persona) {
-					/* Obtenir llicències encara no caducades per aquesta persona*/
-					$strQuery = "SELECT l FROM FecdasBundle\Entity\EntityLlicencia l ";
-					$strQuery .= " WHERE l.datacaducitat >= :dataactual ";
-					$strQuery .= " AND l.persona = :persona ";
-					$strQuery .= " AND l.databaixa IS NULL ";
-
-					$dataactual = $this->getCurrentDate('today');
-					$query = $em->createQuery($strQuery)
-					->setParameter('dataactual', $dataactual)
-					->setParameter('persona', $persona->getId());
-					$llicencies = $query->getResult();
-					
-					if (count($llicencies) > 0) {
-						foreach ($llicencies as $llicencia) {
-							/* Comprovar si la llicència està vigent i no és futura */
-							$inicivigencia = $llicencia->getParte()->getDataalta();
-							if ($inicivigencia <= $dataactual) {
-								$trobada = true;
-								$smsok .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("busseigAction "))->format('d/m/Y');
-							}
-						}
-					}
-				}
-			}
-
 			$this->logEntryAuth('CONSULTA DNI', $dni . " " . ($trobada == true)?"ok":"ko");
 			
 			if ($trobada == true) $this->get('session')->getFlashBag()->add('error-notice', $smsok);
@@ -1142,26 +1074,32 @@ class PageController extends BaseController {
 		$options['nacions'] = $this->getNacions();
 
 		$formpersona = null; 
-
+		$persona = null;
+		$metapersona = null; 
 		$em = $this->getDoctrine()->getManager();
 		
 		try {
 			if ($request->getMethod() == 'POST') {
 				$p = $request->request->get('persona', null);
 				if ($p == null) throw new \Exception("Dades incorrectes");
-	
+
 				if ($p['id'] != 0) {
 					$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($p['id']);
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
-					
-				} else {
-					$persona = new EntityPersona($this->getCurrentDate());
-					// Assignar club
-					$persona->setClub($this->getCurrentClub());
+				}
+
+				if ($persona != null) $metapersona = $persona->getMetapersona();
+				/* Revisar si existeix metapersona */
+				if ($metapersona == null) $metapersona = $em->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $p['dni']));
+				if ($metapersona == null) {
+					$metapersona = new EntityMetaPersona( $p['dni'] );
+					$em->persist($metapersona);
+				}
+				if ($persona == null) {
+					$persona = new EntityPersona($metapersona, $this->getCurrentClub());
 					$options['edit'] = true;
 					$em->persist($persona);
 				}
-
 				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
 				$formpersona->bind($request);
@@ -1219,24 +1157,34 @@ class PageController extends BaseController {
 			}
 			if ($request->isXmlHttpRequest()) {
 				// Reload form persona
-				$persona = new EntityPersona($this->getCurrentDate());
-				$options['edit'] = true;
-				$persona->setDatanaixement(	new \DateTime(date("Y-m-d", strtotime(date("Y-m-d") . " -40 year"))));
-				$persona->setSexe("H");
-				$persona->setAddrnacionalitat("ESP");
-					
-				if ($request->query->get('persona', 0) != 0) { // Select diferent person
-					$persona = $this->getDoctrine()
-							->getRepository('FecdasBundle:EntityPersona')
-							->find($request->query->get('persona'));
-					if (!$this->isCurrentAdmin()) $options['edit'] = false;
+				$personaId = $request->query->get('id', 0);
+				$persona = null;
+				$options['edit'] = false;
+				if ($personaId != 0) {
+					$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($personaId);
+					if ($this->isCurrentAdmin()) $options['edit'] = true; 
 				}
+				if ($persona == null) {
+					$metapersona = new EntityMetaPersona();
+					$persona = new EntityPersona($metapersona, $this->getCurrentClub());
+					$options['edit'] = true;
+					$persona->setSexe("H");
+					$persona->setAddrnacionalitat("ESP");
+				}	
+				
 				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			}
 		} catch (\Exception $e) {
-			if ($persona->getId() == 0) $em->detach($persona);
-			else 	$em->refresh($persona);
-				 
+			if ($persona != null) {
+				if ($persona->getId() == 0) $em->detach($persona);
+				else 	$em->refresh($persona);
+				
+				$metapersona = $persona->getMetapersona();
+				if ($metapersona != null) {
+					if ($metapersona->getId() == 0) $em->detach($metapersona);
+					else $em->refresh($metapersona);
+				}
+			}
 			$this->logEntryAuth('PERSONA KO',	$e->getMessage());
 				
 			$response = new Response($e->getMessage());
@@ -1245,7 +1193,7 @@ class PageController extends BaseController {
 		}
 
 		return $this->render('FecdasBundle:Page:persona.html.twig',
-					array('formpersona' => $formpersona->createView(),));
+					array('formpersona' => $formpersona->createView(), 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));
 	}
 	
 	private function validarDadesPersona($persona, $estranger = false, $form = null) {
@@ -1310,19 +1258,11 @@ class PageController extends BaseController {
 		/* Check persona amb dni no repetida al mateix club */
 		if ($persona->getId() == 0) {
 			
+			$metapersona = $persona->getMetapersona();
 			
-			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
-			$strQuery .= " WHERE p.dni = :dni ";
-			$strQuery .= " AND p.club = :club ";
-			$strQuery .= " AND p.databaixa IS NULL";
-						
-			$query = $em->createQuery($strQuery)
-						->setParameter('dni', $persona->getDni())
-						->setParameter('club', $club->getCodi());
-					
-			$personaexisteix = $query->getResult();
-							
-			if (count($personaexisteix) > 0) throw new \Exception("Existeix una altra persona al club amb aquest DNI");
+			$personaClub = $metapersona->getPersonaClub($club);
+			
+			if ($personaClub != null && $personaClub->getId() > 0) throw new \Exception("Existeix una altra persona al club amb aquest DNI");
 		}		
 		
 		// Canviar format Nom i COGNOMS

@@ -31,90 +31,95 @@
 				</div>
 			</div>
    		</header>
-		{% if admin == true %}
-			<div class="row">
-				<div class="col-md-4">
-					<div class="form-group">
-					   	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
-						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+   		<section class="form-dadespersonals">
+	   		<div class="row">
+				{% if admin == true %}
+					<div class="col-md-3 col-xs-12">
+						<div class="form-group">
+						   	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+						</div>
+					</div>
+				{% endif %}
+				<div class="col-md-3 col-xs-3">
+				  	<div class="form-group">
+						{{ form_label(form.dni, 'Dades personals', { 'label_attr': {'class': ''} }) }}
+				  		<div class="input-group">
+							{{ form_widget(form.dni, { 'attr': {'class': 'form-control','placeholder':'DNI/NIE' } }) }}
+							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3 col-xs-3">
+				  	<div class="form-group">
+				  		<label class="" for="form_nom">&nbsp;</label>
+				  		<div class="input-group">
+							{{ form_widget(form.nom, { 'attr': {'class': 'form-control', 'placeholder':'Nom' } }) }}
+							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+				<div class="{% if admin == true %}col-md-3{% else %}col-md-6{% endif %}  col-xs-6">
+				  	<div class="form-group">
+				  		<label class="" for="form_cognoms">&nbsp;</label>
+				  		<div class="input-group">
+							{{ form_widget(form.cognoms, { 'attr': {'class': 'form-control', 'placeholder':'Cognoms' } }) }}
+							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+						</div>
 					</div>
 				</div>
 			</div>	
-		{% endif %}
-		<div class="row">	
-			<div class="col-md-2 col-xs-4">
-				<div class="form-group">
-					{{ form_label(form.desde, 'Amb llicència des de') }}
-					<div class="input-group" >
-						{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+			<div class="row">	
+				<div class="col-md-2 col-xs-5">
+					<div class="form-group">
+						{{ form_label(form.desde, 'Amb llicència des de') }}
+						<div class="input-group" >
+							{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+		    	<div class="col-md-2 col-xs-5">
+					<div class="form-group">
+						{{ form_label(form.fins, 'fins') }}
+						<div class="input-group" >
+							{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-5 col-xs-12">
+					<div class="form-group">
+						<label>&nbsp;</label>
+						<div class="checkbox">
+					    	<label>
+					      		{{ form_widget(form.vigent) }} Només amb llicència vigent
+					    	</label>
+						</div>
 					</div>
 				</div>
 			</div>
-	    	<div class="col-md-2 col-xs-4">
-				<div class="form-group">
-					{{ form_label(form.fins, 'fins') }}
-					<div class="input-group" >
-						{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+			<div class="row">
+				<div class="col-md-4 col-xs-6">
+					<div class="form-group">
+					   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
+						{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+				<div class="col-md-4 col-xs-6">
+					<div class="form-group">
+					   	{{ form_label(form.titolsexterns, 'Titols altres organismes', { 'label_attr': {'class': ''} }) }}
+						{{ form_widget(form.titolsexterns, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+				<div class="col-md-2 col-md-offset-2 col-xs-10 col-xs-offset-2 col-last-right">
+					<div class="form-group">
+						<label class="" for="form_submit">&nbsp;</label>
+						<button id="formdadespersonals-submit"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-search blue"></i> cerca</button>
 					</div>
 				</div>
 			</div>
-			<div class="col-md-5 col-xs-4">
-				<label>&nbsp;</label>
-				<div class="checkbox">
-			    	<label>
-			      		{{ form_widget(form.vigent) }} Només amb llicència vigent
-			    	</label>
-				</div>
-			</div>
-		</div>
-   		<div class="row">
-			<div class="col-md-2 col-xs-4">
-			  	<div class="form-group">
-					{{ form_label(form.dni, 'Dades personals', { 'label_attr': {'class': ''} }) }}
-			  		<div class="input-group">
-						{{ form_widget(form.dni, { 'attr': {'class': 'form-control','placeholder':'DNI/NIE' } }) }}
-						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-4 col-xs-4">
-			  	<div class="form-group">
-			  		<label class="" for="form_nom">&nbsp;</label>
-			  		<div class="input-group">
-						{{ form_widget(form.nom, { 'attr': {'class': 'form-control', 'placeholder':'Nom' } }) }}
-						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-4  col-xs-4">
-			  	<div class="form-group">
-			  		<label class="" for="form_cognoms">&nbsp;</label>
-			  		<div class="input-group">
-						{{ form_widget(form.cognoms, { 'attr': {'class': 'form-control', 'placeholder':'Cognoms' } }) }}
-						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-2 col-xs-12 col-last-right">
-				<button id="formassegurats-submit"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-search blue"></i> cerca</button>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-4">
-				<div class="form-group">
-				   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
-					{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
-				</div>
-			</div>
-			<div class="col-md-4">
-				<div class="form-group">
-				   	{{ form_label(form.titolsexterns, 'Titols altres organismes', { 'label_attr': {'class': ''} }) }}
-					{{ form_widget(form.titolsexterns, { 'attr': {'class': 'form-control'} }) }}
-				</div>
-			</div>
-		</div>
+		</section>
     {{ form_end(form) }}
 
     {% for flashMessage in app.session.flashbag.get('error-notice') %}
@@ -122,41 +127,54 @@
 		{{ flashMessage }}
   	</div>	
 	{% endfor %}
-	<div id="llista-assegurats">
+	<div id="llista-dadespersonals" class="llista-dadespersonals">
 		<div class="table-header">	
 		   	<div id="list-header">
-		   		<div id="header-asseguratid" class="col-listheader">id</div>
-		   		<div id="header-asseguratcompacte" class="col-listheader col-responsive">Assegurat<span class="listheader-order"></span></div>
-		   		<div id="header-asseguratdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'DNI', 'e.dni') }}
+		   		<div id="header-dadespersonalsid" class="col-listheader">id</div>
+		   		<div id="header-dadespersonalsdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'DNI', 'e.dni') }}
 		   				<span class="listheader-icon {% if persones.isSorted('e.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-asseguratnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nom', 'e.nom') }}
+		   		<div id="header-dadespersonalscognomsnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nom', 'e.cognoms') }}
+		   				<span class="listheader-icon {% if persones.isSorted('e.cognoms') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-dadespersonalsnaixement" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nascut/da', 'e.datanaixement') }}
 		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-asseguratcognoms" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Cognoms', 'e.cognoms', {'direction': 'desc'}) }}
-		   				<span class="listheader-icon {% if sortparams['direction'] == '' %} listheader-icon-asc {% endif %}{% if sortparams['sort'] == 'e.cognoms' %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-asseguratnaixement" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nascut/da', 'e.datanaixement') }}
-		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-assegurattipusdesc" class="col-listheader listheader-noorder">Llicències</div>
-		   		<div id="header-asseguratactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
+		   		<div id="header-dadespersonalshistorialllicencies" class="col-listheader listheader-noorder">Llicències</div>
+		   		<div id="header-dadespersonalshistorialtitulacions" class="col-listheader listheader-noorder">Titulacions</div>
+		   		<div id="header-dadespersonalsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
 	   	</div>
 		{% if persones|length > 0 %}
-		<div class="table-scroll">
+		<div class="table-noscroll table-noscroll-large">
 		   	<ol id="list-data">
 			{% for persona in persones %}
 			   		<li class="data-detall">
-				   		<div class="data-detall-cell assegurat-id">{{ persona.id }}</div>
-				   		<div class="data-detall-cell assegurat-compacte col-responsive">{{ persona.cognoms }}, {{ persona.nom }} ({{ persona.dni }})</div>
-				   		<div class="data-detall-cell assegurat-dni col-noresponsive">{{ persona.dni }}</div>
-				   		<div class="data-detall-cell assegurat-nom col-noresponsive">{{ persona.nom }}</div>
-				   		<div class="data-detall-cell assegurat-cognoms col-noresponsive">{{ persona.cognoms }}</div>
-				   		<div class="data-detall-cell assegurat-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
-				   		<div class="data-detall-cell assegurat-tipusdesc">
-				   			<a class="llicencia-historial" href="{{ path('FecdasBundle_historialLlicencies', { 'id': persona.id }) }}"  alt="Historial llicències" title="Historial llicències">
-				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoAssegurats(admin, persones.params.datadesde, persones.params.datafins) }}</span>
+				   		<div class="data-detall-cell dadespersonals-id">{{ persona.id }}</div>
+				   		<div class="data-detall-cell dadespersonals-dni col-noresponsive">{{ persona.dni }}</div>
+				   		<div class="data-detall-cell dadespersonals-cognomsnom col-noresponsive">{{ persona.cognomsnom }}</div>
+				   		<div class="data-detall-cell dadespersonals-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
+				   		<div class="data-detall-cell dadespersonals-historialllicencies">
+				   			<a class="link-historial historial-llicencies nolink" href="{{ path('FecdasBundle_historialllicencies', { 'id': persona.id }) }}"  alt="Historial de llicències" title="Historial de llicències">
+				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoHistorialLlicencies(admin, persones.params.desde, persones.params.fins) }}</span>
 			   				</a>
 						</div>
+						<div class="data-detall-cell dadespersonals-historialtitulacions">
+							{% set titulacions = persona.getInfoHistorialTitulacions() %}
+							{% if titulacions != '' %}
+				   				<a class="link-historial historial-titulacions nolink" href="{{ path('FecdasBundle_historialtitulacions', { 'id': persona.id }) }}"  alt="Historial de titulacions" title="Historial de titulacions">
+				   					<i class="fa fa-graduation-cap systemblue"></i><span>{{ titulacions }}</span>
+			   					</a>
+			   				{% else %}
+			   					<span>{{ titulacions }}</span>
+			   				{% endif %}
+						</div>
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
-							<div class="data-detall-cell assegurat-actions">
+							<div class="data-detall-cell dadespersonals-actions">
+								{% if admin == true %}
+			   						{# persona és una metapersona #}
+			   						{% set personaId = persona.llicenciaVigent.persona.id %}
+			   					{% else %}
+			   						{% set personaId = persona.id %}
+			   					{% endif %}
+
 								{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
 									<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
 										<i class="fa fa-list-alt fa-1x orange"></i></a>
@@ -173,24 +191,33 @@
 				   				{% endif %}
 				   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
 				   					<i class="fa fa-search fa-1x blue"></i></a>
-								<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
+								<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': personaId }) }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
 				   					<i class="fa fa-user fa-1x red"></i></a>
 			   				</div>
 			   			{% else %}
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-				   				<div class="data-detall-cell assegurat-actions">
+			   					{% if admin == true %}
+			   						{# persona és una metapersona #}
+			   						{% set personaId = persona.lastLlicencia.persona.id %}
+			   					{% else %}
+			   						{% set personaId = persona.id %}
+			   					{% endif %}
+				   				<div class="data-detall-cell dadespersonals-actions">
 			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
 			   						<i class="fa fa-retweet fa-1x green"></i></a>
 			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
 			   						<i class="fa fa-search fa-1x blue"></i></a>
-				   				<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
+				   				<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': personaId })  }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
 			   						<i class="fa fa-user fa-1x red"></i></a>
 			   					</div>
 			   				{% else %}
-			   					<div class="data-detall-cell assegurat-actions">
-			   					<a class="assegurats-openmodal link" href="{{ path('FecdasBundle_persona') }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
-			   						<i class="fa fa-user fa-1x red"></i></a>
-			   					</div>
+			   					{% if admin != true %}
+			   						{# persona NO és una metapersona #}
+				   					<div class="data-detall-cell dadespersonals-actions">
+				   					<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
+				   						<i class="fa fa-user fa-1x red"></i></a>
+				   					</div>
+			   					{% endif %}
 			   				{% endif %}	
 				   		{% endif %}		
 			   		</li>
@@ -204,7 +231,6 @@
 	    {% endif %}
 	</div>
     
-    <div id="historial-llicencies" class="finestra-overlay"></div>
     <div id="edicio-persona" class="finestra-overlay"></div>
     
 {% endblock %}
@@ -226,9 +252,8 @@
 		$("select#form_clubs").select2({
 			minimumInputLength: 2,
 			allowClear: true,
-			placeholder: 'Escollir club (Admins.)'
+			placeholder: 'Escollir club'
 		});
-
 
 		$("select#form_titols").select2({
 			minimumInputLength: 2,
@@ -249,22 +274,26 @@
 	
 		helpBubbles("#form_cognoms", '<p>Indica tot o part dels <b>COGNOMS</b> a cercar</p>\
 		<p>La cerca no distingeix majúscules o minúscules</p>');
-	
-		showPersonClickAssegurats();
-	
-		showHistorialLlicencies();
 
-		$(window).resize(function() {
-			hideMask();
-	        
-	        if ($.browser.msie) $('.assegurat-historial').hide(); 
-	    	else $('.assegurat-historial').slideUp('slow');
-		});
+		$('#form_dadespersonals').submit(function ( e ) {
 		
-		$('#form_assegurats').submit(function () {
 			// Recarrega consulta afegint la dades del formulari
-			asseguratsReload("{{ path('FecdasBundle_assegurats', sortparams)|raw }}");
-			return false;
+			var url = "{{ path('FecdasBundle_dadespersonals', sortparams)|raw }}";
+		
+			var params = []; 
+			params.push( {'name':'clubs','value': $('#form_clubs').val()} );
+			params.push( {'name':'vigent','value': ($('#form_vigent').is(':checked'))?1:0} );
+			params.push( {'name':'dni','value': $('#form_dni').val()} );
+			params.push( {'name':'nom','value': $('#form_nom').val()} );
+			params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
+			params.push( {'name':'desde','value': $('#form_desde').val()} );
+			params.push( {'name':'fins','value': $('#form_fins').val()} );
+			params.push( {'name':'titols','value': $('#form_titols').val()} );
+			params.push( {'name':'titolsexterns','value': $('#form_titolsexterns').val()} );
+			
+			redirectLocationUrlParams(url, params);
+
+			e.preventDefault();
 		});
 
 		var current = new Date();
@@ -278,7 +307,7 @@
 			'desde-picker', 
 			false,
 			function (selectedDateTime) {
-				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");  
+				//dadespersonalsReload("{# path('FecdasBundle_dadespersonals', sortparams)|raw #}");  
 			}
 		);
 	
@@ -290,16 +319,10 @@
 			'fins-picker', 
 			false,
 			function (selectedDateTime) {
-				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}"); 
+				//dadespersonalsReload("{# path('FecdasBundle_dadespersonals', sortparams)|raw #}"); 
 			}
 		);
-		
-		$('#form_tots').change(function () {
-			// Recarrega consulta afegint la dades del formulari
-			//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");
-			
-		});
-	
+
 		$('#form_vigent').change(function () {
 			// Recarrega consulta afegint la dades del formulari
 			if ( $('#form_vigent').is(':checked') ) {
@@ -310,10 +333,37 @@
 				$( '#form_desde, #form_fins' ).removeAttr('disabled');
 				$( '#form_desde' ).val( '01/01/'+current.getFullYear() );	
 				$( '#form_fins' ).val( '31/12/'+current.getFullYear() );
-				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");
+				//dadespersonalsReload("{# path('FecdasBundle_dadespersonals', sortparams)|raw #}");
 			}
 			
 		});
+
+		showHistorialLlicencies();
+
+
+		//select all the a tag with name equal to modal
+		$('.formpersona-openmodal')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	         
+	        var url = $(this).attr("href");
+	        showPersonModal(url, 'dadespersonals', function () {
+		        // Reload 
+	        	$('#form_dadespersonals').submit();
+	        });
+	    });
+
+		$(window).resize(function() {
+			hideMask();
+	        
+	        if ($.browser.msie) $('.dadespersonals-historial').hide(); 
+	    	else $('.dadespersonals-historial').slideUp('slow');
+		});
+		
+		
+
 
 		$( ".llicencia-duplicat" ).click(function (e) {
 			e.preventDefault();
@@ -371,14 +421,6 @@
 			});
 		});
 		
-		
-		//sortLlista("col-listheader", "list-data");
-		//llistaPaginationAndSort($('#form_assegurats'));
-	
-		var tableScroll = $('.table-scroll');
-		if (tableScroll.hasOverflowY()) {
-			$('.table-scroll').css({"width":"101.5%"});
-		}
 	});
 	
 	</script>

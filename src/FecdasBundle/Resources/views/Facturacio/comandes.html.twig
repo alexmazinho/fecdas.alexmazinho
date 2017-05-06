@@ -19,14 +19,14 @@
     <div id="comandes-main">
 	    <div id="list-forms">
 	    	{{ form_start(form, {'action': path('FecdasBundle_comandes'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_comandes'}}) }}
-				{% if admin == true %}
+	    		{% if admin == true %}
 				<div class="row">
-					  <div class="col-md-6  col-xs-12">
+					<div class="col-md-3  col-xs-12">
 					  	<div class="form-group">
-					    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+					    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
-					  </div>
+					</div>
 				</div>
 				{% endif %}
 				<div class="row">
@@ -329,7 +329,7 @@
 			$("select#form_clubs").select2({
 				minimumInputLength: 2,
 				allowClear: true,
-				placeholder: 'Seleccionar Club'
+				placeholder: 'Escollir club'
 			});
 		{% endif %}
 	});

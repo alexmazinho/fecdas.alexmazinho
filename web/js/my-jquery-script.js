@@ -564,27 +564,11 @@
 	});
 	
 	/* Mètode obsolet */
-	/*
-	llistaPaginationAndSort  = function(formElement) {
-	    // Paginació en llista o ordenació de columna
-		$('.navigation .pagination a, #list-header .col-listheader-sortable a')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        
-	        var url = $(this).url();
 
-	        $('#form_page').val(url.param('page'));
-	        $('#form_sort').val(url.param('sort'));
-	        $('#form_direction').val(url.param('direction'));
-	        
-	        formElement.submit();
-	    });
-	};*/
-
-	llistaPaginationAndSort = function(url, params) {
-		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+	redirectLocationUrlParams = function(url, params) {
+		for ( var i in params ) {
+			url=url+'&'+params[i].name+'='+params[i].value;
+		}
 		window.location = url; 
 	};
 
@@ -759,109 +743,64 @@
 		params.push( {'name':'desde','value': $('#form_desde').val()} );
 		params.push( {'name':'fins','value': $('#form_fins').val()} );
 
-		llistaPaginationAndSort(url, params);
+		redirectLocationUrlParams(url, params);
 	};
 	
 	showHistorialLlicencies = function() {
 	    //Carrega i mostra historial per un assegurat
-		$('.llicencia-historial')
+		$('.link-historial')
 	    .off('click')
 	    .click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
 
-	        var current = $(this).parents(".data-detall");
+	        $('.alert').remove();
 	        
-/*	        if (current.hasClass('data-detall-historic')) {
-	        	current.removeClass('data-detall-historic');
-		        if ($.browser.msie) current.children('.assegurat-historial').hide(); 
-		    	else current.children('.assegurat-historial').slideUp('slow');
+	        var current = $(this).parents(".data-detall");
+  	
+	        if ($.browser.msie) $('.taula-historial').hide(); 
+	    	else $('.taula-historial').slideUp('slow');
 
-	        } else {
-	        	//current.children('.assegurat-historial').remove();
-*/	        	
-	        if ($.browser.msie) $('.assegurat-historial').hide(); 
-	    	else $('.assegurat-historial').slideUp('slow');
-
-	        hideMask();
+	        tancarMascaraBlock( '' );
 	        
 	        if ( current.hasClass('data-detall-historic')) {
-		        if ($.browser.msie) current.children('.assegurat-historial').show(); 
-		    	else current.children('.assegurat-historial').slideDown('slow');
+		        if ($.browser.msie) current.children('.taula-historial').show(); 
+		    	else current.children('.taula-historial').slideDown('slow');
 		        
-		        showElementMask(  $('#llista-assegurats .table-scroll'), false );
+		        obrirMascaraBlock(  $('.llista-dadespersonals .table-scroll') );
 	        } else {
 		        var url = $(this).attr("href");
 		        
 		        $.get(url, function(data, textStatus) {
 		        	current.addClass('data-detall-historic');
 		        	current.append(data);
-			        if ($.browser.msie) current.children('.assegurat-historial').show(); 
-			    	else current.children('.assegurat-historial').slideDown('slow');
+			        if ($.browser.msie) current.children('.taula-historial').show(); 
+			    	else current.children('.taula-historial').slideDown('slow');
 
-			        showElementMask( $('#llista-assegurats .table-scroll'), false );
+			        obrirMascaraBlock(  $('.llista-dadespersonals .table-scroll') );
 			        
 			        //if close button is clicked
-				    $('.assegurat-historial .close').click(function (e) {
+				    $('.taula-historial .close').click(function (e) {
 				        //Cancel the link behavior
 				        e.preventDefault();
 				        
-				        hideMask();
+				        tancarMascaraBlock( '' );
 				        
 				        current.removeClass('data-detall-historic');
-				        if ($.browser.msie) current.children('.assegurat-historial').hide(); 
-				    	else current.children('.assegurat-historial').slideUp('slow');
+				        if ($.browser.msie) current.children('.taula-historial').hide(); 
+				    	else current.children('.taula-historial').slideUp('slow');
 				    }); 
+	        	}).fail( function(xhr, status, error) {
+	        		// xhr.status + " " + xhr.statusText, status, error
+		        	var sms = smsResultAjax('KO', xhr.responseText);
+		    			 
+		   			$('#form_dadespersonals').append(sms);
 	        	});
 	        };
 	    });
 		
 		  
 	};
-	
-	showPersonClickLlicencia = function() {
-	    //select all the a tag with name equal to modal
-		$('#formllicencia-openmodal')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        var url = $(this).attr("href");
-	        
-	        var id = $("#parte_llicencies_persona_select").val();
-	        if (id == "") id = 0;
-	        showPersonModal(id, url, 'llicencia');
-	    });
-	};
-	
-	showPersonClickAssegurats = function() {
-	    //select all the a tag with name equal to modal
-		$('.assegurats-openmodal')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        
-	        var id = $(this).parent().parent().find(".assegurat-id").html(); 
-	        var url = $(this).attr("href");
-	        showPersonModal(id, url, 'assegurats');
-	    });
-	};
-	
-	showPersonClickClubs = function() {
-	    //select all the a tag with name equal to modal
-		$('#formclub-openmodal')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        
-	        var id = 0;
-	        var url = $(this).attr("href");
-	        showPersonModal(id, url, 'clubs');
-	    });
-	};
-	
 	
 	showMask = function() {
         // Show mask before overlay
@@ -887,6 +826,7 @@
         var maskWidth = element.width();
         $('.mask').offset( { top: 0, left: 0 } );
         
+        //$('.mask').css({'width':maskWidth,'height':maskHeight, 'position': 'absolute', 'left': 0, 'top': 0});
         $('.mask').css({'width':maskWidth,'height':maskHeight});
 
         //Set height and width to mask to fill up the whole screen
@@ -915,7 +855,7 @@
 		$('.block-mask').remove();
 	};
 	
-	showPersonModal = function(id, url, origen) {
+	showPersonModal = function(url, origen, callbackOk) {
         // Show mask before overlay
         //Get the screen height and width
 		var maskHeight = $(document).height();
@@ -925,10 +865,7 @@
         //transition effect    
         $('.mask').fadeTo("slow",0.6); 
         
-		var params = { 	persona: id };
-		
-		$.get(url,	params,
-		function(data, textStatus) {
+		$.get(url, function(data, textStatus) {
 			
 			$("#edicio-persona").html(data);
 			// Reload DOM events. Add handlers again. Only inside reloaded divs
@@ -950,7 +887,8 @@
 			actionsModalOverlay();
 			actionsPersonaForm(origen);
 			
-			if (id == 0) $( '#persona_datanaixement' ).val(''); // Noves persones naixement blank, cal omplir 
+			
+			$( "#tabs-persona" ).tabs();
 			
 			$("select#parte_persona_addrprovincia").select2({
 				minimumInputLength: 2,
@@ -1243,11 +1181,25 @@
 		});
     	
     	$("select#parte_llicencies_persona_select").change(function(e) {
-			if (e.val == "") $('#formllicencia-openmodal').html('nou assegurat <i class="fa fa-users"></i>');
-			else $('#formllicencia-openmodal').html('modifica assegurat <i class="fa fa-user"></i>');
+			if (e.val == "") $('.formpersona-openmodal').html('nou assegurat <i class="fa fa-users"></i>');
+			else $('.formpersona-openmodal').html('modifica assegurat <i class="fa fa-user"></i>');
 		});
     	
-    	showPersonClickLlicencia();
+    	//select all the a tag with name equal to modal
+		$('.formpersona-openmodal')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        var url = $(this).attr("href");
+	        var id = $("#parte_llicencies_persona_select").val();
+	        if (id == "") id = 0;
+	        url += '?id='+id;
+	        showPersonModal(url, 'llicencia', function () {
+		        // Reload 
+	        	$('#form_assegurats').submit();
+	        });
+	    });
 
     	addLlicenciaClick();
     	

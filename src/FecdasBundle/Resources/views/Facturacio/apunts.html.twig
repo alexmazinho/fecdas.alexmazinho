@@ -31,15 +31,16 @@
 	    	{{ form_start(form, {'action': path('FecdasBundle_apunts'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_apunts'}}) }}
 				<div class="row">
 					{% if admin == true %}
-						  <div class="col-md-4 col-xs-12">
+						  <div class="col-md-3 col-xs-12">
 						  	<div class="form-group">
-						    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+						    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 								{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 							</div>
 						  </div>
 					{% endif %}
 					<div class="col-md-3 col-xs-4">
 						<div class="form-group">
+							{% if admin == true %}<label class="" for="form_datadesde">&nbsp;</label>{% endif %}
 							<div class="input-group">
 				  				<span class="input-group-addon">Des de</span>
 								{{ form_widget(form.datadesde, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
@@ -49,6 +50,7 @@
 					</div>
 					<div class="col-md-3 col-xs-4">
 						<div class="form-group">
+							{% if admin == true %}<label class="" for="form_datafins">&nbsp;</label>{% endif %}
 							<div class="input-group">
 				  				<span class="input-group-addon">Fins</span>
 								{{ form_widget(form.datafins, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
@@ -56,8 +58,11 @@
 							</div>
 						</div>
 					</div>
-					<div class="{% if admin == true %}col-md-2{% else %}col-md-6{% endif %} col-last-right">
-						<a id="consulta-apunts" class="btn btn-default btn-lg">consultar <i class="fa fa-search"></i></a>
+					<div class="{% if admin == true %}col-md-3{% else %}col-md-6{% endif %} col-last-right">
+						<div class="form-group">
+							{% if admin == true %}<label class="" for="form_button">&nbsp;</label>{% endif %}
+							<a id="consulta-apunts" class="btn btn-default btn-lg">consultar <i class="fa fa-search"></i></a>
+						</div>
 				  	</div>
 				</div>
 		   	{{ form_end(form) }}
@@ -181,7 +186,7 @@
 			$("select#form_clubs").select2({
 				minimumInputLength: 2,
 				allowClear: true,
-				placeholder: 'Seleccionar Club'
+				placeholder: 'Escollir club'
 			});
 		{% else %}
 			setMenuActive("menu-apunts");

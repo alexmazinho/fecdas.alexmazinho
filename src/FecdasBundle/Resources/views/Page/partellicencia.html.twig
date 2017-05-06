@@ -13,10 +13,10 @@
 			{{ form_widget(llicencia.persona, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_persona_select' }) }}
 			{# form_errors(llicencia.persona) #}
 		</div>
-		{% if llicenciadades.parte.allowEdit == true or admin == true %} 
+		{% if llicenciadades.parte.allowEdit == true or admin == true %}
 		<div class="form-left">
 			<label>&nbsp;</label>
-			<button type="button" id="formllicencia-openmodal" class="btn btn-default btn-lg" name="modal" 
+			<button type="button" class="formpersona-openmodal" class="btn btn-default btn-lg" name="modal" 
 				href="{{ path('FecdasBundle_persona') }}">
 				{% if llicenciadades.persona is not null %}	modifica assegurat <i class="fa fa-user"></i> 
 				{% else %} nou assegurat <i class="fa fa-users"></i>{% endif %}</button>

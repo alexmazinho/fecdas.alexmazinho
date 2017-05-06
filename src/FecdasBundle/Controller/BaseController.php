@@ -3469,7 +3469,7 @@ class BaseController extends Controller {
 	public static function esDNIvalid ($cadena)
 	{
 		//Comprovar DNI
-		if (strlen($dnisenselletra) != 9 || !preg_match('/^[0-9]{8}[A-Z]$/i', $cadena)) return false;	// Format incorrecte
+		if (strlen($cadena) != 9 || !preg_match('/^[0-9]{8}[A-Z]$/i', $cadena)) return false;	// Format incorrecte
 		
 		$dnisenselletra = (int) substr($cadena, 0, strlen($cadena) - 1);		
 			

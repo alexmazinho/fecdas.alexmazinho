@@ -21,15 +21,16 @@
 	    	{{ form_start(form, {'action': path('FecdasBundle_nouingres'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_ingresos'}}) }}
 		    	<div class="row">
 		    	  {% if admin == true %}
-				  <div class="col-md-6">
+				  <div class="col-md-3 col-xs-5">
 				  	<div class="form-group">
-				    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+				    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				  </div>
 				  {% endif %}
-				  <div class="col-md-3">
+				  <div class="col-md-3 col-xs-4">
 				  	<div class="form-group">
+				  		{% if admin == true %}<label class="" for="form_numrebut">&nbsp;</label>{% endif %}
 				    	<div class="input-group">
 					    	<span class="input-group-addon">Rebut</span>
 							{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control'} }) }}
@@ -40,8 +41,11 @@
 					</div>
 				  </div>
 				  {% if admin == true %}	
-				  <div class="col-md-2 col-md-offset-1 col-last-right">
+				  <div class="col-md-2 col-md-offset-4  col-xs-3 col-last-right">
+				  	<div class="form-group">
+				  		{% if admin == true %}<label class="" for="form_button">&nbsp;</label>{% endif %}
 						<button type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> afegir</button>
+					</div>	
 				  </div>
 				  {% endif %}
 				</div>
@@ -160,7 +164,7 @@
 		$("select#form_clubs").select2({
 			minimumInputLength: 2,
 			allowClear: true,
-			placeholder: 'Seleccionar club'
+			placeholder: 'Escollir club'
 		});
 
 		$('#form_ingresos').submit( function(e){

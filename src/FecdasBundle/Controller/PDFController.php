@@ -267,7 +267,7 @@ class PDFController extends BaseController {
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
 			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
 		} else {
-			$text =  $persona->getInfoAssegurats($this->isCurrentAdmin(), $desde, $fins);
+			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d"));
 		}
 		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
 			

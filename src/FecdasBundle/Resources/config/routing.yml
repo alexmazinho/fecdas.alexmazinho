@@ -36,12 +36,6 @@ FecdasBundle_llicenciesParte:
     requirements:
         methods:  GET
 
-FecdasBundle_historialLlicencies: 
-    path:  /historialLlicencies
-    defaults: { _controller: "FecdasBundle:Page:historialLlicencies" }
-    requirements:
-        methods:  GET
-
 FecdasBundle_busseig:
     path:  /consultadni
     defaults: { _controller: "FecdasBundle:Page:busseig" }
@@ -349,6 +343,24 @@ FecdasBundle_exportcursos:
 FecdasBundle_cursostopdf:
     path:  /cursostopdf
     defaults: { _controller: "FecdasBundle:Titulacions:cursostopdf" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_actacurspdf:
+    path:  /actacurspdf
+    defaults: { _controller: "FecdasBundle:Titulacions:actacurspdf" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_historialtitulacions: 
+    path:  /historialtitulacions
+    defaults: { _controller: "FecdasBundle:Titulacions:historialtitulacions" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_historialllicencies: 
+    path:  /historialllicencies
+    defaults: { _controller: "FecdasBundle:Titulacions:historialllicencies" }
     requirements:
         methods:  GET
 

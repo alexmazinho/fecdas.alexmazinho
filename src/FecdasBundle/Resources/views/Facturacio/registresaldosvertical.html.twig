@@ -35,12 +35,13 @@
 						<div class="row">
 							  <div class="col-md-3 col-xs-12">
 							  	<div class="form-group">
-							    	{{ form_label(form.clubs, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+							    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 									{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 								</div>
 							  </div>
 							  <div class="col-md-3 col-xs-4">
 							 	<div class="form-group">
+							 		<label class="" for="form_desde">&nbsp;</label>
 									<div class="input-group">
 										<span class="input-group-addon">Des de</span>
 										{{ form_widget(form.desde, { 'attr': {'class': 'form-control form-control-center'} }) }}
@@ -50,6 +51,7 @@
 							  </div>
 							  <div class="col-md-3 col-xs-4">
 							 	<div class="form-group">
+							 		<label class="" for="form_fins">&nbsp;</label>
 									<div class="input-group">
 										<span class="input-group-addon">Fins</span>
 										{{ form_widget(form.fins, { 'attr': {'class': 'form-control form-control-center'} }) }}
@@ -58,15 +60,20 @@
 								</div>
 							  </div>
 							  <div class="col-md-3 col-xs-4">
-							  	<label class="radio-inline">
-									{{ form_widget(form.grup[0], { 'attr': {'class': 'agrupar-dates'} }) }} Diari
-								</label>
-								<label class="radio-inline">
-									{{ form_widget(form.grup[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
-								</label>
-								<label class="radio-inline">
-									{{ form_widget(form.grup[2], { 'attr': {'class': 'agrupar-dates'} }) }} Anual
-								</label>
+							  	<div class="form-group">
+							 		<label class="" for="form_grup">&nbsp;</label>
+							 		<div class="input-group">	
+									  	<label class="radio-inline">
+											{{ form_widget(form.grup[0], { 'attr': {'class': 'agrupar-dates'} }) }} Diari
+										</label>
+										<label class="radio-inline">
+											{{ form_widget(form.grup[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
+										</label>
+										<label class="radio-inline">
+											{{ form_widget(form.grup[2], { 'attr': {'class': 'agrupar-dates'} }) }} Anual
+										</label>
+									</div>
+								</div>
 							   </div>							  
 						</div>
 						{% if rebutscontrol|length > 0 %}
@@ -167,7 +174,7 @@
 		$("select#form_clubs").select2({
 			minimumInputLength: 2,
 			allowClear: true,
-			placeholder: 'Seleccionar Club'
+			placeholder: 'Escollir club'
 		});
 
 		$("#form_clubs").change(function() {

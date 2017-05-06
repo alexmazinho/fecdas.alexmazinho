@@ -1,6 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -118,6 +119,137 @@ class EntityCurs {
 		return $this->num;
 	}
 	
+	/**
+	 * @return curs anul·lat?
+	 */
+	public function anulat() {
+		return $this->databaixa != null;
+	}
+	
+	/**
+	 * @return es un curs històric?
+	 */
+	public function historic() {
+		return $this->club == null;
+	}
+	
+	/**
+	 * @return estat: Pendent validació del club, Enviat a la federació, Finalitzat 
+	 */
+	public function getEstat() {
+		
+		if ($this->anulat()) return '';	
+			
+		if ($this->finalitzat) return 'Finalitzat';
+		
+		if ($this->validat) return 'Enviat a la federació';
+		
+		return 'Pendent validació del club';
+	}
+	public function getEstatColor() {
+			
+		if ($this->finalitzat || $this->anulat()) return '';
+		
+		if ($this->validat) return 'green';
+		
+		return 'red';
+	}
+	
+	/**
+	 * @return Nom del club
+	 */
+	public function getClubInfo() {
+		return $this->club != null?$this->club->getNom():$this->clubhistoric;
+	}
+	
+	/**
+	 * @return participants
+	 */
+	public function getAlumnes($admin = false) {
+			
+		$arr = array();	
+		
+		$participacions = $this->getParticipantsSortedByCognomsNom();
+		
+		if (count($participacions) > 5) return count($participacions)." participants";
+		
+		foreach ($participacions as $titulacio) {
+			$persona = $titulacio->getPersona();
+			
+			if ($admin || $persona->checkClub($club)) $arr[] = $persona->getDni()." - ".$persona->getNomCognoms();
+			else $arr[] = $persona->getDni();
+		}
+		
+		return implode(PHP_EOL, $arr);
+	}
+	
+	/**
+	 * @return docents
+	 */
+	public function getEquipDocent() {
+			
+		$arr = array();
+		$i = 0;
+		
+		$docencies = $this->getDocentsSortedByCognomsNom();
+		
+		if (count($docencies) == 0) return "Sense dades de l'equip docent";
+		
+		foreach ($docencies as $docencia) {
+			if ($i > 5) return implode(PHP_EOL, $arr);
+			
+			$persona = $docencia->getPersona();
+			
+			$arr[] = $docencia->getRol()." - ".$persona->getNomCognoms();
+			$i++;
+		}
+		
+		return implode(PHP_EOL, $arr);
+	}
+	
+	public function getParticipantsSortedByCognomsNom($baixes = false)
+    {
+    	/* Ordenades de primer a últim */
+    	$arr = array();
+    	foreach ($this->participants as $titulacio) {
+    		if (!$titulacio->anulada() || $baixes == true) $arr[] = $titulacio;
+    	}
+
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+    		return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
+    	});
+    	return $arr;
+    }
+	
+	public function getDocentsSortedByCognomsNom($baixes = false)
+    {
+    	/* Ordenades per rol director, co-director, instructor, colaborador => cognoms nom*/
+    	$arr = array();
+    	foreach ($this->docents as $docencia) {
+    		if (!$docencia->anulada() || $baixes == true) $arr[] = $docencia;
+    	}
+
+		
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+			if ($a->getRol() == $b->getRol()) return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
+			
+			// Rols diferents
+			if ($a->getRol() == BaseController::DOCENT_DIRECTOR) return 1;
+			if ($b->getRol() == BaseController::DOCENT_DIRECTOR) return -1;
+			if ($a->getRol() == BaseController::DOCENT_CODIRECTOR) return 1;
+			if ($b->getRol() == BaseController::DOCENT_CODIRECTOR) return -1;
+			if ($a->getRol() == BaseController::DOCENT_INSTRUCTOR) return 1;
+			return -1;
+    		
+    	});
+    	return $arr;
+    }
 	
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();

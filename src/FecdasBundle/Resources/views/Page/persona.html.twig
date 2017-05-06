@@ -1,4 +1,4 @@
-{{ form_start(form, {'action': path('FecdasBundle_persona'), 'method': 'POST', 'attr': {'class': 'modalform appform container-fluid', 'id':'formpersona'}}) }}
+{{ form_start(formpersona, {'action': path('FecdasBundle_persona'), 'method': 'POST', 'attr': {'class': 'modalform appform container-fluid', 'id':'formpersona'}}) }}
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
 	<h1>Dades personals<div id="sms-mailpersona">* Cal omplir <strong>l'adreça de correu</strong> per poder fer la tramitació</div></h1>
 	<div class="row">
@@ -131,17 +131,54 @@
 		</div>
 	</div> 
 	<div class="row">
-		<div id="formpersona-cancel" class="persona-submit form-right">	
-			<input type="submit" id="formpersona-button-cancel" class="form-button-cancel forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
+		<div id="tabs-persona" class="col-md-12">
+	  		<ul>
+	    		<li><a href="#tabs-llicencies">Llicències</a></li>
+	    		{% if persona.teTitulacions() %}<li><a href="#tabs-titulacions">Titulacions</a></li>{% endif %}
+	    		{% if persona.teDocencies() %}<li><a href="#tabs-docencies">Docències</a></li>{% endif %}
+			</ul>
+			<div id="tabs-llicencies">
+				<div class="row">
+					<div class="historial-titol-outer">Historial de llicències</div>
+					{% if admin %}
+						{% set llicencies = persona.getLlicenciesSortedByDate(true) %}
+					{% else %}
+						{% set llicencies = persona.metapersona.getLlicenciesSortedByDate(false) %}
+					{% endif %}
+					{% include 'FecdasBundle:Titulacions:llicencieshistorial.html.twig' %}
+				</div>
+			</div>
+			{% if persona.teTitulacions() %}
+				<div id="tabs-titulacions">
+				    <div class="row">
+				    	<div class="historial-titol-outer">Historial de titulacions</div>
+						{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
+						{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
+						{% include 'FecdasBundle:Titulacions:titulacionshistorial.html.twig' %}
+					</div>
+				</div>
+			{% endif %}
+			{% if persona.teDocencies() %}
+				<div id="tabs-docencies">
+				    <p>Pendent</p>
+				</div>
+			{% endif %}
 		</div>
-		<div id="formpersona-remove" class="persona-submit form-right">	
-			<input type="submit" id="formpersona-button-remove" class="forminput-inside" value="Esborrar" name="formpersona-button-remove"/>
-		</div>
-		<div id="formpersona-submit" class="persona-submit form-right">	
-			<input type="submit" id="formpersona-button-save" class="forminput-inside" value="Desar" name="formpersona-button-save"/>
+	</div>
+	<div class="row">
+		<div class="form-group">
+			<div id="formpersona-cancel" class="persona-submit form-right">	
+				<input type="submit" id="formpersona-button-cancel" class="form-button-cancel forminput-inside" value="Cancel·lar" name="formpersona-button-cancel" />
+			</div>
+			<div id="formpersona-remove" class="persona-submit form-right">	
+				<input type="submit" id="formpersona-button-remove" class="forminput-inside" value="Esborrar" name="formpersona-button-remove"/>
+			</div>
+			<div id="formpersona-submit" class="persona-submit form-right">	
+				<input type="submit" id="formpersona-button-save" class="forminput-inside" value="Desar" name="formpersona-button-save"/>
+			</div>
 		</div>
 	</div>	
 	<div id="error-persona"></div>
 	<a id="formpersona-autocompleters" href="{{ path('FecdasBundle_ajaxpoblacions') }}" style="display:none">
 	<div id="formpersona-rest">	{{ form_rest(formpersona) }}</div>
-{{ form_end(form) }}
+{{ form_end(formpersona) }}

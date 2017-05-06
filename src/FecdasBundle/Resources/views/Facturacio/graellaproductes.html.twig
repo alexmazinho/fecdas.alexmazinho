@@ -32,9 +32,9 @@
 			{{ form_start(form, {'action': path('FecdasBundle_graellaproductes'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_productes'}}) }}
 				<div class="row">		
 					{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
-					<div class="{% if admin != true %}hidden{% else %}col-md-5 col-xs-12{% endif %}">
+					<div class="{% if admin != true %}hidden{% else %}col-md-3 col-xs-12{% endif %}">
 					  	<div class="form-group">
-					    	{{ form_label(form.clubs, 'Club', { 'label_attr': {'class': ''} }) }}
+					    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
@@ -44,7 +44,7 @@
 							{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
-					<div class="col-md-3 {% if admin != true %}col-md-offset-5{% endif %} col-xs-4">
+					<div class="col-md-3 {% if admin != true %}col-md-offset-5{% else %}col-md-offset-2{% endif %} col-xs-4">
 						<label class="required">&nbsp;</label>
 						<p class="total-productes-grid">Total productes: <span>{{ productes|length }}</span></p>
 					</div>
@@ -330,7 +330,7 @@
 			$("select#form_clubs").select2({
 				minimumInputLength: 2,
 				allowClear: true,
-				placeholder: 'Seleccionar club'
+				placeholder: 'Escollir club'
 			});
 		{% endif %}
 	});

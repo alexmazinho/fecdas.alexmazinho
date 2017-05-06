@@ -1,0 +1,48 @@
+{# src/Fecdas/PartesBundle/Resources/views/Titulacions/curs.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block stylesheets %}
+	
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
+{% block title %}Aplicació gestió FECDAS. Informació curs {% endblock %}
+
+{% block body %}
+   	<header>
+		<div class="row">
+			<div class="col-md-8"><h1>Curs</h1></div>
+	        <div class="col-md-4 col-last-right">
+				<div class="buttons-top-bootstrap">
+					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_actacurspdf') }}" alt="Descarregar acta curs" 
+							title="Descarregar acta curs"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
+				</div> 
+			</div>
+		</div>
+   	</header>
+   	
+	<section id="llista-cursos">
+		<div class="row">
+			<div class="col-md-12">	PENDENT </div>
+		</div>
+	</section>
+   		
+    
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+
+	<script type="text/javascript">
+	
+	$(document).ready(function(){
+		setMenuActive("menu-cursos");
+		
+	});
+	
+	</script>		
+
+{% endblock %}

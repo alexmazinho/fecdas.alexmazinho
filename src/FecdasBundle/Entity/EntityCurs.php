@@ -64,7 +64,7 @@ class EntityCurs {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $omplert;  // Pel tècnic
+	protected $editable;  // Pel tècnic
 	
 	/**
 	 * @ORM\Column(type="boolean")
@@ -108,7 +108,7 @@ class EntityCurs {
 		$this->datadesde = $datadesde == null?new \DateTime():$datadesde;
 		$this->datafins = $datafins == null?new \DateTime():$datafins;
 		
-		$this->omplert = false;
+		$this->editable = true;
 		$this->validat = false;
 		$this->finalitzat = false;
 		
@@ -152,10 +152,10 @@ class EntityCurs {
 	}
 	
 	/**
-	 * @return curs omplert? El tècnic l'ha omplert i cal validació del club
+	 * @return curs editable? El tècnic l'ha omplert i cal validació del club
 	 */
-	public function omplert() {
-		return $this->omplert;
+	public function editable() {
+		return $this->editable;
 	}
 	
 	/**
@@ -176,7 +176,7 @@ class EntityCurs {
 		
 		if ($this->validat) return 'Enviat a la federació';
 		
-		if ($this->omplert) return 'Pendent de validar pel club';
+		if ($this->editable) return 'Pendent de validar pel club';
 		
 		return 'En procés...';
 	}
@@ -466,23 +466,23 @@ class EntityCurs {
     }
     
 	/**
-     * Set omplert
+     * Set editable
      *
-     * @param boolean $omplert
+     * @param boolean $editable
      */
-    public function setOmplert($omplert)
+    public function setEditable($editable)
     {
-    	$this->omplert = $omplert;
+    	$this->editable = $editable;
     }
     
     /**
-     * Get omplert
+     * Get editable
      *
      * @return boolean
      */
-    public function getOmplert()
+    public function getEditable()
     {
-    	return $this->omplert;
+    	return $this->editable;
     }
 	
     /**

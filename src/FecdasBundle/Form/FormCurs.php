@@ -40,11 +40,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		/* Check we're looking at the right data/form */
 		if ($curs instanceof EntityCurs) {
 			
-			$editable = false;
-			if (!$curs->omplert()) {
-				// Curs en procés
-				$editable = true;	
-			}
+			$editable = $curs->editable();
 			
 			$form->add('num', 'text', array(
 				'required' 	=> true,
@@ -66,9 +62,9 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 										->orderBy('c.nom', 'ASC');
 									}, 
 							'choice_label' 	=> 'nom',
-							'placeholder' 	=> 'Escollir Club',
+							//'placeholder' 	=> '',
 							'required'  	=> true,
-							'attr'			=> array('readonly' => true)	// Current club. No es pot editar	
+							'disabled'		=> true  // Current club. No es pot editar	
 				));	
 			}	
 			
@@ -83,7 +79,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 						'choice_label' 	=> 'llistaText',
 						'placeholder' 	=> 'Indicar titulació',
 						'required'  	=> true,
-						'attr'			=>	array('readonly' => !$editable)
+						'disabled'		=> !$editable  		// No es pot canviar el títol
 			));	
 				
 				
@@ -132,7 +128,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$persona = new EntityPersona($metapersona, $curs->getClub());
 			$persona->setNom(''); 
 			$persona->setCognoms(''); 
-			$persona->setDatanaixement(new \DateTime());
+			//$persona->setDatanaixement(new \DateTime());
 				
 			$form->add('formalumne', new FormAlumne(), array(
 					'mapped'   	=> false,

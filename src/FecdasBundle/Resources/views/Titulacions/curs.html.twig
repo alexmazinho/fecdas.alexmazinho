@@ -75,99 +75,101 @@
 		</div>
 		
 		<div class="row">
-			<div id="tabs-docents" class="col-md-12">
-		  		<ul>
-		    		<li><a href="#tabs-direccio">Director/s</a></li>
-		    		<li><a href="#tabs-instructors">Instructors</a></li>
-		    		<li><a href="#tabs-colaboradors">Col·laboradors</a></li>
-				</ul>
-				<div id="tabs-direccio">
-					<div class="row">
-						<div class="col-md-9">
-							<div class="form-group">
-								<div class="row">
-									<div class="col-md-2">
-									    {{ form_label(form.auxdirector, 'Director:') }}
-									</div>
-									<div class="col-md-5">
-										<div class="input-group">
-											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-											{{ form_widget(form.auxdirector, { 'attr': {'class': 'form-control'} }) }}
+			<div class="col-md-12">
+				<div id="tabs-docents">
+			  		<ul>
+			    		<li><a href="#tabs-direccio">Director/s</a></li>
+			    		<li><a href="#tabs-instructors">Instructors</a></li>
+			    		<li><a href="#tabs-colaboradors">Col·laboradors</a></li>
+					</ul>
+					<div id="tabs-direccio">
+						<div class="row">
+							<div class="col-md-9">
+								<div class="form-group">
+									<div class="row">
+										<div class="col-md-2">
+										    {{ form_label(form.auxdirector, 'Director:') }}
+										</div>
+										<div class="col-md-5">
+											<div class="input-group">
+												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+												{{ form_widget(form.auxdirector, { 'attr': {'class': 'form-control'} }) }}
+											</div>
+										</div>
+										<div class="col-md-5">
+											<div class="nom-director"><span class="title-comment">(Director pendent)</span></div>
 										</div>
 									</div>
-									<div class="col-md-5">
-										<div class="nom-director"><span class="title-comment">(Director pendent)</span></div>
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<div class="row">
+										<div class="col-md-3">
+										    {{ form_label(form.auxcarnet, 'Num.') }}
+										</div>
+										<div class="col-md-9">
+											<div class="input-group">
+												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
+												{{ form_widget(form.auxcarnet, { 'attr': {'class': 'form-control'} }) }}
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<div class="row">
-									<div class="col-md-3">
-									    {{ form_label(form.auxcarnet, 'Num.') }}
-									</div>
-									<div class="col-md-9">
-										<div class="input-group">
-											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
-											{{ form_widget(form.auxcarnet, { 'attr': {'class': 'form-control'} }) }}
+						<div class="row">
+							<div class="col-md-9">
+								<div class="form-group">
+									<div class="row">
+										<div class="col-md-2">
+										    {{ form_label(form.auxcodirector, 'Co-director:') }}
+										</div>
+										<div class="col-md-5">
+											<div class="input-group">
+												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+												{{ form_widget(form.auxcodirector, { 'attr': {'class': 'form-control'} }) }}
+											</div>
+										</div>
+										<div class="col-md-5">
+											<div class="nom-director"><span class="title-comment">(Co-director pendent)</span></div>
 										</div>
 									</div>
 								</div>
 							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<div class="row">
+										<div class="col-md-3">
+										    {{ form_label(form.auxcocarnet, 'Num.') }}
+										</div>
+										<div class="col-md-9">
+											<div class="input-group">
+												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
+												{{ form_widget(form.auxcocarnet, { 'attr': {'class': 'form-control'} }) }}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>					
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-md-9">
-							<div class="form-group">
-								<div class="row">
-									<div class="col-md-2">
-									    {{ form_label(form.auxcodirector, 'Co-director:') }}
-									</div>
-									<div class="col-md-5">
-										<div class="input-group">
-											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-											{{ form_widget(form.auxcodirector, { 'attr': {'class': 'form-control'} }) }}
-										</div>
-									</div>
-									<div class="col-md-5">
-										<div class="nom-director"><span class="title-comment">(Co-director pendent)</span></div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<div class="row">
-									<div class="col-md-3">
-									    {{ form_label(form.auxcocarnet, 'Num.') }}
-									</div>
-									<div class="col-md-9">
-										<div class="input-group">
-											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
-											{{ form_widget(form.auxcocarnet, { 'attr': {'class': 'form-control'} }) }}
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>					
+					<div id="tabs-instructors">
+						{% set proto = true %}
+						{% set tipus = "instructor" %}
+						{% set docents = form.instructors %}
+						{% set prototype = form.instructors.vars.prototype %}
+						{% set titol = "Instructors que han impartit classes" %}
+						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
 					</div>
-				</div>
-				<div id="tabs-instructors">
-					{% set proto = true %}
-					{% set tipus = "instructor" %}
-					{% set docents = form.instructors %}
-					{% set prototype = form.instructors.vars.prototype %}
-					{% set titol = "Instructors que han impartit classes" %}
-					{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
-				</div>
-				<div id="tabs-colaboradors">
-					{% set proto = false %}
-					{% set tipus = "col·laborador" %}
-					{% set docents = form.colaboradors %}
-					{% set prototype = form.colaboradors.vars.prototype %}
-					{% set titol = "Han col·laborat com a equip de seguretat" %}
-					{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
+					<div id="tabs-colaboradors">
+						{% set proto = false %}
+						{% set tipus = "col·laborador" %}
+						{% set docents = form.colaboradors %}
+						{% set prototype = form.colaboradors.vars.prototype %}
+						{% set titol = "Han col·laborat com a equip de seguretat" %}
+						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -196,18 +198,6 @@
 
 	<script type="text/javascript">
 
-		loadPreu = function(url, params) {
-			
-			
-			$.get(url, params,
-			function(data, textStatus) {
-						
-				$("#curs_anypreus").val(data.anypreu);
-		    	$("#curs_preu").val(data.preu);
-		    	$("#curs_iva").val(data.iva);
-			});
-		};
-	
 		$(document).ready(function(){
 			setMenuActive("menu-cursos");
 
@@ -251,6 +241,17 @@
 			);
 
 			$( "#tabs-docents" ).tabs();
+
+			// Select per dni
+			var urlConsultaPerDni = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
+			urlConsultaPerDni += '&club='+$('#curs_club').val();
+			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&docent=1';
+			
+			init_cercaperdni_JSON('#curs_auxdirector', 'Cercar al tècnic per nom o DNI', urlConsultaDocentPerDniNom);
+
+			init_cercaperdni_JSON('#curs_auxcodirector', 'Cercar al tècnic per nom o DNI', urlConsultaDocentPerDniNom);
+			
+			init_cercaperdni_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', urlConsultaPerDni);
 		});
 
 	</script>

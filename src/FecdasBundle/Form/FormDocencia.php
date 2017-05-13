@@ -24,7 +24,7 @@ class FormDocencia extends AbstractType {
 				
 				$editable = false;
 				$curs = $docencia->getCurs();
-				if ($curs != null && !$curs->omplert()) {
+				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
 					$editable = true;	
 				}

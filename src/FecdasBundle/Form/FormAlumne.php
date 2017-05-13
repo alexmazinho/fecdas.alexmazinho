@@ -32,7 +32,7 @@ class FormAlumne extends AbstractType {
 
 
 				$form->add('datanaixement', 'text',	array(
-					'data'		=> $persona->getDatanaixement()->format('d/m/Y'),
+					'data'		=> $persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):'',
 					'attr'		=>	array('readonly' => true)
 				)); 
 

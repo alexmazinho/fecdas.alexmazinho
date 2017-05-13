@@ -364,6 +364,12 @@ FecdasBundle_historialllicencies:
     requirements:
         methods:  GET
 
+FecdasBundle_jsonpersona:
+    path:  /jsonpersona
+    defaults: { _controller: "FecdasBundle:Titulacions:jsonpersona" }
+    requirements:
+        methods:  GET
+
 
 # ---------------------------------------------------------------------------
 # -----------------------  ADMINISTRACIÓ ------------------------------------

@@ -1,10 +1,11 @@
 <div class="row">
-	<div class="col-md-12">
-		<h3 class="blue">{{ titol }}
-			{% if curs.omplert == false %}
-				<a class="add-docent pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-2x blue"></i></a> 
-			{% endif %}
-		</h3>
+	<div class="col-md-10">
+		<h3 class="blue">{{ titol }}</h3>
+	</div>
+	<div class="col-md-2">
+		{% if curs.editable == true %}
+			<a class="add-docent pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-2x blue"></i></a> 
+		{% endif %}
 	</div>
 	<div class="col-md-12">
 		<div class="table-header">
@@ -19,7 +20,7 @@
 				<div class="col-listheader col-actions">&nbsp;</div>
 			</div>
 		</div>
-		<div class="table-scroll">
+		<div class="table-noscroll">
    			<ul id="list-data" class="docents-curs {{ tipus }}s" data-prototype="{{ form_widget(prototype)|e('html_attr') }}">
    				{# if docents|length == 0 %}
 					<li class="docent-form-row"><div class="docent-form"><div class="data-docent-cell"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></div></div></li>

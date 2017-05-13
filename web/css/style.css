@@ -438,6 +438,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .data-detall .data-detall-cell i.fa.transparent:hover { background-color: transparent; color: transparent;  } 
   
  
+.data-detall .icon-inline { display:table-cell; vertical-align: middle; padding: 0 5px; }
+ 
 .form-control-left { text-align: left; }
 .form-control-right { text-align: right; }
 .form-control-center { text-align: center; }
@@ -1978,10 +1980,27 @@ select#parte_renovar_tipus { width: 240px; }
 
 /*************** curs ****************/
 
-#list-data.docents li .alert { margin: 10px; }
+#llista-alumnes .col-listheader {  }
+
+
+.col-alumne-dni { width: 10%; text-align: center; }
+.col-alumne-nom { width: 25%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-nascut { width: 10%; text-align: center; }
+.col-alumne-poblacio { width: 25%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-num { width: 10%; text-align: center; }
+.col-alumne-docs { width: 15%; text-align: left; }
+.col-alumne-actions { width: 5%; text-align: center; }
+
+.col-alumne-num .datasuperacio-titulacio,
+.col-alumne-nom .mailalumne-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
+
+
+
+#list-data.docents-curs li .alert,
+#list-data.alumnes-curs li .alert { margin: 10px; }
 
 #tabs-docents { margin-bottom: 20px; }
-#llista-alumnes { margin-top: 20px; }
+#formalumne-cerca { margin-bottom: 20px; }
 
 
 /*************** curs Fi ****************/

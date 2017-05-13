@@ -272,7 +272,7 @@ class TitulacionsController extends BaseController {
     		if ($curs == null) {
     			$this->logEntryAuth('CURS NOU',	'');
     	
-    			$curs = new EntityCurs();
+    			$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $this->getCurrentClub());
     		} else {
 	    		$this->logEntryAuth('CURS EDIT',	'curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
     		}
@@ -409,7 +409,7 @@ class TitulacionsController extends BaseController {
     			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     		}*/
    		} 
-
+error_log($curs->editable()?'Omplert':'No omplert');
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs)));
 	}
@@ -515,4 +515,70 @@ class TitulacionsController extends BaseController {
 	
 		return $query;
 	}
+
+	public function jsonpersonaAction(Request $request) {
+		//fecdas.dev/jsonfactures?cerca=dni&admin=1&club=CATXXX
+		
+		$response = new Response();
+		$em = $this->getDoctrine()->getManager();
+	
+		$cerca = $request->get('cerca', '');
+		$docent = $request->get('docent', 0) == 1?true:false;
+		$admin = $request->get('admin', 0) == 1?true:false;
+		$codi = $request->get('club', '');
+
+		$club = $em->getRepository('FecdasBundle:EntityClub')->find($codi); // Per filtrar la persona correcta 
+		
+		$id = $request->get('id', 0);
+		
+		if ($id > 0) {
+			$persona = $em->getRepository('FecdasBundle:EntityPersona')->find($id);
+			if ($persona != null) {
+				$response->headers->set('Content-Type', 'application/json');
+				$response->setContent(json_encode(array("id" => $persona->getId(), "text" => $persona->getDni()."-".$persona->getNomcognoms() ) ) );
+				return $response;
+			}
+		}
+		
+		if ($id == 0 && $cerca == "") {
+			// Res a cercar
+			$response->headers->set('Content-Type', 'application/json');
+			$response->setContent(json_encode(array()));
+			return $response;
+		}
+		
+		if ($docent == true) {
+			
+// CAL AFEGIR LLIÈNCIA VIGENT TêCNIC !!!!!!!!!!!!!!!!			
+			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e WHERE ";
+			$strQuery .= " (p.dni LIKE :cerca OR CONCAT(e.nom,' ',e.cognoms) LIKE :cerca) ";
+			$strQuery .= " ORDER BY e.cognoms, e.nom";  
+	error_log($strQuery);
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('cerca', '%'.$cerca.'%');
+		} else {
+			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p WHERE ";
+			$strQuery .= " (p.dni LIKE :cerca) ";
+			$strQuery .= " ORDER BY p.dni";  
+		
+			$query = $em->createQuery($strQuery);
+			$query->setParameter('cerca', '%'.$cerca.'%');
+		}
+		
+		$search = array();
+		if ($query != null) {
+			$result = $query->getResult();
+			foreach ($result as $metapersona) {
+				$persona = $metapersona->getPersonaClub($club);
+				if ($persona == null) $persona = $metapersona->getUltimesDadesPersonals();
+				if ($persona != null) $search[] = array("id" => $persona->getId(), "text" => $persona->getDni()."-".$persona->getNomcognoms());
+			}
+		}
+		
+		$response->headers->set('Content-Type', 'application/json');
+		$response->setContent(json_encode($search));
+		
+		return $response;
+	}
+
 }

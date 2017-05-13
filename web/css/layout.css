@@ -313,7 +313,7 @@ html>body #left-menu a:hover {
 	/*color: #1240a0;*/ 
 	color: #005A8C 
 }
-#main-col h1,
+#main-col h1
     { line-height: 1.2em; font-size: 28px; margin-bottom: 10px; margin-top: 5px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }
 #main-col h2
     { line-height: 1.2em; font-size: 28px; margin-bottom: 20px; margin-top: 10px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }    

@@ -26,7 +26,7 @@
    	</header>
    	
    	<section id="form-filtre-cursos">
-		{{ form_start(form, {'action': path('FecdasBundle_cursos'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_cursos'}}) }}
+		{{ form_start(form, {'action': path('FecdasBundle_cursos'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_cursos'}}) }}
     	{% if admin == true %}
     		<div class="row">
 				<div class="col-md-3  col-xs-12">
@@ -74,7 +74,7 @@
 			</div>
 	    	<div class="col-md-2 col-xs-4 col-last-right">
 				<label>&nbsp;</label>
-				<button id="form_crearcurs"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou curs</button>
+				<a id="form_crearcurs" href="{{ path('FecdasBundle_curs') }}" class="btn btn-default btn-lg"><i class="fa fa-plus-circle"></i> nou curs</a>
 		    </div>
 		</div> 
 		{{ form_end(form) }}

@@ -1,0 +1,137 @@
+<div class="row">
+	<div class="col-md-12">
+		<h3 class="blue">{{ titol }}
+			{% if curs.omplert == false %}
+				<a class="add-docent pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-2x blue"></i></a> 
+			{% endif %}
+		</h3>
+	</div>
+	<div class="col-md-12">
+		{% set formalumne = form.formalumne %}
+		{{ form_widget(form.formalumne.id) }}
+		{{ form_widget(form.formalumne.fotoupld) }}
+		{{ form_widget(form.formalumne.certificatupld) }}    
+		<div class="row">
+			<div class="col-md-3">
+			    <div class="form-group">
+					<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span> DNI</span>
+						{{ form_widget(formalumne.dni, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-5">
+				<div class="form-group">
+				   	<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon">Nom</span>
+						{{ form_widget(formalumne.nomcognoms, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="form-group">
+				   	<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-envelope fa-1x"></span></span>
+						{{ form_widget(formalumne.mail, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="form-group">
+				   	<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon">Nascut</span>
+						{{ form_widget(formalumne.datanaixement, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="form-group">
+				   	<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-phone fa-1x"></span></span>
+						{{ form_widget(formalumne.telefon, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="form-group">
+				   	<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon">Població</span>
+						{{ form_widget(formalumne.poblacio, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="form-group">
+				   	<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon">Nacionalitat</span>
+						{{ form_widget(formalumne.nacionalitat, { 'attr': {'class': 'form-control'} }) }}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<h4 class="blue">Pujar documents</h4>
+			</div>
+			<div class="col-md-3">
+				<div class="colform colmiddle">
+					<div class="galeria-upload">
+						<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+						<div class="image-upload certificat-upload"><span class="box-center-txt">Pujar certificat<br/>(click)</span></div>
+					</div>
+				</div>
+			</div> 
+		</div>
+	</div>
+	<div id="llista-alumnes" class="col-md-12">
+		<div class="table-header">
+			<div id="list-header" class="list-docent-curs-header">
+				<div class="col-id hidden">&nbsp;</div>
+				<div class="col-listheader col-alumne-dni">DNI</div>
+				<div class="col-listheader col-alumne-mail">Adreça electrònica</div>
+				<div class="col-listheader col-alumne-nom">Nom i cognoms</div>
+				<div class="col-listheader col-alumne-nascut">Nascut</div>
+				<div class="col-listheader col-alumne-poblacio">Població</div>
+				<div class="col-listheader col-alumne-num">Num.</div>
+				<div class="col-listheader col-alumne-superacio">Data</div>
+				<div class="col-listheader col-alumne-docs">&nbsp;</div>
+				<div class="col-listheader col-actions">&nbsp;</div>
+			</div>
+		</div>
+		<div class="table-scroll">
+   			<ul id="list-data" class="alumnes-curs">
+				{% for participant in curs.participantsSortedByCognomsNom %}  {# classe EntityTitulacio#}
+					{% set meta = participant.persona %} 
+					{% set alumne = meta.personaClub(participant.club) %} 
+					<li class="alumne-row data-detall">
+						<div class="col-id col-seq hidden">{{ meta.id }}</div>
+						<div class="data-detall-cell col-alumne-dni">{{ meta.dni }}</div>
+						{% if alumne == null %}
+							<div class="data-detall-cell col-alumne-mail"><span class="title-comment">(dades no accessibles)</span></div>
+							<div class="data-detall-cell col-alumne-nom"><span class="title-comment">(dades no accessibles)</span></div>
+							<div class="data-detall-cell col-alumne-nascut"><span class="title-comment">(dades no accessibles)</span></div>
+							<div class="data-detall-cell col-alumne-poblacio"><span class="title-comment">(dades no accessibles)</span></div>
+						{% else %}
+							<div class="data-detall-cell col-alumne-mail">{{ alumne.mail }}</div>
+							<div class="data-detall-cell col-alumne-nom">{{ alumne.nomCognoms }}</div>
+							<div class="data-detall-cell col-alumne-nascut">{{ alumne.datanaixement|date('d/m/Y') }}</div>
+							<div class="data-detall-cell col-alumne-poblacio">{{ alumne.addrpob }} ({{ alumne.addrnacionalitat }})</div>
+						{% endif %}
+						<div class="data-detall-cell col-alumne-num">{{ participant.num }}</div>
+						<div class="data-detall-cell col-alumne-superacio">{{ participant.datasuperacio|date('d/m/Y') }}</div>
+						<div class="data-detall-cell col-alumne-docs">--</div>
+						<div class="data-detall-cell col-actions">
+							<a class="esborrar-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
+						</div>
+					</li>
+				{% endfor %}
+   				{% if curs.participantsSortedByCognomsNom|length == 0 %}
+					<li class="alumne-row"><div class="data-detall-cell"><div class="alert alert-success" role="alert">Cap participant</div></div></li>
+				{% endif %}
+   				
+   			
+			 </ul> 
+		</div>				 
+	</div>
+</div>
+	

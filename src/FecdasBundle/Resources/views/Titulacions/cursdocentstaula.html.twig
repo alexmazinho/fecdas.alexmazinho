@@ -1,0 +1,43 @@
+<div class="row">
+	<div class="col-md-12">
+		<h3 class="blue">{{ titol }}
+			{% if curs.omplert == false %}
+				<a class="add-docent pull-right link" href="javascript:void(0);" ><i class="fa fa-plus-square fa-2x blue"></i></a> 
+			{% endif %}
+		</h3>
+	</div>
+	<div class="col-md-12">
+		<div class="table-header">
+			<div id="list-header" class="list-docent-curs-header">
+				<div class="col-id hidden">&nbsp;</div>
+				<div class="col-listheader col-docent-dni">DNI</div>
+				<div class="col-listheader col-docent-nom">Nom i cognoms</div>
+				<div class="col-listheader col-docent-hteoriques">Teòriques</div>
+				<div class="col-listheader col-docent-haula">Aula</div>
+				<div class="col-listheader col-docent-hpiscina">Piscina</div>
+				<div class="col-listheader col-docent-hmar">Mar</div>
+				<div class="col-listheader col-actions">&nbsp;</div>
+			</div>
+		</div>
+		<div class="table-scroll">
+   			<ul id="list-data" class="docents-curs {{ tipus }}s" data-prototype="{{ form_widget(prototype)|e('html_attr') }}">
+   				{# if docents|length == 0 %}
+					<li class="docent-form-row"><div class="docent-form"><div class="data-docent-cell"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></div></div></li>
+				{% else #}
+					{% set proto = false %}
+					
+					{% for docent in docents %}
+						{% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
+					{% endfor %}
+				{# endif #}
+   				
+   				{% if docents|length == 0 %}
+					<li class="docent-form-row"><div class="docent-form"><div class="data-docent-cell"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></div></div></li>
+				{% endif %}
+   				
+   			
+			 </ul> 
+		</div>				 
+	</div>
+</div>
+	

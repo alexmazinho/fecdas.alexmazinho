@@ -1,5 +1,7 @@
-{# src/Fecdas/PartesBundle/Resources/views/Titulacions/curs.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Page/curs.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
+
+{% form_theme form 'FecdasBundle:Includes:formtheming.html.twig' %}
 
 {% block stylesheets %}
 	
@@ -8,12 +10,12 @@
 	{{ parent() }}
 {% endblock %}
 
-{% block title %}Aplicació gestió FECDAS. Informació curs {% endblock %}
+{% block title %}Aplicació gestió FECDAS. Informació curs{% endblock %}
 
 {% block body %}
-   	<header>
+	<header>
 		<div class="row">
-			<div class="col-md-8"><h1>Curs</h1></div>
+			<div class="col-md-8"><h1><a href="{{ path('FecdasBundle_cursos') }}">Llistat de cursos</a> > Edició</h1></div>
 	        <div class="col-md-4 col-last-right">
 				<div class="buttons-top-bootstrap">
 					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_actacurspdf') }}" alt="Descarregar acta curs" 
@@ -22,27 +24,236 @@
 			</div>
 		</div>
    	</header>
-   	
-	<section id="llista-cursos">
-		<div class="row">
-			<div class="col-md-12">	PENDENT </div>
-		</div>
-	</section>
-   		
+	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
+	{{ form_start(form, {'action': path('FecdasBundle_curs'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formcurs'}}) }}
+		
+		<div class="row">
+			<div class="col-md-2">
+			    <div class="form-group">
+			    	{{ form_label(form.num, 'Num. Acta') }}
+					<div class="input-group"><div class="input-group-addon"></div>{{ form_widget(form.num, { 'attr': {'class': 'form-control'} }) }}</div>
+				</div>{{ form_errors(form.num)  }}
+			 </div>
+			<div class="col-md-3  col-xs-12">
+				<div class="form-group">
+				   	{{ form_label(form.club, 'Realitzat pel club', { 'label_attr': {'class': ''} }) }}
+					{{ form_widget(form.club, { 'attr': {'class': 'form-control'} }) }}
+				</div>{{ form_errors(form.club)  }}
+			</div>
+			<div class="col-md-3 col-xs-6">
+				<div class="form-group">
+				   	{{ form_label(form.titol, 'Del curs', { 'label_attr': {'class': ''} }) }}
+					{{ form_widget(form.titol, { 'attr': {'class': 'form-control'} }) }}
+				</div>{{ form_errors(form.titol)  }}
+			</div>
+			<div class="col-md-2 col-xs-4">
+				<div class="form-group">
+					{{ form_label(form.datadesde, 'Data inici') }}
+					<div class="input-group" >
+						{{ form_widget(form.datadesde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>{{ form_errors(form.datadesde)  }}
+				</div>
+			</div>
+		   	<div class="col-md-2 col-xs-4">
+				<div class="form-group">
+					{{ form_label(form.datafins, 'Finalització prevista') }}
+					<div class="input-group" >
+						{{ form_widget(form.datafins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>{{ form_errors(form.datafins)  }}
+				</div>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-md-12">
+				<h2 class="blue">Equip docent del curs</h2>
+			</div>
+			
+		</div>
+		
+		<div class="row">
+			<div id="tabs-docents" class="col-md-12">
+		  		<ul>
+		    		<li><a href="#tabs-direccio">Director/s</a></li>
+		    		<li><a href="#tabs-instructors">Instructors</a></li>
+		    		<li><a href="#tabs-colaboradors">Col·laboradors</a></li>
+				</ul>
+				<div id="tabs-direccio">
+					<div class="row">
+						<div class="col-md-9">
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-2">
+									    {{ form_label(form.auxdirector, 'Director:') }}
+									</div>
+									<div class="col-md-5">
+										<div class="input-group">
+											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+											{{ form_widget(form.auxdirector, { 'attr': {'class': 'form-control'} }) }}
+										</div>
+									</div>
+									<div class="col-md-5">
+										<div class="nom-director"><span class="title-comment">(Director pendent)</span></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-3">
+									    {{ form_label(form.auxcarnet, 'Num.') }}
+									</div>
+									<div class="col-md-9">
+										<div class="input-group">
+											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
+											{{ form_widget(form.auxcarnet, { 'attr': {'class': 'form-control'} }) }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-9">
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-2">
+									    {{ form_label(form.auxcodirector, 'Co-director:') }}
+									</div>
+									<div class="col-md-5">
+										<div class="input-group">
+											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+											{{ form_widget(form.auxcodirector, { 'attr': {'class': 'form-control'} }) }}
+										</div>
+									</div>
+									<div class="col-md-5">
+										<div class="nom-director"><span class="title-comment">(Co-director pendent)</span></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-3">
+									    {{ form_label(form.auxcocarnet, 'Num.') }}
+									</div>
+									<div class="col-md-9">
+										<div class="input-group">
+											<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
+											{{ form_widget(form.auxcocarnet, { 'attr': {'class': 'form-control'} }) }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>					
+					</div>
+				</div>
+				<div id="tabs-instructors">
+					{% set proto = true %}
+					{% set tipus = "instructor" %}
+					{% set docents = form.instructors %}
+					{% set prototype = form.instructors.vars.prototype %}
+					{% set titol = "Instructors que han impartit classes" %}
+					{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
+				</div>
+				<div id="tabs-colaboradors">
+					{% set proto = false %}
+					{% set tipus = "col·laborador" %}
+					{% set docents = form.colaboradors %}
+					{% set prototype = form.colaboradors.vars.prototype %}
+					{% set titol = "Han col·laborat com a equip de seguretat" %}
+					{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
+				</div>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-md-12">
+				{% include 'FecdasBundle:Titulacions:cursalumnestaula.html.twig'  %}
+			</div>
+		</div>
+		
+		
+		<div id="formcurs-rest" class="hidden">{{ form_rest(form) }}</div>
+		
+		<div id="error" class="sms-notice" style="display:none"> </div>
+		
+    {{ form_end(form) }}
+
 {% endblock %}
 
 {% block javascripts %}
 
 	{{ parent() }}
 
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
+
 	<script type="text/javascript">
+
+		loadPreu = function(url, params) {
+			
+			
+			$.get(url, params,
+			function(data, textStatus) {
+						
+				$("#curs_anypreus").val(data.anypreu);
+		    	$("#curs_preu").val(data.preu);
+		    	$("#curs_iva").val(data.iva);
+			});
+		};
 	
-	$(document).ready(function(){
-		setMenuActive("menu-cursos");
+		$(document).ready(function(){
+			setMenuActive("menu-cursos");
+
+			$("select#curs_club").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: 'Escollir club'
+			});
+			
+			$("select#curs_titol").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: 'Escollir títol'
+			});
+
+			var current = new Date();
+			var mindate = new Date (current.getFullYear(), current.getMonth()-1, current.getDay());
+			var maxdate = new Date (current.getFullYear(), current.getMonth()+3, current.getDay());
+			initDateTimePicker ( 
+				$( '#curs_desde' ), 
+				mindate, 
+				maxdate, 
+				current, 
+				'desde-picker', 
+				false,
+				function (selectedDateTime) {
+					//filtreLlistacursos();  
+				}
+			);
 		
-	});
-	
-	</script>		
+			initDateTimePicker ( 
+				$( '#curs_fins' ), 
+				mindate, 
+				maxdate, 
+				current, 
+				'fins-picker', 
+				false,
+				function (selectedDateTime) {
+					//filtreLlistacursos();
+				}
+			);
+
+			$( "#tabs-docents" ).tabs();
+		});
+
+	</script>
 
 {% endblock %}
+

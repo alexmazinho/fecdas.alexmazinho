@@ -11,8 +11,9 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-use FecdasBundle\Form\FormProducte;
-use FecdasBundle\Entity\EntityProducte;
+use FecdasBundle\Form\FormCurs;
+use FecdasBundle\Entity\EntityCurs;
+
 use FecdasBundle\Form\FormStock;
 use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Form\FormRebut;
@@ -258,9 +259,163 @@ class TitulacionsController extends BaseController {
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
+    	$em = $this->getDoctrine()->getManager();
+    	
+    	$curs = null;
+    	//$anypreu = date('y');
+		//$stockOriginal = 0;
+    	if ($request->getMethod() != 'POST') {
+    		$id = $request->query->get('id', 0);
+    		
+    		$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
+    		 
+    		if ($curs == null) {
+    			$this->logEntryAuth('CURS NOU',	'');
+    	
+    			$curs = new EntityCurs();
+    		} else {
+	    		$this->logEntryAuth('CURS EDIT',	'curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
+    		}
+    		
+    	} else {
+   			/* Alta o modificació de preus */
+    		/*$data = $request->request->get('curs');
+    		$id = (isset($data['id'])?$data['id']:0);
+    		
+    		if ($id > 0) $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
+    		
+    		if ($producte == null) {
+    			$producte = new EntityProducte();
+    			$em->persist($producte);
+    		}
+			
+			$stockOriginal = $producte->getStock();
+			 */ 
+    	}	
+    	$form = $this->createForm(new FormCurs(), $curs);
+    	
+    	if ($request->getMethod() == 'POST') {
+    		/*
+    		try {
+    			$form->handleRequest($request);
+    			$anypreu 	= $form->get('anypreus')->getData();
+    			$importpreu = $form->get('preu')->getData();
+    			$iva 		= $form->get('iva')->getData();
+    			
+    			if (doubleval($importpreu) < 0) {
+    				$form->get('preu')->addError(new FormError('Valor incorrecte'));
+    				throw new \Exception('Cal indicar un preu vàlid 1'.$importpreu  );
+    			}
+    			
+    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString());
+    				
+    			if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
+    				
+    			if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
+    				$form->get('codi')->addError(new FormError('Codi incorrecte'));
+    				throw new \Exception('El codi ha de tenir 7 dígits ' );
+    			}
+    				
+    			if ($producte->getMinim() < 0) {
+    				$form->get('minim')->addError(new FormError('Valor incorrecte'));
+    				throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
+    			}
+    				
+    			if ($producte->getStockable() == true) {
+    				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
+    					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('Cal indicar el límit de notificació ' );
+    				}
+    					
+    				if ($producte->getStock() == null || $producte->getStock() < 0) {
+    					$form->get('stock')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('Cal indicar l\'stock disponible ' );
+    				}
+    			} else {
+    				$producte->setLimitnotifica(null);
+					$producte->setStock(null);
+    			}
+    				
+				if ($producte->getTransport() == true) {
+					if ($producte->getPes() == null || $producte->getPes() < 0) {
+    					$form->get('pes')->addError(new FormError('Valor incorrecte'));
+    					throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
+    				}
+				} else {
+					$producte->setPes(0);
+				}
+    				
+    			$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
+    				
+    			if ($iva == 0) $iva = null;
+    				
+    			$preu = $producte->getPreu($anypreu);
+    			if ($preu == null) {
+    				// Crear nou
+    				$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
+    				$em->persist($preu);
+					$producte->addPreus($preu);
+    			} else {
+    				$preu->setPreu($importpreu);
+    				$preu->setIva($iva);
+    			}
+
+				// Stock
+				if ($producte->getStockable() == true) {
+					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+					if ($producte->getId() == 0) {
+						// => Crear producte stockable afegir registre stock
+						$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
+						$registreStock->setStock($producte->getStock()); // Stock inicial
+						$em->persist($registreStock);
+					} else {
+						// Si no existeix stock pel producte es crea.   
+						$query = $this->consultaStock($producte->getId());
+						$registres = $query->getResult();
+						if ($registres == null || count($registres) == 0) {
+							$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
+							$registreStock->setStock($producte->getStock()); // Stock inicial
+							$em->persist($registreStock);
+						} else {
+							// Si existeix stock no permet canviar-lo
+							if ($stockOriginal != $producte->getStock()) {
+								$form->get('stock')->addError(new FormError('No es pot modificar'));
+	    						throw new \Exception('No es pot modificar l\'stock d\'aquest producte directament, cal fer-ho a través de la gestió d\'stock' );
+							}
+						}
+					}
+				}
+
+				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
+					$activat = $form->get('activat')->getData();
+					if ($producte->getCategoria() != null && 
+						$producte->getCategoria()->getTipusparte() != null) {
+							$producte->getCategoria()->getTipusparte()->setActiu($activat);
+						}
+				}
+
+
+    			$em->flush();
+    			 
+    			$this->get('session')->getFlashBag()->add('sms-notice',	'El producte s\'ha desat correctament');
+    			
+    			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
+    			// Ok, retorn form sms ok
+    			return $this->redirect($this->generateUrl('FecdasBundle_editarproducte', 
+    					array( 'id' => $producte->getId(), 'anypreu' => $anypreu )));
+    			
+    		} catch (\Exception $e) {
+    			// Ko, mostra form amb errors
+    			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+    		}*/
+   		} 
+
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',
-				$this->getCommonRenderArrayOptions(array()));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs)));
 	}
+
+	
+
 
 	private function consultaDadespersonals($dni, $nom, $cognoms, $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 
 		$em = $this->getDoctrine()->getManager();

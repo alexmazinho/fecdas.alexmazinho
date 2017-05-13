@@ -1976,6 +1976,16 @@ select#parte_renovar_tipus { width: 240px; }
 
 /*************** cursos Fi ****************/
 
+/*************** curs ****************/
+
+#list-data.docents li .alert { margin: 10px; }
+
+#tabs-docents { margin-bottom: 20px; }
+#llista-alumnes { margin-top: 20px; }
+
+
+/*************** curs Fi ****************/
+
 /********************************************* Clubs i users ****************************************************/
 
 #tabs-club {
@@ -2315,6 +2325,8 @@ select#parte_persona_addrnacionalitat {
 .table-scroll-vertical  #list-data { display: table-row-group; }
 
 .table-scroll-vertical table { table-layout: fixed; width: 100%; display: block;  }
+
+
 
 /************************************************ Històric saldos Fi ******************************************************/
 

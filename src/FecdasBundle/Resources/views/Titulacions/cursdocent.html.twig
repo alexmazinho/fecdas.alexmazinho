@@ -1,0 +1,14 @@
+<li class="{% if proto == true %}docent-form-prototype{% else %}docent-form-row{% endif %}">
+	<div class="docent-form">
+		<div class="col-id col-seq hidden">{{ form_widget(docent.id) }}</div>
+		<div class="data-docent-cell col-{{ tipus }}-dni">{{ form_widget(docent.auxdocentdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-docent-cell col-{{ tipus }}-nom">{{ form_widget(docent.auxdocentnom, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
+		<div class="data-docent-cell col-{{ tipus }}-hteoria">{{ form_widget(docent.hteoria, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-docent-cell col-{{ tipus }}-haula">{{ form_widget(docent.haula, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-docent-cell col-{{ tipus }}-hpiscina">{{ form_widget(docent.hpiscina, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-docent-cell col-{{ tipus }}-hmar">{{ form_widget(docent.hmar, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+		<div class="data-docent-cell col-actions">
+			<a class="baixa-docent link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
+		</div>
+	</div>
+</li>

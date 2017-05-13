@@ -223,7 +223,7 @@ class EntityPersona {
 	 * @return pertany al club?
 	 */
 	public function checkClub($club) {
-		if ($this->club == null) return false;
+		if ($this->club == null || $club == null || !is_object($club)) return false;
 		return $this->club->getCodi() == $club->getCodi();
 	}
 	

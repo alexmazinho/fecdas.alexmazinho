@@ -64,6 +64,11 @@ class EntityCurs {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
+	protected $omplert;  // Pel tècnic
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
 	protected $validat;  // Pel club
 	
 	/**
@@ -103,11 +108,17 @@ class EntityCurs {
 		$this->datadesde = $datadesde == null?new \DateTime():$datadesde;
 		$this->datafins = $datafins == null?new \DateTime():$datafins;
 		
+		$this->omplert = false;
 		$this->validat = false;
 		$this->finalitzat = false;
 		
 		$this->docents = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->participants = new \Doctrine\Common\Collections\ArrayCollection();
+	}
+	
+	public function esNou()
+	{
+		return ($this->id == 0);
 	}
 	
 	/**
@@ -124,6 +135,27 @@ class EntityCurs {
 	 */
 	public function anulat() {
 		return $this->databaixa != null;
+	}
+	
+	/**
+	 * @return curs finalitzat?  Federació l'ha tancat
+	 */
+	public function finalitzat() {
+		return $this->finalitzat;
+	}
+	
+	/**
+	 * @return curs validat?  El club ha validat les dades
+	 */
+	public function validat() {
+		return $this->validat;
+	}
+	
+	/**
+	 * @return curs omplert? El tècnic l'ha omplert i cal validació del club
+	 */
+	public function omplert() {
+		return $this->omplert;
 	}
 	
 	/**
@@ -144,7 +176,9 @@ class EntityCurs {
 		
 		if ($this->validat) return 'Enviat a la federació';
 		
-		return 'Pendent validació del club';
+		if ($this->omplert) return 'Pendent de validar pel club';
+		
+		return 'En procés...';
 	}
 	public function getEstatColor() {
 			
@@ -431,6 +465,26 @@ class EntityCurs {
     	return $this->validat;
     }
     
+	/**
+     * Set omplert
+     *
+     * @param boolean $omplert
+     */
+    public function setOmplert($omplert)
+    {
+    	$this->omplert = $omplert;
+    }
+    
+    /**
+     * Get omplert
+     *
+     * @return boolean
+     */
+    public function getOmplert()
+    {
+    	return $this->omplert;
+    }
+	
     /**
      * Set finalitzat
      *

@@ -12,6 +12,13 @@ use Symfony\Component\Form\FormEvent;
 
 class FormParte extends AbstractType {
 
+	private $admin;
+	
+	public function __construct($admin = false)
+	{
+		$this->admin = $admin;
+	}
+
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
@@ -47,8 +54,9 @@ class FormParte extends AbstractType {
 									->where('t.id = :tipusparte')
 									->setParameter('tipusparte', $tipusparte);
 								}, 
-							'choice_label' => 'descripcio', 
-							'read_only' => true,
+							'choice_label' => 'descripcio',
+							'attr'		=>	array('readonly' => true) 
+							
 					);
 					
 					//$builder->add('tipus', 'text', array('mapped'  => false, 'data' => $llistatipus[0], 'read_only' => true,));
@@ -58,23 +66,22 @@ class FormParte extends AbstractType {
 				
 				$form->add('any', 'text', array(
 						'mapped'  => false,
-						'read_only' => true,
+						'attr'		=>	array('readonly' => true),
 						'data'		=> $parte->getAny()
 				));
 
 				if ($parte->getRebut() != null) {
 					$form->add('datapagament', 'date', array(
-							'widget' 	=> 'single_text',
-							'format' 	=> 'dd/MM/yyyy',
+							'widget'	=> 'single_text',
 							'disabled' 	=> true,
+							'format' 	=> 'dd/MM/yyyy',
 							'data'		=> $parte->getRebut()->getDatapagament(),
 							'mapped' 	=> false,
+							'attr'		=>	array('readonly' => !$this->admin)
 					));
 				} else {
 					$form->add('datapagament', 'hidden', array());
 				}
-				
-				
 			}
 		});
 				
@@ -82,11 +89,9 @@ class FormParte extends AbstractType {
 		$builder->add('id', 'hidden');
 
 		$builder->add('dataalta', 'datetime', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'datetime',
-				'placeholder' => false,
-				'format' => 'dd/MM/yyyy HH:mm',
+				'widget' 	=> 'single_text',
+				'format' 	=> 'dd/MM/yyyy HH:mm',
+				'attr'		=>	array('readonly' => !$this->admin)
 		));
 		
 	}

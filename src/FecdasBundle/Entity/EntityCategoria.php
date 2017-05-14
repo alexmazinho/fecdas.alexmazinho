@@ -188,10 +188,11 @@ class EntityCategoria {
     	return $this->getLlistaTextAny(Date('Y') + 1);
     }
     
-    private function getLlistaTextAny($any)
+    public function getLlistaTextAny($any)
     {
     	$preu = $this->getPreuAny($any);
-    	$factor = ($this->tipusparte->getIva()/100) + 1;
+    	//$factor = ($this->tipusparte->getIva()/100) + 1;
+    	$factor = 1;
     	return $this->categoria . " " . number_format($preu * $factor, 2, ',', '') . " €";
     }
         

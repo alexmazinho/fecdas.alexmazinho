@@ -11,6 +11,13 @@ use Symfony\Component\Form\FormEvent;
 
 class FormParteRenew extends AbstractType {
 
+	private $admin;
+	
+	public function __construct($admin = false)
+	{
+		$this->admin = $admin;
+	}
+
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
@@ -58,13 +65,10 @@ class FormParteRenew extends AbstractType {
 		$builder->add('datapagament', 'hidden', array());
 		
 		$builder->add('dataalta', 'datetime', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'datetime',
-				'placeholder' => false,
-				'format' => 'dd/MM/yyyy HH:mm',
+				'widget' 	=> 'single_text',
+				'format' 	=> 'dd/MM/yyyy HH:mm',
+				'attr'		=>	array('readonly' => !$this->admin)
 		));
-		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

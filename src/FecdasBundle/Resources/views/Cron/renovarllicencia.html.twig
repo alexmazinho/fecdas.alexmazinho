@@ -22,43 +22,56 @@
 		</div>
 	
 		<div id="formparte-llicencia" class="parte-llicencia">
-	
-			<div class="form-row clearfix">
-				<div id="formllicencia-persona" class="form-left">
-					{{ form_label(form.personashow, 'Nom i cognoms', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.personashow, { 'attr': {'class': 'formfield-outside'} }) }}
+			<div class="row">
+				<div class="col-md-4 col-sm-5 col-xs-12">
+					<div class="form-group">
+						{{ form_label(form.personashow, 'Nom i cognoms') }}
+						{{ form_widget(form.personashow, { 'attr': {'class': 'form-control'} }) }}
+					</div>
 				</div>
-				<div id="formllicencia-categoria" class="form-left">
-					{{ form_label(form.categoria, 'Tipus', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.categoria, { 'attr': {'class': 'formfield-outside'}, 'id': 'parte_llicencies_categoria_select' }) }}
-				</div> 
-				<div id="formllicencia-datacaducitat" class="form-left data-field">
-					{{ form_label(form.datacaducitatshow, 'Data de caducitat', { 'label_attr': {'class': 'formlabel-outside'} }) }}
-					{{ form_widget(form.datacaducitatshow, { 'attr': {'class': 'formfield-outside formdate-calendar'} }) }}
-					{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
+				<div class="col-md-3 col-sm-4 col-xs-6">
+					<div class="form-group">
+						{{ form_label(form.categoria, 'Tipus') }}
+						{{ form_widget(form.categoria, { 'attr': {'class': 'form-control'}, 'id': 'parte_llicencies_categoria_select' }) }}
+					</div>
 				</div>
-	    	</div>
-		 	{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
-			<div class="form-row clearfix">
-				<div class="llicencia-check check-correu" class="form-left">
-					<label>
-    					Rebre llicència per correu?
-    					<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[0]) }}{{ form_label(form.enviarllicencia[0]) }}</div>
-    		      		<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[1]) }}{{ form_label(form.enviarllicencia[1]) }}</div>
-					</label>
+				<div class="col-md-2 col-sm-3 col-xs-6">
+					<div class="form-group">
+						{{ form_label(form.datacaducitatshow, 'Data de caducitat') }}
+						{{ form_widget(form.datacaducitatshow, { 'attr': {'class': 'form-control form-control-center'} }) }}
+						{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
+					</div>
 				</div>
+				{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
+				<div class="col-md-3 col-sm-6 col-xs-6">
+					<div class="form-group">
+						<label>
+    						Rebre llicència per correu?
+    						<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[0]) }}{{ form_label(form.enviarllicencia[0]) }}</div>
+    		      			<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[1]) }}{{ form_label(form.enviarllicencia[1]) }}</div>
+						</label>
+					</div>
+				</div>
+				{% else %}
+					{{ form_widget(form.enviarllicencia) }}
+				{% endif %}
+				<div class="col-md-3 col-sm-6 col-xs-6 col-last-right">
+					<div class="form-group">
+						<label class="required"><span class="" style="color:transparent">.</span></label>
+						<a id="formllicencia-renovar"  type="submit" class="btn btn-default">Renovar llicència <i class="fa fa-check blue"></i></a>
+					</div>
+				</div>
+
 			</div>
-			{% else %}
-				{{ form_widget(form.enviarllicencia) }}
-			{% endif %}
+			
 			<!--  NO mostra checks per Fusell i No CMAs, no habilitada per competició -->
-			<div class="form-row clearfix" {% if (parte.asseguranca == true) %} style="display:none" {% endif %}>
+			<div class="form-row clearfix hidden" {% if (parte.asseguranca == true) %} style="display:none" {% endif %}>
 				<div class="llicencia-check seleccionar-tot">
 			 		<label class="formlabel-lefttocheckbox"  for="llicencia_seleccionat-tot">Seleccionar tot</label>
 					<input id="llicencia_seleccionat-tot" class="formcheckbox-right" type="checkbox" name="seleccionar-tot">
 				</div>
 			</div>
-			<div class="form-row clearfix" {% if (parte.asseguranca == true) %} style="display:none" {% endif %}>
+			<div class="form-row clearfix hidden" {% if (parte.asseguranca == true) %} style="display:none" {% endif %}>
 				<div class="llicencia-check">
 				{{ form_label(form.apnea, 'Apnea', { 'label_attr': {'class': 'formlabel-lefttocheckbox'} }) }}
 				{{ form_widget(form.apnea, { 'attr': {'class': 'formcheckbox-right'} }) }}
@@ -112,13 +125,8 @@
 				{{ form_widget(form.bampolles, { 'attr': {'class': 'formcheckbox-right'} }) }}
 				</div>
 			</div>
-			<div class="form-row clearfix">
-				<div class="form-left">
-					<a id="formllicencia-renovar" class="btn btn-default btn-lg" href="javascript:void(0);" name="renovar-llicencia">Renovar llicència <i class="fa fa-check"></i></a>
-				</div>
-			</div>
 	
-			<div id="formrenovar-rest" style="display:none">
+			<div id="formrenovar-rest"  class="hidden">
 				<div class="formparte-id">{{ form_widget(form.cloneid) }}</div>
 	        	{{ form_rest(form) }}
 	        </div>

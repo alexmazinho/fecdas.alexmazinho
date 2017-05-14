@@ -119,7 +119,7 @@ class PageController extends BaseController {
 		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
 		
 		$formbuilder->add('dataalta', 'text', array(
-				'read_only' => true,
+				'read_only' => !$this->isCurrentAdmin(),
 				'data' => $dataalta->format('d/m/Y')
 		));
 		
@@ -677,7 +677,7 @@ class PageController extends BaseController {
 		// Clone llicències
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
 
-		$form = $this->createForm(new FormParteRenew(), $parte);
+		$form = $this->createForm(new FormParteRenew($this->isCurrentAdmin()), $parte);
 		
 		$form->get('cloneid')->setData($parteid);
 
@@ -787,7 +787,7 @@ class PageController extends BaseController {
 			$this->crearFactura($dataalta, $parte);
 		}
 		
-		$form = $this->createForm(new FormParte(), $parte);
+		$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
 		
 		return $this->render('FecdasBundle:Page:parte.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 
@@ -913,7 +913,7 @@ class PageController extends BaseController {
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 				} else {
 					// Update / insert llicència
-					$form = $this->createForm(new FormParte(), $parte);
+					$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
 					$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
 
 					$form->bind($request);

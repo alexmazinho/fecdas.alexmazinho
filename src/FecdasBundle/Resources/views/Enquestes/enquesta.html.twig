@@ -105,9 +105,33 @@
 		setMenuActive("menu-admenquesta");
 		
 		$("#menu-adm").click();
-	
-		loadCalendar($( "#enquesta_datainici" ));
-		loadCalendar($( "#enquesta_datafinal" ));
+
+		var current = new Date();
+		var mindate = new Date (current.getFullYear()-5, current.getMonth(), current.getDay());
+		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+		initDateTimePicker ( 
+			$( '#enquesta_datainici' ), 
+			mindate, 
+			maxdate, 
+			current, 
+			'inici-picker', 
+			false,
+			function (ct) {
+				
+			}
+		);
+
+		initDateTimePicker ( 
+			$( '#enquesta_datafinal' ), 
+			mindate, 
+			maxdate, 
+			current, 
+			'final-picker', 
+			false,
+			function (ct) {
+				
+			}
+		);
 		
 		gestionarSortables();
 	

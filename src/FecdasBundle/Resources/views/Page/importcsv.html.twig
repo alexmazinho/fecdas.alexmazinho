@@ -99,8 +99,6 @@
 	$(document).ready(function(){
 		setMenuActive("menu-import");
 	
-		//loadCalendar($( "#form_dataalta" ));
-	
 		var curYear = new Date().getFullYear();
 	
 		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});

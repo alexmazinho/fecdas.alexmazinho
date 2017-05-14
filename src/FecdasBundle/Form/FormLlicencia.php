@@ -44,31 +44,50 @@ class FormLlicencia extends AbstractType {
 							'property_path' => 'persona',
 				));
 				
-				$llistacategoria = 'llistaText';
+				
 				$current = $parte->getAny();
-				if ($current > date('Y')) {  // Seleccionar preu post (any posterior)
-					$llistacategoria = 'llistaTextPost';
-				}
+				$llistacategoria = function ($value, $key, $index) use ($current) {
+					if ($current > date('Y')) {  // Seleccionar preu post (any posterior)
+						return $value->getLlistaTextPost();
+					}
+					
+					return $value->getLlistaTextAny($current);
+			    };
 				
 				$tipusparte = $parte->getTipus()->getId();
-				$form->add('categoria', 'entity', array(
-							'class' => 'FecdasBundle:EntityCategoria',
-							'query_builder' => function($repository) use ($tipusparte, $current) {
-								return $repository->createQueryBuilder('c')
-									->join('c.producte', 'o')
-									->join('c.tipusparte', 'tp')
-									//->join('o.preus', 'p')
-									->where('tp.id = :tipusparte')
-									//->andwhere('p.anypreu = :anypreu')
-									//->andwhere('p.preu > 0')
-									->orderBy('c.simbol', 'ASC')
-									//->setParameter('anypreu', $current)
-									->setParameter('tipusparte', $tipusparte);
-								},
-							'choice_label' => $llistacategoria,
-							'required'  => true,
-							'read_only' => !$parte->isAllowEdit(),
-				));
+				if ($parte->isAllowEdit()) {
+					
+					$form->add('categoria', 'entity', array(
+								'class' => 'FecdasBundle:EntityCategoria',
+								'query_builder' => function($repository) use ($tipusparte, $current) {
+									return $repository->createQueryBuilder('c')
+										->join('c.producte', 'o')
+										->join('c.tipusparte', 'tp')
+										->where('tp.id = :tipusparte')
+										->orderBy('c.simbol', 'ASC')
+										->setParameter('tipusparte', $tipusparte);
+									},
+								'choice_label' => $llistacategoria,
+								'required'  => true
+					));
+				} else {
+					$currentCategoria = $llicencia->getCategoria();
+					$form->add('categoria', 'entity', array(
+								'class' => 'FecdasBundle:EntityCategoria',
+								'query_builder' => function($repository) use ($currentCategoria) {
+									return $repository->createQueryBuilder('c')
+										->where('c.id = :categoria')
+										->setParameter('categoria', $currentCategoria);
+									},
+								'choice_label' => $llistacategoria,
+								'read_only' => !$parte->isAllowEdit(),
+								'required'  => true
+					));
+					
+					
+				}
+
+
 				$form->add('pesca', 'checkbox', array(
 						'required'  => false,
 						'read_only' => !$parte->isAllowEdit(),

@@ -147,9 +147,7 @@
 
 	{{ parent() }}
 
-	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
-   	<script src="{{ asset('js/jquery-ui-timepicker-addon.js') }}" type="text/javascript"></script>
-   	<script src="{{ asset('js/jquery-ui-timepicker-ca.js') }}" type="text/javascript"></script>
+	
 	
 	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
 	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
@@ -163,31 +161,37 @@ $(document).ready(function() {
 	{% if parte.esnova == true %}
 		$('#parte_tipus').val(0);
 		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
-		
+
+		var current = new Date();
+
+console.log({{ datesparte['min']['any'] }}+' '+{{ datesparte['min']['mes'] }}+' '+ {{ datesparte['min']['dia'] }});		
+console.log({{ datesparte['max']['any'] }}+' '+{{ datesparte['max']['mes'] }}+' '+ {{ datesparte['max']['dia'] }});
 		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});
 		var maxdate = new Date ( {{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }});
 		initDateTimePicker ( 
 			$( '#parte_dataalta' ), 
 			mindate, 
 			maxdate, 
-			new Date (), 
+			current, 
 			'dataalta-picker', 
 			true,
-			function (selectedDateTime) {
+			function (ct) {
 				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
 				
 				if ($.browser.msie) $('#formparte-llicencia').hide(); 
 		    	else $('#formparte-llicencia').slideUp('fast');
 
 		    	// Update select tipus parte	
-				var params = { day: selectedDateTime.getDate(), month: (selectedDateTime.getMonth()+1), year: selectedDateTime.getFullYear()  };
+				var params = { day: ct.getDate(), month: (ct.getMonth()+1), year: ct.getFullYear()  };
 				$.get(url,	params,
 				function(data) {
 					$('select#parte_tipus').html(data); 
-					$('#parte_any').val(selectedDateTime.getFullYear());
+					$('#parte_any').val(ct.getFullYear());
 				});
 			}
 		);
+		
+		
 	{% endif %} 
 	
 	{% if parte.allowedit == true %}
@@ -243,15 +247,21 @@ $(document).ready(function() {
         }, 
         function() { /* Cancel */ }, 
         function() {
-        	$( "#datafacturacio" ).datepicker({
-	      		showOn: "button",
-	            //buttonImage: "/images/icon-calendar.gif",
-	            buttonText: "<span class='fa fa-calendar fa-1x'></span>",
-	            //buttonImageOnly: true,
-	            dateFormat: 'dd/mm/yy'
-	      	});
-		    
-		  	$( "#datafacturacio" ).datepicker( "setDate", new Date() ); 
+
+        	var current = new Date();
+    		var mindate = new Date (current.getFullYear()-1, current.getMonth(), current.getDay());
+    		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+    		initDateTimePicker ( 
+    			$( '#datafacturacio' ), 
+    			mindate, 
+    			maxdate, 
+    			current, 
+    			'facturacio-picker', 
+    			false,
+    			function (selectedDateTime) {
+    				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");  
+    			}
+    		);
         });
 		
 	});

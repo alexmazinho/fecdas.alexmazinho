@@ -424,41 +424,12 @@
     
 	/********** Selectors de dates ***************/
 	
-	loadCalendar = function(elem, callback) {
-		$.datepicker.setDefaults( $.datepicker.regional[ "ca" ] );
-		
-		elem.datepicker({
-			 showOn: "button",
-			 buttonImage: "../images/calendar.gif",
-			 buttonImageOnly: true,
-			 changeMonth: true,
-			 changeYear: true,
-			 onSelect: callback
-		});
-
-	};
-	
-	loadTimeCalendar = function(elem, min, max, fonSelect) {
-		//$.datepicker.setDefaults( $.datepicker.regional[ 'ca' ] );
-		$.timepicker.setDefaults($.timepicker.regional['ca']);
-		
-		elem.datetimepicker({
-			 showOn: "button",
-			 buttonImage: "../images/calendar.gif",
-			 buttonImageOnly: true,
-			 changeMonth: true,
-			 changeYear: true,
-			 minDate: min,
-			 maxDate: max,
-			 controlType: 'select',
-			 timeFormat: 'HH:mm',
-			 onSelect: fonSelect 
-		});
-
-	};
-	
 	initDateTimePicker = function (elem, min, max, current, id, showtime, callback ) {
-
+		
+		if ( elem.attr("readonly") === true || elem.attr("readonly") === "readonly") {
+			return;
+		}
+		
 		var curformat = 'd/m/Y';
 		if (showtime) curformat = 'd/m/Y H:i';
 		

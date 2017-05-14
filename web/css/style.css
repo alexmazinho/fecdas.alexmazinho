@@ -468,6 +468,7 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 	float:left;
 	color: #67a2cf;
 	/*background-color: #67a2cf;*/
+	min-width: 240px;
     font-size: 16px;
     font-weight: bold;
     font-style: normal;
@@ -501,6 +502,8 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     padding-top: 3px;
     white-space: nowrap;
 }
+
+#header .notifications { color: red; text-transform: uppercase; font-weight: 400; font-size: 30px; text-shadow: -1px 2px 2px #fff; line-height: 0.9; }
 
 #slider {
   position: relative;
@@ -1560,6 +1563,8 @@ input#form_dni {
 .buttons-top-bootstrap { margin-top: 10px; }
 
 
+
+
 .alert span.fa { margin-right: 10px; } 
 
 #formparte-rest { display: none; }
@@ -2002,6 +2007,37 @@ select#parte_renovar_tipus { width: 240px; }
 #tabs-docents { margin-bottom: 20px; }
 #formalumne-cerca { margin-bottom: 20px; }
 
+.add-docent .fa.fa-2x, .add-alumne .fa.fa-2x { font-size: 1.8em; min-height: 24px; min-width: 24px; padding: 5px; }
+
+#tabs-instructors .table-header, #tabs-colaboradors .table-header { margin-top: 10px; }
+
+.curs-process { text-align: center; margin: 0 auto;  }
+.buttons-curs-process { margin: 0 10% 10px;  display: block; }
+
+.button-step  { padding: 0 2px;  display: inline; }
+.step-description { color: #1240a0; font-size: 18px; display: inline; padding-left: 20px; padding-right: 0; }
+.step-description .step-step { font-size: 24px; font-weight: bold;  }
+
+.button-step a.link { font-size: 28px; display: table-cell; padding-left: 2px;   }
+.button-step a.link i.fa { margin: 0; padding: 2px; min-height: 15px; min-width: 15px; }
+.button-step a.link .fa-stack-2x { font-size: 1.6em; }
+.button-step a.link .fa-stack-1x { font-size: 0.8em; line-height: 2; }
+.button-step a.link .fa-stack {
+    height: 1.5em;
+    line-height: 1.5em;
+    width: 1.5em;
+}
+
+.link i.fa-stack:hover { opacity: 0.8; }
+
+.link i.fa-stack:hover fa.blue { background-color: #31708f; }
+.link i.fa-stack:hover fa.systemblue { background-color: #2281cf;  }
+.link i.fa-stack:hover fa.lightblue{ background-color: #96c4ea; }
+.link i.fa-stack:hover fa.red{ background-color: #a94442; } 
+.link i.fa-stack:hover fa.green { background-color: #5cb85c; }
+.link i.fa-stack:hover fa.orange { background-color: #eea236; } 
+.link i.fa-stack:hover fa.yellow { background-color: #FFFF66; }
+.link i.fa-stack:hover fa.gray { background-color: #CCCCCC; }
 
 /*************** curs Fi ****************/
 

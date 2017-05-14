@@ -3541,7 +3541,7 @@ class BaseController extends Controller {
 		}
 		
 		$em = $this->getDoctrine()->getManager();
-		$logentry = new EntityUserLog($user, $accio, $remoteaddr, $useragent, $extrainfo);
+		$logentry = new EntityUserLog(substr($user,0,50), substr($accio,0,20), substr($remoteaddr,0,20), substr($useragent,0,100), substr($extrainfo,0,100));
 		$em->persist($logentry);
 		try {
 			$em->flush();

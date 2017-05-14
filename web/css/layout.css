@@ -206,9 +206,11 @@ a img {border: none; }
 
 #header {  color: #EEEEEE; z-index: 10}
 
-#header .logo { width: 0; float: left; /*display: inline-block;*/  }
+#header .logo { /*width: 0; float: left;*/ /*display: inline-block;*/  }
 
-.login { float: right; /*display: inline-block; width: auto;*/ }
+.login { /*float: right; */ /*display: inline-block; width: auto;*/ }
+
+.login #menu-user { float: right; }
 .login .btn-primary.user-login { max-width: 240px; text-overflow: ellipsis; }
 
 #menu-user { max-width: 270px; }

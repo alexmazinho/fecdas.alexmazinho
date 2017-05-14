@@ -27,7 +27,7 @@ Examples
 @media (min-width: 1200px) {
 	.logo img { width : 110px; }
 	
-	#header .title { padding-left: 130px; }
+	/* #header .title { padding-left: 130px; } */
 	
 	.container {
 	    width: 1000px;
@@ -37,7 +37,7 @@ Examples
 @media (min-width: 1680px) {
 	.logo img { width : 130px; }
 	
-	#header .title { padding-left: 154px; }
+	/* #header .title { /*padding-left: 154px; }*/
 
 	.container {
 	    width: 1170px;
@@ -54,7 +54,7 @@ Examples
 
 	.logo img { width: 90px; }
 	
-	.title { padding-left: 110px; }
+	/*.title { padding-left: 110px; }*/
 	
 	#header { margin-bottom: 10px; }
 	
@@ -70,9 +70,13 @@ Examples
 	.navbar-text { display: none; }
 	.title { font-size: 17px; line-height: 1.1; }
 	.title i { font-size: 15px; }
+	
+	
+	
 }
 
 @media only screen and (min-width: 768px) and (max-width: 959px) {
+	#header .notifications { display: none;  }
 }
 
 @media only screen and (max-width: 767px) {
@@ -92,6 +96,8 @@ Examples
 	#main-col nav .nav-pills a { font-size: 1em; }
 	
 	#main-col .page-center { /*margin: 15px auto 0; width: auto;*/ }
+	
+	#header .notifications { font-size: 20px; text-align:center; }
 	
 /*	#menu-user {
 	    float: none;
@@ -141,12 +147,10 @@ Examples
 		/* height: 60px;*/
 	}
 	
-	.title {
+	/*.title {
 	    padding-left: 70px;
-	    /*display: block;
-	    width: auto;*/
 	    padding-bottom: 20px;
-	}
+	}*/
 	
 	.logo img {
 	    width: 60px;

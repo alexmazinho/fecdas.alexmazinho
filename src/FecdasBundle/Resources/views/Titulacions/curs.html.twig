@@ -20,13 +20,64 @@
 				<div class="buttons-top-bootstrap">
 					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_actacurspdf') }}" alt="Descarregar acta curs" 
 							title="Descarregar acta curs"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
+
 				</div> 
+			</div>
+			<div class="row">
+				<div class="col-md-offset-2 col-md-8">
+					<div class="buttons-curs-process">
+						{% if curs.esNou %}
+							<span class="step-description"><span class="step-step green">Pas 1.</span> Instructor: Introduïr les dades i desar</span>
+						{% endif %}
+
+						<div class="button-step {% if curs.esNou %}button-step-active {% endif %}">
+							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" alt="Desar dades curs" 
+								title="Desar dades curs">
+								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x green"></i><i class="fa fa-floppy-o fa-stack-1x fa-inverse"></i></i>
+							</a>
+						</div>
+
+						{% if curs.editable and not curs.esNou %}
+							<span class="step-description"><span class="step-step orange">Pas 2.</span> Instructor: Confirmar les dades i validació per part del club</span>
+						{% endif %}
+						
+						<div class="button-step {% if curs.editable and not curs.esNou %}button-step-active{% endif %}">
+							<a class="link close-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'close' }) }}" alt="Tancar per validació del club" 
+								title="Tancar per validació del club">
+									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-lock fa-stack-1x fa-inverse"></i></i>
+							</a>
+						</div>	
+						
+						{% if curs.tancat %}
+							<span class="step-description"><span class="step-step red">Pas 3.</span> Club: Validar les  dades i notificar a la Federació </span>
+						{% endif %}
+						
+						<div class="button-step {% if curs.tancat %}button-step-active{% endif %}">
+							<a class="link validate-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'validar' }) }}" alt="Validar i notificar a la Federació" 
+								title="Validar i notificar a la Federació">
+									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x red"></i><i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"></i></i>
+							</a>
+						</div>  
+						
+						{% if curs.validat %}
+							<span class="step-description"><span class="step-step blue">Pas 4.</span> Federació: Completar les dades i consolidar el curs i les titulacions dels participants </span>
+						{% endif %}
+						
+						<div class="button-step {% if curs.validat %}button-step-active{% endif %}">
+							<a class="link finalize-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'finalize' }) }}" alt="Consolidació del curs" 
+								title="Consolidació del curs">
+								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x blue"></i><i class="fa fa-graduation-cap fa-stack-1x fa-inverse"></i></i>
+							</a>
+						</div>  	
+					</div> 
+				</div>
 			</div>
 		</div>
    	</header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
 	{{ form_start(form, {'action': path('FecdasBundle_curs'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formcurs'}}) }}
+		
 		
 		<div class="row">
 			<div class="col-md-2">
@@ -160,6 +211,7 @@
 						{% set docents = form.instructors %}
 						{% set prototype = form.instructors.vars.prototype %}
 						{% set titol = "Instructors que han impartit classes" %}
+						{% set auxdocent = form.auxinstructor %}
 						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
 					</div>
 					<div id="tabs-colaboradors">
@@ -168,6 +220,7 @@
 						{% set docents = form.colaboradors %}
 						{% set prototype = form.colaboradors.vars.prototype %}
 						{% set titol = "Han col·laborat com a equip de seguretat" %}
+						{% set auxdocent = form.auxcolaborador %}
 						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
 					</div>
 				</div>
@@ -217,29 +270,39 @@
 			var mindate = new Date (current.getFullYear(), current.getMonth()-1, current.getDay());
 			var maxdate = new Date (current.getFullYear(), current.getMonth()+3, current.getDay());
 			initDateTimePicker ( 
-				$( '#curs_desde' ), 
+				$( '#curs_datadesde' ), 
 				mindate, 
 				maxdate, 
 				current, 
 				'desde-picker', 
 				false,
-				function (selectedDateTime) {
-					//filtreLlistacursos();  
-				}
-			);
-		
-			initDateTimePicker ( 
-				$( '#curs_fins' ), 
-				mindate, 
-				maxdate, 
-				current, 
-				'fins-picker', 
-				false,
-				function (selectedDateTime) {
-					//filtreLlistacursos();
+				function (ct, $input) {  // current_time i $input el control
+					/*if ( $input.val() == '') {
+					}*/
 				}
 			);
 
+			$( '#curs_datadesde' ).datetimepicker( {'allowBlank': false} );
+			$( '#curs_datadesde' ).datetimepicker( {'validateOnBlur': false} );
+			
+			var currentfin = new Date (current.getFullYear(), current.getMonth(), current.getDay()+10);
+			initDateTimePicker ( 
+				$( '#curs_datafins' ), 
+				mindate, 
+				maxdate, 
+				currentfin, 
+				'fins-picker', 
+				false,
+				function (ct, $input) {
+					/*if ( $input.val() == '') {
+					}*/
+				}
+			);
+
+			$( '#curs_datafins' ).datetimepicker( {'allowBlank': false} );
+			$( '#curs_datafins' ).datetimepicker( {'validateOnBlur': false} );
+			
+				
 			$( "#tabs-docents" ).tabs();
 
 			// Select per dni
@@ -247,11 +310,78 @@
 			urlConsultaPerDni += '&club='+$('#curs_club').val();
 			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&docent=1';
 			
-			init_cercaperdni_JSON('#curs_auxdirector', 'Cercar al tècnic per nom o DNI', urlConsultaDocentPerDniNom);
+			init_cercaperdni_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', urlConsultaDocentPerDniNom);
 
-			init_cercaperdni_JSON('#curs_auxcodirector', 'Cercar al tècnic per nom o DNI', urlConsultaDocentPerDniNom);
+			init_cercaperdni_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', urlConsultaDocentPerDniNom);
+
+			init_cercaperdni_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', urlConsultaDocentPerDniNom);
+
+			init_cercaperdni_JSON('#curs_auxcolaborador', 'Cercar col·laborador per nom o DNI', urlConsultaDocentPerDniNom);
 			
-			init_cercaperdni_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', urlConsultaPerDni);
+			init_cercaperdni_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', urlConsultaPerDni, function ( added ) {
+				/*
+				{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+				*/
+				$('#curs_formalumne_nomcognoms').val( added.nom );
+				$('#curs_formalumne_mail').val( added.mail );
+				$('#curs_formalumne_telefon').val( added.telf );
+				$('#curs_formalumne_datanaixement').val( added.nascut );
+				$('#curs_formalumne_poblacio').val( added.poblacio );
+				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );
+
+			});
+
+			$('.add-alumne').click( function(e) {
+				// Si hi ha algú seleccionat afegir les dades del formulari
+				e.preventDefault();
+				
+				$('.alert').remove();
+				
+				if ($('#curs_formalumne_dni').val() == '') {
+					var sms = smsResultAjax('KO', 'Cal escollir algún alumne');
+		   			$('#formalumne-cerca').prepend(sms);
+		   			return false;
+				} 
+
+				var htmlLi = [];
+				htmlLi.push('<li class="alumne-row data-detall">');
+				htmlLi.push('   <div class="col-id col-seq hidden">'+$('#curs_formalumne_dni').val()+'</div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-dni">'+$('#s2id_curs_formalumne_dni .select2-chosen').html()+'</div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-nom">'+$('#curs_formalumne_nomcognoms').val()+'</div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-nascut">'+$('#curs_formalumne_datanaixement').val());
+				if ($('#curs_formalumne_mail').val() != '') {
+					htmlLi.push('      <br/><span class="mailalumne-titulacio">'+$('#curs_formalumne_mail').val()+'</span>');
+				}
+				htmlLi.push('   </div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-poblacio">'+$('#curs_formalumne_poblacio').val());
+				if ($('#curs_formalumne_nacionalitat').val() != '') {
+					htmlLi.push('      ('+$('#curs_formalumne_nacionalitat').val()+')');
+				}
+				htmlLi.push('   </div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-docs">~</div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-num">&nbsp;</div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-actions">');
+				htmlLi.push('      <a class="esborrar-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>');
+				htmlLi.push('   </div>');
+				htmlLi.push('</li>');
+
+				if ($('#list-data.alumnes-curs').children('.alert').length >= 1) {
+					$('#list-data.alumnes-curs').html();
+				}
+
+				$('#list-data.alumnes-curs').append(htmlLi.join( '' ));
+
+				// Clear form
+				$('#curs_formalumne_dni').val('');
+				$('#curs_formalumne_nomcognoms').val( '' );
+				$('#curs_formalumne_mail').val( '' );
+				$('#curs_formalumne_telefon').val( '' );
+				$('#curs_formalumne_datanaixement').val( '' );
+				$('#curs_formalumne_poblacio').val( '' );
+				$('#curs_formalumne_nacionalitat').val( '' );
+				
+
+			});
 		});
 
 	</script>

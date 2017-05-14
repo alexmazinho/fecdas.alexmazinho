@@ -120,7 +120,18 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				'mapped'	=> false,
 				'attr'		=>	array('readonly' => !$editable)
 			));
+			
+			$form->add('auxinstructor', 'text', array(
+				'mapped'	=> false,
+				'required' 	=> false,
+				'attr'		=>	array('readonly' => !$editable)
+			));	
 				
+			$form->add('auxcolaborador', 'text', array(
+				'mapped'	=> false,
+				'required' 	=> false,
+				'attr'		=>	array('readonly' => !$editable)
+			));	
 				
 			$metapersona = new EntityMetaPersona('');
 			$persona = new EntityPersona($metapersona, $curs->getClub());

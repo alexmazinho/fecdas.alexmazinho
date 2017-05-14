@@ -1,83 +1,91 @@
 <div class="row">
-	<div class="col-md-12">
+	<div class="col-md-9">
 		<h2 class="blue">Relació d'alumnes aptes</h2>
 	</div>
-	{% if curs.editable == true %}	
+	{% if curs.editable == true %}
+		<div class="col-md-3">
+			<h4 class="blue">Pujar documents</h4>
+		</div>	
 		<div id="formalumne-cerca" class="col-md-12">
 			{% set formalumne = form.formalumne %}
 			{{ form_widget(form.formalumne.id) }}
 			{{ form_widget(form.formalumne.fotoupld) }}
 			{{ form_widget(form.formalumne.certificatupld) }}    
 			<div class="row">
+				<div class="col-md-9">
+					<div class="row">
+						<div class="col-md-5">
+						    <div class="form-group">
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span> DNI</span>
+									{{ form_widget(formalumne.dni, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-7">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon">Nom</span>
+									{{ form_widget(formalumne.nomcognoms, { 'attr': {'class': 'form-control'} }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-7">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-envelope fa-1x"></span></span>
+									{{ form_widget(formalumne.mail, { 'attr': {'class': 'form-control'} }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-5">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-phone fa-1x"></span></span>
+									{{ form_widget(formalumne.telefon, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon">Nascut</span>
+									{{ form_widget(formalumne.datanaixement, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon">Població</span>
+									{{ form_widget(formalumne.poblacio, { 'attr': {'class': 'form-control'} }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon">Nacionalitat</span>
+									{{ form_widget(formalumne.nacionalitat, { 'attr': {'class': 'form-control form-control-center'} }) }}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 				<div class="col-md-3">
-				    <div class="form-group">
-						<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span> DNI</span>
-							{{ form_widget(formalumne.dni, { 'attr': {'class': 'form-control'} }) }}
+					<div class="row">
+						<div class="col-md-9">
+							<div class="colform colmiddle">
+								<div class="galeria-upload">
+									<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+									<div class="image-upload certificat-upload"><span class="box-center-txt">Pujar certificat<br/>(click)</span></div>
+								</div>
+							</div>
+						</div> 
+						<div class="col-md-3 col-last-right">
+							<a class="add-alumne link" href="javascript:void(0);" ><i class="fa fa-chevron-circle-down fa-2x blue"></i></a> 
 						</div>
-					</div>
-				</div>
-				<div class="col-md-5">
-					<div class="form-group">
-					   	<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon">Nom</span>
-							{{ form_widget(formalumne.nomcognoms, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="form-group">
-					   	<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-envelope fa-1x"></span></span>
-							{{ form_widget(formalumne.mail, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				</div>
-				<div class="col-md-3">
-					<div class="form-group">
-					   	<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon">Nascut</span>
-							{{ form_widget(formalumne.datanaixement, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				</div>
-				<div class="col-md-3">
-					<div class="form-group">
-					   	<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-phone fa-1x"></span></span>
-							{{ form_widget(formalumne.telefon, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="form-group">
-					   	<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon">Població</span>
-							{{ form_widget(formalumne.poblacio, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				</div>
-				<div class="col-md-2">
-					<div class="form-group">
-					   	<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon">Nacionalitat</span>
-							{{ form_widget(formalumne.nacionalitat, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-3">
-					<h4 class="blue">Pujar documents</h4>
-					<div class="colform colmiddle">
-						<div class="galeria-upload">
-							<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
-							<div class="image-upload certificat-upload"><span class="box-center-txt">Pujar certificat<br/>(click)</span></div>
-						</div>
-					</div>
-				</div> 
-				<div class="col-md-offset-8 col-md-1 col-last-right">
-					<a class="add-alumne link" href="javascript:void(0);" ><i class="fa fa-chevron-circle-down fa-2x blue"></i></a> 
+					</div>				
 				</div>
 			</div>
 		</div>
@@ -121,7 +129,7 @@
 								{% if alumne.addrpob == null or alumne.addrpob == '' %}
 									<span class="title-comment">(dades no disponibles)</span>
 								{% else %}
-									{{ alumne.addrpob }} ({{ alumne.addrnacionalitat }})
+									{{ alumne.addrpob }} {% if alumne.addrnacionalitat != null and alumne.addrnacionalitat != '' %} ({{ alumne.addrnacionalitat }}){% endif %}
 								{% endif %}
 							</div>
 							<div class="data-detall-cell col-alumne-docs">

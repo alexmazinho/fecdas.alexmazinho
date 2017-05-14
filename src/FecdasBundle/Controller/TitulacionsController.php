@@ -535,7 +535,20 @@ error_log($curs->editable()?'Omplert':'No omplert');
 			$persona = $em->getRepository('FecdasBundle:EntityPersona')->find($id);
 			if ($persona != null) {
 				$response->headers->set('Content-Type', 'application/json');
-				$response->setContent(json_encode(array("id" => $persona->getId(), "text" => $persona->getDni()."-".$persona->getNomcognoms() ) ) );
+				
+				$telf  = $persona->getTelefon1()!=null?$persona->getTelefon1():'';
+				$telf .= $persona->getTelefon2()!=null&&$telf=''?$persona->getTelefon2():'';
+				
+				$response->setContent(json_encode(array(
+							"id" => $persona->getId(), 
+							"text" => $persona->getDni(),
+							"nom" => $persona->getNomcognoms(), 
+							"mail" => $persona->getMail(),
+							"telf" => $telf,
+							"nascut" => $persona->getDatanaixement()->format('d/m/Y'),
+							"poblacio" => $persona->getAddrpob(),
+							"nacionalitat" => $persona->getAddrnacionalitat() 
+				)));
 				return $response;
 			}
 		}
@@ -565,13 +578,27 @@ error_log($curs->editable()?'Omplert':'No omplert');
 			$query->setParameter('cerca', '%'.$cerca.'%');
 		}
 		
-		$search = array();
+		$search = array( );
 		if ($query != null) {
 			$result = $query->getResult();
 			foreach ($result as $metapersona) {
 				$persona = $metapersona->getPersonaClub($club);
 				if ($persona == null) $persona = $metapersona->getUltimesDadesPersonals();
-				if ($persona != null) $search[] = array("id" => $persona->getId(), "text" => $persona->getDni()."-".$persona->getNomcognoms());
+				if ($persona != null) {
+						
+					$telf  = $persona->getTelefon1()!=null?$persona->getTelefon1():'';
+					$telf .= $persona->getTelefon2()!=null&&$telf=''?$persona->getTelefon2():'';
+					
+					$search[] = array("id" => $persona->getId(), 
+									"text" => $persona->getDni(),
+									"nom" => $persona->getNomcognoms(), 
+									"mail" => $persona->getMail(),
+									"telf" => $telf,
+									"nascut" => $persona->getDatanaixement()->format('d/m/Y'),
+									"poblacio" => $persona->getAddrpob(),
+									"nacionalitat" => $persona->getAddrnacionalitat()
+						);
+				}
 			}
 		}
 		

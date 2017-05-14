@@ -152,7 +152,14 @@ class EntityCurs {
 	}
 	
 	/**
-	 * @return curs editable? El tècnic l'ha omplert i cal validació del club
+	 * @return curs tancat? El tècnic ha omplert totes les dades i cal validació del club
+	 */
+	public function tancat() {
+		return !$this->anulat() && !$this->editable && !$this->validat && !$this->finalitzat;
+	}
+	
+	/**
+	 * @return curs editable? El tècnic ha omplert algunes dades i l'ha desat, encara s'hi poden introduïr d'altres
 	 */
 	public function editable() {
 		return $this->editable;

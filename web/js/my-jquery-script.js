@@ -369,7 +369,7 @@
 	
 	
 	//Cercador select2 genèric cal que existeixi mètode al Controller que gestioni params 'cerca' i 'id'
-	init_cercaperdni_JSON = function(elem_sel, placeholder_txt, url) {
+	init_cercaperdni_JSON = function(elem_sel, placeholder_txt, url, callbackPropagateValues) {
 		
 		// Inicialitza el control de cerca (input hidden) 
 		$(elem_sel).select2({
@@ -384,12 +384,14 @@
 				// Consulta activitats %desc% que no tingui assignades la persona o no sigui alguna de les excepcions 
 				$.get(url,	params, function(jdata) {
 					data.results = jdata;
+
 					query.callback(data);
 				}).fail(function() {
-					query.callback(data);
+					query.callback(data); 
 				});
 			},
 			initSelection: function(element, callback) {  // value del input ==> carrega per defecte
+				console.log( 'INNNNNNIIIIT' );
 				//if (element.val() !== undefined && element.val() > 0) {
 					var data = [];
 					var params = { 	'id': element.val() };
@@ -402,7 +404,21 @@
 					
 			        callback(data);
 				//}
-			} 
+			},
+		    formatResult: function(item) {
+		    	//var originalOption = item.element;
+		        return item.text+"-"+item.nom;
+		    },
+		    formatSelection: function(item) {
+		    	//var originalOption = item.element;
+		        return item.text;
+		    },
+		}).on("change", function ( e ) { 
+			
+			//e.val, e.added, e.removed
+			console.log("change"+JSON.stringify(e.added)); 
+			
+			callbackPropagateValues(e.added);
 		});
 	};
     
@@ -461,12 +477,12 @@
 			 timepicker: showtime,
 			 lang:'ca',
 			 id:  id,
-			 //className: 'pickerclass',
+			 className: 'pickerclass',
 			 format: curformat, // '',
 			 minDate: min,
 			 maxDate: max,
 			 defaultDate: current,
-			 //startDate: current,
+			 startDate: current,
 			 yearStart: min.getFullYear(),
 			 yearEnd: max.getFullYear()
 			 

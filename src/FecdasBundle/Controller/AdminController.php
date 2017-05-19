@@ -17,19 +17,6 @@ use FecdasBundle\Form\FormLlicenciaImprimir;
 
 class AdminController extends BaseController {
 	
-	public function changeroleAction(Request $request) {
-		$this->get('session')->remove('adminasuser');	
-		if (!$this->isCurrentAdmin()) return new Response(""); 
-			
-		// Canviar Club Administrador	
-		if ($request->query->has('roleclub')) $this->get('session')->set('roleclub', $request->query->get('roleclub'));
-		
-		
-		if ($request->query->has('role') && $request->query->get('role', '') == 'club') $this->get('session')->set('adminasuser', true);
-		
-		return new Response("");
-	}
-	
 	public function imprimircarnetsAction(Request $request) {
 		// Formulari per imprimir carnet CMAS
 		 
@@ -1930,7 +1917,7 @@ GROUP BY c.nom
 				if ($club->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
 				
 				$bccmails = $this->getFacturacioMails();
-				$tomails = array($club->getMail());
+				$tomails = $club->getMails();
 				$body = "<p>Benvolgut club ".$club->getNom()."</p>";
 				$body .= "<p>Us fem saber que, a partir de la recepció d’aquest correu, 
 						per a la realització de tràmits en el sistema de gestió de 

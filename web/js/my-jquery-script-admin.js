@@ -4,34 +4,6 @@
 
 (function($){
 	
-	changeRoleClub = function(url)  {
-		$("#menu-user select#form_roleclub").select2({
-			minimumInputLength: 2
-		});
-		$("#menu-user select#form_roleclub").change(function(e) {
-			var currRole = $("#menu-user #form_currentrole").val();
-			if (currRole == '') currRole = 'admin';
-			var params = { 	role: currRole, roleclub:e.val };
-			$.get(url,	params,
-			function(data) {
-				//window.location = window.location.pathname; 
-				location.reload();
-			}); // Canvi de rol
-		});
-		
-		$('.changerole').click(function(e) {
-			e.preventDefault();
-		
-			var url = $(this).attr("href");
-			url += '&roleclub='+$("#menu-user select#form_roleclub").val();
-			
-			$.get(url, function(data) {
-				location.reload();
-			});
-		});
-		
-	};
-	
 	selectRecentsClub = function() {
 		$("select#form_clubs").select2({
 			minimumInputLength: 2,

@@ -462,7 +462,7 @@ class CronController extends BaseController {
 		$club = $rebut->getClub();
 		
 		$subject = ""; 
-		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMail();
+		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
 			$tomails = self::getCarnetsMails();
 			$subject .= " (CLUB SENSE CORREU DE CONTACTE) ";
@@ -520,7 +520,7 @@ class CronController extends BaseController {
 		
 		$club = $comanda->getClub();
 		
-		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMail();
+		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
 			$tomails = self::getCarnetsMails();
 			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';

@@ -48,7 +48,7 @@ class EntityClub {
 	protected $mobil;
 	
 	/**
-	 * @ORM\Column(type="string", length=50, nullable=true)
+	 * @ORM\Column(type="text", nullable=true)
 	 * @Assert\NotBlank()
 	 */
 	protected $mail;
@@ -289,6 +289,17 @@ class EntityClub {
 		}
 		return $partes;
 	}
+	
+	
+	/**
+     * Get mails
+     *
+     * @return array 
+     */
+    public function getMails()
+    {
+    	return explode(";", trim($this->mail));
+    }
 	
 	/**
 	 * Dades del club any actual. Opcionalment comprova errors
@@ -841,7 +852,7 @@ class EntityClub {
     /**
      * Set mail
      *
-     * @param string $mail
+     * @param text $mail
      */
     public function setMail($mail)
     {
@@ -851,7 +862,7 @@ class EntityClub {
     /**
      * Get mail
      *
-     * @return string 
+     * @return text 
      */
     public function getMail()
     {

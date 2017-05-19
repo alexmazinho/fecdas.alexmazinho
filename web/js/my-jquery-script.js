@@ -125,7 +125,7 @@
 		//create a bubble popup for each DOM element
 		//with class attribute as "button"
 		$(t).CreateBubblePopup({
- 			themePath : '/css/jquerybubblepopup-themes',	 
+ 			themePath : '/css/bubble-popup/jquerybubblepopup-themes',	 
  			themeName : 'all-orange',           
  			position: 'right',   
          	innerHtml: 	ht
@@ -138,7 +138,7 @@
 		//set customized mouseover event for each button
 		$(t).mouseover(function(){
 			$(this).ShowBubblePopup({
-				themePath : '/css/jquerybubblepopup-themes',	 
+				themePath : '/css/bubble-popup/jquerybubblepopup-themes',	 
 	 			themeName : 'all-orange',           
 	 			position: 'right',   
 				innerHtml: $(this).children(ht).html()					 
@@ -303,7 +303,6 @@
 	$.fn.hasScrollBar = function() {
 		var $this = $(this);
 		
-		//console.log( this.get(0).scrollHeight+' '+this.innerHeight());
 		if ($this.get(0).scrollHeight == 0) return false;
 		
         return $this.get(0) ? $this.get(0).scrollHeight > this.innerHeight() : false;
@@ -391,7 +390,6 @@
 				});
 			},
 			initSelection: function(element, callback) {  // value del input ==> carrega per defecte
-				console.log( 'INNNNNNIIIIT' );
 				//if (element.val() !== undefined && element.val() > 0) {
 					var data = [];
 					var params = { 	'id': element.val() };
@@ -416,8 +414,6 @@
 		}).on("change", function ( e ) { 
 			
 			//e.val, e.added, e.removed
-			console.log("change"+JSON.stringify(e.added)); 
-			
 			callbackPropagateValues(e.added);
 		});
 	};
@@ -601,6 +597,15 @@
 	/*****************************************************************************************************************/
 	
 	/*************************************************** Menu ********************************************************/
+	
+	
+	reloadRoleClub = function( url, role, club ) {
+		var params = { 	currentrole: role, roleclub: club };
+		$.get(url,	params,
+		function(data) {
+			location.reload();
+		}); // Canvi de rol
+	};
 	
 	mainMenuClick = function() {
 		$( ".main-menu-action" ).on('click', function(e, t){
@@ -911,6 +916,7 @@
 				false
 			);
 			
+			
 			formFocus();
 			autocompleters( $('#formpersona-autocompleters').attr('href'), $('#parte_persona_addrpob'), $('#parte_persona_addrcp'), $('#parte_persona_addrprovincia'), $('#parte_persona_addrcomarca'), "#edicio-persona" );
 			actionsModalOverlay();
@@ -937,6 +943,10 @@
 			/* Check estranger */
 			if ($('#parte_persona_id').val() != 0) {
 				//$("#formpersona-estranger").hide();
+				var error = validarDadesPersona($("#persona_dni").val(), $("#persona_estranger").is(':checked'));
+	    		if (error != "") {
+	    			$("#persona_estranger").prop("checked", true);
+	    		};
 			}
 			// Show Div
 			showModalDiv('#edicio-persona');
@@ -1116,7 +1126,6 @@
 		params += '&'+$.param({'action': action} );
 		params += '&'+$.param({'origen': origen} );
 
-		
 		$.post(url, params,
 		function(data, textStatus) {
 

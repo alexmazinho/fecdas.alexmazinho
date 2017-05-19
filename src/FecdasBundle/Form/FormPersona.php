@@ -22,7 +22,9 @@ class FormPersona extends AbstractType {
 		
 		$builder->add('nom', 'text');
 		$builder->add('cognoms', 'text');
-		$builder->add('dni', 'text', array('read_only' => $readonly,));
+		$builder->add('dni', 'text', array(
+				//'attr'			=>	array('readonly' => true)
+			));
 		
 		$builder->add('datanaixement', 'date',	array(
 				'widget' 	=> 'single_text',

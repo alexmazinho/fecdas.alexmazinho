@@ -1077,16 +1077,17 @@ class PageController extends BaseController {
 		$persona = null;
 		$metapersona = null; 
 		$em = $this->getDoctrine()->getManager();
-		
+error_log("persona Action");		
 		try {
 			if ($request->getMethod() == 'POST') {
 				$p = $request->request->get('persona', null);
 				if ($p == null) throw new \Exception("Dades incorrectes");
-
+error_log("==========> ".$p['dni']);
 				if ($p['id'] != 0) {
 					$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($p['id']);
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 				}
+
 
 				if ($persona != null) $metapersona = $persona->getMetapersona();
 				/* Revisar si existeix metapersona */
@@ -1100,10 +1101,12 @@ class PageController extends BaseController {
 					$options['edit'] = true;
 					$em->persist($persona);
 				}
+error_log("==========> persona ".$persona->getDni());				
+error_log("==========> metapersona ".$metapersona->getDni());				
 				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
 				$formpersona->bind($request);
-			
+error_log("==========> persona after bind ".$persona->getDni());			
 				if ($formpersona->isValid()) {
 					
 					$baixaPersona = $request->request->get('action') != 'save';
@@ -1131,6 +1134,8 @@ class PageController extends BaseController {
 						$em->flush();
 						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals esborrades correctament");
 					}
+error_log("==========> metapersona before flush ".$metapersona->getDni());					
+error_log("==========> persona before flush ".$persona->getDni());						
 					$em->flush();
 					// Després de flush, noves entitats tenen id
 					$this->logEntryAuth('PERSONA '.$request->request->get('action'). ' OK', $persona->getId());
@@ -1175,16 +1180,21 @@ class PageController extends BaseController {
 				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			}
 		} catch (\Exception $e) {
-			if ($persona != null) {
-				if ($persona->getId() == 0) $em->detach($persona);
-				else 	$em->refresh($persona);
-				
-				$metapersona = $persona->getMetapersona();
-				if ($metapersona != null) {
-					if ($metapersona->getId() == 0) $em->detach($metapersona);
-					else $em->refresh($metapersona);
+			if ($em->isOpen()) {
+				if ($persona != null) {
+					if ($persona->getId() == 0) $em->detach($persona);
+					else 	$em->refresh($persona);
+					
+					$metapersona = $persona->getMetapersona();
+					if ($metapersona != null) {
+						if ($metapersona->getId() == 0) $em->detach($metapersona);
+						else $em->refresh($metapersona);
+					}
 				}
+			} else {
+				$em = $this->getDoctrine()->resetManager();
 			}
+			
 			$this->logEntryAuth('PERSONA KO',	$e->getMessage());
 				
 			$response = new Response($e->getMessage());

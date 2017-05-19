@@ -136,7 +136,7 @@
 				   		<div class="data-detall-cell assegurat-cognoms col-noresponsive">{{ persona.cognoms }}</div>
 				   		<div class="data-detall-cell assegurat-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell assegurat-tipusdesc">
-				   			<a class="link-historial llicencies-historial" href="{{ path('FecdasBundle_historialLlicencies', { 'id': persona.id }) }}"  alt="Historial llicències" title="Historial llicències">
+				   			<a class="link-historial llicencies-historial" href="{{ path('FecdasBundle_historialllicencies', { 'id': persona.id }) }}"  alt="Historial llicències" title="Historial llicències">
 				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoHistorialLlicencies(admin, persones.params.desde, persones.params.fins) }}</span>
 			   				</a>
 						</div>

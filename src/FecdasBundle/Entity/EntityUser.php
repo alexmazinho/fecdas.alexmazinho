@@ -3,6 +3,7 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -34,9 +35,9 @@ class EntityUser {
 	protected $club;  // FK m_clubs
 	
 	/**
-	 * @ORM\Column(type="string", length=5)
+	 * @ORM\Column(type="string", length=50)
 	 */
-	protected $role;
+	protected $roles;
 
 	/**
 	 * @ORM\Column(type="boolean")
@@ -70,6 +71,29 @@ class EntityUser {
 	public function __toString() {
 		return $this->user;
 	}
+	
+	/**
+     * Get main role
+     *
+     * @return string
+     */
+    public function getRole()
+    {
+    	if ($this->roles == '') return ''; 	
+    	$rolesArray = explode(";", $this->roles);	
+    	return $rolesArray[0];
+    }
+	
+	/**
+     * has Admin?
+     *
+     * @return boolean
+     */
+    public function hasAdmin()
+    {
+    	$rolesArray = explode(";", $this->roles);	
+    	return in_array(BaseController::ROLE_ADMIN, $rolesArray);
+    }
 	
 	/**
      * Set user
@@ -132,23 +156,23 @@ class EntityUser {
     }
     
     /**
-     * Set role
+     * Set roles
      *
-     * @param string $role
+     * @param string $roles
      */
-    public function setRole($role)
+    public function setRoles($roles)
     {
-    	$this->role = $role;
+    	$this->roles = $roles;
     }
     
     /**
-     * Get role
+     * Get roles
      *
      * @return string
      */
-    public function getRole()
+    public function getRoles()
     {
-    	return $this->role;
+    	return $this->roles;
     }
     
     /**

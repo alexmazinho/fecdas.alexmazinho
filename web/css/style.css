@@ -254,6 +254,7 @@ input.disabled label
 
 .input-group-addon-icon-search { padding: 6px 6px }
 
+.ui-dialog { z-index: 1000; }
 
 #dialeg p {
 	padding-bottom: 10px;
@@ -403,7 +404,6 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .select2-container { padding: 0; border: none;  height: 100%;}
 
 .select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
-
 
 .data-detall .data-detall-cell i.fa, .link i.fa { 
 	padding: 4px;
@@ -2171,7 +2171,7 @@ input#formuserclub-randompassword { width: 150px; }
 /************************************************* Persona  ******************************************************/
 
 #edicio-persona {
-	
+	z-index: 300;
 }
 
 #edicio-persona h3 {
@@ -2788,7 +2788,7 @@ p.info-bold {
 .duplicat-extra { width: 19%; text-align: left; left; font-size: 0.8em; }
 .duplicat-actions { width: auto; text-align: right; font-size: 1.2em; }
 
-#dialeg { height: auto !important; }
+#dialeg { height: auto !important;  }
 
 #dialeg .title {  padding-left: 0;  line-height: 2; }
 

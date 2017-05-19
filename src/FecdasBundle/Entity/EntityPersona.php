@@ -7,7 +7,7 @@ use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="m_persones",indexes={@ORM\Index(name="dni_idx", columns={"dni"})})
+ * @ORM\Table(name="m_persones")
  * 
  * @author alex
  *
@@ -30,14 +30,6 @@ class EntityPersona {
 	 * @ORM\Column(type="string", length=30)
 	 */
 	protected $cognoms;
-	
-	/* Aquesta validació pot donar problemes
-	 * @Assert\Type(type="numeric", message="El dni {{ value }} no es un valor vàlid")*/
-	/**
-	 * 
-	 * @ORM\Column(type="string", length=20)
-	 */
-	protected $dni;
 	
 	/**
 	 * @ORM\Column(type="date")
@@ -62,7 +54,7 @@ class EntityPersona {
 	protected $telefon2;
 	
 	/**
-	 * @ORM\Column(type="string", length=100, nullable=true)
+	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $mail;
 	
@@ -504,7 +496,6 @@ class EntityPersona {
     public function setDni($dni)
     {
         $this->metapersona->setDni($dni);	
-        $this->dni = $dni;
     }
 
     /**
@@ -514,7 +505,6 @@ class EntityPersona {
      */
     public function getDni()
     {
-        //return $this->dni;
         return $this->metapersona->getDni();
     }
 
@@ -601,7 +591,7 @@ class EntityPersona {
     /**
      * Set mail
      *
-     * @param string $mail
+     * @param text $mail
      */
     public function setMail($mail)
     {
@@ -611,7 +601,7 @@ class EntityPersona {
     /**
      * Get mail or mails: mail 1; mail 2; ...
      *
-     * @return string 
+     * @return text 
      */
     public function getMail()
     {

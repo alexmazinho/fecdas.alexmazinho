@@ -3,7 +3,7 @@
 * @Service()
 * @Tag("twig.extension")
 */
-namespace FecdasBundle\Twig;
+namespace FecdasBundle\Service;
 
 class FecdasExtension extends \Twig_Extension
 {

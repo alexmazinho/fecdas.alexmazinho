@@ -6,6 +6,10 @@ services:
 #        class: %fecdas.example.class%
 #        arguments: [@service_id, "plain_value", %parameter%]
     fecdas.twig.partes_extension:
-        class: FecdasBundle\Twig\FecdasExtension
+        class: FecdasBundle\Service\FecdasExtension
         tags:
             - { name: twig.extension }
+            
+    fecdas.rolechecker:
+        class:     FecdasBundle\Service\RoleChecker
+        arguments: ["@session", "@request_stack","@doctrine"]

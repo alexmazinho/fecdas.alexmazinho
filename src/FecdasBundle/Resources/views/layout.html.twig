@@ -66,13 +66,13 @@
 					<li><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió <i class="fa fa-sign-in fa-fw"></i></a></li>	
 				{% endif %}	
 			    {% if roleform is defined %}
-			    	{{ form_widget(roleform.currentrole) }}
 			    	<li class="divider"></li>
 			    	{% if adminasuser is defined and adminasuser == true %}
 			    		<li><a class="changerole" href="{{ path('FecdasBundle_changerole', {'role': 'admin'}) }}">Tornar al rol Admin <i class="fa fa-user-plus fa-fw"></i></a></li>
 			    	{% else %}
 			    		<li><a class="changerole" href="{{ path('FecdasBundle_changerole', {'role': 'club'}) }}">Activar rol club <i class="fa fa-user fa-fw"></i></a></li>
 			    	{% endif %}
+			    	<li><p>{{ form_widget(roleform.currentrole, { 'attr': {'class': 'select2-nosearch'} }) }} {% if admin == true %}<i class="fa fa-user-plus fa-fw"></i>{% else %}<i class="fa fa-exchange fa-fw"></i>{% endif %}</p></li>
 			    	<li><p>{{ form_widget(roleform.roleclub) }} <i class="fa fa-exchange fa-fw"></i></p></li>
 				{% endif %}
 			  </ul>
@@ -258,6 +258,9 @@
 	</script>
 
 	<script type="text/javascript">
+
+	
+
 		$(document).ready(function(){
 			
 			formFocus();
@@ -266,8 +269,52 @@
 	
 			mainMenuClick();
 	
-			changeRoleClub("{{ path('FecdasBundle_changerole') }}");
+			if ($("#menu-user select#form_roleclub").length !== 0) {
+				$("#menu-user select#form_roleclub").select2({
+					minimumInputLength: 2
+				});
+
+				$("#menu-user select#form_roleclub").change(function( e ) {
+					var url =  "{{ path('FecdasBundle_changerole') }}";
+					
+					reloadRoleClub( url, $("#menu-user #form_currentrole").val(), $("#menu-user #form_roleclub").val() );
+				});
+					
+			}
 			
+			if ($("#menu-user select#form_currentrole").length !== 0) {
+				$("#menu-user select#form_currentrole").select2({
+					minimumInputLength: 0,
+					minimumResultsForSearch: -1, 		// Disables search
+					formatSelection: function(item) {
+					  	//var originalOption = item.element;
+						return "Rol "+item.text.toUpperCase();
+					},
+					formatResult: function(item) {
+					  	//var originalOption = item.element;
+						return item.text.toUpperCase();
+					}
+				});
+
+				$("#menu-user select#form_currentrole").change(function( e ) {
+					var url =  "{{ path('FecdasBundle_changerole') }}";
+					
+					reloadRoleClub( url, $("#menu-user #form_currentrole").val(), $("#menu-user #form_roleclub").val() );
+				});
+			}
+			
+			
+			$('.changerole').click(function(e) {
+				e.preventDefault();
+			
+				var url = $(this).attr("href");
+				url += '&roleclub='+$("#menu-user select#form_roleclub").val();
+				
+				$.get(url, function(data) {
+					location.reload();
+				});
+			});
+
 		});
 	
 		$('#menu-user')

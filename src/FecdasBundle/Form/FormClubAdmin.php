@@ -32,11 +32,11 @@ class FormClubAdmin extends FormClub {
 				
 				
 				$form->add('saldoclub', 'number', array(
-					'read_only'  => true,
-					'grouping' => true,
-					'scale' => 2,
-					'mapped' => false,
-					'data'	=> $club->getSaldo()
+					'grouping' 	=> true,
+					'scale' 	=> 2,
+					'mapped' 	=> false,
+					'data'		=> $club->getSaldo(),
+					'attr'		=>	array('readonly' => true)
 				));
 
 				$form->add('activat', 'checkbox', array(
@@ -50,22 +50,22 @@ class FormClubAdmin extends FormClub {
 			}
 		});
 		
-		$builder->add('nom', 'text', array( 'read_only' => false ));
-		$builder->add('mail', 'email', array('read_only' => false));
-		$builder->add('cif', 'text', array('read_only' => false));
+		$builder->add('nom', 'text', array('attr'	=>	array('readonly' => false)));
+		$builder->add('mail', 'email', array('attr'	=>	array('readonly' => false)));
+		$builder->add('cif', 'text', array('attr'	=>	array('readonly' => false)));
 		$builder->add('databaixa', 'date', array(
 				'required'  	=> true,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
-				'read_only' 	=> false
+				'attr'			=>	array('readonly' => true)
 		));
 		
 		
 		$builder->add('codi', 'text', array(
 			'required'  => true,
-			'read_only' => true
+			'attr'			=>	array('readonly' => true)
 		));
 			
 		$tipuscluboptions = array('class' => 'FecdasBundle:EntityClubType', 'choice_label' => 'tipus',
@@ -87,16 +87,16 @@ class FormClubAdmin extends FormClub {
 		));
 			
 		$builder->add('limitcredit', 'number', array(
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2
 		));
 			
 		$builder->add('limitnotificacio', 'datetime', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'datetime',
-				'placeholder' => false,
-				'format' => 'dd/MM/yyyy',
+				'widget' 		=> 'single_text',
+				'input' 		=> 'datetime',
+				'placeholder' 	=> false,
+				'format' 		=> 'dd/MM/yyyy',
+				'attr'			=>	array('readonly' => true)
 		));
 		
 		$builder->add('tipusparte', 'entity', array('class' => 'FecdasBundle:EntityParteType', 'choice_label' => 'descripcio', 'multiple' => true, 'required' => false,
@@ -104,73 +104,46 @@ class FormClubAdmin extends FormClub {
 					return $repository->createQueryBuilder('e')->where('e.actiu = true')->orderBy('e.id', 'ASC');
 				})
 		);
-		
-		/* Camps nou usuari */
-		$builder->add('user', 'email', array(
-				'required' => false,
-				'mapped' => false,
-		));
-		
-		$builder->add('pwd', 'repeated', array(
-    			'type' => 'password',
-    			'required' => false,
-    			'first_name'  => 'first',
-    			'second_name' => 'second',
-				'mapped' => false,
-				'options' => array('always_empty' => true, 'required' => false),
-		));
-		
-		$builder->add('randompwd', 'text', array(
-				'required' => false,
-				'mapped' => false,
-		));
-		
-		$builder->add('role', 'choice', array(
-				'choices' => array('user'=> 'user'),
-				'data' => 'user',
-				'mapped' => false,
-		));
-		
-		
+	
 		// Saldos. Comptabilitat
 		$builder->add('compte', 'text', array(
 				'required'  => true,
 		));
 		
 		$builder->add('romanent', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2,
+				'attr'		=>	array('readonly' => true)
 		));
 			
 		$builder->add('totalpagaments', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2,
+				'attr'		=>	array('readonly' => true)
 		));
 		
 		$builder->add('totalllicencies', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2,
+				'attr'		=>	array('readonly' => true)
 		));
 		
 		$builder->add('totalduplicats', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2,
+				'attr'		=>	array('readonly' => true)
 		));
 		
 		$builder->add('totalaltres', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2,
+				'attr'		=>	array('readonly' => true)
 		));
 		
 		$builder->add('ajustsubvencions', 'number', array(
-				'read_only'  => true,
-				'grouping' => true,
-				'scale' => 2
+				'grouping' 	=> true,
+				'scale' 	=> 2,
+				'attr'		=>	array('readonly' => true)
 		));
 		
 	}

@@ -241,6 +241,12 @@ FecdasBundle_registrarsaldos:
 # -----------------------  SEGURETAT ------------------------------------
 # ---------------------------------------------------------------------------
 
+FecdasBundle_changerole:
+    path:  /changerole
+    defaults: { _controller: "FecdasBundle:Security:changerole" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_login:
     path:  /login
     defaults: { _controller: "FecdasBundle:Security:login" }
@@ -375,12 +381,6 @@ FecdasBundle_jsonpersona:
 # -----------------------  ADMINISTRACIÓ ------------------------------------
 # ---------------------------------------------------------------------------
    
-
-FecdasBundle_changerole:
-    path:  /changerole
-    defaults: { _controller: "FecdasBundle:Admin:changerole" }
-    requirements:
-        methods:  GET
 
 FecdasBundle_recents:
     path:  /recents

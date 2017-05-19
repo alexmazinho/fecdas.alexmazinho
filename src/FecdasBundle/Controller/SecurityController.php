@@ -18,6 +18,19 @@ use FecdasBundle\Entity\EntityClub;
 class SecurityController extends BaseController
 {
 	
+	public function changeroleAction(Request $request) {
+		$this->get('session')->remove('adminasuser');	
+		if (!$this->isCurrentAdmin()) return new Response(""); 
+			
+		// Canviar Club Administrador	
+		if ($request->query->has('roleclub')) $this->get('session')->set('roleclub', $request->query->get('roleclub'));
+		
+		
+		if ($request->query->has('role') && $request->query->get('role', '') == 'club') $this->get('session')->set('adminasuser', true);
+		
+		return new Response("");
+	}
+	
     public function loginAction(Request $request)
     {
     	if ($this->get('session')->has('username')){
@@ -581,14 +594,16 @@ class SecurityController extends BaseController
 		   			}
 					
 	   				/* Validacions mail no existeix en altres clubs */
-	   				$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($club->getMail());
-	   				if ($checkuser != null) {
-	   					if  ($nouclub || 
-	   						(!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())	) {
-	   						$tab = 0;	
-							throw new \Exception("Aquest mail ja existeix per un altre club, " . $club->getMail());
-	   					}
-	   				}
+	   				foreach ($club->getMails() as $mail) {
+		   				$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find(trim($mail));
+		   				if ($checkuser != null) {
+		   					if  ($nouclub || 
+		   						(!$nouclub && $checkuser->getClub()->getCodi() != $club->getCodi())	) {
+		   						$tab = 0;	
+								throw new \Exception("Aquest mail ja existeix per un altre club, " . $mail);
+		   					}
+		   				}
+ 					}
 	   					
     				if ($nouclub) {
     					// Nou club
@@ -597,12 +612,13 @@ class SecurityController extends BaseController
 	    				
 	    				// Crear el primer usuari de club, amb el mail del club
     					$userclub = new EntityUser();
-    					$userclub->setUser($club->getMail());
+						$mails = $club->getMails();
+    					$userclub->setUser($mails[0]);
     					$userclub->setClub($club);
    					
     					$randomPassword = $this->generateRandomPassword();
     					$userclub->setPwd(sha1($randomPassword));
-    					$userclub->setRole("user");
+    					$userclub->setRoles(BaseController::ROLE_CLUB);	// Rol del mail de club
     					$club->addEntityUser($userclub);
 
     					$em->persist($userclub);
@@ -739,7 +755,7 @@ class SecurityController extends BaseController
     			$userclub->setUser($useruser);
     				
     			$userclub->setPwd(sha1($randomPassword));
-    			$userclub->setRole($userrole);
+    			$userclub->setRoles($userrole);
     			//$userclub->setForceupdate($forceupdate);
     			$club->addEntityUser($userclub);
 	    				

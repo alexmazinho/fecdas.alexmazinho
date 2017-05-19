@@ -92,7 +92,7 @@ class FormClub extends AbstractType {
 		
 		$builder->add('codi', 'hidden');
 		
-		$builder->add('nom', 'text', array('read_only' => true));
+		$builder->add('nom', 'text', array('attr' =>	array('readonly' => true)));
 		
 		$builder->add('telefon', 'text', array(
 				'required'  => false,
@@ -106,13 +106,13 @@ class FormClub extends AbstractType {
 				'required'  => false,
 		));
 		
-		$builder->add('mail', 'email', array('read_only' => true));
+		$builder->add('mail', 'email', array('attr'			=>	array('readonly' => true)));
 
 		$builder->add('web', 'text', array(
 				'required'  => false,
 		));
 		
-		$builder->add('cif', 'text', array('read_only' => true));
+		$builder->add('cif', 'text', array('attr'			=>	array('readonly' => true)));
 				
 		$builder->add('addradreca', 'text', array(
 				'required'  => false,
@@ -146,7 +146,7 @@ class FormClub extends AbstractType {
 				'input' 		=> 'datetime',
 				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
-				'read_only' 	=> true
+				'attr'			=>	array('readonly' => true)
 		));
 
 		$builder->add('databaixa', 'date', array(
@@ -155,7 +155,7 @@ class FormClub extends AbstractType {
 				'input' 		=> 'datetime',
 				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
-				'read_only' 	=> true
+				'attr'			=>	array('readonly' => true)
 		));
 
 		$builder->add('datacreacio', 'date', array(
@@ -182,7 +182,33 @@ class FormClub extends AbstractType {
 				'required'  => false,
 		));
 		
+				/* Camps nou usuari */
+		$builder->add('user', 'email', array(
+				'required' => false,
+				'mapped' => false,
+		));
 		
+		$builder->add('pwd', 'repeated', array(
+    			'type' => 'password',
+    			'required' => false,
+    			'first_name'  => 'first',
+    			'second_name' => 'second',
+				'mapped' => false,
+				'options' => array('always_empty' => true, 'required' => false),
+		));
+		
+		$builder->add('randompwd', 'text', array(
+				'required' => false,
+				'mapped' => false,
+		));
+		
+		$builder->add('role', 'choice', array(
+				'choices' => BaseController::getRoles(),
+				'data' => BaseController::ROLE_FEDERAT,
+				'mapped' => false,
+		));
+		
+	
 		
 	}
 	

@@ -189,13 +189,18 @@ class BaseController extends Controller {
 	const CONTEXT_REQUERIMENT_GENERAL	= 'general';	// Aplica a les dades del curs 
 	const CONTEXT_REQUERIMENT_DOCENTS	= 'docents';	// Aplica als docents del curs
 
+	// Rols usuaris aplicació
+	const ROLE_ADMIN		= 'administrador';
+	const ROLE_CLUB			= 'club';
+	const ROLE_INSTRUCTOR	= 'instructor';
+	const ROLE_FEDERAT		= 'federat';
 	
-	protected static $tipusproducte; // Veure getTipusDeProducte()
-	protected static $tipuspagament; // Veure getTipusDePagament()
-	protected static $tipuscomanda; // Veure getTipusDeComanda()
-	protected static $carrecs; // Veure getCarrecs()
-	protected static $estats; // Veure getEstats()
-	
+	protected static $tipusproducte; 	// Veure getTipusDeProducte()
+	protected static $tipuspagament; 	// Veure getTipusDePagament()
+	protected static $tipuscomanda; 	// Veure getTipusDeComanda()
+	protected static $carrecs; 			// Veure getCarrecs()
+	protected static $estats; 			// Veure getEstats()
+	protected static $roles; 			// Veure getRoles()
 	
 	public static function getTipusClubsNoComandes() {
 	    // Symfony no deixa definir constants com Arrays TIPUS_CLUBS_NO_COMANDES   
@@ -265,11 +270,11 @@ class BaseController extends Controller {
 		if (self::$tipusproducte == null) {
 			self::$tipusproducte = array(
 					self::TIPUS_PRODUCTE_LLICENCIES => 'Llicències',
-					self::TIPUS_PRODUCTE_DUPLICATS => 'Duplicats',
-					self::TIPUS_PRODUCTE_KITS => 'Kits',
-					self::TIPUS_PRODUCTE_MERCHA => 'Merchandising',
-					self::TIPUS_PRODUCTE_CURSOS => 'Cursos',
-					self::TIPUS_PRODUCTE_ALTRES => 'Altres'
+					self::TIPUS_PRODUCTE_DUPLICATS 	=> 'Duplicats',
+					self::TIPUS_PRODUCTE_KITS 		=> 'Kits',
+					self::TIPUS_PRODUCTE_MERCHA 	=> 'Merchandising',
+					self::TIPUS_PRODUCTE_CURSOS 	=> 'Cursos',
+					self::TIPUS_PRODUCTE_ALTRES 	=> 'Altres'
 			);
 		}
 		return self::$tipusproducte;
@@ -394,6 +399,23 @@ class BaseController extends Controller {
 		return '';
 	}
 	
+	
+	/**
+	 * Array possibles rols d'usuari
+	 */
+	public static function getRoles($admin = false) {
+		if (self::$roles == null) {
+			self::$roles = array( 
+				self::ROLE_CLUB,
+				self::ROLE_INSTRUCTOR,
+				self::ROLE_FEDERAT
+			);
+			
+			if ($admin) array_unshift(self::$roles, self::ROLE_ADMIN); 	// Afegir el primer
+		}
+		return self::$roles;
+	}
+	
 	/**
 	 * Array header export llicències
 	 */
@@ -489,18 +511,30 @@ class BaseController extends Controller {
 	
 	protected function getCommonRenderArrayOptions($more = array()) {
 		$options = array();
-		if ($this->isCurrentAdmin() || $this->get('session')->has('adminasuser')) {
-			$formBuilder = $this->createFormBuilder();
-			
-			$this->addClubsActiusForm($formBuilder, $this->getCurrentClub(), 'roleclub');
-			
-			$formBuilder->add('currentrole', 'hidden', array( 'data' => ( $this->get('session')->has('adminasuser')?'club':'admin' ) ));  // Rol actual de admin
-			
+		
+		if ($this->isAuthenticated()) {
+			//if ($this->isCurrentAdmin() || $this->get('session')->has('adminasuser')) {
+			if ($this->isCurrentAdmin()) {
+				$formBuilder = $this->createFormBuilder();
+				
+				$this->addClubsActiusForm($formBuilder, $this->getCurrentClub(), 'roleclub');
+			} else {
+				$userclub = $this->getCurrentClub();
+				if ($userclub) $options['userclub'] = $userclub->getNom(); 	
+			}
+
+						
+			//$formBuilder->add('currentrole', 'hidden', array( 'data' => ( $this->get('session')->has('adminasuser')?'club':'admin' ) ));  // Rol actual de admin
+		
+			$checkRole = $this->get('fecdas.rolechecker');
+			$formBuilder->add('currentrole', 'choice', array(			
+				'choices' => $checkRole->getUserRoles(),	
+				'data' => $checkRole->getCurrentRole(),				// Rol actual de l'usuari
+			));
+				
 			$options['roleform'] = $formBuilder->getForm()->createView();
-		} else {
-			$userclub = $this->getCurrentClub();
-			if ($userclub) $options['userclub'] = $userclub->getNom(); 	
 		}
+		
 		$options['admin'] = $this->isCurrentAdmin();
 		$options['adminasuser'] = $this->get('session')->has('adminasuser');
 		$options['authenticated'] = $this->isAuthenticated();
@@ -577,16 +611,25 @@ class BaseController extends Controller {
 	}
 	
 	protected function isAuthenticated() {
-		$request = $this->container->get('request_stack')->getCurrentRequest();
+		
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		return $checkRole->isAuthenticated();
+		/*$request = $this->container->get('request_stack')->getCurrentRequest();
 		if ($this->get('session')->has('username') and $this->get('session')->has('remote_addr')
 				and $this->get('session')->has('remote_addr') == $request->server->get('REMOTE_ADDR')) {
 			return true;
 		}
-		return false;
+		return false;*/
 	}
 	
 	protected function isCurrentAdmin() {
-		if ($this->isAuthenticated() != true) return false;
+			
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		return $checkRole->isCurrentAdmin();
+		
+		/*if ($this->isAuthenticated() != true) return false;
 		
 		$em = $this->getDoctrine()->getManager();
 		$repository = $em->getRepository('FecdasBundle:EntityUser');
@@ -596,7 +639,7 @@ class BaseController extends Controller {
 		// Admins. Validar canvi de Role
 		if ($this->get('session')->has('adminasuser')) return false;
 		
-		return true;
+		return true;*/
 	}
 
 	protected function esFederacio($club) {

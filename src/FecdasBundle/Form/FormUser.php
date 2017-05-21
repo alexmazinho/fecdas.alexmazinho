@@ -17,7 +17,7 @@ class FormUser extends AbstractType {
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->add('user', 'email',array(
-    	    'read_only'  => true,
+    	    'attr'		=>	array('readonly' => true)
 		));
 		
 		$builder->add('pwd', 'repeated', array(

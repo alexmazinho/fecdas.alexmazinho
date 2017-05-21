@@ -713,7 +713,7 @@ class CronController extends BaseController {
 			
 			
 			if ($request->getMethod() == 'POST') {
-				$form->bind($request);
+				$form->handleRequest($request);
 			
 				if ($form->isValid() && $request->request->has('llicencia_renovar')) {
 	

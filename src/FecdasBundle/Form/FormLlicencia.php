@@ -40,8 +40,8 @@ class FormLlicencia extends AbstractType {
 							'choice_label' => 'llistaText',
 							'placeholder' => '',
 							'required'  => false,
-							'read_only' => !$parte->isAllowEdit(),
 							'property_path' => 'persona',
+							'attr'			=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				
@@ -80,8 +80,8 @@ class FormLlicencia extends AbstractType {
 										->setParameter('categoria', $currentCategoria);
 									},
 								'choice_label' => $llistacategoria,
-								'read_only' => !$parte->isAllowEdit(),
-								'required'  => true
+								'required'  => true,
+								'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 					));
 					
 					
@@ -90,78 +90,78 @@ class FormLlicencia extends AbstractType {
 
 				$form->add('pesca', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('escafandrisme', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('natacio', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('orientacio', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('biologia', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('fotocine', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('hockey', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('fotosubapnea', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('videosub', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('apnea', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('rugbi', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('besportiu', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				
 				$form->add('bampolles', 'checkbox', array(
 						'required'  => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				/*$form->add('enviarllicenciaSi', 'checkbox', array(
 						'required'  => false,
 						'mapped'    => false,
-						'read_only' => !$parte->isAllowEdit(),
+						'attr'		=>	array('readonly' => !$parte->isAllowEdit()),
 						'data'      => ($llicencia->esNova()?false:$llicencia->getEnviarllicencia()) 
 				));
                 $form->add('enviarllicenciaNo', 'checkbox', array(
                         'required'  => false,
                         'mapped'    => false,
-                        'read_only' => !$parte->isAllowEdit(),
+                        'attr'		=>	array('readonly' => !$parte->isAllowEdit()),
                         'data'      => ($llicencia->esNova()?false:!$llicencia->getEnviarllicencia()) 
                 ));*/
                 
@@ -171,7 +171,7 @@ class FormLlicencia extends AbstractType {
 	                        'multiple'  => false,
 	                        'expanded'  => true,
 	                        'choices'   => array( BaseController::INDEX_ENVIARLLICENCIA => 'Si', BaseController::INDEX_NOENVIARLLICENCIA => 'No' ),
-	                        'read_only' => !$parte->isAllowEdit(),
+	                        'attr'		=>	array('readonly' => !$parte->isAllowEdit()),
 	                        'data'      => ($llicencia->esNova()?-1:($llicencia->getEnviarllicencia()?BaseController::INDEX_ENVIARLLICENCIA:BaseController::INDEX_NOENVIARLLICENCIA)) 
 	                ));
 	            } else {
@@ -193,19 +193,19 @@ class FormLlicencia extends AbstractType {
 		$builder->add('datacaducitatshow', 'date', array(
 			'widget' => 'single_text', 
 			'format' => 'dd/MM/yyyy',
-			'mapped'  => false,
-			'read_only' => true,
+			'mapped' => false,
+			'attr'	 =>	array('readonly' => true)
 		));
 		
 		
 		$builder->add('nocmas', 'checkbox', array(
     	    'required'  => false,
-			'read_only' => true,
+			'attr'		=>	array('readonly' => true)
 		));
 		
 		$builder->add('fusell', 'checkbox', array(
     	    'required'  => false,
-			'read_only' => true,
+			'attr'		=>	array('readonly' => true)
 		));
 	}
 	

@@ -59,7 +59,6 @@ class FormParte extends AbstractType {
 							
 					);
 					
-					//$builder->add('tipus', 'text', array('mapped'  => false, 'data' => $llistatipus[0], 'read_only' => true,));
 				}
 				
 				$form->add('tipus', 'entity', $tipusparteoptions);

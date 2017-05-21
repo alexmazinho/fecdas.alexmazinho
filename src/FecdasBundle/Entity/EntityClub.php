@@ -125,7 +125,7 @@ class EntityClub {
 	protected $activat;
 	
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityUser", mappedBy="club")
+	 * @ORM\OneToMany(targetEntity="EntityUserClub", mappedBy="club")
 	 */
 	protected $usuaris;	// Owning side of the relationship
 	
@@ -276,6 +276,23 @@ class EntityClub {
 		return $this->codi;
 	}
 	
+	
+	/**
+     * Add user, role, metadata
+     *
+     * @param FecdasBundle\Entity\EntityUser $user
+     */
+    public function addUsuariRole($user, $role)
+    {
+    	$userClubRole = new EntityUserClub($this, $user, $role);
+    	
+    	$user->addClub($userClubRole);
+    	$this->usuaris->add($userClubRole);
+		
+		return $userClubRole;
+    }
+    
+	
 	/**
 	 * Get partes
 	 *
@@ -301,6 +318,49 @@ class EntityClub {
     	return explode(";", trim($this->mail));
     }
 	
+	
+	/**
+     * Get roles diferents
+     *
+     * @return 
+     */
+    public function getRolsDistinct($baixes = false)
+    {
+    	
+		
+    	$roles = BaseController::getRoles( BaseController::esFederacio($this) || $this->codi == BaseController::CODI_CLUBTEST);
+		
+		return $roles;
+	}
+	
+	/**
+     * Get usuaris diferents
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getUsuarisDistinct($baixes = false)
+    {
+    	$roles = $this->getRolsDistinct();
+		
+		$test = array_map(function ($n) { return null; }, $roles);
+		
+    	$usuarisArray = array();
+    	foreach ($this->usuaris as $userClubRole) {
+    		if ($baixes || (!$baixes && !$userClubRole->anulat())) {
+	    		$userClub = $userClubRole->getUsuari();
+				$role = $userClubRole->getRole();
+				if ($baixes || (!$baixes && !$userClub->anulat())) {
+					if (!isset($usuarisArray[$userClub->getId()])) {
+						$usuarisArray[$userClub->getId()] = array('userclub' => $userClub, 'rols' => array_map(function ($n) { return null; }, $roles) ); // Crea array objectes amb claus els valors de $roles i valor null 
+					}
+					$usuarisArray[$userClub->getId()]['rols'][$role] = $userClubRole;
+				}
+			}
+    	}
+		
+		return $usuarisArray;
+    }
+    
 	/**
 	 * Dades del club any actual. Opcionalment comprova errors
 	 *
@@ -335,7 +395,6 @@ class EntityClub {
 			if (count($this->tipusparte) == 0) $dades['errors'][] = "Aquest club no té cap tipus de parte activat per tramitar</br>";
 			if (count($this->usuaris) == 0) $dades['errors'][] = "Aquest club no té cap usuari activat per tramitar</br>";
 		}
-		
 		
 		foreach($this->comandes as $comanda) {
 			if ($comanda->esBaixa() == false && $comanda->comandaConsolidada() == true && $comanda->getAny() >= ($current -1)) { // Limitar comandes any actual i anterior
@@ -1110,37 +1169,6 @@ class EntityClub {
     }
     
     /**
-     * Get usuaris
-     *
-     * @return Doctrine\Common\Collections\ArrayCollection
-     */
-    public function getUsuaris()
-    {
-    	return $this->usuaris;
-    }
-    
-    /**
-     * Add user
-     *
-     * @param FecdasBundle\Entity\EntityUser $user
-     */
-    public function addEntityUser(\FecdasBundle\Entity\EntityUser $user)
-    {
-    	$user->setClub($this);
-    	$this->usuaris->add($user);
-    }
-    
-    
-    public function setUsuaris(\Doctrine\Common\Collections\ArrayCollection $usuaris)
-    {
-    	$this->usuaris = $usuaris;
-    	foreach ($usuaris as $usuari) {
-    		$usuari->setClub($this);
-    	}
-    }
-
-    
-    /**
      * Get comandes
      *
      * @return Doctrine\Common\Collections\ArrayCollection
@@ -1173,10 +1201,8 @@ class EntityClub {
     		$comanda->setClub($this);
     	}
     }
-    
 	
-	
-	   /**
+   /**
      * Get ingresos
      *
      * @return Doctrine\Common\Collections\ArrayCollection
@@ -1245,7 +1271,6 @@ class EntityClub {
     {
     	$this->tipusparte = $tipusparte;
     }
-    
      
     /**
      * Set estat
@@ -1630,27 +1655,22 @@ class EntityClub {
     	return $this->comptabilitat;
     }
 
-    /**
-     * Add usuaris
+	/**
+     * Get usuaris
      *
-     * @param \FecdasBundle\Entity\EntityUser $usuaris
-     * @return EntityClub
+     * @return Doctrine\Common\Collections\ArrayCollection
      */
-    public function addUsuari(\FecdasBundle\Entity\EntityUser $usuaris)
+    public function getUsuaris()
     {
-        $this->usuaris[] = $usuaris;
-
-        return $this;
+    	return $this->usuaris;	// userClubRoles
     }
-
-    /**
-     * Remove usuaris
-     *
-     * @param \FecdasBundle\Entity\EntityUser $usuaris
-     */
-    public function removeUsuari(\FecdasBundle\Entity\EntityUser $usuaris)
+    
+    public function setUsuaris(\Doctrine\Common\Collections\ArrayCollection $usuaris)
     {
-        $this->usuaris->removeElement($usuaris);
+    	$this->usuaris = $usuaris;
+    	foreach ($usuaris as $userClubRole) {
+    		$userClubRole->setClub($this);
+    	}
     }
 
     /**

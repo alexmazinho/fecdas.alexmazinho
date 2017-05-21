@@ -231,7 +231,7 @@ class FacturacioController extends BaseController {
 										
 					$this->logEntryAuth('BAIXA STOCK OK', ' Registre '.$id);
 					
-					return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId())));
+					return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId(), 'view' => 'D')));
 				}
 				
 				$this->logEntryAuth('PRODUCTE '+$action+' FORM', 'registre : ' . $id);
@@ -288,7 +288,7 @@ class FacturacioController extends BaseController {
     			
     			$this->logEntryAuth('PRODUCTE SUBMIT',	'registre : ' . $registreStock->getId().' '.$registreStock->getProducte()->getDescripcio().' '.$registreStock->getTipus().' '.$registreStock->getUnitats()); 
     			 
-				return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId())));
+				return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId(), 'view' => 'D')));
    			} 
 
 		} catch (\Exception $e) {
@@ -302,16 +302,12 @@ class FacturacioController extends BaseController {
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'registre' => $registreStock))); 
 	}		
 		
-	public function recalcularStockProducte($registreStock) {
 		
-		if ($registreStock == null) throw new \Exception('Registre incorrecte' );
-
-		$producte = $registreStock->getProducte();
-		$club = $registreStock->getClub();
-
-		$desde = $registreStock->getDataregistre();
+	public function calcularStockProducteFins($producte, $club = null, $fins = null, $id = 0) {
 		
 		$em = $this->getDoctrine()->getManager();
+		
+		$codiclub = ($club!=null?$club->getCodi():BaseController::CODI_FECDAS);
 		
 		// Consultar últim stock abans de $desde
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
@@ -319,16 +315,22 @@ class FacturacioController extends BaseController {
 		$strQuery .= " AND s.producte = :idproducte ";
 		$strQuery .= " AND s.club = :codiclub ";
 		$strQuery .= " AND s.databaixa IS NULL ";
-		$strQuery .= " AND (s.dataregistre < :desde ";
-		if ($registreStock->getId() != 0) $strQuery .= " OR (s.dataregistre = :desde AND s.id < :id) "; // Anteriors a registre existent
-		else $strQuery .= " OR (s.dataregistre = :desde) ";	// Nou registre sempre id major
-		$strQuery .= " ) ";
+		
+		if ($fins != null) {
+			$strQuery .= " AND (s.dataregistre < :fins ";
+			if ($id != 0) $strQuery .= " OR (s.dataregistre = :fins AND s.id < :id) "; // Anteriors a registre existent
+			else $strQuery .= " OR (s.dataregistre = :fins) ";	// Nou registre sempre id major
+			$strQuery .= " ) ";
+		}
+		
 		$strQuery .= " ORDER BY s.dataregistre DESC, s.id DESC ";
 		$query = $em->createQuery($strQuery);
-		$query->setParameter('desde', $desde->format('Y-m-d'));
 		$query->setParameter('idproducte', $producte->getId());
-		$query->setParameter('codiclub', $club->getCodi());
-		if ($registreStock->getId() != 0) $query->setParameter('id', $registreStock->getId());
+		$query->setParameter('codiclub', $codiclub);
+		if ($fins != null) {
+			$query->setParameter('fins', $fins->format('Y-m-d'));
+			if ($id != 0) $query->setParameter('id', $id);
+		}
 		$query->setMaxResults( 1 );
 		
 		$ultimRegistre = $query->getResult();
@@ -345,6 +347,21 @@ class FacturacioController extends BaseController {
 			$stock = $ultimRegistre->getStock();
 		}
 		
+		return $stock;
+	}	
+		
+	public function recalcularStockProducte($registreStock) {
+		
+		if ($registreStock == null) throw new \Exception('Registre incorrecte' );
+
+		$producte = $registreStock->getProducte();
+		$club = $registreStock->getClub();
+		$desde = $registreStock->getDataregistre(); 
+		
+		$em = $this->getDoctrine()->getManager();
+
+		$stock = $this->calcularStockProducteFins($producte, $club, $desde, $registreStock->getId());
+
 		// Actualitzar següents stock registres posteriors o iguals a $desde 
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
 		$strQuery .= " WHERE 1 = 1 ";
@@ -1845,7 +1862,10 @@ class FacturacioController extends BaseController {
 		if ($this->isCurrentAdmin()) {  // Admins poden escollir el club 
 			$codi = $request->query->get('club', ''); 
 			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
-			if ($club != null) $this->get('session')->set('roleclub', $codi);
+			if ($club != null) {
+				$checkRole = $this->get('fecdas.rolechecker');	
+				$checkRole->setCurrentClubRole( $codi );
+			}
 		}
 		if ($club == null) $club = $this->getCurrentClub();
 		
@@ -2614,15 +2634,30 @@ class FacturacioController extends BaseController {
     			}
     				
     			if ($producte->getStockable() == true) {
-    				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
+    				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) { 
+    					$producte->setLimitnotifica(0);
     					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
     					throw new \Exception('Cal indicar el límit de notificació ' );
     				}
     					
     				if ($producte->getStock() == null || $producte->getStock() < 0) {
-    					$form->get('stock')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('Cal indicar l\'stock disponible ' );
-    				}
+    					// Activat stockable
+						$stock = $this->calcularStockProducteFins($producte);  // Federació
+						$producte->setStock($stock);
+
+						$registres = null;		
+						$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+						if ($producte->getId() != 0) {
+							// Si no existeix stock pel producte es crea.   
+							$query = $this->consultaStock($producte->getId(), false);
+							$registres = $query->getResult();
+						}
+						if ($producte->getId() == 0 || $registres == null || count($registres) == 0) {
+							// => Crear producte stockable afegir registre stock
+							$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
+							$em->persist($registreStock);
+    					}
+					}					
     			} else {
     				$producte->setLimitnotifica(null);
 					$producte->setStock(null);
@@ -2651,32 +2686,6 @@ class FacturacioController extends BaseController {
     				$preu->setPreu($importpreu);
     				$preu->setIva($iva);
     			}
-
-				// Stock
-				if ($producte->getStockable() == true) {
-					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
-					if ($producte->getId() == 0) {
-						// => Crear producte stockable afegir registre stock
-						$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
-						$registreStock->setStock($producte->getStock()); // Stock inicial
-						$em->persist($registreStock);
-					} else {
-						// Si no existeix stock pel producte es crea.   
-						$query = $this->consultaStock($producte->getId());
-						$registres = $query->getResult();
-						if ($registres == null || count($registres) == 0) {
-							$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
-							$registreStock->setStock($producte->getStock()); // Stock inicial
-							$em->persist($registreStock);
-						} else {
-							// Si existeix stock no permet canviar-lo
-							if ($stockOriginal != $producte->getStock()) {
-								$form->get('stock')->addError(new FormError('No es pot modificar'));
-	    						throw new \Exception('No es pot modificar l\'stock d\'aquest producte directament, cal fer-ho a través de la gestió d\'stock' );
-							}
-						}
-					}
-				}
 
 				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
 					$activat = $form->get('activat')->getData();
@@ -3166,7 +3175,10 @@ class FacturacioController extends BaseController {
 		// Comandes pendents de pagament. Inicialment al club connectat
 		if ($request->getMethod() != 'POST') {
 			$codi = $request->query->get('codi', '');
-			if ($codi != '') $this->get('session')->set('roleclub', $codi);
+			if ($codi != '') {
+				$checkRole = $this->get('fecdas.rolechecker');	
+				$checkRole->setCurrentClubRole( $codi );
+			}
 		} else {
 			$formdata = $request->request->get('rebut');
 			$codi = $formdata['club'];

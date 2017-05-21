@@ -195,6 +195,9 @@ class BaseController extends Controller {
 	const ROLE_INSTRUCTOR	= 'instructor';
 	const ROLE_FEDERAT		= 'federat';
 	
+	// Símbol categoría Tècnic
+	const SIMBOL_TECNIC		= 'T';
+	
 	protected static $tipusproducte; 	// Veure getTipusDeProducte()
 	protected static $tipuspagament; 	// Veure getTipusDePagament()
 	protected static $tipuscomanda; 	// Veure getTipusDeComanda()
@@ -403,16 +406,19 @@ class BaseController extends Controller {
 	/**
 	 * Array possibles rols d'usuari
 	 */
-	public static function getRoles($admin = false) {
-		if (self::$roles == null) {
+	public static function getRoles( $admin = false ) {
+		/*if (self::$roles == null) {*/
 			self::$roles = array( 
-				self::ROLE_CLUB,
-				self::ROLE_INSTRUCTOR,
-				self::ROLE_FEDERAT
+				self::ROLE_CLUB 		=> mb_strtoupper(self::ROLE_CLUB),
+				self::ROLE_FEDERAT		=> mb_strtoupper(self::ROLE_FEDERAT),					
+				self::ROLE_INSTRUCTOR	=> mb_strtoupper(self::ROLE_INSTRUCTOR),
 			);
 			
-			if ($admin) array_unshift(self::$roles, self::ROLE_ADMIN); 	// Afegir el primer
-		}
+			//if ($admin) array_unshift(self::$roles, self::ROLE_ADMIN); 	// Afegir el primer
+			if ($admin) self::$roles[self::ROLE_ADMIN] = mb_strtoupper(self::ROLE_ADMIN); 	// Afegir el primer
+			
+			ksort(self::$roles);
+		/*}*/
 		return self::$roles;
 	}
 	
@@ -510,47 +516,59 @@ class BaseController extends Controller {
     }
 	
 	protected function getCommonRenderArrayOptions($more = array()) {
-		$options = array();
+		$options = array( 	'role' => '', 'authenticated' => false, 'admin' => false, 
+							'roleclub' => false, 'roleinstructor' => false, 'rolefederat' => false,
+							'userclub' => '', 'currentclubnom' => '',
+							'allowcomandes' => false, 'busseig' => false, 
+							'enquestausuari' => '', 'enquestausuaripendent' => '',
+							'cartItems'		=> 0 );
 		
 		if ($this->isAuthenticated()) {
-			//if ($this->isCurrentAdmin() || $this->get('session')->has('adminasuser')) {
+			$checkRole = $this->get('fecdas.rolechecker');
+			
+			$options['role'] = $checkRole->getCurrentRole();
+			$options['admin'] = $checkRole->isCurrentAdmin();
+			$options['roleclub'] = $checkRole->isCurrentClub();
+			$options['roleinstructor'] = $checkRole->isCurrentInstructor();
+			$options['rolefederat'] = $checkRole->isCurrentFederat();
+			
+			$options['authenticated'] = $checkRole->isAuthenticated();
+			$options['allowcomandes'] = $this->allowComandes();
+			$options['busseig'] = $this->isCurrentBusseig();
+			$options['enquestausuari'] = $checkRole->getCurrentEnquestaActiva();
+			$options['enquestausuaripendent'] = $checkRole->getCurrentEnquestaPendent();
+
+			$formBuilder = $this->createFormBuilder();
 			if ($this->isCurrentAdmin()) {
-				$formBuilder = $this->createFormBuilder();
+				$this->addClubsActiusForm($formBuilder, $this->getCurrentClub(), 'currentclub');
 				
-				$this->addClubsActiusForm($formBuilder, $this->getCurrentClub(), 'roleclub');
+				$formBuilder->add('currentrole', 'choice', array(			
+					'choices' => self::getRoles(true),				// Llista de rols sense clubs
+					'data' => $checkRole->getCurrentRole()			// Rol actual de l'usuari
+				));
+				
 			} else {
+				$formBuilder->add('currentrole', 'choice', array(			
+					'choices' => $checkRole->getUserRolesArray(),	// Llista de parelles rol - club
+					'data' => $checkRole->getUserRoleKey()			// Rol actual de l'usuari
+				));
+				
 				$userclub = $this->getCurrentClub();
 				if ($userclub) $options['userclub'] = $userclub->getNom(); 	
 			}
-
-						
-			//$formBuilder->add('currentrole', 'hidden', array( 'data' => ( $this->get('session')->has('adminasuser')?'club':'admin' ) ));  // Rol actual de admin
-		
-			$checkRole = $this->get('fecdas.rolechecker');
-			$formBuilder->add('currentrole', 'choice', array(			
-				'choices' => $checkRole->getUserRoles(),	
-				'data' => $checkRole->getCurrentRole(),				// Rol actual de l'usuari
-			));
-				
+			
 			$options['roleform'] = $formBuilder->getForm()->createView();
+			$options['currentclubnom'] = $this->getCurrentClub()!=null?$this->getCurrentClub()->getNom():'';
+				
+			$cart = $this->getSessionCart();
+			$options['cartItems'] = count( $cart['productes'] );
 		}
-		
-		$options['admin'] = $this->isCurrentAdmin();
-		$options['adminasuser'] = $this->get('session')->has('adminasuser');
-		$options['authenticated'] = $this->isAuthenticated();
-		$options['allowcomandes'] = $this->allowComandes();
-		$options['busseig'] = $this->isCurrentBusseig();
-		$options['enquestausuari'] = $this->get('session')->has('enquesta');
-		$options['enquestausuaripendent'] = $this->get('session')->has('enquestapendent');
-		
-		$cart = $this->getSessionCart();
-		$options['cartItems'] = count( $cart['productes'] );
 		
 		return  array_merge($more, $options);
 	}
 	
 	
-	protected function addClubsActiusForm($formBuilder, $clubs, $nom = 'clubs') {
+	protected function addClubsActiusForm($formBuilder, $club, $nom = 'clubs') {
 			
 		$formBuilder->add($nom, 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityClub',
@@ -563,7 +581,7 @@ class BaseController extends Controller {
 				'choice_label' 	=> 'nom',
 				'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
 				'required'  	=> false,
-				'data' 			=> $clubs,
+				'data' 			=> $club,
 		));
 		
 	}
@@ -615,12 +633,6 @@ class BaseController extends Controller {
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		return $checkRole->isAuthenticated();
-		/*$request = $this->container->get('request_stack')->getCurrentRequest();
-		if ($this->get('session')->has('username') and $this->get('session')->has('remote_addr')
-				and $this->get('session')->has('remote_addr') == $request->server->get('REMOTE_ADDR')) {
-			return true;
-		}
-		return false;*/
 	}
 	
 	protected function isCurrentAdmin() {
@@ -628,35 +640,23 @@ class BaseController extends Controller {
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		return $checkRole->isCurrentAdmin();
-		
-		/*if ($this->isAuthenticated() != true) return false;
-		
-		$em = $this->getDoctrine()->getManager();
-		$repository = $em->getRepository('FecdasBundle:EntityUser');
-		$user = $repository->findOneByUser($this->get('session')->get('username'));
-		if (!$user || $user->getRole() != 'admin') return false;
-		
-		// Admins. Validar canvi de Role
-		if ($this->get('session')->has('adminasuser')) return false;
-		
-		return true;*/
 	}
 
-	protected function esFederacio($club) {
+	public static function esFederacio($club) {
 		return $club->getCodi() == self::CODI_FECDAS;
 	}
 
 	protected function getCurrentClub() {
-		if ($this->isAuthenticated() != true) return null;
+		if (!$this->isAuthenticated()) return null;
 		
 		$em = $this->getDoctrine()->getManager();
 		
-		if (( $this->isCurrentAdmin() || $this->get('session')->has('adminasuser') ) && $this->get('session')->has('roleclub')) {
-			return 	$em->getRepository('FecdasBundle:EntityClub')->find($this->get('session')->get('roleclub'));		
-		}
-		$user = $em->getRepository('FecdasBundle:EntityUser')->findOneByUser($this->get('session')->get('username'));
-		if ($user) return $user->getClub();
-		return null;
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		$codiClub = $checkRole->getCurrentClubRole();
+		$club =	$em->getRepository('FecdasBundle:EntityClub')->find( $codiClub );
+		
+		return $club;
 	}
 
 	protected function allowComandes() {
@@ -3571,17 +3571,22 @@ class BaseController extends Controller {
 		return __DIR__.self::TMP_FOLDER;
 	}
 	
-	protected function logEntryAuth($accio = null, $extrainfo = null) {
+	protected function logEntryAuth($accio = null, $extrainfo = '') {
 		$request = $this->container->get('request_stack')->getCurrentRequest();
-		$this->logEntry($this->get('session')->get('username'), $accio, $this->get('session')->get('remote_addr'), 
-				$request->server->get('HTTP_USER_AGENT'), $extrainfo);
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		$this->logEntry($checkRole->getCurrentUserName(), $accio, $checkRole->getCurrentRemoteAddr(), $checkRole->getCurrentHTTPAgent(), $extrainfo);
 	}
 	
-	protected function logEntry($user = null, $accio = null, $remoteaddr = null, $useragent = null, $extrainfo = null) {
+	protected function logEntry($user = null, $accio = '', $remoteaddr = '', $useragent = '', $extrainfo = '') {
+		$checkRole = $this->get('fecdas.rolechecker');
 		if (!$user) {
-			if ($this->get('session')->has('username')) $user = $this->get('session')->get('username');
+			if ($checkRole->getCurrentUserName() != '') $user = $checkRole->getCurrentUserName();
 			else $user = $this->getParameter('MAIL_ADMINLOG');
 		}
+		
+		if ($remoteaddr == '') $remoteaddr = $checkRole->getCurrentRemoteAddr();
+		if ($useragent == '') $useragent =  $checkRole->getCurrentHTTPAgent();
 		
 		$em = $this->getDoctrine()->getManager();
 		$logentry = new EntityUserLog(substr($user,0,50), substr($accio,0,20), substr($remoteaddr,0,20), substr($useragent,0,100), substr($extrainfo,0,100));
@@ -3595,7 +3600,9 @@ class BaseController extends Controller {
 	
 	protected function getLogMailUserData($source = null) {
 		$request = $this->container->get('request_stack')->getCurrentRequest();
-		return $source." ".$this->get('session')->get('username')." (".$request->server->get('HTTP_USER_AGENT').")";
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		return $source." ".$checkRole->getCurrentUserName()." (".$checkRole->getCurrentHTTPAgent().")";
 	}
 	
     protected function validateCronAuth($request, $action = '') {
@@ -3787,7 +3794,7 @@ class BaseController extends Controller {
 	
 		$cerca = $request->get('cerca', ''); 
 		$id = $request->get('id', ''); // id federat
-	
+
 		$em = $this->getDoctrine()->getManager();
 		
 		if ($id != '') {
@@ -3797,7 +3804,7 @@ class BaseController extends Controller {
 				$response->headers->set('Content-Type', 'application/json');
 				$response->setContent(json_encode(array('id' => $id, 'text' => $persona->getNomCognoms(), 
 														'nom' => $persona->getNom(), 'cognoms' => $persona->getCognoms(), 
-														'dni' => $persona->getDni())));
+														'dni' => $persona->getDni(), 'mail'	 => $persona->getMail())));
 				return $response;
 			}
 		}
@@ -3814,10 +3821,10 @@ class BaseController extends Controller {
 		$search = array();
 		if ($query != null) {
 			$result = $query->getResult();
-			foreach ($result as $p) {
-				$search[] = array('id' => $p->getId(), 'text' => $p->getNomCognoms(), 
-								'nom' => $p->getNom(), 'cognoms' => $p->getCognoms(), 
-								'dni' => $p->getDni());
+			foreach ($result as $persona) {
+				$search[] = array('id' => $persona->getId(), 'text' 	=> $persona->getNomCognoms(), 
+								'nom' => $persona->getNom(), 'cognoms' 	=> $persona->getCognoms(), 
+								'dni' => $persona->getDni(), 'mail'	 	=> $persona->getMail());
 			}
 		}
 	

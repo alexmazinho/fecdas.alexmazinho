@@ -92,7 +92,6 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			
 			$form->add('datafins', 'datetime', array(
 				'required' 		=> false,
-				'read_only' 	=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'placeholder' 	=> false,

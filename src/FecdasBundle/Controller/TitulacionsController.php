@@ -31,7 +31,6 @@ use FecdasBundle\Classes\Funcions;
 
 class TitulacionsController extends BaseController {
 	
-	
 	public function dadespersonalsAction(Request $request) {
 		// Llista de membres del club amb les dades personals
 
@@ -99,9 +98,9 @@ class TitulacionsController extends BaseController {
 		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
 		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
 		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
-		$formBuilder->add('desde', 'text', array('read_only' => false, 'required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
-		$formBuilder->add('fins', 'text', array('read_only'  => false, 'required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
-	
+		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
+		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
+
 		$this->addClubsActiusForm($formBuilder, $club);
 		
 		$this->addTitolsForm($formBuilder, $titol, true, 'titols');
@@ -238,9 +237,8 @@ class TitulacionsController extends BaseController {
 		); 
 
 		$formBuilder = $this->createFormBuilder()->add('pervalidar', 'checkbox', array('required'  => false, 'data' => $currentPerValidar));
-		$formBuilder->add('desde', 'text', array('read_only' => false, 'required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
-		$formBuilder->add('fins', 'text', array('read_only'  => false, 'required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
-	
+		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
+		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$this->addClubsActiusForm($formBuilder, $club);
 		
 		$this->addTitolsForm($formBuilder, $titol, true, 'titols');
@@ -409,7 +407,7 @@ class TitulacionsController extends BaseController {
     			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     		}*/
    		} 
-error_log($curs->editable()?'Omplert':'No omplert');
+
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs)));
 	}
@@ -566,7 +564,7 @@ error_log($curs->editable()?'Omplert':'No omplert');
 			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e WHERE ";
 			$strQuery .= " (p.dni LIKE :cerca OR CONCAT(e.nom,' ',e.cognoms) LIKE :cerca) ";
 			$strQuery .= " ORDER BY e.cognoms, e.nom";  
-	error_log($strQuery);
+	//error_log($strQuery);
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('cerca', '%'.$cerca.'%');
 		} else {

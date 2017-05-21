@@ -3,7 +3,7 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use FecdasBundle\Controller\BaseController;
+
 
 /**
  * @ORM\Entity
@@ -16,7 +16,13 @@ class EntityUser {
 	
 	/**
 	 * @ORM\Id
-	 * @ORM\Column(name="usuari",type="string", length=50)
+	 * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+	 */
+	protected $id;	
+	
+	/**
+	 * @ORM\Column(name="usuari",type="string", length=50, unique=true)
 	 * @Assert\NotBlank()
 	 * @Assert\Email()
 	 */
@@ -29,20 +35,20 @@ class EntityUser {
 	protected $pwd;
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="usuaris")
-	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
+	 * @ORM\OneToMany(targetEntity="EntityUserClub", mappedBy="usuari")
 	 */
-	protected $club;  // FK m_clubs
+	protected $clubs;	// Owning side of the relationship
 	
 	/**
 	 * @ORM\Column(type="string", length=50)
 	 */
-	protected $roles;
+	//protected $roles;
 
 	/**
-	 * @ORM\Column(type="boolean")
+	 * @ORM\OneToOne(targetEntity="EntityMetaPersona")
+	 * @ORM\JoinColumn(name="metapersona", referencedColumnName="id")
 	 */
-	//protected $forceupdate;
+	//protected $metapersona;			// Un usuari pot estar associat a una metapersona (federat o instructor)
 	
 	/**
 	 * @ORM\Column(type="string", length=40, nullable=true)
@@ -64,8 +70,11 @@ class EntityUser {
 	 */
 	protected $databaixa;
 	
-	public function __construct() {
-		$this->forceupdate = true;
+	public function __construct( $user = null, $pwd = null ) {
+		$this->id = 0;
+		$this->user = $user;
+		$this->pwd 	= $pwd;
+		$this->clubs = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
 	public function __toString() {
@@ -73,26 +82,140 @@ class EntityUser {
 	}
 	
 	/**
-     * Get main role
+     * està anul·lat?
      *
-     * @return string
+     * @return boolean
      */
-    public function getRole()
+    public function anulat()
     {
-    	if ($this->roles == '') return ''; 	
-    	$rolesArray = explode(";", $this->roles);	
-    	return $rolesArray[0];
+    	return $this->databaixa != null;
     }
 	
-	/**
+		/**
      * has Admin?
      *
      * @return boolean
      */
-    public function hasAdmin()
+    public function isAdmin()
     {
-    	$rolesArray = explode(";", $this->roles);	
-    	return in_array(BaseController::ROLE_ADMIN, $rolesArray);
+    	return $this->getRoleAdmin() != null; 	
+    }
+	
+	/**
+     * Get JSON  roles 
+     *
+     * @return string
+     */
+    public function getRolesJSON()
+    {
+    	$roles = array('admin' => $this->isAdmin(), 'roles' => array());
+			
+    	foreach ($this->clubs as $userClubRole) {
+    		if (!$userClubRole->anulat()) {
+    			$roles['roles'][] = array('role' => $userClubRole->getRole(), 
+    									  'club' => $userClubRole->getClub()->getCodi(),
+										  'nom'  => $userClubRole->getClub()->getNom());
+			}
+		}
+    	return json_encode($roles);
+    }
+	
+	/**
+     * Get main role
+     *
+     * @return FecdasBundle\Entity\EntityUserClub 
+     */
+    public function getBaseRole()
+    {
+    	// Revisa rols per ordre preferència: Admin, Club, Instructor, Federat (Pendent)
+        $role = $this->getRoleAdmin();
+		if ($role == null) $role = $this->getRoleClub();
+		if ($role == null) $role = $this->getRoleInstructor();
+		//if ($role == null) $role = $this->getRoleFederat();  // => Desactivat de moment
+		
+		return $role;
+    }
+	
+	/**
+     * Get club
+     *
+     * @return FecdasBundle\Entity\EntityClub 
+     */
+    public function getBaseClub()
+    {
+    	// Revisa rols per ordre preferència: Admin, Club, Instructor, Federat (Pendent)
+    	$role = $this->getBaseRole();
+		if ($role != null) return $role->getClub();
+		return null;
+    }
+	
+	/**
+     * Get club
+     *
+     * @return FecdasBundle\Entity\EntityUSerClub 
+     */
+    public function getRoleAdmin()
+    {
+        foreach ($this->clubs as $userClubRole) if ($userClubRole->isAdmin()) return $userClubRole;
+    	
+    	return null;
+    }
+	
+	/**
+     * Get club
+     *
+     * @return FecdasBundle\Entity\EntityUSerClub 
+     */
+    public function getRoleClub()
+    {
+        foreach ($this->clubs as $userClubRole) if ($userClubRole->isRoleClub()) return $userClubRole;
+    	
+    	return null;
+    }
+	
+	/**
+     * Get club
+     *
+     * @return FecdasBundle\Entity\EntityUSerClub 
+     */
+    public function getRoleInstructor()
+    {
+        foreach ($this->clubs as $userClubRole) if ($userClubRole->isRoleInstructor()) return $userClubRole;
+    	
+    	return null;
+    }
+	
+	/**
+     * Get club
+     *
+     * @return FecdasBundle\Entity\EntityUSerClub 
+     */
+    public function getRoleFederat()
+    {
+        foreach ($this->clubs as $userClubRole) if ($userClubRole->isRoleFederat()) return $userClubRole;
+    	
+    	return null;
+    }
+	
+	/**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+    	return $this->id;
+    }
+
+    // Set Id not autogenerated
+    /**
+     * Set id
+     *
+     * @param integer $id
+     */
+    public function setId($id)
+    {
+    	$this->id = $id;
     }
 	
 	/**
@@ -134,67 +257,36 @@ class EntityUser {
     {
         return $this->pwd;
     }
-
-    /**
-     * Set club
+	
+	/**
+     * Get clubs
      *
-     * @param FecdasBundle\Entity\EntityClub $club
+     * @return Doctrine\Common\Collections\ArrayCollection
      */
-    public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+    public function getClubs()
     {
-        $this->club = $club;
-    }
-
-    /**
-     * Get club
-     *
-     * @return FecdasBundle\Entity\EntityClub 
-     */
-    public function getClub()
-    {
-        return $this->club;
+    	return $this->clubs;	// userClubRoles
     }
     
-    /**
-     * Set roles
+	/**
+     * Add user club
      *
-     * @param string $roles
+     * @param FecdasBundle\Entity\EntityUserClub $club
      */
-    public function setRoles($roles)
+    public function addClub(\FecdasBundle\Entity\EntityUserClub $userClub)
     {
-    	$this->roles = $roles;
+    	$this->clubs->add($userClub);
     }
-    
-    /**
-     * Get roles
-     *
-     * @return string
-     */
-    public function getRoles()
+	
+	    
+    public function setClubs(\Doctrine\Common\Collections\ArrayCollection $clubs)
     {
-    	return $this->roles;
+    	$this->clubs = $clubs;
+    	foreach ($clubs as $userClubRole) {
+    		$userClubRole->setUsuari($this);
+    	}
     }
-    
-    /**
-     * Set forceupdate
-     *
-     * @param boolean $forceupdate
-     */
-    /*public function setForceupdate($forceupdate)
-    {
-    	$this->forceupdate = $forceupdate;
-    }*/
-    
-    /**
-     * Get forceupdate
-     *
-     * @return boolean
-     */
-    /*public function getForceupdate()
-    {
-    	return $this->forceupdate;
-    }*/
-
+	
     /**
      * Set recoverytoken
      *

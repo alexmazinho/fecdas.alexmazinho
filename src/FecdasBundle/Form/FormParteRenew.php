@@ -47,9 +47,9 @@ class FormParteRenew extends AbstractType {
 					));
 				
 				$form->add('any', 'text', array(
-						'mapped'  => false,
-						'read_only' => true,
-						'data'		=> $parte->getAny()
+						'mapped'  	=> false,
+						'data'		=> $parte->getAny(),
+						'attr'		=>	array('readonly' => true)
 				));
 				
 			}

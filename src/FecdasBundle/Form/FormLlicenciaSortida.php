@@ -29,21 +29,21 @@ class FormLlicenciaSortida extends AbstractType {
 				));
 
 				$form->add('nom', 'text', array(
-					'read_only' => true,
 					'mapped' 	=> false,
-					'data'		=> $persona->getNomCognoms()
+					'data'		=> $persona->getNomCognoms(),
+					'attr'		=>	array('readonly' => true)
 				));
 
 				$form->add('dni', 'text', array(
-					'read_only' => true,
 					'mapped' 	=> false,
-					'data'		=> $persona->getDni()
+					'data'		=> $persona->getDni(),
+					'attr'		=>	array('readonly' => true)
 				));
 				
 				$form->add('mail', 'text', array(
-					'read_only' => true,
 					'mapped' 	=> false,
-					'data'		=> $persona->getMail()
+					'data'		=> $persona->getMail(),
+					'attr'		=>	array('readonly' => true)
 				));
 			}
 		});

@@ -368,11 +368,21 @@
 	
 	
 	//Cercador select2 genèric cal que existeixi mètode al Controller que gestioni params 'cerca' i 'id'
-	init_cercaperdni_JSON = function(elem_sel, placeholder_txt, url, callbackPropagateValues) {
+	init_cercaperdni_JSON = function(elem_sel, placeholder_txt, minInput, seleccioCurta, url, callbackPropagateValues, selectionFunction) {
+		
+		$(".alert").remove();
+		
+		if (typeof selectionFunction === "undefined") {
+			//e.val, e.added, e.removed
+			selectionFunction = function(item) {
+		    	//var originalOption = item.element;
+		        return item.text;
+		    };
+		}
 		
 		// Inicialitza el control de cerca (input hidden) 
 		$(elem_sel).select2({
-			minimumInputLength: 6,
+			minimumInputLength: minInput,
 			allowClear: true,
 			multiple: false,
 			placeholder: placeholder_txt,
@@ -407,14 +417,13 @@
 		    	//var originalOption = item.element;
 		        return item.text+"-"+item.nom;
 		    },
-		    formatSelection: function(item) {
-		    	//var originalOption = item.element;
-		        return item.text;
-		    },
+		    formatSelection: selectionFunction,
 		}).on("change", function ( e ) { 
-			
-			//e.val, e.added, e.removed
-			callbackPropagateValues(e.added);
+			if (typeof callbackPropagateValues !== "undefined"
+				&& typeof e.added  !== "undefined") {
+				//e.val, e.added, e.removed
+				callbackPropagateValues(e.added);
+			}
 		});
 	};
     
@@ -428,6 +437,8 @@
 		
 		var curformat = 'd/m/Y';
 		if (showtime) curformat = 'd/m/Y H:i';
+	
+		$.datetimepicker.setLocale('ca');
 		
 		elem.datetimepicker({
 			 onGenerate:function( ct, $input ) {
@@ -599,11 +610,16 @@
 	/*************************************************** Menu ********************************************************/
 	
 	
-	reloadRoleClub = function( url, role, club ) {
-		var params = { 	currentrole: role, roleclub: club };
+	reloadCurrentClub = function( url, urlCallback, role, club ) {
+		var params = { 	currentrole: role, currentclub: club };
 		$.get(url,	params,
 		function(data) {
-			location.reload();
+			if (data !== "reload") {
+				location.reload();
+			} else {
+				window.location = urlCallback;
+			}
+			
 		}); // Canvi de rol
 	};
 	
@@ -1862,10 +1878,10 @@
 	    });
 	};
 	
-	resetPwdUserClick = function(struser) {
+	resetPwdUserClick = function( idUserClub ) {
 		
         var url = $("#formuserclub-add").attr("href");
-		var params = { 	action: 'resetpwd', user: struser };
+		var params = { 	action: 'resetpwd', id: idUserClub };
 		$.get(url, params,
 		function(data, textStatus) {
 	    	$("#llista-usuarisclub").html(data);
@@ -1874,10 +1890,10 @@
 		});
 	};
 	
-	removedUserClick = function(struser) {
+	removedUserClick = function( idUserClub ) {
 		
         var url = $("#formuserclub-add").attr("href");
-		var params = { 	action: 'remove', user: struser };
+		var params = { 	action: 'remove', id: idUserClub };
 		$.get(url, params,
 		function(data, textStatus) {
 	    	$("#llista-usuarisclub").html(data);
@@ -1899,9 +1915,11 @@
 	        $('#club_randompwd').val(password);
 	        $('#club_pwd_first').val(password);
 	        $('#club_pwd_second').val(password);
+	        
+	        $('#formuserclub-manual').show();
 	    });
 	};
-
+	
 	randomPassword = function (length) {
 	    var iteration = 0;
 	    var password = "";
@@ -1924,6 +1942,25 @@
 	        password += String.fromCharCode(randomNumber);
 	    }
 	    return password;
+	};
+	
+	
+	manualPwdClick = function() {
+		/*  Allow manual Password */
+	    $('#formuserclub-manual')
+	    .off('click')
+	    .click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        $('.form-user-password-manual').show();
+	        $('.form-user-password-random').hide();
+	        
+	        $('#club_randompwd').val('');
+	        $('#club_pwd_first').val('');
+	        $('#club_pwd_second').val('');
+	        
+	        $('#formuserclub-manual').hide();
+	    });
 	};
 	/*****************************************************************************************************************/
 	

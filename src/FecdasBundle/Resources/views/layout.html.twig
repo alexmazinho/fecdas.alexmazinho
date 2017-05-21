@@ -34,8 +34,11 @@
 {% endblock %}
 
 {% block fecdas_notifications %}
+	{% if currentclubnom is defined %}
+		<span class="notifications-title">{{ currentclubnom }}</span>
+	{% endif %}
 	{% if app.environment != 'prod' %}
-		Entorn de proves
+		<span class="dev-environment">Entorn de proves</span>
 	{% endif %}
 {% endblock %}
 
@@ -60,20 +63,15 @@
 						<li><a class="featured enquesta-action-open" href="{{ path('FecdasBundle_enquestausuari') }}">Enquesta <i class="fa fa-question fa-fw"></i></a></li>
 					{% endif %}
 					<li><a href="{{ path('FecdasBundle_user') }}">Racó d'usuari <i class="fa fa-key fa-fw"></i></a></li>
-					<li><a href="{{ path('FecdasBundle_club') }}">Dades del club <i class="fa fa-list-alt fa-fw"></i></a></li>
+					{% if roleclub == true  %}<li><a href="{{ path('FecdasBundle_club') }}">Dades del club <i class="fa fa-list-alt fa-fw"></i></a></li>{% endif %}
 					<li><a href="{{ path('FecdasBundle_logout') }}">Tancar sessió <i class="fa fa-sign-out fa-fw"></i></a></li>
 				{% else %}
 					<li><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió <i class="fa fa-sign-in fa-fw"></i></a></li>	
 				{% endif %}	
 			    {% if roleform is defined %}
 			    	<li class="divider"></li>
-			    	{% if adminasuser is defined and adminasuser == true %}
-			    		<li><a class="changerole" href="{{ path('FecdasBundle_changerole', {'role': 'admin'}) }}">Tornar al rol Admin <i class="fa fa-user-plus fa-fw"></i></a></li>
-			    	{% else %}
-			    		<li><a class="changerole" href="{{ path('FecdasBundle_changerole', {'role': 'club'}) }}">Activar rol club <i class="fa fa-user fa-fw"></i></a></li>
-			    	{% endif %}
 			    	<li><p>{{ form_widget(roleform.currentrole, { 'attr': {'class': 'select2-nosearch'} }) }} {% if admin == true %}<i class="fa fa-user-plus fa-fw"></i>{% else %}<i class="fa fa-exchange fa-fw"></i>{% endif %}</p></li>
-			    	<li><p>{{ form_widget(roleform.roleclub) }} <i class="fa fa-exchange fa-fw"></i></p></li>
+			    	{% if admin == true %}<li><p>{{ form_widget(roleform.currentclub) }} <i class="fa fa-exchange fa-fw"></i></p></li>{% endif %}
 				{% endif %}
 			  </ul>
 			</div>
@@ -102,55 +100,101 @@
 		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		      <ul class="nav navbar-nav">
 		        <li id="menu-home"><a href="{{ path('FecdasBundle_homepage') }}">Inici <span class="sr-only">Inici</span></a></li>
-		        <li class="dropdown">
-		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tramitació <span class="caret"></span></a>
-		          <ul class="dropdown-menu" role="menu">
-		          	<li id="menu-parte" class="separator"><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
-					<li id="menu-import"><a href="{{ path('FecdasBundle_importcsv') }}">Importació de llicències</a></li>
-					<li class="divider"></li>
-					<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
-		          </ul>
-		        </li>
-		        {% if allowcomandes == true %}
-		        <li class="dropdown">
-			        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Comandes <span class="caret"></span></a>
-			        <ul class="dropdown-menu" role="menu">
-   			          	<li id="menu-comanda"><a href="{{ path('FecdasBundle_graellaproductes') }}"><i class="fa fa-shopping-cart"></i>  Cistella ( {{ cartItems }} )</a></li>
+		        
+		        {% if admin or roleclub %}
+<!-- STARTS CLUB MENU -->			        
+			        <li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tramitació <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li id="menu-parte" class="separator"><a href="{{ path('FecdasBundle_parte') }}">Introduir noves llicències</a></li>
+						<li id="menu-import"><a href="{{ path('FecdasBundle_importcsv') }}">Importació de llicències</a></li>
 						<li class="divider"></li>
-			          	<li id="menu-kits" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':3 }) }}">Kits</a></li>
-			          	<li id="menu-merchandising" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':4 }) }}">Merchandising</a></li>
-			          	<li id="menu-productes-cursos"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':5 }) }}">Cursos</a></li>
-			          	<li id="menu-altres"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) }}">Altres</a></li>
-			          	<!-- <li id="menu-altres"><a href="{# path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) #}">Miscel·lània</a></li> -->
-						{% if admin == true %}
-						<li class="divider">Admin</li>
-			          	<li id="menu-productes-llicencies"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':1 }) }}">Llicències</a></li>
-			          	<li id="menu-productes-duplicats"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':2 }) }}">Duplicats</a></li>
-			          	{% endif %}
- 		            </ul>
-		        </li>
+						<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Duplicats</a></li>
+			          </ul>
+			        </li>
+			        {% if allowcomandes == true %}
+				        <li class="dropdown">
+					        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Comandes <span class="caret"></span></a>
+					        <ul class="dropdown-menu" role="menu">
+		   			          	<li id="menu-comanda"><a href="{{ path('FecdasBundle_graellaproductes') }}"><i class="fa fa-shopping-cart"></i>  Cistella ( {{ cartItems }} )</a></li>
+								<li class="divider"></li>
+					          	<li id="menu-kits" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':3 }) }}">Kits</a></li>
+					          	<li id="menu-merchandising" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':4 }) }}">Merchandising</a></li>
+					          	<li id="menu-productes-cursos" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':5 }) }}">Cursos</a></li>
+					          	<li id="menu-altres"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) }}">Altres</a></li>
+					          	<!-- <li id="menu-altres"><a href="{# path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':6 }) #}">Miscel·lània</a></li> -->
+								{% if admin == true %}
+								<li class="divider">Admin</li>
+					          	<li id="menu-productes-llicencies" class="separator"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':1 }) }}">Llicències</a></li>
+					          	<li id="menu-productes-duplicats"><a href="{{ path('FecdasBundle_graellaproductes', { 'sort': 'p.descripcio', 'direction':'asc', 'tipus':2 }) }}">Duplicats</a></li>
+					          	{% endif %}
+		 		            </ul>
+				        </li>
+			        {% endif %}
+			        <li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consulta <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li id="menu-partes"><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llicències</a></li>
+			          	<li class="divider"></li>
+			          	<li id="menu-cursos" class="separator"><a href="{{ path('FecdasBundle_cursos') }}">Cursos</a></li>
+			          	<li id="menu-persones" class="separator"><a href="{{ path('FecdasBundle_dadespersonals') }}">Titulacions i<br/>dades personals</a></li>
+			          	<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
+						{% if busseig == true  %}
+				            <li class="divider"></li>
+							<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>
+						{% endif %}
+			          </ul>
+			        </li>
+			        {% if roleclub %}
+				        <li class="dropdown">
+				          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Facturació <span class="caret"></span></a>
+				          <ul class="dropdown-menu" role="menu">
+				          	<li id="menu-apunts" class="separator"><a href="{{ path('FecdasBundle_apunts') }}">Moviments i saldo</a></li>
+				          	<li id="menu-comandes" class="separator"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
+				          	<li id="menu-factures" class="separator"><a href="{{ path('FecdasBundle_factures', { 'sort': 'f.datafactura', 'direction':'desc' }) }}">Factures</a></li>
+				          	<li id="menu-ingresos"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
+				          </ul>
+				        </li>
+			      		<li class="dropdown">
+				          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Club <span class="caret"></span></a>
+				          <ul class="dropdown-menu" role="menu">
+				            <li id="menu-club" class="separator"><a href="{{ path('FecdasBundle_club') }}">Dades i usuaris</a></li>
+				            {% if admin == true %}{% set tab = 4 %}{% else %}{% set tab = 2 %}{% endif %}
+				            <li id="menu-adduser"><a href="{{ path('FecdasBundle_club', { 'tab': 2 }) }}">Afegir usuari</a></li>
+				          </ul>
+				        </li>
+				    {% endif %}
+<!-- ENDS CLUB MENU -->				    
 		        {% endif %}
-		        <li class="dropdown">
-		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consulta <span class="caret"></span></a>
-		          <ul class="dropdown-menu" role="menu">
-		          	<li id="menu-partes"><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llicències</a></li>
-		          	<li class="divider"></li>
-		          	<li id="menu-cursos"><a href="{{ path('FecdasBundle_cursos') }}">Cursos</a></li>
-		          	<li id="menu-persones"><a href="{{ path('FecdasBundle_dadespersonals') }}">Titulacions i<br/>dades personals</a></li>
-		          	<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
-		          	<li class="divider"></li>
-		          	<li id="menu-apunts"><a href="{{ path('FecdasBundle_apunts') }}">Moviments i saldo</a></li>
-		          	<li id="menu-comandes"><a href="{{ path('FecdasBundle_comandes', { 'sort': 'c.dataentrada', 'direction':'desc' }) }}">Comandes</a></li>
-		          	<li id="menu-factures"><a href="{{ path('FecdasBundle_factures', { 'sort': 'f.datafactura', 'direction':'desc' }) }}">Factures</a></li>
-		          	<li id="menu-ingresos"><a href="{{ path('FecdasBundle_ingresos', { 'sort': 'r.datapagament', 'direction':'desc' }) }}">Ingressos i rebuts</a></li>
-					{% if busseig == true  %}
-			            <li class="divider"></li>
-						<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>
-					{% endif %}
-		          </ul>
-		        </li>
+		        {% if roleinstructor or rolefederat %}
+<!-- STARTS INSTRUCTORS i FEDERATS MENU -->		        
+		        	<li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Llicències <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li id="menu-fedellicencies"><a href="{{ path('FecdasBundle_homepage') }}">Historial (pendent)</a></li>
+			          </ul>
+			        </li>
+			        <li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Titulacions <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li id="menu-fedetitols"><a href="{{ path('FecdasBundle_homepage') }}">Historial (pendent)</a></li>
+			          </ul>
+			        </li>
+			        {% if roleinstructor %}
+			        <li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Cursos <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			          	<li id="menu-cursos"><a href="{{ path('FecdasBundle_homepage') }}">Historial (pendent)</a></li>
+			          	<li class="divider"></li>
+			          	<li id="menu-curs"><a href="{{ path('FecdasBundle_curs') }}">Nou curs</a></li>
+			          </ul>
+			        </li>
+			        {% endif %}
+<!-- ENDS INSTRUCTORS i FEDERATS MENU -->			        
+		        {% endif %}
 		      </ul>
 		      {% if admin == true  %}
+<!-- STARTS ADMIN MENU -->
 		      	<ul class="nav navbar-nav navbar-right"><li><p class="navbar-text"><i class="admin-nav">ADMINISTRACIÓ </i></p></li></ul>
 		      	<ul class="nav navbar-nav navbar-right">
 		      		<li class="dropdown">
@@ -202,8 +246,14 @@
 			          </ul>
 			        </li>
 		      	</ul>
+<!-- ENDS ADMIN MENU -->		      	
 		      {% else %}
 		      	<ul class="nav navbar-right"><li id="menu-contact"><a class="navbar-brand" href="{{ path('FecdasBundle_contact') }}"><i class="fa fa-envelope"></i></a></li></ul>
+		      	{% if not admin %}
+		      	<ul class="nav navbar-nav navbar-right">
+		      		<li id="menu-raco"><a href="{{ path('FecdasBundle_user') }}" class="">Racó d'usuari <i class="fa fa-key fa-fw"></i></a></li>
+			    </ul>
+			    {% endif %}
 			{% endif %}
 		    </div><!-- /.navbar-collapse -->
 		  </div><!-- /.container-fluid -->
@@ -269,15 +319,16 @@
 	
 			mainMenuClick();
 	
-			if ($("#menu-user select#form_roleclub").length !== 0) {
-				$("#menu-user select#form_roleclub").select2({
-					minimumInputLength: 2
+			if ($("#menu-user select#form_currentclub").length !== 0) {
+				$("#menu-user select#form_currentclub").select2({
+					minimumInputLength: 2,
 				});
 
-				$("#menu-user select#form_roleclub").change(function( e ) {
+				$("#menu-user select#form_currentclub").change(function( e ) {
 					var url =  "{{ path('FecdasBundle_changerole') }}";
-					
-					reloadRoleClub( url, $("#menu-user #form_currentrole").val(), $("#menu-user #form_roleclub").val() );
+					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
+					var role = $("#menu-user #form_currentrole").length > 0?$("#menu-user #form_currentrole").val():'';
+					reloadCurrentClub( url, urlCallback, role, $(this).val());
 				});
 					
 			}
@@ -288,32 +339,23 @@
 					minimumResultsForSearch: -1, 		// Disables search
 					formatSelection: function(item) {
 					  	//var originalOption = item.element;
-						return "Rol "+item.text.toUpperCase();
+						//return "Rol "+item.text.toUpperCase();
+						return "Rol "+item.text;
 					},
 					formatResult: function(item) {
 					  	//var originalOption = item.element;
-						return item.text.toUpperCase();
+						//return item.text.toUpperCase();
+						return item.text;
 					}
 				});
 
 				$("#menu-user select#form_currentrole").change(function( e ) {
 					var url =  "{{ path('FecdasBundle_changerole') }}";
-					
-					reloadRoleClub( url, $("#menu-user #form_currentrole").val(), $("#menu-user #form_roleclub").val() );
+					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
+					var club = $("#menu-user #form_currentclub").length > 0?$("#menu-user #form_currentclub").val():'';
+					reloadCurrentClub( url, urlCallback, $(this).val(), club );
 				});
 			}
-			
-			
-			$('.changerole').click(function(e) {
-				e.preventDefault();
-			
-				var url = $(this).attr("href");
-				url += '&roleclub='+$("#menu-user select#form_roleclub").val();
-				
-				$.get(url, function(data) {
-					location.reload();
-				});
-			});
 
 		});
 	

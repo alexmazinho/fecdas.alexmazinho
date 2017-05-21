@@ -81,6 +81,7 @@ class EntityStock {
 
 	public function __construct($club = null, $producte = null, $unitats = 0, $comentaris = '', $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $factura = null ) {
 		$this->id = 0;
+		$this->stock = 0;
 		$this->club = $club;
 		$this->producte = $producte;
 		$this->dataregistre = ($dataregistre != null?$dataregistre:new \DateTime('today'));

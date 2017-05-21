@@ -3,6 +3,7 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * 
@@ -211,7 +212,31 @@ class EntityLlicencia {
 	}
 	
 	/**
-	 * Get id
+     * Get llicencia vàlida
+     */
+    public function isValida()
+    {
+    	return ($this->getDatabaixa() == null && $this->getParte() != null && $this->getParte()->getPendent() == false);
+    }
+
+	/**
+     * Get llicencia baixa
+     */
+    public function isBaixa()
+    {
+    	return ($this->getDatabaixa() != null || $this->getParte() == null || ($this->getParte() != null && $this->getParte()->getDatabaixa() != null));
+    }
+	
+    /**
+     * Get llicencia vigent
+     */
+    public function isVigent()
+    {
+    	return ($this->isValida() == true && $this->getParte()->isVigent() == true);
+    }
+	
+	/**
+	 * Get llicència baixa
 	 *
 	 * @return boolean
 	 */
@@ -219,6 +244,17 @@ class EntityLlicencia {
 	{
 		return $this->databaixa != null;
 	}
+
+	/**
+	 * Get llicència tècnic?
+	 *
+	 * @return boolean
+	 */
+	public function esTecnic()
+	{
+		return $this->categoria->getSimbol() == BaseController::SIMBOL_TECNIC;
+	}
+
 	
 	/**
      * Get id
@@ -880,30 +916,6 @@ class EntityLlicencia {
     	else $activitats .= "-";*/
     	 
     	return $activitats;
-    }
-    
-    /**
-     * Get llicencia vàlida
-     */
-    public function isValida()
-    {
-    	return ($this->getDatabaixa() == null && $this->getParte() != null && $this->getParte()->getPendent() == false);
-    }
-
-	/**
-     * Get llicencia baixa
-     */
-    public function isBaixa()
-    {
-    	return ($this->getDatabaixa() != null || $this->getParte() == null || ($this->getParte() != null && $this->getParte()->getDatabaixa() != null));
-    }
-	
-    /**
-     * Get llicencia vigent
-     */
-    public function isVigent()
-    {
-    	return ($this->isValida() == true && $this->getParte()->isVigent() == true);
     }
     
 }

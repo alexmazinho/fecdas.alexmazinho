@@ -154,6 +154,8 @@
 								$("#stock-main").append(sms);
 								$("#stock-main").append(data);
 
+								$("#form_view_0").prop("checked", true);	// Vista detall
+								
 						 		$( '#dialeg' ).html('');
 						 		$( '#dialeg' ).dialog( "close" );
 						 		
@@ -190,7 +192,7 @@
 						});
 
 						var maxdate = new Date (current.getFullYear(), current.getMonth()+2, current.getDay());
-								
+
 						initDateTimePicker ( 
 							$( '#registrestock_dataregistre' ), 
 							mindate, 
@@ -249,6 +251,9 @@
 					$(".table-stock").remove();
 					$("#stock-main").append(sms);
 					$("#stock-main").append(data);
+
+					$("#form_view_0").prop("checked", true);	// Vista detall
+					
 
 				}).fail( function(xhr, status, error) {
 					 // xhr.status + " " + xhr.statusText, status, error

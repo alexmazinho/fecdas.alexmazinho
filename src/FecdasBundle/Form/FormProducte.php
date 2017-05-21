@@ -84,21 +84,20 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'required' 		=> false,
 					'scale' 		=> 0,
 					//'disabled' 		=> $producte->getStockable() != true
-					'read_only' 		=> $producte->getStockable() != true
+					'attr'			=>	array('readonly' => $producte->getStockable() != true)
 			));
 			
 			$form->add ('stock', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
 					//'disabled' 	=> $producte->getStockable() != true
-					'read_only' 	=> $producte->getId() != 0 || $producte->getStockable() != true   // NO modificar stock. Només indicar quan es crea
+					'disabled'		=> true
 			));
 			
 			$form->add ('pes', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					//'disabled' 	=> $producte->getTransport() != true
-					'read_only' 	=> $producte->getTransport() != true
+					'attr'			=>	array('readonly' => $producte->getTransport() != true)
 			));
 			
 			$form->add('stockable', 'checkbox', array(
@@ -237,7 +236,7 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		
 		$builder->add('databaixa', 'datetime', array(
 				'required' => false,
-				'read_only' => false,
+				'attr'			=>	array('readonly' => false),
 				'widget' => 'single_text',
 				'input' => 'datetime',
 				'placeholder' => false,

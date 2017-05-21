@@ -77,7 +77,7 @@
 				{% if admin == true %} <li><a href="#formclub-dades-tab3">Llicències admeses</a></li>{% endif %}
 				{% if admin == true %} <li><a href="#formclub-dades-tab4">Saldos</a></li>{% endif %}
 				<li><a href="#formclub-dades-tab5">Dates i càrrecs</a></li>
-				{% if admin == true and nouclub != true %} <li><a href="#formclub-dades-tab6">Nou usuari</a></li>{% endif %}
+				{% if nouclub != true %} <li><a href="#formclub-dades-tab6">Nou usuari</a></li>{% endif %}
 			</ul>
 			
 			<div id="formclub-dades-tab1" class="formclub-tab">		
@@ -88,7 +88,7 @@
 				</div>
 				<div class="row">
 					<div class="col-md-5">
-			  			<div class="form-group">
+			  			<div class="space20">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">Nom*</span>
 								{{ form_label(form.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -97,7 +97,7 @@
 						</div>
 					</div>
 					<div class="col-md-3">
-			  			<div class="form-group">
+			  			<div class="space20">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">CIF*</span>
 								{{ form_label(form.cif, 'CIF', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -106,7 +106,7 @@
 						</div>
 					</div>
 					<div class="col-md-4">
-			  			<div class="form-group">
+			  			<div class="space20">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">Correu*</span>
 								{{ form_label(form.mail, 'Correu', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -114,6 +114,8 @@
 							</div>
 						</div>
 					</div>
+				</div>
+				<div class="row">					
 					<div class="col-md-3">
 			  			<div class="form-group">
 			  				<div class="input-group">
@@ -152,15 +154,13 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-12">
-						<h4 class="blue">Adreça fiscal</h4>
-					</div>
+					<div class="col-md-12"></div>
 				</div>
 				<div class="row">
-					<div class="col-md-6">
-			  			<div class="form-group">
+					<div class="col-md-8">
+			  			<div class="space20">
 			  				<div class="input-group">
-					    		<span class="input-group-addon input-group-addon-icon">Adreça</span>
+					    		<span class="input-group-addon input-group-addon-icon">Adreça fiscal</span>
 								{{ form_label(form.addradreca, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
 								{{ form_widget(form.addradreca, { 'attr': {'class': 'form-control','placeholder':'Adreça' } }) }}
 							</div>
@@ -209,15 +209,13 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-12">
-						<h4 class="blue">Adreça correu</h4>
-					</div>
+					<div class="col-md-12"></div>
 				</div>
 				<div class="row">
-					<div class="col-md-6">
-			  			<div class="form-group">
+					<div class="col-md-8">
+			  			<div class="space20">
 			  				<div class="input-group">
-					    		<span class="input-group-addon input-group-addon-icon">Adreça</span>
+					    		<span class="input-group-addon input-group-addon-icon">Adreça correu</span>
 								{{ form_label(form.addradrecacorreu, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
 								{{ form_widget(form.addradrecacorreu, { 'attr': {'class': 'form-control','placeholder':'Adreça' } }) }}
 							</div>
@@ -264,6 +262,11 @@
 	        </div>
 	        {% if admin == true %} 
 		        <div id="formclub-dades-tab3" class="formclub-tab" >
+		        	<div class="row">
+						<div class="col-md-12">
+							<h4 class="blue">Tipus de llicències</h4>
+						</div>
+					</div>
 					<div class="row">
 						<div class="col-md-9">
 							<div class="form-group">
@@ -279,6 +282,14 @@
 	        {% endif %}
 	        {% if admin == true %} 
 		        <div id="formclub-dades-tab4" class="formclub-tab" >
+			        <div class="row">
+						<div class="col-md-12">
+							<h4 class="blue">Dades actuals</h4>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12 space20"></div>
+					</div>
 		        	<div class="row">
 						<div class="col-md-4">
 							<div class="form-group">
@@ -428,7 +439,7 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-6">
+					<div class="col-md-7">
 						<div class="row">
 							<div class="col-md-6">
 							 	<div class="form-group">
@@ -475,16 +486,16 @@
 								</div>
 							</div>
 							<div class="row">
-								<div class="col-md-8">
+								<div class="col-md-5">
 									<div class="form-group">
 										<div class="input-group" >
-											<span class="input-group-addon required">Càrrec</span>
+											<span class="input-group-addon required">&nbsp;</span>
 								  			{{ form_label(form.carrec, 'Càrrec', { 'label_attr': {'class': 'sr-only'} }) }}
 								  			{{ form_widget(form.carrec, { 'attr': {'class': 'form-control'} }) }}
 										</div>
 									</div>
 								</div>
-								<div class="col-md-10">
+								<div class="col-md-7">
 									<div class="form-group">
 										<div class="input-group" >
 											<span class="input-group-addon required">Federat</span>
@@ -493,34 +504,40 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-md-8">
+								<div class="col-md-10">
 									<div class="form-group">
 										<div class="input-group" >
-											<span class="input-group-addon required">Nom</span>
+											<span class="input-group-addon required">O indicar el nom ...</span>
 								  			{{ form_label(form.nommembre, 'Nom nou membre', { 'label_attr': {'class': 'sr-only'} }) }}
 								  			{{ form_widget(form.nommembre, { 'attr': {'class': 'form-control'} }) }}
 										</div>
 									</div>
 								</div>
 								{{ form_widget(form.carrecs) }}
-								<div class="col-md-2">
+								<div class="col-md-2 col-last-right">
 									<a id="formclub-addcarrec" href="{{ path('FecdasBundle_clubaddjunta', {'codi': club.codi }) }}" class="btn btn-default" title="Afegir"><i class="fa fa-chevron-circle-right fa-1x blue"></i></a>
 								</div>
 							</div>
 						{% endif %}
 					</div>
 					
-					<div id="formclub-taula-junta" class="col-md-6">
+					<div id="formclub-taula-junta" class="col-md-5">
 						{% include "FecdasBundle:Security:clubtaulajunta.html.twig" %}
 					</div>
 				</div>
 			</div>	        
-	        {% if admin == true and nouclub != true %}
+	        {% if nouclub != true %}
 		        <div id="formclub-dades-tab6" class="formclub-tab">
+		        	<div class="row">
+						<div class="col-md-12">
+							<h4 class="blue">Gestió d'usuaris</h4>
+						</div>
+					</div>
+					<div class="row"><div class="col-md-12"><div class="form-group">&nbsp;</div></div></div>
 					<div class="row">
 						<div class="col-md-3">
 							<div class="form-group">
-								{{ form_label(form.user, 'User', { 'label_attr': {'class': ''} }) }}
+								{{ form_label(form.user, 'Usuari (Adreça de correu)', { 'label_attr': {'class': ''} }) }}
 								<div class="input-group" >
 									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-user fa-1x"></span></span>
 									{{ form_widget(form.user, { 'attr': {'class': 'form-control','placeholder':'Nom d\'usuari' } }) }}
@@ -533,6 +550,15 @@
 								<div class="input-group" >
 									<span class="input-group-addon input-group-addon-icon"></span>
 									{{ form_widget(form.role, { 'attr': {'class': 'form-control' } }) }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								{{ form_label(form.auxinstructordni, 'Escollir persona (Instructors)') }}
+								<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+									{{ form_widget(form.auxinstructordni, { 'attr': {'class': 'form-control'} }) }}
 								</div>
 							</div>
 						</div>
@@ -556,7 +582,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-md-3 form-user-password-random" style="display:none">
+						<div class="col-md-3 form-user-password-random" style="display: none">
 							<div class="form-group" >
 								{{ form_label(form.randompwd, 'Paraula clau generada', { 'label_attr': {'class': ''} }) }}
 								<div class="input-group" >
@@ -569,14 +595,16 @@
 							<div class="form-group" >
 								<label class="">&nbsp;</label>
 								<div class="input-group" >
-									<a id="formuserclub-random" href="javascript:void(0);" class="btn btn-default"><i class="fa fa-random fa-1x orange"></i> automàtic</a>
+									<a id="formuserclub-random" href="javascript:void(0);" class="btn btn-default"><i class="fa fa-magic fa-1x orange"></i> automàtic</a>
 									<!-- <div class="checkbox-inline">
 								    	<label>{# form_widget(form.forceupdate) #} Obliga a actualitzar	</label>
 									</div> -->
+									<a id="formuserclub-manual" href="javascript:void(0);" class="btn btn-default" style="display: none"><i class="fa fa-pencil fa-1x system-blue"></i> manual</a>
 								</div>
 							</div>
 						</div>
 					</div>
+					<div class="row"><div class="col-md-12"><div class="space50"></div></div></div>
 					<div class="row">
 						<div class="col-md-4">
 							<div class="form-group" >
@@ -590,9 +618,11 @@
 				
 		<div id="formclub-rest" class="hidden">{{ form_rest(form) }}</div>
 
-		<div id="llista-usuarisclub" class="row">
+		<div class="row">
 			<div class="col-md-12">
+				<div id="llista-usuarisclub">
 				{% include "FecdasBundle:Security:clubllistausers.html.twig" %}
+				</div>
 			</div>
 		</div> 
 
@@ -632,9 +662,68 @@
 		nouClub();
 	
 		addUserClick();
-	
+
+		$('#club_pwd_first').val('');
+        $('#club_pwd_second').val('');
+        
 		randomPwdClick();
-	
+
+		manualPwdClick();
+
+		// Crear select2
+		$("#club_auxinstructordni").val("");
+		$("#club_auxinstructordni").removeAttr('readonly');
+		var urlConsultaDocentPerDniNom = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
+		urlConsultaDocentPerDniNom += '&club='+$('#club_codi').val()+'&docent=1';
+
+		init_cercaperdni_JSON('#club_auxinstructordni', 'Cercar instructor per nom o DNI', 4, false, urlConsultaDocentPerDniNom, function ( added ) {
+			/*
+			{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+			*/
+			$(".alert").remove();
+			if (added.mail == null) {  // Aquest instructor no té mail. => Avís
+				var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
+	 			 
+				 $("#tabs-club").append(sms);
+				 $("#club_auxinstructordni").val("");
+				 $('#club_user').val( "" );
+			} else {
+				$('#club_user').val( added.mail );
+			}
+
+		}, function( item ) {
+	    	//Selection Function
+	        return item.text+"-"+item.nom;
+	    });
+		
+		// Comença sempre com club
+		$('#club_user').val( "" ); 
+		$("select#club_role").val( "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_CLUB')  }}" );
+		$("#club_user").removeAttr('readonly');
+		//$("#club_auxinstructordni").attr('readonly', 'readonly');
+		$("#club_auxinstructordni").select2("readonly", true);
+		
+		$("select#club_role").on("change", function(e) {
+			$(".alert").remove();	
+
+			$("#club_auxinstructordni").val("");
+			$('#club_user').val( "" );
+			
+			// Canvi role 
+			// 	Instructors 			=> activa selecció persona, desactiva mail
+			//	Altres (Club, Admin)	=> desactiva selecció persona, activa mail
+			if ($(this).val() === "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_INSTRUCTOR')  }}" ||
+				$(this).val() === "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_FEDERAT') }}") {
+				$("#club_user").attr('readonly', 'readonly');
+				$("#club_auxinstructordni").select2("readonly", false);				
+			} else {
+				$("#club_user").removeAttr('readonly');
+				$("#club_auxinstructordni").select2("readonly", true);
+				
+			}
+		});
+		
+		
 		var urlPoblacions = "{{ path('FecdasBundle_ajaxpoblacions') }}";
 		
 		autocompleters( urlPoblacions, $('#club_addrpob'), $('#club_addrcp'), $('#club_addrprovincia'), $('#club_addrcomarca'), "#formclub" );
@@ -665,7 +754,7 @@
 			// Exemple {"id":"47422","text":"Pere ABADAL GONZALEZ"}
 			$("#club_nommembre").val(dades.text);
 		});
-		
+
 		var current = new Date();
 		var maxdate = new Date (current.getFullYear(), current.getMonth() + 1, current.getDay());
 

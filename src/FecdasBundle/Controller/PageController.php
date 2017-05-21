@@ -52,7 +52,7 @@ class PageController extends BaseController {
 		}
 
 		if ($request->getMethod() == 'POST') {
-			$form->bind($request);
+			$form->handleRequest($request);
 
 			if ($form->isValid()) {
 				$message = \Swift_Message::newInstance()
@@ -119,7 +119,7 @@ class PageController extends BaseController {
 		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
 		
 		$formbuilder->add('dataalta', 'text', array(
-				'read_only' => !$this->isCurrentAdmin(),
+				'attr'		=>	array('readonly' => !$this->isCurrentAdmin()),
 				'data' => $dataalta->format('d/m/Y')
 		));
 		
@@ -136,7 +136,7 @@ class PageController extends BaseController {
 		$form = $formbuilder->getForm();
 		
 		if ($request->getMethod() == 'POST') {
-			$form->bind($request);
+			$form->handleRequest($request);
 			
 			if ($form->isValid()) {
 				$file = $form->get('importfile')->getData();
@@ -379,14 +379,17 @@ class PageController extends BaseController {
 			// A partir 10/12 poden fer llicències any següent
 			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
 		}
-				
+
 		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
-				'read_only' => false,
 				'required' => false,
 				'data' => ($desde != null?$desde->format('d/m/Y'):''),
-				'attr' => array( 'placeholder' => '--')
+				'attr' => array( 'placeholder' => '--', 'readonly' => false)
 		));
-		$formBuilder->add('fins', 'text', array('read_only'  => false, 'required' => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--') ) );
+		$formBuilder->add('fins', 'text', array(
+				'required' 	=> false, 
+				'data' => ($fins != null?$fins->format('d/m/Y'):''),
+				'attr' => array( 'placeholder' => '--', 'readonly' => false) 
+		));
 		
 		$tipusSearch =  $this->getTotsTipusParte();
 		$formBuilder->add('tipus', 'choice', array(
@@ -507,8 +510,8 @@ class PageController extends BaseController {
 		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
 		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
 		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots) );
-		$formBuilder->add('desde', 'text', array('read_only' => false, 'required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
-		$formBuilder->add('fins', 'text', array('read_only'  => false, 'required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--')));
+		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
+		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		
 		$form = $formBuilder->getForm(); 
 	
@@ -686,7 +689,7 @@ class PageController extends BaseController {
 			$avisos = "";
 			if ($request->getMethod() == 'POST') {
 					
-				$form->bind($request);
+				$form->handleRequest($request);
 	
 				if ($parte->getTipus()->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 
@@ -916,8 +919,8 @@ class PageController extends BaseController {
 					$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
 					$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
 
-					$form->bind($request);
-					$formLlicencia->bind($request);
+					$form->handleRequest($request);
+					$formLlicencia->handleRequest($request);
 	
 					if (!$formLlicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formLlicencia->getErrorsAsString());
 						
@@ -1077,12 +1080,11 @@ class PageController extends BaseController {
 		$persona = null;
 		$metapersona = null; 
 		$em = $this->getDoctrine()->getManager();
-error_log("persona Action");		
 		try {
 			if ($request->getMethod() == 'POST') {
 				$p = $request->request->get('persona', null);
 				if ($p == null) throw new \Exception("Dades incorrectes");
-error_log("==========> ".$p['dni']);
+
 				if ($p['id'] != 0) {
 					$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($p['id']);
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
@@ -1101,12 +1103,10 @@ error_log("==========> ".$p['dni']);
 					$options['edit'] = true;
 					$em->persist($persona);
 				}
-error_log("==========> persona ".$persona->getDni());				
-error_log("==========> metapersona ".$metapersona->getDni());				
 				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
-				$formpersona->bind($request);
-error_log("==========> persona after bind ".$persona->getDni());			
+				$formpersona->handleRequest($request);
+			
 				if ($formpersona->isValid()) {
 					
 					$baixaPersona = $request->request->get('action') != 'save';
@@ -1134,8 +1134,7 @@ error_log("==========> persona after bind ".$persona->getDni());
 						$em->flush();
 						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals esborrades correctament");
 					}
-error_log("==========> metapersona before flush ".$metapersona->getDni());					
-error_log("==========> persona before flush ".$persona->getDni());						
+
 					$em->flush();
 					// Després de flush, noves entitats tenen id
 					$this->logEntryAuth('PERSONA '.$request->request->get('action'). ' OK', $persona->getId());

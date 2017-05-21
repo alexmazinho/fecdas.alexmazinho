@@ -106,7 +106,7 @@ class EnquestesController extends BaseController {
 			
 			$form = $this->createForm(new FormEnquesta(), $enquesta);
 			
-			$form->bind($request);
+			$form->handleRequest($request);
 
 			$actiontext = (is_null($enquesta->getId()))?'NEW ENQUESTA OK':'UPD ENQUESTA OK';
 

@@ -1,33 +1,85 @@
-	{% for flashMessage in app.session.flashbag.get('error-notice') %}
-	    <div class="sms-notice">
-			{{ flashMessage }}
-  		</div>	
-	{% endfor %}
+{% include 'FecdasBundle:Includes:messages.html.twig' %}
 
-{% if club.usuaris|length > 0 %}
-	<div class="table-header">	
-		<div id="list-header">
-		   	<div id="header-userclubuser" class="col-listheader">Usuari</div>
-		   	<div id="header-userclublastaccess" class="col-listheader">Darrer accés</div>
-		   	<div id="header-userclubrol" class="col-listheader">Rol</div>
-		   	<!-- <div id="header-userclubforceupdate" class="col-listheader">Canvi clau</div> -->
-		   	<div id="header-userclubactions" class="col-listheader">&nbsp;</div>
-		</div>
-	</div>
-	<div class="table-scroll">
-		<ol id="list-data">
-			{% for userclub in club.usuaris %}
-				{% if userclub.databaixa is null %}
-				<li class="data-detall">
-					<div class="data-detall-cell userclub-user">{{ userclub.user }}</div>
-					<div class="data-detall-cell userclub-lastaccess">
-					{% if userclub.lastaccess is not null %}
-					{{ userclub.lastaccess|date("d/m/Y H:i:s") }}
-					{% else %}
-					--
-					{% endif %}
-					</div>
-					<div class="data-detall-cell userclub-rol">{{ userclub.role }}</div>
+{% if club.getUsuarisDistinct|length > 0 %}
+	{% set rolsDistinct = club.getRolsDistinct %}
+	<table class="table-scroll table">
+		<thead class="table-header">	
+			<tr id="list-header">
+			   	<th id="header-userclubuser" class="col-listheader" rowspan="2">Usuari</th>
+			   	<th id="header-userclublastaccess" class="col-listheader" rowspan="2">Darrer accés</th>
+			   	<th id="header-userclubrolspan" class="col-listheader" colspan="{{ rolsDistinct|length }}">Rols</th>
+			   	<th id="header-userclubactions" class="col-listheader" rowspan="2">&nbsp;</th>
+			</tr>
+			<tr id="summary-header">
+				{% for role in rolsDistinct %}
+			   		<th id="header-userclubrol" class="col-listheader userclub-rol-{{ rolsDistinct|length }}">
+			   			{{ role|capitalize }}
+			   			{% if role ==  constant('FecdasBundle\\Controller\\BaseController::ROLE_INSTRUCTOR') or
+			   				  role ==  constant('FecdasBundle\\Controller\\BaseController::ROLE_FEDERAT') %}
+			   				  <br/><span class="title-comment">(Federat/Instructor)</span>
+			   			{% endif %}
+			   		</th>
+			   	{% endfor %}
+			</tr>
+		</thead>
+	
+		<tbody id="list-data">
+			{% for userdistinct in club.getUsuarisDistinct %}
+				{% set userclub = userdistinct.userclub %}
+				<tr class="data-detall">
+					<td class="data-detall-cell userclub-user">{{ userclub.user }}</td>
+					<td class="data-detall-cell userclub-lastaccess">
+						{% if userclub.lastaccess is not null %}
+						{{ userclub.lastaccess|date("d/m/Y H:i:s") }}
+						{% else %}
+						--
+						{% endif %}
+					</td>
+						
+					{% for userclubrole in userdistinct.rols %}
+						{% if userclubrole == '' %}
+							<td class="data-detall-cell userclub-rol userclub-rol-{{ rolsDistinct|length }} userclub-rol-empty">Sense accés</td>
+						{% else %}
+							<td class="data-detall-cell userclub-rol userclub-rol-{{ rolsDistinct|length }} userclub-rol-{{ userclubrole.role }}">
+								{{ userclubrole.role|capitalize }}
+								<a class="label-remove-userclub link" href="javascript:void(0);" onclick="removedUserClick('{{ userclubrole.id }}');" alt="Treure accés {{ userclubrole.role }}" title="Treure accés {{ userclubrole.role }}">
+									<i class="fa fa-lock fa-1x blue"></i>
+								</a>
+								{% if userclubrole.metapersona != null %}
+									{% set id = 0 %}
+									{% set nomuserclub = userclubrole.metapersona.nomCognoms %}
+									{% set llicenciaVigent = userclubrole.metapersona.llicenciaVigent %}
+									{% if admin %}
+										{% set id = userclubrole.metapersona.id %} {# Admins consulten dades personals de les metapersones #}
+									{% else %}
+										{% set persona = userclubrole.metapersona.personaClub(club) %}
+										{% if persona != null %}
+										 	{% set id = persona.id %}
+										 	{% set nomuserclub = persona.nomCognoms %}
+										{% endif %}
+									{% endif %}
+									<br/><span class="title-comment">
+										{% if id > 0 %}
+											<a class="link-dades-userclub link" href="{{ path('FecdasBundle_dadespersonals', { 'id': id }) }}"
+										 		alt="Veure les dades d'aquesta persona" title="Veure les dades d'aquesta persona">
+										 		{{ nomuserclub }}
+										 	</a>
+										{% else %}
+											{# Persona d'un altre club. No es poden consultar les seves dades  #}
+											{{ nomuserclub }}
+										{% endif %}
+									</span>
+									{% if llicenciaVigent == null %}
+										<br/><span class="title-comment">(No disposa de llicència vigent)</span>
+									{% else %}
+										{% if not llicenciaVigent.esTecnic %}
+											<br/><span class="title-comment">(La llicència actual no és tècnica)</span>
+										{% endif %}
+									{% endif %}
+								{% endif %}
+							</td>
+						{% endif %}
+					{% endfor %}
 					<!-- <div class="data-detall-cell userclub-forceupdate" class="form-left">
 					{# if userclub.forceupdate == true #}
 					Si
@@ -35,14 +87,12 @@
 					No
 					{# endif #}
 					</div> -->
-					<div class="data-detall-cell userclub-actions">
-					{% if admin == true %}<a class="label-remove-userclub link" href="javascript:void(0);" onclick="removedUserClick('{{ userclub.user }}');" alt="Esborrar usuari" title="Esborrar usuari"><i class="fa fa-trash fa-1x red"></i></a>{% endif %}
-					<a class="label-resetpwd-userclub link" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.user }}');" alt="Reiniciar Password" title="Reiniciar Password"><i class="fa fa-random fa-1x orange"></i></a>
-					</div>
-				</li>
-				{% endif %}
+					<td class="data-detall-cell userclub-actions">
+						<a class="label-resetpwd-userclub link" href="javascript:void(0);" onclick="resetPwdUserClick('{{ userclub.id }}');" alt="Reiniciar Password" title="Reiniciar Password"><i class="fa fa-magic fa-1x orange"></i></a>
+					</td>
+				</tr>
 		   	{% endfor %}
-		</ol>
-	</div>
+		</tbody>
+	</table>
 {% endif %}
 

@@ -112,11 +112,11 @@ class FormComanda extends AbstractType {
 		
 		$builder->add('databaixa', 'datetime', array(
 				'required' 		=> false,
-				'read_only' 	=> false,
 				'widget' 		=> 'single_text',
 				'input' 		=> 'datetime',
 				'placeholder' 	=> false,
 				'format' 		=> 'dd/MM/yyyy',
+				'attr'			=>	array('readonly' => false)						
 		));
 		
 		

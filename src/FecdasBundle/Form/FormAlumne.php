@@ -18,8 +18,6 @@ class FormAlumne extends AbstractType {
 			$form = $event->getForm();
 			$persona = $event->getData();
 
-			//error_log("ERERTEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEE".get_class($persona).get_class($form));
-			
 			/* Check we're looking at the right data/form */
 			if ($persona instanceof EntityPersona) {
 				$editable = false;

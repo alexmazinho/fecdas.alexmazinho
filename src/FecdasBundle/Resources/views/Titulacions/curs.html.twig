@@ -310,15 +310,15 @@
 			urlConsultaPerDni += '&club='+$('#curs_club').val();
 			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&docent=1';
 			
-			init_cercaperdni_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', urlConsultaDocentPerDniNom);
+			init_cercaperdni_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', 6, true, urlConsultaDocentPerDniNom);
 
-			init_cercaperdni_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', urlConsultaDocentPerDniNom);
+			init_cercaperdni_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', 6, true, urlConsultaDocentPerDniNom);
 
-			init_cercaperdni_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', urlConsultaDocentPerDniNom);
+			init_cercaperdni_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 6, true, urlConsultaDocentPerDniNom);
 
-			init_cercaperdni_JSON('#curs_auxcolaborador', 'Cercar col·laborador per nom o DNI', urlConsultaDocentPerDniNom);
+			init_cercaperdni_JSON('#curs_auxcolaborador', 'Cercar col·laborador per nom o DNI', 6, true, urlConsultaDocentPerDniNom);
 			
-			init_cercaperdni_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', urlConsultaPerDni, function ( added ) {
+			init_cercaperdni_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', 6, true, urlConsultaPerDni, function ( added ) {
 				/*
 				{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 				*/

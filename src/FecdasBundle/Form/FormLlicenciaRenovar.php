@@ -14,8 +14,8 @@ class FormLlicenciaRenovar extends FormLlicencia {
 		$builder->remove('persona');  // impedir editar persona
 		
 		$builder->add('personashow', 'text', array(
-				'read_only' => true,
 				'mapped' => false,
+				'attr'			=>	array('readonly' => true)
 		));
 	}
 	

@@ -100,13 +100,9 @@
 				<button id="formassegurats-submit"  type="submit" class="btn btn-default btn-lg"><i class="fa fa-search blue"></i> cerca</button>
 			</div>
 		</div>
+		<div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
     {{ form_end(form) }}
 
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
 	<div id="llista-assegurats" class="llista-dadespersonals">
 		<div class="table-header">	
 		   	<div id="list-header">

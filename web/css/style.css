@@ -315,6 +315,10 @@ input#datepicker,
     font-style: italic;
 }
 
+.select2-results .select2-highlighted .title-comment {
+	color: #ccc;
+}
+
 .open-calendar, .input-group-addon-action { cursor: pointer; }
 
 /* css for timepicker */
@@ -370,6 +374,10 @@ html[xmlns] .clearfix {
 * html .clearfix {
 	height: 1%;
 }
+
+
+.space20 { display: block; margin: 10px 0; }
+.space50 { display: block; margin: 25px 0; }
 
 /*************** FECDAS NOU bootstrap ****************/
 
@@ -503,7 +511,12 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
     white-space: nowrap;
 }
 
-#header .notifications { color: red; text-transform: uppercase; font-weight: 400; font-size: 30px; text-shadow: -1px 2px 2px #fff; line-height: 0.9; }
+#header .notifications { /*color: #fff;*/ font-weight: 400; font-size: 30px; /*line-height: 0.9;*/ }
+
+#header .notifications .notifications-title,
+#header .notifications .dev-environment { vertical-align: middle; }
+
+#header .notifications .dev-environment { color: red; font-style: italic; font-size: 0.8em; text-shadow: -1px 2px 2px #fff; text-transform: uppercase; padding-bottom: 6px; }
 
 #slider {
   position: relative;
@@ -1144,7 +1157,7 @@ ul.detalls li .alert { margin: 10px 0; }
 .listheader-icon {
 	display: none;
     position: absolute;
-    background-image: url("redmond/images/ui-icons_469bdd_256x240.png");
+    background-image: url("jquery-ui/images/ui-icons_469bdd_256x240.png");
     height: 16px;
     width: 16px;
     background-repeat: no-repeat;
@@ -1329,6 +1342,10 @@ ul.detalls li .alert { margin: 10px 0; }
 
 .navbar-default .nav .dropdown-menu > li.separator  {
 	border-bottom: 1px solid #e5e5e5; 
+}
+
+.navbar-right ~ .navbar-right {
+    margin-right: 15px;
 }
 
 .dropdown-menu .divider { height: 1px; background-color: #2281CF; background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%); }
@@ -2052,17 +2069,20 @@ select#parte_renovar_tipus { width: 240px; }
 
 .formclub-tab {
 	padding: 10px 15px;
+	min-height: 350px;
 }
 
 .col-md-comment { /*position: absolute; bottom: -10px;*/ color: #1240a0; font-size: 0.9em; line-height: 2.8; }
 
+/*
 #llista-usuarisclub #list-data {
 	max-height: 120px;
 }
 
-* html #llista-usuarisclub #list-data { /*max-height: 120px;  max-height IE hack */
-   height: expression( this.scrollHeight > 119 ? "120px" : "auto" ); /* sets max-height for IE */
+* html #llista-usuarisclub #list-data { 
+   height: expression( this.scrollHeight > 119 ? "120px" : "auto" ); 
 }
+*/
 
 #formclub-nouclub, #formclub-copiar {
 	margin: 28px 0 0 0;
@@ -2084,7 +2104,7 @@ select#parte_renovar_tipus { width: 240px; }
 #formclub-addradreca, #formclub-addradrecacorreu { width: 28%; }
 
 
-#llista-usuarisclub .table-scroll { max-height: 150px; }
+#llista-usuarisclub .table-scroll { /*max-height: 150px;*/ }
 
 /*
 input#club_nom { width: 350px; }
@@ -2097,7 +2117,7 @@ input#club_web { width: 298px; }
 */
 select#club_tipusparte {
 	/*width: 350px;*/
-	height: 130px;
+	height: 220px;
 }
 
 #formclub-dades-tab4 .formlabel-left {
@@ -2118,11 +2138,20 @@ select#club_tipusparte {
 #formclub-dades-tab4 #formclub-saldoclub input { font-weight: bold }
 
 .data-detall-cell.userclub-junta-nom { display: none; }
-.data-detall-cell.userclub-junta-carrec { text-align: left; padding: 2px 6px; font-weight: bold;  width: 15%; }
-.data-detall-cell.userclub-junta-text { text-align: left; padding: 2px 6px;  width: 80%;}
-.data-detall-cell.userclub-junta-action { text-align: right; padding: 2px 4px;  width: 3%; } 
+.data-detall-cell.userclub-junta-carrec { text-align: left; padding: 2px 6px; font-weight: bold;  width: 25%; }
+.data-detall-cell.userclub-junta-text { text-align: left; padding: 2px 6px;  width: 65%;}
+.data-detall-cell.userclub-junta-action { text-align: right; padding: 2px 4px;  width: 10%; } 
 .data-detall-cell.userclub-junta-action a { padding: 0; }
 
+
+#llista-usuarisclub table { table-layout: fixed; }
+
+#llista-usuarisclub #list-header, #llista-usuarisclub #summary-header { display: table-row; height: auto; }
+
+#llista-usuarisclub #list-header { border-bottom-width: 0; border-top-width: 0; }
+#llista-usuarisclub #summary-header { border-bottom-width: 0;border-top-width: 0; }
+
+#llista-usuarisclub #list-data .data-detall-cell { vertical-align: middle; }
 
 input#user_club_user { width: 298px; }
 select#user_club_role { width: auto; }
@@ -2130,17 +2159,23 @@ input#user_club_pwd_first,
 input#user_club_pwd_second, 
 input#formuserclub-randompassword { width: 150px; }
 
-#header-userclubuser {	width: 30%; text-align: left;}
-#header-userclublastaccess { width: 30%; }
-#header-userclubrol { width: 10%; }
-#header-userclubforceupdate { width: 10%; line-height: 12px;}
-#header-userclubactions { width: 10%;}
+#list-header #header-userclubuser {	width: 17%; text-align: left; vertical-align: middle; border-bottom-width: 0; }
+#list-header #header-userclublastaccess { width: 17%; vertical-align: middle; border-right: 1px solid #96c4ea; border-bottom-width: 0; }
+#header-userclubrolspan { width: 60%; text-align: center; }
+#header-userclubrol { text-align: center; font-style: italic; }  
+#list-header #header-userclubactions { width: 6%; vertical-align: middle; border-left: 1px solid #96c4ea; border-bottom-width: 0; }
 
-.userclub-user { width: 30%; text-align: left; margin-top: -10px; }
-.userclub-lastaccess { width: 30%; }
-.userclub-rol {	width: 10%;  }
-.userclub-forceupdate {	width: 10%; }
-.userclub-actions { width: 10%; text-align:right; margin-top: -14px}
+.data-detall-cell.userclub-user { width: 17%; text-align: left; margin-top: -10px; word-wrap: normal; nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; /*background:#f9f9f9; background:rgba(237,​ 241,​ 245, 0.4);*/  }
+.data-detall-cell.userclub-lastaccess { width: 17%; border-right: 1px solid #96c4ea;   }
+.data-detall-cell.userclub-rol { text-align: left;  text-align: center;  }
+.data-detall-cell.userclub-rol a.link { font-size: 1.3em; padding-left: 5px;}
+
+.userclub-rol-3 { width: 20%; }
+.userclub-rol-4 { width: 15%; }
+.data-detall-cell.userclub-rol-empty {  background-color: #eee; text-align: center; color:#bbb;  }
+.data-detall-cell.userclub-actions { width: 6%; text-align:right; margin-top: -14px; border-left: 1px solid #96c4ea; }
+
+
 
 /*****************************************************************************************************************/
 

@@ -17,11 +17,11 @@
 		        <h1>Entrada d'usuaris</h1>
 		    </header>
 		
-		    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-		    <div class="sms-notice">
-				{{ flashMessage }}
-		  	</div>	
-			{% endfor %}
+		    <div class="row">
+		    	<div class="col-md-12 block-errors">
+		    		{% include 'FecdasBundle:Includes:messages.html.twig' %}
+		    	</div>
+		    </div>
 		    
 		   	{% include "FecdasBundle:Security:loginform.html.twig" %} 
 		   	<a href="{{ path('FecdasBundle_pwdrecovery') }}">Password perdut?</a>

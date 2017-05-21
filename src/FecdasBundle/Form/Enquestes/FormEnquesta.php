@@ -23,17 +23,17 @@ class FormEnquesta extends AbstractType {
 		$current_year = date("Y", strtotime('now'));
 		
 		$builder->add('datainici', 'datetime', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'datetime',
-				'format' => 'dd/MM/yyyy',
+				'widget' 	=> 'single_text',
+				'input' 	=> 'datetime',
+				'format' 	=> 'dd/MM/yyyy',
+				'attr'		=>	array('readonly' => true)
 		));
 
 		$builder->add('datafinal', 'datetime', array(
-				'read_only' => true,
-				'widget' => 'single_text',
-				'input' => 'datetime',
-				'format' => 'dd/MM/yyyy',
+				'widget' 	=> 'single_text',
+				'input' 	=> 'datetime',
+				'format' 	=> 'dd/MM/yyyy',
+				'attr'		=>	array('readonly' => true)
 		));
 	}
 	

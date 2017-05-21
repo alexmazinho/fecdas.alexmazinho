@@ -338,24 +338,30 @@
 					}
 				});
 			});
-			
+
+
+			if ($("#producte_stockable").is(':checked')) {
+				// En cas d'error
+				$('#producte_limitnotifica').removeClass('disabled');
+				$('#producte_limitnotifica').removeAttr('readonly');
+			}	
 			$("#producte_stockable").click(function(){
 
 				var checked = $(this).is(':checked');
 				if (checked) {
 					$('#producte_limitnotifica').removeClass('disabled');
 					$('#producte_limitnotifica').removeAttr('readonly'); 
-					$('#producte_stock').removeClass('disabled');
-					$('#producte_stock').removeAttr('readonly'); 
+					//$('#producte_stock').removeClass('disabled');
+					//$('#producte_stock').removeAttr('readonly'); 
 					$('#producte_limitnotifica').val(1);
-					$('#producte_stock').val(1);				
+					//$('#producte_stock').val(1);				
 				} else {
 					$('#producte_limitnotifica').addClass('disabled');
 					$('#producte_limitnotifica').attr('readonly', 'readonly'); 
-					$('#producte_stock').addClass('disabled'); 
-					$('#producte_stock').attr('readonly', 'readonly');
+					//$('#producte_stock').addClass('disabled'); 
+					//$('#producte_stock').attr('readonly', 'readonly');
 					$('#producte_limitnotifica').val("");
-					$('#producte_stock').val("");				
+					//$('#producte_stock').val("");				
 				};
 			});
 

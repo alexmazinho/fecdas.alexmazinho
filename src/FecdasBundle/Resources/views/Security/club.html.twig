@@ -77,7 +77,6 @@
 				{% if admin == true %} <li><a href="#formclub-dades-tab3">Llicències admeses</a></li>{% endif %}
 				{% if admin == true %} <li><a href="#formclub-dades-tab4">Saldos</a></li>{% endif %}
 				<li><a href="#formclub-dades-tab5">Dates i càrrecs</a></li>
-				{% if nouclub != true %} <li><a href="#formclub-dades-tab6">Nou usuari</a></li>{% endif %}
 			</ul>
 			
 			<div id="formclub-dades-tab1" class="formclub-tab">		
@@ -526,99 +525,19 @@
 					</div>
 				</div>
 			</div>	        
-	        {% if nouclub != true %}
-		        <div id="formclub-dades-tab6" class="formclub-tab">
-		        	<div class="row">
-						<div class="col-md-12">
-							<h4 class="blue">Gestió d'usuaris</h4>
-						</div>
-					</div>
-					<div class="row"><div class="col-md-12"><div class="form-group">&nbsp;</div></div></div>
-					<div class="row">
-						<div class="col-md-3">
-							<div class="form-group">
-								{{ form_label(form.user, 'Usuari (Adreça de correu)', { 'label_attr': {'class': ''} }) }}
-								<div class="input-group" >
-									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-user fa-1x"></span></span>
-									{{ form_widget(form.user, { 'attr': {'class': 'form-control','placeholder':'Nom d\'usuari' } }) }}
-								</div>
-							</div>
-						</div>
-						<div class="col-md-2">
-							<div class="form-group">
-								{{ form_label(form.role, 'Rol *', { 'label_attr': {'class': ''} }) }}
-								<div class="input-group" >
-									<span class="input-group-addon input-group-addon-icon"></span>
-									{{ form_widget(form.role, { 'attr': {'class': 'form-control' } }) }}
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4">
-							<div class="form-group">
-								{{ form_label(form.auxinstructordni, 'Escollir persona (Instructors)') }}
-								<div class="input-group">
-									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-									{{ form_widget(form.auxinstructordni, { 'attr': {'class': 'form-control'} }) }}
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-3 form-user-password-manual">
-							<div class="form-group">
-								{{ form_label(form.pwd.first, 'Paraula clau *', { 'label_attr': {'class': ''} }) }}
-								<div class="input-group" >
-									<span class="input-group-addon input-group-addon-icon"><i class="fa fa-secret fa-1x"></i></span>
-									{{ form_widget(form.pwd.first, { 'attr': {'class': 'form-control','placeholder':'Nova clau' } }) }}
-								</div>
-							</div>
-						</div>
-						<div class="col-md-3 form-user-password-manual">
-							<div class="form-group">
-								{{ form_label(form.pwd.second, 'Repetir paraula clau *', { 'label_attr': {'class': ''} }) }}
-								<div class="input-group" >
-									<span class="input-group-addon input-group-addon-icon"><i class="fa fa-secret fa-1x"></i></span>
-									{{ form_widget(form.pwd.second, { 'attr': {'class': 'form-control','placeholder':'Repetir clau' } }) }}
-								</div>
-							</div>
-						</div>
-						<div class="col-md-3 form-user-password-random" style="display: none">
-							<div class="form-group" >
-								{{ form_label(form.randompwd, 'Paraula clau generada', { 'label_attr': {'class': ''} }) }}
-								<div class="input-group" >
-									<span class="input-group-addon input-group-addon-icon"><i class="fa fa-secret fa-1x"></i></span>
-									{{ form_widget(form.randompwd, { 'attr': {'class': 'form-control','placeholder':'Paraula clau generada' } }) }}
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group" >
-								<label class="">&nbsp;</label>
-								<div class="input-group" >
-									<a id="formuserclub-random" href="javascript:void(0);" class="btn btn-default"><i class="fa fa-magic fa-1x orange"></i> automàtic</a>
-									<!-- <div class="checkbox-inline">
-								    	<label>{# form_widget(form.forceupdate) #} Obliga a actualitzar	</label>
-									</div> -->
-									<a id="formuserclub-manual" href="javascript:void(0);" class="btn btn-default" style="display: none"><i class="fa fa-pencil fa-1x system-blue"></i> manual</a>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="row"><div class="col-md-12"><div class="space50"></div></div></div>
-					<div class="row">
-						<div class="col-md-4">
-							<div class="form-group" >
-								<a id="formuserclub-add" class="btn btn-default" href="{{ path('FecdasBundle_usuariclub') }}" name="add-userclub"><i class="fa fa-chevron-circle-down fa-1x blue"></i> Confirmar usuari</a>
-							</div>
-						</div>
-					</div>
-		        </div>
-	       	{% endif %}
         </div>
 				
 		<div id="formclub-rest" class="hidden">{{ form_rest(form) }}</div>
 
 		<div class="row">
+			<div class="col-md-8"><h4 class="blue">Llista d'usuaris</h4></div>
+			<div class="col-md-4 col-last-right">
+				<div class="form-group" >
+					<a id="add-userclub" class="btn btn-default" href="{{ path('FecdasBundle_usuariclub', { 'action': 'open' }) }}" data-role="" data-user="" data-id="" name="add-userclub">
+						<i class="fa fa-user fa-1x blue"></i>  Afegir usuari
+					</a>
+				</div>
+			</div>
 			<div class="col-md-12">
 				<div id="llista-usuarisclub">
 				{% include "FecdasBundle:Security:clubllistausers.html.twig" %}
@@ -627,8 +546,7 @@
 		</div> 
 
     {{ form_end(form) }}
-
-    <div id="edicio-persona" class="finestra-overlay"></div> 
+    
 {% endblock %}
 
 {% block javascripts %}
@@ -650,6 +568,22 @@
 				active: tabactive 
 			});
 		});
+
+
+		/*************************************************************************************/  
+		/********************************* Gestió usuaris ************************************/
+		/*************************************************************************************/
+		var urlJSONpersona = "{{ path('FecdasBundle_jsonpersones', { 'admin': admin }) }}";
+		var keysCercaPersona = ["{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_FEDERAT')  }}", 
+		              			"{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_INSTRUCTOR')  }}"];
+
+		addUserRoleClick( urlJSONpersona, keysCercaPersona );
+		
+		actionsUserRolePwdClick(); 
+		
+		/*************************************************************************************/  
+		/*********************************** Gestió club *************************************/
+		/*************************************************************************************/
 		
 		reloadClub();
 	
@@ -661,69 +595,7 @@
 		
 		nouClub();
 	
-		addUserClick();
 
-		$('#club_pwd_first').val('');
-        $('#club_pwd_second').val('');
-        
-		randomPwdClick();
-
-		manualPwdClick();
-
-		// Crear select2
-		$("#club_auxinstructordni").val("");
-		$("#club_auxinstructordni").removeAttr('readonly');
-		var urlConsultaDocentPerDniNom = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
-		urlConsultaDocentPerDniNom += '&club='+$('#club_codi').val()+'&docent=1';
-
-		init_cercaperdni_JSON('#club_auxinstructordni', 'Cercar instructor per nom o DNI', 4, false, urlConsultaDocentPerDniNom, function ( added ) {
-			/*
-			{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
-			*/
-			$(".alert").remove();
-			if (added.mail == null) {  // Aquest instructor no té mail. => Avís
-				var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
-	 			 
-				 $("#tabs-club").append(sms);
-				 $("#club_auxinstructordni").val("");
-				 $('#club_user').val( "" );
-			} else {
-				$('#club_user').val( added.mail );
-			}
-
-		}, function( item ) {
-	    	//Selection Function
-	        return item.text+"-"+item.nom;
-	    });
-		
-		// Comença sempre com club
-		$('#club_user').val( "" ); 
-		$("select#club_role").val( "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_CLUB')  }}" );
-		$("#club_user").removeAttr('readonly');
-		//$("#club_auxinstructordni").attr('readonly', 'readonly');
-		$("#club_auxinstructordni").select2("readonly", true);
-		
-		$("select#club_role").on("change", function(e) {
-			$(".alert").remove();	
-
-			$("#club_auxinstructordni").val("");
-			$('#club_user').val( "" );
-			
-			// Canvi role 
-			// 	Instructors 			=> activa selecció persona, desactiva mail
-			//	Altres (Club, Admin)	=> desactiva selecció persona, activa mail
-			if ($(this).val() === "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_INSTRUCTOR')  }}" ||
-				$(this).val() === "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_FEDERAT') }}") {
-				$("#club_user").attr('readonly', 'readonly');
-				$("#club_auxinstructordni").select2("readonly", false);				
-			} else {
-				$("#club_user").removeAttr('readonly');
-				$("#club_auxinstructordni").select2("readonly", true);
-				
-			}
-		});
-		
-		
 		var urlPoblacions = "{{ path('FecdasBundle_ajaxpoblacions') }}";
 		
 		autocompleters( urlPoblacions, $('#club_addrpob'), $('#club_addrcp'), $('#club_addrprovincia'), $('#club_addrcomarca'), "#formclub" );

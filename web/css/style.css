@@ -2148,8 +2148,15 @@ select#club_tipusparte {
 
 #llista-usuarisclub #list-header, #llista-usuarisclub #summary-header { display: table-row; height: auto; }
 
-#llista-usuarisclub #list-header { border-bottom-width: 0; border-top-width: 0; }
-#llista-usuarisclub #summary-header { border-bottom-width: 0;border-top-width: 0; }
+#llista-usuarisclub #list-header {  box-shadow: none;  }
+#llista-usuarisclub #summary-header {  box-shadow: none;  }
+
+#llista-usuarisclub .table > thead > tr > th {
+    border-color: transparent;
+    border-style: solid;
+    border-width: 0;
+    vertical-align: middle;
+}
 
 #llista-usuarisclub #list-data .data-detall-cell { vertical-align: middle; }
 
@@ -2169,11 +2176,14 @@ input#formuserclub-randompassword { width: 150px; }
 .data-detall-cell.userclub-lastaccess { width: 17%; border-right: 1px solid #96c4ea;   }
 .data-detall-cell.userclub-rol { text-align: left;  text-align: center;  }
 .data-detall-cell.userclub-rol a.link { font-size: 1.3em; padding-left: 5px;}
+.data-detall-cell.userclub-rol i.fa { width: 24px; }
 
 .userclub-rol-3 { width: 20%; }
 .userclub-rol-4 { width: 15%; }
 .data-detall-cell.userclub-rol-empty {  background-color: #eee; text-align: center; color:#bbb;  }
-.data-detall-cell.userclub-actions { width: 6%; text-align:right; margin-top: -14px; border-left: 1px solid #96c4ea; }
+.data-detall-cell.userclub-actions { width: 6%; text-align:center; margin-top: -14px; border-left: 1px solid #96c4ea; }
+
+
 
 
 

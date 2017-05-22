@@ -20,10 +20,12 @@ class EntityRealitzacio {
 	 */
 	protected $id;	
 
+	
 	/**
-	 * @ORM\ManyToOne(targetEntity="FecdasBundle\Entity\EntityUser")
+	 * @ORM\Column(type="string", length=50)
+	 * @ORM\ManyToOne(targetEntity="EntityUser")
 	 * @ORM\JoinColumn(name="usuari", referencedColumnName="usuari")
-	 */
+	 */ 
 	protected $usuari;	// Mail del club
 	
 	/**

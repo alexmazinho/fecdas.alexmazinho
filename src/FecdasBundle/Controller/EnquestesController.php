@@ -261,7 +261,8 @@ class EnquestesController extends BaseController {
 			// Comprovar si s'ha començat l'enquesta
 			$realitzacio = $enquesta->getRealitzada($this->get('session')->get('username'));
 			if ($realitzacio == null) {
-				$usuari = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($this->get('session')->get('username'));
+				$checkRole = $this->get('fecdas.rolechecker');
+				$usuari = $checkRole->getCurrentUser(); 
 				$realitzacio = new EntityRealitzacio($usuari, $enquesta);
 				$enquesta->addEntityRealitzacio($realitzacio);
 				$em->persist($realitzacio);

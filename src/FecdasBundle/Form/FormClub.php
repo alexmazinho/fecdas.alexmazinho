@@ -86,13 +86,6 @@ class FormClub extends AbstractType {
 					'required'  => false,
 					'data'		=> mb_convert_case($club->getAddrprovinciacorreu(), MB_CASE_TITLE, "utf-8")
 				));
-				
-				$form->add('role', 'choice', array(
-					'choices' => BaseController::getRoles( $this->options['admin'] ),
-					'data' => BaseController::ROLE_FEDERAT,
-					'mapped' => false,
-				));
-	   				
 			}
 		});
 		
@@ -187,33 +180,6 @@ class FormClub extends AbstractType {
 		$builder->add('registre', 'text', array(
 				'required'  => false,
 		));
-		
-				/* Camps nou usuari */
-		$builder->add('user', 'email', array(
-				'required' => false,
-				'mapped' => false,
-		));
-		
-		$builder->add('pwd', 'repeated', array(
-    			'type' => 'password',
-    			'required' => false,
-    			'first_name'  => 'first',
-    			'second_name' => 'second',
-				'mapped' => false,
-				'options' => array('always_empty' => true, 'required' => false),
-		));
-		
-		$builder->add('randompwd', 'text', array(
-				'required' 	=> false,
-				'mapped' 	=> false,
-				'attr'		=>	array('readonly' => true)
-		));
-		
-		// EScollir persona tècnic
-		$builder->add('auxinstructordni', 'text', array(
-				'mapped'	=> false,
-				'attr'		=>	array('readonly' => false)
-		));	
 		
 	}
 	

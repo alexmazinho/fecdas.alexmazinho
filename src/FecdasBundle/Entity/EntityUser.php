@@ -22,15 +22,13 @@ class EntityUser {
 	protected $id;	
 	
 	/**
-	 * @ORM\Column(name="usuari",type="string", length=50, unique=true)
-	 * @Assert\NotBlank()
+	 * @ORM\Column(name="usuari",type="string", length=50, nullable=false)
 	 * @Assert\Email()
 	 */
 	protected $user;	// Mail del club
 
 	/**
-	 * @ORM\Column(type="string", length=40)
-	 * @Assert\NotBlank()
+	 * @ORM\Column(type="string", length=40, nullable=false)
 	 */
 	protected $pwd;
 	
@@ -118,6 +116,22 @@ class EntityUser {
 			}
 		}
     	return json_encode($roles);
+    }
+	
+	/**
+     * Get roles club
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getRolesClubs($club)
+    {
+    	if ($club == null) return $this->clubs;
+		
+		$roles = array();
+		foreach ($this->clubs as $userClubRole) {
+    		if (!$userClubRole->anulat() && $userClubRole->getClub === $club) $roles[] = $userClubRole;
+		}
+    	return $roles;
     }
 	
 	/**

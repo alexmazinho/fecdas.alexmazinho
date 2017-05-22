@@ -1,7 +1,6 @@
 <?php
 namespace FecdasBundle\Controller;
 
-
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -10,9 +9,12 @@ use FecdasBundle\Form\FormLogin;
 use FecdasBundle\Form\FormUser;
 use FecdasBundle\Form\FormClub;
 use FecdasBundle\Form\FormClubAdmin;
+use FecdasBundle\Form\FormClubUser;
 use FecdasBundle\Entity\EntityUser;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityClub;
+
+
 
 
 class SecurityController extends BaseController
@@ -160,7 +162,7 @@ class SecurityController extends BaseController
     			$username =  $userdata['usertoken'];
     			$token = $userdata['recoverytoken'];
     		}
-    		$user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($username);
+    		$user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($username)));
     		 
     		if ($user == null || $username == '' || $token = '' || $token != $user->getRecoverytoken()) {
    				$this->get('session')->getFlashBag()->add('sms-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
@@ -594,7 +596,7 @@ class SecurityController extends BaseController
 					
 	   			/* Validacions mail no existeix en altres clubs */
 	   			foreach ($club->getMails() as $mail) {
-		   			$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find(trim($mail));
+		   			$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($mail)));
 		   			if ($checkuser != null && !$checkuser->anulat()) {
 		   				$roleClubExistent = $checkuser->getRoleClub();
 						
@@ -735,81 +737,166 @@ class SecurityController extends BaseController
     	//$this->get('session')->getFlashBag()->clear();
     	$club = null;
 		$userclub = null;
+		$userrole = '';
 		$em = $this->getDoctrine()->getManager();
+		$id = 0;
+error_log("AQUI INIT");
     	try {
-    		$checkRole = $this->get('fecdas.rolechecker');
+			$optionsForm = array( 'admin' => $this->isCurrentAdmin() );
 			
-	    	if (!$checkRole->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception("Acció no permesa");
+			if ($request->getMethod() != 'POST') $id = $request->query->get('id');
+			else {
+				$requestParams = $request->request->all();
+				$useruser = $requestParams['user']['user'];
+	    		$randomPassword = $requestParams['user']['pwd']['first'];
+	    		$userrole = $requestParams['user']['role'];
+				$idInstructor = $requestParams['user']['auxinstructordni'];
+				$id = isset($requestParams['user']['id'])?$requestParams['user']['id']:0;
+			}
+
+			$checkRole = $this->get('fecdas.rolechecker');
+			$codiclub = $checkRole->getCurrentClubRole();
+    		
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
+			if ($club == null) throw new \Exception("Error. Contacti amb l'administrador (200)");
+			
+			if (!$checkRole->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception("Acció no permesa");
 	    
-			if ($request->isXmlHttpRequest() != true) throw new \Exception("Error. Contacti amb l'administrador (100)");
+			if (!$request->isXmlHttpRequest()) throw new \Exception("Error. Contacti amb l'administrador (100)");
 			
-	    	if ($request->getMethod() == 'POST') {
+			if ($id > 0) $userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
+			else {
+				if ($request->getMethod() == 'POST') {
+					// Validar i recuperar usuari existent si escau 
+					$info = "";
+	    			//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
+error_log("AQUI".$useruser." ".$randomPassword. " ".$userrole." ");	    			
+	    			$userclub = $this->checkUsuariClub($club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
+				} else {
+					$userclub = new EntityUser();
+					$em->persist($userclub);
+				}
+			}
+			
+			if ($request->getMethod() != 'POST') {
+								
+				if (!$request->query->has('action')) return new Response("Error. Contacti amb l'administrador (101)"); 
+		
+				// Activar o desactivar usuaris
+				$action = $request->query->get('action');
+				
+				switch ($action) {
+					case 'open':
+						$form = $this->createForm(new FormClubUser( $optionsForm ), $userclub);				
+						
+						return $this->render('FecdasBundle:Security:clubformuser.html.twig',
+   								array('form' => $form->createView(), 'admin' =>$this->isCurrentAdmin()));
+						
+					case 'addrole':
+						$userrole = $request->query->get('role');
+						$codiclub = $request->query->get('club');
+						
+						$userClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
+						if ($userClub == null) throw new \Exception("Error. Contacti amb l'administrador (301)");
+						
+						$form = $this->createForm(new FormClubUser( $optionsForm ), $userclub);	
+						
+						return $this->render('FecdasBundle:Security:clubformuser.html.twig',
+   								array('form' => $form->createView(), 'admin' =>$this->isCurrentAdmin()));
+						
+						/*$randomPassword = $this->generateRandomPassword();
+						
+						$info = "";
+						//$userclub = $this->checkUsuariClub($club, $info, $userrole, $userClub->getUser(), $randomPassword, ????? $idInstructor);
+						$userclub = $this->checkUsuariClub($club, $info, $userrole, $userClub->getUser(), $randomPassword);
+						
+						$this->get('session')->getFlashBag()->add('sms-notice', $info);*/
+						
+						break;
+					case 'removerole':
+						
+						$userClubRole = $this->getDoctrine()->getRepository('FecdasBundle:EntityUserClub')->find($id);
+			
+						if ($userClubRole == null) throw new \Exception('Error. Posa\'t en contacte amb l\'administrador (300)');
+		
+						$userclub = $userClubRole->getUsuari();
+						
+						$userClubRole->setDatabaixa(new \DateTime('now'));
+						
+			 			$this->get('session')->getFlashBag()->add("sms-notice", "Accés " . $userClubRole->getRole(). " anul·lat per l'usuari ".$userclub->getUser());
+						
+						break;
+					
+					case 'removeuser':
+						$userClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
+						if ($userClub == null) throw new \Exception("Error. Contacti amb l'administrador (302)");
+						
+						$userClub->setDatabaixa(new \DateTime('now'));
+			
+						// Baixa tots els rols
+						foreach ($userClub->getRolesClubs($club) as $userClubRole) {
+							if (!$userClubRole->anulat()) $userClubRole->setDatabaixa(new \DateTime('now'));
+						}
+						break;
+						
+					case 'resetpwd':
+						
+						$userClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
+						if ($userClub == null) throw new \Exception("Error. Contacti amb l'administrador (303)");
+						
+						$randomPassword = $this->generateRandomPassword();
+		   				$userclub->setPwd(sha1($randomPassword));
+						
+		   				$this->get('session')->getFlashBag()->add("sms-notice", "Clau de l'usuari " . $userclub->getUser() . ", canviada: " . $randomPassword);
+						
+						break;
+				}
+
+	   			$em->flush();
+				
+				$this->logEntryAuth('USER '. strtoupper($action) . ' OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser(). ' role: '.$userClubRole->getRole());
+				
+   				return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
+   						array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
+			} else {
+				$form = $this->createForm(new FormClubUser( $optionsForm ), $userclub);
+				
 	    		// Alta nou usuari de club
-	    		$requestParams = $request->request->all();
-	    		
-	    		$codiclub = $requestParams['club']['codi'];
-	    		$useruser = $requestParams['club']['user'];
-	    		$randomPassword = $requestParams['club']['pwd']['first'];
-	    		$userrole = $requestParams['club']['role'];
-				$idInstructor = $requestParams['club']['auxinstructordni'];
-	    		//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
-	    		
-	   			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
-				if ($club == null) throw new \Exception("Error. Contacti amb l'administrador (200)");
-				
-				$info = "";
-				$userclub = $this->checkUsuariClub($club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
-				
+	    		$form->handleRequest($request);
+
+	   			if (!$form->isValid()) throw new \Exception("error validant les dades -".$randomPassword."-". $form->getErrors()."     -     ".$form->getErrorsAsString());
+								
    				$em->flush();
 	   				
    				$this->get('session')->getFlashBag()->add('sms-notice', $info);
 	    		
 				$this->logEntryAuth('USER CLUB NEW OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser().' info: '.$info);	
-
-	    	} else {
-	    	
-		   		if (!$request->query->has('action')) return new Response("Error. Contacti amb l'administrador (101)"); 
-		
-				// Activar o desactivar usuaris
-				$action = $request->query->get('action');
-		    			
-				$userClubRole = $this->getDoctrine()->getRepository('FecdasBundle:EntityUserClub')->find($request->query->get('id'));
-		
-				if ($userClubRole == null) throw new \Exception('Error. Posa\'t en contacte amb l\'administrador (300)');
-
-				$userclub = $userClubRole->getUsuari();
-				$club = $userClubRole->getClub();
-
-				if ($action == 'remove') {
+		   			
+				return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
+   						array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
 					
-					$userClubRole->setDatabaixa(new \DateTime('now'));
-					
-		 			$this->get('session')->getFlashBag()->add("sms-notice", "Accés " . $userClubRole->getRole(). " anul·lat per l'usuari ".$userclub->getUser());			
-				}
-				if ($action == 'resetpwd') {
-
-	   				$randomPassword = $this->generateRandomPassword();
-	   				$userclub->setPwd(sha1($randomPassword));
-					
-	   				$this->get('session')->getFlashBag()->add("sms-notice", "Clau de l'usuari " . $userclub->getUser() . ", canviada: " . $randomPassword);
-	   			}
-		
-	   			$em->flush();
-				
-				$this->logEntryAuth('USER '. strtoupper($action) . ' OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser(). ' role: '.$userClubRole->getRole());	
 	   		}
 		} catch (\Exception $e) {
-			$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
-	   		
-			$extra = '. Club : ' . ($club != null?$club->getCodi():'club desconegut') . ' user: ' . ($userclub != null?$userclub->getUser():'');
-			$this->logEntryAuth('USER KO', $e->getMessage().$extra);	
-		}
-			
-		if ($club == null) $club = $this->getCurrentClub();
 				
-   		return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
-   				array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
-   	 	
+			$this->get('session')->getFlashBag()->clear();
+			
+			$response = new Response($e->getMessage());
+	    	$response->setStatusCode(500);
+	    	
+			$extra = '. Club : ' . ($club != null?$club->getCodi():'No club') . 
+					 ' user: ' . ($userclub != null?$userclub->getUser():'No user') .
+					 ' rol: ' . ($userrole != ''?$userrole:'No roles');
+						
+			if ($request->getMethod() != 'POST') $this->logEntryAuth('USER '.$action.' KO', $e->getMessage().$extra);	
+			else $this->logEntryAuth('USER SUBMIT KO', $e->getMessage());
+			
+			return $response;	// Error
+		}
+		
+		$response = new Response('error 1234');
+	    $response->setStatusCode(500);
+				
+		return $response;	// No hauria d'arribar mai
     }
 
 	private function checkUsuariClub($club, &$info, $userrole, $useruser, $randomPassword, $idInstructor = 0) {
@@ -841,11 +928,14 @@ class SecurityController extends BaseController
 			if ($userrole == BaseController::ROLE_ADMIN && !BaseController::esFederacio($club)) throw new \Exception("Només es poden afegir Administradors a la Federació");
 		}
 				
-		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($useruser);
-
+		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($useruser)));
+error_log("AQUI2222".$useruser." ".$randomPassword. " ".$userrole." ".count($checkuser));
 		// Check Roles existents pel mateix mail
+		
+		if (count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu ");
+		
 		if ($checkuser != null)  {
-			$userclub = $checkuser;
+			
 			if ($checkuser->anulat()) {
 				$checkuser->setDatabaixa(null); // Tornar a activar
 				$info = "Aquest usuari s'ha tornat a activar".PHP_EOL;
@@ -858,6 +948,8 @@ class SecurityController extends BaseController
 					Un mail pot tenir role varis rols federat o instructor a varis clubs <== OK
 			*/
 			foreach ($checkuser->getClubs() as $checkUserRole) {
+				
+error_log("AQUI333333".$checkUserRole->getClub()->getCodi()." ".$checkUserRole->getRole()." ");				
 				if (!$checkUserRole->anulat()) {
 					if ($randomPassword != '' && $randomPassword != null) throw new \Exception("Aquest usuari ja disposa d'accés i no es pot canviar la clau ");
 					
@@ -873,6 +965,8 @@ class SecurityController extends BaseController
 						$metaPersona !== $checkUserRole->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
 				}
 			}
+			
+			$userclub = $checkuser;
 					
 			$metapersona = null;
 										

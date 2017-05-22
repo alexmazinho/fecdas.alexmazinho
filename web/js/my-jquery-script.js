@@ -550,14 +550,15 @@
 			 buttons: {
 			 	"Continuar": function() {
 			 		
-			 		callbackok();
-
-			 		$( '#dialeg' ).html('');
-			 		$( this ).dialog( "destroy" );
+			 		if (callbackok()) {
+			 			// Callback no funciona després de crida asíncrona $.get o $.post
+				 		$( '#dialeg' ).html('');
+				 		$( this ).dialog( "destroy" );
+			 		}
 			 	},
 			 	"Cancel·lar": function() {
-			 		callbackko();
 
+			 		callbackko();
 			 		$( '#dialeg' ).html('');
 			 		$( this ).dialog( "destroy" );
 			 	}
@@ -1872,51 +1873,61 @@
 	        	
 	        	dialegConfirmacio(data, 'Afegir usuari', 'auto', 740, function() {
 	        		//callbackok
-	        		
+
+					$('.alert').remove();
+
 	        		if (afegirRolUserExistent) {
 	        			// Afegir role a usuari existent
 	        			if ($("#user_user").val() != $("#user_auxinstructordni").val() ) {
-	        				$("#form-user-club").prepend(smsResultAjax('KO', "No coincideixen les adreces de correu"));
+	        				$("#formuserclub").prepend(smsResultAjax('KO', "No coincideixen les adreces de correu"));
 							return false;
 		        		}
 	        		} else {
 	        			// Afegir usuari
 		        			
 		        		if ($("#user_user").val() == "") {
-				        	$("#form-user-club").prepend(smsResultAjax('KO', "cal indicar el mail de l'usuari"));
+				        	$("#formuserclub").prepend(smsResultAjax('KO', "cal indicar el mail de l'usuari"));
 							return false;
 		        		}			
 							
 				        if ( !isValidEmailAddress( $("#user_user").val() ) ) {
-				        	$("#form-user-club").prepend(smsResultAjax('KO', "L'adreça de correu "+$("#user_user").val()+" no té un format correcte"));
+				        	$("#formuserclub").prepend(smsResultAjax('KO', "L'adreça de correu "+$("#user_user").val()+" no té un format correcte"));
 							return false;
 			        	}
 				        
 				        if ($("#user_pwd_first").val() == "" || $("#user_pwd_second").val() == "") {
-				        	$("#form-user-club").prepend(smsResultAjax('KO', "cal indicar la clau l'usuari"));
+				        	$("#formuserclub").prepend(smsResultAjax('KO', "cal indicar la clau l'usuari"));
 							return false;
 				        }
 				        if ($("#user_pwd_first").val() != $("#user_pwd_second").val()) {
-				        	$("#form-user-club").prepend(smsResultAjax('KO', "Les claus no coincideixen"));
+				        	$("#formuserclub").prepend(smsResultAjax('KO', "Les claus no coincideixen"));
 							return false;
 				        }
 	        		}
-					
+
 	        		var params = $('#formuserclub').serializeArray();
 	        		
-					$.post(url, params,
+	        		var urlSubmit = $('#formuserclub').attr('action'); 
+	        		
+					$.post(urlSubmit, params,
 					function(data, textStatus) {
 				    	$("#llista-usuarisclub").html(data);
-				    	
+
 				    	reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));
+				    	
+				    	$( '#dialeg' ).html('');
+				 		$( '#dialeg' ).dialog( "destroy" );
 				    	
 					}).fail( function(xhr, status, error) {
 		        		// xhr.status + " " + xhr.statusText, status, error
 			        	var sms = smsResultAjax('KO', xhr.responseText);
 			    			 
 			        	$("#formuserclub").prepend(sms);
+			        	
 		        	});
-	        		
+
+					
+					
 	        	},function() {
 	        		//callbackko
 	        		
@@ -1938,7 +1949,7 @@
 			    		if (added.mail == null) {  // Aquest instructor no té mail. => Avís
 			    			var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
 			    				 
-			    			 $("#form-user-club").prepend(sms);
+			    			 $("#formuserclub").prepend(sms);
 			    			 if (afegirUserNou) $("#user_auxinstructordni").val("");
 			    			 if (afegirUserNou) $('#user_user').val( "" );
 			    		} else {

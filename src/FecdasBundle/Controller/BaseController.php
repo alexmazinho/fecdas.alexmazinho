@@ -3589,6 +3589,12 @@ class BaseController extends Controller {
 		if ($useragent == '') $useragent =  $checkRole->getCurrentHTTPAgent();
 		
 		$em = $this->getDoctrine()->getManager();
+		
+		if (!$em->isOpen()) {
+			//$em = $this->getDoctrine()->resetManager();
+			//$em = $this->getDoctrine()->getManager();
+		} 
+		
 		$logentry = new EntityUserLog(substr($user,0,50), substr($accio,0,20), substr($remoteaddr,0,20), substr($useragent,0,100), substr($extrainfo,0,100));
 		$em->persist($logentry);
 		try {
@@ -3789,11 +3795,12 @@ class BaseController extends Controller {
 	}
 
 	public function jsonpersonesAction(Request $request) {
-		//fecdas.dev/jsonpersones?cerca=alex
+		//fecdas.dev/jsonpersones?cerca=alex&mail=0
 		$response = new Response();
-	
+error_log("jsonpersonesAction");		
 		$cerca = $request->get('cerca', ''); 
 		$id = $request->get('id', ''); // id federat
+		$mail = $request->get('mail', 0)==1?true:false; // 1 => cerca per mail
 
 		$em = $this->getDoctrine()->getManager();
 		
@@ -3809,12 +3816,16 @@ class BaseController extends Controller {
 			}
 		}
 	
-		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
+		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityPersona p JOIN p.metapersona e ";
 		$strQuery .= " WHERE p.databaixa IS NULL ";
-		$strQuery .= " AND (CONCAT(p.nom , ' ', p.cognoms ) LIKE :cerca";
-		$strQuery .= " OR p.dni LIKE :cerca ) ";
+		if (!$mail) {
+			$strQuery .= " AND (CONCAT(p.nom , ' ', p.cognoms ) LIKE :cerca";
+			$strQuery .= " OR e.dni LIKE :cerca ) ";
+		} else {
+			$strQuery .= " AND p.mail LIKE :cerca ";
+		} 
 		$strQuery .= " ORDER BY p.cognoms, p.nom";
-	
+
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('cerca', '%'.$cerca.'%');
 	

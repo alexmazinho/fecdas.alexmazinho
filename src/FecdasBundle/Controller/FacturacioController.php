@@ -3873,9 +3873,9 @@ class FacturacioController extends BaseController {
 				'pendent' => false);
 		
 		$dades = $redsysapi->getParameter("Ds_MerchantData");
+
 		
 		$dadesArray = explode(";", urldecode($dades));
-
 		if (!is_array($dadesArray) || count($dadesArray) != 3) throw new \Exception('Error TPV dades retornades ');				
 		
 		//$environment = $dadesArray[2];
@@ -3959,7 +3959,8 @@ class FacturacioController extends BaseController {
 			if ($id == null) $id = 0;
 			
 			$formBuilder = $this->createFormBuilder()->add('Ds_Response', 'text', array('data' => 0));
-			$formBuilder->add('Ds_MerchantData', 'text', array('required' => false, 'data' => $id.'%3B'.self::PAGAMENT_LLICENCIES.'%3Bdev'));
+			//$formBuilder->add('Ds_MerchantData', 'text', array('required' => false, 'data' => $id.'%3B'.self::PAGAMENT_LLICENCIES.'%3Bdev'));
+			$formBuilder->add('Ds_MerchantData', 'text', array('required' => false, 'data' => $id.';'.self::PAGAMENT_LLICENCIES.';'));
 			$formBuilder->add('Ds_Date', 'text', array('data' => date('d/m/Y')));
 			$formBuilder->add('Ds_Hour', 'text', array('data' => date('h:i')));
 			$formBuilder->add('Ds_Order', 'text', array('data' => date('Ymdhi')));

@@ -370,7 +370,8 @@
 	
 	
 	//Cercador select2 genèric cal que existeixi mètode al Controller que gestioni params 'cerca' i 'id'
-	init_cercapernomdnimail_JSON = function(elem_sel, placeholder_txt, minInput, mail, allowclear, seleccioCurta, url, callbackPropagateValues, selectionFunction, loadedFunction) {
+	init_cercapernomdnimail_JSON = function(elem_sel, placeholder_txt, minInput, mail, allowclear, seleccioCurta, url, 
+											callbackPropagateValues, selectionFunction, onclearingFunction, loadedFunction) {
 		
 		$(".alert").remove();
 		
@@ -386,6 +387,12 @@
 			//e.val, e.added, e.removed
 			loadedFunction = function( e ) { };
 		}
+		
+		if (typeof onclearingFunction === "undefined") {
+			//e.val, e.added, e.removed
+			onclearingFunction = function( e ) { };	// e.preventDefault() to avoid clearing
+		}
+		
 		
 		if (mail) {  // Afegir opció cerca per mail
 			url += '&mail=1';
@@ -435,7 +442,7 @@
 				//e.val, e.added, e.removed
 				callbackPropagateValues(e.added);
 			}
-		}).on("select2-loaded", loadedFunction);		
+		}).on("select2-clearing", loadedFunction).on("select2-loaded", loadedFunction);		
 	};
     
 	/********** Selectors de dates ***************/
@@ -1878,15 +1885,17 @@
 
 	        		if (afegirRolUserExistent) {
 	        			// Afegir role a usuari existent
-	        			if ($("#user_user").val() != $("#user_auxinstructordni").val() ) {
+console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val());	        			
+	        			/*if ($("#user_auxinstructordni").val().indexOf( $("#user_user").val() ) === -1) {
 	        				$("#formuserclub").prepend(smsResultAjax('KO', "No coincideixen les adreces de correu"));
 							return false;
-		        		}
+		        		}*/
 	        		} else {
 	        			// Afegir usuari
 		        			
 		        		if ($("#user_user").val() == "") {
-				        	$("#formuserclub").prepend(smsResultAjax('KO', "cal indicar el mail de l'usuari"));
+		        			if ($("#user_user").attr("readonly")) $("#formuserclub").prepend(smsResultAjax('KO', "Cal escollir una persona"));
+		        			else $("#formuserclub").prepend(smsResultAjax('KO', "Cal indicar el mail de l'usuari"));
 							return false;
 		        		}			
 							
@@ -1950,26 +1959,43 @@
 			    			var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
 			    				 
 			    			 $("#formuserclub").prepend(sms);
-			    			 if (afegirUserNou) $("#user_auxinstructordni").val("");
-			    			 if (afegirUserNou) $('#user_user').val( "" );
+			    			 if (afegirUserNou) {
+			    				 $("#user_auxinstructordni").val("");
+			    				 $('#user_user').val( "" );
+			    			 }
+			    			  
 			    		} else {
 			    			$('#user_user').val( added.mail );
+			    			if (afegirUserNou) {
+			    				$("#user_user").removeAttr('readonly'); // Permetre editar mail, poden existir múltiples
+			    			}
 			    		}
 		    		}, function( item ) {
 		    	    	//Selection Function
-		    	        return item.text+"-"+item.nom;
+		    	        return item.text+"-"+item.nom+" ("+item.mail+")";
 		    	    }, function( e ) {
+	    				//  select2-clearing
+console.log("cleared");
+		    	    	$("#user_user").attr('readonly', 'readonly');
+		    	    	
+					}, function( e ) {
 	    				//  select2-loaded search for user mail and when loaded opens
-	    				
-						console.log(JSON.stringify(e.items));
-						/*  NO FUNCIONA
-						items = e.items.results;
-						if (items.length == 0) {
-							var sms = smsResultAjax('KO', 'No s\'ha trobat cap persona amb aquest mail');
-							$("#formuserclub").prepend(sms);
+						if (typeof e.items !== "undefined") {
+							// No hi ha resultats
+							if (afegirUserNou) {
+								var sms = smsResultAjax('KO', 'No s\'ha trobat cap persona amb aquest mail');
+								$("#formuserclub").prepend(sms);
+							}
 						} else {
-							$("#user_auxinstructordni").select2("open");
-						}*/
+							/*
+							 * e.items
+							 * {"results":[{"id":30981,"text":"Oscar MONTEVERDE LIZANDRA","nom":"Oscar","cognoms":"MONTEVERDE LIZANDRA","dni":"44417698Y","mail":null},
+							 * */
+							if (afegirRolUserExistent) {
+								$("#user_auxinstructordni").select2("open");
+							}
+						}
+						
 					});
 		    		
 		    		if (afegirRolUserExistent) {

@@ -740,7 +740,7 @@ class SecurityController extends BaseController
 		$userrole = '';
 		$em = $this->getDoctrine()->getManager();
 		$id = 0;
-error_log("AQUI INIT");
+		$info = "";
     	try {
 			$optionsForm = array( 'admin' => $this->isCurrentAdmin() );
 			
@@ -764,15 +764,15 @@ error_log("AQUI INIT");
 	    
 			if (!$request->isXmlHttpRequest()) throw new \Exception("Error. Contacti amb l'administrador (100)");
 			
-			if ($id > 0) $userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
-			else {
-				if ($request->getMethod() == 'POST') {
-					// Validar i recuperar usuari existent si escau 
-					$info = "";
-	    			//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
-error_log("AQUI".$useruser." ".$randomPassword. " ".$userrole." ");	    			
-	    			$userclub = $this->checkUsuariClub($club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
-				} else {
+			
+			if ($request->getMethod() == 'POST') {
+				// Validar i recuperar usuari existent si escau 
+	    		//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
+  			
+	    		$userclub = $this->checkUsuariClub($club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
+			} else {
+				if ($id > 0) $userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
+				else {
 					$userclub = new EntityUser();
 					$em->persist($userclub);
 				}
@@ -804,9 +804,9 @@ error_log("AQUI".$useruser." ".$randomPassword. " ".$userrole." ");
 						return $this->render('FecdasBundle:Security:clubformuser.html.twig',
    								array('form' => $form->createView(), 'admin' =>$this->isCurrentAdmin()));
 						
+						
 						/*$randomPassword = $this->generateRandomPassword();
 						
-						$info = "";
 						//$userclub = $this->checkUsuariClub($club, $info, $userrole, $userClub->getUser(), $randomPassword, ????? $idInstructor);
 						$userclub = $this->checkUsuariClub($club, $info, $userrole, $userClub->getUser(), $randomPassword);
 						
@@ -919,7 +919,11 @@ error_log("AQUI".$useruser." ".$randomPassword. " ".$userrole." ");
 			$llicenciaVigent = $metaPersona->getLlicenciaVigent();
 			if ($llicenciaVigent == null) throw new \Exception("Aquesta persona no té cap llicència vigent ");
 			if (!$llicenciaVigent->esTecnic()) throw new \Exception("La llicència actual d'aquesta persona no permet afegir-la com instructor ");
-					
+			
+			$mailsPersona = $metaPersona->getMails();
+			if (!in_array($useruser, $mailsPersona)) throw new \Exception("El mail no és d'aquesta persona ");
+			
+			
 		} else {
 			// Només poden fer altes Administradors els propis Administradors
 			if ($userrole == BaseController::ROLE_ADMIN && !$this->isCurrentAdmin()) throw new \Exception("Privilegis insuficients per afegir Administradors");
@@ -929,7 +933,7 @@ error_log("AQUI".$useruser." ".$randomPassword. " ".$userrole." ");
 		}
 				
 		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($useruser)));
-error_log("AQUI2222".$useruser." ".$randomPassword. " ".$userrole." ".count($checkuser));
+
 		// Check Roles existents pel mateix mail
 		
 		if (count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu ");
@@ -949,17 +953,18 @@ error_log("AQUI2222".$useruser." ".$randomPassword. " ".$userrole." ".count($che
 			*/
 			foreach ($checkuser->getClubs() as $checkUserRole) {
 				
-error_log("AQUI333333".$checkUserRole->getClub()->getCodi()." ".$checkUserRole->getRole()." ");				
 				if (!$checkUserRole->anulat()) {
-					if ($randomPassword != '' && $randomPassword != null) throw new \Exception("Aquest usuari ja disposa d'accés i no es pot canviar la clau ");
-					
 					if ($userrole == $checkUserRole->getRole() &&
 						$club === $checkUserRole->getClub()) throw new \Exception("Aquest usuari ja disposa d'accés ".$userrole." per aquest club: ".$useruser); 	
+					
+					if ($userrole != $checkUserRole->getRole() &&
+						$club === $checkUserRole->getClub()) throw new \Exception("Aquest usuari ja disposa d'accés, es poden afegir permisos des de la taula d'usuaris ");
 						
 					if ($userrole == BaseController::ROLE_CLUB && 
 						$checkUserRole->getRole() == BaseController::ROLE_CLUB &&
-						$club !== $checkUserRole->getClub()) throw new \Exception("Aquest usuari pertany a un altre club: ".$useruser); 	
-								
+						$club !== $checkUserRole->getClub()) throw new \Exception("Aquest usuari pertany a un altre club: ".$useruser.
+																				($this->isCurrentAdmin()?".(Admins) Club ".$checkUserRole->getClub()->getNom():"") ); 	
+
 					// Si usuari existent validar que sigui de la mateixa persona 
 					if ($metaPersona != null && $checkUserRole->getMetapersona() != null &&
 						$metaPersona !== $checkUserRole->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");

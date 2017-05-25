@@ -62,7 +62,7 @@ class EntityRebut {
 	protected $tipuspagament;  // Llista
 	
 	/**
-	 * @ORM\Column(type="string", length=15, nullable=true)
+	 * @ORM\Column(type="string", length=30, nullable=true)
 	 */
 	protected $dadespagament;  // Del TPV per exemple
 
@@ -517,7 +517,7 @@ class EntityRebut {
 	 * @param string $dadespagament
 	 */
 	public function setDadespagament($dadespagament) {
-		$this->dadespagament = $dadespagament;
+		$this->dadespagament = substr($dadespagament,0,30);
 	}
 
 	/**

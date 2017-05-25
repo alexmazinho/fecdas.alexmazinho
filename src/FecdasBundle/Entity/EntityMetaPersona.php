@@ -250,6 +250,21 @@ class EntityMetaPersona {
     }
 
 
+	/**
+     * Get mail or mails: mail 1; mail 2; ...
+     *
+     * @return text 
+     */
+    public function getMails()
+    {
+    	$mails = array();
+		foreach ($this->getPersonesSortedById() as $persona) {
+			$mails = array_merge(explode(";", $persona->getMail()));
+		}
+        return $mails;
+    }
+
+
 	public function __toString() {
 		return $this->id;
 	}

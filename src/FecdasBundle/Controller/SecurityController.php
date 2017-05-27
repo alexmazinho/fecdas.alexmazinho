@@ -627,7 +627,7 @@ class SecurityController extends BaseController
 					
 					// Tot OK afegir primer usuari al club role club
 					$info = "";
-					$userclub = $this->checkUsuariClub($club, $info, BaseController::ROLE_CLUB, $mails[0], $randomPassword);
+					$userclub = $this->checkUsuariClub(true, $club, $info, BaseController::ROLE_CLUB, $mails[0], $randomPassword);
 
     				$this->get('session')->getFlashBag()->add('sms-notice', 'Club creat correctament. '.$info);
     			} else {
@@ -769,7 +769,8 @@ class SecurityController extends BaseController
 				// Validar i recuperar usuari existent si escau 
 	    		//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
   			
-	    		$userclub = $this->checkUsuariClub($club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
+	    		$userclub = $this->checkUsuariClub($id == 0, $club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
+				
 			} else {
 				if ($id > 0) $userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
 				else {
@@ -804,26 +805,19 @@ class SecurityController extends BaseController
 						return $this->render('FecdasBundle:Security:clubformuser.html.twig',
    								array('form' => $form->createView(), 'admin' =>$this->isCurrentAdmin()));
 						
-						
-						/*$randomPassword = $this->generateRandomPassword();
-						
-						//$userclub = $this->checkUsuariClub($club, $info, $userrole, $userClub->getUser(), $randomPassword, ????? $idInstructor);
-						$userclub = $this->checkUsuariClub($club, $info, $userrole, $userClub->getUser(), $randomPassword);
-						
-						$this->get('session')->getFlashBag()->add('sms-notice', $info);*/
-						
 						break;
 					case 'removerole':
 						
 						$userClubRole = $this->getDoctrine()->getRepository('FecdasBundle:EntityUserClub')->find($id);
 			
 						if ($userClubRole == null) throw new \Exception('Error. Posa\'t en contacte amb l\'administrador (300)');
+						$userrole = $userClubRole->getRole();
 		
 						$userclub = $userClubRole->getUsuari();
 						
 						$userClubRole->setDatabaixa(new \DateTime('now'));
 						
-			 			$this->get('session')->getFlashBag()->add("sms-notice", "Accés " . $userClubRole->getRole(). " anul·lat per l'usuari ".$userclub->getUser());
+			 			$this->get('session')->getFlashBag()->add("sms-notice", "Accés " . $userrole. " anul·lat per l'usuari ".$userclub->getUser());
 						
 						break;
 					
@@ -832,11 +826,11 @@ class SecurityController extends BaseController
 						if ($userClub == null) throw new \Exception("Error. Contacti amb l'administrador (302)");
 						
 						$userClub->setDatabaixa(new \DateTime('now'));
-			
 						// Baixa tots els rols
 						foreach ($userClub->getRolesClubs($club) as $userClubRole) {
 							if (!$userClubRole->anulat()) $userClubRole->setDatabaixa(new \DateTime('now'));
 						}
+			
 						break;
 						
 					case 'resetpwd':
@@ -851,11 +845,10 @@ class SecurityController extends BaseController
 						
 						break;
 				}
-
 	   			$em->flush();
 				
-				$this->logEntryAuth('USER '. strtoupper($action) . ' OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser(). ' role: '.$userClubRole->getRole());
-				
+				$this->logEntryAuth('USER '. strtoupper($action) . ' OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser(). ' role: '.$userrole);
+			
    				return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
    						array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
 			} else {
@@ -887,6 +880,7 @@ class SecurityController extends BaseController
 					 ' user: ' . ($userclub != null?$userclub->getUser():'No user') .
 					 ' rol: ' . ($userrole != ''?$userrole:'No roles');
 						
+			$em->clear();
 			if ($request->getMethod() != 'POST') $this->logEntryAuth('USER '.$action.' KO', $e->getMessage().$extra);	
 			else $this->logEntryAuth('USER SUBMIT KO', $e->getMessage());
 			
@@ -899,10 +893,10 @@ class SecurityController extends BaseController
 		return $response;	// No hauria d'arribar mai
     }
 
-	private function checkUsuariClub($club, &$info, $userrole, $useruser, $randomPassword, $idInstructor = 0) {
+	private function checkUsuariClub($nou, $club, &$info, $userrole, $useruser, $randomPassword, $idInstructor = 0) {
 		$em = $this->getDoctrine()->getManager();
 		
-		$metapersona = null;
+		$metaPersona = null;
 		
 		// Check NEW Role				
 		if ($userrole == BaseController::ROLE_FEDERAT) throw new \Exception("No es poden afegir federats"); // Encara no
@@ -958,6 +952,7 @@ class SecurityController extends BaseController
 						$club === $checkUserRole->getClub()) throw new \Exception("Aquest usuari ja disposa d'accés ".$userrole." per aquest club: ".$useruser); 	
 					
 					if ($userrole != $checkUserRole->getRole() &&
+						$nou &&
 						$club === $checkUserRole->getClub()) throw new \Exception("Aquest usuari ja disposa d'accés, es poden afegir permisos des de la taula d'usuaris ");
 						
 					if ($userrole == BaseController::ROLE_CLUB && 
@@ -965,16 +960,20 @@ class SecurityController extends BaseController
 						$club !== $checkUserRole->getClub()) throw new \Exception("Aquest usuari pertany a un altre club: ".$useruser.
 																				($this->isCurrentAdmin()?".(Admins) Club ".$checkUserRole->getClub()->getNom():"") ); 	
 
-					// Si usuari existent validar que sigui de la mateixa persona 
-					if ($metaPersona != null && $checkUserRole->getMetapersona() != null &&
-						$metaPersona !== $checkUserRole->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
+					if ($metaPersona == null){
+						if ($checkUserRole->getMetapersona() != null) $metapersona = $checkUserRole->getMetapersona();
+					} 
+					else {
+						// Si usuari existent validar que sigui de la mateixa persona 
+						if ($checkUserRole->getMetapersona() != null &&
+							$metaPersona !== $checkUserRole->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
+					}
 				}
 			}
 			
 			$userclub = $checkuser;
+			
 					
-			$metapersona = null;
-										
 		} else {
 			$userclub = new EntityUser($useruser, sha1($randomPassword));
 			$userclub->setPwd(sha1($randomPassword));
@@ -984,8 +983,8 @@ class SecurityController extends BaseController
 		}
 				
 		// Tot OK afegir role usuari al club
-		$userClubRole = $club->addUsuariRole($userclub, $userrole, $metapersona);
-		$info .= "Nou accés ".$userrole." per al club ".$club->getNom();
+		$userClubRole = $club->addUsuariRole($userclub, $userrole, $metaPersona);
+		$info .= "Nou accés ".$userrole." per a  ".$useruser;
 		$em->persist($userClubRole);
 		return $userclub;
 	}

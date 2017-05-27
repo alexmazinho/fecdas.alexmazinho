@@ -413,6 +413,9 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 
 .select2-container .select2-choice { display: block;   line-height: 32px;  height: 32px;}
 
+.input-group .select2-container { padding: 0; border: none;  height: 100%;}
+.input-group .select2-container .select2-choice { display: block;   line-height: 36px;  height: 36px; }
+
 .data-detall .data-detall-cell i.fa, .link i.fa { 
 	padding: 4px;
 	margin-left: -4px;
@@ -2332,6 +2335,8 @@ select#parte_persona_addrnacionalitat {
 
 .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
 
+
+#edicio-persona .input-group .select2-container .select2-choice { max-width: 350px; }
 
 /************************************************* Persona Fin  ******************************************************/
 

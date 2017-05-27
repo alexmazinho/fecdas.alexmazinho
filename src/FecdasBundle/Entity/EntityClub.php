@@ -282,7 +282,7 @@ class EntityClub {
      *
      * @param FecdasBundle\Entity\EntityUser $user
      */
-    public function addUsuariRole($user, $role)
+    public function addUsuariRole($user, $role, $metapersona)
     {
     	$userClubRole = new EntityUserClub($this, $user, $role);
     	
@@ -326,8 +326,6 @@ class EntityClub {
      */
     public function getRolsDistinct($baixes = false)
     {
-    	
-		
     	$roles = BaseController::getRoles( BaseController::esFederacio($this) || $this->codi == BaseController::CODI_CLUBTEST);
 		
 		return $roles;
@@ -346,18 +344,21 @@ class EntityClub {
 		
     	$usuarisArray = array();
     	foreach ($this->usuaris as $userClubRole) {
+
     		if ($baixes || (!$baixes && !$userClubRole->anulat())) {
+	    			
 	    		$userClub = $userClubRole->getUsuari();
 				$role = $userClubRole->getRole();
 				if ($baixes || (!$baixes && !$userClub->anulat())) {
+					
 					if (!isset($usuarisArray[$userClub->getId()])) {
-						$usuarisArray[$userClub->getId()] = array('userclub' => $userClub, 'rols' => array_map(function ($n) { return null; }, $roles) ); // Crea array objectes amb claus els valors de $roles i valor null 
+						$usuarisArray[$userClub->getId()] = array('userclub' => $userClub, 'rols' => array_map(function ($n) { return null; }, $roles) ); // Crea array objectes amb claus els valors de $roles i valor null
 					}
 					$usuarisArray[$userClub->getId()]['rols'][$role] = $userClubRole;
 				}
 			}
     	}
-		
+	
 		return $usuarisArray;
     }
     

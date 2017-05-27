@@ -145,7 +145,8 @@
 				params 		+= '&comptefactura='+$('#comptefactura').val();		
 				
 	        	window.location = url+params;
-	        }, function() {}, function() {
+
+	        }, function() { closeDialegConfirmacio(); }, function() {
 
 	        	$( "#datafacturacio" ).datepicker({
 		      		showOn: "button",

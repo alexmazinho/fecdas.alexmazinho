@@ -179,7 +179,7 @@
 			
 			dialegConfirmacio( pagamentcursSMS( false, "{{ iban }}", "{{ ibanescola }}" ), "Abans de continuar...", 0, 550, function() {
 	        	window.location = url+'&comentaris='+$('#curs_comentaris').val();
-	        }, function() {}, function() {});
+	        }, function() { closeDialegConfirmacio(); }, function() {});
 		});
 
 		
@@ -240,7 +240,7 @@
 					
 					window.location = url;
 					 
-				}, function() { }, function() { });
+				}, function() { closeDialegConfirmacio(); }, function() { });
 			});
 		    
 			

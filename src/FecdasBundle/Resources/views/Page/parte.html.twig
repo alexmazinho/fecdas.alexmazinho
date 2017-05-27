@@ -245,7 +245,7 @@ console.log({{ datesparte['max']['any'] }}+' '+{{ datesparte['max']['mes'] }}+' 
 			url += '&datafacturacio='+$('#datafacturacio').val()+'&llicencies='+encodeURIComponent(JSON.stringify(idsLlicencies));
     		window.location = url;	
         }, 
-        function() { /* Cancel */ }, 
+        function() { closeDialegConfirmacio(); /* Cancel */ }, 
         function() {
 
         	var current = new Date();

@@ -395,7 +395,7 @@
 					
 				window.location = url;
 				 
-			}, function() { }, function() {
+			}, function() { closeDialegConfirmacio(); }, function() {
 
 				$("#checkfactura").click(function(){
 					var checked = $(this).is(':checked');
@@ -417,7 +417,6 @@
 						$( "#datafacturacio" ).datepicker('destroy');
 					}
 				});
-				
 	        	
 			});
 		});

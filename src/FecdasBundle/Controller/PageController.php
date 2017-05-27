@@ -1168,15 +1168,7 @@ class PageController extends BaseController {
 					$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($personaId);
 					if ($this->isCurrentAdmin()) $options['edit'] = true; 
 				}
-				if ($persona == null) {
-					$metapersona = new EntityMetaPersona();
-					$persona = new EntityPersona($metapersona, $this->getCurrentClub());
-					$options['edit'] = true;
-					$persona->setSexe("H");
-					$persona->setAddrnacionalitat("ESP");
-				}	
 				
-				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			}
 		} catch (\Exception $e) {
 			if ($em->isOpen()) {
@@ -1200,6 +1192,17 @@ class PageController extends BaseController {
 			$response->setStatusCode(500);
 			return $response;
 		}
+
+		if ($persona == null) {
+			$metapersona = new EntityMetaPersona();
+			$em->persist($metapersona);
+			$persona = new EntityPersona($metapersona, $this->getCurrentClub());
+			$em->persist($persona);
+			$options['edit'] = true;
+			$persona->setSexe("H");
+			$persona->setAddrnacionalitat("ESP");
+		}	
+		if ($formpersona == null) $formpersona = $this->createForm(new FormPersona($options), $persona);
 
 		return $this->render('FecdasBundle:Page:persona.html.twig',
 					array('formpersona' => $formpersona->createView(), 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));

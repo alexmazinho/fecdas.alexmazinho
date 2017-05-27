@@ -253,7 +253,8 @@
 					$("#stock-main").append(data);
 
 					$("#form_view_0").prop("checked", true);	// Vista detall
-					
+
+					closeDialegConfirmacio();
 
 				}).fail( function(xhr, status, error) {
 					 // xhr.status + " " + xhr.statusText, status, error
@@ -264,7 +265,7 @@
 					 $("#stock-main").prepend(sms);
 				});	
 				 
-			}, function() { }, function() { });
+			}, function() { closeDialegConfirmacio(); }, function() { });
 		});
 
 		

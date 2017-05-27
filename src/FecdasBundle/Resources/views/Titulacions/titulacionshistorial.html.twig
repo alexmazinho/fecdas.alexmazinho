@@ -3,7 +3,7 @@
 {% if titulacions|length > 0 %}
 	<div class="historial-titol">Historial de titulacions</div>
 {% endif %}
-	<div class="historial-items">
+	<div class="historial-items historial-cmas">
 {% for titulacio in titulacions %}
 		<div class="item-historial {% if titulacio.anulada %}data-detall-fosc{% endif %}">
 			<div class="historial-camp historial-titulacio">{{ titulacio.titol.llistaText }}</div> 
@@ -30,11 +30,24 @@
 {% if altrestitulacions|length > 0 %}
 	<div class="historial-titol">Altres titulacions</div>
 {% endif %}
+	<div class="historial-items historial-altrestitols">
+		<div class="item-historial item-blank hidden">
+			<div class="historial-camp historial-titulacio"></div> 
+			<div class="historial-camp historial-action"><a class="remove-titol-extern link" data-id="{{ 'ID_REPLACE'  }}" href="{{ path('FecdasBundle_curs', { 'id': 'ID_REPLACE' }) }}" alt="Treure títol" title="Treure títol">
+					<i class="fa fa-trash fa-1x red"></i></a></div>
+		</div>
 {% for titulacio in altrestitulacions %}
-	<div class="item-historial">
-		<div class="historial-camp historial-titulacio">{{ titulacio.llistaText }}</div> 
-	</div>
+		<div class="item-historial">
+			<div class="historial-camp historial-titulacio">{{ titulacio.llistaText }}</div> 
+			<div class="historial-camp historial-action"><a class="remove-titol-extern link" data-id="{{ titulacio.id  }}" href="javascript:void(0);" alt="Treure títol" title="Treure títol">
+					<i class="fa fa-trash fa-1x red"></i></a></div>
+		</div>
 {% endfor %}
+	</div>
+{% if titulacions|length == 0 and altrestitulacions|length == 0 %}
+	<div class="space20"></div>
+	<div class="alert alert-success" role="alert">Cap titulació</div>
+{% endif %}
 </div>
 
 

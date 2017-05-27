@@ -385,6 +385,20 @@ class EntityPersona {
         return $this->metapersona!=null?$this->metapersona->getAltrestitulacions():array();
     }
 	
+	/**
+     * Get altrestitulacions
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getAltrestitulacionsIds()
+    {
+    	$altres = array();
+    	foreach ($this->getAltrestitulacions() as $altre) {
+			$altres[] = $altre->getId();
+		}
+        return $altres;
+    }
+	
 	public function teTitulacions() {
 		return $this->metapersona!=null?$this->metapersona->teTitulacions():false;
 	}

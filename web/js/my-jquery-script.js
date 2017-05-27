@@ -543,6 +543,10 @@
 				strInfo+"</li></ul></div>");
 	};
 	
+	closeDialegConfirmacio = function() {
+		$( '#dialeg' ).html('');
+		$( '#dialeg' ).dialog( "destroy" );
+	};
 	
 	dialegConfirmacio = function(strHtml, titol, h, w, callbackok, callbackko, callbackopen) {
 		
@@ -555,20 +559,15 @@
 			 width:  (w !== undefined?w:300),
 			 modal: true,
 			 buttons: {
-			 	"Continuar": function() {
-			 		
-			 		if (callbackok()) {
-			 			// Callback no funciona després de crida asíncrona $.get o $.post
-				 		$( '#dialeg' ).html('');
-				 		$( this ).dialog( "destroy" );
-			 		}
-			 	},
-			 	"Cancel·lar": function() {
+				 "Continuar": function() {
+					 
+					 callbackok();
+					 // El retorn de callback no funciona després de crida asíncrona $.get o $.post
+				 },
+				 "Cancel·lar": function() {
 
-			 		callbackko();
-			 		$( '#dialeg' ).html('');
-			 		$( this ).dialog( "destroy" );
-			 	}
+					 callbackko();
+				 }
 			 },
 			 open: callbackopen
 		});
@@ -578,11 +577,11 @@
 	
 	smsResultAjax = function(result, sms) {
 
-		var classAlert = '';
-		if (result != 'OK')	classAlert = 'alert-danger';
-		else classAlert = 'alert-info';
+		var classAlert = '',errorRemove = ''; 
+		if (result !== 'OK') { classAlert = 'alert-danger'; }
+		else { classAlert = 'alert-info'; }
 		
-		var errorRemove = '<div class="alert '+classAlert+' form-alert alert-dismissible">';
+		errorRemove += '<div class="alert '+classAlert+' form-alert alert-dismissible">';
 		errorRemove += '<button data-dismiss="alert" class="close" type="button">';
 		errorRemove += '<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>';
 		errorRemove += '<ul><li><span class="fa fa-exclamation-circle fa-1x"></span>';
@@ -594,7 +593,7 @@
 	jQuery.fn.extend({
 		slideRightShow: function() {
 		    return this.each(function() {
-		        $(this).show('slide', {direction: 'right'}, 1000);
+		    	$(this).show('slide', {direction: 'right'}, 1000);
 		    });
 		},
 		slideLeftHide: function() {
@@ -617,7 +616,8 @@
 	/* Mètode obsolet */
 
 	redirectLocationUrlParams = function(url, params) {
-		for ( var i in params ) {
+		var i = 0;
+		for ( i in params ) {
 			url=url+'&'+params[i].name+'='+params[i].value;
 		}
 		window.location = url; 
@@ -983,6 +983,68 @@
 	    			$("#persona_estranger").prop("checked", true);
 	    		};
 			}
+			
+			$("select#persona_altretitol").select2({
+				minimumInputLength: 4,
+				allowClear: true,
+				width: 'off',
+				placeholder: 'Escollir títol extern'
+			});
+			
+			
+			$('.add-titol-extern').click(function (e) {
+		        //Cancel the link behavior
+		        e.preventDefault();
+		        var dataSelected = $("#persona_altretitol").select2("data");
+		        
+		        var idTitol = dataSelected.id;
+		        var textTitol = dataSelected.text;
+		        
+		        if (idTitol != "") {
+		        	// Afegir a la llista
+		        	$('.titulacions-historial .alert.alert-success').hide();  //<div class="alert alert-success" role="alert">Cap titulació</div>  
+		        	
+console.log(idTitol+" - "+JSON.stringify(textTitol) );
+		        	
+		        	var nouItem = $('.item-historial.item-blank').clone();
+		        	nouItem.removeClass('hidden item-blank');
+		        	nouItem.html( nouItem.html().replace('ID_REPLACE', idTitol ) );
+		        	nouItem.find( '.historial-titulacio').html( textTitol );
+		        	nouItem.find( '.titol-action-remove').attr( 'data-id', idTitol );
+		        	$('.historial-altrestitols').append(nouItem);
+
+		        	// Afegir al camp ocult
+		        	var current = $('#persona_altrestitolscurrent').val().trim().split(";");
+		        	current.push( $("select#persona_altretitol").val() );
+		        	$('#persona_altrestitolscurrent').val( current.join(";") );
+		        	$("#persona_altretitol").select2("data", "");
+		        }
+		        
+			});
+			// Delegate
+			$( ".titulacions-historial" ).on( "click", ".remove-titol-extern", function( e ) {
+		        //Cancel the link behavior
+		        e.preventDefault();
+		        
+		        var idTitol = $(this).attr( 'data-id' );
+		        var parentRow = $(this).parents('.item-historial');	
+		        
+		        // Treure de la llista
+		        var current = $('#persona_altrestitolscurrent').val().trim().split(";");
+console.log($('#persona_altrestitolscurrent').val()+" - "+current.length );
+				if (current.indexOf(idTitol) !== -1) {
+					current.splice( current.indexOf(idTitol) , 1);
+				}
+				$('#persona_altrestitolscurrent').val( current.join(";") );
+				
+		        parentRow.remove();
+		        
+		        if ($('#persona_altrestitolscurrent').val() == '') {
+		        	$('.titulacions-historial .alert.alert-success').show();
+		        }
+		        
+			});
+			
 			// Show Div
 			showModalDiv('#edicio-persona');
 			helpBubbles("#help-dni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
@@ -1082,7 +1144,7 @@
 	        //Cancel the link behavior
 	        e.preventDefault();
 	        $("#error-persona").html();
-	        
+	        var i = '';
 	        $("#dialeg").dialog({
 	          	buttons : {
 	            	"Confirmar" : function() {
@@ -1090,7 +1152,7 @@
 	    	        	if ($('#persona_mail').val() != "") {  // Múltiples adreces acceptades mail 1; mail 2; ...
 	    	        		var mails = $('#persona_mail').val().split(";");
 
-	    	        		for (var i in mails) {
+	    	        		for (i in mails) {
 	    	        			if (mails[i].trim() != "" && !isValidEmailAddress( mails[i].trim() ) ) {
 						        	dialegError("Error", "L'adreça de correu -"+mails[i]+"- no té un format correcte", 400);
 									return false;
@@ -1352,6 +1414,8 @@
 	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	 		    	else $('#formparte-llicencia').slideUp('fast');
 	 		    	
+	 		    	closeDialegConfirmacio();
+	 		    	
 	 	        }).fail( function(xhr, status, error) {
 					 // xhr.status + " " + xhr.statusText, status, error
 					 var sms = smsResultAjax('KO', xhr.responseText);
@@ -1363,7 +1427,7 @@
 				     $("#llista-llicencies").prepend(sms);
 				});
 				 
-			}, function() { }, function() { 
+			}, function() { closeDialegConfirmacio(); }, function() { 
 
 				$( "#datafacturacio" ).datepicker({
 		      		showOn: "button",
@@ -1836,8 +1900,13 @@
 	        if (admin == true && $("#club_tipusparte :selected").length < 1) {
 	        	dialegConfirmacio( "El club no té assignat cap tipus de llicència", "Abans de continuar...", 0, 400, function() {
 	        		$('#formclub').submit();
+	        		
+	        		closeDialegConfirmacio();
+	        		
 		        }, function() {
 		        	$( "#tabs-club" ).tabs( "option", "active", 1 );
+		        	closeDialegConfirmacio();
+		        	
 		        }, function() { });
 	        	
 			} else {
@@ -1858,10 +1927,10 @@
 		});
 	};
 	
+	
 	addUserRoleClick = function( urlJSONpersona, keysCercaPersona ) {
-	    $('#add-userclub, .add-userroleclub')
-	    .off('click')
-	    .click(function(e) {
+		// delegate
+		$( "#llista-usuarisclub" ).on( "click", "#add-userclub, .add-userroleclub", function( e ) {
 			//Cancel the link behavior
 	        e.preventDefault();
 
@@ -1885,7 +1954,7 @@
 
 	        		if (afegirRolUserExistent) {
 	        			// Afegir role a usuari existent
-console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val());	        			
+	        			
 	        			/*if ($("#user_auxinstructordni").val().indexOf( $("#user_user").val() ) === -1) {
 	        				$("#formuserclub").prepend(smsResultAjax('KO', "No coincideixen les adreces de correu"));
 							return false;
@@ -1896,21 +1965,28 @@ console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val()
 		        		if ($("#user_user").val() == "") {
 		        			if ($("#user_user").attr("readonly")) $("#formuserclub").prepend(smsResultAjax('KO', "Cal escollir una persona"));
 		        			else $("#formuserclub").prepend(smsResultAjax('KO', "Cal indicar el mail de l'usuari"));
-							return false;
+        			
+		        			return;
 		        		}			
 							
 				        if ( !isValidEmailAddress( $("#user_user").val() ) ) {
 				        	$("#formuserclub").prepend(smsResultAjax('KO', "L'adreça de correu "+$("#user_user").val()+" no té un format correcte"));
-							return false;
+
+				        	
+				        	return;
 			        	}
 				        
 				        if ($("#user_pwd_first").val() == "" || $("#user_pwd_second").val() == "") {
 				        	$("#formuserclub").prepend(smsResultAjax('KO', "cal indicar la clau l'usuari"));
-							return false;
+
+				        	
+				        	return;
 				        }
 				        if ($("#user_pwd_first").val() != $("#user_pwd_second").val()) {
 				        	$("#formuserclub").prepend(smsResultAjax('KO', "Les claus no coincideixen"));
-							return false;
+
+				        	
+				        	return;
 				        }
 	        		}
 
@@ -1924,15 +2000,14 @@ console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val()
 
 				    	reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));
 				    	
-				    	$( '#dialeg' ).html('');
-				 		$( '#dialeg' ).dialog( "destroy" );
+	        			closeDialegConfirmacio();
 				    	
 					}).fail( function(xhr, status, error) {
 		        		// xhr.status + " " + xhr.statusText, status, error
 			        	var sms = smsResultAjax('KO', xhr.responseText);
 			    			 
 			        	$("#formuserclub").prepend(sms);
-			        	
+			        	return;
 		        	});
 
 					
@@ -1940,6 +2015,7 @@ console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val()
 	        	},function() {
 	        		//callbackko
 	        		
+	        		closeDialegConfirmacio();
 	        		
 	        	},function() {
 	        		//callbackopen
@@ -1961,11 +2037,9 @@ console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val()
 			    			 $("#formuserclub").prepend(sms);
 			    			 if (afegirUserNou) {
 			    				 $("#user_auxinstructordni").val("");
-			    				 $('#user_user').val( "" );
 			    			 }
 			    			  
 			    		} else {
-			    			$('#user_user').val( added.mail );
 			    			if (afegirUserNou) {
 			    				$("#user_user").removeAttr('readonly'); // Permetre editar mail, poden existir múltiples
 			    			}
@@ -1975,7 +2049,6 @@ console.log($("#user_auxinstructordni").select2("val")+" "+$("#user_user").val()
 		    	        return item.text+"-"+item.nom+" ("+item.mail+")";
 		    	    }, function( e ) {
 	    				//  select2-clearing
-console.log("cleared");
 		    	    	$("#user_user").attr('readonly', 'readonly');
 		    	    	
 					}, function( e ) {
@@ -2003,19 +2076,24 @@ console.log("cleared");
 		    			$('#user_id').val( userid );
 		    			$('#user_user').val( userMail );
 		    			$("select#user_role").val( role );
+		    			$("select#user_role").attr('readonly', 'readonly');  
 		    			
-		    			$("#user_auxinstructordni").select2( "readonly", false ); 
-		    			$("#user_user").attr('readonly', 'readonly');  // Cerca no es pot canviar
-		    			$("#select#user_role").attr('readonly', 'readonly');  // Cerca no es pot canviar
+		    			if (keysCercaPersona.includes( role )) {
+		    				$("#user_user").attr('readonly', 'readonly');	// Cerca no es pot canviar
+		    				$("#user_auxinstructordni").select2("readonly", false);			// // Cerca no es pot canviar
+		    				
+							$("#user_auxinstructordni").select2("search", userMail);  // Executar cerca persones pel mail de l'usuari
+
+		    			} else {
+		    				$("#user_user").removeAttr('readonly');
+		    				$("#user_auxinstructordni").select2("readonly", true);
+		    				
+		    			}
+		    			
+		    			
 		    			
 		    			$('.form-user-password-manual, .form-user-password-random, #formuserclub-random, #formuserclub-manual').hide();
 
-						$("#user_auxinstructordni").select2("search", userMail);  // Executar cerca persones pel mail de l'usuari
-
-						setTimeout(function() {
-		    				$('#user_randompwd,#user_pwd_first,#user_pwd_second').val('');
-			    	    },200);
-		    			
 		    		} else {
 		    			// Afegir usuari
 		    			randomPwdClick();
@@ -2063,9 +2141,8 @@ console.log("cleared");
 	};
 	
 	actionsUserRolePwdClick = function( ) {
-		$('.remove-userroleclub, .del-userclub, .reset-pwduserclub')
-	    .off('click')
-	    .click(function(e) {
+		//delegated
+		$( "#llista-usuarisclub" ).on( "click", ".remove-userroleclub, .del-userclub, .reset-pwduserclub", function( e ) {
 			//Cancel the link behavior
 	        e.preventDefault();
 	        var url = $(this).attr("href");
@@ -2078,18 +2155,25 @@ console.log("cleared");
 			    	$("#llista-usuarisclub").html(data);
 			    	
 			    	reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));
-				});
+			    	
+			    	closeDialegConfirmacio();
+			    	
+				}).fail( function(xhr, status, error) {
+	        		// xhr.status + " " + xhr.statusText, status, error
+		        	var sms = smsResultAjax('KO', xhr.responseText);
+		    			 
+		        	$("#llista-usuarisclub").prepend(sms);
+	        	});
         		
         	},function() {
         		//callbackko
         		
-        		
+        		closeDialegConfirmacio();
         	},function() {
         		//callbackopen
         		
         	});
-	        
-	        
+
 	    });
 	};
 	

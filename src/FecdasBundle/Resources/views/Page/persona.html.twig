@@ -134,7 +134,7 @@
 		<div id="tabs-persona" class="col-md-12">
 	  		<ul>
 	    		<li><a href="#tabs-llicencies">Llicències</a></li>
-	    		{% if persona.teTitulacions() %}<li><a href="#tabs-titulacions">Titulacions</a></li>{% endif %}
+	    		<li><a href="#tabs-titulacions">Titulacions</a></li>
 	    		{% if persona.teDocencies() %}<li><a href="#tabs-docencies">Docències</a></li>{% endif %}
 			</ul>
 			<div id="tabs-llicencies">
@@ -148,16 +148,37 @@
 					{% include 'FecdasBundle:Titulacions:llicencieshistorial.html.twig' %}
 				</div>
 			</div>
-			{% if persona.teTitulacions() %}
-				<div id="tabs-titulacions">
-				    <div class="row">
-				    	<div class="historial-titol-outer">Historial de titulacions</div>
-						{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
-						{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
-						{% include 'FecdasBundle:Titulacions:titulacionshistorial.html.twig' %}
+			<div id="tabs-titulacions">
+				{% if persona.teTitulacions() %}
+					{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
+					{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
+				{% else %}
+					{% set titulacions = [] %}
+					{% set altrestitulacions = [] %}
+				{% endif %}
+			    <div class="row">
+			    	<div class="historial-titol-outer">Historial de titulacions</div>
+					{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
+					{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
+					{% include 'FecdasBundle:Titulacions:titulacionshistorial.html.twig' %}
+				</div>
+				<div class="space20"></div>
+			    <div class="row">
+					<div class="col-md-offset-2 col-md-10 col-xs-12 col-last-right">
+						<div class="form-group">
+							<div class="input-group">
+								{{ form_widget(formpersona.altrestitolscurrent) }}
+								<div class="input-group-addon">Altres titulacions</div>
+								{{ form_widget(formpersona.altretitol, { 'attr': {'class': 'form-control'} }) }}
+								<span class="input-group-btn">
+									<a class="add-titol-extern btn btn-default" href="{{ path('FecdasBundle_ajaxpoblacions') }}">Afegir <span class="fa fa-plus fa-1x green"></span></a>
+								</span>
+							</div>
+						</div>
 					</div>
 				</div>
-			{% endif %}
+			</div>
+			
 			{% if persona.teDocencies() %}
 				<div id="tabs-docencies">
 				    <p>Pendent</p>

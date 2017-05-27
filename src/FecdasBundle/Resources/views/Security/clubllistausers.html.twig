@@ -42,7 +42,7 @@
 								Sense accés 
 								<a class="add-userroleclub link" href="{{ path('FecdasBundle_usuariclub',{ 'action': 'addrole', 'id': userclub.id, 'role': rolsDistinct|keys[loop.index0] } ) }}" 
 									data-role="{{ rolsDistinct|keys[loop.index0] }}" data-user="{{ userclub.user }}" data-id="{{ userclub.id }}" alt="Afegir accés {{ rolsDistinct|keys[loop.index0] }}" title="Afegir accés {{ rolsDistinct|keys[loop.index0] }}">
-									<i class="fa fa-lock fa-1x green"></i>
+									<i class="fa fa-unlock fa-1x green"></i>
 								</a>
 							</td>
 						{% else %}
@@ -102,5 +102,7 @@
 		   	{% endfor %}
 		</tbody>
 	</table>
+{% else %}
+	<div class="alert alert-success" role="alert">Cap usuari</div>
 {% endif %}
 

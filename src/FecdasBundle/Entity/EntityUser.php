@@ -38,17 +38,6 @@ class EntityUser {
 	protected $clubs;	// Owning side of the relationship
 	
 	/**
-	 * @ORM\Column(type="string", length=50)
-	 */
-	//protected $roles;
-
-	/**
-	 * @ORM\OneToOne(targetEntity="EntityMetaPersona")
-	 * @ORM\JoinColumn(name="metapersona", referencedColumnName="id")
-	 */
-	//protected $metapersona;			// Un usuari pot estar associat a una metapersona (federat o instructor)
-	
-	/**
 	 * @ORM\Column(type="string", length=40, nullable=true)
 	 */
 	protected $recoverytoken;
@@ -129,7 +118,7 @@ class EntityUser {
 		
 		$roles = array();
 		foreach ($this->clubs as $userClubRole) {
-    		if (!$userClubRole->anulat() && $userClubRole->getClub === $club) $roles[] = $userClubRole;
+    		if (!$userClubRole->anulat() && $userClubRole->getClub() === $club) $roles[] = $userClubRole;
 		}
     	return $roles;
     }

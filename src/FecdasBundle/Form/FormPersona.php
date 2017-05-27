@@ -4,6 +4,11 @@ namespace FecdasBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
+
+use FecdasBundle\Controller\BaseController;
+use FecdasBundle\Entity\EntityPersona;
 
 class FormPersona extends AbstractType {
 
@@ -16,6 +21,26 @@ class FormPersona extends AbstractType {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
+		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
+			$form = $event->getForm();
+			$persona = $event->getData();
+			
+			/* Check we're looking at the right data/form */
+			if ($persona instanceof EntityPersona) {
+
+				$altres = array();
+				if ($persona != null) $altres = $persona->getAltrestitulacionsIds();  
+								
+				$form->add('altrestitolscurrent', 'hidden', array(
+					'mapped' 		=> false,
+					'data'			=> implode(";", $altres)
+				));
+				
+			}
+		});	
+			
+			
 		$builder->add('id', 'hidden');
 		
 		$readonly = ! $this->options['edit'];
@@ -84,9 +109,24 @@ class FormPersona extends AbstractType {
 		));
 		
 		$builder->add('estranger', 'checkbox', array(
-    	    'required'  => false,
-    	    'mapped'  => false,
+    	    	'required'  => false,
+    	    	'mapped'  => false,
 		));
+		
+		$builder->add('altretitol', 'entity', array(
+				'class' 		=> 'FecdasBundle:EntityTitol',
+				'query_builder' => function($repository) {
+						return $repository->createQueryBuilder('t')
+							->where('t.organisme <> \''.BaseController::ORGANISME_CMAS.'\'' )
+							//->andWhere('t.actiu = 1')
+							->orderBy('t.titol', 'ASC');
+						}, 
+				'choice_label' 	=> 'llistaText',
+				'placeholder' 	=> 'Escollir titulació externa',
+				'mapped' 		=> false,
+				'required'  	=> false
+		));	
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

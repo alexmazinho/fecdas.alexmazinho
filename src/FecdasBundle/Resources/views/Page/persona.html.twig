@@ -1,96 +1,111 @@
 {{ form_start(formpersona, {'action': path('FecdasBundle_persona'), 'method': 'POST', 'attr': {'class': 'modalform appform container-fluid', 'id':'formpersona'}}) }}
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
 	<h1>Dades personals<div id="sms-mailpersona">* Cal omplir <strong>l'adreça de correu</strong> per poder fer la tramitació</div></h1>
+	
 	<div class="row">
-		{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
-		<div id="formpersona-nom" class="col-md-3  col-xs-3">
-		  	<div class="form-group">
-				{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
-				{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom'} }) }}
-			</div>{{ form_errors(formpersona.nom) }}
-		</div>
-		<div id="formpersona-cognoms"  class="col-md-5  col-xs-5">
-			{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
-			{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'form-control', 'placeholder': 'Cognoms'} }) }}
-		</div> 
-		<div id="formpersona-dni" class="col-md-4  col-xs-4">
-	  		<div class="form-group">
-		  		<div class="input-group">
-		  			<span class="input-group-addon"></span>				
-					{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
-					{{ form_widget(formpersona.dni, { 'attr': {'class': 'form-control', 'placeholder': 'DNI'} }) }}
-					<span id="help-dni" class="input-group-addon input-group-addon-action">
-						<a class="" href="javascript:void(0);">
-							<i class="fa fa-info-circle fa-lg"></i>
-						</a>
-					</span>
+		<div class="col-md-10">
+			<div class="row">
+				{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
+				<div id="formpersona-nom" class="col-md-3  col-xs-3">
+				  	<div class="form-group">
+						{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom'} }) }}
+					</div>{{ form_errors(formpersona.nom) }}
 				</div>
-			</div>			
+				<div id="formpersona-cognoms"  class="col-md-5  col-xs-5">
+					{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
+					{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'form-control', 'placeholder': 'Cognoms'} }) }}
+				</div> 
+				<div id="formpersona-dni" class="col-md-4  col-xs-4">
+			  		<div class="form-group">
+				  		<div class="input-group">
+				  			<span class="input-group-addon"></span>				
+							{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(formpersona.dni, { 'attr': {'class': 'form-control', 'placeholder': 'DNI'} }) }}
+							<span id="help-dni" class="input-group-addon input-group-addon-action">
+								<a class="" href="javascript:void(0);">
+									<i class="fa fa-info-circle fa-lg"></i>
+								</a>
+							</span>
+						</div>
+					</div>			
+				</div>
+			</div>
+			<div class="row">
+				<div id="formpersona-datanaixement" class="col-md-4  col-xs-4">
+				  	<div class="form-group">
+				  		<div  class="input-group">
+					  		<span class="input-group-addon"></span>
+							{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'sr-only'}}) }}
+							{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'Data de naixement' } }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+				<div id="formpersona-sexe" class="col-md-4  col-xs-4">
+			  		<label class="radio-inline">
+						{{ form_widget(formpersona.sexe[0]) }} Home
+					</label>
+					<label class="radio-inline">
+						{{ form_widget(formpersona.sexe[1]) }} Dona
+					</label>
+				</div>
+				<div id="formpersona-estranger" class="col-md-offset-2 col-md-2 col-xs-offset-2 col-xs-2">
+				  	<div class="checkbox">
+				    	<label>
+				     		{{ form_widget(formpersona.estranger) }} Estranger? 
+				    	</label>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div id="formpersona-tlf1" class="col-md-3  col-xs-3">
+				  	<div class="form-group">
+				  		<div class="input-group">
+					  		<span class="input-group-addon"><span class="fa fa-phone fa-1x"></span></span>
+							{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon' } }) }}
+							<span class="input-group-addon"></span>
+						</div>
+					</div>
+				</div>
+				<div id="formpersona-tlf2" class="col-md-3  col-xs-3">
+				  	<div class="form-group">
+				  		<div class="input-group">
+					  		<span class="input-group-addon"><span class="fa fa-mobile fa-1x"></span></span>
+							{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon'} }) }}
+							<span class="input-group-addon"></span>
+						</div>
+					</div>
+				</div>
+				<div id="formpersona-mail"  class="col-md-6  col-xs-6">
+				  	<div class="form-group">
+				  		<div class="input-group">
+					  		<span class="input-group-addon"><span class="fa fa-mail fa-1x"></span></span>
+							{{ form_label(formpersona.mail, 'Adreça electrònica 1; Adreça electrònica 2; ...', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(formpersona.mail, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça electrònica 1; Adreça electrònica 2; ...'} }) }}
+							<span class="input-group-addon"></span>
+						</div>
+					</div>
+				</div>
+				<div id="adreca-header" class="col-md-12  col-xs-12">
+					<h3>Adreça<div id="sms-mailpersona">Es poden indicar vàries adreces de correu separades per  <strong>';'</strong></div></h3>
+				</div>
+			</div> 
+		</div>
+		<div class="col-md-2 col-last-right">
+			{% if formpersona.fotoupld is defined %}
+				{{ form_widget(formpersona.fotoupld) }} 
+				<div class="galeria-upload">
+					<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+				</div>
+			{% endif %}
 		</div>
 	</div>
+	
+	
 	<div class="row">
-		<div id="formpersona-datanaixement" class="col-md-4  col-xs-4">
-		  	<div class="form-group">
-		  		<div  class="input-group">
-			  		<span class="input-group-addon"></span>
-					{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'sr-only'}}) }}
-					{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'Data de naixement' } }) }}
-					<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-				</div>
-			</div>
-		</div>
-		<div id="formpersona-sexe" class="col-md-4  col-xs-4">
-	  		<label class="radio-inline">
-				{{ form_widget(formpersona.sexe[0]) }} Home
-			</label>
-			<label class="radio-inline">
-				{{ form_widget(formpersona.sexe[1]) }} Dona
-			</label>
-		</div>
-		<div id="formpersona-estranger" class="col-md-offset-2 col-md-2 col-xs-offset-2 col-xs-2">
-		  	<div class="checkbox">
-		    	<label>
-		     		{{ form_widget(formpersona.estranger) }} Estranger? 
-		    	</label>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div id="formpersona-tlf1" class="col-md-3  col-xs-3">
-		  	<div class="form-group">
-		  		<div class="input-group">
-			  		<span class="input-group-addon"><span class="fa fa-phone fa-1x"></span></span>
-					{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'sr-only'} }) }}
-					{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon' } }) }}
-					<span class="input-group-addon"></span>
-				</div>
-			</div>
-		</div>
-		<div id="formpersona-tlf2" class="col-md-3  col-xs-3">
-		  	<div class="form-group">
-		  		<div class="input-group">
-			  		<span class="input-group-addon"><span class="fa fa-mobile fa-1x"></span></span>
-					{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'sr-only'} }) }}
-					{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon'} }) }}
-					<span class="input-group-addon"></span>
-				</div>
-			</div>
-		</div>
-		<div id="formpersona-mail"  class="col-md-6  col-xs-6">
-		  	<div class="form-group">
-		  		<div class="input-group">
-			  		<span class="input-group-addon"><span class="fa fa-mail fa-1x"></span></span>
-					{{ form_label(formpersona.mail, 'Adreça electrònica 1; Adreça electrònica 2; ...', { 'label_attr': {'class': 'sr-only'} }) }}
-					{{ form_widget(formpersona.mail, { 'attr': {'class': 'form-control', 'placeholder': 'Adreça electrònica 1; Adreça electrònica 2; ...'} }) }}
-					<span class="input-group-addon"></span>
-				</div>
-			</div>
-		</div>
-	</div> 
-	<div class="row">
-	 	<div id="adreca-header" class="col-md-12  col-xs-12">
-			<h3>Adreça<div id="sms-mailpersona">Es poden indicar vàries adreces de correu separades per  <strong>';'</strong></div></h3>
-		</div>
 		<div id="formpersona-addradreca" class="col-md-6  col-xs-6">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addradreca, 'Adreça', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -134,12 +149,13 @@
 		<div id="tabs-persona" class="col-md-12">
 	  		<ul>
 	    		<li><a href="#tabs-llicencies">Llicències</a></li>
-	    		<li><a href="#tabs-titulacions">Titulacions</a></li>
-	    		{% if persona.teDocencies() %}<li><a href="#tabs-docencies">Docències</a></li>{% endif %}
+	    		<li><a href="#tabs-titulacions">Titulacions CMAS</a></li>
+	    		<li><a href="#tabs-altrestitulacions">Altres titulacions</a></li>
+	    		<li><a href="#tabs-docencies">Docències</a></li>
+	    		<li><a href="#tabs-arxius">Arxius...</a></li>
 			</ul>
 			<div id="tabs-llicencies">
 				<div class="row">
-					<div class="historial-titol-outer">Historial de llicències</div>
 					{% if admin %}
 						{% set llicencies = persona.getLlicenciesSortedByDate(true) %}
 					{% else %}
@@ -149,17 +165,16 @@
 				</div>
 			</div>
 			<div id="tabs-titulacions">
-				{% if persona.teTitulacions() %}
-					{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
-					{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
-				{% else %}
-					{% set titulacions = [] %}
-					{% set altrestitulacions = [] %}
-				{% endif %}
+				{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
+				{% set altrestitulacions = '' %}
 			    <div class="row">
-			    	<div class="historial-titol-outer">Historial de titulacions</div>
-					{% set titulacions = persona.metapersona.getTitulacionsSortedByDate( admin ) %}
-					{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
+					{% include 'FecdasBundle:Titulacions:titulacionshistorial.html.twig' %}
+				</div>
+			</div>
+			<div id="tabs-altrestitulacions">
+				{% set altrestitulacions = persona.metapersona.getAltrestitulacions() %}
+				{% set titulacions = '' %}
+			    <div class="row">
 					{% include 'FecdasBundle:Titulacions:titulacionshistorial.html.twig' %}
 				</div>
 				<div class="space20"></div>
@@ -171,7 +186,7 @@
 								<div class="input-group-addon">Altres titulacions</div>
 								{{ form_widget(formpersona.altretitol, { 'attr': {'class': 'form-control'} }) }}
 								<span class="input-group-btn">
-									<a class="add-titol-extern btn btn-default" href="{{ path('FecdasBundle_ajaxpoblacions') }}">Afegir <span class="fa fa-plus fa-1x green"></span></a>
+									<a class="add-titol-extern btn btn-default" href="javascript:void(0);">Afegir <span class="fa fa-plus fa-1x green"></span></a>
 								</span>
 							</div>
 						</div>
@@ -179,11 +194,17 @@
 				</div>
 			</div>
 			
-			{% if persona.teDocencies() %}
-				<div id="tabs-docencies">
-				    <p>Pendent</p>
+			<div id="tabs-docencies">
+				{% set docencies = [] %}
+				<div class="row">
+					{% include 'FecdasBundle:Titulacions:docencieshistorial.html.twig' %}
 				</div>
-			{% endif %}
+			</div>
+			<div id="tabs-arxius">
+			    <div class="row">
+					pendent
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="row">

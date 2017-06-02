@@ -36,6 +36,8 @@ class FormPersona extends AbstractType {
 					'mapped' 		=> false,
 					'data'			=> implode(";", $altres)
 				));
+			
+				$form->add('fotoupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'image/*')));
 				
 			}
 		});	

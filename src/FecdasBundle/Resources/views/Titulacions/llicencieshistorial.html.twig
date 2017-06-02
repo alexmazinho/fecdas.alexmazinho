@@ -1,23 +1,25 @@
-<div class="taula-historial llicencies-historial">
+<div class="llicencies-historial">
 	<a class="close" href="#"><img style="cursor: pointer;" src="/images/close.png"></a>
+
 	<div class="historial-titol">Historial de llicències</div>
-	<div class="historial-items">
-{% for llicencia in llicencies %}
-	<div class="item-historial {% if llicencia.isBaixa %}data-detall-fosc{% endif %}">
-		<div class="historial-camp historial-vigencia">
-		{{ llicencia.parte.dataalta|date('d/m/Y') }} - {{ llicencia.parte.datacaducitat|date('d/m/Y') }}
-		</div>
-		<div class="historial-camp historial-categoria">{{ llicencia.categoria.categoria }}</div>
-		<div class="historial-camp historial-club">({{ llicencia.parte.club.nom }})</div>
-		<div class="historial-camp historial-desc">{{ llicencia.categoria.descripcio }} {% if llicencia.isBaixa %}(anul·lada){% endif %}</div>
-		{% if admin == true %}
-			<div class="historial-camp historial-action"><a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': llicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
-				<i class="fa fa-search fa-1x blue"></i></a></div>
-		{% endif %}
-	</div>
-{% else %}
-	<div class="item-historial">Historial sense dades</div>
-{% endfor %}
+
+	<div class="taula-historial historial-items historial-llicencies">
+		{% for llicencia in llicencies %}
+			<div class="item-historial {% if llicencia.isBaixa %}data-detall-fosc{% endif %}">
+				<div class="historial-camp historial-vigencia">
+				{{ llicencia.parte.dataalta|date('d/m/Y') }} - {{ llicencia.parte.datacaducitat|date('d/m/Y') }}
+				</div>
+				<div class="historial-camp historial-categoria">{{ llicencia.categoria.categoria }}</div>
+				<div class="historial-camp historial-club">({{ llicencia.parte.club.nom }})</div>
+				<div class="historial-camp historial-desc">{{ llicencia.categoria.descripcio }} {% if llicencia.isBaixa %}(anul·lada){% endif %}</div>
+				{% if admin == true %}
+					<div class="historial-camp historial-action"><a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': llicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
+						<i class="fa fa-search fa-1x blue"></i></a></div>
+				{% endif %}
+			</div>
+		{% else %}
+			<div class="item-historial">Historial sense dades</div>
+		{% endfor %}
 	</div>
 </div>
 

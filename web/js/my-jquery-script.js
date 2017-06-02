@@ -825,8 +825,6 @@
 	        var index = $( "li.data-detall" ).index( current );
 	        index++;
 	        
-	        /*if ($.browser.msie) $('.taula-historial').hide(); 
-	    	else $('.taula-historial').slideUp('slow');*/
 	        if ($.browser.msie) $('#historial-overlay').hide(); 
 	    	else $('#historial-overlay').fadeOut('fast');
 	        $('#historial-overlay').html('');
@@ -852,7 +850,7 @@
 		        actionsModalOverlay();
 			        
 		        //if close button is clicked
-			    $('.taula-historial .close').click(function (e) {
+			    $('.titulacions-historial .close').click(function (e) {
 			        //Cancel the link behavior
 			        e.preventDefault();
 			        
@@ -957,6 +955,7 @@
 			actionsModalOverlay();
 			actionsPersonaForm(origen);
 			
+			imageUploadForm($("#persona_fotoupld"), 104);
 			
 			$( "#tabs-persona" ).tabs();
 			
@@ -1002,9 +1001,7 @@
 		        
 		        if (idTitol != "") {
 		        	// Afegir a la llista
-		        	$('.titulacions-historial .alert.alert-success').hide();  //<div class="alert alert-success" role="alert">Cap titulació</div>  
-		        	
-console.log(idTitol+" - "+JSON.stringify(textTitol) );
+		        	$('.titulacions-historial .alert.alert-success').addClass('hidden');  //<div class="alert alert-success hidden" role="alert">Cap titulació</div>  
 		        	
 		        	var nouItem = $('.item-historial.item-blank').clone();
 		        	nouItem.removeClass('hidden item-blank');
@@ -1014,9 +1011,13 @@ console.log(idTitol+" - "+JSON.stringify(textTitol) );
 		        	$('.historial-altrestitols').append(nouItem);
 
 		        	// Afegir al camp ocult
-		        	var current = $('#persona_altrestitolscurrent').val().trim().split(";");
-		        	current.push( $("select#persona_altretitol").val() );
-		        	$('#persona_altrestitolscurrent').val( current.join(";") );
+		        	if ($('#persona_altrestitolscurrent').val().trim() == '') {
+		        		$('#persona_altrestitolscurrent').val( $("select#persona_altretitol").val() );
+		        	} else {
+			        	var current = $('#persona_altrestitolscurrent').val().trim().split(";");
+			        	current.push( $("select#persona_altretitol").val() );
+			        	$('#persona_altrestitolscurrent').val( current.join(";") );
+		        	}
 		        	$("#persona_altretitol").select2("data", "");
 		        }
 		        
@@ -1031,16 +1032,15 @@ console.log(idTitol+" - "+JSON.stringify(textTitol) );
 		        
 		        // Treure de la llista
 		        var current = $('#persona_altrestitolscurrent').val().trim().split(";");
-console.log($('#persona_altrestitolscurrent').val()+" - "+current.length );
 				if (current.indexOf(idTitol) !== -1) {
 					current.splice( current.indexOf(idTitol) , 1);
 				}
 				$('#persona_altrestitolscurrent').val( current.join(";") );
 				
 		        parentRow.remove();
-		        
+
 		        if ($('#persona_altrestitolscurrent').val() == '') {
-		        	$('.titulacions-historial .alert.alert-success').show();
+		        	$('.titulacions-historial .alert.alert-success').removeClass('hidden');
 		        }
 		        
 			});
@@ -2339,14 +2339,13 @@ console.log($('#persona_altrestitolscurrent').val()+" - "+current.length );
 		$(this).change(function(evt){
 			if(typeof FileReader == "undefined") return true; // File reader not available.
 
-			var fileInput = $(this);
-			var files = evt.target.files; // FileList object
+			var fileInput = $(this), i = 0, f, files = evt.target.files; // FileList object
 			//var total = 0;
 
 			$(params.selector).find(".image-uploaded").remove();  // Removes previous preview 
 
 			// Loop through the FileList and render image files as thumbnails.
-			for (var i = 0, f; f = files[i]; i++) {
+			for (i = 0, f; f = files[i]; i++) {
 
 				// Only process image files.
 				if (!f.type.match('image.*')) {
@@ -2358,7 +2357,8 @@ console.log($('#persona_altrestitolscurrent').val()+" - "+current.length );
 				reader.onload = (function(theFile) {
 					return function(e) {
 						// Render thumbnail.
-						var imgHTML = '<img width="'+params.width+'" title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
+						//var imgHTML = '<img width="'+params.width+'" title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
+						var imgHTML = '<img title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
 
 						if( typeof params.selector != 'undefined' ){
 							if (params.multiple == true) {

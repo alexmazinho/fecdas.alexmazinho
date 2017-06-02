@@ -1922,13 +1922,19 @@ select#parte_renovar_tipus { width: 240px; }
     width: 35px;
 }
 
-.historial-titol { color: #2281CF; font-weight: bold; font-size: 1.1em; line-height: 2em; padding: 5px 20px; }
+.historial-titol { color: #2281CF; font-weight: bold; font-size: 1.1em; line-height: 2em; padding: 5px 20px 5px 0; }
+
+#historial-overlay .historial-titol { padding: 5px 20px; }
+#historial-overlay .taula-historial.historial-cmas { margin-bottom: 40px; }
+
 .item-historial { 
 	display:block;
 	border-top: 1px solid #EDF1F5;
 	position: relative;
 	padding-right: 15px;
 }
+
+#tabs-persona .item-historial { font-size: 0.9em; }
 
 #historial-overlay .historial-items {
 	overflow-y: auto;
@@ -1950,10 +1956,6 @@ select#parte_renovar_tipus { width: 240px; }
 
 
 #tabs-persona { margin-bottom: 15px;}
-
-#tabs-persona .historial-titol { display:none;  }
-
-#tabs-persona .historial-titol-outer { background-color: rgba(223,​ 239,​ 252, 0.7); width: 100%; display: block;  color: #2281CF; font-weight: bold; font-size: 1.1em }
 
 #tabs-persona .taula-historial img { display:none  }
 
@@ -1978,6 +1980,8 @@ select#parte_renovar_tipus { width: 240px; }
 }
 #tabs-persona  .taula-historial .historial-camp { font-size: 0.9em }
 
+
+#edicio-persona.finestra-overlay { width: 820px; }
 
 
 /********************************************* Llista persones Fi ****************************************************/
@@ -2786,7 +2790,9 @@ p.info-bold {
 .galeria-upload {
 	position: relative;
 	cursor: pointer;
+	display: inline-block;	
 }
+
 .image-upload {
 	width: 81px;  /* 26mm */
 	height: 100px;  /* 32mm */
@@ -2795,6 +2801,16 @@ p.info-bold {
 	display: table-cell; 
 	border: 1px solid #dddddd;
 	padding: 2px;
+}
+
+.image-upload img {
+	width: auto;
+	height: 100%;
+}
+
+#edicio-persona .image-upload {
+	width: 100px; 
+	height: 124px;
 }
 
 .image-uploaded {

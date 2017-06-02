@@ -1,0 +1,19 @@
+<div class="docencies-historial">
+	<a class="close" href="#"><img style="cursor: pointer;" src="/images/close.png"></a>
+
+	<div class="historial-titol">Historial de docències</div>
+
+	<div class="taula-historial historial-items historial-docencies">
+		{% for docencia in docencies %}
+			<div class="item-historial {% if docencia.isBaixa %}data-detall-fosc{% endif %}">
+				<div class="historial-camp historial-pendent"></div>
+			</div>
+		{% endfor %}
+		
+		{% if docencies|length == 0 %}
+			<div class="space20"></div>
+			<div class="alert alert-success" role="alert">Historial sense dades</div>
+		{% endif %}
+	</div>
+</div>
+

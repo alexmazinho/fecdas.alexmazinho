@@ -340,6 +340,16 @@ class EntityMetaPersona {
         $this->altrestitulacions->add($titolextern);
     }
 
+	/**
+     * Remove altrestitulacions
+     *
+     * @param FecdasBundle\Entity\EntityTitol $titolextern
+     */
+    public function removeAltrestitulacions(\FecdasBundle\Entity\EntityTitol $titolextern)
+    {
+        $this->altrestitulacions->removeElement($titolextern);
+    }
+
     /**
      * Get altrestitulacions
      *

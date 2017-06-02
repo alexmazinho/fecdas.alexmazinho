@@ -1079,6 +1079,7 @@ class PageController extends BaseController {
 		$formpersona = null; 
 		$persona = null;
 		$metapersona = null; 
+		$altrestitolscurrent = array();	
 		$em = $this->getDoctrine()->getManager();
 		try {
 			if ($request->getMethod() == 'POST') {
@@ -1090,6 +1091,9 @@ class PageController extends BaseController {
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 				}
 
+				if (isset($p['altrestitolscurrent']) && $p['altrestitolscurrent'] != '') {
+					$altrestitolscurrent = 	explode(";", $p['altrestitolscurrent']);
+				}
 
 				if ($persona != null) $metapersona = $persona->getMetapersona();
 				/* Revisar si existeix metapersona */
@@ -1115,6 +1119,8 @@ class PageController extends BaseController {
 						$estranger = ( isset($p['estranger']) && $p['estranger'] == 1 )?true:false;
 						
 						$this->validarDadesPersona($persona, $estranger, $formpersona);
+
+						$this->actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent);
 
 						if ($persona->getId() == 0) {
 							$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
@@ -1283,6 +1289,54 @@ class PageController extends BaseController {
 		$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
 					
 		$persona->setDatamodificacio($this->getCurrentDate());
+		
+	}
+	
+	private function actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent = array()) {
+		if ($persona == null || $persona->getMetapersona() == null) throw new \Exception("Dades personals errònies. Cal revisar-les");
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$metapersona = $persona->getMetapersona();
+		
+		
+		if ($persona->getId() != 0) {
+			$altrestitolsesborrar = array();
+			$altrestitols = $metapersona->getAltrestitulacions();
+error_log('TITOLS ACTUALS');			
+			foreach ($altrestitols as $altretitol) {
+				
+				if (!in_array($altretitol->getId(), $altrestitolscurrent)) {
+error_log('     esborrar '.$altretitol->getId());					
+					// Remove
+					$altrestitolsesborrar[] = $altretitol;
+				} else {
+error_log('     existent '.$altretitol->getId());					
+					// Existeix Treure de l'array
+					
+					$pos = array_search($altretitol->getId(), $altrestitolscurrent);
+					array_splice($altrestitolscurrent, $pos, 1);
+					
+					//unset($altrestitolscurrent[$altretitol->getId()]);
+				}
+			}
+			// Esborrar
+			foreach ($altrestitolsesborrar as $altretitolesborrar) {
+	error_log('     treure definitiu '.$altretitolesborrar->getId());				
+				$metapersona->removeAltrestitulacions($altretitolesborrar);
+			}
+		}	
+		
+		// A $altrestitolscurrent queden només les noves titulacions
+		foreach ($altrestitolscurrent as $altretitolId) {
+error_log('     nou '.$altretitolId);			
+			$altretitolnou = $em->getRepository('FecdasBundle:EntityTitol')->find($altretitolId);
+			
+			if ($altretitolnou == null) throw new \Exception("Titulació no trobada ".$altretitolId);
+			
+			$metapersona->addAltrestitulacions($altretitolnou);
+		}
+	
 		
 	}
 	

@@ -109,7 +109,6 @@ FecdasBundle_duplicatsform:
         methods:  GET
         
         
-        
 FecdasBundle_licensetopdf:
     path:  /license
     defaults: { _controller: "FecdasBundle:PDF:licensetopdf" }
@@ -133,6 +132,14 @@ FecdasBundle_asseguratstopdf:
     defaults: { _controller: "FecdasBundle:PDF:asseguratstopdf" }
     requirements:
         methods:  GET
+
+FecdasBundle_dadespersonalstopdf:
+    path:  /dadespersonalstopdf
+    defaults: { _controller: "FecdasBundle:PDF:dadespersonalstopdf" }
+    requirements:
+        methods:  GET
+
+
 
 FecdasBundle_facturatopdf:
     path:  /printfactura
@@ -331,12 +338,6 @@ FecdasBundle_curs:
 FecdasBundle_dadespersonals:
     path:  /dadespersonals
     defaults: { _controller: "FecdasBundle:Titulacions:dadespersonals" }
-    requirements:
-        methods:  GET
-
-FecdasBundle_titulacionstopdf:
-    path:  /titulacionstopdf
-    defaults: { _controller: "FecdasBundle:Titulacions:titulacionstopdf" }
     requirements:
         methods:  GET
 

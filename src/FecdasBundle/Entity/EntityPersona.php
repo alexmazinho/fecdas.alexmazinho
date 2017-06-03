@@ -162,8 +162,15 @@ class EntityPersona {
 		return $this->getLlistaText();
 	}
 
-	public static function csvHeader() {
-		return array (  'dni', 
+	public static function csvHeader($admin = false, $strTemps = '') {
+		
+		$csvHeader = array( 'num' );
+		if ($admin) $csvHeader = array( 'num', 'club' );
+		
+		$titolLlicencies = "Llicències ".$strTemps; 
+		
+		return array_merge($csvHeader, array (  
+						'dni', 
 				 		'nom', 
 				 		'cognoms', 
 				 		'naixement', 
@@ -177,7 +184,10 @@ class EntityPersona {
 				 		'cp', 
 				 		'comarca',
 				 		'provincia', 
-				 		'pais' );
+				 		'nac.',
+				 		'titulacions',
+				 		$titolLlicencies 
+					));
 	}
 	
 	/**
@@ -185,9 +195,13 @@ class EntityPersona {
      *
      * @return string
      */
-    public function csvRow()
+    public function csvRow($i = 0, $admin = false, $desde = '', $fins = '')
     {
-    	return array (	$this->getDni(), 
+    	$csvRow = array( $i );	
+    	if ($admin) $csvRow = array( $i, $this->getClub()->getNom() );	
+			
+    	$csvRow = array_merge($csvRow,	array (	
+    					$this->getDni(), 
 				 		$this->getNom(), 
 				 		$this->getCognoms(), 
 				 		$this->getDatanaixement()->format('d/m/Y'), 
@@ -201,7 +215,22 @@ class EntityPersona {
 				 		$this->getAddrcp(), 
 				 		$this->getAddrcomarca(),
 				 		$this->getAddrprovincia(), 
-				 		$this->getAddrnacionalitat() );
+				 		$this->getAddrnacionalitat(),
+						$this->getInfoHistorialTitulacions(),
+						$this->getInfoHistorialLlicencies(FALSE, $desde, $fins)		// No adjuntar club
+					 ));
+		
+		return $csvRow;
+			
+    }
+	
+	/**
+	 * return array( self )
+	 */
+	public function getPersonesSortedById($baixes = false)
+    {
+		if (!$persona->esBaixa() || $baixes == true) return array( $this ); 		
+    	return array( );
     }
 	
 	/**
@@ -782,6 +811,8 @@ class EntityPersona {
 	public function setFoto(\FecdasBundle\Entity\EntityArxiu $foto = null)
 	{
 		$this->foto = $foto;
+		if ($foto != null) $foto->setPersona($this);
+		
 	}
 	
 	/**
@@ -803,6 +834,7 @@ class EntityPersona {
 	public function setCertificat(\FecdasBundle\Entity\EntityArxiu $certificat = null)
 	{
 		$this->certificat = $certificat;
+		if ($certificat != null) $certificat->setPersona($this);
 	}
 	
 	/**
@@ -823,7 +855,10 @@ class EntityPersona {
      */
     public function addArxius(\FecdasBundle\Entity\EntityArxiu $arxiu)
     {
-        $this->arxius->add($arxiu);
+    	if ($arxiu != null) {
+	        $this->arxius->add($arxiu);
+			$arxiu->setPersona($this);
+		}
     }
 
     /**

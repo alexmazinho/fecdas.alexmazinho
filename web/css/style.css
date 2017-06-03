@@ -1955,9 +1955,25 @@ select#parte_renovar_tipus { width: 240px; }
 .historial-titulacio { font-weight: bold; }
 
 
+.taula-historial.historial-arxius { display: table; table-layout: fixed; }
+.taula-historial.historial-arxius .item-historial { display: table-row; }
+.historial-arxius .historial-camp { display:table-cell; padding: 3px; } 
+.historial-title { text-align: left; }
+.historial-title span { width: 215px; }
+.historial-path { width: 140px; text-align: center; }
+.historial-path a { width: 140px; }
+.historial-icona { width: auto; text-align: right; }
+.historial-icona a .fa { font-size: 1.8em; }
+
+.historial-arxius .historial-camp span, .historial-arxius .historial-camp a { display:block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.historial-certificat { text-align: center; }
+.historial-certificat span.fa { margin: 0 4px; font-size: 1.2em; }
+
 #tabs-persona { margin-bottom: 15px;}
 
-#tabs-persona .taula-historial img { display:none  }
+/*#tabs-persona .taula-historial img { display:none  }*/
+#tabs-persona .close img { display:none  }
 
 #tabs-persona  .taula-historial { 
 	display:block; 
@@ -2791,6 +2807,11 @@ p.info-bold {
 	position: relative;
 	cursor: pointer;
 	display: inline-block;	
+}
+
+.galeria-remove-foto {
+	display: block;
+	text-align: center;	
 }
 
 .image-upload {

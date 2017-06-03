@@ -111,6 +111,208 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
+	public function dadespersonalstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '') {
+		/* PDF Llistat de dades personals filtrades */
+		$club = $this->getCurrentClub();
+		
+		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+		$pdf->init(array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
+				true, ($this->isCurrentAdmin()?'ADMINISTRADOR':$club->getNom()));
+			
+		$pdf->AddPage();
+		
+		// set color for background
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		// set color for text
+		$pdf->SetTextColor(0, 0, 0); // Negre
+		
+		$y_ini = $pdf->getY();
+		$x_ini = $pdf->getX();
+		
+		$y = $y_ini;
+		$x = $x_ini;
+		
+		$pdf->SetFont('dejavusans', '', 12, '', true);
+		// Titol segons filtre
+		if ($vigents) $text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
+		else $text = '<b>Històric d\'assegurats '.BaseController::getInfoTempsNomFitxer($desde, $fins, " ", "/").' </b>';
+		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
+		
+		$pdf->Ln();
+
+		if ($dni != "" || $nom != "" || $cognoms != "") {
+			// Afegir dades del filtre
+			$y += 10;
+			$pdf->SetFont('dejavusans', 'I', 10, '', true);
+			$pdf->writeHTMLCell(0, 0, $x, $y, 'Opcions de filtre', 'B', 1, 1, true, '', true);
+			$pdf->SetFont('dejavusans', '', 9, '', true);
+			if ($dni != "") {
+				$y += 7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, 'DNI\'s que contenen "'.$dni.'"', '', 1, 1, true, '', true);
+			}
+			if ($nom != "") {
+				$y += 7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, 'Noms que contenen "'.$nom.'"', '', 1, 1, true, '', true);
+			}
+			if ($cognoms != "") {
+				$y += 7;
+				$pdf->writeHTMLCell(0, 0, $x, $y, 'Cognoms que contenen "'.$cognoms.'"', '', 1, 1, true, '', true);
+			}
+			$y += 2;
+			$pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
+			
+			$pdf->Ln();
+		} else {
+			$y += 15;
+		}
+		
+		//$w = array(8, 44, 20, 26, 82); // Amplades
+		$w = array(8, 37, 16, 22, 67, 30); // Amplades
+		$this->dadespersonalsHeader($pdf, $w);
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		$pdf->SetFont('dejavusans', '', 7, '', true);
+		
+		$total = 0;
+		
+		foreach ($persones as $persona) {			
+			$total++;
+				
+			$num_pages = $pdf->getNumPages();
+			$pdf->startTransaction();
+				
+			$this->dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w);
+					
+			if($num_pages < $pdf->getNumPages()) {
+	
+				//Undo adding the row.
+				$pdf->rollbackTransaction(true);
+				
+				$pdf->AddPage();
+				$this->dadespersonalsHeader($pdf, $w);
+				$pdf->SetFillColor(255, 255, 255); //Blanc
+				$pdf->SetFont('dejavusans', '', 9, '', true);
+				
+				$this->dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w);
+					
+			} else {
+				//Otherwise we are fine with this row, discard undo history.
+				$pdf->commitTransaction();
+			}
+			
+		}
+		
+		$pdf->Ln(10);
+
+		// Afegir llista abreviatures titols
+		$pdf->SetFont('dejavusans', '', 4.5, '', true);
+		$pdf->SetTextColor(50, 50, 50); // Gris
+		
+		$titolscmas 	= $this->getTitolsByOrganisme(BaseController::ORGANISME_CMAS);
+		$altrestitols 	= $this->getTitolsByOrganisme('', BaseController::ORGANISME_CMAS);
+		
+		$html  = '<h3>Abreviatures títols:</h3><ul>';
+		$pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $html, '', 1, 1, true, 'L', true);
+		
+		// 4 cols
+		$x_tit 	= $pdf->getX();
+		$y_tit 	= $pdf->getY();
+		$w_col 	= 45 - 1; // 180/4
+		$i 		= 0;
+		$html  	= '';
+		$titols = array_merge(array(array( 'organisme' => BaseController::ORGANISME_CMAS )), $titolscmas[BaseController::ORGANISME_CMAS]);
+		foreach ($altrestitols as $org => $titolsorg) $titols = array_merge($titols, array(array( 'empty' => '' ), array( 'organisme' => $org )), $titolsorg);
+
+		$pdf->SetAutoPageBreak(false);
+		
+		$t_col 	= round(count($titols)/4);
+		foreach ($titols as $titol) {
+			
+			if (isset($titol['organisme'])) {
+				$html  .= '<span style="font-size: medium;"><b>'.$titol['organisme'].'</b></span><br/>';
+			} else {
+				if (isset($titol['empty'])) $html  .= '<span>&nbsp;</span><br/>';
+				else $html  .= '<span>'.$titol['codi'].' - '.$titol['titol'].'</span><br/>';
+			}
+				
+			if ($i == $t_col) {
+				$pdf->writeHTMLCell($w_col, 0, $x_tit, $y_tit, $html, '', 0, false, true, 'L', true);
+					
+				$x_tit += $w_col + 1;
+				$i = 0;
+				$html = '';
+			} else {
+				$i++;	
+			}
+		}
+		if ($i < $t_col) $pdf->writeHTMLCell($w_col, 0, $x_tit, $y_tit, $html, '', 0, false, true, 'L', true);
+		
+		$pdf->SetTextColor(0, 0, 0); // Negre
+		
+		$pdf->setPage(1); // Move to first page
+		
+		$pdf->setY($y_ini);
+		$pdf->setX($pdf->getPageWidth() - 100);
+		
+		$pdf->SetFont('dejavusans', '', 13, '', true);
+		$text = '<b>Total : '. $total . '</b>';
+		$pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $text, '', 1, 1, true, 'R', true);
+		
+		// reset pointer to the last page
+		$pdf->lastPage();
+		
+					
+		$filename = "dadespersonals_".BaseController::getInfoTempsNomFitxer($desde, $fins).".pdf";
+		
+		if ($print) {
+			// force print dialog
+			$js = 'print(true);';
+			// set javascript
+			$pdf->IncludeJS($js);
+			$response = new Response($pdf->Output($filename, "D")); // inline
+		} else {
+		// Close and output PDF document
+			$response = new Response($pdf->Output($filename, "D")); // save as...
+		}
+		$response->headers->set('Content-Type', 'application/pdf');
+		return $response;
+		
+	}
+	
+	private function dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w) {
+		$llicencia = $persona->getLlicenciaVigent();
+		
+		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+		$pdf->Cell($w[1], 6, $persona->getCognomsNom(), 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[2], 6, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[3], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
+		if ($llicencia != null && $llicencia->getParte() != null) {
+			$text = $llicencia->getCategoria()->getDescripcio().". ";
+			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
+			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
+		} else {
+			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
+		}
+		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[5], 6, $persona->getInfoHistorialTitulacions() , 'LRB', 0, 'C', 0, '', 1);
+			
+		$pdf->Ln();
+		
+	}
+	
+	private function dadespersonalsHeader($pdf, $w) {
+		$pdf->SetFont('dejavusans', 'B', 9, '', true);
+		$pdf->SetFillColor(221, 221, 221); //Gris
+		
+		$pdf->Cell($w[0], 7, '', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
+		$pdf->Cell($w[1], 7, 'Nom', 1, 0, 'L', 1);
+		$pdf->Cell($w[2], 7, 'Nascut/da', 1, 0, 'C', 1, '', 1);
+		$pdf->Cell($w[3], 7, 'DNI', 1, 0, 'C', 1);
+		$pdf->Cell($w[4], 7, 'Informació llicència / assegurança', 1, 0, 'C', 1, '', 1);
+		$pdf->Cell($w[5], 7, 'Titulacions', 1, 0, 'C', 1, '', 1);
+		$pdf->Ln();
+	}
+	
+	
 	public function  asseguratstopdfAction(Request $request) {
 		/* Llistat d'assegurats vigents */
 		
@@ -259,7 +461,7 @@ class PDFController extends BaseController {
 		$llicencia = $persona->getLlicenciaVigent();
 		
 		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-		$pdf->Cell($w[1], 6, $persona->getCognoms() . ', ' . $persona->getNom(), 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[1], 6, $persona->getCognomsNom(), 'LRB', 0, 'L', 0, '', 1);
 		$pdf->Cell($w[2], 6, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
 		$pdf->Cell($w[3], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
 		if ($llicencia != null && $llicencia->getParte() != null) {
@@ -267,7 +469,7 @@ class PDFController extends BaseController {
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
 			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
 		} else {
-			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d"));
+			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
 		}
 		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
 			

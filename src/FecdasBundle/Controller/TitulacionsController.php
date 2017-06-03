@@ -23,6 +23,7 @@ use FecdasBundle\Entity\EntityComanda;
 use FecdasBundle\Form\FormPayment;
 use FecdasBundle\Entity\EntityPayment;
 use FecdasBundle\Entity\EntityPreu;
+use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityComptabilitat;
 use FecdasBundle\Classes\RedsysAPI;
@@ -76,7 +77,23 @@ class TitulacionsController extends BaseController {
 		
 		if ($format == 'csv') {
 			// Generar CSV
-			return $this->exportAssegurats($request, $query->getResult(), $desde, $fins);
+			return $this->exportDadespersonals($request, $query->getResult(), $desde, $fins);
+		}
+		
+		if ($format == 'pdf') {
+			// Generar PDF
+			$print = $request->query->has('print') && $request->query->get('print') == true?true:false;
+			
+			return $this->forward('FecdasBundle:PDF:dadespersonalstopdf', array(
+							        'persones'  => $query->getResult(),
+							        'print' 		=> $print,
+							        'desde'			=> $desde,
+							        'fins'			=> $fins,
+							        'vigents'		=> $currentVigent,
+							        'dni'			=> $currentDNI,
+							        'nom'			=> $currentNom,
+							        'cognoms'		=> $currentCognoms
+		    ));
 		}
 		
 		$paginator  = $this->get('knp_paginator');
@@ -115,6 +132,25 @@ class TitulacionsController extends BaseController {
 						));
 
 	}
+	
+	private function exportDadespersonals($request, $persones, $desde, $fins) {
+		/* CSV Llistat de dades personals filtrades */
+		$filename = "export_dadespersonals_".BaseController::getInfoTempsNomFitxer($desde, $fins).".csv";
+			
+		$header = EntityPersona::csvHeader( $this->isCurrentAdmin(), BaseController::getInfoTempsNomFitxer($desde, $fins, " ", "/") );
+			
+		$data = array(); // Get only data matrix
+		$i = 1;
+		
+		foreach ($persones as $persona) {
+			$data[] = $persona->csvRow($i, $this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
+			$i ++; 
+		}
+			
+		$response = $this->exportCSV($request, $header, $data, $filename);
+		return $response;
+	}
+	
 	
 	public function historialllicenciesAction(Request $request) {
 		
@@ -420,8 +456,12 @@ class TitulacionsController extends BaseController {
 	
 		$current = $this->getCurrentDate();
 		
-		if ($this->isCurrentAdmin()) $strQuery = "SELECT m FROM FecdasBundle\Entity\EntityMetaPersona m JOIN m.persones e ";
-		else $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
+		//if ($this->isCurrentAdmin()) $strQuery = "SELECT m FROM FecdasBundle\Entity\EntityMetaPersona m JOIN m.persones e ";
+		//else $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
+		
+		//$strQuery = "SELECT m FROM FecdasBundle\Entity\EntityMetaPersona m JOIN m.persones e ";
+		
+		$strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e JOIN e.metapersona m ";
 		
 		if ($titol != null) $strQuery .= " JOIN e.titulacions t JOIN t.curs c ";
 		if ($titolExtern != null) $strQuery .= " JOIN e.altrestitulacions at ";
@@ -443,7 +483,6 @@ class TitulacionsController extends BaseController {
                 $strQuery .= " WHERE e.databaixa IS NULL ";
             }
 		}
-		
 		
 		if ($titol != null) $strQuery .= " AND t.databaixa IS NULL AND t.datasuperacio IS NOT NULL AND c.titol = :titol ";
 		if ($titolExtern != null) $strQuery .= " AND at = :titolextern ";

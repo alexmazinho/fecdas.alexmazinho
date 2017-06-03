@@ -37,14 +37,19 @@ class FormPersona extends AbstractType {
 					'data'			=> implode(";", $altres)
 				));
 			
-				$form->add('fotoupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'image/*')));
+				$form->add('fotoupld', 'file', array('mapped' => false, 'required'  => false, 'attr' => array('accept' => 'image/*')));
 				
+				$form->add('foto', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona->getFoto()==null?'':$persona->getFoto()->getPath())));
+				
+				$form->add('certificatupld', 'file', array('mapped' => false, 'required'  => false, 'attr' => array('accept' => 'application/pdf,application/msword,text/*')));
+				
+				$form->add('certificat', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona->getCertificat()==null?'':$persona->getCertificat()->getPath())));
 			}
 		});	
 			
 			
 		$builder->add('id', 'hidden');
-		
+
 		$readonly = ! $this->options['edit'];
 		
 		$builder->add('nom', 'text');

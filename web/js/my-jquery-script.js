@@ -957,6 +957,26 @@
 			
 			imageUploadForm($("#persona_fotoupld"), 104);
 			
+			$('.remove-foto').click(function (e) {
+		        //Cancel the link behavior
+		        e.preventDefault();
+			
+		        $('#persona_foto').val( '' );
+			
+		        $(".galeria-upload").find(".image-upload").html('<span class="box-center-txt">Pujar foto<br/>(click)</span>');	
+			});
+			
+			$('.remove-certificat').click(function (e) {
+		        //Cancel the link behavior
+		        e.preventDefault();
+			
+		        $('#persona_certificat').val( '' );
+			
+		        $(".historial-certificat").html('<span class="blue">Cap certificat</span>');	
+			});
+			
+			prepareFileInput( $("#persona_certificatupld") );
+			
 			$( "#tabs-persona" ).tabs();
 			
 			$("select#parte_persona_addrprovincia").select2({
@@ -1201,7 +1221,49 @@
 	};
 	
 	submitPerson = function(action, origen) {
+		var form = $('#formpersona')[ 0 ];  // Equivalent to document.getElementById( "formpersona" )
+		var formData = new FormData( form );
 		
+		if (origen === 'llicencia') {
+			var part = { id : $("#parte_id").val(), dataalta: $("#parte_dataalta").val(), tipus: $('#parte_tipus').val() };
+	        var llic = { id : $('#parte_llicencies_id').val() };
+	        formData.append( "parte",  JSON.stringify(part));
+	        formData.append( "llicencia", JSON.stringify(llic));
+		}
+
+		formData.append('action', action);
+		formData.append('origen', origen);
+	
+	    $.ajax({
+	        url: $('#formpersona').attr("action"),
+	        type: $('#formpersona').attr("method"),
+	        //dataType: "text",
+	        data: formData,
+	        processData: false,
+	        contentType: false,
+	        success: function (data, status)
+	        {
+	        	$('.mask').hide();
+
+	        	$('#edicio-persona').hide();
+	        	
+				$("#edicio-persona").html("");
+				
+				if (origen === 'llicencia') loadLlicenciaData(data);
+				else location.reload();  
+				
+	        },
+	        error: function (xhr, status, error)
+	        {
+	        	var sms = smsResultAjax('KO', xhr.responseText);
+	 			 
+				$('#edicio-persona').show();
+				 
+				$("#error-persona").html(sms);
+	        }
+	    });  
+		// CANVI PER ADAPTAR CÀRREGA FITXER
+/*		
 		$('#edicio-persona').hide();
 		
 		var url = $('#formpersona').attr("action");
@@ -1241,6 +1303,7 @@
 			 $("#error-persona").html(sms);
 		     
 		});
+*/		
 	};
 	
 	
@@ -2331,6 +2394,7 @@
 		    formel.click();
 	    });
 		
+		
 		formel.imagePreview({ selector : '.galeria-upload', multiple: false, textover: 'Canviar imatge', width: imgwidth });
 	};
 	
@@ -2420,6 +2484,9 @@
 	        info     = path[path.length - 1];
 
 	        $("#upload-file-info").val(info);
+	        
+	        $(this).addClass('form-control-updated');
+	        
 	    });
 
 		$(".input-append").click(function(e) {

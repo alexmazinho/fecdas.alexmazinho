@@ -609,6 +609,37 @@ class BaseController extends Controller {
 		
 	}
 	
+	protected function getOrganismesTitols() {
+		$em = $this->getDoctrine()->getManager();
+		
+		$query = $em->createQuery('SELECT DISTINCT t.organisme FROM FecdasBundle\Entity\EntityTitol t ORDER BY t.organisme');
+		
+		return $query->getResult(); 
+	}
+	
+	protected function getTitolsByOrganisme($organisme = '', $notorganisme = '') {
+		$em = $this->getDoctrine()->getManager();
+		
+		$strQuery = 'SELECT t FROM FecdasBundle\Entity\EntityTitol t WHERE 1=1 ';
+		if ($organisme != '') 		$strQuery .= ' AND t.organisme = :organisme ';
+		if ($notorganisme != '') 	$strQuery .= ' AND t.organisme <> :notorganisme ';
+		$strQuery .= 'ORDER BY t.organisme, t.codi';
+		
+		$query = $em->createQuery($strQuery);
+		if ($organisme != '') $query->setParameter('organisme', $organisme);
+		if ($notorganisme != '') $query->setParameter('notorganisme', $notorganisme);
+	
+		$titols = array();	
+		foreach ($query->getResult() as $titol) {
+			$org = $titol->getOrganisme();
+			
+			if ( !isset($titols[$org]) ) $titols[ $org ] = array();			
+			
+			$titols[$org][] = array( 'codi' => $titol->getCodi(), 'titol' => $titol->getTitol() );
+		}
+		
+		return $titols;
+	}
 	
 	protected function getCurrentDate($time = null) {
 		//function to fake date, testing purpouse
@@ -3563,6 +3594,19 @@ class BaseController extends Controller {
 		$enquestes = $query->getResult();
 		foreach ($enquestes as $enquesta) return $enquesta; // Només una
 		return null;
+	}
+	
+	public static  function getInfoTempsNomFitxer($desde, $fins, $space = '_', $datasep = '_') {
+		$dateFormat = "d".$datasep."m".$datasep."Y";
+		$strTemps = "a".$space."data".$space.date($dateFormat);
+		
+		if ($desde != null || $fins != null) {
+			$strTemps = "";
+			if ($desde != null) $strTemps .= $space."des".$space."de".$space.$desde->format($dateFormat);
+				
+			if ($fins != null) $strTemps .= $space."fins".$space.$fins->format($dateFormat);
+		}
+		return $strTemps;
 	}
 	
 	protected function getTempUploadDir()

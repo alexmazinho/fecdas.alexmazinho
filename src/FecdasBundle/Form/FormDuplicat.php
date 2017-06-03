@@ -55,7 +55,7 @@ class FormDuplicat extends AbstractType {
 			$duplicat = $event->getData();
 			$form = $event->getForm();
 			
-			if (is_array($duplicat) and isset($duplicat['titol'])) {
+			if (is_array($duplicat) && isset($duplicat['titol'])) {
 				$form->add('titol', 'entity', array('class' => 'FecdasBundle:EntityTitol',
 						'choice_label' => 'llistaText',
 						'multiple' => false,
@@ -70,7 +70,7 @@ class FormDuplicat extends AbstractType {
 				));
 			}
 			
-			if (is_array($duplicat) and isset($duplicat['fotoupld'])) {
+			if (is_array($duplicat) && isset($duplicat['fotoupld'])) {
 				$form->add('fotoupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'image/*')));
 			}
 		});

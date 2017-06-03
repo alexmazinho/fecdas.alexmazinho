@@ -57,12 +57,13 @@ class EntityArxiu {
 	/**
 	 * Constructor
 	 */
-	public function __construct($file, $imatge = true)
+	public function __construct($file, $imatge = true, $persona = null)
 	{
 		$this->id = 0;	
 		$this->dataentrada = new \DateTime();
 		$this->imatge = $imatge;
 		$this->file = $file;
+		$this->persona = $persona;
 	}
 	
 	public function __toString() {
@@ -83,7 +84,46 @@ class EntityArxiu {
 	{
 		return $this->imatge == true;
 	}
-
+	
+	public function esPdf()
+	{
+		return (($temp =  strlen($this->getPath()) - strlen(".pdf")) >= 0  &&  stripos($this->getPath(), ".pdf", $temp) !== false);  // Case insensitive
+	}
+	
+	public function esWord()
+	{
+		return  (($temp =  strlen($this->getPath()) - strlen(".doc")) >= 0  &&  stripos($this->getPath(), ".doc", $temp) !== false) ||
+			  	(($temp =  strlen($this->getPath()) - strlen(".docx")) >= 0  &&  stripos($this->getPath(), ".docx", $temp) !== false) ||
+			  	(($temp =  strlen($this->getPath()) - strlen(".odt")) >= 0  &&  stripos($this->getPath(), ".odt", $temp) !== false);  // Case insensitive
+	}
+	
+	public function esExcel()
+	{
+		return (($temp =  strlen($this->getPath()) - strlen(".xls")) >= 0  &&  stripos($this->getPath(), ".xls", $temp) !== false) ||
+				(($temp =  strlen($this->getPath()) - strlen(".xlsx")) >= 0  &&  stripos($this->getPath(), ".xlsx", $temp) !== false) ||
+				(($temp =  strlen($this->getPath()) - strlen(".ods")) >= 0  &&  stripos($this->getPath(), ".ods", $temp) !== false);  // Case insensitive
+	}
+	
+	public function getWidth() {
+		if (!$this->esImatge() || !file_exists($this->getAbsolutePath())) return 0;
+		try {
+			$image_info = getimagesize($this->getAbsolutePath());
+		} catch (\Exception $e) {
+			return 0; 
+		}
+		return $image_info[0];
+	}
+	
+	public function getHeight() {
+		if (!$this->esImatge() || !file_exists($this->getAbsolutePath())) return 0;
+		try {
+			$image_info = getimagesize($this->getAbsolutePath());
+		} catch (\Exception $e) {
+			return 0; 
+		}
+		return $image_info[1];
+	}
+	
 	public function upload($name = null)
 	{
 		// the file property can be empty if the field is not required
@@ -123,10 +163,15 @@ class EntityArxiu {
 		// move takes the target directory and then the
 		// target filename to move to
 		$extension = $this->getFile()->guessExtension(); 
+		$extension = strtolower($extension);
 		
 		if ($extension == null ||  ($extension != "pdf" && 
 									$extension != "png" && $extension != "jpg" && 
-									$extension != "jpeg" && $extension != "gif")) {
+									$extension != "jpeg" && $extension != "gif" &&
+									$extension != "doc" && $extension != "odt" && 
+									$extension != "docx" && $extension != "pdf" &&
+									$extension != "xsl" && $extension != "xlsxf" 
+									)) {
 			return null;
 		} 
 								

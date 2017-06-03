@@ -95,10 +95,20 @@
 			</div> 
 		</div>
 		<div class="col-md-2 col-last-right">
-			{% if formpersona.fotoupld is defined %}
-				{{ form_widget(formpersona.fotoupld) }} 
-				<div class="galeria-upload">
+			{{ form_widget(formpersona.foto) }} 
+			{{ form_widget(formpersona.fotoupld) }} 
+			<div class="galeria-upload">
+				{% if persona.foto is not null and persona.foto.width > 0 and persona.foto.height > 0 %}
+			   		<div class="image-upload">
+			   			<img src="{{ persona.foto.webPath }}" alt="{{ persona.foto.titol }}" width="30px"/>
+			   		</div>
+			   	{% else %}
 					<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+				{% endif %}
+			</div>
+			{% if persona.foto is not null and persona.foto.width > 0 and persona.foto.height > 0 %}
+				<div class="galeria-remove-foto">
+					<a class="remove-foto link" href="javascript:void(0);"><span class="fa fa-trash fa-1x gray"></span></a>
 				</div>
 			{% endif %}
 		</div>
@@ -201,8 +211,61 @@
 				</div>
 			</div>
 			<div id="tabs-arxius">
+				{% set arxius = persona.arxius %}
 			    <div class="row">
-					pendent
+			    	<div class="col-md-5">
+			    		<div class="certificat-medic">
+			    			{{ form_widget(formpersona.certificat) }} 
+			    			<div class="historial-titol">Certificat mèdic</div>
+			    			<div class="form-group">
+								{{ form_widget(formpersona.certificatupld, { 'attr': {'class': 'form-control'} }) }}
+								<div class="input-group" style="position:relative;">
+									<span class="input-group-addon"></span>
+									<input id="upload-file-info" class="form-control" type="text">
+							        <span class="input-group-addon input-group-addon-action">
+							        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+							        </span>
+						        </div>
+							</div>
+							<div class="historial-certificat space50">
+								{% if persona.certificat != null %}
+									<span class="blue">descarregar certificat</span> 
+									<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
+										  <span class="fa fa-download fa-1x orange"></span> 
+									</a>
+									<a class="remove-certificat link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
+								{% else %}
+									<span class="blue">Cap certificat</span>
+								{% endif %}
+							</div>
+			    		</div>
+			    	</div>
+			    	<div class="col-md-7">
+			    		<div class="arxius-historial">
+							<div class="historial-titol">Històric d'arxius</div>
+							<div class="taula-historial historial-items historial-arxius">
+								{% for arxiu in arxius %}
+									<div class="item-historial">
+										<div class="historial-camp historial-title"><span>{{ arxiu.titol }}</span></div>
+										<div class="historial-camp historial-path"><a href="{{ arxiu.webPath }}" target="_blank" title="{{ arxiu.titol }}" class="link">{{ arxiu.path }}</a></div>
+										<div class="historial-camp historial-icona">
+											<a href="{{ arxiu.webPath }}" target="_blank" title="{{ arxiu.titol }}" class="link">
+											{% if arxiu.esImatge == true and arxiu.width > 0 and arxiu.height > 0 %}
+								   				<img src="{{ arxiu.webPath }}" alt="{{ arxiu.titol }}" width="20px"/>
+										   	{% else %}
+										   		{% if arxiu.esPdf == true %} <span class="fa fa-file-pdf-o fa-1x red"></span> {% endif %}
+										   		{% if arxiu.esWord == true %} <span class="fa fa-file-word-o fa-1x blue"></span> {% endif %}
+										   		{% if arxiu.esExcel == true %} <span class="fa fa-file-excel-o fa-1x green"></span> {% endif %}
+											{% endif %}
+											</a>
+										</div>
+									</div>
+								{% else %}
+									<div class="item-historial">No hi ha arxius</div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>			
 				</div>
 			</div>
 		</div>

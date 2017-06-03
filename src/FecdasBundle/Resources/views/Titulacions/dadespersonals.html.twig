@@ -16,18 +16,20 @@
 			<div class="row">
 				<div class="col-md-8"><h1>Titulacions i dades personals</h1></div>
     		    <div class="col-md-4 col-last-right">
-					{% if persones.getTotalItemCount <= 3000 %}
+					{# if persones.getTotalItemCount <= 3000 #}
 						<div class="buttons-top-bootstrap">
-							<div class="button-top"><a class="link" href="{{ path('FecdasBundle_titulacionstopdf', persones.params) }}" alt="Descarregar les llistes de titulacions" 
-								title="Descarregar les llistes de titulacions">
-								<i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
-							<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_titulacionstopdf', persones.params|merge({ 'print': 1 })) }}" alt="Imprimir les llistes de titulacions" 
-								title="Imprimir les llistes de titulacions">
-								<i class="fa fa-print fa-1x blue"></i></a></div>
-							<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'csv' })) }}" alt="Exportar les dades de les titulacions" 
-								title="Exportar les dades de les titulacions"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
+							<div class="button-top">
+								<a class="link export-csv" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'csv' })) }}" alt="Exportar les llistes de dades personals" 
+								title="Exportar les llistes de dades personals"><i class="fa fa-file-excel-o fa-1x green"></i></a>
+							</div>	
+							<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf', 'print': 1 })) }}" alt="Imprimir les llistes de dades personals" 
+								title="Imprimir les llistes de dades personals"><i class="fa fa-print fa-1x blue"></i></a>
+							</div>
+							<div class="button-top"><a class="link" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf' })) }}" alt="Descarregar les llistes de dades personals" 
+								title="Descarregar les llistes de dades personals"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							</div>	
 						</div> 
-					{% endif %}
+					{# endif #}
 				</div>
 			</div>
    		</header>
@@ -141,25 +143,32 @@
 		   		<div id="header-dadespersonalshistorialtitulacions" class="col-listheader listheader-noorder">Titulacions i docències</div>
 		   		<div id="header-dadespersonalsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
 		   	</div>
-	   	</div>
+	   	</div> 
 		{% if persones|length > 0 %}
 		<div class="table-noscroll table-noscroll-large">
 		   	<ol id="list-data">
-			{% for persona in persones %}
+				{% for persona in persones %}
+					{% set metapersona = persona.metapersona %}
+					{% if admin == true %}
+   						{% set personaId = metapersona.id %}
+   					{% else %}
+   						{% set personaId = persona.id %}
+  					{% endif %}	
+					
 			   		<li class="data-detall">
-				   		<div class="data-detall-cell dadespersonals-id">{{ persona.id }}</div>
+				   		<div class="data-detall-cell dadespersonals-id">{{ personaId }}</div>
 				   		<div class="data-detall-cell dadespersonals-dni col-noresponsive">{{ persona.dni }}</div>
 				   		<div class="data-detall-cell dadespersonals-cognomsnom col-noresponsive">{{ persona.cognomsnom }}</div>
 				   		<div class="data-detall-cell dadespersonals-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell dadespersonals-historialllicencies">
-				   			<a class="link-historial historial-llicencies nolink" href="{{ path('FecdasBundle_historialllicencies', { 'id': persona.id }) }}"  alt="Historial de llicències" title="Historial de llicències">
+				   			<a class="link-historial historial-llicencies nolink" href="{{ path('FecdasBundle_historialllicencies', { 'id': personaId }) }}"  alt="Historial de llicències" title="Historial de llicències">
 				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoHistorialLlicencies(admin, persones.params.desde, persones.params.fins) }}</span>
 			   				</a>
 						</div>
 						<div class="data-detall-cell dadespersonals-historialtitulacions">
 							{% set titulacions = persona.getInfoHistorialTitulacions() %}
 							{% if titulacions != '' %}
-				   				<a class="link-historial historial-titulacions nolink" href="{{ path('FecdasBundle_historialtitulacions', { 'id': persona.id }) }}"  alt="Historial de titulacions" title="Historial de titulacions">
+				   				<a class="link-historial historial-titulacions nolink" href="{{ path('FecdasBundle_historialtitulacions', { 'id': personaId }) }}"  alt="Historial de titulacions" title="Historial de titulacions">
 				   					<i class="fa fa-graduation-cap systemblue"></i><span>{{ titulacions }}</span>
 			   					</a>
 			   				{% else %}
@@ -168,12 +177,7 @@
 						</div>
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
 							<div class="data-detall-cell dadespersonals-actions">
-								{% if admin == true %}
-			   						{# persona és una metapersona #}
-			   						{% set personaId = persona.llicenciaVigent.persona.id %}
-			   					{% else %}
-			   						{% set personaId = persona.id %}
-			   					{% endif %}
+								
 
 								{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
 									<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
@@ -191,23 +195,17 @@
 				   				{% endif %}
 				   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
 				   					<i class="fa fa-search fa-1x blue"></i></a>
-								<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': personaId }) }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
+								<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
 				   					<i class="fa fa-user fa-1x red"></i></a>
 			   				</div>
 			   			{% else %}
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-			   					{% if admin == true %}
-			   						{# persona és una metapersona #}
-			   						{% set personaId = persona.lastLlicencia.persona.id %}
-			   					{% else %}
-			   						{% set personaId = persona.id %}
-			   					{% endif %}
 				   				<div class="data-detall-cell dadespersonals-actions">
 			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
 			   						<i class="fa fa-retweet fa-1x green"></i></a>
 			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
 			   						<i class="fa fa-search fa-1x blue"></i></a>
-				   				<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': personaId })  }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
+				   				<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id })  }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
 			   						<i class="fa fa-user fa-1x red"></i></a>
 			   					</div>
 			   				{% else %}
@@ -221,7 +219,7 @@
 			   				{% endif %}	
 				   		{% endif %}		
 			   		</li>
-			{% endfor %}
+				{% endfor %}
 			</ol>
 		</div>
 		{% if persones.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(persones, null, sortparams) }}</div>{% endif %}		

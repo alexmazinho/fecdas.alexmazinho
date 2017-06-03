@@ -10,7 +10,7 @@ use Symfony\Component\Form\FormError;
 
 //use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-
+use FecdasBundle\Classes\Funcions;
 use FecdasBundle\Form\FormContact;
 use FecdasBundle\Form\FormParte;
 use FecdasBundle\Form\FormPersona;
@@ -557,7 +557,7 @@ class PageController extends BaseController {
 			$rowLic[] = $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d"));	
 			
 			
-			$rowdata = array_merge(array ( $i ), $persona->csvRow(), $rowLic);
+			$rowdata = array_merge(array ( $i ), $persona->csvRow( $this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d") ), $rowLic);
 			$data[] = $rowdata;
 			$i++; 
 		}
@@ -838,15 +838,13 @@ class PageController extends BaseController {
 		// source: FormPersona
 		if (!isset($requestParams['action']) || $requestParams['action'] != 'persona') 			
 					$this->get('session')->getFlashBag()->clear();
-			
 		
 		try {
-			$p = $requestParams['parte'];
-			$l = $requestParams['llicencia'];
+			$p = is_array($requestParams['parte'])?$requestParams['parte']:json_decode($requestParams['parte'], true);
+			$l = is_array($requestParams['llicencia'])?$requestParams['llicencia']:json_decode($requestParams['llicencia'], true);
 
 			$id = is_numeric($p['id']) && $p['id'] > 0?$p['id']:0;
 			$lid = is_numeric($l['id']) && $l['id'] > 0?$l['id']:0;
-
 			if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
 	
 			if ($lid == 0) {
@@ -1079,6 +1077,8 @@ class PageController extends BaseController {
 		$formpersona = null; 
 		$persona = null;
 		$metapersona = null; 
+		$currentFoto = null;
+		$currentCertificat = null;
 		$altrestitolscurrent = array();	
 		$em = $this->getDoctrine()->getManager();
 		try {
@@ -1091,6 +1091,10 @@ class PageController extends BaseController {
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 				}
 
+
+				if ($p['foto'] != 0) $currentFoto = $p['foto'];
+				if ($p['certificat'] != 0) $currentCertificat = $p['certificat'];
+				
 				if (isset($p['altrestitolscurrent']) && $p['altrestitolscurrent'] != '') {
 					$altrestitolscurrent = 	explode(";", $p['altrestitolscurrent']);
 				}
@@ -1107,6 +1111,7 @@ class PageController extends BaseController {
 					$options['edit'] = true;
 					$em->persist($persona);
 				}
+				
 				$formpersona = $this->createForm(new FormPersona($options), $persona);
 			
 				$formpersona->handleRequest($request);
@@ -1114,11 +1119,14 @@ class PageController extends BaseController {
 				if ($formpersona->isValid()) {
 					
 					$baixaPersona = $request->request->get('action') != 'save';
+					
 					if (!$baixaPersona) {
 						
 						$estranger = ( isset($p['estranger']) && $p['estranger'] == 1 )?true:false;
 						
 						$this->validarDadesPersona($persona, $estranger, $formpersona);
+
+						$this->gestionarArxiusPersona($persona, $currentFoto, $currentCertificat, $formpersona);
 
 						$this->actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent);
 
@@ -1156,13 +1164,16 @@ class PageController extends BaseController {
 					}
 					throw new \Exception("Dades invàlides");
 				}
-
+					
 				if ($request->request->get('origen') == 'llicencia') {
+			
 					if (!$baixaPersona) $request->request->set('currentperson', $persona->getId()); 
-					$response = $this->forward('FecdasBundle:Page:llicencia');
+					$response = $this->forward('FecdasBundle:Page:llicencia', array(
+				        'request'  => $request
+				    ));
 					return $response;
 				} else {
-					return new Response();
+					return new Response("");
 				}
 			}
 			if ($request->isXmlHttpRequest()) {
@@ -1292,6 +1303,69 @@ class PageController extends BaseController {
 		
 	}
 	
+	private function gestionarArxiusPersona($persona, $currentFoto, $currentCertificat, $formpersona) {
+		$foto = $formpersona->get('fotoupld')->getData();
+		
+		if ($foto == null) {
+			if ($currentFoto == '' && $persona->getFoto() != null) {
+				// Desar la foto a arxius de la persona i esborrar foto
+				$persona->addArxius($persona->getFoto());
+				$persona->setFoto(null);
+			}
+		} else {
+	
+			if (!($foto instanceof UploadedFile) or !is_object($foto))  throw new \Exception('No s\'ha pogut carregar la foto (1)');
+								
+			if (!$foto->isValid()) throw new \Exception('No s\'ha pogut carregar la foto (2-'.$foto->isValid().')'); // Codi d'error
+			
+			$em = $this->getDoctrine()->getManager();
+							
+			$uploaded = $this->uploadAndScale($foto, $persona->getDni(), 300, 200);
+						
+			$foto = new EntityArxiu($uploaded['path'], true);
+			$foto->setPath($uploaded['name']);
+			$foto->setTitol("Foto federat " . $persona->getNomCognoms());
+			$em->persist($foto);
+	
+			if ($persona->getFoto() != null) {
+				// Desar la foto a arxius de la persona
+				$persona->addArxius($persona->getFoto());
+			}		
+			$persona->setFoto($foto);
+		}
+
+		$certificat = $formpersona->get('certificatupld')->getData();
+		
+		if ($certificat == null) {
+			if ($currentCertificat == '' && $persona->getCertificat() != null) {
+				// Desar el certificat a arxius de la persona i esborrar certificat
+				$persona->addArxius($persona->getCertificat());
+				$persona->setCertificat(null);
+			}
+		} else {
+	
+			if (!($certificat instanceof UploadedFile) or !is_object($certificat))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
+								
+			if (!$certificat->isValid()) throw new \Exception('No s\'ha pogut carregar l\'arxiu (2-'.$certificat->isValid().')'); // Codi d'error
+			
+			$em = $this->getDoctrine()->getManager();
+			
+			$nameAjustat = $persona->getDni()."_".substr($certificat->getClientOriginalName(), -20);
+			$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat);
+						
+			$certificat = new EntityArxiu($certificat, true);
+			$certificat->upload($nameAjustat);
+			$certificat->setTitol("Certificat mèdic federat " . $persona->getNomCognoms());
+			$em->persist($certificat);
+	
+			if ($persona->getCertificat() != null) {
+				// Desar el certificat a arxius de la persona
+				$persona->addArxius($persona->getCertificat());
+			}		
+			$persona->setCertificat($certificat);
+		}
+	}
+	
 	private function actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent = array()) {
 		if ($persona == null || $persona->getMetapersona() == null) throw new \Exception("Dades personals errònies. Cal revisar-les");
 		
@@ -1303,33 +1377,27 @@ class PageController extends BaseController {
 		if ($persona->getId() != 0) {
 			$altrestitolsesborrar = array();
 			$altrestitols = $metapersona->getAltrestitulacions();
-error_log('TITOLS ACTUALS');			
+		
 			foreach ($altrestitols as $altretitol) {
 				
 				if (!in_array($altretitol->getId(), $altrestitolscurrent)) {
-error_log('     esborrar '.$altretitol->getId());					
 					// Remove
 					$altrestitolsesborrar[] = $altretitol;
 				} else {
-error_log('     existent '.$altretitol->getId());					
 					// Existeix Treure de l'array
 					
 					$pos = array_search($altretitol->getId(), $altrestitolscurrent);
 					array_splice($altrestitolscurrent, $pos, 1);
-					
-					//unset($altrestitolscurrent[$altretitol->getId()]);
 				}
 			}
 			// Esborrar
 			foreach ($altrestitolsesborrar as $altretitolesborrar) {
-	error_log('     treure definitiu '.$altretitolesborrar->getId());				
 				$metapersona->removeAltrestitulacions($altretitolesborrar);
 			}
 		}	
 		
 		// A $altrestitolscurrent queden només les noves titulacions
 		foreach ($altrestitolscurrent as $altretitolId) {
-error_log('     nou '.$altretitolId);			
 			$altretitolnou = $em->getRepository('FecdasBundle:EntityTitol')->find($altretitolId);
 			
 			if ($altretitolnou == null) throw new \Exception("Titulació no trobada ".$altretitolId);

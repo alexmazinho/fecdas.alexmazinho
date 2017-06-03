@@ -203,15 +203,26 @@ class PDFController extends BaseController {
 		
 		$pdf->Ln(10);
 
+
+
 		// Afegir llista abreviatures titols
 		$pdf->SetFont('dejavusans', '', 4.5, '', true);
-		$pdf->SetTextColor(50, 50, 50); // Gris
+		$pdf->SetTextColor(100, 100, 100); // Gris
+		$pdf->SetDrawColor(150, 150, 150); // Gris
+
+		$h_llista = 85;	
+		//if ($pdf->getY() > ( ($pdf->getPageHeight()-PDF_MARGIN_BOTTOM-PDF_MARGIN_TOP)/3) ) {
+		if ($pdf->getY() + $h_llista > ( $pdf->getPageHeight()-PDF_MARGIN_BOTTOM) ) {  // La llista abreviatures mesura unes 80 unitats	
+			$pdf->AddPage();
+		}
 		
+		$pdf->setY($pdf->getPageHeight()-PDF_MARGIN_BOTTOM - $h_llista - 5);
+
 		$titolscmas 	= $this->getTitolsByOrganisme(BaseController::ORGANISME_CMAS);
 		$altrestitols 	= $this->getTitolsByOrganisme('', BaseController::ORGANISME_CMAS);
 		
 		$html  = '<h3>Abreviatures títols:</h3><ul>';
-		$pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $html, '', 1, 1, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $html, '', 1, false, true, 'L', true);
 		
 		// 4 cols
 		$x_tit 	= $pdf->getX();
@@ -222,8 +233,8 @@ class PDFController extends BaseController {
 		$titols = array_merge(array(array( 'organisme' => BaseController::ORGANISME_CMAS )), $titolscmas[BaseController::ORGANISME_CMAS]);
 		foreach ($altrestitols as $org => $titolsorg) $titols = array_merge($titols, array(array( 'empty' => '' ), array( 'organisme' => $org )), $titolsorg);
 
-		$pdf->SetAutoPageBreak(false);
-		
+		$pdf->Rect($x_tit, $y_tit-3,$pdf->getPageWidth()-PDF_MARGIN_LEFT*2, $h_llista,  'DF', '', '');
+
 		$t_col 	= round(count($titols)/4);
 		foreach ($titols as $titol) {
 			
@@ -236,7 +247,6 @@ class PDFController extends BaseController {
 				
 			if ($i == $t_col) {
 				$pdf->writeHTMLCell($w_col, 0, $x_tit, $y_tit, $html, '', 0, false, true, 'L', true);
-					
 				$x_tit += $w_col + 1;
 				$i = 0;
 				$html = '';
@@ -245,7 +255,6 @@ class PDFController extends BaseController {
 			}
 		}
 		if ($i < $t_col) $pdf->writeHTMLCell($w_col, 0, $x_tit, $y_tit, $html, '', 0, false, true, 'L', true);
-		
 		$pdf->SetTextColor(0, 0, 0); // Negre
 		
 		$pdf->setPage(1); // Move to first page
@@ -259,7 +268,6 @@ class PDFController extends BaseController {
 		
 		// reset pointer to the last page
 		$pdf->lastPage();
-		
 					
 		$filename = "dadespersonals_".BaseController::getInfoTempsNomFitxer($desde, $fins).".pdf";
 		

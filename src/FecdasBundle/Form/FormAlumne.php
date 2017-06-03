@@ -56,7 +56,9 @@ class FormAlumne extends AbstractType {
 				
 				$form->add('fotoupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'image/*')));
 				
-				$form->add('certificatupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'pdf/*')));			
+				$form->add('certificatupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'pdf/*')));	
+				
+				$form->add('num', 'text', array('mapped' => false, 'required'  => false));		
 			}
 		});
 		

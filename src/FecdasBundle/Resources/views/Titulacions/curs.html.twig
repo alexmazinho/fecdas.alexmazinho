@@ -135,71 +135,51 @@
 					</ul>
 					<div id="tabs-direccio">
 						<div class="row">
-							<div class="col-md-9">
+							<div class="col-md-8">
 								<div class="form-group">
 									<div class="row">
 										<div class="col-md-2">
-										    {{ form_label(form.auxdirector, 'Director:') }}
+										    {{ form_label(form.auxdirector, 'Director:', { 'label_attr': {'class': 'space10'} }) }}
 										</div>
-										<div class="col-md-5">
+										<div class="col-md-10">
 											<div class="input-group">
 												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
 												{{ form_widget(form.auxdirector, { 'attr': {'class': 'form-control'} }) }}
 											</div>
 										</div>
-										<div class="col-md-5">
-											<div class="nom-director"><span class="title-comment">(Director pendent)</span></div>
-										</div>
 									</div>
 								</div>
 							</div>
-							<div class="col-md-3">
+							<div class="col-md-4">
 								<div class="form-group">
-									<div class="row">
-										<div class="col-md-3">
-										    {{ form_label(form.auxcarnet, 'Num.') }}
-										</div>
-										<div class="col-md-9">
-											<div class="input-group">
-												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
-												{{ form_widget(form.auxcarnet, { 'attr': {'class': 'form-control'} }) }}
-											</div>
-										</div>
+									<div class="input-group">
+										<span class="input-group-addon input-group-addon-icon">Num. <span class="fa fa-address-card-o fa-1x"></span></span>
+										{{ form_widget(form.auxcarnet, { 'attr': {'class': 'form-control'} }) }}
 									</div>
 								</div>
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-9">
+							<div class="col-md-8">
 								<div class="form-group">
 									<div class="row">
 										<div class="col-md-2">
-										    {{ form_label(form.auxcodirector, 'Co-director:') }}
+										    {{ form_label(form.auxcodirector, 'Co-director:', { 'label_attr': {'class': 'space10'} }) }}
 										</div>
-										<div class="col-md-5">
+										<div class="col-md-10">
 											<div class="input-group">
 												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
 												{{ form_widget(form.auxcodirector, { 'attr': {'class': 'form-control'} }) }}
 											</div>
 										</div>
-										<div class="col-md-5">
-											<div class="nom-director"><span class="title-comment">(Co-director pendent)</span></div>
-										</div>
 									</div>
 								</div>
 							</div>
-							<div class="col-md-3">
+							<div class="col-md-4">
 								<div class="form-group">
-									<div class="row">
-										<div class="col-md-3">
-										    {{ form_label(form.auxcocarnet, 'Num.') }}
-										</div>
-										<div class="col-md-9">
-											<div class="input-group">
-												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-card fa-1x"></span></span>
-												{{ form_widget(form.auxcocarnet, { 'attr': {'class': 'form-control'} }) }}
-											</div>
-										</div>
+									<div class="input-group">
+										<span class="input-group-addon input-group-addon-icon">Num. <span class="fa fa-address-card-o fa-1x"></span></span>
+										{{ form_widget(form.auxcocarnet, { 'attr': {'class': 'form-control'} }) }}
 									</div>
 								</div>
 							</div>					
@@ -266,6 +246,10 @@
 				placeholder: 'Escollir títol'
 			});
 
+			imageUploadForm($("#curs_formalumne_fotoupld"), 104);
+
+			prepareFileInput( $("#curs_formalumne_certificatupld") );
+			
 			var current = new Date();
 			var mindate = new Date (current.getFullYear(), current.getMonth()-1, current.getDay());
 			var maxdate = new Date (current.getFullYear(), current.getMonth()+3, current.getDay());
@@ -308,21 +292,38 @@
 			// Select per dni
 			var urlConsultaPerDni = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
 			urlConsultaPerDni += '&club='+$('#curs_club').val();
-			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&docent=1';
+			urlConsultaPerDni += '&desde='+$('#curs_datadesde').val();  // data inici del curs, per validar llicència
+			urlConsultaPerDni += '&fins='+$('#curs_datafins').val();  // data final del curs, per validar llicència
+			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&nom=1&tecnic=1';
+
+
+			callbackPropagate = function(added) {
+				$(".alert.alert-dismissible").remove();
+		    };
+			selectionFormat = function(item) {
+		        return item.text+"-"+item.nomcognoms;
+		    };
+
+		    resultFormat = function(item) {
+		        return item.text+"-"+item.nomcognoms;
+		    };
 			
-			init_cercapernomdnimail_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', 6, false, true, true, urlConsultaDocentPerDniNom);
+			//								elem_sel, 				placeholder, 			minInput, allowclear, url, callbackPropagateValues, selectionFunction, selectionFormat, resultFormat, onclearingFunction, loadedFunction										
+			init_cercapernomdnimail_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat );
 
-			init_cercapernomdnimail_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', 6, false, true, true, urlConsultaDocentPerDniNom);
-
-			init_cercapernomdnimail_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 6, false, true, true, urlConsultaDocentPerDniNom);
-
-			init_cercapernomdnimail_JSON('#curs_auxcolaborador', 'Cercar col·laborador per nom o DNI', 6, false, true, true, urlConsultaDocentPerDniNom);
+			init_cercapernomdnimail_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', 5, true, urlConsultaDocentPerDniNom,  callbackPropagate, selectionFormat, resultFormat );	
 			
-			init_cercapernomdnimail_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', 6, false, true, true, urlConsultaPerDni, function ( added ) {
+			
+			init_cercapernomdnimail_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
+
+			init_cercapernomdnimail_JSON('#curs_auxcolaborador', 'Cercar col·laborador per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
+			
+			init_cercapernomdnimail_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, function ( added ) {
 				/*
-				{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+				{"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 				*/
-				$('#curs_formalumne_nomcognoms').val( added.nom );
+				$('#curs_formalumne_id').val( added.id );
+				$('#curs_formalumne_nomcognoms').val( added.nomcognoms );
 				$('#curs_formalumne_mail').val( added.mail );
 				$('#curs_formalumne_telefon').val( added.telf );
 				$('#curs_formalumne_datanaixement').val( added.nascut );
@@ -333,46 +334,81 @@
 
 			$('.add-alumne').click( function(e) {
 				// Si hi ha algú seleccionat afegir les dades del formulari
-				e.preventDefault();
+				e.preventDefault();				
 				
-				$('.alert').remove();
+				$(".alert.alert-dismissible").remove();
 				
-				if ($('#curs_formalumne_dni').val() == '') {
+				if ($('#curs_formalumne_dni').val() === '') {
 					var sms = smsResultAjax('KO', 'Cal escollir algún alumne');
 		   			$('#formalumne-cerca').prepend(sms);
 		   			return false;
 				} 
 
+				var newRowClass = 'alumne-row_'+$('#curs_formalumne_id').val();
+				var newFotoUpld = $('#curs_formalumne_fotoupld').clone();
+				var newCertificatUpld = $('#curs_formalumne_certificatupld').clone();
+				var newNumTitulacio = $('#curs_formalumne_num').clone();
+
+				var totalNous = $('.alumne-row-new').length;
+
+				newFotoUpld.attr('name', newFotoUpld.attr('name')+'['+totalNous+']');
+				newCertificatUpld.attr('name', newCertificatUpld.attr('name')+'['+totalNous+']');
+				newNumTitulacio.attr('name', newNumTitulacio.attr('name')+'['+totalNous+']');
+				newNumTitulacio.removeClass('hidden');
+
+				
 				var htmlLi = [];
-				htmlLi.push('<li class="alumne-row data-detall">');
+				htmlLi.push('<li class="alumne-row data-detall '+newRowClass+' alumne-row-new">');
 				htmlLi.push('   <div class="col-id col-seq hidden">'+$('#curs_formalumne_dni').val()+'</div>');
 				htmlLi.push('   <div class="data-detall-cell col-alumne-dni">'+$('#s2id_curs_formalumne_dni .select2-chosen').html()+'</div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-nom">'+$('#curs_formalumne_nomcognoms').val()+'</div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-nascut">'+$('#curs_formalumne_datanaixement').val());
+				htmlLi.push('   <div class="data-detall-cell col-alumne-nom">'+$('#curs_formalumne_nomcognoms').val());
 				if ($('#curs_formalumne_mail').val() != '') {
-					htmlLi.push('      <br/><span class="mailalumne-titulacio">'+$('#curs_formalumne_mail').val()+'</span>');
+					htmlLi.push('      <br/><span class="subtitle">'+$('#curs_formalumne_mail').val()+'</span>');
 				}
 				htmlLi.push('   </div>');
 				htmlLi.push('   <div class="data-detall-cell col-alumne-poblacio">'+$('#curs_formalumne_poblacio').val());
 				if ($('#curs_formalumne_nacionalitat').val() != '') {
 					htmlLi.push('      ('+$('#curs_formalumne_nacionalitat').val()+')');
 				}
+				if ($('#curs_formalumne_mail').val() != '') {
+					htmlLi.push('      <br/><span class="subtitle">'+$('#curs_formalumne_datanaixement').val()+'</span>');
+				}
 				htmlLi.push('   </div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-docs">~</div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-num">&nbsp;</div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-foto"></div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-certificat"></div>');
+				htmlLi.push('   <div class="data-detall-cell col-alumne-num"></div>');
 				htmlLi.push('   <div class="data-detall-cell col-alumne-actions">');
-				htmlLi.push('      <a class="esborrar-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>');
+				htmlLi.push('      <a class="remove-alumne link" href="javascript:void(0);" data-id="'+$('#curs_formalumne_id').val()+'" ><i class="fa fa-remove fa-1x red"></i></a>');
 				htmlLi.push('   </div>');
 				htmlLi.push('</li>');
 
-				if ($('#list-data.alumnes-curs').children('.alert').length >= 1) {
-					$('#list-data.alumnes-curs').html();
+				if ($('#list-data.alumnes-curs').children('.alumne-row').length == 0) {
+					$('#list-data.alumnes-curs').children('.alumne-empty-alert').addClass('hidden');
 				}
 
 				$('#list-data.alumnes-curs').append(htmlLi.join( '' ));
 
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append(newFotoUpld);
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append( $('.galeria-upload').clone() );
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append(newCertificatUpld);
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append( $('.certificat-upload .form-group').clone() );
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-num').append(newNumTitulacio);
+
+				// Afegir a la llista
+	        	var idAlumne = $('#curs_formalumne_id').val(); 
+
+				if ($('#curs_participantscurrent').val().trim() == '') {
+	        		$('#curs_participantscurrent').val( idAlumne );
+	        	} else {
+		        	var current = $('#curs_participantscurrent').val().trim().split(";");
+		        	current.push( idAlumne );
+		        	$('#curs_participantscurrent').val( current.join(";") );
+	        	}
+				
 				// Clear form
-				$('#curs_formalumne_dni').val('');
+				$('#curs_formalumne_id').val('');
+				//$('#curs_formalumne_dni').val( );
+				$('#curs_formalumne_dni').select2("data", "");
 				$('#curs_formalumne_nomcognoms').val( '' );
 				$('#curs_formalumne_mail').val( '' );
 				$('#curs_formalumne_telefon').val( '' );
@@ -381,6 +417,29 @@
 				$('#curs_formalumne_nacionalitat').val( '' );
 				
 
+			});
+			// Delegate
+			$( "#llista-alumnes" ).on( "click", ".remove-alumne", function( e ) {
+		        //Cancel the link behavior
+		        e.preventDefault();
+		        
+		        var idAlumne = $(this).attr( 'data-id' );
+		        var parentRow = $(this).parents('.alumne-row');	
+		        
+		        // Treure de la llista
+		        var current = $('#curs_participantscurrent').val().trim().split(";");
+				if (current.indexOf(idAlumne) !== -1) {
+					current.splice( current.indexOf(idAlumne) , 1);
+				}
+				$('#curs_participantscurrent').val( current.join(";") );
+
+		        parentRow.remove();
+
+		        if ($('#list-data.alumnes-curs').children('.alumne-row').length == 0) {
+					$('#list-data.alumnes-curs').children('.alumne-empty-alert').removeClass('hidden');
+				}
+		        
+		        
 			});
 		});
 

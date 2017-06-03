@@ -3838,57 +3838,6 @@ class BaseController extends Controller {
 		return $response;
 	}
 
-	public function jsonpersonesAction(Request $request) {
-		//fecdas.dev/jsonpersones?cerca=alex&mail=0
-		$response = new Response();
-error_log("jsonpersonesAction");		
-		$cerca = $request->get('cerca', ''); 
-		$id = $request->get('id', ''); // id federat
-		$mail = $request->get('mail', 0)==1?true:false; // 1 => cerca per mail
-
-		$em = $this->getDoctrine()->getManager();
-		
-		if ($id != '') {
-			$persona = $em->getRepository('FecdasBundle:EntityPersona')->find($id);
-				
-			if ($persona != null) {
-				$response->headers->set('Content-Type', 'application/json');
-				$response->setContent(json_encode(array('id' => $id, 'text' => $persona->getNomCognoms(), 
-														'nom' => $persona->getNom(), 'cognoms' => $persona->getCognoms(), 
-														'dni' => $persona->getDni(), 'mail'	 => $persona->getMail())));
-				return $response;
-			}
-		}
-	
-		$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityPersona p JOIN p.metapersona e ";
-		$strQuery .= " WHERE p.databaixa IS NULL ";
-		if (!$mail) {
-			$strQuery .= " AND (CONCAT(p.nom , ' ', p.cognoms ) LIKE :cerca";
-			$strQuery .= " OR e.dni LIKE :cerca ) ";
-		} else {
-			$strQuery .= " AND p.mail LIKE :cerca ";
-		} 
-		$strQuery .= " ORDER BY p.cognoms, p.nom";
-
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('cerca', '%'.$cerca.'%');
-	
-		$search = array();
-		if ($query != null) {
-			$result = $query->getResult();
-			foreach ($result as $persona) {
-				$search[] = array('id' => $persona->getId(), 'text' 	=> $persona->getNomCognoms(), 
-								'nom' => $persona->getNom(), 'cognoms' 	=> $persona->getCognoms(), 
-								'dni' => $persona->getDni(), 'mail'	 	=> $persona->getMail());
-			}
-		}
-	
-		$response->headers->set('Content-Type', 'application/json');
-		$response->setContent(json_encode($search));
-	
-		return $response;
-	}
-
 	public function jsontipuspagamentsAction(Request $request) {
 		//foment.dev/jsontipuspagaments
 		$response = new Response();

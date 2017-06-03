@@ -741,6 +741,7 @@ class SecurityController extends BaseController
 		$em = $this->getDoctrine()->getManager();
 		$id = 0;
 		$info = "";
+		$action = "";
     	try {
 			$optionsForm = array( 'admin' => $this->isCurrentAdmin() );
 			

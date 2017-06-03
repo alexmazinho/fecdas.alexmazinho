@@ -232,7 +232,7 @@ class EntityCurs {
 		$arr = array();
 		$i = 0;
 		
-		$docencies = $this->getDocentsSortedByCognomsNom();
+		$docencies = $this->getDocentsByRoleSortedByCognomsNom();
 		
 		if (count($docencies) == 0) return "Sense dades de l'equip docent";
 		
@@ -248,31 +248,14 @@ class EntityCurs {
 		return implode(PHP_EOL, $arr);
 	}
 	
-	public function getParticipantsSortedByCognomsNom($baixes = false)
-    {
-    	/* Ordenades de primer a últim */
-    	$arr = array();
-    	foreach ($this->participants as $titulacio) {
-    		if (!$titulacio->anulada() || $baixes == true) $arr[] = $titulacio;
-    	}
-
-    	usort($arr, function($a, $b) {
-    		if ($a === $b) {
-    			return 0;
-    		}
-    		return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
-    	});
-    	return $arr;
-    }
-	
-	public function getDocentsSortedByCognomsNom($baixes = false)
+	public function getDocentsByRoleSortedByCognomsNom($role = '', $baixes = false)
     {
     	/* Ordenades per rol director, co-director, instructor, colaborador => cognoms nom*/
     	$arr = array();
     	foreach ($this->docents as $docencia) {
-    		if (!$docencia->anulada() || $baixes == true) $arr[] = $docencia;
+    		if ((!$docencia->anulada() || $baixes == true) && 
+    			($tipus == '' || $docencia->getRole() == $role)) $arr[] = $docencia;
     	}
-
 		
     	usort($arr, function($a, $b) {
     		if ($a === $b) {
@@ -291,6 +274,33 @@ class EntityCurs {
     	});
     	return $arr;
     }
+	
+	
+	public function getParticipantsSortedByCognomsNom($baixes = false)
+    {
+    	/* Ordenades de primer a últim */
+    	$arr = array();
+    	foreach ($this->participants as $titulacio) {
+    		if (!$titulacio->anulada() || $baixes == true) $arr[] = $titulacio;
+    	}
+
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+    		return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
+    	});
+    	return $arr;
+    }
+	
+	public function getParticipantsIds()
+    {
+		$participants = $this->getParticipantsSortedByCognomsNom();
+		$arr = array();
+		foreach ($participants as $participant) $arr[] = $participant->getId();
+			
+		return $arr;		
+	}
 	
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();

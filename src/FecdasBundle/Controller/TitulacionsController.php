@@ -463,8 +463,8 @@ class TitulacionsController extends BaseController {
 		
 		$strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e JOIN e.metapersona m ";
 		
-		if ($titol != null) $strQuery .= " JOIN e.titulacions t JOIN t.curs c ";
-		if ($titolExtern != null) $strQuery .= " JOIN e.altrestitulacions at ";
+		if ($titol != null) $strQuery .= " JOIN m.titulacions t JOIN t.curs c ";
+		if ($titolExtern != null) $strQuery .= " JOIN m.altrestitulacions at ";
 		
 		if ($vigent == true) {
 			$strQuery .= " JOIN e.llicencies l JOIN l.parte p ";
@@ -560,10 +560,15 @@ class TitulacionsController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 	
 		$cerca = $request->get('cerca', '');
-		$docent = $request->get('docent', 0) == 1?true:false;
+		$cercanom = $request->get('nom', 0) == 1?true:false;
+		$cercamail = $request->get('mail', 0) == 1?true:false;
 		$admin = $request->get('admin', 0) == 1?true:false;
 		$codi = $request->get('club', '');
-
+		// Validació de llicències
+		$tecnic = $request->get('tecnic', 0) == 1?true:false;
+		$desde = $request->get('desde', '')!=''?\DateTime::createFromFormat('d/m/Y', $request->get('desde')):null;
+		$fins = $request->get('fins', '')!=''?\DateTime::createFromFormat('d/m/Y', $request->get('fins')):null;
+		
 		$club = $em->getRepository('FecdasBundle:EntityClub')->find($codi); // Per filtrar la persona correcta 
 		
 		$id = $request->get('id', 0);
@@ -579,7 +584,9 @@ class TitulacionsController extends BaseController {
 				$response->setContent(json_encode(array(
 							"id" => $persona->getId(), 
 							"text" => $persona->getDni(),
-							"nom" => $persona->getNomcognoms(), 
+							"nom" => $persona->getNom(),
+							"cognoms" => $persona->getCognoms(),
+							"nomcognoms" => $persona->getNomcognoms(), 
 							"mail" => $persona->getMail(),
 							"telf" => $telf,
 							"nascut" => $persona->getDatanaixement()->format('d/m/Y'),
@@ -597,23 +604,38 @@ class TitulacionsController extends BaseController {
 			return $response;
 		}
 		
-		if ($docent == true) {
+		if ($tecnic == true) {
+// CAL AFEGIR LLIÈNCIA VIGENT TêCNIC !!!!!!!!!!!!!!!!	
+			// Consulta persones amb llicència durant tot el periode desde -> fins
+			// iniciada abans de la data desde i acabada després de la data fins
+			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e  ";
+			$strQuery .= " JOIN e.llicencies l JOIN l.parte r JOIN l.categoria a WHERE ";
+			$strQuery .= " l.databaixa IS NULL ";
+			$strQuery .= " AND r.dataalta <= :desde ";
+			$strQuery .= " AND l.datacaducitat >= :fins ";
+			$strQuery .= " AND a.simbol = :categoria ";
 			
-// CAL AFEGIR LLIÈNCIA VIGENT TêCNIC !!!!!!!!!!!!!!!!			
-			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e WHERE ";
-			$strQuery .= " (p.dni LIKE :cerca OR CONCAT(e.nom,' ',e.cognoms) LIKE :cerca) ";
-			$strQuery .= " ORDER BY e.cognoms, e.nom";  
-	//error_log($strQuery);
+			$strQuery .= " AND ((p.dni LIKE :cerca) ";
+			if ($cercanom) $strQuery .= " OR (CONCAT(e.nom,' ',e.cognoms) LIKE :cerca) ";
+			if ($cercamail) $strQuery .= " OR (e.mail LIKE :cerca) ";
+			$strQuery .= " ) ORDER BY e.cognoms, e.nom";  
+
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('cerca', '%'.$cerca.'%');
-		} else {
-			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p WHERE ";
+			$query->setParameter('desde', $desde->format('Y-m-d H:i:s'));
+			$query->setParameter('fins', $fins->format('Y-m-d'));
+			$query->setParameter('categoria', BaseController::SIMBOL_TECNIC);
+			
+		} else {	
+			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e WHERE ";
 			$strQuery .= " (p.dni LIKE :cerca) ";
-			$strQuery .= " ORDER BY p.dni";  
+			if ($cercanom) $strQuery .= " OR (CONCAT(e.nom,' ',e.cognoms) LIKE :cerca) ";
+			if ($cercamail) $strQuery .= " OR (e.mail LIKE :cerca) ";
+			$strQuery .= " ORDER BY e.cognoms, e.nom";  
 		
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('cerca', '%'.$cerca.'%');
-		}
+		}		
 		
 		$search = array( );
 		if ($query != null) {
@@ -628,7 +650,9 @@ class TitulacionsController extends BaseController {
 					
 					$search[] = array("id" => $persona->getId(), 
 									"text" => $persona->getDni(),
-									"nom" => $persona->getNomcognoms(), 
+									"nom" => $persona->getNom(),
+									"cognoms" => $persona->getCognoms(),
+									"nomcognoms" => $persona->getNomcognoms(),  
 									"mail" => $persona->getMail(),
 									"telf" => $telf,
 									"nascut" => $persona->getDatanaixement()->format('d/m/Y'),

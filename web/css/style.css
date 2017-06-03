@@ -254,6 +254,10 @@ input.disabled label
 
 .input-group-addon-icon-search { padding: 6px 6px }
 
+.input-group-addon.group-addon-sm { min-width: 30px; }
+.input-group-addon.group-addon-md { min-width: 60px; }
+.input-group-addon.group-addon-lg { min-width: 100px; }
+
 .ui-dialog { z-index: 1000; }
 
 #dialeg p {
@@ -375,7 +379,7 @@ html[xmlns] .clearfix {
 	height: 1%;
 }
 
-
+.space10 { display: block; margin: 5px 0; }
 .space20 { display: block; margin: 10px 0; }
 .space50 { display: block; margin: 25px 0; }
 
@@ -442,7 +446,6 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .link i.fa.orange:hover { background-color: #eea236; } 
 .link i.fa.yellow:hover { background-color: #FFFF66; }
 .link i.fa.gray:hover { background-color: #CCCCCC; }
-
 
 .data-detall .data-detall-cell .nolink i.fa:hover, .nolink i.fa:hover { color: inherit; background-color: inherit } 
 
@@ -2031,16 +2034,17 @@ select#parte_renovar_tipus { width: 240px; }
 
 
 .col-alumne-dni { width: 10%; text-align: center; }
-.col-alumne-nom { width: 25%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
-.col-alumne-nascut { width: 10%; text-align: center; }
-.col-alumne-poblacio { width: 25%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-nom { width: 11%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
+/*.col-alumne-nascut { width: 8%; text-align: center; }*/
+.col-alumne-poblacio { width: 23%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-foto { width: 11%; text-align: center; }
+.col-alumne-certificat { width: 20%; text-align: left; }
 .col-alumne-num { width: 10%; text-align: center; }
-.col-alumne-docs { width: 15%; text-align: left; }
 .col-alumne-actions { width: 5%; text-align: center; }
 
-.col-alumne-num .datasuperacio-titulacio,
-.col-alumne-nom .mailalumne-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
+.col-alumne-num .datasuperacio-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
+.alumne-row .data-detall-cell .subtitle { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
 
 #list-data.docents-curs li .alert,
@@ -2049,9 +2053,18 @@ select#parte_renovar_tipus { width: 240px; }
 #tabs-docents { margin-bottom: 20px; }
 #formalumne-cerca { margin-bottom: 20px; }
 
-.add-docent .fa.fa-2x, .add-alumne .fa.fa-2x { font-size: 1.8em; min-height: 24px; min-width: 24px; padding: 5px; }
+#formalumne-cerca .image-upload {
+	width: 100px; 
+	height: 123px;
+}
+
+
+.add-docent .fa.fa-2x, .add-alumne .fa.fa-2x { font-size: 1.8em; min-height: 24px; min-width: 34px; padding: 5px; }
 
 #tabs-instructors .table-header, #tabs-colaboradors .table-header { margin-top: 10px; }
+
+#tabs-instructors .select2-container, 
+#tabs-colaboradors .select2-container { min-width: 400px; }
 
 .curs-process { text-align: center; margin: 0 auto;  }
 .buttons-curs-process { margin: 0 10% 10px;  display: block; }

@@ -282,16 +282,20 @@
 			
 			
 			// Cerca federat
-			init_cercapersones_JSON('#form_federat', 
-									'Cercar per dni o nom dades del federat ... ', 
-									"{{  path('FecdasBundle_jsonpersones') }}",
-									function(dades) {
-										// Callback. Exemple {"id":"47422","text":"Pere ABADAL GONZALEZ","nom":"Pere","cognoms":"ABADAL GONZALEZ","dni":"77112119L"}
-				 						$("#form_nom").val(dades.nom);
-				 						$("#form_cognoms").val(dades.cognoms);
-				 						$("#form_nif").val(dades.dni);
-									});
+			var urlConsultaPerDni = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
+			urlConsultaPerDni += '&nom=1';
+			//urlConsultaPerDni += '&club='+$('#curs_club').val();
 
+			//							elem_sel, 				placeholder, 			minInput, allowclear, url, callbackPropagateValues, selectionFunction, onclearingFunction, loadedFunction	
+			init_cercapernomdnimail_JSON('#form_federat', 'Cercar DNI o nom dades del federat', 3, true, urlConsultaPerDni, function ( added ) {
+				/*
+				{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+				*/
+				$("#form_nom").val(added.nom);
+				$("#form_cognoms").val(added.cognoms);
+				$("#form_nif").val(added.text);
+			});
+			
 			$( ".afegir-carnet" ).click(function (e) {
 				e.preventDefault();
 

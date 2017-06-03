@@ -175,49 +175,37 @@
 			   					<span>{{ titulacions }}</span>
 			   				{% endif %}
 						</div>
+						<div class="data-detall-cell dadespersonals-actions">
 				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
-							<div class="data-detall-cell dadespersonals-actions">
-								
-
-								{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
-									<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
-										<i class="fa fa-list-alt fa-1x orange"></i></a>
-								{% endif %}
-								{% if admin == true %}
-									<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': persona.llicenciaVigent.id}) }}" 
-										data-club="{{ persona.llicenciaVigent.parte.club.nom }}"
-										data-persona="{{ persona.nomcognoms }}" alt="Duplicat llicència" title="Duplicat llicència">
-										<i class="fa fa-copy fa-1x lightblue"></i></a>
-								{% endif  %}
-								{% if persona.llicenciaVigent.parte.allowRenovar %}
-									<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-					   					<i class="fa fa-retweet fa-1x green"></i></a>
-				   				{% endif %}
-				   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
-				   					<i class="fa fa-search fa-1x blue"></i></a>
-								<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal" alt="Editar dades federat" title="Editar dades federat">
-				   					<i class="fa fa-user fa-1x red"></i></a>
-			   				</div>
+							{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
+								<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
+									<i class="fa fa-list-alt fa-1x orange"></i></a>
+							{% endif %}
+							{% if admin == true %}
+								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': persona.llicenciaVigent.id}) }}" 
+									data-club="{{ persona.llicenciaVigent.parte.club.nom }}"
+									data-persona="{{ persona.nomcognoms }}" alt="Duplicat llicència" title="Duplicat llicència">
+									<i class="fa fa-copy fa-1x lightblue"></i></a>
+							{% endif  %}
+							{% if persona.llicenciaVigent.parte.allowRenovar %}
+								<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
+				   					<i class="fa fa-retweet fa-1x green"></i></a>
+			   				{% endif %}
+			   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
+			   					<i class="fa fa-search fa-1x blue"></i></a>
 			   			{% else %}
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-				   				<div class="data-detall-cell dadespersonals-actions">
 			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
 			   						<i class="fa fa-retweet fa-1x green"></i></a>
 			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
 			   						<i class="fa fa-search fa-1x blue"></i></a>
 				   				<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id })  }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
 			   						<i class="fa fa-user fa-1x red"></i></a>
-			   					</div>
-			   				{% else %}
-			   					{% if admin != true %}
-			   						{# persona NO és una metapersona #}
-				   					<div class="data-detall-cell dadespersonals-actions">
-				   					<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
-				   						<i class="fa fa-user fa-1x red"></i></a>
-				   					</div>
-			   					{% endif %}
-			   				{% endif %}	
-				   		{% endif %}		
+			   				{% endif %}
+				   		{% endif %}
+		   					<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
+		   						<i class="fa fa-user fa-1x red"></i></a>
+				   		</div>
 			   		</li>
 				{% endfor %}
 			</ol>

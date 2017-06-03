@@ -1,20 +1,20 @@
 <div class="row">
-	<div class="col-md-9">
+	<div class="col-md-8">
 		<h2 class="blue">Relació d'alumnes aptes</h2>
 	</div>
 	{% if curs.editable == true %}
-		<div class="col-md-3">
+		<div class="col-md-4 space20">
 			<h4 class="blue">Pujar documents</h4>
 		</div>	
 		<div id="formalumne-cerca" class="col-md-12">
+			{{ form_widget(form.participantscurrent) }}
 			{% set formalumne = form.formalumne %}
 			{{ form_widget(form.formalumne.id) }}
-			{{ form_widget(form.formalumne.fotoupld) }}
-			{{ form_widget(form.formalumne.certificatupld) }}    
+			{{ form_widget(formalumne.num, { 'attr': {'class': 'form-control form-control-center hidden'} }) }}
 			<div class="row">
-				<div class="col-md-9">
+				<div class="col-md-8 col-sm-12">
 					<div class="row">
-						<div class="col-md-5">
+						<div class="col-md-5 col-sm-6">
 						    <div class="form-group">
 								<div class="input-group">
 									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span> DNI</span>
@@ -22,31 +22,35 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-md-7">
+						<div class="col-md-7 col-sm-6">
 							<div class="form-group">
 							   	<div class="input-group">
-									<span class="input-group-addon input-group-addon-icon">Nom</span>
+									<span class="input-group-addon input-group-addon-icon group-addon-md">Nom</span>
 									{{ form_widget(formalumne.nomcognoms, { 'attr': {'class': 'form-control'} }) }}
 								</div>
 							</div>
 						</div>
-						<div class="col-md-7">
+					</div>
+					<div class="row">	
+						<div class="col-md-5 col-sm-6">
 							<div class="form-group">
 							   	<div class="input-group">
-									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-envelope fa-1x"></span></span>
-									{{ form_widget(formalumne.mail, { 'attr': {'class': 'form-control'} }) }}
-								</div>
-							</div>
-						</div>
-						<div class="col-md-5">
-							<div class="form-group">
-							   	<div class="input-group">
-									<span class="input-group-addon input-group-addon-icon"><span class="fa fa-phone fa-1x"></span></span>
+									<span class="input-group-addon input-group-addon-icon group-addon-md"><span class="fa fa-phone fa-1x"></span></span>
 									{{ form_widget(formalumne.telefon, { 'attr': {'class': 'form-control form-control-center'} }) }}
 								</div>
 							</div>
 						</div>
-						<div class="col-md-3">
+						<div class="col-md-7 col-sm-6">
+							<div class="form-group">
+							   	<div class="input-group">
+									<span class="input-group-addon input-group-addon-icon group-addon-md"><span class="fa fa-envelope fa-1x"></span></span>
+									{{ form_widget(formalumne.mail, { 'attr': {'class': 'form-control'} }) }}
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">	
+						<div class="col-md-4 col-sm-6">
 							<div class="form-group">
 							   	<div class="input-group">
 									<span class="input-group-addon input-group-addon-icon">Nascut</span>
@@ -54,38 +58,51 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-md-6">
+						<div class="col-md-5 col-sm-6">
 							<div class="form-group">
 							   	<div class="input-group">
-									<span class="input-group-addon input-group-addon-icon">Població</span>
+									<span class="input-group-addon input-group-addon-icon group-addon-lg">Població</span>
 									{{ form_widget(formalumne.poblacio, { 'attr': {'class': 'form-control'} }) }}
 								</div>
 							</div>
 						</div>
-						<div class="col-md-3">
+						<div class="col-md-3 col-sm-4">
 							<div class="form-group">
 							   	<div class="input-group">
-									<span class="input-group-addon input-group-addon-icon">Nacionalitat</span>
+									<span class="input-group-addon input-group-addon-icon group-addon-md"><span class="fa fa-globe fa-1x"></span></span>
 									{{ form_widget(formalumne.nacionalitat, { 'attr': {'class': 'form-control form-control-center'} }) }}
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="col-md-3">
+				<div class="col-md-offset-0 col-md-4  col-sm-offset-6 col-sm-6">
 					<div class="row">
-						<div class="col-md-9">
-							<div class="colform colmiddle">
-								<div class="galeria-upload">
-									<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
-									<div class="image-upload certificat-upload"><span class="box-center-txt">Pujar certificat<br/>(click)</span></div>
+						<div class="col-md-4">
+							{{ form_widget(form.formalumne.fotoupld) }}
+							<div class="galeria-upload">
+								<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+							</div>
+						</div>
+						<div class="col-md-8">
+							{{ form_widget(form.formalumne.certificatupld) }}
+							<div class="certificat-upload">
+								<p class="titol blue">Certificat mèdic</p>
+								<div class="form-group">
+									<div class="input-group" style="position:relative;">
+										<span class="input-group-addon"></span>
+										<input id="upload-file-info" class="form-control" type="text">
+								        <span class="input-group-addon input-group-addon-action">
+								        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+								        </span>
+							        </div>
 								</div>
 							</div>
+							<div class="col-last-right">
+								<a class="add-alumne link" href="javascript:void(0);" ><i class="fa fa-chevron-circle-down fa-2x blue"></i></a> 
+							</div>	
 						</div> 
-						<div class="col-md-3 col-last-right">
-							<a class="add-alumne link" href="javascript:void(0);" ><i class="fa fa-chevron-circle-down fa-2x blue"></i></a> 
-						</div>
-					</div>				
+					</div>
 				</div>
 			</div>
 		</div>
@@ -95,10 +112,10 @@
 			<div id="list-header" class="list-docent-curs-header">
 				<div class="col-id hidden">&nbsp;</div>
 				<div class="col-listheader col-alumne-dni">DNI</div>
-				<div class="col-listheader col-alumne-nom">Nom i cognoms<br/><span class="mailalumne-titulacio">(Adreça electrònica)</span></div>
-				<div class="col-listheader col-alumne-nascut">Nascut</div>
-				<div class="col-listheader col-alumne-poblacio">Població</div>
-				<div class="col-listheader col-alumne-docs">Arxius</div>
+				<div class="col-listheader col-alumne-nom">Nom i cognoms<br/><span class="subtitle">(Adreça electrònica)</span></div>
+				<div class="col-listheader col-alumne-poblacio">Població<br/><span class="subtitle">(Nascut)</span></div>
+				<div class="col-listheader col-alumne-foto">Foto</div>
+				<div class="col-listheader col-alumne-certificat">Certificat</div>
 				<div class="col-listheader col-alumne-num">Num.</div>
 				<div class="col-listheader col-alumne-actions">&nbsp;</div>
 			</div>
@@ -111,60 +128,13 @@
 					{% if alumne == null %}
 						{% set alumne = meta.ultimesDadesPersonals %}
 					{% endif %}
-					<li class="alumne-row data-detall">
-						<div class="col-id col-seq hidden">{{ meta.id }}</div>
-						<div class="data-detall-cell col-alumne-dni">{{ meta.dni }}</div>
-						{% if alumne == null %}
-							<div class="data-detall-cell col-alumne-nom"><span class="title-comment">(dades no disponibles)</span></div>
-							<div class="data-detall-cell col-alumne-nascut"><span class="title-comment">(dades no disponibles)</span></div>
-							<div class="data-detall-cell col-alumne-poblacio"><span class="title-comment">(dades no disponibles)</span></div>
-						{% else %}
-							<div class="data-detall-cell col-alumne-nom">{{ alumne.nomCognoms }}
-								{% if alumne.mail != null and alumne.mail != '' %}
-									<br/><span class="mailalumne-titulacio">{{ alumne.mail }}</span>
-								{% endif %}
-							</div>
-							<div class="data-detall-cell col-alumne-nascut">{{ alumne.datanaixement|date('d/m/Y') }}</div>
-							<div class="data-detall-cell col-alumne-poblacio">
-								{% if alumne.addrpob == null or alumne.addrpob == '' %}
-									<span class="title-comment">(dades no disponibles)</span>
-								{% else %}
-									{{ alumne.addrpob }} {% if alumne.addrnacionalitat != null and alumne.addrnacionalitat != '' %} ({{ alumne.addrnacionalitat }}){% endif %}
-								{% endif %}
-							</div>
-							<div class="data-detall-cell col-alumne-docs">
-								<div class="icon-inline">
-					   			{% if alumne.foto is not null and alumne.foto.width > 0 and alumne.foto.height > 0 %}
-						   			<a href="{{ alumne.foto.webPath }}" target="_blank" download="{{ alumne.foto.path }}" class="nolink"><img src="{{ alumne.foto.webPath }}" alt="{{ alumne.foto.titol }}" width="30px"/></a>
-					   			{% else %}
-						   			<span class="noimage-available"><span class="title-comment">Foto no<br/>Disponible</span></span>
-					   			{% endif %}
-					   			</div>
-					   			
-					   			{% if alumne.certificat is not null %}
-					   				<div class="icon-inline">
-						   				<a href="{{ alumne.certificat.webPath }}" target="_blank" download="{{ alumne.certificat.path }}" class="nolink" title="Certificat mèdic"><i class="fa fa-medkit fa-2x green"></i></a>
-						   			</div>
-					   			{% endif %}
-							</div>							
-						{% endif %}
-						<div class="data-detall-cell col-alumne-num">{{ participant.num }}
-							{% if participant.datasuperacio != null %}
-								<br/><span class="datasuperacio-titulacio">{{ participant.datasuperacio|date('d/m/Y') }}</span>
-							{% endif %}
-						</div>
-						<div class="data-detall-cell col-alumne-actions">
-							{% if curs.editable == true %}
-								<a class="esborrar-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
-							{% endif %}
-						</div>
-					</li>
+					
+					{% include 'FecdasBundle:Titulacions:cursalumnerow.html.twig'  %}
+					
 				{% endfor %}
    				{% if curs.participantsSortedByCognomsNom|length == 0 %}
-					<li class="alumne-row data-detall"><div class="data-detall-cell"><div class="alert alert-success" role="alert">Cap participant</div></div></li>
+					<li class="data-detall alumne-empty-alert"><div class="data-detall-cell" colspan="7"><div class="alert alert-success" role="alert">Cap participant</div></div></li>
 				{% endif %}
-   				
-   			
 			 </ul> 
 		</div>				 
 	</div>

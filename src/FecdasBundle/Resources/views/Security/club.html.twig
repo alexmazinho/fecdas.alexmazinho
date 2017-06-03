@@ -529,7 +529,7 @@
 				
 		<div id="formclub-rest" class="hidden">{{ form_rest(form) }}</div>
 
-		<div class="row">
+		<div id="gestio-usuarisclub" class="row">
 			<div class="col-md-8"><h4 class="blue">Llista d'usuaris</h4></div>
 			<div class="col-md-4 col-last-right">
 				<div class="form-group" >
@@ -573,11 +573,13 @@
 		/*************************************************************************************/  
 		/********************************* Gestió usuaris ************************************/
 		/*************************************************************************************/
-		var urlJSONpersona = "{{ path('FecdasBundle_jsonpersones', { 'admin': admin }) }}";
+		var urlJSONpersona = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
 		var keysCercaPersona = ["{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_FEDERAT')  }}", 
 		              			"{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_INSTRUCTOR')  }}"];
 
-		addUserRoleClick( urlJSONpersona, keysCercaPersona );
+		var roltecnic = "{{ constant('FecdasBundle\\Controller\\BaseController::ROLE_INSTRUCTOR')  }}";	
+		
+		addUserRoleClick( urlJSONpersona, keysCercaPersona,  roltecnic);
 		
 		actionsUserRolePwdClick(); 
 		

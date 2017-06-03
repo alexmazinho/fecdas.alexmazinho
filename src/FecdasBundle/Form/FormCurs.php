@@ -131,6 +131,13 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				'required' 	=> false,
 				'attr'		=>	array('readonly' => !$editable)
 			));	
+			
+			$idsAlumnes = $curs->getParticipantsIds();  
+								
+			$form->add('participantscurrent', 'hidden', array(
+				'mapped' 		=> false,
+				'data'			=> implode(";", $idsAlumnes)
+			));
 				
 			$metapersona = new EntityMetaPersona('');
 			$persona = new EntityPersona($metapersona, $curs->getClub());

@@ -598,12 +598,6 @@ FecdasBundle_jsonclubs:
     requirements:
         methods:  GET
 
-FecdasBundle_jsonpersones:
-    path:  /jsonpersones
-    defaults: { _controller: "FecdasBundle:Facturacio:jsonpersones" }
-    requirements:
-        methods:  GET
-
 FecdasBundle_jsontipuspagaments:
     path:  /jsontipuspagaments
     defaults: { _controller: "FecdasBundle:Facturacio:jsontipuspagaments" }

@@ -370,16 +370,19 @@
 	
 	
 	//Cercador select2 genèric cal que existeixi mètode al Controller que gestioni params 'cerca' i 'id'
-	init_cercapernomdnimail_JSON = function(elem_sel, placeholder_txt, minInput, mail, allowclear, seleccioCurta, url, 
-											callbackPropagateValues, selectionFunction, onclearingFunction, loadedFunction) {
+	init_cercapernomdnimail_JSON = function(elem_sel, placeholder_txt, minInput, allowclear, url, 
+											callbackPropagateValues, selectionFormat, resultFormat, onclearingFunction, 
+											loadedFunction) {
 		
-		$(".alert").remove();
-		
-		if (typeof selectionFunction === "undefined") {
-			//e.val, e.added, e.removed
-			selectionFunction = function(item) {
-		    	//var originalOption = item.element;
+		if (typeof selectionFormat === "undefined") {
+			selectionFormat = function(item) {
 		        return item.text;
+		    };
+		}
+		
+		if (typeof resultFormat === "undefined") {
+			resultFormat = function(item) {
+		        return item.text+"-"+item.nomcognoms;
 		    };
 		}
 		
@@ -391,11 +394,6 @@
 		if (typeof onclearingFunction === "undefined") {
 			//e.val, e.added, e.removed
 			onclearingFunction = function( e ) { };	// e.preventDefault() to avoid clearing
-		}
-		
-		
-		if (mail) {  // Afegir opció cerca per mail
-			url += '&mail=1';
 		}
 		
 		// Inicialitza el control de cerca (input hidden) 
@@ -431,18 +429,15 @@
 			        callback(data);
 				//}
 			},
-		    formatResult: function(item) {
-		    	//var originalOption = item.element;
-		        return item.text+"-"+item.nom;
-		    },
-		    formatSelection: selectionFunction,
+		    formatResult: resultFormat,
+		    formatSelection: selectionFormat,
 		}).on("change", function ( e ) { 
 			if (typeof callbackPropagateValues !== "undefined"
 				&& typeof e.added  !== "undefined") {
 				//e.val, e.added, e.removed
 				callbackPropagateValues(e.added);
 			}
-		}).on("select2-clearing", loadedFunction).on("select2-loaded", loadedFunction);		
+		}).on("select2-clearing", onclearingFunction).on("select2-loaded", loadedFunction);		
 	};
     
 	/********** Selectors de dates ***************/
@@ -483,6 +478,22 @@
 			 yearEnd: max.getFullYear()
 			 
 		});
+	};
+	
+	function getCurrentDate($separador) {
+		var current = new Date();
+		var currentFormatted = current.getDayFormatted() + $separador + current.getMonthFormatted() + $separador + current.getFullYear();
+		return currentFormatted;
+	};
+
+	Date.prototype.getMonthFormatted = function() {
+	    var month = this.getMonth();
+	    return month < 9 ? '0' + (month+1) : month+1; // ('' + month) for string result
+	};
+
+	Date.prototype.getDayFormatted = function() {
+	    var day = this.getDate();
+	    return day < 10 ? '0' + day : day;
 	};
 	
 	dialegError = function(titol, strError, dwidth, dheight) {
@@ -1991,9 +2002,9 @@
 	};
 	
 	
-	addUserRoleClick = function( urlJSONpersona, keysCercaPersona ) {
+	addUserRoleClick = function( urlJSONpersona, keysCercaPersona, roltecnic ) {
 		// delegate
-		$( "#llista-usuarisclub" ).on( "click", "#add-userclub, .add-userroleclub", function( e ) {
+		$( "#gestio-usuarisclub" ).on( "click", "#add-userclub, .add-userroleclub", function( e ) {
 			//Cancel the link behavior
 	        e.preventDefault();
 
@@ -2083,56 +2094,9 @@
 	        	},function() {
 	        		//callbackopen
 		    		
-		    		// Crear select2
-	        		
-		    		$("#user_auxinstructordni").removeAttr('readonly');
-		    		urlJSONpersona += '&club='+$('#club_codi').val()+'&docent=1';
+	        		$("#user_auxinstructordni").removeAttr('readonly');
 		    		
-		    		init_cercapernomdnimail_JSON('#user_auxinstructordni', 'Cercar instructor per mail', 4, afegirRolUserExistent, afegirUserNou, false, urlJSONpersona, 	// Cerca per mail sense opció clear
-		    		function ( added ) {
-			    		/*
-			    		{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nom":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
-			    		*/
-			    		$(".alert").remove();
-			    		if (added.mail == null) {  // Aquest instructor no té mail. => Avís
-			    			var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
-			    				 
-			    			 $("#formuserclub").prepend(sms);
-			    			 if (afegirUserNou) {
-			    				 $("#user_auxinstructordni").val("");
-			    			 }
-			    			  
-			    		} else {
-			    			if (afegirUserNou) {
-			    				$("#user_user").removeAttr('readonly'); // Permetre editar mail, poden existir múltiples
-			    			}
-			    		}
-		    		}, function( item ) {
-		    	    	//Selection Function
-		    	        return item.text+"-"+item.nom+" ("+item.mail+")";
-		    	    }, function( e ) {
-	    				//  select2-clearing
-		    	    	$("#user_user").attr('readonly', 'readonly');
-		    	    	
-					}, function( e ) {
-	    				//  select2-loaded search for user mail and when loaded opens
-						if (typeof e.items !== "undefined") {
-							// No hi ha resultats
-							if (afegirUserNou) {
-								var sms = smsResultAjax('KO', 'No s\'ha trobat cap persona amb aquest mail');
-								$("#formuserclub").prepend(sms);
-							}
-						} else {
-							/*
-							 * e.items
-							 * {"results":[{"id":30981,"text":"Oscar MONTEVERDE LIZANDRA","nom":"Oscar","cognoms":"MONTEVERDE LIZANDRA","dni":"44417698Y","mail":null},
-							 * */
-							if (afegirRolUserExistent) {
-								$("#user_auxinstructordni").select2("open");
-							}
-						}
-						
-					});
+		    		initSelectorPersones(urlJSONpersona, afegirRolUserExistent, afegirUserNou, roltecnic);		    		
 		    		
 		    		if (afegirRolUserExistent) {
 		    			// Afegir role a usuari existent
@@ -2171,6 +2135,9 @@
 			    			$(".alert").remove();	
 	
 			    			$("#user_auxinstructordni").val('');
+			    			
+			    			initSelectorPersones(urlJSONpersona, afegirRolUserExistent, afegirUserNou, roltecnic);	
+			    			
 			    			$('#user_user').val('');
 			    			// Canvi role 
 			    			// 	Instructors 			=> activa selecció persona, desactiva mail
@@ -2202,6 +2169,68 @@
         	});
 	    });
 	};
+	
+	
+	initSelectorPersones = function( url, allowClear, userNou, roltecnic ) {
+
+		// Crear select2
+		var tecnic = $('#user_role').val() === roltecnic?1:0;
+		url += '&club='+$('#club_codi').val();
+		url += '&nom=1&mail=1&tecnic='+tecnic;  // Cercar per nom i mail
+		url += '&desde='+getCurrentDate('/');  // data actual, per validar llicència
+		url += '&fins='+getCurrentDate('/');  // data actual, per validar llicència
+		
+		//								elem_sel, 				placeholder, 			minInput, 	allowclear, 		url, callbackPropagateValues, selectionFunction, onclearingFunction, loadedFunction		    		
+		init_cercapernomdnimail_JSON('#user_auxinstructordni', 'Cercar instructor per mail', 4, allowClear, url, 	// Cerca per mail sense opció clear
+		function ( added ) {
+			/*
+			{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+			*/
+			$(".alert").remove();
+			if (added.mail == null) {  // Aquest instructor no té mail. => Avís
+				var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
+					 
+				 $("#formuserclub").prepend(sms);
+				 if (userNou) {
+					 $("#user_auxinstructordni").val("");
+				 }
+				  
+			} else {
+				if (userNou) {
+					$("#user_user").removeAttr('readonly'); // Permetre editar mail, poden existir múltiples
+				}
+			}
+		}, function( item ) {
+	    	//Selection format Function
+	        return item.text+"-"+item.nom+" ("+item.mail+")";
+	    }, function( item ) {
+	    	//Result format Function
+	        return item.text+"-"+item.nom+" ("+item.mail+")";
+	    }, function( e ) {
+			//  select2-clearing
+	    	$("#user_user").attr('readonly', 'readonly');
+	    	
+		}, function( e ) {
+			//  select2-loaded search for user mail and when loaded opens
+			if (typeof e.items === "undefined") {
+				// No hi ha resultats
+				if (userNou) {
+					var sms = smsResultAjax('KO', 'No s\'ha trobat cap persona amb aquest mail');
+					$("#formuserclub").prepend(sms);
+				}
+			} else {
+				/*
+				 * e.items
+				 * {"results":[{"id":30981,"text":"Oscar MONTEVERDE LIZANDRA","nom":"Oscar","cognoms":"MONTEVERDE LIZANDRA","dni":"44417698Y","mail":null},
+				 * */
+				if (!userNou) {
+					$("#user_auxinstructordni").select2("open");
+				}
+			}
+			
+		});
+	};
+	
 	
 	actionsUserRolePwdClick = function( ) {
 		//delegated

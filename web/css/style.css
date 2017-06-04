@@ -1007,6 +1007,7 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 .data-detall-cell input.form-control { font-size: 0.9em; padding: 6px 2px; }
 .data-detall-cell textarea.form-control { font-size: 0.8em; padding: 10px 6px 0 6px; line-height: 1; }
 .data-detall-cell .form-control .select2-chosen { font-size: 0.9em; }
+.data-detall-cell .input-group .input-group-addon { font-size: 0.9em; }
 
 .comanda-detall-form-header .col-id {  }
 .comanda-detall-form-header .col-listheader.col-producte { width: 20%; text-align: left; min-width: 200px;  }
@@ -2037,8 +2038,8 @@ select#parte_renovar_tipus { width: 240px; }
 .col-alumne-nom { width: 11%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
 /*.col-alumne-nascut { width: 8%; text-align: center; }*/
 .col-alumne-poblacio { width: 23%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
-.col-alumne-foto { width: 11%; text-align: center; }
-.col-alumne-certificat { width: 20%; text-align: left; }
+.col-alumne-foto { width: 11%; text-align: center; position: relative; }
+.col-alumne-certificat { width: 20%; text-align: left;  position: relative; }
 .col-alumne-num { width: 10%; text-align: center; }
 .col-alumne-actions { width: 5%; text-align: center; }
 
@@ -2816,7 +2817,7 @@ p.info-bold {
 #formduplicats #duplicat_submit { width: 100px; }
 #formduplicats #duplicat_fotoupld { display: none }
 
-.galeria-upload {
+.galeria-upload, .galeria-row {
 	position: relative;
 	cursor: pointer;
 	display: inline-block;	

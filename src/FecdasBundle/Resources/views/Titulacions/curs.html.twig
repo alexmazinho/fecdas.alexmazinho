@@ -231,6 +231,28 @@
 
 	<script type="text/javascript">
 
+		clearAlumneForm = function() {
+
+			// Clear form
+			$('#curs_formalumne_id').val('');
+			//$('#curs_formalumne_dni').val( );
+			
+			$('#curs_formalumne_nomcognoms').val( '' );
+			$('#curs_formalumne_mail').val( '' );
+			$('#curs_formalumne_telefon').val( '' );
+			$('#curs_formalumne_datanaixement').val( '' );
+			$('#curs_formalumne_poblacio').val( '' );
+			$('#curs_formalumne_nacionalitat').val( '' );
+
+
+			// Remove foto galeria i certificat si escau
+			$("#formalumne-cerca .remove-foto").click();
+
+			$('#curs_formalumne_certificatupld').val('');
+			$(".certificat-upload.certificat-proto #upload-file-info").val('');
+		};
+
+	
 		$(document).ready(function(){
 			setMenuActive("menu-cursos");
 
@@ -246,9 +268,11 @@
 				placeholder: 'Escollir títol'
 			});
 
-			imageUploadForm($("#curs_formalumne_fotoupld"), 104);
+			imageUploadForm("#curs_formalumne_fotoupld", 104);
 
 			prepareFileInput( $("#curs_formalumne_certificatupld") );
+
+			removeFotoGaleria( "#formalumne-cerca, #llista-alumnes" );
 			
 			var current = new Date();
 			var mindate = new Date (current.getFullYear(), current.getMonth()-1, current.getDay());
@@ -330,6 +354,14 @@
 				$('#curs_formalumne_poblacio').val( added.poblacio );
 				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );
 
+			}, function(item) {
+
+		        return item.text;
+
+			}, resultFormat, function( e ) {
+				// On Clearing  => e.val, e.added, e.removed
+				// Reset form fields
+				clearAlumneForm();
 			});
 
 			$('.add-alumne').click( function(e) {
@@ -344,16 +376,35 @@
 		   			return false;
 				} 
 
+				// Valida que no estigui ja a la llista
+	        	var idAlumne = $('#curs_formalumne_id').val(); 
+
+				if ($('#curs_participantscurrent').val().trim().indexOf( idAlumne ) !== -1) {
+					var sms = smsResultAjax('KO', 'Aquesta persona ja es troba a la llista');
+		   			$('#formalumne-cerca').prepend(sms);
+		   			return false;
+				}
+				
 				var newRowClass = 'alumne-row_'+$('#curs_formalumne_id').val();
 				var newFotoUpld = $('#curs_formalumne_fotoupld').clone();
 				var newCertificatUpld = $('#curs_formalumne_certificatupld').clone();
 				var newNumTitulacio = $('#curs_formalumne_num').clone();
 
-				var totalNous = $('.alumne-row-new').length;
-
+				//var totalNous = $('.alumne-row-new').length;  <= cal aprofitar forats que deixa l'esborrat
+				var totalNous = 0;
+				
+				while ( $('#'+newCertificatUpld.attr('id')+'_'+totalNous).length !== 0 ) {
+					totalNous++;
+				}
+				
 				newFotoUpld.attr('name', newFotoUpld.attr('name')+'['+totalNous+']');
+				newFotoUpld.attr('id', newFotoUpld.attr('id')+'_'+totalNous);
+				
 				newCertificatUpld.attr('name', newCertificatUpld.attr('name')+'['+totalNous+']');
+				newCertificatUpld.attr('id', newCertificatUpld.attr('id')+'_'+totalNous);
+				
 				newNumTitulacio.attr('name', newNumTitulacio.attr('name')+'['+totalNous+']');
+				newNumTitulacio.attr('id', newNumTitulacio.attr('id')+'_'+totalNous);
 				newNumTitulacio.removeClass('hidden');
 
 				
@@ -389,14 +440,18 @@
 				$('#list-data.alumnes-curs').append(htmlLi.join( '' ));
 
 				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append(newFotoUpld);
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append( $('.galeria-upload').clone() );
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append( $('.galeria-upload.galeria-upload-proto').clone().removeClass('galeria-upload-proto') );
 				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append(newCertificatUpld);
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append( $('.certificat-upload .form-group').clone() );
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append( $('.certificat-upload.certificat-proto .form-group .input-group ').clone() );
 				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-num').append(newNumTitulacio);
 
-				// Afegir a la llista
-	        	var idAlumne = $('#curs_formalumne_id').val(); 
+				// Canviar/esborrar foto des de la taula d'alumnes
+				addFotoActionsBottom(newFotoUpld.next('.galeria-upload'));
 
+				imageUploadForm('#'+newFotoUpld.attr('id'), 104);
+
+				prepareFileInput( newCertificatUpld );
+				
 				if ($('#curs_participantscurrent').val().trim() == '') {
 	        		$('#curs_participantscurrent').val( idAlumne );
 	        	} else {
@@ -406,18 +461,11 @@
 	        	}
 				
 				// Clear form
-				$('#curs_formalumne_id').val('');
-				//$('#curs_formalumne_dni').val( );
 				$('#curs_formalumne_dni').select2("data", "");
-				$('#curs_formalumne_nomcognoms').val( '' );
-				$('#curs_formalumne_mail').val( '' );
-				$('#curs_formalumne_telefon').val( '' );
-				$('#curs_formalumne_datanaixement').val( '' );
-				$('#curs_formalumne_poblacio').val( '' );
-				$('#curs_formalumne_nacionalitat').val( '' );
-				
+				clearAlumneForm();
 
 			});
+
 			// Delegate
 			$( "#llista-alumnes" ).on( "click", ".remove-alumne", function( e ) {
 		        //Cancel the link behavior

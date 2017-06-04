@@ -933,6 +933,26 @@
 		$('.block-mask').remove();
 	};
 	
+	
+	removeFotoGaleria = function(selectorContenidor, additionalActions) {
+		
+		// Delegate
+		$( selectorContenidor ).on( "click", ".remove-foto", function( e ) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	
+	        $(this).parent('.galeria-remove-foto').prev('input[type="file"]').val('');
+	        
+	        $(this).parent('.galeria-remove-foto').prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
+	        
+	        $(this).parent('.galeria-remove-foto').remove();
+	        
+	        if (typeof additionalActions !== "undefined") {
+	        	additionalActions();
+			}
+		});
+	};
+	
 	showPersonModal = function(url, origen, callbackOk) {
         // Show mask before overlay
         //Get the screen height and width
@@ -966,15 +986,11 @@
 			actionsModalOverlay();
 			actionsPersonaForm(origen);
 			
-			imageUploadForm($("#persona_fotoupld"), 104);
+			imageUploadForm("#persona_fotoupld", 104);
 			
-			$('.remove-foto').click(function (e) {
-		        //Cancel the link behavior
-		        e.preventDefault();
-			
-		        $('#persona_foto').val( '' );
-			
-		        $(".galeria-upload").find(".image-upload").html('<span class="box-center-txt">Pujar foto<br/>(click)</span>');	
+			removeFotoGaleria( "#edicio-persona", function() {
+				// Accions addicionals
+				$('#persona_foto').val( '' );
 			});
 			
 			$('.remove-certificat').click(function (e) {
@@ -2370,7 +2386,7 @@
 					if ($.browser.msie) $('#formduplicats-dades').show(); 
 				    else $('#formduplicats-dades').slideDown('slow');
 					
-					imageUploadForm($("#duplicat_fotoupld"), 104);
+					imageUploadForm("#duplicat_fotoupld", 104);
 					
 					
 					$('#duplicat_submit').click(function(e) {
@@ -2416,15 +2432,17 @@
 	    else $('#formduplicats-dades').slideUp('slow');
 	};
 
-	imageUploadForm = function(formel, imgwidth) {
-		$(".galeria-upload").click(function(e) {
+	imageUploadForm = function(formsel, imgwidth) {
+		var galeria = $(formsel).next(".galeria-upload");
+		
+		galeria.click(function(e) {
 		    e.preventDefault();
 		    // Make as the real input was clicked
-		    formel.click();
+		    $(formsel).click();
 	    });
 		
 		
-		formel.imagePreview({ selector : '.galeria-upload', multiple: false, textover: 'Canviar imatge', width: imgwidth });
+		$(formsel).imagePreview({ galeria : galeria, multiple: false, textover: 'Canviar imatge', width: imgwidth });
 	};
 	
 	
@@ -2435,7 +2453,7 @@
 			var fileInput = $(this), i = 0, f, files = evt.target.files; // FileList object
 			//var total = 0;
 
-			$(params.selector).find(".image-uploaded").remove();  // Removes previous preview 
+			params.galeria.find(".image-uploaded").remove();  // Removes previous preview 
 
 			// Loop through the FileList and render image files as thumbnails.
 			for (i = 0, f; f = files[i]; i++) {
@@ -2453,11 +2471,11 @@
 						//var imgHTML = '<img width="'+params.width+'" title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
 						var imgHTML = '<img title="'+params.textover+'" alt="'+params.textover+'" class="file-input-thumb" src="' + e.target.result + '" title="' + theFile.name + '"/>';
 
-						if( typeof params.selector != 'undefined' ){
-							if (params.multiple == true) {
+						if( typeof params.galeria !== 'undefined' ){
+							if (params.multiple === true) {
 								/*
 								$novaimatge = $('<div class="image-preview image-upload">' + imgHTML +'</div>');
-								$(params.selector).append($novaimatge);
+								params.galeria.append($novaimatge);
 								
 								// Les imatges que encara no han pujat al servidor no es poden posar a la portada 
 								$novaimatge.find("img").draggable({	
@@ -2473,9 +2491,10 @@
 								
 								
 							} else {
-								//$(params.selector).replaceWith( data );
-								$(params.selector).html('<div class="image-upload image-uploaded">' + imgHTML +'</div>');
-								hoverPortada($(".image-uploaded"));
+								params.galeria.html('<div class="image-upload image-uploaded">' + imgHTML +'</div>');
+								hoverPortada( params.galeria.find(".image-uploaded") );
+								
+								addFotoActionsBottom(params.galeria);
 							}
 						}else{
 							fileInput.before(imgHTML);
@@ -2500,11 +2519,23 @@
 		});
 	};
 	
+	addFotoActionsBottom = function( galeria ) {
+		if ( galeria.next('.galeria-remove-foto').length === 0) {
+			var htmlRemove = Array();
+			htmlRemove.push('<div class="galeria-remove-foto">');
+			htmlRemove.push(' 	<a class="remove-foto link" href="javascript:void(0);"><span class="fa fa-trash fa-1x gray"></span></a>');
+			htmlRemove.push('</div>');
+			galeria.parent().append( htmlRemove.join( '' ) );
+		}
+	};
+	
 	/*****************************************************************************************************************/
 	
 	/********************************************* import CSV ********************************************************/
 	
 	prepareFileInput = function (elem) {
+		var parent = elem.parent();
+		
 		elem.change(function() {
 	        var info  = '';
 
@@ -2512,13 +2543,13 @@
 	        var path = $(this).val().split('\\');
 	        info     = path[path.length - 1];
 
-	        $("#upload-file-info").val(info);
+	        parent.find("#upload-file-info").val(info);
 	        
 	        $(this).addClass('form-control-updated');
 	        
 	    });
 
-		$(".input-append").click(function(e) {
+		parent.find(".input-append").click(function(e) {
 	        e.preventDefault();
 	        // Make as the real input was clicked
 	        elem.click();

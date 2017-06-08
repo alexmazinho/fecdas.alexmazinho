@@ -296,41 +296,84 @@ class TitulacionsController extends BaseController {
     	$em = $this->getDoctrine()->getManager();
     	
     	$curs = null;
-    	//$anypreu = date('y');
-		//$stockOriginal = 0;
+		$auxdirector = null;
+		$auxcarnet = null;
+		$auxcodirector = null;
+		$auxcocarnet = null;
+		$formalumne = null;
+		$instructors = null;
+		$colaboradors = null;
+		
+		$participantscurrent = null;
+
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
     		
-    		$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
-    		 
-    		if ($curs == null) {
-    			$this->logEntryAuth('CURS NOU',	'');
-    	
-    			$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $this->getCurrentClub());
-    		} else {
-	    		$this->logEntryAuth('CURS EDIT',	'curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
-    		}
-    		
     	} else {
    			/* Alta o modificació de preus */
-    		/*$data = $request->request->get('curs');
+    		$data = $request->request->get('curs');
     		$id = (isset($data['id'])?$data['id']:0);
-    		
-    		if ($id > 0) $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
-    		
-    		if ($producte == null) {
-    			$producte = new EntityProducte();
-    			$em->persist($producte);
-    		}
 			
-			$stockOriginal = $producte->getStock();
-			 */ 
-    	}	
+			
+			if (isset($data['auxdirector']) && isset($data['auxdirector']) > 0) $auxdirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxdirector']);
+			$auxcarnet = isset($data['auxcarnet'])?$data['auxcocarnet']:'';
+			
+			if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
+			$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
+error_log("carnets "+$auxcarnet+" "+$auxcocarnet);
+			
+			//$participantscurrent = isset($data['participantscurrent'])?explode(";",$data['participantscurrent']):array();
+			
+			$formalumnes = isset($data['formalumne'])?$data['formalumne']:array();
+error_log("ALUMNES");			
+			foreach ($formalumnes as $k => $formalumne) {
+error_log("ALUMNE => ".$k);				
+				
+error_log(print_r($formalumne, true));				
+			}
+error_log("ALUMNES FI");			
+			//curs_formalumne_fotoupld_0
+			//curs_formalumne_certificat_0
+			
+			$instructors = isset($data['instructors'])?$data['instructors']:array();
+error_log("INSTRUCTORS");
+			foreach ($instructors as $instructor) {
+error_log(print_r($instructor, true));				
+			}			
+			$colaboradors = isset($data['colaboradors'])?$data['colaboradors']:array();;
+error_log("COLABORADORS");
+			foreach ($colaboradors as $colaborador) {
+error_log(print_r($colaborador, true));				
+			}			
+			
+			 
+    	}
+		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
+    		 
+    	if ($curs == null) {
+    		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST'));
+    	
+    		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $this->getCurrentClub());
+    	} else {
+	    	$this->logEntryAuth('CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
+    	}
+    		
+			
     	$form = $this->createForm(new FormCurs(), $curs);
     	
     	if ($request->getMethod() == 'POST') {
-    		/*
+    		
     		try {
+    			
+			 	$form->handleRequest($request);
+			
+				if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrorsAsString() );
+					
+					// Alumnes
+					//$foto = $form->get('fotoupld')->getData(); 
+				
+				
+				/*
     			$form->handleRequest($request);
     			$anypreu 	= $form->get('anypreus')->getData();
     			$importpreu = $form->get('preu')->getData();
@@ -435,13 +478,18 @@ class TitulacionsController extends BaseController {
     			
     			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
     			// Ok, retorn form sms ok
-    			return $this->redirect($this->generateUrl('FecdasBundle_editarproducte', 
-    					array( 'id' => $producte->getId(), 'anypreu' => $anypreu )));
+    			
+    			*/	
+    			
+    			return $this->redirect($this->generateUrl('FecdasBundle_curs', 
+    					array( 'id' => $curs->getId() )));
+    			
+    			$this->get('session')->getFlashBag()->add('sms-notice',	'POST curs OK');
     			
     		} catch (\Exception $e) {
     			// Ko, mostra form amb errors
     			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-    		}*/
+    		}
    		} 
 
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',

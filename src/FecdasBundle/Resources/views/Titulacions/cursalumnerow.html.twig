@@ -1,5 +1,5 @@
 <li class="alumne-row data-detall">
-	<div class="col-id col-seq hidden">{{ meta.id }}</div>
+	<div class="col-id col-seq col-alumne-id hidden">{{ meta.id }}</div>
 	<div class="data-detall-cell col-alumne-dni">{{ meta.dni }}</div>
 	{% if alumne == null %}
 		<div class="data-detall-cell col-alumne-nom"><span class="title-comment">(dades no disponibles)</span></div>
@@ -44,7 +44,7 @@
 	</div>
 	<div class="data-detall-cell col-alumne-actions">
 		{% if curs.editable == true %}
-			<a class="remove-alumne link" href="javascript:void(0);" data-id="{{ alumne.id }}" ><i class="fa fa-remove fa-1x red"></i></a>
+			<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
 		{% endif %}
 	</div>
 </li>

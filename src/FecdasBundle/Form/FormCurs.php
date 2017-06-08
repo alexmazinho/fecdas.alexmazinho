@@ -24,7 +24,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		return array (
 				
 				//FormEvents::POST_SUBMIT => array('postSubmitData', 900),  // Desactiva validació
-				FormEvents::SUBMIT => array('submitData', 900),
+				//FormEvents::SUBMIT => array('submitData', 900),
 				FormEvents::PRE_SET_DATA => 'preSetData'
 		);
 	}
@@ -99,8 +99,14 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				'attr'			=>	array('readonly' => !$editable)
 			));
 			
+			$director = $curs->getDirector();
+			$codirector = $curs->getCodirector();
+			$instructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+			$colaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLABORADOR);
+			
 			$form->add('auxdirector', 'text', array(
 				'mapped'	=> false,
+				'data'  	=> $director != null?$director->getId():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 
@@ -112,6 +118,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('auxcodirector', 'text', array(
 				'mapped'	=> false,
 				'required' 	=> false,
+				'data'  	=> $codirector != null?$codirector->getId():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
@@ -120,19 +127,38 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				'attr'		=>	array('readonly' => !$editable)
 			));
 			
-			$form->add('auxinstructor', 'text', array(
+			$form->add('auxinstructor', 'text', array(		/* Per la cerca. Sense valor */
 				'mapped'	=> false,
 				'required' 	=> false,
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 				
-			$form->add('auxcolaborador', 'text', array(
+			$form->add('auxcolaborador', 'text', array(		/* Per la cerca. Sense valor */
 				'mapped'	=> false,
 				'required' 	=> false,
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
+			$form->add('instructors', 'collection', array(
+				'mapped' 	   	=> false,
+				'data'		 	=> $instructors,
+		        'type' 		   	=> new FormDocencia(),
+		        'allow_add'    	=> true,
+		        'allow_delete' 	=> true,
+		        'by_reference' 	=> false
+	   		));
+	
+			$form->add('colaboradors', 'collection', array(
+				'mapped' 	   	=> false,
+				'data'			=> $colaboradors,
+		        'type' 			=> new FormDocencia(),
+		        'allow_add'    	=> true,
+		        'allow_delete' 	=> true,
+		        'by_reference' 	=> false
+	   		));
+			
 			$idsAlumnes = $curs->getParticipantsIds();  
+			$alumnes = $curs->getParticipantsSortedByCognomsNom();
 								
 			$form->add('participantscurrent', 'hidden', array(
 				'mapped' 		=> false,
@@ -147,7 +173,16 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('formalumne', new FormAlumne(), array(
 					'mapped'   	=> false,
 					'data'		=> $persona
-		   	));	
+		   	));
+			
+			$form->add('alumnes', 'collection', array(
+				'mapped' 	   	=> false,
+				'data'			=> $alumnes,
+		        'type' 			=> new FormAlumne(),
+		        'allow_add'    	=> true,
+		        'allow_delete' 	=> true,
+		        'by_reference' 	=> false
+	   		));	
 			
 		}
 	}
@@ -158,21 +193,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		
 		$builder->add('id', 'hidden');
 		
-		$builder->add('instructors', 'collection', array(
-			'mapped' 	   => false,
-	        'type' 		   => new FormDocencia(),
-	        'allow_add'    => true,
-	        'allow_delete' => true,
-	        'by_reference' => false
-   		));
-
-		$builder->add('colaboradors', 'collection', array(
-			'mapped' 	   => false,
-	        'type' 		   => new FormDocencia(),
-	        'allow_add'    => true,
-	        'allow_delete' => true,
-	        'by_reference' => false
-   		));
+		$builder->add('action', 'hidden', array('mapped' => false) );
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

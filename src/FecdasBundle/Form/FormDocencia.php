@@ -62,6 +62,11 @@ class FormDocencia extends AbstractType {
 					'scale' 	=> 0,
 					'attr'		=>	array('readonly' => !$editable)
 				));
+				
+				$form->add('carnet', 'text', array(
+					'required' 	=> false,
+					'attr'		=>	array('readonly' => !$editable)
+				));
 		
 			}
 		});

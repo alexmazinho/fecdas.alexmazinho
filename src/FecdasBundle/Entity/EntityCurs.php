@@ -275,6 +275,15 @@ class EntityCurs {
     	return $arr;
     }
 	
+	public function getDirector()
+    {
+    	return $this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_DIRECTOR);
+    }
+
+	public function getCodirector()
+    {
+    	return $this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_CODIRECTOR);
+    }
 	
 	public function getParticipantsSortedByCognomsNom($baixes = false)
     {

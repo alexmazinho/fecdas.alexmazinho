@@ -31,7 +31,7 @@
 						{% endif %}
 
 						<div class="button-step {% if curs.esNou %}button-step-active {% endif %}">
-							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" alt="Desar dades curs" 
+							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" data-action="save" alt="Desar dades curs" 
 								title="Desar dades curs">
 								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x green"></i><i class="fa fa-floppy-o fa-stack-1x fa-inverse"></i></i>
 							</a>
@@ -42,7 +42,7 @@
 						{% endif %}
 						
 						<div class="button-step {% if curs.editable and not curs.esNou %}button-step-active{% endif %}">
-							<a class="link close-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'close' }) }}" alt="Tancar per validació del club" 
+							<a class="link close-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'close' }) }}" data-action="close" alt="Tancar per validació del club" 
 								title="Tancar per validació del club">
 									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-lock fa-stack-1x fa-inverse"></i></i>
 							</a>
@@ -53,7 +53,7 @@
 						{% endif %}
 						
 						<div class="button-step {% if curs.tancat %}button-step-active{% endif %}">
-							<a class="link validate-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'validar' }) }}" alt="Validar i notificar a la Federació" 
+							<a class="link validate-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'validate' }) }}" data-action="validate" alt="Validar i notificar a la Federació" 
 								title="Validar i notificar a la Federació">
 									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x red"></i><i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"></i></i>
 							</a>
@@ -64,7 +64,7 @@
 						{% endif %}
 						
 						<div class="button-step {% if curs.validat %}button-step-active{% endif %}">
-							<a class="link finalize-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'finalize' }) }}" alt="Consolidació del curs" 
+							<a class="link finalize-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'finalize' }) }}" data-action="finalize" alt="Consolidació del curs" 
 								title="Consolidació del curs">
 								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x blue"></i><i class="fa fa-graduation-cap fa-stack-1x fa-inverse"></i></i>
 							</a>
@@ -78,7 +78,7 @@
     
 	{{ form_start(form, {'action': path('FecdasBundle_curs'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formcurs'}}) }}
 		
-		
+		{{ form_widget(form.action) }}
 		<div class="row">
 			<div class="col-md-2">
 			    <div class="form-group">
@@ -131,7 +131,7 @@
 			  		<ul>
 			    		<li><a href="#tabs-direccio">Director/s</a></li>
 			    		<li><a href="#tabs-instructors">Instructors</a></li>
-			    		<li><a href="#tabs-colaboradors">Col·laboradors</a></li>
+			    		<li><a href="#tabs-collaboradors">Col·laboradors</a></li>
 					</ul>
 					<div id="tabs-direccio">
 						<div class="row">
@@ -194,9 +194,9 @@
 						{% set auxdocent = form.auxinstructor %}
 						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
 					</div>
-					<div id="tabs-colaboradors">
+					<div id="tabs-collaboradors">
 						{% set proto = false %}
-						{% set tipus = "col·laborador" %}
+						{% set tipus = "collaborador" %}
 						{% set docents = form.colaboradors %}
 						{% set prototype = form.colaboradors.vars.prototype %}
 						{% set titol = "Han col·laborat com a equip de seguretat" %}
@@ -231,6 +231,47 @@
 
 	<script type="text/javascript">
 
+		var instructorsHolder, collaboradorsHolder, alumnesHolder;
+	
+		function addInstructorForm(instructorsHolder) {
+		    // Get the data-prototype explained earlier
+		    var prototype = instructorsHolder.data('prototype');
+
+		    // get the new index
+		    var index = instructorsHolder.data('index');
+
+		    // Replace '__name__' in the prototype's HTML to
+		    // instead be a number based on how many items we have
+		    var newForm = prototype.replace(/__name__/g, index);
+
+		    // increase the index with one for the next item
+		    instructorsHolder.data('index', index + 1);
+
+		    // Display the form in the page in an li, before the "Add a tag" link li
+		    var $newFormLi = $('<li class="docent-form-row"></li>').append(newForm);
+		    instructorsHolder.append($newFormLi);
+
+		    
+		};
+
+		function removeItemCollection(holder, elClick) {
+			var parentRow = elClick.parents('li');
+	        var parentTable = parentRow.parents('.list-data');
+	        
+	        var index = holder.data('index');
+	        index--;
+	        holder.data('index', index);
+
+	        if (index === 0) {
+		        // Últim
+	        	parentTable.children('.empty-alert').removeClass('hidden'); 
+		    }
+	        
+	        parentRow.remove();
+		};
+
+		
+		
 		clearAlumneForm = function() {
 
 			// Clear form
@@ -252,10 +293,44 @@
 			$(".certificat-upload.certificat-proto #upload-file-info").val('');
 		};
 
-	
 		$(document).ready(function(){
 			setMenuActive("menu-cursos");
 
+			// Prepare collections holders
+			instructorsHolder = $('ul.docents-curs.instructors');
+			collaboradorsHolder	= $('ul.docents-curs.collaboradors');
+			alumnesHolder	= $('ul.alumnes-curs');
+
+			instructorsHolder.data('index', instructorsHolder.find(':input').length);	
+			collaboradorsHolder.data('index', collaboradorsHolder.find(':input').length);
+			alumnesHolder.data('index', alumnesHolder.find(':input').length);
+
+			$('a.add-instructor').on('click', function(e) {
+		        // prevent the link from creating a "#" on the URL
+		        e.preventDefault();
+
+		        // add a new intructor form
+		        addInstructorForm(instructorsHolder);
+		    });
+
+			$('a.add-collaborador').on('click', function(e) {
+		        // prevent the link from creating a "#" on the URL
+		        e.preventDefault();
+
+		        // add a new col·laborador form
+		        addCollaboradorForm(collaboradorsHolder);
+		    });
+
+			$('a.add-alumne').on('click', function(e) {
+		        // prevent the link from creating a "#" on the URL
+		        e.preventDefault();
+
+		        // add a new intructor form
+		        addAlumneForm(alumnesHolder);
+		    });
+
+
+			
 			$("select#curs_club").select2({
 				minimumInputLength: 2,
 				allowClear: true,
@@ -364,6 +439,7 @@
 				clearAlumneForm();
 			});
 
+			/*
 			$('.add-alumne').click( function(e) {
 				// Si hi ha algú seleccionat afegir les dades del formulari
 				e.preventDefault();				
@@ -386,6 +462,7 @@
 				}
 				
 				var newRowClass = 'alumne-row_'+$('#curs_formalumne_id').val();
+				var newIdAlumne = $('#curs_formalumne_id').clone();
 				var newFotoUpld = $('#curs_formalumne_fotoupld').clone();
 				var newCertificatUpld = $('#curs_formalumne_certificatupld').clone();
 				var newNumTitulacio = $('#curs_formalumne_num').clone();
@@ -396,6 +473,9 @@
 				while ( $('#'+newCertificatUpld.attr('id')+'_'+totalNous).length !== 0 ) {
 					totalNous++;
 				}
+
+				newIdAlumne.attr('name', newIdAlumne.attr('name')+'['+totalNous+']');
+				newIdAlumne.attr('id', newIdAlumne.attr('id')+'_'+totalNous);
 				
 				newFotoUpld.attr('name', newFotoUpld.attr('name')+'['+totalNous+']');
 				newFotoUpld.attr('id', newFotoUpld.attr('id')+'_'+totalNous);
@@ -410,7 +490,7 @@
 				
 				var htmlLi = [];
 				htmlLi.push('<li class="alumne-row data-detall '+newRowClass+' alumne-row-new">');
-				htmlLi.push('   <div class="col-id col-seq hidden">'+$('#curs_formalumne_dni').val()+'</div>');
+				htmlLi.push('   <div class="col-id col-seq col-alumne-id hidden"></div>');
 				htmlLi.push('   <div class="data-detall-cell col-alumne-dni">'+$('#s2id_curs_formalumne_dni .select2-chosen').html()+'</div>');
 				htmlLi.push('   <div class="data-detall-cell col-alumne-nom">'+$('#curs_formalumne_nomcognoms').val());
 				if ($('#curs_formalumne_mail').val() != '') {
@@ -439,6 +519,7 @@
 
 				$('#list-data.alumnes-curs').append(htmlLi.join( '' ));
 
+				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-id').append(newIdAlumne);
 				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append(newFotoUpld);
 				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append( $('.galeria-upload.galeria-upload-proto').clone().removeClass('galeria-upload-proto') );
 				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append(newCertificatUpld);
@@ -452,42 +533,53 @@
 
 				prepareFileInput( newCertificatUpld );
 				
-				if ($('#curs_participantscurrent').val().trim() == '') {
-	        		$('#curs_participantscurrent').val( idAlumne );
-	        	} else {
-		        	var current = $('#curs_participantscurrent').val().trim().split(";");
-		        	current.push( idAlumne );
-		        	$('#curs_participantscurrent').val( current.join(";") );
-	        	}
-				
+				//if ($('#curs_participantscurrent').val().trim() == '') {
+	        	//	$('#curs_participantscurrent').val( idAlumne );
+	        	//} else {
+		        //	var current = $('#curs_participantscurrent').val().trim().split(";");
+		        //	current.push( idAlumne );
+		        //	$('#curs_participantscurrent').val( current.join(";") );
+	        	//}
 				// Clear form
 				$('#curs_formalumne_dni').select2("data", "");
 				clearAlumneForm();
 
 			});
 
+			*/
+			
 			// Delegate
 			$( "#llista-alumnes" ).on( "click", ".remove-alumne", function( e ) {
 		        //Cancel the link behavior
 		        e.preventDefault();
 		        
-		        var idAlumne = $(this).attr( 'data-id' );
-		        var parentRow = $(this).parents('.alumne-row');	
-		        
-		        // Treure de la llista
-		        var current = $('#curs_participantscurrent').val().trim().split(";");
-				if (current.indexOf(idAlumne) !== -1) {
-					current.splice( current.indexOf(idAlumne) , 1);
-				}
-				$('#curs_participantscurrent').val( current.join(";") );
+		        removeItemCollection(alumnesHolder, $(this));
+			});
 
-		        parentRow.remove();
+			// Delegate
+			$( "#tabs-instructors" ).on( "click", ".remove-docent", function( e ) {
+		        //Cancel the link behavior
+		        e.preventDefault();
+		        
+				removeItemCollection(instructorsHolder, $(this));
+			});
+			
+			// Delegate
+			$( "#tabs-collaboradors" ).on( "click", ".remove-docent", function( e ) {
+		        //Cancel the link behavior
+		        e.preventDefault();
 
-		        if ($('#list-data.alumnes-curs').children('.alumne-row').length == 0) {
-					$('#list-data.alumnes-curs').children('.alumne-empty-alert').removeClass('hidden');
-				}
+				removeItemCollection(collaboradorsHolder, $(this));
 		        
-		        
+			});
+			
+			$('.button-step a').click( function(e) {
+				//Cancel the link behavior
+		        e.preventDefault();
+				
+				$('#curs_action').val( $(this).attr('data-action') ); 
+			
+				$('#formcurs').submit();
 			});
 		});
 

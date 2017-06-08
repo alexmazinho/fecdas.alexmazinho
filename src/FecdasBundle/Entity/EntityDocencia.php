@@ -37,6 +37,11 @@ class EntityDocencia {
 	protected $rol;	// director, co-director, instructor, colaborador
 	
 	/**
+	 * @ORM\Column(type="string", length=30, nullable=true)
+	 */
+	protected $carnet;	// Num titulació instructor corresponent (EntityTitulacio -> num)	
+	
+	/**
 	 * @ORM\Column(type="integer")
 	 */
 	protected $hteoria;	// Hores teoria
@@ -168,9 +173,19 @@ class EntityDocencia {
 		$this->rol = $rol;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getCarnet() {
+		return $this->carnet;
+	}
 	
-	
-	
+	/**
+	 * @param string $carnet
+	 */
+	public function setCarnet($carnet) {
+		$this->carnet = $carnet;
+	}
 
 	/**
      * Set dataentrada

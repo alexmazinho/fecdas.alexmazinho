@@ -121,20 +121,19 @@
 			</div>
 		</div>
 		<div class="table-noscroll">
-   			<ul id="list-data" class="alumnes-curs">
-				{% for participant in curs.participantsSortedByCognomsNom %}  {# classe EntityTitulacio#}
+   			<ul id="list-data-alumnes" class="list-data alumnes-curs" data-prototype="{{ form_widget(form.alumnes.vars.prototype)|e('html_attr') }}">
+				{# for participant in curs.participantsSortedByCognomsNom %} 
 					{% set meta = participant.persona %} 
 					{% set alumne = meta.personaClub(participant.club) %} 
 					{% if alumne == null %}
 						{% set alumne = meta.ultimesDadesPersonals %}
 					{% endif %}
-					
+				{% endfor #}
+				{% for alumne in form.alumnes %}
 					{% include 'FecdasBundle:Titulacions:cursalumnerow.html.twig'  %}
-					
 				{% endfor %}
-   				{% if curs.participantsSortedByCognomsNom|length == 0 %}
-					<li class="data-detall alumne-empty-alert"><div class="data-detall-cell" colspan="7"><div class="alert alert-success" role="alert">Cap participant</div></div></li>
-				{% endif %}
+				
+				<li class="data-detall empty-alert {% if form.alumnes|length == 0 %}hidden{% endif %}"><div class="data-detall-cell" colspan="7"><div class="alert alert-success" role="alert">Cap participant</div></div></li>
 			 </ul> 
 		</div>				 
 	</div>

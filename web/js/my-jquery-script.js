@@ -2434,9 +2434,15 @@
 
 	imageUploadForm = function(formsel, imgwidth) {
 		var galeria = $(formsel).next(".galeria-upload");
-		
+
+console.log("imageUploadForm "+formsel +" " + $(formsel).next(".galeria-upload").length+" "+$(formsel).next().length);
+
 		galeria.click(function(e) {
+			
+console.log("clivk a");    		    
+			
 		    e.preventDefault();
+console.log("clivk b");    		    
 		    // Make as the real input was clicked
 		    $(formsel).click();
 	    });

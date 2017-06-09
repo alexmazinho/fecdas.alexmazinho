@@ -1193,9 +1193,9 @@ ul.detalls li .alert { margin: 10px 0; }
     position: absolute;
 }
 
-#list-data,
-#summary-data,
-#summary-data-hidden {
+#list-data, .list-data,
+#summary-data, .summary-data,
+#summary-data-hidden, .summary-data-hidden {
 	display: table;
 	/*border-collapse: collapse;*/
 	width:100%;
@@ -1203,6 +1203,8 @@ ul.detalls li .alert { margin: 10px 0; }
 	padding: 0;
 	table-layout: fixed;	
 }
+
+.list-data li .alert { margin: 10px; }
 
 #summary-data-hidden {
 	display:none;
@@ -2034,22 +2036,17 @@ select#parte_renovar_tipus { width: 240px; }
 #llista-alumnes .col-listheader {  }
 
 
-.col-alumne-dni { width: 10%; text-align: center; }
-.col-alumne-nom { width: 11%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
-/*.col-alumne-nascut { width: 8%; text-align: center; }*/
-.col-alumne-poblacio { width: 23%; text-align: center; nowrap; overflow: hidden; text-overflow: ellipsis; }
-.col-alumne-foto { width: 11%; text-align: center; position: relative; }
-.col-alumne-certificat { width: 20%; text-align: left;  position: relative; }
-.col-alumne-num { width: 10%; text-align: center; }
+.col-alumne-dni { width: 15%; text-align: center; }
+.col-alumne-nom { width: 25%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-certificat { width: 25%; text-align: left;  position: relative; }
+.col-alumne-foto { width: 15%; text-align: center; position: relative; }
+.col-alumne-num { width: 15%; text-align: center; }
 .col-alumne-actions { width: 5%; text-align: center; }
 
 .col-alumne-num .datasuperacio-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
 .alumne-row .data-detall-cell .subtitle { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
-
-#list-data.docents-curs li .alert,
-#list-data.alumnes-curs li .alert { margin: 10px; }
 
 #tabs-docents { margin-bottom: 20px; }
 #formalumne-cerca { margin-bottom: 20px; }
@@ -2059,13 +2056,20 @@ select#parte_renovar_tipus { width: 240px; }
 	height: 123px;
 }
 
+.col-docent-dni { width: 15%; text-align: center; }
+.col-docent-nom { width: 20%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-docent-carnet { width: 15%; text-align: center; }
+.col-docent-hteoriques, .col-docent-haula, .col-docent-hpiscina, .col-docent-hmar { width: 10%; text-align: center; }
+.col-actions { width: 5%; text-align: center; }
+
 
 .add-docent .fa.fa-2x, .add-alumne .fa.fa-2x { font-size: 1.8em; min-height: 24px; min-width: 34px; padding: 5px; }
 
-#tabs-instructors .table-header, #tabs-colaboradors .table-header { margin-top: 10px; }
+#tabs-instructors .table-header, #tabs-collaboradors .table-header { margin-top: 10px; }
 
 #tabs-instructors .select2-container, 
-#tabs-colaboradors .select2-container { min-width: 400px; }
+#tabs-collaboradors .select2-container,
+#participants-curs .select2-container { min-width: 400px; }
 
 .curs-process { text-align: center; margin: 0 auto;  }
 .buttons-curs-process { margin: 0 10% 10px;  display: block; }
@@ -2094,6 +2098,10 @@ select#parte_renovar_tipus { width: 240px; }
 .link i.fa-stack:hover fa.orange { background-color: #eea236; } 
 .link i.fa-stack:hover fa.yellow { background-color: #FFFF66; }
 .link i.fa-stack:hover fa.gray { background-color: #CCCCCC; }
+
+
+
+
 
 /*************** curs Fi ****************/
 

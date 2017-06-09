@@ -13,9 +13,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use FecdasBundle\Form\FormCurs;
 use FecdasBundle\Entity\EntityCurs;
+use FecdasBundle\Entity\EntityDocencia;
 
 use FecdasBundle\Form\FormStock;
-use FecdasBundle\Entity\EntityStock;
+
 use FecdasBundle\Form\FormRebut;
 use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormComanda;
@@ -358,7 +359,6 @@ error_log(print_r($colaborador, true));
 	    	$this->logEntryAuth('CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
     	}
     		
-			
     	$form = $this->createForm(new FormCurs(), $curs);
     	
     	if ($request->getMethod() == 'POST') {

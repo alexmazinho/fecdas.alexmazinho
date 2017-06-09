@@ -79,10 +79,12 @@ class EntityDocencia {
 	/**
 	 * Constructor
 	 */
-	public function __construct()
+	public function __construct($docent = null, $rol = '')
 	{
 		$this->id = 0;
-		$this->rol = BaseController::DOCENT_INSTRUCTOR;  // pendent
+		
+		$this->docent = $docent;
+		$this->rol = ($rol == '' || $rol == null)?BaseController::DOCENT_INSTRUCTOR:$rol;  // pendent
 		$this->hteoria = 0;
 		$this->haula = 0;
 		$this->hpiscina = 0;
@@ -160,13 +162,6 @@ class EntityDocencia {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getRol() {
-		return $this->rol;
-	}
-	
-	/**
 	 * @param string $rol
 	 */
 	public function setRol($rol) {
@@ -176,8 +171,8 @@ class EntityDocencia {
 	/**
 	 * @return string
 	 */
-	public function getCarnet() {
-		return $this->carnet;
+	public function getRol() {
+		return $this->rol;
 	}
 	
 	/**
@@ -185,6 +180,69 @@ class EntityDocencia {
 	 */
 	public function setCarnet($carnet) {
 		$this->carnet = $carnet;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCarnet() {
+		return $this->carnet;
+	}
+
+	/**
+	 * @param integer $hteoria
+	 */
+	public function setHteoria($hteoria) {
+		$this->hteoria = $hteoria;
+	}
+
+	/**
+	 * @return integer
+	 */
+	public function getHteoria() {
+		return $this->hteoria;
+	}
+
+	/**
+	 * @param integer $haula
+	 */
+	public function setHaula($haula) {
+		$this->haula = $haula;
+	}
+
+	/**
+	 * @return integer
+	 */
+	public function getHaula() {
+		return $this->haula;
+	}
+
+	/**
+	 * @param integer $hpiscina
+	 */
+	public function setHpiscina($hpiscina) {
+		$this->hpiscina = $hpiscina;
+	}
+
+	/**
+	 * @return integer
+	 */
+	public function getHpiscina() {
+		return $this->hpiscina;
+	}
+
+	/**
+	 * @param integer $hmar
+	 */
+	public function setHmar($hmar) {
+		$this->hmar = $hmar;
+	}
+
+	/**
+	 * @return integer
+	 */
+	public function getHmar() {
+		return $this->hmar;
 	}
 
 	/**

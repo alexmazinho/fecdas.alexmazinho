@@ -254,14 +254,14 @@ class EntityCurs {
     	$arr = array();
     	foreach ($this->docents as $docencia) {
     		if ((!$docencia->anulada() || $baixes == true) && 
-    			($tipus == '' || $docencia->getRole() == $role)) $arr[] = $docencia;
+    			($role == '' || strtolower($docencia->getRol()) == strtolower($role))) $arr[] = $docencia;
     	}
 		
     	usort($arr, function($a, $b) {
     		if ($a === $b) {
     			return 0;
     		}
-			if ($a->getRol() == $b->getRol()) return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
+			if (strtolower($a->getRol()) == strtolower($b->getRol())) return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
 			
 			// Rols diferents
 			if ($a->getRol() == BaseController::DOCENT_DIRECTOR) return 1;

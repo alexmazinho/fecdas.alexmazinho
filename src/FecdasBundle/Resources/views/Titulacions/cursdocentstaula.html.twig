@@ -32,18 +32,13 @@
 			</div>
 		</div>
 		<div class="table-noscroll">
-   			<ul id="list-data-{{ tipus }}s" class="list-data docents-curs {{ tipus }}s" data-prototype="{{ form_widget(prototype)|e('html_attr') }}">
-   				{# if docents|length == 0 %}
-					<li class="docent-form-row"><div class="docent-form"><div class="data-docent-cell"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></div></div></li>
-				{% else #}
-					{% set proto = false %}
+   			<ul id="list-data-{{ tipus }}s" class="list-data docents-curs {{ tipus }}s" data-prototype="{{ prototype|e('html_attr') }}">
+				{% set proto = false %}
 					
-					{% for docent in docents %}
-						{% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
-					{% endfor %}
-				{# endif #}
-   				
-				<li class="docent-form-row empty-alert {% if form.docents|length == 0 %}hidden{% endif %}"><div class="docent-form"><div class="data-docent-cell"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></div></div></li>
+				{% for docent in docents %}
+					{% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
+				{% endfor %}
+				<li class="docent-form-row empty-alert {% if curs.getDocentsByRoleSortedByCognomsNom(tipus)|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></li>
 			 </ul> 
 		</div>				 
 	</div>

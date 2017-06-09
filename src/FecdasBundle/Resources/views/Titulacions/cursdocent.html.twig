@@ -1,15 +1,13 @@
-<li class="{% if proto == true %}docent-form-prototype{% else %}docent-form-row {{ tipus }}-form-row{% endif %}">
-	<div class="docent-form">
-		<div class="col-id col-seq hidden">{{ form_widget(docent.id) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-dni">{{ form_widget(docent.auxdocentdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-nom">{{ form_widget(docent.auxdocentnom, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-carnet">{{ form_widget(docent.carnet, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-hteoria">{{ form_widget(docent.hteoria, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-haula">{{ form_widget(docent.haula, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-hpiscina">{{ form_widget(docent.hpiscina, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-		<div class="data-docent-cell col-{{ tipus }}-hmar">{{ form_widget(docent.hmar, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-		<div class="data-docent-cell col-actions">
-			<a class="remove-docent link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
-		</div>
+<li class="{% if proto == true %}curs-form-prototype{% else %}docent-form-row data-detall{% endif %}">
+	<div class="col-id col-seq col-docent-id hidden">{{ form_widget(docent.id) }}</div>
+	<div class="data-detall-cell col-docent-dni">{{ form_widget(docent.auxdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+	<div class="data-detall-cell col-docent-nom">{{ form_widget(docent.auxnom, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
+	<div class="data-detall-cell col-docent-carnet">{{ form_widget(docent.carnet, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
+	<div class="data-detall-cell col-docent-hteoria">{{ form_widget(docent.hteoria, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+	<div class="data-detall-cell col-docent-haula">{{ form_widget(docent.haula, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+	<div class="data-detall-cell col-docent-hpiscina">{{ form_widget(docent.hpiscina, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+	<div class="data-detall-cell col-docent-hmar">{{ form_widget(docent.hmar, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+	<div class="data-detall-cell col-actions">
+		<a class="remove-docent link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
 	</div>
 </li>

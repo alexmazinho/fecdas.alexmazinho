@@ -1,7 +1,26 @@
 {# src/Fecdas/PartesBundle/Resources/views/Page/curs.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% form_theme form 'FecdasBundle:Includes:formtheming.html.twig' %}
+{% form_theme form with ['FecdasBundle:Includes:formtheming.html.twig', _self] %}
+
+{% block _curs_instructors_entry_row %}
+    {% set docent = form  %}
+	{% set proto = true  %}
+    {% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
+{% endblock %}
+
+{% block _curs_collaboradors_entry_row %}
+    {% set docent = form  %}
+	{% set proto = true  %}
+    {% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
+{% endblock %}
+
+{% block _curs_participants_entry_row %}
+    {% set participant = form  %}
+	{% set proto = true  %}
+	{% set participantdata = participant.vars.data  %}
+    {% include 'FecdasBundle:Titulacions:cursalumnerow.html.twig' %}
+{% endblock %}
 
 {% block stylesheets %}
 	
@@ -189,7 +208,7 @@
 						{% set proto = true %}
 						{% set tipus = "instructor" %}
 						{% set docents = form.instructors %}
-						{% set prototype = form.instructors.vars.prototype %}
+						{% set prototype = form_row(form.instructors.vars.prototype)  %}
 						{% set titol = "Instructors que han impartit classes" %}
 						{% set auxdocent = form.auxinstructor %}
 						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
@@ -197,10 +216,10 @@
 					<div id="tabs-collaboradors">
 						{% set proto = false %}
 						{% set tipus = "collaborador" %}
-						{% set docents = form.colaboradors %}
-						{% set prototype = form.colaboradors.vars.prototype %}
+						{% set docents = form.collaboradors %}
+						{% set prototype = form_row(form.collaboradors.vars.prototype) %}
 						{% set titol = "Han col·laborat com a equip de seguretat" %}
-						{% set auxdocent = form.auxcolaborador %}
+						{% set auxdocent = form.auxcollaborador %}
 						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
 					</div>
 				</div>
@@ -233,25 +252,46 @@
 
 		var instructorsHolder, collaboradorsHolder, alumnesHolder;
 	
-		function addInstructorForm(instructorsHolder) {
+		function addItemCollection(holder, newItemclass, item) {
 		    // Get the data-prototype explained earlier
-		    var prototype = instructorsHolder.data('prototype');
-
+		    var prototype = holder.data('prototype');
+			
 		    // get the new index
-		    var index = instructorsHolder.data('index');
+		    var index = holder.data('index');
 
+			if (index == 0) holder.children('.empty-alert').addClass('hidden'); 
+		    
 		    // Replace '__name__' in the prototype's HTML to
 		    // instead be a number based on how many items we have
 		    var newForm = prototype.replace(/__name__/g, index);
-
 		    // increase the index with one for the next item
-		    instructorsHolder.data('index', index + 1);
-
+		    index++;
+		    holder.data('index', index);
 		    // Display the form in the page in an li, before the "Add a tag" link li
-		    var $newFormLi = $('<li class="docent-form-row"></li>').append(newForm);
-		    instructorsHolder.append($newFormLi);
+		    var $newFormLi = $(newForm);
+		    $newFormLi.removeClass('curs-form-prototype').addClass( newItemclass+'-form-row data-detall' );
 
-		    
+		    // Set selected persona values
+		    $newFormLi.find('.col-'+newItemclass+'-id input').val( item.id );
+		    $newFormLi.find('.col-'+newItemclass+'-dni input').val( item.text );
+		    $newFormLi.find('.col-'+newItemclass+'-nom input').val( item.nomcognoms );
+
+			// Canviar/esborrar foto des de la taula d'alumnes
+		    holder.append($newFormLi);
+
+
+			if ($newFormLi.find('.data-detall-cell.col-'+newItemclass+'-foto input[type="file"]').length > 0) {
+    			//addFotoActionsBottom($newFormLi.find('.data-detall-cell.col-'+newItemclass+'-foto .galeria-upload'));
+
+				$uplFoto = $newFormLi.find('.data-detall-cell.col-'+newItemclass+'-foto input[type="file"]');
+
+				imageUploadForm('#'+$uplFoto.attr('id'), 104);
+			}
+			if ($newFormLi.find('.data-detall-cell.col-'+newItemclass+'-certificat input[type="file"]').length > 0) {
+				$uplCertificat = $newFormLi.find('.data-detall-cell.col-'+newItemclass+'-certificat input[type="file"]');
+				
+				prepareFileInput( $uplCertificat );
+			}
 		};
 
 		function removeItemCollection(holder, elClick) {
@@ -308,27 +348,39 @@
 			$('a.add-instructor').on('click', function(e) {
 		        // prevent the link from creating a "#" on the URL
 		        e.preventDefault();
-
+				if ($('#curs_auxinstructor').val() == '') {
+					dialegError('Error', 'Cal escollir un instructor', 400, 0);
+					return false;
+				} 
 		        // add a new intructor form
-		        addInstructorForm(instructorsHolder);
+		        addItemCollection(instructorsHolder, 'docent', $("#curs_auxinstructor").select2("data"));
+		        $("#curs_auxinstructor").select2("data", "");
 		    });
 
 			$('a.add-collaborador').on('click', function(e) {
 		        // prevent the link from creating a "#" on the URL
 		        e.preventDefault();
 
+                if ($('#curs_auxcollaborador').val() == '') {
+                	dialegError('Error', 'Cal escollir un instructor', 400, 0);
+                	return false;
+                } 
 		        // add a new col·laborador form
-		        addCollaboradorForm(collaboradorsHolder);
+                addItemCollection(collaboradorsHolder, 'docent', $("#curs_auxcollaborador").select2("data"));
+                $("#curs_auxcollaborador").select2("data", "");
 		    });
 
 			$('a.add-alumne').on('click', function(e) {
 		        // prevent the link from creating a "#" on the URL
 		        e.preventDefault();
-
+                if ($('#curs_auxalumne').val() == '') {
+                	dialegError('Error', 'Cal escollir algun participant', 400, 0);
+                	return false;
+                }
 		        // add a new intructor form
-		        addAlumneForm(alumnesHolder);
+		        addItemCollection(alumnesHolder, 'alumne', $("#curs_auxalumne").select2("data"));
+                $("#curs_auxcollaborador").select2("data", "");
 		    });
-
 
 			
 			$("select#curs_club").select2({
@@ -415,19 +467,19 @@
 			
 			init_cercapernomdnimail_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
 
-			init_cercapernomdnimail_JSON('#curs_auxcolaborador', 'Cercar col·laborador per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
+			init_cercapernomdnimail_JSON('#curs_auxcollaborador', 'Cercar col·laborador per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
 			
-			init_cercapernomdnimail_JSON('#curs_formalumne_dni', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, function ( added ) {
+			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, function ( added ) {
 				/*
 				{"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 				*/
-				$('#curs_formalumne_id').val( added.id );
+				/*$('#curs_formalumne_id').val( added.id );
 				$('#curs_formalumne_nomcognoms').val( added.nomcognoms );
 				$('#curs_formalumne_mail').val( added.mail );
 				$('#curs_formalumne_telefon').val( added.telf );
 				$('#curs_formalumne_datanaixement').val( added.nascut );
 				$('#curs_formalumne_poblacio').val( added.poblacio );
-				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );
+				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );*/
 
 			}, function(item) {
 

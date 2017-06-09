@@ -18,57 +18,56 @@ class FormDocencia extends AbstractType {
 			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
 			$form = $event->getForm();
 			$docencia = $event->getData();
-			
+
 			/* Check we're looking at the right data/form */
+			$editable = true;	
 			if ($docencia instanceof EntityDocencia) {
 				
-				$editable = false;
 				$curs = $docencia->getCurs();
 				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
-					$editable = true;	
+					$editable = false;	
 				}
-					
-				$form->add('auxdocentdni', 'text', array(
-					'mapped'	=> false,
-					'attr'		=>	array('readonly' => !$editable)
-				));	
+			}		
+			$form->add('auxdni', 'text', array(
+				'mapped'	=> false,
+				'disabled'	=> true
+			));	
 				
-				$form->add('auxdocentnom', 'text', array(
-					'mapped'	=> false,
-					'attr'		=>	array('readonly' => false)
-				));
+			$form->add('auxnom', 'text', array(
+				'mapped'	=> false,
+				'disabled'	=> true
+			));
 				
-				$form->add ('hteoria', 'integer', array (
-					'required' 	=> true,
-					'scale' 	=> 0,
-					'attr'		=>	array('readonly' => !$editable)
-				));
+			$form->add ('hteoria', 'integer', array (
+				'required' 	=> true,
+				'scale' 	=> 0,
+				'attr'		=>	array('readonly' => !$editable)
+			));
 				
-				$form->add ('haula', 'integer', array (
-					'required' 	=> true,
-					'scale' 	=> 0,
-					'attr'		=>	array('readonly' => !$editable)
-				));
+			$form->add ('haula', 'integer', array (
+				'required' 	=> true,
+				'scale' 	=> 0,
+				'attr'		=>	array('readonly' => !$editable)
+			));
 				
-				$form->add ('hpiscina', 'integer', array (
-					'required' 	=> true,
-					'scale' 	=> 0,
-					'attr'		=>	array('readonly' => !$editable)
-				));
+			$form->add ('hpiscina', 'integer', array (
+				'required' 	=> true,
+				'scale' 	=> 0,
+				'attr'		=>	array('readonly' => !$editable)
+			));
 				
-				$form->add ('hmar', 'integer', array (
-					'required' 	=> true,
-					'scale' 	=> 0,
-					'attr'		=>	array('readonly' => !$editable)
-				));
+			$form->add ('hmar', 'integer', array (
+				'required' 	=> true,
+				'scale' 	=> 0,
+				'attr'		=>	array('readonly' => !$editable)
+			));
 				
-				$form->add('carnet', 'text', array(
-					'required' 	=> false,
-					'attr'		=>	array('readonly' => !$editable)
-				));
-		
-			}
+			$form->add('carnet', 'text', array(
+				'required' 	=> false,
+				'attr'		=>	array('readonly' => !$editable)
+			));
+			
 		});
 		
 		$builder->add('id', 'hidden');

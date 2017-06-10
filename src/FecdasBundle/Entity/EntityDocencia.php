@@ -21,9 +21,9 @@ class EntityDocencia {
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona", inversedBy="docencies")
-	 * @ORM\JoinColumn(name="docent", referencedColumnName="id")
+	 * @ORM\JoinColumn(name="metadocent", referencedColumnName="id")
 	 */
-	protected $docent;	// FK taula m_persones
+	protected $metadocent;	// FK taula m_persones
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityCurs", inversedBy="docents")
@@ -79,11 +79,11 @@ class EntityDocencia {
 	/**
 	 * Constructor
 	 */
-	public function __construct($docent = null, $rol = '')
+	public function __construct($metadocent = null, $curs = null, $rol = '')
 	{
 		$this->id = 0;
-		
-		$this->docent = $docent;
+		$this->metadocent = $metadocent;
+		$this->curs = $curs;
 		$this->rol = ($rol == '' || $rol == null)?BaseController::DOCENT_INSTRUCTOR:$rol;  // pendent
 		$this->hteoria = 0;
 		$this->haula = 0;
@@ -100,6 +100,30 @@ class EntityDocencia {
 	 */
 	public function anulada() {
 		return $this->databaixa != null;
+	}
+	
+	/**
+	 * @return baixa docència
+	 */
+	public function baixa() {
+		$this->setDatamodificacio(new \DateTime('now'));
+		$this->setDatabaixa(new \DateTime('now'));
+	}
+	
+	/**
+	 * es director?
+	 * @return boolean 
+	 */
+	public function esDirector() {
+		return $this->rol === BaseController::DOCENT_DIRECTOR;
+	}
+	
+	/**
+	 * es codirector?
+	 * @return boolean 
+	 */
+	public function esCodirector() {
+		return $this->rol === BaseController::DOCENT_CODIRECTOR;
 	}
 	
 	public function __toString() {
@@ -121,23 +145,23 @@ class EntityDocencia {
 	}
 
 	/**
-	 * Set docent
+	 * Set metadocent
 	 *
-	 * @param \FecdasBundle\Entity\EntityMetaPersona $docent
+	 * @param \FecdasBundle\Entity\EntityMetaPersona $metadocent
 	 */
-	public function setDocent(\FecdasBundle\Entity\EntityMetaPersona $docent = null)
+	public function setMetadocent(\FecdasBundle\Entity\EntityMetaPersona $metadocent = null)
 	{
-		$this->docent = $docent;
+		$this->metadocent = $metadocent;
 	}
 	
 	/**
-	 * Get docent
+	 * Get metadocent
 	 *
 	 * @return \FecdasBundle\Entity\EntityMetaPersona
 	 */
-	public function getDocent()
+	public function getMetadocent()
 	{
-		return $this->docent;
+		return $this->metadocent;
 	}
 
 

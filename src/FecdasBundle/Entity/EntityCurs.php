@@ -98,7 +98,7 @@ class EntityCurs {
 	{
 	
 		$this->id = 0;
-		$this->num = "Pendent";  // pendent
+		$this->num = '--';  // pendent
 		$this->titol = $titol;
 		$this->club = $club;
 		if ($club == null) $this->clubhistoric = $clubhistoric;
@@ -215,10 +215,11 @@ class EntityCurs {
 		if (count($participacions) > 5) return count($participacions)." participants";
 		
 		foreach ($participacions as $titulacio) {
-			$persona = $titulacio->getPersona();
+			$metapersona = $titulacio->getMetapersona();
+			$persona = $metapersona->getPersonaClub($this->club);
 			
-			if ($admin || $persona->checkClub($club)) $arr[] = $persona->getDni()." - ".$persona->getNomCognoms();
-			else $arr[] = $persona->getDni();
+			if ($admin || $persona != null) $arr[] = $metapersona->getDni()." - ".$metapersona->getNomCognoms();
+			else $arr[] = $metapersona->getDni();
 		}
 		
 		return implode(PHP_EOL, $arr);
@@ -239,9 +240,9 @@ class EntityCurs {
 		foreach ($docencies as $docencia) {
 			if ($i > 5) return implode(PHP_EOL, $arr);
 			
-			$persona = $docencia->getPersona();
+			$metapersona = $docencia->getMetadocent();
 			
-			$arr[] = $docencia->getRol()." - ".$persona->getNomCognoms();
+			$arr[] = $docencia->getRol()." - ".$metapersona->getNomCognoms();
 			$i++;
 		}
 		
@@ -261,7 +262,7 @@ class EntityCurs {
     		if ($a === $b) {
     			return 0;
     		}
-			if (strtolower($a->getRol()) == strtolower($b->getRol())) return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
+			if (strtolower($a->getRol()) == strtolower($b->getRol())) return ($a->getMetadocent()->getCognomsNom() > $b->getMetadocent()->getCognomsNom())? 1:-1;
 			
 			// Rols diferents
 			if ($a->getRol() == BaseController::DOCENT_DIRECTOR) return 1;
@@ -275,14 +276,48 @@ class EntityCurs {
     	return $arr;
     }
 	
+	public function getDocenciesIds($role = '')
+    {
+		$arr = array();
+		foreach ($this->getDocentsByRoleSortedByCognomsNom($role) as $docencia) $arr[] = $docencia->getId();
+			
+		return $arr;		
+	}
+	
+	public function getDocenciaById($id)
+    {
+    	foreach ($this->docents as $docencia) {
+    		if ($id == $docencia->getId()) return $docencia;
+    	}
+		return null;
+    }
+	
+	/*
+	 * Exclou director i subdirector, per obtenir aquest cal executar getDirector() o getCodirector()
+	 */ 
+	public function getDocenciaByMetaId($meta)
+    {
+    	foreach ($this->docents as $docencia) {
+    		if (!$docencia->anulada() && !$docencia->esDirector() && !$docencia->esCodirector() && 
+    			$docencia->getMetadocent() != null && 
+    			$meta == $docencia->getMetadocent()->getId()) return $docencia;
+    	}
+		return null;
+    }
+	
+	
 	public function getDirector()
     {
-    	return $this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_DIRECTOR);
+    	$director = $this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_DIRECTOR);
+		if (count($director) > 1) return null;
+    	return array_shift($director);
     }
 
 	public function getCodirector()
     {
-    	return $this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_CODIRECTOR);
+    	$codirector = $this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_CODIRECTOR);
+		if (count($codirector) > 1) return null;
+    	return array_shift($codirector);
     }
 	
 	public function getParticipantsSortedByCognomsNom($baixes = false)
@@ -297,9 +332,28 @@ class EntityCurs {
     		if ($a === $b) {
     			return 0;
     		}
-    		return ($a->getPersona()->getCognomsNom() > $b->getPersona()->getCognomsNom())? 1:-1;
+    		return ($a->getMetapersona()->getCognomsNom() > $b->getMetapersona()->getCognomsNom())? 1:-1;
     	});
     	return $arr;
+    }
+	
+	public function getParticipantById($id)
+    {
+    	foreach ($this->participants as $titulacio) {
+    		if ($id == $titulacio->getId()) return $titulacio;
+    	}
+		return null;
+    }
+	
+	
+	public function getParticipantByMetaId($meta)
+    {
+    	foreach ($this->participants as $titulacio) {
+    		if (!$titulacio->anulada() && 
+    			$titulacio->getMetapersona() != null && 
+    			$meta == $titulacio->getMetapersona()->getId()) return $titulacio;
+    	}
+		return null;
     }
 	
 	public function getParticipantsIds()
@@ -432,33 +486,53 @@ class EntityCurs {
 	}
 	
 	/**
-     * Add docents
+     * Add docencia
      *
-     * @param FecdasBundle\Entity\EntityDocencia $docent
+     * @param FecdasBundle\Entity\EntityDocencia $docencia
      */
-    public function addDocents(\FecdasBundle\Entity\EntityDocencia $docent)
+    public function addDocencia(\FecdasBundle\Entity\EntityDocencia $docencia)
     {
-        $this->docents->add($docent);
+        $this->docents->add($docencia);
+    }
+
+	/**
+     * Remove docencia
+     *
+     * @param FecdasBundle\Entity\EntityDocencia $docencia
+     */
+    public function removeDocencia(\FecdasBundle\Entity\EntityDocencia $docencia)
+    {
+        $this->docents->removeElement($docencia);
     }
 
     /**
-     * Get docents
+     * Get docencies
      *
      * @return Doctrine\Common\Collections\Collection 
      */
-    public function getDocents()
+    public function getDocencies()
     {
-        return $this->docents;
+        return $this->docencies;
     }
 	
 	/**
-     * Add participants
+     * Add participant
      *
      * @param FecdasBundle\Entity\EntityTitulacio $participants
      */
-    public function addParticipants(\FecdasBundle\Entity\EntityTitulacio $participant)
+    public function addParticipant(\FecdasBundle\Entity\EntityTitulacio $participant)
     {
         $this->participants->add($participant);
+    }
+
+	/**
+     * Remove participant
+     *
+     * @param FecdasBundle\Entity\EntityTitulacio $participants
+     */
+    public function removeParticipant(\FecdasBundle\Entity\EntityTitulacio $participant)
+    {
+        $this->participants->removeElement($participant);
     }
 
     /**

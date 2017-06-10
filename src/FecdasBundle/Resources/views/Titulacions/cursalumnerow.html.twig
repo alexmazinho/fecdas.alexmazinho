@@ -1,21 +1,34 @@
+{% set persona = null %}
+{% if participantdata is not null and participantdata.metapersona is not null %}
+    {% set persona = participantdata.metapersona.persona(curs.club) %}	
+{% endif %}
+
 <li class="{% if proto == true %}curs-form-prototype{% else %}alumne-form-row data-detall{% endif %}">
-	<div class="col-id col-seq col-alumne-id hidden">{{ form_widget(participant.id) }}</div>
+	<div class="col-id col-seq hidden">{{ form_widget(participant.id) }}</div>
+	<div class="data-detall-cell col-alumne-meta hidden">{{ form_widget(participant.metapersona) }}</div>
 	<div class="data-detall-cell col-alumne-dni">{{ form_widget(participant.auxdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell col-alumne-nom">{{ form_widget(participant.auxnom, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
    	<div class="data-detall-cell col-alumne-certificat">
    		{{ form_widget(participant.certificatupld) }}
    		<div class="certificat-upload">
-			<div class="input-group">
-				<span class="input-group-addon"></span>
-    			<input id="upload-file-info" class="form-control" type="text">
-    			<span class="input-group-addon input-group-addon-action">
-    				<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
-    			</span>
-    		</div>
-   			{% if participantdata is not null and participantdata.certificat is not null %}
+   			{% if proto == false and curs.editable == true %}
+    			<div class="input-group">
+    				<span class="input-group-addon"></span>
+        			<input id="upload-file-info" class="form-control" type="text">
+        			<span class="input-group-addon input-group-addon-action">
+        				<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+        			</span>
+        		</div>
+    		{% endif %}
+   			{% if persona is not null and persona.certificat is not null %}
 				<div class="icon-inline">
-	   				<a href="{{ participantdata.certificat.webPath }}" target="_blank" download="{{ participantdata.certificat.path }}" class="nolink" title="Certificat mèdic"><i class="fa fa-medkit fa-2x green"></i></a>
+	   				<a href="{{ persona.certificat.webPath }}" target="_blank" download="{{ persona.certificat.path }}" class="nolink" title="Certificat mèdic"><i class="fa fa-medkit fa-2x green"></i></a>
    				</div>
+   			{% else %}
+   				{% if proto == false and curs.editable == true %}
+   				{% else %}
+    	   				<span class="subtitle">Certificat mèdic no disponible </span>
+   				{% endif %}
    			{% endif %}
    		</div>
    	</div>	
@@ -23,20 +36,24 @@
 		{{ form_widget(participant.fotoupld) }}
 		
 		<a class="galeria-upload" href="">
-			{% if participantdata is not null and participantdata.foto is not null and participantdata.foto.width > 0 and participantdata.foto.height > 0 %}
+			{% if persona is not null and persona.foto is not null and persona.foto.width > 0 and persona.foto.height > 0 %}
 				<div class="image-upload">
-  		   			<a href="{{ participantdata.foto.webPath }}" target="_blank" download="{{ participantdata.foto.path }}" class="nolink">
-   		   				<img src="{{ participantdata.foto.webPath }}" alt="{{ participantdata.foto.titol }}" width="30px"/>
+  		   			<a href="{{ persona.foto.webPath }}" target="_blank" download="{{ persona.foto.path }}" class="nolink">
+   		   				<img src="{{ persona.foto.webPath }}" alt="{{ persona.foto.titol }}" width="30px"/>
    		   			</a>
    		   		</div>
 			{% else %}
-	   			<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+	   			{% if proto == false and curs.editable == true %}
+	   				<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+	   			{% else %}
+	   				<div class="image-upload"><span class="box-center-txt">Imatge no<br/>disponible</span></div>
+	   			{% endif %}
 			{% endif %}
    		</a>	
    	</div>
 	<div class="data-detall-cell col-alumne-num">{{ form_widget(participant.num, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell col-actions">
-		<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
+		{% if proto == false and curs.editable == true %}<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>{% endif %}
 	</div>
 </li>
 

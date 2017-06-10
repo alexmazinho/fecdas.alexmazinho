@@ -18,48 +18,65 @@ class FormDocencia extends AbstractType {
 			// Abans de posar els valors de la entitat al formulari. Permet evaluar-los per modificar el form. Ajax per exemple
 			$form = $event->getForm();
 			$docencia = $event->getData();
+			$metadocent = null;
 
 			/* Check we're looking at the right data/form */
 			$editable = true;	
 			if ($docencia instanceof EntityDocencia) {
-				
+				$metadocent = $docencia->getMetadocent();
 				$curs = $docencia->getCurs();
 				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
 					$editable = false;	
 				}
-			}		
+			}
+			
+			$form->add('metadocent', 'hidden', array(
+				'mapped'	=> false,
+				'data'		=> $metadocent!=null?$metadocent->getId():0
+			));
+					
 			$form->add('auxdni', 'text', array(
 				'mapped'	=> false,
+				'data'		=> $metadocent!=null?$metadocent->getDni():'',
 				'disabled'	=> true
 			));	
 				
 			$form->add('auxnom', 'text', array(
 				'mapped'	=> false,
+				'data'		=> $metadocent!=null?$metadocent->getNomcognoms():'',
 				'disabled'	=> true
 			));
 				
 			$form->add ('hteoria', 'integer', array (
 				'required' 	=> true,
 				'scale' 	=> 0,
+				'data'		=> $docencia!=null?$docencia->getHteoria():0,
+				'empty_data' => '',
 				'attr'		=>	array('readonly' => !$editable)
 			));
 				
 			$form->add ('haula', 'integer', array (
 				'required' 	=> true,
 				'scale' 	=> 0,
+				'data'		=> $docencia!=null?$docencia->getHaula():0,
+				'empty_data' => '',
 				'attr'		=>	array('readonly' => !$editable)
 			));
 				
 			$form->add ('hpiscina', 'integer', array (
 				'required' 	=> true,
 				'scale' 	=> 0,
+				'data'		=> $docencia!=null?$docencia->getHpiscina():0,
+				'empty_data' => '',
 				'attr'		=>	array('readonly' => !$editable)
 			));
 				
 			$form->add ('hmar', 'integer', array (
 				'required' 	=> true,
 				'scale' 	=> 0,
+				'data'		=> $docencia!=null?$docencia->getHmar():0,
+				'empty_data' => '',
 				'attr'		=>	array('readonly' => !$editable)
 			));
 				
@@ -71,8 +88,6 @@ class FormDocencia extends AbstractType {
 		});
 		
 		$builder->add('id', 'hidden');
-		
-		$builder->add('rol', 'hidden');
 		
 	}
 	

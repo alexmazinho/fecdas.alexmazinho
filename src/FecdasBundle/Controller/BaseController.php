@@ -182,7 +182,7 @@ class BaseController extends Controller {
 	const DOCENT_DIRECTOR		= 'Director';
 	const DOCENT_CODIRECTOR		= 'Co-director';
 	const DOCENT_INSTRUCTOR		= 'Instructor';
-	const DOCENT_COLABORADOR	= 'col·laborador';
+	const DOCENT_COLLABORADOR	= 'col·laborador';
 	
 	// Context requeriments títols 
 	const CONTEXT_REQUERIMENT_ALUMNES	= 'alumnes';	// Aplica als alumnes del curs

@@ -2037,15 +2037,15 @@ select#parte_renovar_tipus { width: 240px; }
 
 
 .col-alumne-dni { width: 15%; text-align: center; }
-.col-alumne-nom { width: 25%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-nom { width: 30%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
 .col-alumne-certificat { width: 25%; text-align: left;  position: relative; }
-.col-alumne-foto { width: 15%; text-align: center; position: relative; }
+.col-alumne-foto { width: 10%; text-align: center; position: relative; }
 .col-alumne-num { width: 15%; text-align: center; }
 .col-alumne-actions { width: 5%; text-align: center; }
 
 .col-alumne-num .datasuperacio-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
-.alumne-row .data-detall-cell .subtitle { font-style: italic; font-size: 0.9em; color: #005a8c; }
+.alumne-form-row .data-detall-cell .subtitle { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
 
 #tabs-docents { margin-bottom: 20px; }
@@ -2057,9 +2057,9 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 .col-docent-dni { width: 15%; text-align: center; }
-.col-docent-nom { width: 20%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-docent-nom { width: 30%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
 .col-docent-carnet { width: 15%; text-align: center; }
-.col-docent-hteoriques, .col-docent-haula, .col-docent-hpiscina, .col-docent-hmar { width: 10%; text-align: center; }
+.col-docent-hteoria, .col-docent-haula, .col-docent-hpiscina, .col-docent-hmar { width: 7%; text-align: center; }
 .col-actions { width: 5%; text-align: center; }
 
 
@@ -2071,11 +2071,12 @@ select#parte_renovar_tipus { width: 240px; }
 #tabs-collaboradors .select2-container,
 #participants-curs .select2-container { min-width: 400px; }
 
-.curs-process { text-align: center; margin: 0 auto;  }
-.buttons-curs-process { margin: 0 10% 10px;  display: block; }
+#curs-process-block { display: table; margin: 0 auto; }
+/*.curs-process { text-align: center; margin: 0 auto;  }*/
+.buttons-curs-process { margin: 0 10% 10px;  display: table-row; }
 
-.button-step  { padding: 0 2px;  display: inline; }
-.step-description { color: #1240a0; font-size: 18px; display: inline; padding-left: 20px; padding-right: 0; }
+.button-step  { padding: 0 2px;  display: table-cell; line-height: 2; }
+.step-description { color: #1240a0; font-size: 18px; display: table-cell; padding-left: 20px; padding-right: 0; line-height: 2; }
 .step-description .step-step { font-size: 24px; font-weight: bold;  }
 
 .button-step a.link { font-size: 28px; display: table-cell; padding-left: 2px;   }

@@ -21,10 +21,11 @@
 		<div class="table-header">
 			<div id="list-header" class="list-docent-curs-header">
 				<div class="col-id hidden">&nbsp;</div>
+				<div class="col-meta hidden">&nbsp;</div>
 				<div class="col-listheader col-docent-dni">DNI</div>
 				<div class="col-listheader col-docent-nom">Nom i cognoms</div>
 				<div class="col-listheader col-docent-carnet">Núm. carnet</div>
-				<div class="col-listheader col-docent-hteoriques">Teòriques</div>
+				<div class="col-listheader col-docent-hteoria">Teòriques</div>
 				<div class="col-listheader col-docent-haula">Aula</div>
 				<div class="col-listheader col-docent-hpiscina">Piscina</div>
 				<div class="col-listheader col-docent-hmar">Mar</div>
@@ -38,7 +39,7 @@
 				{% for docent in docents %}
 					{% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
 				{% endfor %}
-				<li class="docent-form-row empty-alert {% if curs.getDocentsByRoleSortedByCognomsNom(tipus)|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></li>
+				<li class="empty-alert {% if docents|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></li>
 			 </ul> 
 		</div>				 
 	</div>

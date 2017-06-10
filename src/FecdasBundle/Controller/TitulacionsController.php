@@ -14,8 +14,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use FecdasBundle\Form\FormCurs;
 use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Entity\EntityDocencia;
-
-use FecdasBundle\Form\FormStock;
+use FecdasBundle\Entity\EntityTitulacio;
 
 use FecdasBundle\Form\FormRebut;
 use FecdasBundle\Entity\EntityRebut;
@@ -301,9 +300,9 @@ class TitulacionsController extends BaseController {
 		$auxcarnet = null;
 		$auxcodirector = null;
 		$auxcocarnet = null;
-		$formalumne = null;
+		$participants = null;
 		$instructors = null;
-		$colaboradors = null;
+		$collaboradors = null;
 		
 		$participantscurrent = null;
 
@@ -316,38 +315,7 @@ class TitulacionsController extends BaseController {
     		$id = (isset($data['id'])?$data['id']:0);
 			
 			
-			if (isset($data['auxdirector']) && isset($data['auxdirector']) > 0) $auxdirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxdirector']);
-			$auxcarnet = isset($data['auxcarnet'])?$data['auxcocarnet']:'';
 			
-			if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
-			$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
-error_log("carnets "+$auxcarnet+" "+$auxcocarnet);
-			
-			//$participantscurrent = isset($data['participantscurrent'])?explode(";",$data['participantscurrent']):array();
-			
-			$formalumnes = isset($data['formalumne'])?$data['formalumne']:array();
-error_log("ALUMNES");			
-			foreach ($formalumnes as $k => $formalumne) {
-error_log("ALUMNE => ".$k);				
-				
-error_log(print_r($formalumne, true));				
-			}
-error_log("ALUMNES FI");			
-			//curs_formalumne_fotoupld_0
-			//curs_formalumne_certificat_0
-			
-			$instructors = isset($data['instructors'])?$data['instructors']:array();
-error_log("INSTRUCTORS");
-			foreach ($instructors as $instructor) {
-error_log(print_r($instructor, true));				
-			}			
-			$colaboradors = isset($data['colaboradors'])?$data['colaboradors']:array();;
-error_log("COLABORADORS");
-			foreach ($colaboradors as $colaborador) {
-error_log(print_r($colaborador, true));				
-			}			
-			
-			 
     	}
 		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
     		 
@@ -355,136 +323,36 @@ error_log(print_r($colaborador, true));
     		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST'));
     	
     		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $this->getCurrentClub());
+			$em->persist($curs);
     	} else {
 	    	$this->logEntryAuth('CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
     	}
-    		
+    	
+		if ($request->getMethod() == 'POST') {
+			
+			$this->initDadesPostCurs($request->request->get('curs'), $curs);
+			
+		}
+			
     	$form = $this->createForm(new FormCurs(), $curs);
     	
     	if ($request->getMethod() == 'POST') {
-    		
     		try {
-    			
 			 	$form->handleRequest($request);
-			
 				if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrorsAsString() );
-					
+				
+				$this->validacionsCurs($curs, $form);
+			
 					// Alumnes
 					//$foto = $form->get('fotoupld')->getData(); 
 				
-				
-				/*
-    			$form->handleRequest($request);
-    			$anypreu 	= $form->get('anypreus')->getData();
-    			$importpreu = $form->get('preu')->getData();
-    			$iva 		= $form->get('iva')->getData();
-    			
-    			if (doubleval($importpreu) < 0) {
-    				$form->get('preu')->addError(new FormError('Valor incorrecte'));
-    				throw new \Exception('Cal indicar un preu vàlid 1'.$importpreu  );
-    			}
-    			
-    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString());
-    				
-    			if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
-    				
-    			if ($producte->getCodi() < 1000000 || $producte->getCodi() > 9999999) {
-    				$form->get('codi')->addError(new FormError('Codi incorrecte'));
-    				throw new \Exception('El codi ha de tenir 7 dígits ' );
-    			}
-    				
-    			if ($producte->getMinim() < 0) {
-    				$form->get('minim')->addError(new FormError('Valor incorrecte'));
-    				throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
-    			}
-    				
-    			if ($producte->getStockable() == true) {
-    				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) {
-    					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('Cal indicar el límit de notificació ' );
-    				}
-    					
-    				if ($producte->getStock() == null || $producte->getStock() < 0) {
-    					$form->get('stock')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('Cal indicar l\'stock disponible ' );
-    				}
-    			} else {
-    				$producte->setLimitnotifica(null);
-					$producte->setStock(null);
-    			}
-    				
-				if ($producte->getTransport() == true) {
-					if ($producte->getPes() == null || $producte->getPes() < 0) {
-    					$form->get('pes')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('Cal indicar el pes del producte per calcular la tarifa de transport ' );
-    				}
-				} else {
-					$producte->setPes(0);
-				}
-    				
-    			$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
-    				
-    			if ($iva == 0) $iva = null;
-    				
-    			$preu = $producte->getPreu($anypreu);
-    			if ($preu == null) {
-    				// Crear nou
-    				$preu = new EntityPreu($anypreu, $importpreu, $iva, $producte);
-    				$em->persist($preu);
-					$producte->addPreus($preu);
-    			} else {
-    				$preu->setPreu($importpreu);
-    				$preu->setIva($iva);
-    			}
-
-				// Stock
-				if ($producte->getStockable() == true) {
-					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
-					if ($producte->getId() == 0) {
-						// => Crear producte stockable afegir registre stock
-						$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
-						$registreStock->setStock($producte->getStock()); // Stock inicial
-						$em->persist($registreStock);
-					} else {
-						// Si no existeix stock pel producte es crea.   
-						$query = $this->consultaStock($producte->getId());
-						$registres = $query->getResult();
-						if ($registres == null || count($registres) == 0) {
-							$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
-							$registreStock->setStock($producte->getStock()); // Stock inicial
-							$em->persist($registreStock);
-						} else {
-							// Si existeix stock no permet canviar-lo
-							if ($stockOriginal != $producte->getStock()) {
-								$form->get('stock')->addError(new FormError('No es pot modificar'));
-	    						throw new \Exception('No es pot modificar l\'stock d\'aquest producte directament, cal fer-ho a través de la gestió d\'stock' );
-							}
-						}
-					}
-				}
-
-				if ($producte->getTipus() == BaseController::TIPUS_PRODUCTE_LLICENCIES) {
-					$activat = $form->get('activat')->getData();
-					if ($producte->getCategoria() != null && 
-						$producte->getCategoria()->getTipusparte() != null) {
-							$producte->getCategoria()->getTipusparte()->setActiu($activat);
-						}
-				}
-
-
-    			$em->flush();
-    			 
-    			$this->get('session')->getFlashBag()->add('sms-notice',	'El producte s\'ha desat correctament');
-    			
-    			$this->logEntryAuth('PRODUCTE SUBMIT',	'producte : ' . $producte->getId().' '.$producte->getDescripcio());
-    			// Ok, retorn form sms ok
-    			
-    			*/	
+	    		
+	    		$em->flush();
+	    		
+    			$this->get('session')->getFlashBag()->add('sms-notice',	'Canvis desats correctament');
     			
     			return $this->redirect($this->generateUrl('FecdasBundle_curs', 
     					array( 'id' => $curs->getId() )));
-    			
-    			$this->get('session')->getFlashBag()->add('sms-notice',	'POST curs OK');
     			
     		} catch (\Exception $e) {
     			// Ko, mostra form amb errors
@@ -496,8 +364,199 @@ error_log(print_r($colaborador, true));
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs)));
 	}
 
-	
+	private function initDadesPostCurs($data, $curs) {
+				
+		if (isset($data['auxdirector']) && isset($data['auxdirector']) > 0) $auxdirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxdirector']);
+		$auxcarnet = isset($data['auxcarnet'])?$data['auxcocarnet']:'';
+			
+		if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
+		$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
+			
+			//$participantscurrent = isset($data['participantscurrent'])?explode(";",$data['participantscurrent']):array();
+			
+			
+			//curs_formalumne_fotoupld_0
+			//curs_formalumne_certificat_0
+			
+		$instructors = isset($data['instructors'])?$data['instructors']:array();
+		$collaboradors = isset($data['collaboradors'])?$data['collaboradors']:array();;
+		$participants = isset($data['participants'])?$data['participants']:array();
+		
+		$currentDocencia = $curs->getDirector();
+		if ($auxdirector != null && $auxdirector->getMetapersona() != null) {
+			$meta = $auxdirector->getMetapersona();
+			$currentMeta = ($currentDocencia == null?null:$currentDocencia->getMetadocent());
+			
+			if ($meta !== $currentMeta) {
+				if ($currentDocencia != null) $currentDocencia->baixa();
+				$this->novaDocenciaCurs($meta, array('carnet' => $auxcarnet), $curs, BaseController::DOCENT_DIRECTOR);
+			} 
+		} else {
+			// Esborrar?
+			if ($currentDocencia != null) $currentDocencia->baixa();
+		}
+			
+		$currentDocencia = $curs->getCodirector();
+		if ($auxcodirector != null && $auxcodirector->getMetapersona() != null) {
+			$meta = $auxcodirector->getMetapersona();
+			$currentMeta = ($currentDocencia == null?null:$currentDocencia->getMetadocent());
+			
+			if ($meta !== $currentMeta) {
+				if ($currentDocencia != null) $currentDocencia->baixa();
+				
+				$this->novaDocenciaCurs($meta, array('carnet' => $auxcocarnet), $curs, BaseController::DOCENT_CODIRECTOR);
+			} 
+		} else {
+			// Esborrar?
+			if ($currentDocencia != null) $currentDocencia->baixa(); 
+		}
+			
+		$currentInstructorsIds = $curs->getDocenciesIds(BaseController::DOCENT_INSTRUCTOR);
+		foreach ($instructors as $docent) {		// Afegir/treure/modificar instructors
+			$index = array_search(isset($docent['id'])?$docent['id']:0, $currentInstructorsIds);
+			if ($index !== false) array_splice($currentInstructorsIds, $index, 1);		// Treu els existents de l'array
+				
+			$this->gestionarDocenciaCurs($docent, $curs, BaseController::DOCENT_INSTRUCTOR);		
+		}
 
+		$currentCollaboradorsIds = $curs->getDocenciesIds(BaseController::DOCENT_COLLABORADOR);
+		foreach ($collaboradors as $docent) { 	// Afegir/treure/modificar colaboradors
+			$index = array_search(isset($docent['id'])?$docent['id']:0, $currentCollaboradorsIds);
+			if ($index !== false) array_splice($currentCollaboradorsIds, $index, 1);		// Treu els existents de l'array
+			
+			$this->gestionarDocenciaCurs($docent, $curs, BaseController::DOCENT_COLLABORADOR);
+		}
+		
+		$docenciesIdsEsborrar = array_merge($currentInstructorsIds, $currentCollaboradorsIds);
+		foreach ($docenciesIdsEsborrar as $id) {  // Esborrar
+			$docencia = $curs->getDocenciaById($id);
+			if ($docencia != null) $docencia->baixa();	
+		} 		
+			
+		$currentParticipantsIds = $curs->getParticipantsIds();
+		foreach ($participants as $participant) {	// Afegir/treure/modificar participants
+			$index = array_search(isset($participant['id'])?$participant['id']:0, $currentParticipantsIds);
+			if ($index !== false) array_splice($currentParticipantsIds, $index, 1);		// Treu els existents de l'array
+		
+			$this->gestionarParticipacioCurs($participant, $curs);
+		}
+
+		foreach ($currentParticipantsIds as $id) {  // Esborrar
+			$participant = $curs->getParticipantById($id);
+			if ($participant != null) $participant->baixa();
+		} 		
+		
+	} 
+	
+	
+	private function gestionarDocenciaCurs($docent, $curs, $rol) { 
+		$meta = isset($docent['metadocent'])?$docent['metadocent']:0;
+		$id = isset($docent['id'])?$docent['id']:0;
+		
+		if ($id != 0) {
+			$docencia = $curs->getDocenciaByMetaId($meta);
+		
+			if ($docencia == null) throw new \Exception('No existeix l\'instructor '.$meta );
+			
+			$this->updateDocenciaCurs($docent, $docencia);
+			$docencia->setRol( $rol ); 
+			
+		} else {
+			$metadocent = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->find($meta);	
+			if ($metadocent == null) throw new \Exception('Instructor no trobat '.$meta );
+			
+			$this->novaDocenciaCurs($metadocent, $docent, $curs, $rol);
+		}	
+	}
+	
+	private function updateDocenciaCurs($docent, $docencia) {
+		$docencia->setCarnet( isset($docent['carnet'])?$docent['carnet']:'' );
+		$docencia->setHteoria( isset($docent['hteoria'])&&is_numeric($docent['hteoria'])?$docent['hteoria']:0 );
+		$docencia->setHaula( isset($docent['haula'])&&is_numeric($docent['haula'])?$docent['haula']:0 );
+		$docencia->setHpiscina( isset($docent['hpiscina'])&&is_numeric($docent['hpiscina'])?$docent['hpiscina']:0 );
+		$docencia->setHmar( isset($docent['hmar'])&&is_numeric($docent['hmar'])?$docent['hmar']:0 );
+	}
+	
+	private function novaDocenciaCurs($metadocent, $docent = array(), $curs, $rol) {
+		$em = $this->getDoctrine()->getManager();
+		
+		$docencia = new EntityDocencia($metadocent, $curs, $rol);	
+		$this->updateDocenciaCurs($docent, $docencia); 			
+
+		$em->persist($docencia);
+		$curs->addDocencia($docencia);
+		return $docencia;
+	}
+
+	private function gestionarParticipacioCurs($participant, $curs) { 
+		$em = $this->getDoctrine()->getManager();
+		$id = isset($participant['metapersona'])?$participant['metapersona']:0;
+		
+		$titulacio = $curs->getParticipantByMetaId($id);
+		if ($titulacio != null) {
+			$titulacio->setNum( isset($participant['num'])?$participant['num']:'' );
+		} else {
+			$metapersona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->find($id);	
+			if ($metapersona == null) throw new \Exception('Alumne no trobat '.$id );
+						
+			$titulacio = new EntityTitulacio($metapersona, $curs);	
+			$titulacio->setNum( isset($participant['num'])?$participant['num']:'' );
+	
+			$em->persist($titulacio);
+			$curs->addParticipant($titulacio);
+		}
+	}
+
+
+	private function validacionsCurs($curs, $form) {
+		
+		// Generals 
+		if ($curs->getTitol() == null) {
+			$form->get('titol')->addError(new FormError('Obligatori'));
+			throw new \Exception('Cal escollir el títol que s\'impartirà');
+		}
+
+		// Validar instructor repetit
+		$director = $curs->getDirector();
+		$codirector = $curs->getCodirector();
+		
+		if ($director == null) {
+			$form->get('auxdirector')->addError(new FormError('Obligatori'));
+			throw new \Exception('Cal indicar un director per al curs');
+		} 
+		
+		
+		if ($codirector != null && $codirector->getMetadocent() === $director->getMetadocent()) {
+			$form->get('auxcodirector')->addError(new FormError('Duplicat'));
+			throw new \Exception('El director i el co-director no poden ser el mateix');
+		}
+		// Director / Co-director poden ser instructors també?
+
+		$docentIds = array();
+		$instructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+		foreach ($instructors as $docent) {
+			$meta = $docent->getMetadocent();
+			if (in_array($meta->getId(), $docentIds)) throw new \Exception('L\'instructor '.$meta->getNomCognoms().' està repetit');
+			$docentIds[] = $meta->getId();
+		}
+		$collaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
+		foreach ($collaboradors as $docent) {
+			$meta = $docent->getMetadocent();
+			if (in_array($meta->getId(), $docentIds)) throw new \Exception('El col·laborador '.$meta->getNomCognoms().' està repetit');
+			$docentIds[] = $meta->getId();
+		}
+
+		// Validar alumne repetit
+		$alumnesIds = array();
+		$participants = $curs->getParticipantsSortedByCognomsNom();
+		foreach ($participants as $participant) {
+			$meta = $participant->getMetapersona();
+			if (in_array($meta->getId(), $alumnesIds)) throw new \Exception('L\'alumne '.$meta->getNomCognoms().' està repetit');
+			$alumnesIds[] = $meta->getId();
+		}
+		
+
+	}
 
 	private function consultaDadespersonals($dni, $nom, $cognoms, $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 
 		$em = $this->getDoctrine()->getManager();
@@ -632,6 +691,7 @@ error_log(print_r($colaborador, true));
 				$response->setContent(json_encode(array(
 							"id" => $persona->getId(), 
 							"text" => $persona->getDni(),
+							"meta" => ($persona->getMetapersona()!=null?$persona->getMetapersona()->getId():0),
 							"nom" => $persona->getNom(),
 							"cognoms" => $persona->getCognoms(),
 							"nomcognoms" => $persona->getNomcognoms(), 
@@ -689,8 +749,7 @@ error_log(print_r($colaborador, true));
 		if ($query != null) {
 			$result = $query->getResult();
 			foreach ($result as $metapersona) {
-				$persona = $metapersona->getPersonaClub($club);
-				if ($persona == null) $persona = $metapersona->getUltimesDadesPersonals();
+				$persona = $metapersona->getPersona($club);
 				if ($persona != null) {
 						
 					$telf  = $persona->getTelefon1()!=null?$persona->getTelefon1():'';
@@ -698,6 +757,7 @@ error_log(print_r($colaborador, true));
 					
 					$search[] = array("id" => $persona->getId(), 
 									"text" => $persona->getDni(),
+									"meta" => $metapersona->getId(),
 									"nom" => $persona->getNom(),
 									"cognoms" => $persona->getCognoms(),
 									"nomcognoms" => $persona->getNomcognoms(),  

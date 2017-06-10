@@ -86,6 +86,14 @@ class EntityMetaPersona {
     	return $arr;
     }
 
+    /* Intenta trobar la persona associada a metapersona i club, o les últimes dades personales de metapersona*/
+    public function getPersona($club = null)
+    {
+		$persona = $this->getPersonaClub($club);
+		if ($persona != null) return $persona; 
+		return $this->getUltimesDadesPersonals();
+    }
+	
     public function getPersonaClub($club = null)
     {
     	if ($club == null) return null;

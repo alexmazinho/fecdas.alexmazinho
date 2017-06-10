@@ -24,6 +24,7 @@
 		<div class="table-header">
 			<div id="list-header" class="list-docent-curs-header">
 				<div class="col-id hidden">&nbsp;</div>
+				<div class="col-meta hidden">&nbsp;</div>
 				<div class="col-listheader col-alumne-dni">DNI</div>
 				<div class="col-listheader col-alumne-nom">Nom i cognoms</div>
 				<div class="col-listheader col-alumne-certificat">Certificat</div>
@@ -34,10 +35,12 @@
 		</div>
 		<div class="table-noscroll">
    			<ul id="list-data-alumnes" class="list-data alumnes-curs" data-prototype="{{ form_row(form.participants.vars.prototype)|e('html_attr') }}">
+   			    {% set proto = false  %}
 				{% for participant in form.participants %}
+	                {% set participantdata = participant.vars.data  %}
 					{% include 'FecdasBundle:Titulacions:cursalumnerow.html.twig'  %}
 				{% endfor %}
-				<li class="alumne-row empty-alert {% if curs.getParticipantsSortedByCognomsNom|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap participant</div></li>
+				<li class="empty-alert {% if form.participants|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap participant</div></li>
 			 </ul> 
 		</div>				 
 	</div>

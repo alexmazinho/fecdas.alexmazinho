@@ -43,7 +43,8 @@
 				</div> 
 			</div>
 			<div class="row">
-				<div class="col-md-offset-2 col-md-8">
+				<div class="col-md-offset-1 col-md-10">
+				<div id="curs-process-block">
 					<div class="buttons-curs-process">
 						{% if curs.esNou %}
 							<span class="step-description"><span class="step-step green">Pas 1.</span> Instructor: Introduïr les dades i desar</span>
@@ -88,6 +89,7 @@
 								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x blue"></i><i class="fa fa-graduation-cap fa-stack-1x fa-inverse"></i></i>
 							</a>
 						</div>  	
+					</div>
 					</div> 
 				</div>
 			</div>
@@ -272,14 +274,15 @@
 		    $newFormLi.removeClass('curs-form-prototype').addClass( newItemclass+'-form-row data-detall' );
 
 		    // Set selected persona values
-		    $newFormLi.find('.col-'+newItemclass+'-id input').val( item.id );
+		    $newFormLi.find('.col-id input').val( 0 );
+		    $newFormLi.find('.col-'+newItemclass+'-meta input').val( item.meta );
 		    $newFormLi.find('.col-'+newItemclass+'-dni input').val( item.text );
 		    $newFormLi.find('.col-'+newItemclass+'-nom input').val( item.nomcognoms );
 
 			// Canviar/esborrar foto des de la taula d'alumnes
 		    holder.append($newFormLi);
 
-
+			// Només per alumnes
 			if ($newFormLi.find('.data-detall-cell.col-'+newItemclass+'-foto input[type="file"]').length > 0) {
     			//addFotoActionsBottom($newFormLi.find('.data-detall-cell.col-'+newItemclass+'-foto .galeria-upload'));
 
@@ -310,28 +313,6 @@
 	        parentRow.remove();
 		};
 
-		
-		
-		clearAlumneForm = function() {
-
-			// Clear form
-			$('#curs_formalumne_id').val('');
-			//$('#curs_formalumne_dni').val( );
-			
-			$('#curs_formalumne_nomcognoms').val( '' );
-			$('#curs_formalumne_mail').val( '' );
-			$('#curs_formalumne_telefon').val( '' );
-			$('#curs_formalumne_datanaixement').val( '' );
-			$('#curs_formalumne_poblacio').val( '' );
-			$('#curs_formalumne_nacionalitat').val( '' );
-
-
-			// Remove foto galeria i certificat si escau
-			$("#formalumne-cerca .remove-foto").click();
-
-			$('#curs_formalumne_certificatupld').val('');
-			$(".certificat-upload.certificat-proto #upload-file-info").val('');
-		};
 
 		$(document).ready(function(){
 			setMenuActive("menu-cursos");
@@ -341,9 +322,9 @@
 			collaboradorsHolder	= $('ul.docents-curs.collaboradors');
 			alumnesHolder	= $('ul.alumnes-curs');
 
-			instructorsHolder.data('index', instructorsHolder.find(':input').length);	
-			collaboradorsHolder.data('index', collaboradorsHolder.find(':input').length);
-			alumnesHolder.data('index', alumnesHolder.find(':input').length);
+			instructorsHolder.data('index', instructorsHolder.find('.docent-form-row').length);	
+			collaboradorsHolder.data('index', collaboradorsHolder.find('.docent-form-row').length);
+			alumnesHolder.data('index', alumnesHolder.find('.alumne-form-row').length);
 
 			$('a.add-instructor').on('click', function(e) {
 		        // prevent the link from creating a "#" on the URL
@@ -379,7 +360,7 @@
                 }
 		        // add a new intructor form
 		        addItemCollection(alumnesHolder, 'alumne', $("#curs_auxalumne").select2("data"));
-                $("#curs_auxcollaborador").select2("data", "");
+                $("#curs_auxalumne").select2("data", "");
 		    });
 
 			
@@ -449,7 +430,8 @@
 
 
 			callbackPropagate = function(added) {
-				$(".alert.alert-dismissible").remove();
+				$(".alert.alert-dismissible, .alert.field-error-alert").remove();
+				
 		    };
 			selectionFormat = function(item) {
 		        return item.text+"-"+item.nomcognoms;
@@ -468,18 +450,19 @@
 			init_cercapernomdnimail_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
 
 			init_cercapernomdnimail_JSON('#curs_auxcollaborador', 'Cercar col·laborador per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
-			
+
+			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, callbackPropagate, selectionFormat, resultFormat);
+			/*
 			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, function ( added ) {
-				/*
-				{"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
-				*/
-				/*$('#curs_formalumne_id').val( added.id );
+				// {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+				
+				$('#curs_formalumne_id').val( added.id );
 				$('#curs_formalumne_nomcognoms').val( added.nomcognoms );
 				$('#curs_formalumne_mail').val( added.mail );
 				$('#curs_formalumne_telefon').val( added.telf );
 				$('#curs_formalumne_datanaixement').val( added.nascut );
 				$('#curs_formalumne_poblacio').val( added.poblacio );
-				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );*/
+				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );
 
 			}, function(item) {
 
@@ -491,6 +474,8 @@
 				clearAlumneForm();
 			});
 
+			*/
+			
 			/*
 			$('.add-alumne').click( function(e) {
 				// Si hi ha algú seleccionat afegir les dades del formulari

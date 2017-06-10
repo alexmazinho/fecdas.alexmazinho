@@ -20,9 +20,9 @@ class EntityTitulacio {
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona", inversedBy="titulacions")
-	 * @ORM\JoinColumn(name="persona", referencedColumnName="id")
+	 * @ORM\JoinColumn(name="metapersona", referencedColumnName="id")
 	 */
-	protected $persona;	// FK taula m_persones
+	protected $metapersona;	// FK taula m_metapersones
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityCurs", inversedBy="participants")
@@ -31,7 +31,7 @@ class EntityTitulacio {
 	protected $curs;	// FK taula m_cursos
 	
 	/**
-	 * @ORM\Column(type="string", length=30)
+	 * @ORM\Column(type="string", length=30, nullable=true)
 	 */
 	protected $num;	 // El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
 	
@@ -58,10 +58,10 @@ class EntityTitulacio {
 	/**
 	 * Constructor
 	 */
-	public function __construct($persona = null, $curs = null)
+	public function __construct($metapersona = null, $curs = null)
 	{
 		$this->id = 0;
-		$this->persona = $persona;
+		$this->metapersona = $metapersona;
 		$this->curs = $curs;
 		$this->num = "Pendent";  // pendent
 		$this->dataentrada = new \DateTime();
@@ -103,6 +103,14 @@ class EntityTitulacio {
 	}
 	
 	/**
+	 * @return baixa titulacio
+	 */
+	public function baixa() {
+		$this->setDatamodificacio(new \DateTime('now'));
+		$this->setDatabaixa(new \DateTime('now'));
+	}
+	
+	/**
 	 * @return titulacio consolidada?
 	 */
 	public function consolidada() {
@@ -124,23 +132,23 @@ class EntityTitulacio {
 	}
 
 	/**
-	 * Set persona
+	 * Set metapersona
 	 *
-	 * @param \FecdasBundle\Entity\EntityMetaPersona $persona
+	 * @param \FecdasBundle\Entity\EntityMetaPersona $metapersona
 	 */
-	public function setPersona(\FecdasBundle\Entity\EntityMetaPersona $persona = null)
+	public function setMetapersona(\FecdasBundle\Entity\EntityMetaPersona $metapersona = null)
 	{
-		$this->persona = $persona;
+		$this->metapersona = $metapersona;
 	}
 	
 	/**
-	 * Get persona
+	 * Get metapersona
 	 *
 	 * @return \FecdasBundle\Entity\EntityMetaPersona
 	 */
-	public function getPersona()
+	public function getMetapersona()
 	{
-		return $this->persona;
+		return $this->metapersona;
 	}
 
 

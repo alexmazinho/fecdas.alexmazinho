@@ -9,11 +9,8 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use FecdasBundle\Controller\BaseController;
-use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Entity\EntityMetaPersona;
 use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Form\FormDocencia;
-use FecdasBundle\Entity\EntityTitulacio;
 
 
 class FormCurs extends AbstractType  implements EventSubscriberInterface {
@@ -103,11 +100,13 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$director = $curs->getDirector();
 			$codirector = $curs->getCodirector();
 			$instructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
-			$collaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLABORADOR);
+			$collaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 			
+			$persona = null;
+			if ($director != null && $director->getMetadocent() != null) $persona = $director->getMetadocent()->getPersona($curs->getClub());
 			$form->add('auxdirector', 'text', array(
 				'mapped'	=> false,
-				'data'  	=> $director != null?$director->getId():'',
+				'data'  	=> $persona != null?$persona->getId():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 
@@ -116,10 +115,12 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
+			$persona = null;
+			if ($codirector != null && $codirector->getMetadocent() != null) $persona = $codirector->getMetadocent()->getPersona($curs->getClub());
 			$form->add('auxcodirector', 'text', array(
 				'mapped'	=> false,
 				'required' 	=> false,
-				'data'  	=> $codirector != null?$codirector->getId():'',
+				'data'  	=> $persona != null?$persona->getId():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
@@ -146,7 +147,6 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		        'type' 		   	=> new FormDocencia(),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
-		        //'prototype' 	=> true,
 		        'by_reference' 	=> false
 	   		));
 
@@ -156,7 +156,6 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		        'type' 			=> new FormDocencia(),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
-		        //'prototype' 	=> true,
 		        'by_reference' 	=> false
 	   		));
 			
@@ -167,33 +166,14 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
-			/*
-			$idsAlumnes = $curs->getParticipantsIds();  
-			
-								
-			$form->add('participantscurrent', 'hidden', array(
-				'mapped' 		=> false,
-				'data'			=> implode(";", $idsAlumnes)
-			));
-				
-			$metapersona = new EntityMetaPersona('');
-			$persona = new EntityPersona($metapersona, $curs->getClub());
-			$persona->setNom(''); 
-			$persona->setCognoms(''); 
-			$titulacio = new EntityTitulacio($persona, $curs);	
-				
-			$form->add('formalumne', new FormTitulacio(), array(
-					'mapped'   	=> false,
-					'data'		=> $titulacio
-		   	));
-			*/
-			$alumnes = $curs->getParticipantsSortedByCognomsNom();
+			$participants = $curs->getParticipantsSortedByCognomsNom();
+		
 			$form->add('participants', 'collection', array(
-				'data'			=> $alumnes,
+				'mapped' 	   	=> false,
+				'data'			=> $participants,
 		        'type' 			=> new FormTitulacio(),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
-		        //'prototype' 	=> true,
 		        'by_reference' 	=> false
 	   		));	
 			

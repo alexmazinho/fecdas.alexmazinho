@@ -2036,8 +2036,8 @@ select#parte_renovar_tipus { width: 240px; }
 #llista-alumnes .col-listheader {  }
 
 
-.col-alumne-dni { width: 15%; text-align: center; }
-.col-alumne-nom { width: 30%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-dni { width: 12%; text-align: center; }
+.col-alumne-nom { width: 32%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
 .col-alumne-certificat { width: 25%; text-align: left;  position: relative; }
 .col-alumne-foto { width: 10%; text-align: center; position: relative; }
 .col-alumne-num { width: 15%; text-align: center; }
@@ -2045,7 +2045,7 @@ select#parte_renovar_tipus { width: 240px; }
 
 .col-alumne-num .datasuperacio-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
-.alumne-form-row .data-detall-cell .subtitle { font-style: italic; font-size: 0.9em; color: #005a8c; }
+#llista-alumnes .data-detall-cell .subtitle, #llista-alumnes .col-listheader .subtitle { display: block; font-style: italic; font-size: 0.9em; color: #005a8c; }
 
 .title-info {
     color: #a94442;
@@ -2069,12 +2069,17 @@ select#parte_renovar_tipus { width: 240px; }
     overflow-y: auto;
 }
 
-#informe-requeriments .informe-detall-text { width: 61%; font-weight: bold; text-align: right; }
-#informe-requeriments .informe-detall-1col { width: 39%; text-align: center; }
-#informe-requeriments .informe-detall-2col { width: 19%; text-align: center; }
-#informe-requeriments .informe-detall-3col { width: 13%; text-align: center; }
+#informe-requeriments .informe-detall-text { width: 65%; font-weight: bold; text-align: right; }
+#informe-requeriments .informe-detall-1col { width: 30%; text-align: center; }
+#informe-requeriments .informe-detall-2col { width: 15%; text-align: center; }
+#informe-requeriments .informe-detall-3col { width: 10%; text-align: center; }
+#informe-requeriments .informe-detall-error { width: 5%; text-align: center; }
 
 #informe-requeriments .data-detall-subheader { font-weight: bold; color: #005a8c; }
+
+#informe-requeriments ul { list-style: disc inside none; margin-left: 10px; }
+#informe-requeriments ul li { font-size: 0.9em;  color: #a94442; line-height: 1.1; }
+#informe-requeriments ul li span { font-weight: bold;  font-size: 1.1em; }
 
 #informe-requeriments
 

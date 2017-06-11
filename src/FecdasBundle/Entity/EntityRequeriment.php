@@ -53,7 +53,7 @@ class EntityRequeriment {
 	 * @return string
 	 */
 	public function getText() {
-		return $this->requeriment!=null?$this->requeriment->getDescripcio():'';
+		return $this->requeriment!=null?trim($this->requeriment->getDescripcio()):'';
 	}
 
 	/**

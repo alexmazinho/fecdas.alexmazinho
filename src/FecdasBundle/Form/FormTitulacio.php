@@ -65,10 +65,6 @@ class FormTitulacio extends AbstractType {
 		});
 		
 		$builder->add('id', 'hidden');
-		
-			
-				
-		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

@@ -145,7 +145,7 @@
 			</div>
 			<div class="col-md-8 col-last-right">
 				{% if requeriments.titol != '' %}
-    				<p class="title-info for-title-h2">Hi ha <strong class="highlight">{{ requeriments.errors|length }} errades</strong>. Consulta l'informe del compliment de requeriments del curs 
+    				<p class="title-info for-title-h2">Hi ha <strong class="highlight">{{ requeriments.errors.total }} problemes</strong>. Consulta l'informe del compliment de requeriments del curs 
     					<a class="link open-informe" href="javascript:void(0)" alt="Informe requeriments del curs" title="Informe requeriments del curs"><b>aquí</b>&nbsp;&nbsp;<i class="fa fa-external-link-square fa-1x blue"></i></a>
     				</p>
     				<div id="informe-requeriments" class="hidden container-fluid">{% include 'FecdasBundle:Titulacions:cursinformerequeriments.html.twig'  %}</div>
@@ -233,7 +233,6 @@
 				</div>
 			</div>
 		</div>
-		
 		<div class="row">
 			<div class="col-md-12">
 				{% include 'FecdasBundle:Titulacions:cursalumnestaula.html.twig'  %}
@@ -332,7 +331,7 @@
 				//var strHtml = $('#informe-requeriments').html();
 				var strHtml = $('#informe-requeriments').clone().removeClass('hidden')[0].outerHTML;
 				
-				dialegInformacio(strHtml, 'Informe compliment requeriments', 'auto', 700, closeDialegConfirmacio, function() { });
+				dialegInformacio(strHtml, 'Informe compliment requeriments', 'auto', 835, closeDialegConfirmacio, function() { });
 			});
 				
 			// Prepare collections holders

@@ -1,6 +1,6 @@
 <div class="row">
 	<div class="col-md-6"><h3>Títol: {{ requeriments.titol }}</h3></div>
-	<div class="col-md-6  col-last-right"><p class="title-info for-title-h3">Hi ha <strong class="highlight">{{ requeriments.errors|length }} errades</strong></div>
+	<div class="col-md-6  col-last-right"><p class="title-info for-title-h3">Hi ha <strong class="highlight">{{ requeriments.errors.total }} problemes</strong></div>
 	<div class="col-md-12">
 		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_ALUMNES') %}
 		{% set dadesAlumnes = requeriments[key] %}
@@ -12,24 +12,42 @@
 			</thead>
 			<tbody id="list-data">
 				<tr class="data-detall">
-					<td class="data-detall-cell"><b>{{ dadesAlumnes.edat.text }}</b> {{ dadesAlumnes.edat.valor }}</td>
-					<td class="data-detall-cell"><b>{{ dadesAlumnes.llicencia.text }}</b> {{ dadesAlumnes.llicencia.valor }}</td>
-					<td class="data-detall-cell"><b>{{ dadesAlumnes.titols.text }}</b>: {{ dadesAlumnes.titols.valor }}</td>
+					<td class="data-detall-cell">
+						<b>{{ dadesAlumnes.edat.text }}</b> {{ dadesAlumnes.edat.valor }}  
+						{% if dadesAlumnes.edat.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}
+					</td>
+					<td class="data-detall-cell">
+						<b>{{ dadesAlumnes.llicencia.text }}</b> {{ dadesAlumnes.llicencia.valor }}
+						{% if dadesAlumnes.llicencia.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}
+					</td>
+					<td class="data-detall-cell">
+						<b>{{ dadesAlumnes.titols.text }}</b>: {{ dadesAlumnes.titols.valor }}
+						{% if dadesAlumnes.titols.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}
+					</td>
 				</tr>
 				<tr class="data-detall">
-					<td class="data-detall-cell"  colspan="3"><b>{{ dadesAlumnes.immersions.text }}</b>: {{ dadesAlumnes.immersions.valor }}</td>
+					<td class="data-detall-cell"  colspan="3"><b>
+					    {{ dadesAlumnes.immersions.text }}</b>: {{ dadesAlumnes.immersions.valor }}
+					    {% if dadesAlumnes.immersions.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}
+					</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
-	<div class="col-md-12">(llista errors requeriments concrets alumnes)</div>
+	<div class="col-md-12">
+		<ul>
+		{% for error in requeriments.errors.alumnes %}
+		    <li>{{ error|raw }}</li>
+		{% endfor %}
+		</ul>
+	</div>
 	<div class="col-md-12">
 		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_GENERAL') %}
 		{% set dadesGenerals = requeriments[key] %}
 		<table class="table-noscroll table">
 			<thead class="table-header">	
     			<tr id="list-header">
-    			   	<th class="col-listheader data-detall-cell-center" colspan="3">Hores de formació mínimes:</th>
+    			   	<th class="col-listheader data-detall-cell-center" colspan="4">Hores de formació mínimes:</th>
     			</tr>
 			</thead>
 			<tbody id="list-data">
@@ -37,44 +55,68 @@
 					<td class="data-detall-cell informe-detall-text"></td>
 					<td class="data-detall-cell informe-detall-2col">hores</td>
 					<td class="data-detall-cell informe-detall-2col">Immersions</td>
+					<td class="data-detall-cell informe-detall-error"></td>
 				</tr>
 				{% for hora in dadesGenerals.hores %}
 				<tr class="data-detall">
 					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
 					<td class="data-detall-cell">{{ hora.valor1 }}</td>
 					<td class="data-detall-cell">{{ hora.valor2 }}</td>
+					<td class="data-detall-cell">{% if hora.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}</td>
 				</tr>
 				{% endfor %}
 			</tbody>
 		</table>
 	</div>
-	<div class="col-md-12">(llista errors requeriments concrets hores)</div>
+	<div class="col-md-12">
+		<ul>
+		{% for error in requeriments.errors.hores %}
+		    <li>{{ error|raw }}</li>
+		{% endfor %}
+		</ul>
+	</div>
 	<div class="col-md-12">
 		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_DOCENTS') %}
 		{% set dadesDocents = requeriments[key] %}
 		<table class="table-noscroll table">
 			<thead class="table-header">	
     			<tr id="list-header">
-    			   	<th class="col-listheader data-detall-cell-center" colspan="2">Requeriments titulacions docents:</th>
+    			   	<th class="col-listheader data-detall-cell-center" colspan="3">Requeriments titulacions docents:</th>
     			</tr>
 			</thead>
 			<tbody id="list-data">
-				{% for hora in dadesDocents.docents %}
+				{% for titol in dadesDocents.docents %}
 				<tr class="data-detall">
-					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
-					<td class="data-detall-cell informe-detall-1col">{{ hora.valor }}</td>
+					<td class="data-detall-cell informe-detall-text">{{ titol.text }}</td>
+					<td class="data-detall-cell informe-detall-1col">{{ titol.valor }}</td>
+					<td class="data-detall-cell informe-detall-error">{% if titol.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}</td>
 				</tr>
 				{% endfor %}
+				{% if dadesDocents.director.text != '' %}
+    				<tr class="data-detall">
+    					<td class="data-detall-cell data-detall-cell-left" colspan="2">
+    					    <b>{{ dadesDocents.director.text }}</b>: {{ dadesDocents.director.valor }}
+    					</td>
+    					<td class="data-detall-cell informe-detall-error">
+    						{% if dadesDocents.director.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}
+    					</td>
+    				</tr>
+				{% endif %}
 			</tbody>
 		</table>
 	</div>
-	<div class="col-md-12">(llista errors requeriments concrets docents)</div>
-	
+	<div class="col-md-12">
+		<ul>
+		{% for error in requeriments.errors.docents %}
+		    <li>{{ error|raw }}</li>
+		{% endfor %}
+		</ul>
+	</div>
 	<div class="col-md-12">
 		<table class="table-noscroll table">
 			<thead class="table-header">	
     			<tr id="list-header">
-    			   	<th class="col-listheader data-detall-cell-center" colspan="3">Requeriments ratios:</th>
+    			   	<th class="col-listheader data-detall-cell-center" colspan="5">Requeriments ratios:</th>
     			</tr>
 			</thead>
 			<tbody id="list-data">
@@ -83,20 +125,28 @@
 					<td class="data-detall-cell informe-detall-3col">Alumnes</td>
 					<td class="data-detall-cell informe-detall-3col">Docents</td>
 					<td class="data-detall-cell informe-detall-3col">Seguretat</td>
+					<td class="data-detall-cell informe-detall-error"></td>
 				</tr>
 				
-				{% for hora in dadesGenerals.ratios %}
+				{% for ratio in dadesGenerals.ratios %}
 				<tr class="data-detall">
-					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
-					<td class="data-detall-cell">{{ hora.valor0 }}</td>
-					<td class="data-detall-cell">{{ hora.valor1 }}</td>
-					<td class="data-detall-cell">{{ hora.valor2 }}</td>
+					<td class="data-detall-cell informe-detall-text">{{ ratio.text }}</td>
+					<td class="data-detall-cell">{{ ratio.valor0 }}</td>
+					<td class="data-detall-cell">{{ ratio.valor1 }}</td>
+					<td class="data-detall-cell">{{ ratio.valor2 }}</td>
+					<td class="data-detall-cell">{% if ratio.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}</td>
 				</tr>
 				{% endfor %}
 			</tbody>
 		</table>
 	</div>
-	<div class="col-md-12">(llista errors requeriments concrets docents)</div>
+	<div class="col-md-12">
+		<ul>
+		{% for error in requeriments.errors.ratios %}
+		    <li>{{ error|raw }}</li>
+		{% endfor %}
+		</ul>
+	</div>
 </div>
 
 	

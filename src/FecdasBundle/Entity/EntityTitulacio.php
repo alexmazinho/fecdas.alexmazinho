@@ -157,7 +157,7 @@ class EntityTitulacio {
 	 *
 	 * @param \FecdasBundle\Entity\EntityCurs $curs
 	 */
-	public function setClub(\FecdasBundle\Entity\EntityCurs $curs = null)
+	public function setCurs(\FecdasBundle\Entity\EntityCurs $curs = null)
 	{
 		$this->curs = $curs;
 	}
@@ -173,19 +173,19 @@ class EntityTitulacio {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getNum() {
-		return $this->num;
-	}
-	
-	/**
 	 * @param string $num
 	 */
 	public function setNum($num) {
 		$this->num = $num;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getNum() {
+		return $this->num;
+	}
+	
 	/**
 	 * @param datetime $datasuperacio
 	 */

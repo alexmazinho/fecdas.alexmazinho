@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Form\FormDocencia;
-
+use FecdasBundle\Form\FormTitulacio;
 
 class FormCurs extends AbstractType  implements EventSubscriberInterface {
 

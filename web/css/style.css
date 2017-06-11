@@ -2047,6 +2047,36 @@ select#parte_renovar_tipus { width: 240px; }
 
 .alumne-form-row .data-detall-cell .subtitle { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
+.title-info {
+    color: #a94442;
+    line-height: 2.2em;
+    font-size: 1em;
+    font-style: italic;
+}
+.for-title-h3 {
+	margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+.for-title-h2 {
+	margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+#informe-requeriments { 
+	max-height: 450px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#informe-requeriments .informe-detall-text { width: 61%; font-weight: bold; text-align: right; }
+#informe-requeriments .informe-detall-1col { width: 39%; text-align: center; }
+#informe-requeriments .informe-detall-2col { width: 19%; text-align: center; }
+#informe-requeriments .informe-detall-3col { width: 13%; text-align: center; }
+
+#informe-requeriments .data-detall-subheader { font-weight: bold; color: #005a8c; }
+
+#informe-requeriments
 
 #tabs-docents { margin-bottom: 20px; }
 #formalumne-cerca { margin-bottom: 20px; }

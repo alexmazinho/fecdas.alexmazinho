@@ -40,26 +40,6 @@ class EntityRequerimentTipus {
 	}
 
 	/**
-     * És context alumnes?
-     *
-     * @return boolean 
-     */
-    public function aplicaAlumnes()
-    {
-        return $this->context == BaseController::CONTEXT_REQUERIMENT_ALUMNES;
-    }
-
-	/**
-     * És context docents?
-     *
-     * @return boolean 
-     */
-    public function aplicaDocents()
-    {
-        return $this->context == BaseController::CONTEXT_REQUERIMENT_DOCENTS;
-    }
-
-	/**
 	 * @param integer $id
 	 */
 	public function setId($id) {

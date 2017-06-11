@@ -582,8 +582,26 @@
 			 },
 			 open: callbackopen
 		});
+	}; 
+	
+	dialegInformacio = function(strHtml, titol, h, w, callbackclose, callbackopen) {
 		
+		$( '#dialeg' ).html(strHtml);
 		
+		$( '#dialeg' ).dialog({
+			 resizable: false,
+			 title: titol,
+			 height: (h !== undefined?h:"auto"),
+			 width:  (w !== undefined?w:300),
+			 modal: true,
+			 buttons: {
+				 "Tancar": function() {
+
+					 callbackclose();
+				 }
+			 },
+			 open: callbackopen
+		});
 	}; 
 	
 	smsResultAjax = function(result, sms) {

@@ -184,10 +184,17 @@ class BaseController extends Controller {
 	const DOCENT_INSTRUCTOR		= 'Instructor';
 	const DOCENT_COLLABORADOR	= 'col·laborador';
 	
-	// Context requeriments títols 
-	const CONTEXT_REQUERIMENT_ALUMNES	= 'alumnes';	// Aplica als alumnes del curs
-	const CONTEXT_REQUERIMENT_GENERAL	= 'general';	// Aplica a les dades del curs 
-	const CONTEXT_REQUERIMENT_DOCENTS	= 'docents';	// Aplica als docents del curs
+	// Contexts dels requeriments títols 
+	const CONTEXT_REQUERIMENT_GENERAL	= 'general';	 
+	const CONTEXT_REQUERIMENT_ALUMNES	= 'alumnes';	 
+	const CONTEXT_REQUERIMENT_DOCENTS	= 'docents';
+	// Categories de requeriments títols
+	const CATEGORIA_REQUERIMENT_MIN_HORES	= 'Mínim hores';	 
+	const CATEGORIA_REQUERIMENT_IMMERSIONS	= 'Immersions curs';	 
+	const CATEGORIA_REQUERIMENT_RATIOS		= 'Ratios';
+	const CATEGORIA_REQUERIMENT_FORMACIO	= 'Formació esportiva';
+	const CATEGORIA_REQUERIMENT_TITULACIONS	= 'Titulacions';
+	
 
 	// Rols usuaris aplicació
 	const ROLE_ADMIN		= 'administrador';

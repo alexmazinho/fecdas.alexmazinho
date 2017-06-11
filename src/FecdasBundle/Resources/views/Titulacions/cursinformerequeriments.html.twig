@@ -1,0 +1,102 @@
+<div class="row">
+	<div class="col-md-6"><h3>Títol: {{ requeriments.titol }}</h3></div>
+	<div class="col-md-6  col-last-right"><p class="title-info for-title-h3">Hi ha <strong class="highlight">{{ requeriments.errors|length }} errades</strong></div>
+	<div class="col-md-12">
+		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_ALUMNES') %}
+		{% set dadesAlumnes = requeriments[key] %}
+		<table class="table-noscroll table">
+			<thead class="table-header">	
+    			<tr id="list-header">
+    			   	<th class="col-listheader data-detall-cell-center" colspan="2">Requeriments alumnes:</th>
+    			</tr>
+			</thead>
+			<tbody id="list-data">
+				<tr class="data-detall">
+					<td class="data-detall-cell"><b>{{ dadesAlumnes.edat.text }}</b> {{ dadesAlumnes.edat.valor }}</td>
+					<td class="data-detall-cell"><b>{{ dadesAlumnes.llicencia.text }}</b> {{ dadesAlumnes.llicencia.valor }}</td>
+					<td class="data-detall-cell"><b>{{ dadesAlumnes.titols.text }}</b>: {{ dadesAlumnes.titols.valor }}</td>
+				</tr>
+				<tr class="data-detall">
+					<td class="data-detall-cell"  colspan="3"><b>{{ dadesAlumnes.immersions.text }}</b>: {{ dadesAlumnes.immersions.valor }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-12">(llista errors requeriments concrets alumnes)</div>
+	<div class="col-md-12">
+		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_GENERAL') %}
+		{% set dadesGenerals = requeriments[key] %}
+		<table class="table-noscroll table">
+			<thead class="table-header">	
+    			<tr id="list-header">
+    			   	<th class="col-listheader data-detall-cell-center" colspan="3">Hores de formació mínimes:</th>
+    			</tr>
+			</thead>
+			<tbody id="list-data">
+				<tr class="data-detall data-detall-subheader">
+					<td class="data-detall-cell informe-detall-text"></td>
+					<td class="data-detall-cell informe-detall-2col">hores</td>
+					<td class="data-detall-cell informe-detall-2col">Immersions</td>
+				</tr>
+				{% for hora in dadesGenerals.hores %}
+				<tr class="data-detall">
+					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
+					<td class="data-detall-cell">{{ hora.valor1 }}</td>
+					<td class="data-detall-cell">{{ hora.valor2 }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-12">(llista errors requeriments concrets hores)</div>
+	<div class="col-md-12">
+		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_DOCENTS') %}
+		{% set dadesDocents = requeriments[key] %}
+		<table class="table-noscroll table">
+			<thead class="table-header">	
+    			<tr id="list-header">
+    			   	<th class="col-listheader data-detall-cell-center" colspan="2">Requeriments titulacions docents:</th>
+    			</tr>
+			</thead>
+			<tbody id="list-data">
+				{% for hora in dadesDocents.docents %}
+				<tr class="data-detall">
+					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
+					<td class="data-detall-cell informe-detall-1col">{{ hora.valor }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-12">(llista errors requeriments concrets docents)</div>
+	
+	<div class="col-md-12">
+		<table class="table-noscroll table">
+			<thead class="table-header">	
+    			<tr id="list-header">
+    			   	<th class="col-listheader data-detall-cell-center" colspan="3">Requeriments ratios:</th>
+    			</tr>
+			</thead>
+			<tbody id="list-data">
+				<tr class="data-detall data-detall-subheader">
+					<td class="data-detall-cell informe-detall-text"></td>
+					<td class="data-detall-cell informe-detall-3col">Alumnes</td>
+					<td class="data-detall-cell informe-detall-3col">Docents</td>
+					<td class="data-detall-cell informe-detall-3col">Seguretat</td>
+				</tr>
+				
+				{% for hora in dadesGenerals.ratios %}
+				<tr class="data-detall">
+					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
+					<td class="data-detall-cell">{{ hora.valor0 }}</td>
+					<td class="data-detall-cell">{{ hora.valor1 }}</td>
+					<td class="data-detall-cell">{{ hora.valor2 }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-12">(llista errors requeriments concrets docents)</div>
+</div>
+
+	

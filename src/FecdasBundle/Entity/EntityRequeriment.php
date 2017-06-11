@@ -50,6 +50,13 @@ class EntityRequeriment {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getText() {
+		return $this->requeriment!=null?$this->requeriment->getDescripcio():'';
+	}
+
+	/**
 	 * @return boolean
 	 */
 	public function actiu() {

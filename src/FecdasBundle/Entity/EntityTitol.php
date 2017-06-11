@@ -103,6 +103,45 @@ class EntityTitol {
 		return ($this->esCMAS()?"":$this->getOrganisme())." ".$this->getCodi()." - ".$this->getTitol();
 	}
 	
+	
+	public function getRequerimentsSortedByContextCategoria($context = '', $actius = true)
+    {
+    	/* Ordenats per context i categoria */
+    	$arr = array();
+    	foreach ($this->requeriments as $requeriment) {
+    		$tipus = $requeriment->getRequeriment();
+    		if ($tipus != null && 
+    			($requeriment->actiu() || $actius == false) && 
+    			($context == '' || strtolower($tipus->getContext()) == strtolower($context))) $arr[] = $requeriment;
+    	}
+		
+    	usort($arr, function($a, $b) {
+    		if ($a === $b) {
+    			return 0;
+    		}
+			$tipusA = $a->getRequeriment();
+			$tipusB = $b->getRequeriment();
+			
+			return $tipusA->getId() - $tipusB->getId();
+			/*
+			if (strtolower($tipusA->getContext()) === strtolower($tipusB->getContext())) {
+				if (strtolower($tipusA->getCategoria()) === strtolower($tipusB->getCategoria())) return $tipusB->getId() - $tipusA->getId();
+				return strcmp($tipusA->getCategoria(), $tipusB->getCategoria());
+			}
+			return strcmp($tipusA->getContext(), $tipusB->getContext());*/
+    	});
+    	return $arr;
+    }
+	
+	public function getRequerimentByTipus($num)
+    {
+    	foreach ($this->requeriments as $requeriment) {
+    		$tipus = $requeriment->getRequeriment();
+    		if ($num == $tipus->getId()) return $requeriment;
+    	}
+		return null;
+    }
+	
 	/**
 	 * @return integer
 	 */

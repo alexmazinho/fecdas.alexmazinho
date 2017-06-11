@@ -341,8 +341,11 @@ class TitulacionsController extends BaseController {
 			 	$form->handleRequest($request);
 				if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrorsAsString() );
 				
+				// Comprovacions genèriques
 				$this->validacionsCurs($curs, $form);
 			
+				
+				
 					// Alumnes
 					//$foto = $form->get('fotoupld')->getData(); 
 				
@@ -360,8 +363,14 @@ class TitulacionsController extends BaseController {
     		}
    		} 
 
+		// Resultat check Requeriments titulació
+		$resultat = $this->comprovaRequerimentsCurs($curs);
+
+		// Dades estructurades requeriments
+		$requeriments = $this->getRequerimentsEstructuraInforme($curs->getTitol(), $resultat);
+
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs)));
+				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs, 'requeriments' => $requeriments)));
 	}
 
 	private function initDadesPostCurs($data, $curs) {
@@ -513,7 +522,7 @@ class TitulacionsController extends BaseController {
 		// Generals 
 		if ($curs->getTitol() == null) {
 			$form->get('titol')->addError(new FormError('Obligatori'));
-			throw new \Exception('Cal escollir el títol que s\'impartirà');
+			throw new \Exception('Cal escollir el títol que s\'impartirà en aquest curs');
 		}
 
 		// Validar instructor repetit
@@ -556,6 +565,339 @@ class TitulacionsController extends BaseController {
 		}
 		
 
+	}
+
+	private function comprovaRequerimentsCurs($curs) {
+		// Generals
+		$titol =  $curs->getTitol();
+		$resultat = array();  
+		//if ($titol == null) throw new \Exception('Cal escollir el títol que s\'impartirà per poder comprovar els requeriments');
+		if ($titol == null) return $resultat;
+		
+		$requeriments = $titol->getRequerimentsSortedByContextCategoria();
+		 
+		foreach ($requeriments as $requeriment) {
+			$tipus = $requeriment->getRequeriment();
+			
+			if (isset($resultat[$tipus->getId()])) throw new \Exception('Error de configuració a la comprovació dels requeriments'); 
+			
+			$res = array('result' => 'OK', 'errors' => array());
+			switch ($tipus->getCategoria()) {
+				case BaseController::CATEGORIA_REQUERIMENT_MIN_HORES:
+					
+					$res = $this->comprovaRequerimentsMinimHores($requeriment, $curs);
+					
+					break;
+
+				case BaseController::CATEGORIA_REQUERIMENT_IMMERSIONS:
+					
+					break;
+				
+				case BaseController::CATEGORIA_REQUERIMENT_RATIOS:
+					
+					break;
+				
+				case BaseController::CATEGORIA_REQUERIMENT_FORMACIO:
+					
+					break;
+				
+				case BaseController::CATEGORIA_REQUERIMENT_TITULACIONS:
+					
+					break;
+				
+				default:
+					// Altres validacions categoria NULL
+					$res = $this->comprovaRequerimentsAltres($requeriment, $curs);
+					
+					break;
+			}
+			
+			if ($res['result'] != 'OK') $resultat[$tipus->getId()] = $res;
+		}
+		return $resultat;
+	}
+
+	private function comprovaRequerimentsMinimHores($requeriment, $curs) {
+		$tipus = $requeriment->getRequeriment();	
+			
+		$res = array('result' => 'OK', 'errors' => array());   
+		
+		switch ($tipus->getId()) {
+			case 100:  // teoria.
+			case 101:  // aula.
+			case 102:  // piscina.
+			case 103:  // mar.
+			
+				$horesMin = $requeriment->getValor();
+				
+				// Recompte total hores instructors 
+				$totals = array(100 => 0, 101 => 0, 102 => 0, 103 => 0);
+				foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR) as $instructor) {
+					$totals[100] += $instructor->getHteoria();
+					$totals[101] += $instructor->getHaula();
+					$totals[102] += $instructor->getHpiscina();
+					$totals[103] += $instructor->getHmar();
+				}
+				
+				if ($totals[$tipus->getId()] <  $horesMin) {
+					$res['errors'][] = $requeriment->getText().': El total d\'hores és inferior al mínim ('.$horesMin.')';
+				}
+				break;
+				
+			case 104:	// funcio docent
+					
+					
+				break;	
+			case 123:	// Experiència docent (Escola Nacional de Busseig Autònom Esportiu)
+
+					
+					
+				break;	
+				
+			default:
+				
+					
+				break;
+		}
+		
+		if (count($res['errors']) > 0) $res['result'] = 'KO';
+		
+		return $res; 
+	}
+
+
+	private function comprovaRequerimentsAltres($requeriment, $curs) {
+		
+		$tipus = $requeriment->getRequeriment();
+		
+		$res = array('result' => 'OK', 'errors' => array());
+		
+		switch ($tipus->getId()) {
+			case 200:  // Edat mín.
+					
+				$edat = $requeriment->getValor();
+				foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+					$metapersona = $participant->getMetapersona();
+					$persona = $metapersona->getPersona($curs->getClub());
+					
+					if ($persona != null) {
+						if ($persona->getEdat() < $edat) $res['errors'][] = 'Un dels participants no té l\'edat mínima ('.$metapersona->getDni().')';
+					} else {
+						$res['errors'][] = 'No es pot comprovar l\'edat d\'un participant ('.$metapersona->getDni().')'; 
+					}
+				}
+				break;
+
+			case 207:	// Federativa 
+			
+				$desde = $curs->getDatadesde();
+				$fins = $curs->getDatafins();
+				if ($desde == null || $fins == null) {
+					$res['errors'][] = 'No es pot comprovar la vigencia de les llicències dels participants';
+				} else {
+					foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+						$metapersona = $participant->getMetapersona();
+						
+						$finsVariable = clone $fins;
+						$llicenciesPersonaPeriode = $metapersona->getLlicenciesSortedByDate(false, $desde, $fins); /* Ordenades de última a primera */
+	
+						foreach ($llicenciesPersonaPeriode as $llicencia) {
+							// Totes les llicencies haurien d'estar parcialment dins el periode
+							$parte = $llicencia->getParte();
+							
+							if ($parte->getDatacaducitat()->format('Y-m-d') >= $finsVariable->format('Y-m-d') && 
+								$parte->getDataalta()->format('Y-m-d') 		<= $finsVariable->format('Y-m-d')) {
+						 			
+								$finsVariable = clone $parte->getDataalta();
+						 		$finsVariable->sub(new \DateInterval('P1D')); // Minus 1 Day
+							} 
+						}
+
+						// Si $fins <= $desde està tot el periode cobert
+						if ($finsVariable->format('Y-m-d') > $desde->format('Y-m-d')) {
+							$res['errors'][] = 'Un dels participants no té llicència durant tot el periode del curs ('.$metapersona->getDni().')';
+						} 
+					}
+
+				}	
+				break;
+				
+			case 308:	// Federativa instructor 
+					
+				break;
+			
+			case 309:	// Director. # se exige haber dirigido como mínimo dos cursos de buceador de esa misma especialidad
+					
+					
+				break;	
+				
+			default:
+				
+					
+				break;
+		}
+		
+		if (count($res['errors']) > 0) $res['result'] = 'KO';
+		
+		return $res; 
+	}
+
+	public function getRequerimentsEstructuraInforme($titol, $resultat)
+    {
+    	if ($titol == null) return array('titol' => '', 'errors' => '');
+		
+    	// Format tipus fitxa per poder fer el rende ren alguna vista funcionalment
+		$dades = array(
+			'titol' => $titol->getLlistaText(),
+			'errors' => count($resultat),
+			BaseController::CONTEXT_REQUERIMENT_ALUMNES => array(
+				'edat' 			=> array('num' => 200, 'text' => 'Sense requeriments d\'edat', 'valor' => '', 'resultat' => ''),
+				'llicencia'		=> array('num' => 207, 'text' => 'No cal llicència federativa', 'valor' => '', 'resultat' => ''),
+				'immersions'	=> array('num' => array(203, 204, 205, 206, 208), 'text' => 'Immersions', 'valor' => '', 'resultat' => ''),
+				'titols'		=> array('num' => array(201, 202), 'text' => 'Títols', 'valor' => '', 'resultat' => '')
+			),
+			BaseController::CONTEXT_REQUERIMENT_GENERAL => array(
+				'hores' 		=> array(),
+				'ratios' 		=> array()
+			),
+			
+			BaseController::CONTEXT_REQUERIMENT_DOCENTS => array(
+				'docents'		=> array()
+			)
+		);
+		
+		/********** ALUMNE *************/
+		$reqAlumnes = &$dades[BaseController::CONTEXT_REQUERIMENT_ALUMNES]; 
+		
+		$reqEdat = $titol->getRequerimentByTipus($reqAlumnes['edat']['num']);  // Edat
+		if ($reqEdat != null) {
+			$reqAlumnes['edat']['text'] = $reqEdat->getText();
+			$reqAlumnes['edat']['valor'] = $reqEdat->getValor();
+		}
+
+		$reqLlicencia = $titol->getRequerimentByTipus($reqAlumnes['llicencia']['num']);  // Llicencia
+		if ($reqLlicencia != null) {
+			$reqAlumnes['llicencia']['text'] = $reqLlicencia->getText();
+			$reqAlumnes['llicencia']['valor'] = $reqLlicencia->getValor();
+		}
+
+		$reqImmersions = array();
+		foreach ($reqAlumnes['immersions']['num'] as $num) {
+			$reqImmersio = $titol->getRequerimentByTipus($num);  // Immersions
+			
+			if ($reqImmersio != null) $reqImmersions[] = $reqImmersio->getValor().' ('.$reqImmersio->getText().')';
+		} 
+		if (count($reqImmersions) > 0) {
+			$reqAlumnes['immersions']['valor'] = implode(PHP_EOL, $reqImmersions);
+		}
+		
+		$reqTitols = $titol->getRequerimentByTipus($reqAlumnes['titols']['num'][0]);  // Titols suficients
+		$separador = " o ";
+		if ($reqTitols == null) {
+			$reqTitols = $this->getRequerimentByTipus($reqAlumnes['titols']['num'][1]);  // Titols necessaris
+			$separador = " + ";	
+		}		
+		
+		if ($reqTitols != null) {
+			$titolsIdsArray = explode(";",$reqTitols->getValor()); // llista ids XX;YY;ZZ
+			
+			$titolsAbrevArray = array(); 
+			foreach ($titolsIdsArray as $id) {
+				$altretitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($id);
+				if ($altretitol != null) $titolsAbrevArray[] = $altretitol->getCodi(); 
+			}
+			
+			$reqAlumnes['titols']['valor'] = implode($separador, $titolsAbrevArray);
+		}
+		/********** GENERAL *************/
+		$reqGeneral = &$dades[BaseController::CONTEXT_REQUERIMENT_GENERAL];
+		foreach ($titol->getRequerimentsSortedByContextCategoria(BaseController::CONTEXT_REQUERIMENT_GENERAL) as $req) {
+			$tipus = $req->getRequeriment();
+			switch ($tipus->getCategoria()) {
+				case BaseController::CATEGORIA_REQUERIMENT_MIN_HORES:
+					
+					$reqGeneral['hores'][$tipus->getId()] = array(
+						'text' => $req->getText(), 'valor1' => $req->getValor(), 'valor2' => '', 'resultat' => ''
+					);
+					
+					break;
+					
+				case BaseController::CATEGORIA_REQUERIMENT_IMMERSIONS:
+					
+					if ($tipus->getId() == 105 && isset($reqGeneral['hores'][102])) { // piscina
+						$reqGeneral['hores'][102]['valor2'] = $req->getValor();
+					}
+					
+					if ($tipus->getId() == 106 && isset($reqGeneral['hores'][103])) { // mar
+						$reqGeneral['hores'][103]['valor2'] = $req->getValor();
+					}
+
+					if ($tipus->getId() == 122 && isset($reqGeneral['hores'][104])) { // fent una funcio
+						$reqGeneral['hores'][104]['valor2'] = $req->getValor();
+					}
+
+					if (!isset($reqGeneral['hores'][102]) && !isset($reqGeneral['hores'][103]) && !isset($reqGeneral['hores'][104])) {
+						// Nova fila
+						$reqGeneral['hores'][$tipus->getId()] = array(
+							'text' => $req->getText(), 'valor1' => '', 'valor2' => $req->getValor(), 'resultat' => ''
+						);
+					}
+					
+					break;
+				
+				case BaseController::CATEGORIA_REQUERIMENT_RATIOS:
+					
+					// 107 - 109 teoriques  | 110 - 112 piscina | 113 - 115 piscina | 116 - 118 recomanat | 119 - 121 aula
+					
+					$col = ($tipus->getId() - 107)%3;  // Columna  0 alumnes, 1 - profes, 2 - seguretat  
+
+					if (!isset($reqGeneral['ratios'][$tipus->getId()])) {
+						$reqGeneral['ratios'][$tipus->getId()] = array(
+							'text' => $req->getText(), 'valor0' => '', 'valor1' => '', 'valor2' => '', 'resultat' => ''
+						);
+					}
+					
+					$reqGeneral['ratios'][$tipus->getId()]['valor'.$col] = $req->getValor();
+					
+					break;
+				
+				default:
+					
+					break;
+			}
+			
+		}	
+		/********** DOCENTS *************/
+		$reqDocents = &$dades[BaseController::CONTEXT_REQUERIMENT_DOCENTS];
+		foreach ($titol->getRequerimentsSortedByContextCategoria(BaseController::CONTEXT_REQUERIMENT_DOCENTS) as $req) {
+			$tipus = $req->getRequeriment();
+			switch ($tipus->getCategoria()) {
+				case BaseController::CATEGORIA_REQUERIMENT_TITULACIONS:
+
+				$titolsIdsArray = explode(";",$req->getValor()); // llista ids XX;YY;ZZ
+				
+				$titolsAbrevArray = array(); 
+				foreach ($titolsIdsArray as $id) {
+					$altretitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($id);
+					if ($altretitol != null) $titolsAbrevArray[] = $altretitol->getCodi(); 
+				}
+				
+				$reqDocents['docents'][$tipus->getId()] = array(
+						'text' => $req->getText(), 'valor' => implode($separador, $titolsAbrevArray), 'resultat' => ''
+				);
+						
+				break;
+			
+			default:
+				// Altres validacions categoria NULL
+				$res = $this->comprovaRequerimentsAltres($requeriment, $curs);
+					
+				break;
+			}
+		}
+		
+		
+		return $dades;
 	}
 
 	private function consultaDadespersonals($dni, $nom, $cognoms, $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 

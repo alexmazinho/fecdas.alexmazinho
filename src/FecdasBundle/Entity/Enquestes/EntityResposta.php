@@ -20,7 +20,7 @@ class EntityResposta {
 	protected $id;	
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityRealitzacio")
+	 * @ORM\ManyToOne(targetEntity="EntityRealitzacio", inversedBy="respostes")
 	 * @ORM\JoinColumn(name="realitzacio", referencedColumnName="id")
 	 */
 	protected $realitzacio;

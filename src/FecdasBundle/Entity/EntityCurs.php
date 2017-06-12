@@ -98,7 +98,7 @@ class EntityCurs {
 	{
 	
 		$this->id = 0;
-		$this->num = '--';  // pendent
+		$this->num = '';  // pendent
 		$this->titol = $titol;
 		$this->club = $club;
 		if ($club == null) $this->clubhistoric = $clubhistoric;
@@ -127,7 +127,7 @@ class EntityCurs {
 	 * @return string
 	 */
 	public function getNumActa() {
-		return $this->num;
+		return trim($this->num) != ''?$this->num:$this->id.' (Provisional, acta pendent)';
 	}
 	
 	/**

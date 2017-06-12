@@ -497,7 +497,6 @@ class PDFController extends BaseController {
 		$pdf->Ln();
 	}
 	
-	
 	public function partetopdfAction(Request $request) {
 	
 		if ($request->query->has('id')) {
@@ -1173,4 +1172,181 @@ class PDFController extends BaseController {
 		
 	}
 
+	public function actacurspdfAction(Request $request) {
+			
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$id = $request->query->get('id', 0);
+		
+		$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
+	
+		if ($curs == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+			
+		$this->logEntryAuth('CURS PDF', ' curs id: '.$id);
+			
+		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+		$pdf = new TcpdfBridge('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+			
+		$pdf->init(array('author' => 'FECDAS', 'title' => 'Curs ' .$id.'_'. date("Y")), 
+						true, "Curs número: " . $curs->getNumActa());
+
+		$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+				
+		// set color for background
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		// set color for text
+		$pdf->SetTextColor(0, 0, 0); // Negre
+				
+		$pdf->AddPage();
+				
+		$y_ini = $pdf->getY();
+		$x_ini = $pdf->getX();
+				
+		$y = $y_ini;
+		$x = $x_ini;
+
+
+
+
+				$pdf->SetFont('dejavusans', '', 16, '', true);
+				$text = '<b>MODEL ' . $parte->getTipus()->getDescripcio() . '</b>';
+				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
+				
+				if ($parte->getWeb() == true and ($parte->getDatapagament() == null or $parte->getPendent() == true)) {
+					// Si no les paguen o confirmen on-line surt el missatge
+					$y += 10;
+					$pdf->SetTextColor(100, 100, 100); // GRis
+					$pdf->SetFillColor(200, 200, 200); //Blanc
+					$pdf->SetFont('dejavusans', 'BI', 14, '', true);
+					$text = '<p>## Aquestes llicències tindran validesa quan es confirmi el seu pagament ##</p>';
+					$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
+					$pdf->SetTextColor(0, 0, 0); // Negre
+					$pdf->SetFillColor(255, 255, 255); //Blanc
+				}
+				
+				$y += 15;
+				
+				$datainici = $parte->getDataalta();
+				$datafi = $parte->getDataCaducitat($this->getLogMailUserData("partetopdfAction  "));
+
+				$pdf->SetFont('dejavusans', '', 10, '', true);
+				$text = '<p>Llista d\'esportistes que representen el CLUB:   ';
+				$text .= '<b>' . $parte->getClub()->getNom() . '</b></p>';
+				$text .= '<p>Vigència de les llicències des del <b>' . $datainici->format("d/m/Y") . '</b>';
+				$text .= ' fins el <b>' . $datafi->format("d/m/Y") . '</b></p>';
+				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
+				
+				$pdf->SetFont('dejavusans', '', 12, '', true);
+				$text = '<p>Data d\'entrada:  <b>' . $parte->getDataentrada()->format("d/m/Y") . '</b></p>';
+				$pdf->writeHTMLCell(0, 0, $x, $y + 20, $text, '', 1, 1, true, 'L', true);
+
+				$pdf->setY($y);
+				$pdf->setX($pdf->getPageWidth() - 122);
+				
+				$factor = ($parte->getTipus()->getIva()/100) + 1;
+				
+				$pdf->SetFont('dejavusans', '', 9, '', true);
+				
+				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
+				  <tr style="background-color:#DDDDDD;">
+				  <td width="100" align="center">CATEGORIA</td>
+				  <td width="100" align="center">P. UNITAT<br/>IVA ' . number_format($parte->getTipus()->getIva(), 2, ',', '.') . '&nbsp;%</td>
+				  <td width="60" align="center">TOTAL</td>
+				  <td width="120" align="center">PREU</td>
+				 </tr>';
+				
+				foreach ($parte->getTipus()->getCategories() as $categoria) {
+					$numpercat = $parte->getNumLlicenciesCategoria($categoria->getSimbol());
+					$preu = $categoria->getPreuAny($parte->getAny());
+					$tbl .= '<tr><td width="100" align="right">' . $categoria->getCategoria() . '</td>';
+					$tbl .= '<td align="right">' . number_format($preu * $factor, 2, ',', '.') .  '&nbsp;€</td>';
+					$tbl .= '<td align="center">' . $numpercat . '</td>';
+					$tbl .= '<td align="right">' . number_format($preu * $numpercat * $factor, 2, ',', '.') .  '&nbsp;€</td></tr>';
+				}
+				$tbl .= '<tr><td colspan="2" align="right"><b>Total</b></td>';
+				$tbl .= '<td align="center">' . $parte->getNumLlicencies() . '</td>';
+				$tbl .= '<td align="right">' .  number_format($parte->getPreuTotal(), 2, ',', '.') . '&nbsp;€</td></tr>';
+				$tbl .= '</table>';
+				
+				$pdf->writeHTML($tbl, false, false, false, false, '');
+				
+				$pdf->Ln(10);	
+				
+				/*$w = array(26, 44, 28, 26, 50, 16, 30, 10, 35);*/ // Amplades
+				$w = array(8, 26+3, 44+6, 28+3, 26+3, 50+8, 16+2, 30+4, 10); // Amplades
+				$this->parteHeader($pdf, $w);
+				
+				$pdf->SetFillColor(255, 255, 255); //Blanc
+				
+				$pdf->SetFont('dejavusans', '', 9, '', true);
+				
+				$llicenciesSorted = $parte->getLlicenciesSortedByName();
+				
+				$row = 1;
+				foreach ($llicenciesSorted as $llicencia_iter) {
+					$num_pages = $pdf->getNumPages();
+					$pdf->startTransaction();
+					
+					$this->parteRow($pdf, $w, $llicencia_iter, $row);
+					
+					if($num_pages < $pdf->getNumPages()) {
+						//Undo adding the row.
+						$pdf->rollbackTransaction(true);
+						
+						$pdf->AddPage();
+						$this->parteHeader($pdf, $w);
+						$pdf->SetFillColor(255, 255, 255); //Blanc
+						$pdf->SetFont('dejavusans', '', 9, '', true);
+						
+						$this->parteRow($pdf, $w, $llicencia_iter, $row);
+						
+					} else {
+						//Otherwise we are fine with this row, discard undo history.
+						$pdf->commitTransaction();
+					}
+					$row++;
+				}
+				
+				$pdf->Ln();
+				
+				$y = $pdf->getY();
+				
+				/* Treure activitats
+				$pdf->SetFont('dejavusans', '', 8, '', true);
+				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
+				<tr nobr="true">
+				<td width="130" align="left"><b>A</b>: Apnea</td>
+				<td width="130" align="left"><b>E</b>: Escafandrisme CMAS</td>
+				<td width="130" align="left"><b>FA</b>: Foto Sub Apnea</td>
+				<td width="130" align="left"><b>FS</b>: Fotografia Submarina</td>
+				<td width="130" align="left"><b>HS</b>: Hoquei Sub</td>
+				</tr>';
+				$tbl .= '<tr nobr="true">
+				<td align="left"><b>O</b>: Orientació</td>
+				<td align="left"><b>P</b>: Pesca Submarina</td>
+				<td align="left"><b>VS</b>: Video Subaquàtic</td>
+				<td align="left"><b>RG</b>: Rugbi Subaquàtic</td>
+				<td align="left"><b>BP</b>: Busseig Esportiu Piscina</td>
+				</tr>';
+				$tbl .= '<tr nobr="true">
+				<td align="left"><b>N</b>: Natació amb Aletes</td>
+				<td align="left"><b>B</b>: Biologia</td>
+				<td align="left"><b>BA</b>: Busseig amb Ampolles</td>
+				<td align="left">&nbsp;</td>
+				<td align="left">&nbsp;</td>
+				</tr>';
+				$tbl .= '</table>';
+				
+				$pdf->writeHTML($tbl, false, false, false, false, '');
+				*/
+				  
+				// reset pointer to the last page
+				$pdf->lastPage();
+			
+				// Close and output PDF document
+				$response = new Response($pdf->Output("llicencies_" . $parte->getClub()->getCodi() . "_" . $parte->getId() . ".pdf", "D"));
+				$response->headers->set('Content-Type', 'application/pdf');
+				return $response;
+	}
 }

@@ -26,7 +26,7 @@ class EntityMetaPersona {
 	protected $dni;
 
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityTitulacio", mappedBy="persona")
+	 * @ORM\OneToMany(targetEntity="EntityTitulacio", mappedBy="metapersona")
 	 */
 	protected $titulacions;
 
@@ -40,7 +40,7 @@ class EntityMetaPersona {
 	protected $altrestitulacions;
 
 	/**
-	 * @ORM\OneToMany(targetEntity="EntityDocencia", mappedBy="docent")
+	 * @ORM\OneToMany(targetEntity="EntityDocencia", mappedBy="metadocent")
 	 */
 	protected $docencies;
 

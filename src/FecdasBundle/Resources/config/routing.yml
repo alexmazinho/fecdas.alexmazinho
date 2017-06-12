@@ -355,7 +355,7 @@ FecdasBundle_cursostopdf:
 
 FecdasBundle_actacurspdf:
     path:  /actacurspdf
-    defaults: { _controller: "FecdasBundle:Titulacions:actacurspdf" }
+    defaults: { _controller: "FecdasBundle:PDF:actacurspdf" }
     requirements:
         methods:  GET
 

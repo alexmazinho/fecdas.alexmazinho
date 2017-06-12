@@ -303,24 +303,30 @@ class TitulacionsController extends BaseController {
 		$participants = null;
 		$instructors = null;
 		$collaboradors = null;
+		$action = '';
 		
 		$participantscurrent = null;
 
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
-    		
+			$action = $request->query->get('action', 0);
+			
+			$checkRole = $this->get('fecdas.rolechecker');
+			
+			if ($id == 0 && !$checkRole->isCurrentInstructor()) {
+				$this->get('session')->getFlashBag()->add('error-notice', 'Només els instructors poden crear un nou curs');
+				return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
+			}
     	} else {
    			/* Alta o modificació de preus */
     		$data = $request->request->get('curs');
     		$id = (isset($data['id'])?$data['id']:0);
-			
-			
-			
+			$action = (isset($data['action'])?$data['action']:'');
     	}
 		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
     		 
     	if ($curs == null) {
-    		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST'));
+    		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST').' action: '.$action);
     	
     		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $this->getCurrentClub());
 			$em->persist($curs);
@@ -335,34 +341,47 @@ class TitulacionsController extends BaseController {
 		}
 			
     	$form = $this->createForm(new FormCurs(), $curs);
-    	
-    	if ($request->getMethod() == 'POST') {
-    		try {
+    	try {
+    		if ($request->getMethod() == 'POST') {
+    		
 			 	$form->handleRequest($request);
 				if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrorsAsString() );
 				
 				// Comprovacions genèriques
-				$this->validacionsCurs($curs, $form);
+				$this->validacionsCurs($curs, $form, $action);
 			
 				
+				// Alumnes
+				//$foto = $form->get('fotoupld')->getData(); 
 				
-					// Alumnes
-					//$foto = $form->get('fotoupld')->getData(); 
 				
+				$this->accionsPostValidacions($curs, $action);
 	    		
+				$curs->setDatamodificacio(new \DateTime('now'));
+				
 	    		$em->flush();
 	    		
     			$this->get('session')->getFlashBag()->add('sms-notice',	'Canvis desats correctament');
     			
     			return $this->redirect($this->generateUrl('FecdasBundle_curs', 
     					array( 'id' => $curs->getId() )));
-    			
-    		} catch (\Exception $e) {
-    			// Ko, mostra form amb errors
-    			$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-    		}
-   		} 
-
+    		} else {
+	   			
+				if ($action == 'remove') {
+				 	if (!$this->isCurrentAdmin())	throw new \Exception('Només els administradors poden esborrar el curs' );
+						
+				 	if ($curs->esNou())  throw new \Exception('No s\'ha pogut esborrar el curs' );
+					
+					
+					/// !!!!!! PENDENT !!!! 
+				
+				}
+	   		}
+		} catch (\Exception $e) {
+    		// Ko, mostra form amb errors
+    		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+    	}
+		
 		// Resultat check Requeriments titulació
 		$resultat = $this->comprovaRequerimentsCurs($curs);
 
@@ -516,8 +535,17 @@ class TitulacionsController extends BaseController {
 		}
 	}
 
-
-	private function validacionsCurs($curs, $form) {
+	private function validacionsCurs($curs, $form, $action) {
+		
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		if ($action == 'save' 	&& !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden desar les dades del curs');
+		if ($action == 'close' 	&& !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden tancar el curs');
+		
+		if ($action == 'unclose' 	&& !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden tornar a obrir el curs per editar-lo');
+		if ($action == 'validate' 	&& !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden confirmar la validesa de les dades del curs');
+		
+		if ($action == 'finalize' 	&& !$checkRole->isCurrentAdmin()) throw new \Exception('Només des de la Federació es pot finalitzar el curs');
 		
 		// Generals 
 		if ($curs->getTitol() == null) {
@@ -546,11 +574,13 @@ class TitulacionsController extends BaseController {
 		// Director / Co-director poden ser instructors també?
 
 		$docentIds = array();
-		$instructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
-		foreach ($instructors as $docent) {
-			$meta = $docent->getMetadocent();
+		$docenciesInstructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+		foreach ($docenciesInstructors as $docencia) {
+			$meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('L\'instructor '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
+
+			$this->validaDocenciaHores($docencia);
 			
 			// Validació llicència federativa tècnic vigent 
 			$finsVariable = clone $fins;
@@ -574,11 +604,13 @@ class TitulacionsController extends BaseController {
 			if ($finsVariable->format('Y-m-d') > $desde->format('Y-m-d')) throw new \Exception('L\'instructor '.$meta->getDni().' no té llicència tècnic durant tot el periode del curs');
 			
 		}
-		$collaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
-		foreach ($collaboradors as $docent) {
-			$meta = $docent->getMetadocent();
+		$docenciesCollaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
+		foreach ($docenciesCollaboradors as $docencia) {
+			$meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('El col·laborador '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
+			
+			$this->validaDocenciaHores($docencia);
 		}
 
 		// Validar alumne repetit
@@ -588,8 +620,106 @@ class TitulacionsController extends BaseController {
 			$meta = $participant->getMetapersona();
 			if (in_array($meta->getId(), $alumnesIds)) throw new \Exception('L\'alumne '.$meta->getNomCognoms().' està repetit');
 			$alumnesIds[] = $meta->getId();
+			
+			if ($action == 'finalize') $this->validaDadesFinalitzacioCurs($participant);
 		}
+	}
 
+	private function validaDocenciaHores($docencia) {
+		if ($docencia == null) return;
+		
+		$rol = '';
+		if ($docencia->getRol() == BaseController::DOCENT_INSTRUCTOR) $rol = 'instructors';
+		if ($docencia->getRol() == BaseController::DOCENT_COLLABORADOR) $rol = 'col·laboradors';
+		 
+		
+		if ($docencia->getHteoria() < 0) throw new \Exception('Les hores de teoria dels '.$rol.' no poden ser negatives');
+		if ($docencia->getHaula() < 0) throw new \Exception('Les hores de pràctiques fora de l\'aigua dels '.$rol.' no poden ser negatives');
+		if ($docencia->getHpiscina() < 0) throw new \Exception('Les hores de pràctiques a aigües confinades dels '.$rol.' no poden ser negatives');
+		if ($docencia->getHmar() < 0) throw new \Exception('Les hores de pràctiques a la mar dels '.$rol.' no poden ser negatives');
+	}
+
+	private function validaDadesFinalitzacioCurs($participant) {
+		if ($participant == null) return;
+		
+		if ($participant->getNum() == null || trim($participant->getNum()) == '')  throw new \Exception('Falta indicar el número per l\'alumne '.$participant->getMetapersona()->getDni());
+	}
+
+	private function accionsPostValidacions($curs, $action) {
+		
+		$current = new \DateTime('now');
+			
+		switch ($action) {
+			case 'save':	// Instructor.
+				$curs->setEditable(true);
+				$curs->setValidat(false);
+				$curs->setFinalitzat(false);
+				
+				break;
+	
+			case 'close':	// Instructor -> club
+			
+				$curs->setEditable(false);
+				$curs->setValidat(false);
+				$curs->setFinalitzat(false);
+				
+				// Enviar mail al club
+				$club = $curs->getClub();
+				$subject = "Federació Catalana d'Activitats Subaquàtiques. Curs pendent de validació ";
+				$tomails = $club->getMail();
+				if (count($tomails) == 0) $subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
+				
+				$body = "<p>Benvolgut club ".$club->getNom()."</p>";
+				$body .= "<p>Les dades d'un nou curs han estat introduïdes per un dels instructors capacitats a tal efecte, ";
+				$body .= "i resta pendent de la teva validació per notificar-lo a la Federació</p>";
+				$body .= "<p>Curs: <b>".$curs->getTitol()->getLlistaText()."</b></p>";
+				
+				$this->buildAndSendMail($subject, $tomails, $body);
+						
+				break;
+	
+			case 'unclose':		// club -> instructor 
+						
+				$curs->setEditable(true);
+				$curs->setValidat(false);
+				$curs->setFinalitzat(false);
+				
+				// Enviar mail a l'instructor ¿?	
+				break;
+					
+			case 'validate':	// Club  -> federació
+				
+				$curs->setEditable(false);		
+				$curs->setValidat(true);	
+				$curs->setFinalitzat(false);
+				
+				// Enviar mail a Federació
+				$club = $curs->getClub();
+				
+				$subject = ":: Nou curs validat :: ";
+				$tomails = $this->getCarnetsMails(); // Albert 
+				$body = "<p>Hola ".$club->getNom()."</p>";
+				$body .= "<p>El club ".$club->getNom()." ha validat les dades d'un nou curs en data ".$current->format('d/m/Y');
+				$body .= "<p>Curs: <b>".$curs->getTitol()->getLlistaText()."</b></p>";
+				
+				$this->buildAndSendMail($subject, $tomails, $body);
+						
+				break;
+					
+			case 'finalize':	// Federació
+				
+				$curs->setEditable(false);		
+				$curs->setValidat(true);	
+				$curs->setFinalitzat(true);
+				
+				break;
+					
+			default:
+				throw new \Exception('Acció incorrecte '.$action );
+						
+						
+				break;
+		}
 	}
 
 	private function comprovaRequerimentsCurs($curs) {
@@ -615,18 +745,22 @@ class TitulacionsController extends BaseController {
 					break;
 
 				case BaseController::CATEGORIA_REQUERIMENT_IMMERSIONS:
+					// No es pot comprovar
 					
 					break;
 				
 				case BaseController::CATEGORIA_REQUERIMENT_RATIOS:
+					$res = $this->comprovaRequerimentsRatios($requeriment, $curs);
 					
 					break;
 				
 				case BaseController::CATEGORIA_REQUERIMENT_FORMACIO:
+					$res = $this->comprovaRequerimentsFormacio($requeriment, $curs);
 					
 					break;
 				
 				case BaseController::CATEGORIA_REQUERIMENT_TITULACIONS:
+					$res = $this->comprovaRequerimentsTitulacions($requeriment, $curs);
 					
 					break;
 				
@@ -680,8 +814,7 @@ class TitulacionsController extends BaseController {
 				break;	
 				
 			default:
-				
-					
+
 				break;
 		}
 		
@@ -690,6 +823,164 @@ class TitulacionsController extends BaseController {
 		return $res; 
 	}
 
+	private function comprovaRequerimentsRatios($requeriment, $curs) {
+		$tipus = $requeriment->getRequeriment();	
+			
+		$res = array('result' => 'OK', 'errors' => array());
+		
+		$valors = explode(";",$requeriment->getValor());
+		$valor0 = isset($valors[0])?$valors[0]:''; // Alumnes 
+		$valor1 = isset($valors[1])?$valors[1]:''; // Professors
+		$valor2 = isset($valors[2])?$valors[2]:''; // Bussejador seguretat
+		
+		$alumnes = count($curs->getParticipantsSortedByCognomsNom());
+		
+		if ($alumnes > 0 && is_numeric($valor0) && $valor0 > 0) {
+			// Recompte instructors 
+			$profeTeoria = 0;
+			$profePiscina = 0;
+			$profeMar = 0;
+			$profeAula = 0;
+			foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR) as $instructor) {
+				if ($instructor->getHteoria() > 0) $profeTeoria++;
+				if ($instructor->getHaula() > 0) $profeAula++;
+				if ($instructor->getHpiscina() > 0) $profePiscina++;
+				if ($instructor->getHmar() > 0) $profeMar++;
+			}
+			
+			$seguretatTeoria = 0;
+			$seguretatPiscina = 0;
+			$seguretatMar = 0;
+			$seguretatAula = 0;
+			if ($valor2 != '' && $valor2 > 0) {
+				foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR) as $instructor) {
+					if ($instructor->getHteoria() > 0) $seguretatTeoria++;
+					if ($instructor->getHaula() > 0) $seguretatAula++;
+					if ($instructor->getHpiscina() > 0) $seguretatPiscina++;
+					if ($instructor->getHmar() > 0) $seguretatMar++;
+				}
+			}
+			
+			$profes = 0;
+			$seguretat = 0;		
+			switch ($tipus->getId()) {
+				case 150:  // Ratio teoria
+					$profes = $profeTeoria;
+					$seguretat = $seguretatTeoria;	
+					
+					break;
+				case 151:  // Ratio piscina
+					$profes = $profePiscina;
+					$seguretat = $seguretatPiscina;	
+								
+					break;
+				case 152:  // Ratio mar
+				case 153:  // Ratio mar recomanat
+					$profes = $profeMar;
+					$seguretat = $seguretatMar;	
+								
+					break;
+				
+				case 154:  // Ratio aula
+					$profes = $profeAula;
+					$seguretat = $seguretatAula;	
+									
+					break;
+				default:
+						
+					break;
+			}
+	
+			$text = $requeriment->getText();
+			$text = substr($text, 0, strpos($text, ":"));
+	
+			if (($profes/$alumnes) < ($valor1 / $valor0)) $res['errors'][] = $text.'. Ratio professor/alumnes <span>'.$profes.'/'.$alumnes.'</span> inferior al valor requerit '.$valor1.'/'.$valor0; 
+			
+			if (is_numeric($valor2) && $valor2 > 0) {
+				$aux = 'requerit';
+				if ($tipus->getId() == 153) $aux = 'recomanat';
+				
+				if (($seguretat/$alumnes) < ($valor2 / $valor0)) $res['errors'][] = $text.'. Ratio bussejador seguretat/alumnes <span>'.$seguretat.'/'.$alumnes.'</span> inferior al valor '.$aux.' '.$valor2.'/'.$valor0;
+			}
+			
+			if (count($res['errors']) > 0) $res['result'] = 'KO';
+		}
+		
+		return $res;
+	}
+
+	private function comprovaRequerimentsFormacio($requeriment, $curs) {
+		$tipus = $requeriment->getRequeriment();	
+			
+		$res = array('result' => 'OK', 'errors' => array());
+		
+		switch ($tipus->getId()) {
+			case 201:  // Títols alumne suficients
+			case 202:  // Títols alumne necessaris
+			
+				
+				break;
+				
+			case 203:  // Experiència immersions
+			case 204:  
+			case 205:
+			case 206:
+			case 207:			
+			case 208:
+
+				// No es pot comprovar
+					
+				break;	
+				
+			default:
+					
+				break;
+		}
+		
+		if (count($res['errors']) > 0) $res['result'] = 'KO';
+		
+		return $res;
+	}
+	
+	private function comprovaRequerimentsTitulacions($requeriment, $curs) {
+		$tipus = $requeriment->getRequeriment();	
+			
+		$res = array('result' => 'OK', 'errors' => array());
+		
+		switch ($tipus->getId()) {
+			case 300:  // Director títols suficients
+			case 301:  // Director títols necessaris
+			
+				
+				break;
+				
+			case 302:  // Prof. teoria títols suficients
+			case 303:  // Prof. teoria títols necessaris
+			
+				
+				break;
+
+			case 304:  // Prof. pràctica títols suficients
+			case 305:  // Prof. pràctica títols necessaris
+			
+				
+				break;
+
+			case 304:  // Buss. seguretat títols suficients
+			case 305:  // Buss. seguretat títols necessaris
+			
+				
+				break;
+				
+			default:
+					
+				break;
+		}
+		
+		if (count($res['errors']) > 0) $res['result'] = 'KO';
+		
+		return $res;
+	}
 
 	private function comprovaRequerimentsAltres($requeriment, $curs) {
 		
@@ -901,20 +1192,25 @@ class TitulacionsController extends BaseController {
 					break;
 				
 				case BaseController::CATEGORIA_REQUERIMENT_RATIOS:
+					// 150 teoriques  | 151 piscina | 152 mar | 153 recomanat | 154 aula
 					
-					// 150 - 152 teoriques  | 153 - 155 piscina | 156 - 158 piscina | 159 - 161 recomanat | 162 - 164 aula
-					$col = ($num - 150)%3;  // Columna  0 alumnes, 1 - profes, 2 - seguretat  
-					$row =  floor(($num - 150)/3) + 150;
+					$valors = explode(";",$req->getValor());
+					$valor0 = isset($valors[0])?$valors[0]:''; // Alumnes 
+					$valor1 = isset($valors[1])?$valors[1]:''; // Professors
+					$valor2 = isset($valors[2])?$valors[2]:''; // Bussejador seguretat
 					
-					if (!isset($reqGeneral['ratios'][$row])) {
-						$reqGeneral['ratios'][$row] = array(
-							'text' => $req->getText(), 'valor0' => '', 'valor1' => '', 'valor2' => '', 'resultat' => ''
+					
+					if (!isset($reqGeneral['ratios'][$num])) {
+						$reqGeneral['ratios'][$num] = array(
+							'text' => $req->getText(), 'valor0' => $valor0, 'valor1' => $valor1, 'valor2' => $valor2, 'resultat' => ''
 						);
+					} else {
+						$reqGeneral['ratios'][$num]['valor0'] = $valor0;
+						$reqGeneral['ratios'][$num]['valor1'] = $valor1;
+						$reqGeneral['ratios'][$num]['valor2'] = $valor2;
 					}
 					
-					$reqGeneral['ratios'][$row]['valor'.$col] = $req->getValor();
-					
-					if (isset($resultat[$row])) $reqGeneral['ratios'][$row]['resultat'] = 'KO'; // error ratios
+					if (isset($resultat[$num])) $reqGeneral['ratios'][$num]['resultat'] = 'KO'; // error ratios
 					
 					break;
 				

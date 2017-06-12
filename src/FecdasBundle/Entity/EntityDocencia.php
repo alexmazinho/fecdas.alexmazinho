@@ -23,7 +23,7 @@ class EntityDocencia {
 	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona", inversedBy="docencies")
 	 * @ORM\JoinColumn(name="metadocent", referencedColumnName="id")
 	 */
-	protected $metadocent;	// FK taula m_persones
+	protected $metadocent;	// FK taula m_metapersones
 	
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityCurs", inversedBy="docents")

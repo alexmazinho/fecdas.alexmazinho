@@ -29,7 +29,7 @@ class EntityRealitzacio {
 	protected $usuari;	// Mail del club
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityEnquesta")
+	 * @ORM\ManyToOne(targetEntity="EntityEnquesta", inversedBy="realitzacions")
 	 * @ORM\JoinColumn(name="enquesta", referencedColumnName="id")
 	 */
 	protected $enquesta;

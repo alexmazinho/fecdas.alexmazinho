@@ -37,36 +37,53 @@
 			<div class="col-md-8"><h1><a href="{{ path('FecdasBundle_cursos') }}">Llistat de cursos</a> > Edició</h1></div>
 	        <div class="col-md-4 col-last-right">
 				<div class="buttons-top-bootstrap">
-					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_actacurspdf') }}" alt="Descarregar acta curs" 
-							title="Descarregar acta curs"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
-
+					{% if admin and not curs.esNou %}
+					<div class="button-top"><a class="link delete-curs" href="{{ path('FecdasBundle_curs', { 'id': curs.id, 'action' : 'remove' }) }}" alt="Anul·lar curs" 
+							title="Anul·lar curs"><i class="fa fa-trash fa-1x systemblue"></i></a></div>
+					{% endif %} 
+					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_actacurspdf', { 'id': curs.id }) }}" alt="Descarregar acta curs" 
+							title="Descarregar acta curs"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div>
 				</div> 
 			</div>
+			{% if not curs.finalitzat %}
 			<div class="row">
-				<div class="col-md-offset-1 col-md-10">
+				<div class="col-md-12">
 				<div id="curs-process-block">
 					<div class="buttons-curs-process">
-						{% if curs.esNou %}
-							<span class="step-description"><span class="step-step green">Pas 1.</span> Instructor: Introduïr les dades i desar</span>
-						{% endif %}
-
-						<div class="button-step {% if curs.esNou %}button-step-active {% endif %}">
-							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" data-action="save" alt="Desar dades curs" 
-								title="Desar dades curs">
-								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x green"></i><i class="fa fa-floppy-o fa-stack-1x fa-inverse"></i></i>
-							</a>
-						</div>
-
-						{% if curs.editable and not curs.esNou %}
+					    {% if curs.esNou or curs.editable %}
+    						<span class="step-description"><span class="step-step green">Pas 1.</span> Instructor: Introduïr les dades i desar</span>
+    					{% endif %}
+    
+    					<div class="button-step {% if (curs.esNou or curs.editable) and roleinstructor %}button-step-active {% endif %}">
+    						<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" data-action="save" alt="Desar dades curs" 
+    							title="Desar dades curs">
+    							<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x green"></i><i class="fa fa-floppy-o fa-stack-1x fa-inverse"></i></i>
+    						</a>
+    					</div>
+                        
+    					{% if roleinstructor %}
+    						{% if curs.editable and not curs.esNou %}
 							<span class="step-description"><span class="step-step orange">Pas 2.</span> Instructor: Confirmar les dades i validació per part del club</span>
+    						{% endif %}
+    						
+    						<div class="button-step {% if curs.editable and not curs.esNou %}button-step-active{% endif %}">
+    							<a class="link close-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'close' }) }}" data-action="close" alt="Tancar per validació del club" 
+    								title="Tancar per validació del club">
+    									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-lock fa-stack-1x fa-inverse"></i></i>
+    							</a>
+    						</div>	
+						{% else %}
+						    {% if curs.tancat %}
+    							<span class="step-description"><span class="step-step orange">Pas 2.</span> Club: Reobrir el curs per editar-lo</span>
+    						{% endif %}
+    
+    						<div class="button-step {% if curs.tancat %}button-step-active {% endif %}">
+    							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'unclose' }) }}" data-action="unclose" alt="Reobrir curs" 
+    								title="Reobrir curs">
+    								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-unlock fa-stack-1x fa-inverse"></i></i>
+    							</a>
+    						</div>
 						{% endif %}
-						
-						<div class="button-step {% if curs.editable and not curs.esNou %}button-step-active{% endif %}">
-							<a class="link close-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'close' }) }}" data-action="close" alt="Tancar per validació del club" 
-								title="Tancar per validació del club">
-									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-lock fa-stack-1x fa-inverse"></i></i>
-							</a>
-						</div>	
 						
 						{% if curs.tancat %}
 							<span class="step-description"><span class="step-step red">Pas 3.</span> Club: Validar les  dades i notificar a la Federació </span>
@@ -93,6 +110,7 @@
 					</div> 
 				</div>
 			</div>
+			{% endif %}
 		</div>
    	</header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
@@ -447,6 +465,7 @@
 
 
 			callbackPropagate = function(added) {
+				// added = {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 				$(".alert.alert-dismissible, .alert.field-error-alert").remove();
 				
 		    };
@@ -469,138 +488,6 @@
 			init_cercapernomdnimail_JSON('#curs_auxcollaborador', 'Cercar col·laborador per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
 
 			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, callbackPropagate, selectionFormat, resultFormat);
-			/*
-			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, function ( added ) {
-				// {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
-				
-				$('#curs_formalumne_id').val( added.id );
-				$('#curs_formalumne_nomcognoms').val( added.nomcognoms );
-				$('#curs_formalumne_mail').val( added.mail );
-				$('#curs_formalumne_telefon').val( added.telf );
-				$('#curs_formalumne_datanaixement').val( added.nascut );
-				$('#curs_formalumne_poblacio').val( added.poblacio );
-				$('#curs_formalumne_nacionalitat').val( added.nacionalitat );
-
-			}, function(item) {
-
-		        return item.text;
-
-			}, resultFormat, function( e ) {
-				// On Clearing  => e.val, e.added, e.removed
-				// Reset form fields
-				clearAlumneForm();
-			});
-
-			*/
-			
-			/*
-			$('.add-alumne').click( function(e) {
-				// Si hi ha algú seleccionat afegir les dades del formulari
-				e.preventDefault();				
-				
-				$(".alert.alert-dismissible").remove();
-				
-				if ($('#curs_formalumne_dni').val() === '') {
-					var sms = smsResultAjax('KO', 'Cal escollir algún alumne');
-		   			$('#formalumne-cerca').prepend(sms);
-		   			return false;
-				} 
-
-				// Valida que no estigui ja a la llista
-	        	var idAlumne = $('#curs_formalumne_id').val(); 
-
-				if ($('#curs_participantscurrent').val().trim().indexOf( idAlumne ) !== -1) {
-					var sms = smsResultAjax('KO', 'Aquesta persona ja es troba a la llista');
-		   			$('#formalumne-cerca').prepend(sms);
-		   			return false;
-				}
-				
-				var newRowClass = 'alumne-row_'+$('#curs_formalumne_id').val();
-				var newIdAlumne = $('#curs_formalumne_id').clone();
-				var newFotoUpld = $('#curs_formalumne_fotoupld').clone();
-				var newCertificatUpld = $('#curs_formalumne_certificatupld').clone();
-				var newNumTitulacio = $('#curs_formalumne_num').clone();
-
-				//var totalNous = $('.alumne-row-new').length;  <= cal aprofitar forats que deixa l'esborrat
-				var totalNous = 0;
-				
-				while ( $('#'+newCertificatUpld.attr('id')+'_'+totalNous).length !== 0 ) {
-					totalNous++;
-				}
-
-				newIdAlumne.attr('name', newIdAlumne.attr('name')+'['+totalNous+']');
-				newIdAlumne.attr('id', newIdAlumne.attr('id')+'_'+totalNous);
-				
-				newFotoUpld.attr('name', newFotoUpld.attr('name')+'['+totalNous+']');
-				newFotoUpld.attr('id', newFotoUpld.attr('id')+'_'+totalNous);
-				
-				newCertificatUpld.attr('name', newCertificatUpld.attr('name')+'['+totalNous+']');
-				newCertificatUpld.attr('id', newCertificatUpld.attr('id')+'_'+totalNous);
-				
-				newNumTitulacio.attr('name', newNumTitulacio.attr('name')+'['+totalNous+']');
-				newNumTitulacio.attr('id', newNumTitulacio.attr('id')+'_'+totalNous);
-				newNumTitulacio.removeClass('hidden');
-
-				
-				var htmlLi = [];
-				htmlLi.push('<li class="alumne-row data-detall '+newRowClass+' alumne-row-new">');
-				htmlLi.push('   <div class="col-id col-seq col-alumne-id hidden"></div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-dni">'+$('#s2id_curs_formalumne_dni .select2-chosen').html()+'</div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-nom">'+$('#curs_formalumne_nomcognoms').val());
-				if ($('#curs_formalumne_mail').val() != '') {
-					htmlLi.push('      <br/><span class="subtitle">'+$('#curs_formalumne_mail').val()+'</span>');
-				}
-				htmlLi.push('   </div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-poblacio">'+$('#curs_formalumne_poblacio').val());
-				if ($('#curs_formalumne_nacionalitat').val() != '') {
-					htmlLi.push('      ('+$('#curs_formalumne_nacionalitat').val()+')');
-				}
-				if ($('#curs_formalumne_mail').val() != '') {
-					htmlLi.push('      <br/><span class="subtitle">'+$('#curs_formalumne_datanaixement').val()+'</span>');
-				}
-				htmlLi.push('   </div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-foto"></div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-certificat"></div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-num"></div>');
-				htmlLi.push('   <div class="data-detall-cell col-alumne-actions">');
-				htmlLi.push('      <a class="remove-alumne link" href="javascript:void(0);" data-id="'+$('#curs_formalumne_id').val()+'" ><i class="fa fa-remove fa-1x red"></i></a>');
-				htmlLi.push('   </div>');
-				htmlLi.push('</li>');
-
-				if ($('#list-data.alumnes-curs').children('.alumne-row').length == 0) {
-					$('#list-data.alumnes-curs').children('.alumne-empty-alert').addClass('hidden');
-				}
-
-				$('#list-data.alumnes-curs').append(htmlLi.join( '' ));
-
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-id').append(newIdAlumne);
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append(newFotoUpld);
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-foto').append( $('.galeria-upload.galeria-upload-proto').clone().removeClass('galeria-upload-proto') );
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append(newCertificatUpld);
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-certificat').append( $('.certificat-upload.certificat-proto .form-group .input-group ').clone() );
-				$('#list-data.alumnes-curs .'+newRowClass+' .col-alumne-num').append(newNumTitulacio);
-
-				// Canviar/esborrar foto des de la taula d'alumnes
-				addFotoActionsBottom(newFotoUpld.next('.galeria-upload'));
-
-				imageUploadForm('#'+newFotoUpld.attr('id'), 104);
-
-				prepareFileInput( newCertificatUpld );
-				
-				//if ($('#curs_participantscurrent').val().trim() == '') {
-	        	//	$('#curs_participantscurrent').val( idAlumne );
-	        	//} else {
-		        //	var current = $('#curs_participantscurrent').val().trim().split(";");
-		        //	current.push( idAlumne );
-		        //	$('#curs_participantscurrent').val( current.join(";") );
-	        	//}
-				// Clear form
-				$('#curs_formalumne_dni').select2("data", "");
-				clearAlumneForm();
-
-			});
-
-			*/
 			
 			// Delegate
 			$( "#llista-alumnes" ).on( "click", ".remove-alumne", function( e ) {
@@ -626,14 +513,142 @@
 				removeItemCollection(collaboradorsHolder, $(this));
 		        
 			});
+
+			$('a.delete-curs').click( function(e) {
+				//Cancel the link behavior
+		        e.preventDefault();
+
+				var url = $(this).attr('href');
+		        var strText = 'Segur que vols anul·lar aquest curs?';	
+				dialegConfirmacio(strText, 'Anul·lar curs', 'auto', 400, function() {
+					// Continue
+					window.location = url;	
+					
+				}, function() {
+					//Cancel
+					closeDialegConfirmacio();
+				}, function() {
+					//Open
+				});
+			});			
 			
 			$('.button-step a').click( function(e) {
 				//Cancel the link behavior
 		        e.preventDefault();
+
+		        var action = $(this).attr('data-action');
 				
-				$('#curs_action').val( $(this).attr('data-action') ); 
-			
-				$('#formcurs').submit();
+		        var activeLink = $(this).parent('.button-step-active').length;
+		        if (activeLink == 0) {
+					strInfo = 'Opció no disponible';
+		        	if (action == 'save') strInfo += '. Només els instructors poden editar les dades del curs';
+		        	if (action == 'close') strInfo += '. Només els instructors poden tancar el curs per tal que el Club les validi ';		        			        
+		        	if (action == 'unclose') strInfo += '. Només el Club pot reobrir el curs ';
+		        	if (action == 'validate') strInfo += '. Només el Club pot confirmar la validesa de les dades del curs ';
+		        	if (action == 'finalize') strInfo += '. Només des de la Federació es pot finalitzar un curs ';
+		        	dialegError('Avís', strInfo, 400, 0);
+		        	return false;
+		        }
+
+				var roleinstructor = '{{ roleinstructor }}';
+				var roleclub = '{{ roleclub }}';
+				var admin = '{{ admin }}';
+
+				$('#curs_action').val( action ); 
+
+				if (action == 'save') {
+
+					if (!roleinstructor) {
+						dialegError('Error', 'Només els instructors poden editar les dades del curs', 400, 0);
+			        	return false;
+					}
+					
+					$('#formcurs').submit();
+				}
+
+				if (action == 'close') {
+
+					if (!roleinstructor) {
+						dialegError('Error', 'Només els instructors poden tancar el curs', 400, 0);
+			        	return false;
+					}
+					
+					var strText = 'Un cop confirmades les dades del curs no es podran modificar.<br/>Segur que vols continuar?';	
+					dialegConfirmacio(strText, 'Confirmar les dades per validació per part del club', 'auto', 400, function() {
+						// Continue
+						$('#formcurs').submit();
+					}, function() {
+						//Cancel
+						closeDialegConfirmacio();
+					}, function() {
+						//Open
+					});
+				}
+
+				if (action == 'unclose') {
+					if (!roleclub) {
+						dialegError('Error', 'Només el Club pot reobrir el curs per editar-lo', 400, 0);
+			        	return false;
+					}
+					
+					var strText = 'Vols tornar a obrir el curs perquè l\'instructor pugui editar-lo?';	
+					dialegConfirmacio(strText, 'Reobrir el curs', 'auto', 400, function() {
+						// Continue
+						$('#formcurs').submit();
+					}, function() {
+						//Cancel
+						closeDialegConfirmacio();
+					}, function() {
+						//Open
+					});
+				}
+
+				if (action == 'validate') {
+					if (!roleclub) {
+						dialegError('Error', 'Només el Club pot confirmar la validesa de les dades del curs', 400, 0);
+			        	return false;
+					}
+					
+					var strText = 'Un cop validades les dades del curs no es podran modificar.<br/>Segur que vols continuar?';	
+					dialegConfirmacio(strText, 'Validar les dades per notificar a la Federació', 'auto', 400, function() {
+						// Continue
+						$('#formcurs').submit();
+					}, function() {
+						//Cancel
+						closeDialegConfirmacio();
+					}, function() {
+						//Open
+					});
+				}
+
+				if (action == 'finalize') {
+					if (!admin) {
+						dialegError('Error', 'Només des de la Federació es pot finalitzar un curs', 400, 0);
+			        	return false;
+					}
+					
+					var errors = '{{ requeriments.errors.total }}';
+
+					var strText = ''
+					if (!isNaN(errors)) {
+						strText = 'No s\'han pogut revisar els errors del curs.<br/>Segur que vols continuar?';
+					} else {
+						if (errors > 0) {
+							strText = 'S\'ha detectat '+errors+' errades a la revisió dels requeriments del curs.<br/>Segur que vols continuar?';
+						} else {
+							strText = 'La revisió dels requeriments del curs és correcte.<br/>Vols continuar?';
+						}
+					}
+					dialegConfirmacio(strText, 'Finalitzar curs', 'auto', 400, function() {
+						// Continue
+						$('#formcurs').submit();
+					}, function() {
+						//Cancel
+						closeDialegConfirmacio();
+					}, function() {
+						//Open
+					});
+				}
 			});
 		});
 

@@ -1586,7 +1586,7 @@ input#form_dni {
 	bottom: 20px;
 }
 
-.buttons-top-bootstrap { margin-top: 10px; }
+.buttons-top-bootstrap { /*margin-top: 10px;*/ }
 
 
 
@@ -2111,7 +2111,7 @@ select#parte_renovar_tipus { width: 240px; }
 .buttons-curs-process { margin: 0 10% 10px;  display: table-row; }
 
 .button-step  { padding: 0 2px;  display: table-cell; line-height: 2; }
-.step-description { color: #1240a0; font-size: 18px; display: table-cell; padding-left: 20px; padding-right: 0; line-height: 2; }
+.step-description { color: #1240a0; font-size: 18px; display: table-cell; padding-left: 20px; padding-right: 0; line-height: 1; }
 .step-description .step-step { font-size: 24px; font-weight: bold;  }
 
 .button-step a.link { font-size: 28px; display: table-cell; padding-left: 2px;   }
@@ -2124,7 +2124,10 @@ select#parte_renovar_tipus { width: 240px; }
     width: 1.5em;
 }
 
-.link i.fa-stack:hover { opacity: 0.8; }
+.button-step a.link:hover { cursor:default; }
+.button-step.button-step-active a.link:hover { opacity: 0.8; cursor:pointer; }
+
+.link i.fa-stack:hover {  }
 
 .link i.fa-stack:hover fa.blue { background-color: #31708f; }
 .link i.fa-stack:hover fa.systemblue { background-color: #2281cf;  }

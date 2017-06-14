@@ -1172,6 +1172,7 @@ class PDFController extends BaseController {
 		
 	}
 
+
 	public function actacurspdfAction(Request $request) {
 			
 		if (!$this->isAuthenticated())
@@ -1182,21 +1183,25 @@ class PDFController extends BaseController {
 		$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
 	
 		if ($curs == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-			
+
 		$this->logEntryAuth('CURS PDF', ' curs id: '.$id);
+
+		$club 			= $curs->getClub();
+		$titolCurs		= $curs->getTitol()->getTitol();
+		$participants 	= $curs->getParticipantsSortedByCognomsNom();
+		$director 		= $curs->getDirector();
+		$codirector 	= $curs->getCodirector();
+		$docents  		= $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+		$collaboradors 	= $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 			
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-		$pdf = new TcpdfBridge('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
-		$pdf->init(array('author' => 'FECDAS', 'title' => 'Curs ' .$id.'_'. date("Y")), 
-						true, "Curs número: " . $curs->getNumActa());
+		$pdf->init(array('author' => 'FECDAS', 'title' => 'Curs ' .$titolCurs.' '. date("Y")), 
+						false, "Acta número: " . $curs->getNumActa(), "footerActaCurs");
 
+		
 		$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-				
-		// set color for background
-		$pdf->SetFillColor(255, 255, 255); //Blanc
-		// set color for text
-		$pdf->SetTextColor(0, 0, 0); // Negre
 				
 		$pdf->AddPage();
 				
@@ -1206,147 +1211,268 @@ class PDFController extends BaseController {
 		$y = $y_ini;
 		$x = $x_ini;
 
+		$pageWidth = $pdf->getPageWidth()-PDF_MARGIN_LEFT-PDF_MARGIN_RIGHT;
 
+		$rowH = 12;
+		$cellH = 8;
+		$tableRowH = 7.5;
+		$wSmall = 15;
+		$wMed = 30;
+		$wDates = 35;
+		$wLarge = 95;
+		
+		$xTitol = $x_ini;
+		$yTitol = $y_ini;
+		
+		$xEtiquetes1 = $xTitol;
+		$xCampActa = $xEtiquetes1 + 22;
+		$xEtiqCurs = $xEtiquetes1 + 57;
+		$xCamps2 = $xEtiquetes1 + 85;
+		$xEtiqDiaFi = $xCamps2 + $wMed + 10;
+		$xCampDiaFi = $xEtiqDiaFi + 20;
+		
+		$yHeaderFila1 = $yTitol + $rowH + 2;
+		$yHeaderFila2 = $yHeaderFila1 + $rowH;
+		$yHeaderFila3 = $yHeaderFila2 + $rowH;
+		$yHeaderFila4 = $yHeaderFila3 + $rowH;
+		$yTitolDocents = $yHeaderFila4 + $rowH + 6;
+		
+		$yFilaDirector = $yFilaCoDirector = $yTitolDocents + $rowH;
+		if ($codirector != null) $yFilaCoDirector = $yFilaDirector + $cellH;
+		$xCampDirector = $xEtiquetes1 + 35;
+		$xEtiqCarnet = $xCampDirector + $wLarge + 7;
+		$xCampCarnet = $xEtiqCarnet + 13;
+		
+		$ySubtitolInstructors = $yFilaCoDirector + $rowH;
+		$yTaulaInstructors = $ySubtitolInstructors + $rowH;
+		$nFilesInstructors = max(count($docents) + 1, 5);
+		
+		$ySubtitolCollaboradors = $yTaulaInstructors + ($nFilesInstructors * $tableRowH) + $rowH + $rowH + 10;  /* $rowH ~ capçalera taula docents */
+		$yTaulaCollaboradors = $ySubtitolCollaboradors + $rowH;
+		$nFilesCollaboradors = max(count($collaboradors) + 1, 3);
+		
+		$yTitolAlumnes = 0;  // Pàgina següent
 
+		$styleSeparador = array('width' => 0.2, 'cap' => 'butt', 'join' => 'miter', 'dash' => '', 'phase' => 10, 'color' => array(0, 0, 0)); // Gris
+		
+		$pdf->SetLineStyle($styleSeparador);
+		
+		
+		if (!$curs->finalitzat()) {
+			// MArca d'aigua
+			$pdf->SetAlpha(0.5);
+			$pdf->SetTextColor(220, 220, 220); // Gris
+			$pdf->SetFont('dejavusans', '', 64, '', true);
+			$pdf->SetXY($x_ini+60, $y_ini+60);
+			$pdf->StartTransform();
+			// $pdf->Rotate(D, X, Y); rotar D graus contrari agulles del rellotge amb centre a X, Y 
+			$pdf->Rotate(-45, $x_ini+60, $y_ini+60);
+			$pdf->Cell(0, 0, 'ACTA PROVISIONAL', 0, 0, 'C');
+			$pdf->StopTransform();
+			$pdf->SetAlpha(1);
+		}
+		
+		
+		// set color for background
+		$pdf->SetFillColor(255, 255, 255); //Blanc
+		// set color for text
+		$pdf->SetTextColor(0, 0, 0); // Negre
 
-				$pdf->SetFont('dejavusans', '', 16, '', true);
-				$text = '<b>MODEL ' . $parte->getTipus()->getDescripcio() . '</b>';
-				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
-				
-				if ($parte->getWeb() == true and ($parte->getDatapagament() == null or $parte->getPendent() == true)) {
-					// Si no les paguen o confirmen on-line surt el missatge
-					$y += 10;
-					$pdf->SetTextColor(100, 100, 100); // GRis
-					$pdf->SetFillColor(200, 200, 200); //Blanc
-					$pdf->SetFont('dejavusans', 'BI', 14, '', true);
-					$text = '<p>## Aquestes llicències tindran validesa quan es confirmi el seu pagament ##</p>';
-					$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
-					$pdf->SetTextColor(0, 0, 0); // Negre
-					$pdf->SetFillColor(255, 255, 255); //Blanc
-				}
-				
-				$y += 15;
-				
-				$datainici = $parte->getDataalta();
-				$datafi = $parte->getDataCaducitat($this->getLogMailUserData("partetopdfAction  "));
+		// CAPÇALERA
+		$pdf->SetFont('dejavusans', 'B', 16, '', true);
+		
+		$pdf->SetXY($xTitol, $yTitol);
+		// Cell( $w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' )
+		$pdf->Cell(0, 0, 'FEDERACIÓ CATALANA D\'ACTIVITATS SUBAQUÀTIQUES', 0, 0, 'C');
+		
+		// $x1, $y1, $x2, $y2, $style = array() 
+		$pdf->Line(PDF_MARGIN_LEFT, $yTitol+$rowH-2, $pageWidth+PDF_MARGIN_LEFT, $yTitol+$rowH-2, $styleSeparador);
 
-				$pdf->SetFont('dejavusans', '', 10, '', true);
-				$text = '<p>Llista d\'esportistes que representen el CLUB:   ';
-				$text .= '<b>' . $parte->getClub()->getNom() . '</b></p>';
-				$text .= '<p>Vigència de les llicències des del <b>' . $datainici->format("d/m/Y") . '</b>';
-				$text .= ' fins el <b>' . $datafi->format("d/m/Y") . '</b></p>';
-				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
-				
-				$pdf->SetFont('dejavusans', '', 12, '', true);
-				$text = '<p>Data d\'entrada:  <b>' . $parte->getDataentrada()->format("d/m/Y") . '</b></p>';
-				$pdf->writeHTMLCell(0, 0, $x, $y + 20, $text, '', 1, 1, true, 'L', true);
+		$pdf->SetTextColor(0, 0, 128); // Blau
+		$pdf->SetFont('dejavusans', '', 12, '', true);
+		
+		$pdf->SetXY($xCamps2, $yHeaderFila2);
+		$pdf->Cell($wLarge, $cellH, $club->getNom(), 1, 0, 'L', false, '', 1);
 
-				$pdf->setY($y);
-				$pdf->setX($pdf->getPageWidth() - 122);
-				
-				$factor = ($parte->getTipus()->getIva()/100) + 1;
-				
-				$pdf->SetFont('dejavusans', '', 9, '', true);
-				
-				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				  <tr style="background-color:#DDDDDD;">
-				  <td width="100" align="center">CATEGORIA</td>
-				  <td width="100" align="center">P. UNITAT<br/>IVA ' . number_format($parte->getTipus()->getIva(), 2, ',', '.') . '&nbsp;%</td>
-				  <td width="60" align="center">TOTAL</td>
-				  <td width="120" align="center">PREU</td>
-				 </tr>';
-				
-				foreach ($parte->getTipus()->getCategories() as $categoria) {
-					$numpercat = $parte->getNumLlicenciesCategoria($categoria->getSimbol());
-					$preu = $categoria->getPreuAny($parte->getAny());
-					$tbl .= '<tr><td width="100" align="right">' . $categoria->getCategoria() . '</td>';
-					$tbl .= '<td align="right">' . number_format($preu * $factor, 2, ',', '.') .  '&nbsp;€</td>';
-					$tbl .= '<td align="center">' . $numpercat . '</td>';
-					$tbl .= '<td align="right">' . number_format($preu * $numpercat * $factor, 2, ',', '.') .  '&nbsp;€</td></tr>';
-				}
-				$tbl .= '<tr><td colspan="2" align="right"><b>Total</b></td>';
-				$tbl .= '<td align="center">' . $parte->getNumLlicencies() . '</td>';
-				$tbl .= '<td align="right">' .  number_format($parte->getPreuTotal(), 2, ',', '.') . '&nbsp;€</td></tr>';
-				$tbl .= '</table>';
-				
-				$pdf->writeHTML($tbl, false, false, false, false, '');
-				
-				$pdf->Ln(10);	
-				
-				/*$w = array(26, 44, 28, 26, 50, 16, 30, 10, 35);*/ // Amplades
-				$w = array(8, 26+3, 44+6, 28+3, 26+3, 50+8, 16+2, 30+4, 10); // Amplades
-				$this->parteHeader($pdf, $w);
-				
-				$pdf->SetFillColor(255, 255, 255); //Blanc
-				
-				$pdf->SetFont('dejavusans', '', 9, '', true);
-				
-				$llicenciesSorted = $parte->getLlicenciesSortedByName();
-				
-				$row = 1;
-				foreach ($llicenciesSorted as $llicencia_iter) {
-					$num_pages = $pdf->getNumPages();
-					$pdf->startTransaction();
-					
-					$this->parteRow($pdf, $w, $llicencia_iter, $row);
-					
-					if($num_pages < $pdf->getNumPages()) {
-						//Undo adding the row.
-						$pdf->rollbackTransaction(true);
-						
-						$pdf->AddPage();
-						$this->parteHeader($pdf, $w);
-						$pdf->SetFillColor(255, 255, 255); //Blanc
-						$pdf->SetFont('dejavusans', '', 9, '', true);
-						
-						$this->parteRow($pdf, $w, $llicencia_iter, $row);
-						
-					} else {
-						//Otherwise we are fine with this row, discard undo history.
-						$pdf->commitTransaction();
-					}
-					$row++;
-				}
-				
-				$pdf->Ln();
-				
-				$y = $pdf->getY();
-				
-				/* Treure activitats
-				$pdf->SetFont('dejavusans', '', 8, '', true);
-				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				<tr nobr="true">
-				<td width="130" align="left"><b>A</b>: Apnea</td>
-				<td width="130" align="left"><b>E</b>: Escafandrisme CMAS</td>
-				<td width="130" align="left"><b>FA</b>: Foto Sub Apnea</td>
-				<td width="130" align="left"><b>FS</b>: Fotografia Submarina</td>
-				<td width="130" align="left"><b>HS</b>: Hoquei Sub</td>
-				</tr>';
-				$tbl .= '<tr nobr="true">
-				<td align="left"><b>O</b>: Orientació</td>
-				<td align="left"><b>P</b>: Pesca Submarina</td>
-				<td align="left"><b>VS</b>: Video Subaquàtic</td>
-				<td align="left"><b>RG</b>: Rugbi Subaquàtic</td>
-				<td align="left"><b>BP</b>: Busseig Esportiu Piscina</td>
-				</tr>';
-				$tbl .= '<tr nobr="true">
-				<td align="left"><b>N</b>: Natació amb Aletes</td>
-				<td align="left"><b>B</b>: Biologia</td>
-				<td align="left"><b>BA</b>: Busseig amb Ampolles</td>
-				<td align="left">&nbsp;</td>
-				<td align="left">&nbsp;</td>
-				</tr>';
-				$tbl .= '</table>';
-				
-				$pdf->writeHTML($tbl, false, false, false, false, '');
-				*/
-				  
-				// reset pointer to the last page
-				$pdf->lastPage();
+		$pdf->SetXY($xCampActa, $yHeaderFila1);
+		$pdf->Cell($wMed, $cellH, $curs->getNumActa(), 1, 0, 'C', false, '', 1);
+		
+		$pdf->SetXY($xCamps2, $yHeaderFila1);
+		$pdf->Cell($wLarge, $cellH, $titolCurs, 1, 0, 'L', false, '', 1);
+		
+		$pdf->SetXY($xCamps2, $yHeaderFila3);
+		$pdf->Cell($wDates, $cellH, $curs->getDatadesde()->format('d/m/Y'), 1, 0, 'C');
+		
+		$pdf->SetXY($xCampDiaFi, $yHeaderFila3);
+		$pdf->Cell($wDates, $cellH, $curs->getDatafins()->format('d/m/Y'), 1, 0, 'C');
+		
+		$pdf->SetXY($xCamps2, $yHeaderFila4);
+		$pdf->Cell($wSmall, $cellH, count($participants), 1, 0, 'C');
+
+		// EQUIP DOCENT
+		$pdf->SetXY($xCampDirector,$yFilaDirector);	
+		$pdf->Cell($wLarge, $cellH, ($director!=null?$director->getMetadocent()->getDni().' - '.$director->getMetadocent()->getNomCognoms():'') , 1, 0, 'L', false, '', 1);
+		
+		$pdf->SetXY($xCampCarnet, $yFilaDirector);
+		$pdf->Cell($wMed, $cellH, ($director!=null?$director->getCarnet():''), 1, 0, 'C', false, '', 1);
+		
+		if ($codirector != null) {
+			$pdf->SetXY($xCampDirector, $yFilaCoDirector);
+			$pdf->Cell($wLarge, $cellH, ($codirector!=null?$codirector->getMetadocent()->getDni().' - '.$codirector->getMetadocent()->getNomCognoms():''), 1, 0, 'L', false, '', 1);
+	
+			$pdf->SetXY($xCampCarnet, $yFilaCoDirector);
+			$pdf->Cell($wMed, $cellH, ($director!=null?$director->getCarnet():''), 1, 0, 'C', false, '', 1);
+		}
+		
+		$pdf->SetTextColor(0, 0, 0); // Negre
+		
+		$pdf->Line($x_ini, $yHeaderFila4 + $rowH, $pageWidth+PDF_MARGIN_LEFT, $yHeaderFila4 + $rowH, $styleSeparador);
+
+		$pdf->SetXY($xEtiquetes1, $yHeaderFila1);	
+		$pdf->Cell(0, $cellH, 'ACTA Nº:', 0, 0, 'L');
+		
+		$pdf->SetXY($xEtiqCurs, $yHeaderFila1);
+		$pdf->Cell(0, $cellH, 'DEL CURS:', 0, 0, 'L');
+
+		$pdf->SetXY($xEtiquetes1,$yHeaderFila2);
+		$pdf->Cell(0, $cellH, 'REALITZAT PEL CLUB:', 0, 0, 'L');
+
+		$pdf->SetXY($xEtiquetes1,$yHeaderFila3);
+		$pdf->Cell(0, $cellH, 'EN LES DATES COMPRESSES DEL DIA:', 0, 0, 'L');
+
+		$pdf->SetXY($xEtiqDiaFi, $yHeaderFila3);
+		$pdf->Cell(0, $cellH, 'AL DIA:', 0, 0, 'L');
+		
+		$pdf->SetXY($xEtiquetes1,$yHeaderFila4);
+		$pdf->Cell(0, $cellH, 'AMB LA PARTICIPACIÓ DE:', 0, 0, 'L');
+
+		$pdf->SetXY($xCamps2 + $wSmall + 2, $yHeaderFila4);
+		$pdf->Cell(0, $cellH, 'ALUMNES', 0, 0, 'L');
+		
+		$pdf->SetFont('dejavusans', 'UB', 15, '', true);
+		$pdf->SetXY($xEtiquetes1,$yTitolDocents);
+		$pdf->Cell(0, 0, 'EQUIP DOCENT DEL CURS', 0, 0, 'C');	
+		
+		$pdf->SetFont('dejavusans', '', 12, '', true);
+		$pdf->SetXY($xEtiquetes1, $yFilaDirector);	
+		$pdf->Cell(0, $cellH, 'DIRECTOR:', 0, 0, 'L');
+		
+		$pdf->SetXY($xEtiqCarnet, $yFilaDirector);
+		$pdf->Cell(0, $cellH, 'Nº:', 0, 0, 'L');
+		
+		if ($codirector != null) {
+			$pdf->SetXY($xEtiquetes1, $yFilaCoDirector);	
+			$pdf->Cell(0, $cellH, 'CO-DIRECTOR:', 0, 0, 'L');
 			
-				// Close and output PDF document
-				$response = new Response($pdf->Output("llicencies_" . $parte->getClub()->getCodi() . "_" . $parte->getId() . ".pdf", "D"));
-				$response->headers->set('Content-Type', 'application/pdf');
-				return $response;
+			$pdf->SetXY($xEtiqCarnet, $yFilaCoDirector);
+			$pdf->Cell(0, $cellH, 'Nº:', 0, 0, 'L');
+		}
+			
+		// INSTRUCTORS i COL·LABORADORS
+		$pdf->SetFont('dejavusans', 'U', 13, '', true);
+		$pdf->SetXY($xEtiquetes1,$ySubtitolInstructors);
+		$pdf->Cell(0, 0, 'INSTRUCTORS QUE HAN IMPARTIT CLASSES', 0, 0, 'C');	
+		
+		$pdf->SetFont('dejavusans', '', 8, '', true);
+		$pdf->SetY($yTaulaInstructors);
+		
+		$tbl = $this->getHtmlTaulaDocents($nFilesInstructors, $docents);
+		$pdf->writeHTML($tbl, false, false, false, false, '');
+
+		$pdf->Ln(5);
+		$pdf->SetFont('dejavusans', 'U', 13, '', true);
+		$pdf->SetXY($xEtiquetes1, $pdf->getY());
+		$pdf->Cell(0, 0, 'HAN COL·LABORAT COM A EQUIP DE SEGURETAT', 0, 0, 'C');
+		
+		$pdf->SetFont('dejavusans', '', 8, '', true);
+		$pdf->SetY($pdf->getY()+$rowH);
+		
+		$tbl = $this->getHtmlTaulaDocents($nFilesCollaboradors, $collaboradors);
+		$pdf->writeHTML($tbl, false, false, false, false, '');
+		
+		$pdf->Ln(10);
+		$pdf->SetFont('dejavusans', 'I', 7, '', true);
+		$pdf->Cell(0, 0, 'Signat', 0, 0, 'L');
+		$pdf->Cell(0, 0, 'Segellat', 0, 0, 'R');
+		$pdf->Ln();
+		$pdf->SetFont('dejavusans', '', 9, '', true);
+		$pdf->Cell(0, 0, 'El Director del Curs', 0, 0, 'L');
+		$pdf->Cell(0, 0, 'La Federació', 0, 0, 'R');
+		$pdf->Ln(5);
+		$pdf->Line(PDF_MARGIN_LEFT, $pdf->getY(), $pageWidth+PDF_MARGIN_LEFT, $pdf->getY(), $styleSeparador);
+		
+		// reset pointer to the last page
+		$pdf->lastPage();
+			
+		// Close and output PDF document
+		$response = new Response($pdf->Output("Acta_Curs_".$titolCurs."_".$curs->getId()."_".$club->getCodi().".pdf", "D"));
+		$response->headers->set('Content-Type', 'application/pdf');
+		return $response;
+	}
+
+	private function getHtmlTaulaDocents($files, $docencies) {
+		$color = 'color="#000080"';
+		$bordercolor = '#000000';
+		$border = 'border:0.5px solid '.$bordercolor.';';
+		$tbl = '<table border="0" cellpadding="5" cellspacing="0" nobr="true">
+				  <tr style="">
+				  	<td width="100" align="center" rowspan="3" style="'.$border.' font-size: large; line-height:50px;">DNI</td>
+				  	<td width="220" align="center" rowspan="3"  style="'.$border.' font-size: large; line-height:50px;">NOM i COGNOMS</td>
+				  	<td width="200" align="center" colspan="4" style="'.$border.' font-size: small;">CLASSES</td>
+				  	<td width="120" align="center" rowspan="3"  style="'.$border.' font-size: large; line-height:50px;">SIGNATURES</td>
+				  </tr>
+				  <tr>
+				  	<td width="50" align="center" rowspan="2" style="'.$border.' font-size: x-small; line-height:30px;">TEÒRIQUES</td>
+				  	<td width="150" align="center" colspan="3" style="'.$border.' font-size: small;">PRÀCTIQUES</td>
+				  </tr>
+				  <tr>
+				  	<td width="50" align="center" style="'.$border.' font-size: small;">AULA</td>
+				  	<td width="50" align="center" style="'.$border.' font-size: small;">PISCINA</td>
+				  	<td width="50" align="center" style="'.$border.' font-size: small;">MAR</td>
+				  </tr>';
+		
+		$ht = $hp = $hm = $ha = 0;
+		$fila = 0;
+		foreach ($docencies as $docencia) {
+			$meta = $docencia->getMetadocent();
+			$ht += $docencia->getHteoria();
+			$hp += $docencia->getHpiscina();
+			$hm += $docencia->getHmar();
+			$ha += $docencia->getHaula();
+			
+			$tbl .= '<tr>
+				  		<td style="'.$border.'" '.$color.' align="center">'.$meta->getDni().'</td>
+				  		<td style="'.$border.'" '.$color.' align="left">'.$meta->getCognomsNom().'</td>
+				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHteoria().'</td>
+				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHaula().'</td>
+				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHpiscina().'</td>
+				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHmar().'</td>
+				  		<td style="'.$border.'"><span style="font-size: large;"></span></td>
+					</tr>';
+			$fila++;
+		}
+				
+		for ($i=$fila; $i < $files; $i++) { 
+			$tbl .= '<tr>
+				  		<td style="'.$border.'" align="center"></td>
+				  		<td style="'.$border.'" align="left"></td>
+				  		<td style="'.$border.'" align="center"></td>
+				  		<td style="'.$border.'" align="center"></td>
+				  		<td style="'.$border.'" align="center"></td>
+				  		<td style="'.$border.'" align="center"></td>
+				  		<td style="'.$border.'"><span style="font-size: large;"></span></td>
+					</tr>';	
+		}		
+		$tbl .= '<tr>
+				  	<td colspan="2" style="border-bottom: 0.1em solid #ffffff; border-left: 0.1em solid #ffffff;" align="right">Totals</td>
+			  		<td align="center" style="'.$border.'" '.$color.'>'.$ht.'</td>
+			  		<td align="center" style="'.$border.'" '.$color.'>'.$ha.'</td>
+			  		<td align="center" style="'.$border.'" '.$color.'>'.$hp.'</td>
+			  		<td align="center" style="'.$border.'" '.$color.'>'.$hm.'</td>
+			  		<td style="border-bottom: 0.1em solid #ffffff; border-right: 0.1em solid #ffffff; "></td>
+				</tr>
+			  </table>';
+			  
+		return $tbl;	  
 	}
 }

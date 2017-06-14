@@ -16,8 +16,9 @@ include_once (__DIR__.'/../../../vendor/tcpdf/tcpdf.php');
 class TcpdfBridge extends \TCPDF {
 	protected $pagenum;
 	protected $rightheader;
+	protected $footer;
 	
-    public function init($params = null, $pagenum = false, $rightheader = "")
+    public function init($params = null, $pagenum = false, $rightheader = "", $footer= "")
     {
     	// set document information
     	$this->SetCreator(PDF_CREATOR);
@@ -27,6 +28,7 @@ class TcpdfBridge extends \TCPDF {
     	
     	$this->pagenum = $pagenum;
     	$this->rightheader = $rightheader;
+		$this->footer = $footer;
     	//$this->SetKeywords('TCPDF, PDF, example, test, guide');
     	
     	// set default header data
@@ -70,16 +72,39 @@ class TcpdfBridge extends \TCPDF {
     
     
     public function Footer() {
-    	// Position at 15 mm from bottom
-    	$this->SetY(-15);
-    	// Set font
-    	//$this->SetFont('helvetica', 'I', 8);
-    	// Page number
-    	$footer = '<a href="http://www.fecdas.cat">FECDAS</a> - FEDERACIÓ CATALANA D\'ACTIVITATS SUBAQUÀTIQUES - NIF: Q5855006B<br/>';
-    	$footer .= 'Moll de la Vela 1 (Zona Forum) - 08930 Sant Adrià de Besòs<br/>';
-    	$footer .= 'Tel: 93 356 05 43  Fax: 93 356 30 73 Adreça electrònica: info@fecdas.cat';
+		
+		if ($this->footer != "" && method_exists($this,$f=$this->footer)) {
+			// Comprovar si existeix el mètode Footer concret
+			
+			call_user_func(array($this,$f));
+
+		} else {
+    		// Position at 15 mm from bottom
+    		$this->SetY(-15);	
+    		
+    		$this->footer = '<a href="http://www.fecdas.cat">FECDAS</a> - FEDERACIÓ CATALANA D\'ACTIVITATS SUBAQUÀTIQUES - NIF: Q5855006B<br/>';
+    		$this->footer .= 'Moll de la Vela 1 (Zona Forum) - 08930 Sant Adrià de Besòs<br/>';
+    		$this->footer .= 'Tel: 93 356 05 43  Fax: 93 356 30 73 Adreça electrònica: info@fecdas.cat';
+
+	    	$this->writeHTMLCell('', '', '', '', $this->footer, 0, 0, 0, true, 'C', true);
     	
-    	$this->writeHTMLCell('', '', '', '', $footer, 0, 0, 0, true, 'C', true);
-    	if ($this->pagenum == true) $this->Cell(0, 10, 'Pàgina '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+    		// Page number
+    		if ($this->pagenum == true) $this->Cell(0, 10, 'Pàgina '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+
+		}
+    	
     }
+	
+	public function footerActaCurs() {
+    	$this->SetY(-24);
+		// 	Image ($file, $x='', $y='', 
+		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
+		// 			$palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, 
+		//			$hidden=false, $fitonpage=false, $alt=false, $altimgs=array())
+		
+		$this->Image(K_PATH_IMAGES.'logo_fedas.jpg', PDF_MARGIN_LEFT, $this->getY(), 0, 13, 'jpg', '', 'CT', false, 150, '', false, false, array(), 'LT', false, false, false, array());
+		$this->Image(K_PATH_IMAGES.'gene_esport.jpg', ($this->getPageWidth() - 60)/2, $this->getY()+1, 0, 11, 'jpg', '', 'CT', false, 150, '', false, false, array(), 'CT', false, false, false, array());
+		$this->Image(K_PATH_IMAGES.'cmas_logo.jpg', PDF_MARGIN_LEFT+$this->getPageWidth()-60, $this->getY(), 0, 13, 'jpg', '', 'RT', false, 300, '', false, false, array(), 'CT', false, false, false, array());
+    }
+	
 }

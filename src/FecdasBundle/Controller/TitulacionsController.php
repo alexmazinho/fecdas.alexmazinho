@@ -275,7 +275,7 @@ class TitulacionsController extends BaseController {
 		$formBuilder = $this->createFormBuilder()->add('pervalidar', 'checkbox', array('required'  => false, 'data' => $currentPerValidar));
 		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
-		$this->addClubsActiusForm($formBuilder, $club);
+		if ($this->isCurrentAdmin()) $this->addClubsActiusForm($formBuilder, $club);
 		
 		$this->addTitolsForm($formBuilder, $titol, true, 'titols');
 		
@@ -307,11 +307,11 @@ class TitulacionsController extends BaseController {
 		
 		$participantscurrent = null;
 
+		$checkRole = $this->get('fecdas.rolechecker');
+    	
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
-			$action = $request->query->get('action', 0);
-			
-			$checkRole = $this->get('fecdas.rolechecker');
+			$action = $request->query->get('action', '');
 			
 			if ($id == 0 && !$checkRole->isCurrentInstructor()) {
 				$this->get('session')->getFlashBag()->add('error-notice', 'Només els instructors poden crear un nou curs');
@@ -340,7 +340,7 @@ class TitulacionsController extends BaseController {
 			
 		}
 			
-    	$form = $this->createForm(new FormCurs(), $curs);
+    	$form = $this->createForm(new FormCurs($checkRole->isCurrentInstructor()), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
     		
@@ -349,12 +349,29 @@ class TitulacionsController extends BaseController {
 				
 				// Comprovacions genèriques
 				$this->validacionsCurs($curs, $form, $action);
-			
 				
-				// Alumnes
-				//$foto = $form->get('fotoupld')->getData(); 
-				
-				
+				// Fotos i arxius
+				foreach ($form->get('participants') as $formparticipant) {
+					$idMeta = $formparticipant->get('metapersona')->getData();
+					$fotoPath = $formparticipant->get('foto')->getData();
+					$certificatPath = $formparticipant->get('certificat')->getData();
+					$foto = $formparticipant->get('fotoupld')->getData();
+					$certificat = $formparticipant->get('certificatupld')->getData();
+					
+					$persona = null;
+					foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+						$metapersona = $participant->getMetapersona();
+						if ($metapersona->getId() == $idMeta) {
+							$persona = $metapersona->getPersona($curs->getClub());
+							break;
+						} 
+					}
+					if ($persona == null) throw new \Exception('Alumne no trobat '.$idMeta);
+
+					$this->gestionarArxiusPersona($persona, $fotoPath, $certificatPath, $foto, $certificat);
+					
+				}
+
 				$this->accionsPostValidacions($curs, $action);
 	    		
 				$curs->setDatamodificacio(new \DateTime('now'));

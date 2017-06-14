@@ -270,6 +270,13 @@ class EntityPersona {
 		return $this->nom.' '.mb_strtoupper($this->cognoms, 'UTF-8');
     }
     
+	public function getTelefons() {
+		$tlfs = array();
+		if ($this->getTelefon1() != null && $this->getTelefon1() != '') $tlfs[] = $this->getTelefon1();
+		if ($this->getTelefon2() != null && $this->getTelefon2() != '') $tlfs[] = $this->getTelefon2();
+		return implode(", ", $tlfs);
+	}
+	
     /**
      * Get adreça completa
      *

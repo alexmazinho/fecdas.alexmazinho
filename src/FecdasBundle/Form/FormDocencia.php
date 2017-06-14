@@ -12,6 +12,13 @@ use FecdasBundle\Entity\EntityDocencia;
 
 class FormDocencia extends AbstractType {
 
+	private $instructor;
+	
+	public function __construct($instructor = false)
+	{
+		$this->instructor = $instructor;
+	}
+
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
@@ -21,7 +28,8 @@ class FormDocencia extends AbstractType {
 			$metadocent = null;
 
 			/* Check we're looking at the right data/form */
-			$editable = true;	
+			$editable = $this->instructor;	
+		
 			if ($docencia instanceof EntityDocencia) {
 				$metadocent = $docencia->getMetadocent();
 				$curs = $docencia->getCurs();
@@ -30,7 +38,7 @@ class FormDocencia extends AbstractType {
 					$editable = false;	
 				}
 			}
-			
+		
 			$form->add('metadocent', 'hidden', array(
 				'mapped'	=> false,
 				'data'		=> $metadocent!=null?$metadocent->getId():0

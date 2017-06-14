@@ -951,26 +951,6 @@
 		$('.block-mask').remove();
 	};
 	
-	
-	removeFotoGaleria = function(selectorContenidor, additionalActions) {
-		
-		// Delegate
-		$( selectorContenidor ).on( "click", ".remove-foto", function( e ) {
-	        //Cancel the link behavior
-	        e.preventDefault();
-	
-	        $(this).parent('.galeria-remove-foto').prev('input[type="file"]').val('');
-	        
-	        $(this).parent('.galeria-remove-foto').prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
-	        
-	        $(this).parent('.galeria-remove-foto').remove();
-	        
-	        if (typeof additionalActions !== "undefined") {
-	        	additionalActions();
-			}
-		});
-	};
-	
 	showPersonModal = function(url, origen, callbackOk) {
         // Show mask before overlay
         //Get the screen height and width
@@ -1006,19 +986,13 @@
 			
 			imageUploadForm("#persona_fotoupld", 104);
 			
-			removeFotoGaleria( "#edicio-persona", function() {
+			prepareRemoveFotoGaleria( "#edicio-persona", function() {
 				// Accions addicionals
 				$('#persona_foto').val( '' );
 			});
 			
-			$('.remove-certificat').click(function (e) {
-		        //Cancel the link behavior
-		        e.preventDefault();
+			prepareRemoveFile( "#edicio-persona", '' );
 			
-		        $('#persona_certificat').val( '' );
-			
-		        $(".historial-certificat").html('<span class="blue">Cap certificat</span>');	
-			});
 			
 			prepareFileInput( $("#persona_certificatupld") );
 			
@@ -1847,15 +1821,17 @@
 	};
 
 	validarConsultaBusseig = function() {
-	    $("#form-consultadni").submit(function () {
-	    	$(".sms-notice").hide();
-	    	/*if (validarDadesPersona("#form_dni")) {
-	    		return true;  
-	    	};
-	    	alert("El DNI ha de tenir 8 dígits numèrics sense lletra (p.e. '12345678')");
-	    	return false;*/
-	    	return true;
-	    });  
+	    
+		
+		$(".consulta-dni").click(function (e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	        
+	        $(".sms-notice").hide();
+	        
+	        $("#form-consultadni").submit();
+		});
+		
 	};
 
 	validarRenovarNoBuida = function() {
@@ -2450,21 +2426,84 @@
 	    else $('#formduplicats-dades').slideUp('slow');
 	};
 
+	
+	prepareRemoveFotoGaleria = function(selectorContenidor, additionalActions) {
+		
+		// Delegate
+		$( selectorContenidor ).on( "click", ".remove-foto", function( e ) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	
+	        $(this).parent('.galeria-remove-foto').prev('input[type="file"]').val('');
+	        
+	        $(this).parent('.galeria-remove-foto').prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
+	        
+	        $(this).parent('.galeria-remove-foto').remove();
+	        
+	        if (typeof additionalActions !== "undefined") {
+	        	additionalActions($(this));
+			}
+		});
+	};
+	
+	prepareRemoveFile = function(selectorContenidor, textNoFile) {
+		// Delegate
+		$( selectorContenidor ).on( "click", ".remove-file", function( e ) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+
+	        $(this).parents('.file-upload').prev('input[type="hidden"]').val('');
+	        
+	        $(this).parents('.file-upload').prev('input[type="file"]').val('');
+	        
+	        $(this).parents('.file-upload').find('.upload-file-info').val('');
+	        
+	        if (textNoFile !== '') {
+	        	$(this).parents('.file-info').html('<span class="blue">'+textNoFile+'</span>');
+	        } else {
+	        	$(this).parents('.file-info').html('');
+	        }
+	        
+	        $(this).remove();
+		});
+	};
+	
+	prepareFileInput = function (elem) {
+		var parent = elem.parent();
+		
+		elem.change(function() {
+	        var info  = '';
+
+	   		// Display filename (without fake path)
+	        var path = $(this).val().split('\\');
+	        info     = path[path.length - 1];
+
+	        parent.find(".upload-file-info").val(info);
+	        
+	        $(this).addClass('form-control-updated');
+	       
+	        // Add remove file option 
+        	parent.find(".file-info").html('<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>');
+	        
+	    });
+
+		parent.find(".input-append").click(function(e) {
+	        e.preventDefault();
+	        // Make as the real input was clicked
+	        elem.click();
+	    });
+		
+		
+	};
+	
 	imageUploadForm = function(formsel, imgwidth) {
 		var galeria = $(formsel).next(".galeria-upload");
 
-console.log("imageUploadForm "+formsel +" " + $(formsel).next(".galeria-upload").length+" "+$(formsel).next().length);
-
 		galeria.click(function(e) {
-			
-console.log("clivk a");    		    
-			
 		    e.preventDefault();
-console.log("clivk b");    		    
 		    // Make as the real input was clicked
 		    $(formsel).click();
 	    });
-		
 		
 		$(formsel).imagePreview({ galeria : galeria, multiple: false, textover: 'Canviar imatge', width: imgwidth });
 	};
@@ -2557,27 +2596,6 @@ console.log("clivk b");
 	
 	/********************************************* import CSV ********************************************************/
 	
-	prepareFileInput = function (elem) {
-		var parent = elem.parent();
-		
-		elem.change(function() {
-	        var info  = '';
-
-	   		// Display filename (without fake path)
-	        var path = $(this).val().split('\\');
-	        info     = path[path.length - 1];
-
-	        parent.find("#upload-file-info").val(info);
-	        
-	        $(this).addClass('form-control-updated');
-	        
-	    });
-
-		parent.find(".input-append").click(function(e) {
-	        e.preventDefault();
-	        // Make as the real input was clicked
-	        elem.click();
-	    });
-	};
+	
 	
 })(jQuery);

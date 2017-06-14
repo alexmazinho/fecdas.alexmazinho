@@ -1077,8 +1077,8 @@ class PageController extends BaseController {
 		$formpersona = null; 
 		$persona = null;
 		$metapersona = null; 
-		$currentFoto = null;
-		$currentCertificat = null;
+		$fotoPath = '';
+		$certificatPath = '';
 		$altrestitolscurrent = array();	
 		$em = $this->getDoctrine()->getManager();
 		try {
@@ -1092,8 +1092,8 @@ class PageController extends BaseController {
 				}
 
 
-				if ($p['foto'] != 0) $currentFoto = $p['foto'];
-				if ($p['certificat'] != 0) $currentCertificat = $p['certificat'];
+				if ($p['foto'] != '') $fotoPath = $p['foto'];
+				if ($p['certificat'] != '') $certificatPath = $p['certificat'];
 				
 				if (isset($p['altrestitolscurrent']) && $p['altrestitolscurrent'] != '') {
 					$altrestitolscurrent = 	explode(";", $p['altrestitolscurrent']);
@@ -1126,14 +1126,17 @@ class PageController extends BaseController {
 						
 						$this->validarDadesPersona($persona, $estranger, $formpersona);
 
-						$this->gestionarArxiusPersona($persona, $currentFoto, $currentCertificat, $formpersona);
+						$foto = $formpersona->get('fotoupld')->getData();
+						$certificat = $formpersona->get('certificatupld')->getData();
+						
+						$this->gestionarArxiusPersona($persona, $fotoPath, $certificatPath, $foto, $certificat);
 
 						$this->actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent);
 
 						if ($persona->getId() == 0) {
-							$this->get('session')->getFlashBag()->add('error-notice', "Dades personals afegides correctament");
+							$this->get('session')->getFlashBag()->add('sms-notice', "Dades personals afegides correctament");
 						} else {
-							$this->get('session')->getFlashBag()->add('error-notice',	"Dades modificades correctament");
+							$this->get('session')->getFlashBag()->add('sms-notice',	"Dades modificades correctament");
 						}
 						$persona->setValidat(false);  // No validat, detecció ACCESS
 					} else { // Esborrar
@@ -1146,7 +1149,7 @@ class PageController extends BaseController {
 						$persona->setDatabaixa($this->getCurrentDate());
 						//$em->persist($persona); // Per delete seria remove
 						$em->flush();
-						$this->get('session')->getFlashBag()->add('error-notice', "Dades personals esborrades correctament");
+						$this->get('session')->getFlashBag()->add('sms-notice', "Dades personals esborrades correctament");
 					}
 
 					$em->flush();
@@ -1301,69 +1304,6 @@ class PageController extends BaseController {
 					
 		$persona->setDatamodificacio($this->getCurrentDate());
 		
-	}
-	
-	private function gestionarArxiusPersona($persona, $currentFoto, $currentCertificat, $formpersona) {
-		$foto = $formpersona->get('fotoupld')->getData();
-		
-		if ($foto == null) {
-			if ($currentFoto == '' && $persona->getFoto() != null) {
-				// Desar la foto a arxius de la persona i esborrar foto
-				$persona->addArxius($persona->getFoto());
-				$persona->setFoto(null);
-			}
-		} else {
-	
-			if (!($foto instanceof UploadedFile) or !is_object($foto))  throw new \Exception('No s\'ha pogut carregar la foto (1)');
-								
-			if (!$foto->isValid()) throw new \Exception('No s\'ha pogut carregar la foto (2-'.$foto->isValid().')'); // Codi d'error
-			
-			$em = $this->getDoctrine()->getManager();
-							
-			$uploaded = $this->uploadAndScale($foto, $persona->getDni(), 300, 200);
-						
-			$foto = new EntityArxiu($uploaded['path'], true);
-			$foto->setPath($uploaded['name']);
-			$foto->setTitol("Foto federat " . $persona->getNomCognoms());
-			$em->persist($foto);
-	
-			if ($persona->getFoto() != null) {
-				// Desar la foto a arxius de la persona
-				$persona->addArxius($persona->getFoto());
-			}		
-			$persona->setFoto($foto);
-		}
-
-		$certificat = $formpersona->get('certificatupld')->getData();
-		
-		if ($certificat == null) {
-			if ($currentCertificat == '' && $persona->getCertificat() != null) {
-				// Desar el certificat a arxius de la persona i esborrar certificat
-				$persona->addArxius($persona->getCertificat());
-				$persona->setCertificat(null);
-			}
-		} else {
-	
-			if (!($certificat instanceof UploadedFile) or !is_object($certificat))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
-								
-			if (!$certificat->isValid()) throw new \Exception('No s\'ha pogut carregar l\'arxiu (2-'.$certificat->isValid().')'); // Codi d'error
-			
-			$em = $this->getDoctrine()->getManager();
-			
-			$nameAjustat = $persona->getDni()."_".substr($certificat->getClientOriginalName(), -20);
-			$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat);
-						
-			$certificat = new EntityArxiu($certificat, true);
-			$certificat->upload($nameAjustat);
-			$certificat->setTitol("Certificat mèdic federat " . $persona->getNomCognoms());
-			$em->persist($certificat);
-	
-			if ($persona->getCertificat() != null) {
-				// Desar el certificat a arxius de la persona
-				$persona->addArxius($persona->getCertificat());
-			}		
-			$persona->setCertificat($certificat);
-		}
 	}
 	
 	private function actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent = array()) {

@@ -124,6 +124,17 @@ class EntityArxiu {
 		return $image_info[1];
 	}
 	
+	public function getExtension()
+	{
+		$pos = strripos($this->getPath(), ".");  // última posició insensible case
+		
+		if ($pos !== false) return substr($this->getPath(), $pos);
+		
+		return '';
+		 
+	}
+	
+	
 	public function upload($name = null)
 	{
 		// the file property can be empty if the field is not required

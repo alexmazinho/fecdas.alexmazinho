@@ -1198,7 +1198,7 @@ class PDFController extends BaseController {
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 			
 		$pdf->init(array('author' => 'FECDAS', 'title' => 'Curs ' .$titolCurs.' '. date("Y")), 
-						false, "Acta número: " . $curs->getNumActa(), "footerActaCurs");
+						false, "Acta número: " . $curs->getNumActa()."<br/>".$club->getNom(), "footerActaCurs");
 
 		
 		$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
@@ -1216,6 +1216,7 @@ class PDFController extends BaseController {
 		$rowH = 12;
 		$cellH = 8;
 		$tableRowH = 7.5;
+		$alumneRowH = 8;
 		$wSmall = 15;
 		$wMed = 30;
 		$wDates = 35;
@@ -1401,6 +1402,33 @@ class PDFController extends BaseController {
 		$pdf->Ln(5);
 		$pdf->Line(PDF_MARGIN_LEFT, $pdf->getY(), $pageWidth+PDF_MARGIN_LEFT, $pdf->getY(), $styleSeparador);
 		
+		
+		if (count($participants) > 0) {
+			$pdf->AddPage();			
+			
+			$pdf->SetFont('dejavusans', 'BU', 13, '', true);
+			$pdf->SetXY($xEtiquetes1, $pdf->getY());
+			$pdf->Cell(0, 0, 'RELACIÓ D\'ALUMNES APTES', 0, 0, 'C');
+			
+			$pdf->Ln(10);
+			
+			$i = 0;
+			foreach ($participants as $participant) {
+				
+				$this->printAlumneCurs($pdf, $curs, $participant); 
+				
+				$i++;
+				if ($i%3 == 0) {  // 3 per pàgina
+					$i = 0;
+					$pdf->AddPage();
+					$pdf->SetXY($xEtiquetes1, $pdf->getY());
+					$pdf->Ln(10);
+				} else {	
+					$pdf->SetY($pdf->getY() + $alumneRowH * 9);
+				}	
+			}
+		}
+		
 		// reset pointer to the last page
 		$pdf->lastPage();
 			
@@ -1408,6 +1436,117 @@ class PDFController extends BaseController {
 		$response = new Response($pdf->Output("Acta_Curs_".$titolCurs."_".$curs->getId()."_".$club->getCodi().".pdf", "D"));
 		$response->headers->set('Content-Type', 'application/pdf');
 		return $response;
+	}
+
+	private function printAlumneCurs($pdf, $curs, $participant) {
+	
+		$club = $curs->getClub();
+		$metapersona = $participant->getMetapersona();
+		$persona = $metapersona->getPersona($club);
+		$llistaTitols = $metapersona->getInfoHistorialTitulacions();
+	
+		$xEtiquetes1 = PDF_MARGIN_LEFT;
+		$xCamps1 = $xEtiquetes1 + 33;
+		$cellH = 7;
+		$ln = 9;
+		$wEtiquetes = 30;
+		$wLarge = 112;
+		$wDNI = $wNaixement = 35;
+		$wPoblacio = 62;
+		$wNacionalitat = 20;
+		$xEtiqNaixement = $xEtiquetes1 +$wEtiquetes+ $wDNI + 12;
+		$xNaixement = $xEtiqNaixement + $wEtiquetes+3;
+		$xEtiqNacio = $xEtiquetes1 + +$wEtiquetes+$wPoblacio + 10;
+		$xNacionalitat = $xEtiqNacio + $wEtiquetes-8 + 1;
+		
+		$xFoto = $pdf->getPageWidth() - 45;
+		$wFoto = 30; 	
+		$fMargin = 2;	
+
+		$yFila1 = $pdf->getY();
+
+		$pdf->SetFont('dejavusans', '', 11, '', true);		
+		$pdf->SetTextColor(0, 0, 0); // Negre
+		
+		$pdf->SetXY($xEtiquetes1, $yFila1);	
+		$pdf->Cell($wEtiquetes, $cellH, 'NOM i COGNOMS:', 0, 0, 'L', false, '', 1);
+		
+		$pdf->Ln($ln);
+		$pdf->Cell($wEtiquetes, $cellH, 'ADREÇA ELECTRÓNICA:', 0, 0, 'L', false, '', 1);
+		
+		$pdf->Ln($ln);
+		$pdf->Cell(0, $cellH, 'TELÈFON/S:', 0, 0, 'L');
+		
+		$pdf->Ln($ln);
+		$pdf->Cell(0, $cellH, 'DNI:', 0, 0, 'L');
+		
+		$pdf->SetX($xEtiqNaixement);
+		$pdf->Cell($wEtiquetes, $cellH, 'DATA NAIXEMENT:', 0, 0, 'L', false, '', 1);
+		
+		$pdf->Ln($ln);
+		$pdf->SetX($xEtiquetes1);
+		$pdf->Cell(0, $cellH, 'POBLACIÓ:', 0, 0, 'L');
+		
+		$pdf->SetX($xEtiqNacio);
+		$pdf->Cell($wEtiquetes-8, $cellH, 'NACIONALITAT:', 0, 0, 'L', false, '', 1);
+		
+		if ($llistaTitols != '') {
+			$pdf->Ln($ln);
+			$pdf->SetX($xEtiquetes1);
+			$pdf->Cell(0, $cellH, 'TITULACIONS:', 0, 0, 'L');
+		}
+		
+		$pdf->SetTextColor(0, 0, 128); // Blau
+		
+		$pdf->SetXY($xCamps1, $yFila1);	
+		$pdf->Cell($wLarge, $cellH, $metapersona->getNomCognoms(), 1, 0, 'L', false, '', 1);
+		
+		$pdf->Ln($ln);
+		$pdf->SetX($xCamps1);
+		$pdf->Cell($wLarge, $cellH, ($persona != null?$persona->getMail():''), 1, 0, 'L', false, '', 1);
+
+		$pdf->Ln($ln);
+		$pdf->SetX($xCamps1);
+		$pdf->Cell($wLarge, $cellH, ($persona != null?$persona->getTelefons():''), 1, 0, 'L');
+
+		$pdf->Ln($ln);
+		$pdf->SetX($xCamps1);
+		$pdf->Cell($wDNI, $cellH, $metapersona->getDni(), 1, 0, 'C');
+		
+		$pdf->SetX($xNaixement);
+		$pdf->Cell($wNaixement, $cellH, ($persona != null?$persona->getDatanaixement()->format('d/m/Y'):''), 1, 0, 'C');
+		
+		$pdf->Ln($ln);
+		$pdf->SetX($xCamps1);
+		$pdf->Cell($wPoblacio, $cellH, ($persona != null?$persona->getAddrpob():''), 1, 0, 'L', false, '', 1);
+		
+		$pdf->SetX($xNacionalitat);
+		$pdf->Cell($wNacionalitat, $cellH, ($persona != null?$persona->getAddrnacionalitat():''), 1, 0, 'C');
+		
+		
+		if ($llistaTitols != '') {
+			$pdf->Ln($ln);
+			$pdf->SetX($xCamps1);
+			$pdf->Cell($wLarge, $cellH, $llistaTitols, 1, 0, 'L', false, '', 1);
+		}	
+		
+		
+		$pdf->SetTextColor(0, 0, 0); // Negre
+				
+		$pdf->Ln($ln);
+		$pdf->SetX($xCamps1);
+		$pdf->Cell($wLarge, 2*$cellH, 'ETIQUETA DE CONTROL', 1, 0, 'C');
+					
+		$pdf->SetXY($xFoto, $yFila1);	
+		$pdf->Cell($wFoto, 6*$cellH, 'FOTO', 1, 0, 'C');
+		
+		if ($persona != null && $persona->getFoto() != null && $persona->getFoto()->getWidth() > 0 && $persona->getFoto()->getHeight() > 0) {
+		
+			$pdf->Image($persona->getFoto()->getAbsolutePath(), $xFoto+$fMargin, $yFila1+$fMargin, $wFoto-2*$fMargin, 0, $persona->getFoto()->getExtension(), '', 'CT', false, 150, '', false, false, array(), 'LT', false, false, false, array());
+		
+		}
+		$pdf->Ln($cellH);
+		
 	}
 
 	private function getHtmlTaulaDocents($files, $docencies) {

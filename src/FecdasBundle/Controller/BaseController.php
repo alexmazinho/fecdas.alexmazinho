@@ -5,6 +5,7 @@ namespace FecdasBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use Symfony\Component\Form\FormError;
 use FecdasBundle\Classes\Funcions;
@@ -20,6 +21,8 @@ use FecdasBundle\Entity\EntityFactura;
 use FecdasBundle\Entity\EntityComanda;
 use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Entity\EntityComandaDetall;
+use FecdasBundle\Entity\EntityArxiu;
+
 
 include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
 
@@ -3173,7 +3176,65 @@ class BaseController extends Controller {
         return $cart;
     }
 
+	protected function gestionarArxiusPersona($persona, $fotoPath, $certificatPath, $foto, $certificat) {
+
+		if ($foto == null) {
+			if ($fotoPath == '' && $persona->getFoto() != null) {
+				// Desar la foto a arxius de la persona i esborrar foto
+				$persona->addArxius($persona->getFoto());
+				$persona->setFoto(null);
+			}
+		} else {
 	
+			if (!($foto instanceof UploadedFile) or !is_object($foto))  throw new \Exception('No s\'ha pogut carregar la foto (1)');
+								
+			if (!$foto->isValid()) throw new \Exception('No s\'ha pogut carregar la foto (2-'.$foto->isValid().')'); // Codi d'error
+			
+			$em = $this->getDoctrine()->getManager();
+							
+			$uploaded = $this->uploadAndScale($foto, $persona->getDni(), 300, 200);
+						
+			$foto = new EntityArxiu($uploaded['path'], true);
+			$foto->setPath($uploaded['name']);
+			$foto->setTitol("Foto federat " . $persona->getNomCognoms());
+			$em->persist($foto);
+	
+			if ($persona->getFoto() != null) {
+				// Desar la foto a arxius de la persona
+				$persona->addArxius($persona->getFoto());
+			}		
+			$persona->setFoto($foto);
+		}
+		
+		if ($certificat == null) {
+			if ($certificatPath == '' && $persona->getCertificat() != null) {
+				// Desar el certificat a arxius de la persona i esborrar certificat
+				$persona->addArxius($persona->getCertificat());
+				$persona->setCertificat(null);
+			}
+		} else {
+	
+			if (!($certificat instanceof UploadedFile) or !is_object($certificat))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
+								
+			if (!$certificat->isValid()) throw new \Exception('No s\'ha pogut carregar l\'arxiu (2-'.$certificat->isValid().')'); // Codi d'error
+			
+			$em = $this->getDoctrine()->getManager();
+			
+			$nameAjustat = $persona->getDni()."_".substr($certificat->getClientOriginalName(), -20);
+			$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat);
+						
+			$certificat = new EntityArxiu($certificat, true);
+			$certificat->upload($nameAjustat);
+			$certificat->setTitol("Certificat mèdic federat " . $persona->getNomCognoms());
+			$em->persist($certificat);
+	
+			if ($persona->getCertificat() != null) {
+				// Desar el certificat a arxius de la persona
+				$persona->addArxius($persona->getCertificat());
+			}		
+			$persona->setCertificat($certificat);
+		}
+	}
 	
 	/*
 	 * El saldo comptable per a dates posteriors a l'inici de l'exercici (Saldo al dia abans de la data indicada)

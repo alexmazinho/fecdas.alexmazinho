@@ -1973,8 +1973,8 @@ select#parte_renovar_tipus { width: 240px; }
 
 .historial-arxius .historial-camp span, .historial-arxius .historial-camp a { display:block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.historial-certificat { text-align: center; }
-.historial-certificat span.fa { margin: 0 4px; font-size: 1.2em; }
+.file-info { text-align: center; }
+.file-info span.fa { margin: 0 4px; font-size: 1.2em; }
 
 #tabs-persona { margin-bottom: 15px;}
 
@@ -2045,6 +2045,9 @@ select#parte_renovar_tipus { width: 240px; }
 
 .col-alumne-num .datasuperacio-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
+.col-alumne-certificat .file-upload { position: relative; }
+.col-alumne-certificat .file-info { position: absolute;  bottom: -24px; right: 0; }
+
 #llista-alumnes .data-detall-cell .subtitle, #llista-alumnes .col-listheader .subtitle { display: block; font-style: italic; font-size: 0.9em; color: #005a8c; }
 
 .title-info {
@@ -2085,11 +2088,6 @@ select#parte_renovar_tipus { width: 240px; }
 
 #tabs-docents { margin-bottom: 20px; }
 #formalumne-cerca { margin-bottom: 20px; }
-
-#formalumne-cerca .image-upload {
-	width: 100px; 
-	height: 123px;
-}
 
 .col-docent-dni { width: 15%; text-align: center; }
 .col-docent-nom { width: 30%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2137,8 +2135,6 @@ select#parte_renovar_tipus { width: 240px; }
 .link i.fa-stack:hover fa.orange { background-color: #eea236; } 
 .link i.fa-stack:hover fa.yellow { background-color: #FFFF66; }
 .link i.fa-stack:hover fa.gray { background-color: #CCCCCC; }
-
-
 
 
 
@@ -2715,7 +2711,7 @@ select#parte_persona_addrnacionalitat {
 
 /************************************************* Factures  Fin ******************************************************/
 
-.formdni-main, .formuser-main { margin-top: 50px; margin-left: 30px; }
+/*.formdni-main, .formuser-main { margin-top: 50px; margin-left: 30px; }*/
 
 #formdni-dni {  display: inline-block; margin-right: 10px;}
 #formdni-dni-consultadni { display: inline-block; position: relative; width: 120px; }
@@ -2875,7 +2871,7 @@ p.info-bold {
 	text-align: center;	
 }
 
-.image-upload {
+.image-upload, .image-noupload {
 	width: 81px;  /* 26mm */
 	height: 100px;  /* 32mm */
 	vertical-align: middle;
@@ -2975,9 +2971,10 @@ p.info-bold {
 
 /************************************************* Form User ******************************************************/
 
+/*
 .formuser-main div {
 	padding-bottom: 15px;
-}
+}*/
 
 
 /*****************************************************************************************************************/

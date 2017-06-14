@@ -15,6 +15,13 @@ use FecdasBundle\Form\FormTitulacio;
 
 class FormCurs extends AbstractType  implements EventSubscriberInterface {
 
+	private $instructor;
+	
+	public function __construct($instructor = false)
+	{
+		$this->instructor = $instructor;
+	}
+
 	public static function getSubscribedEvents() {
 
 		// Tells the dispatcher that you want to listen on the form.pre_set_data
@@ -36,8 +43,8 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		/* Check we're looking at the right data/form */
 		if ($curs instanceof EntityCurs) {
 			
-			$editable = $curs->editable();
-			
+			$editable = $curs->editable() && $this->instructor;
+		
 			$form->add('num', 'text', array(
 				'required' 	=> true,
 				'attr'		=>	array('readonly' => !$curs->finalitzat())
@@ -144,7 +151,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('instructors', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'		 	=> $instructors,
-		        'type' 		   	=> new FormDocencia(),
+		        'type' 		   	=> new FormDocencia($this->instructor),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -153,7 +160,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('collaboradors', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'			=> $collaboradors,
-		        'type' 			=> new FormDocencia(),
+		        'type' 			=> new FormDocencia($this->instructor),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -171,7 +178,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('participants', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'			=> $participants,
-		        'type' 			=> new FormTitulacio(),
+		        'type' 			=> new FormTitulacio($this->instructor),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -182,7 +189,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		$builder->addEventSubscriber ( new FormCurs () );
+		$builder->addEventSubscriber ( new FormCurs ($this->instructor) );
 		
 		$builder->add('id', 'hidden');
 		

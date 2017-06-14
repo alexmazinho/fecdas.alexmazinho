@@ -351,6 +351,25 @@
 				
 				dialegInformacio(strHtml, 'Informe compliment requeriments', 'auto', 835, closeDialegConfirmacio, function() { });
 			});
+
+			// Init Upload files
+			$('.col-alumne-foto input[type="file"]').each(function() {
+				imageUploadForm('#'+$(this).attr('id'), 104);
+
+				addFotoActionsBottom ( $(this).next(".galeria-upload") );
+	        });
+
+			$('.col-alumne-certificat input[type="file"]').each(function() {
+				prepareFileInput( $(this) );
+	        });
+
+			// Init remove foto i certificat
+			prepareRemoveFotoGaleria( "#list-data-alumnes", function( clkElem ) {
+				// Accions addicionals. Esborrar dades camp hidden foto
+				clkElem.parent('.galeria-remove-foto').prev('input[type="hidden"]').val('')
+			});
+			prepareRemoveFile( "#list-data-alumnes", "" );
+
 				
 			// Prepare collections holders
 			instructorsHolder = $('ul.docents-curs.instructors');
@@ -411,12 +430,6 @@
 				placeholder: 'Escollir títol'
 			});
 
-			imageUploadForm("#curs_formalumne_fotoupld", 104);
-
-			prepareFileInput( $("#curs_formalumne_certificatupld") );
-
-			removeFotoGaleria( "#formalumne-cerca, #llista-alumnes" );
-			
 			var current = new Date();
 			var mindate = new Date (current.getFullYear(), current.getMonth()-1, current.getDay());
 			var maxdate = new Date (current.getFullYear(), current.getMonth()+3, current.getDay());
@@ -543,9 +556,9 @@
 					strInfo = 'Opció no disponible';
 		        	if (action == 'save') strInfo += '. Només els instructors poden editar les dades del curs';
 		        	if (action == 'close') strInfo += '. Només els instructors poden tancar el curs per tal que el Club les validi ';		        			        
-		        	if (action == 'unclose') strInfo += '. Només el Club pot reobrir el curs ';
-		        	if (action == 'validate') strInfo += '. Només el Club pot confirmar la validesa de les dades del curs ';
-		        	if (action == 'finalize') strInfo += '. Només des de la Federació es pot finalitzar un curs ';
+		        	if (action == 'unclose') strInfo += '. Només es pot reobrir un curs si està tancat i pendent de validació, només el Club pot reobrir el curs ';
+		        	if (action == 'validate') strInfo += '. Per poder validar un curs cal que l\'instructor l\'hagi tancat primer. Només el Club pot confirmar la validesa de les dades del curs ';
+		        	if (action == 'finalize') strInfo += '. Per poder finalitzar un curs cal que el Club l\'hagi validat primer. Només des de la Federació es pot finalitzar un curs ';
 		        	dialegError('Avís', strInfo, 400, 0);
 		        	return false;
 		        }

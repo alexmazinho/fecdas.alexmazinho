@@ -8,18 +8,22 @@
 {% block title %}Aplicació gestió FECDAS. Racó de l'usuari{% endblock %}
 
 {% block body %}
-	<header>
-        <h1>Racó de l'usuari. Actualització de clau</h1>
-    </header>
-
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
-    
-	<div class="formuser-main">
-		{{ form_start(form, {'action': path('FecdasBundle_user'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-formuser'}}) }}
+	<div class="raco-usuari page-center"> 
+		{{ parent() }}
+	    
+		<div class="formuser-main content-center"> 
+		    <header>
+		        <h1>Racó de l'usuari</h1>
+		    </header>
+		
+		    <div class="row">
+		    	<div class="col-md-12 block-errors">
+		    		{% include 'FecdasBundle:Includes:messages.html.twig' %}
+		    	</div>
+		    </div>
+		    
+		    {{ form_start(form, {'action': path('FecdasBundle_user'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-formuser'}}) }}
+		     <p class="subtitle blue">Actualització de la clau</p>	
 	    	 <div id="formuser-user">
 				{{ form_label(form.user, 'Usuari', { 'label_attr': {'class': 'formlabel-inside'} }) }}
 				{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
@@ -44,7 +48,14 @@
        	 	 <div id="formuser-submit" class="parte-submit form-left" >	
 		 	 	<input type="submit" id="formuser-button-submit" class="forminput-inside" value="Actualitza" name="formuser-button-submit"/>
 			 </div>
-	    {{ form_end(form) }}
+	   		{{ form_end(form) }}
+	   	</div>
+   	</div>
+
+
+	
+	<div class="formuser-main content-center">
+		
 	</div>
     
 {% endblock %}

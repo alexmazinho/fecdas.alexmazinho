@@ -11,6 +11,13 @@ use FecdasBundle\Entity\EntityTitulacio;
 
 class FormTitulacio extends AbstractType {
 
+	private $instructor;
+	
+	public function __construct($instructor = false)
+	{
+		$this->instructor = $instructor;
+	}
+
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
@@ -18,17 +25,20 @@ class FormTitulacio extends AbstractType {
 			$form = $event->getForm();
 			$titulacio = $event->getData();
 			$metapersona = null;
-			$editable = true;	
+			$persona = null;
+			$editable = $this->instructor;	
+		
 			/* Check we're looking at the right data/form */
 			if ($titulacio instanceof EntityTitulacio) {
 				$metapersona = $titulacio->getMetapersona();
 				$curs = $titulacio->getCurs();
+				if ($curs != null && $curs->getClub() != null && $metapersona != null)  $persona = $metapersona->getPersona($curs->getClub());
 				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
 					$editable = false;	
 				}
 			}
-			
+		
 			$form->add('metapersona', 'hidden', array(
 				'mapped'	=> false,
 				'data'		=> $metapersona!=null?$metapersona->getId():0
@@ -55,12 +65,16 @@ class FormTitulacio extends AbstractType {
 				'disabled'	=> !$editable,
 				'attr' => array('accept' => 'image/*')
 			));
+			
+			$form->add('foto', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona != null && $persona->getFoto()!=null?$persona->getFoto()->getPath():'')));
 				
 			$form->add('certificatupld', 'file', array(
 				'mapped' => false,
 				'disabled'	=> !$editable, 
 				'attr' => array('accept' => 'pdf/*')
 			));
+			
+			$form->add('certificat', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona != null && $persona->getCertificat()!=null?$persona->getCertificat()->getPath():'')));
 			
 		});
 		

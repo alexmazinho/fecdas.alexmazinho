@@ -62,11 +62,17 @@ class TcpdfBridge extends \TCPDF {
     public function Header() {
     	parent::Header();
     	if ($this->rightheader != "") {
-    		$this->SetY(PDF_MARGIN_HEADER + 2.6);
-    		$this->Cell(0, 0, $this->rightheader, 0, true, 'R', 0, '', 0, false, 'C', 'C');
-			$this->SetY(PDF_MARGIN_HEADER + 7);
+    		/*$this->SetY(PDF_MARGIN_HEADER + 2.6);
+			// Cell( $w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' )
+    		$this->Cell(0, 0, $this->rightheader, 0, true, 'R', 0, '', 0, false, 'C', 'C');*/
+			
+			// ( $w, $h, $x, $y, $html = '', $border = 0, $ln = 0, $fill = false, $reseth = true, $align = '', $autopadding = true )
+			$this->writeHTMLCell(0, 0, 0, PDF_MARGIN_HEADER, $this->rightheader, 0, true, 0, true, 'R', true);
+
 			$this->SetFont('dejavusans', 'I', 8, '', true);
-			$this->Cell(0, 0, date("d/m/Y"), 0, false, 'R', 0, '', 0, false, 'C', 'C');
+			/*$this->SetY(PDF_MARGIN_HEADER + 7);
+			$this->Cell(0, 0, date("d/m/Y"), 0, false, 'R', 0, '', 0, false, 'C', 'C');*/
+			$this->writeHTMLCell(0, 0, 0, $this->getY(), date("d/m/Y"), 0, true, 0, true, 'R', true);
 		}
     }
     

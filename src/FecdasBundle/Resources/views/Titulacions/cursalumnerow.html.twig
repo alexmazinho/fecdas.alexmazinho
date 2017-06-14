@@ -3,39 +3,46 @@
     {% set persona = participantdata.metapersona.persona(curs.club) %}	
 {% endif %}
 
-<li class="{% if proto == true %}curs-form-prototype{% else %}alumne-form-row data-detall{% endif %}">
+<li class="{% if proto %}curs-form-prototype{% else %}alumne-form-row data-detall{% endif %}">
 	<div class="col-id col-seq hidden">{{ form_widget(participant.id) }}</div>
 	<div class="data-detall-cell col-alumne-meta hidden">{{ form_widget(participant.metapersona) }}</div>
 	<div class="data-detall-cell col-alumne-dni">{{ form_widget(participant.auxdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell col-alumne-nom">{{ form_widget(participant.auxnom, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
    	<div class="data-detall-cell col-alumne-certificat">
+   	    {{ form_widget(participant.certificat) }}
    		{{ form_widget(participant.certificatupld) }}
-   		<div class="certificat-upload">
-   			{% if proto == false and curs.editable == true %}
+   		<div class="file-upload">
+   			{% if proto or (curs.editable and roleinstructor) %}
     			<div class="input-group">
     				<span class="input-group-addon"></span>
-        			<input id="upload-file-info" class="form-control" type="text">
+        			<input id="upload-file-{% if proto or persona is null %}__name__{% else %}{{ persona.id }}{% endif %}-info" class="upload-file-info form-control" type="text">
         			<span class="input-group-addon input-group-addon-action">
         				<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
         			</span>
         		</div>
     		{% endif %}
+    		<div class="file-info">
    			{% if persona is not null and persona.certificat is not null %}
-				<div class="icon-inline">
-	   				<a href="{{ persona.certificat.webPath }}" target="_blank" download="{{ persona.certificat.path }}" class="nolink" title="Certificat mèdic"><i class="fa fa-medkit fa-2x green"></i></a>
-   				</div>
+   				<span class="blue">descarregar certificat</span> 
+				<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
+					  <span class="fa fa-download fa-1x orange"></span> 
+				</a>
+				<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
    			{% else %}
-   				{% if proto == false and curs.editable == true %}
+   				{% if proto or (curs.editable and roleinstructor) %}
    				{% else %}
-    	   				<span class="subtitle">Certificat mèdic no disponible </span>
+   						<span class="blue">Certificat mèdic no disponible </span>
+    	   				<span class="subtitle">asdasd </span>
    				{% endif %}
    			{% endif %}
+   			</div>
    		</div>
    	</div>	
 	<div class="data-detall-cell col-alumne-foto">
+        {{ form_widget(participant.foto) }}
 		{{ form_widget(participant.fotoupld) }}
 		
-		<a class="galeria-upload" href="">
+		<span class="galeria-upload" href="javascript:void(0);">
 			{% if persona is not null and persona.foto is not null and persona.foto.width > 0 and persona.foto.height > 0 %}
 				<div class="image-upload">
   		   			<a href="{{ persona.foto.webPath }}" target="_blank" download="{{ persona.foto.path }}" class="nolink">
@@ -43,75 +50,17 @@
    		   			</a>
    		   		</div>
 			{% else %}
-	   			{% if proto == false and curs.editable == true %}
+	   			{% if proto or (curs.editable and roleinstructor)  %}
 	   				<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
 	   			{% else %}
-	   				<div class="image-upload"><span class="box-center-txt">Imatge no<br/>disponible</span></div>
+	   				<div class="image-noupload"><span class="box-center-txt">Imatge no<br/>disponible</span></div>
 	   			{% endif %}
 			{% endif %}
-   		</a>	
+   		</span>	
    	</div>
 	<div class="data-detall-cell col-alumne-num">{{ form_widget(participant.num, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell col-actions">
-		{% if proto == false and curs.editable == true %}<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>{% endif %}
+		{% if proto or (curs.editable and roleinstructor) %}<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>{% endif %}
 	</div>
 </li>
 
-
-
-{#
-
-<li class="{% if proto == true %}alumne-form-prototype{% else %}alumne-row data-detall{% endif %}">
-	<!-- <div class="alumne-form"> -->
-    	<div class="col-id col-seq hidden">{{ alumne.id }}</div>
-    	<div class="data-detall-cell col-alumne-dni">{{ alumne.dni }}</div>
-    	{% if alumne == null %}
-    		<div class="data-detall-cell col-alumne-nom"><span class="title-comment">(dades no disponibles)</span></div>
-    		<div class="data-detall-cell col-alumne-nascut"><span class="title-comment">(dades no disponibles)</span></div>
-    		<div class="data-detall-cell col-alumne-poblacio"><span class="title-comment">(dades no disponibles)</span></div>
-    	{% else %}
-    		<div class="data-detall-cell col-alumne-nom">
-    			{{ alumne.nomCognoms }}
-    			{% if alumne.mail != null and alumne.mail != '' %}
-    				<br/><span class="subtitle">{{ alumne.mail }}</span>
-    			{% endif %}
-    		</div>
-    		<div class="data-detall-cell col-alumne-poblacio">
-    			{% if alumne.addrpob == null or alumne.addrpob == '' %}
-    				<span class="title-comment">(dades no disponibles)</span>
-    			{% else %}
-    				{{ alumne.addrpob }} {% if alumne.addrnacionalitat != null and alumne.addrnacionalitat != '' %} ({{ alumne.addrnacionalitat }}){% endif %}
-    				<br/><span class="subtitle">{{ alumne.datanaixement|date('d/m/Y') }}</span>
-    			{% endif %}
-    		</div>
-    		<div class="data-detall-cell col-alumne-foto">
-    			<div class="icon-inline">
-    				{% if alumne.foto is not null and alumne.foto.width > 0 and alumne.foto.height > 0 %}
-    		   			<a href="{{ alumne.foto.webPath }}" target="_blank" download="{{ alumne.foto.path }}" class="nolink"><img src="{{ alumne.foto.webPath }}" alt="{{ alumne.foto.titol }}" width="30px"/></a>
-    				{% else %}
-    		   			<span class="noimage-available"><span class="title-comment">Foto no<br/>Disponible</span></span>
-    				{% endif %}
-    			</div>
-    		</div>
-    		<div class="data-detall-cell col-alumne-certificat">			   			
-    			{% if alumne.certificat is not null %}
-    				<div class="icon-inline">
-    					<a href="{{ alumne.certificat.webPath }}" target="_blank" download="{{ alumne.certificat.path }}" class="nolink" title="Certificat mèdic"><i class="fa fa-medkit fa-2x green"></i></a>
-    				</div>
-    			{% endif %}
-    		</div>							
-    	{% endif %}
-    	<div class="data-detall-cell col-alumne-num">{{ participant.num }}
-    		{% if participant.datasuperacio != null %}
-    			<br/><span class="datasuperacio-titulacio">{{ participant.datasuperacio|date('d/m/Y') }}</span>
-    		{% endif %}
-    	</div>
-    	<div class="data-detall-cell col-alumne-actions">
-    		{% if curs.editable == true %}
-    			<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>
-    		{% endif %}
-    	</div>
-	<!-- </div> -->
-</li>
-		#}		
-	

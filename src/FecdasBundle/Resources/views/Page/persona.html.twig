@@ -215,29 +215,32 @@
 			    <div class="row">
 			    	<div class="col-md-5">
 			    		<div class="certificat-medic">
-			    			{{ form_widget(formpersona.certificat) }} 
 			    			<div class="historial-titol">Certificat mèdic</div>
 			    			<div class="form-group">
+			    			    {{ form_widget(formpersona.certificat) }} 
 								{{ form_widget(formpersona.certificatupld, { 'attr': {'class': 'form-control'} }) }}
-								<div class="input-group" style="position:relative;">
-									<span class="input-group-addon"></span>
-									<input id="upload-file-info" class="form-control" type="text">
-							        <span class="input-group-addon input-group-addon-action">
-							        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
-							        </span>
-						        </div>
+								<div class="file-upload">
+    								<div class="input-group">
+    									<span class="input-group-addon"></span>
+    									<input id="upload-file-info" class="upload-file-info form-control" type="text">
+    							        <span class="input-group-addon input-group-addon-action">
+    							        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+    							        </span>
+    						        </div>
+    						        <div class="file-info historial-certificat space10">
+    								{% if persona.certificat != null %}
+    									<span class="blue">descarregar certificat</span> 
+    									<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
+    										  <span class="fa fa-download fa-1x orange"></span> 
+    									</a>
+    									<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
+    								{% else %}
+    									<span class="blue">Certificat mèdic no disponible</span>
+    								{% endif %}
+    								</div>
+								</div>
 							</div>
-							<div class="historial-certificat space50">
-								{% if persona.certificat != null %}
-									<span class="blue">descarregar certificat</span> 
-									<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
-										  <span class="fa fa-download fa-1x orange"></span> 
-									</a>
-									<a class="remove-certificat link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
-								{% else %}
-									<span class="blue">Cap certificat</span>
-								{% endif %}
-							</div>
+							
 			    		</div>
 			    	</div>
 			    	<div class="col-md-7">

@@ -143,21 +143,69 @@
 	        zIndex:	350
 	    });
 		
-	    $("#dialeg").html("<p>Indica la data <input type='text' id='datapagament' disabled='disabled'/></p>");
-	    $("#dialeg").append("<p>Raó del pagament <select type='text' id='tipuspagament' required='required'></select></p>");
-	    $("#dialeg").append("<p>Dades opcionals. Núm. comanda TPV, etc... <input type='text' id='dadespagament' required='required'/></p>");
-	    $("#dialeg").append("<p>Comentaris<textarea id='pagatcomentari' required='required'/></p>");
+		   
+		var dialegHtml = "";
+		dialegHtml += "<div class='row'>";
+		dialegHtml +="   <div class='col-md-10'>";
+		dialegHtml +="		<div class='form-group'>";
+		dialegHtml +="     		<label for='comanda_datafactura'>Rebut</label>";
+	    dialegHtml +="      		<div class='input-group'>";
+	    dialegHtml +="				<span class='input-group-addon'>Data</span>";
+	    dialegHtml +="	        	<input type='text' id='datapagament' class='form-control form-control-center'  />";
+	    dialegHtml +="	        	<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
+	    dialegHtml +="      		</div>";
+	    dialegHtml +="   	</div>";
+	    dialegHtml +="   </div>";
+	    dialegHtml +="   <div class='col-md-12'>";
+	    dialegHtml +="		<div class='form-group'>";
+	    dialegHtml +="     		<label for='comanda_datafactura'>Raó del pagament</label>";
+	    dialegHtml +="      		<div class='input-group'>";
+	    dialegHtml +="				<span class='input-group-addon'></span>";
+	    dialegHtml +="	        	<select type='text' id='tipuspagament' required='required' class='form-control form-control-left'></select>";
+	    dialegHtml +="      		</div>";
+	    dialegHtml +="   	</div>";
+	    dialegHtml +="   </div>";
+	    dialegHtml +="   <div class='col-md-12'>";
+	    dialegHtml +="		<div class='form-group'>";
+	    dialegHtml +="     		<label for='comanda_datafactura'>Dades opcionals. Núm. comanda TPV, etc...</label>";
+	    dialegHtml +="      		<div class='input-group'>";
+	    dialegHtml +="				<span class='input-group-addon'></span>";
+	    dialegHtml +="	        	<input type='text' id='dadespagament' class='form-control form-control-left'  />";
+	    dialegHtml +="      		</div>";
+	    dialegHtml +="   	</div>";
+	    dialegHtml +="   </div>";
+	    dialegHtml +="   <div class='col-md-12'>";
+	    dialegHtml +="		<div class='form-group'>";
+	    dialegHtml +="     		<label for='comanda_datafactura'>Comentaris</label>";
+	    dialegHtml +="      		<div class='input-group'>";
+	    dialegHtml +="				<span class='input-group-addon'></span>";
+	    dialegHtml +="	        	<textarea id='pagatcomentari' required='required'  class='form-control form-control-left' />";
+	    dialegHtml +="      		</div>";
+	    dialegHtml +="   	</div>";
+	    dialegHtml +="   </div>";
+	    dialegHtml +="</div>";
+		
+	    $("#dialeg").html(dialegHtml);
 	    
-	    $( "#datapagament" ).datepicker({
-            showOn: "button",
-            //buttonImage: "/images/icon-calendar.gif",
-            buttonText: "<i class='fa fa-calendar fa-1x blue'></i>",
-            //buttonImageOnly: true,
-            dateFormat: 'dd/mm/yy'
-        });
-	    
-	    $( "#datapagament" ).datepicker( "setDate", new Date() );
-
+		var current = new Date();
+		var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
+		
+		initDateTimePicker ( 
+			$( '#datapagament' ), 
+			mindate, 
+			current,
+			current, 
+			'datapagament-picker', 
+			false,
+			function() {} 
+		);
+		
+		$( '#datapagament' ).datetimepicker({
+			value: current,
+			format:'d/m/Y'
+		});
+		
+		
 		$.get( "/jsontipuspagaments" , function( data ) {
 			  var tipusPagament = JSON.parse( JSON.stringify(data), function (k, v) {
 				    return v; 

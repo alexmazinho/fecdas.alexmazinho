@@ -1,0 +1,48 @@
+<div class="table-header">	
+	<div id="list-header">
+   		<div class="header-stockclub-id hidden">Id</div>
+   		<div class="header-stockclub-abreviatura col-listheader collistheader-noorder">Abr.</div>
+   		<div class="header-stockclub-producte col-listheader collistheader-noorder">Kit</div>
+   		<div class="header-stockclub-titol col-listheader collistheader-noorder">títol/curs</div>
+   		<div class="header-stockclub-stock col-listheader collistheader-noorder">disponibles</div>
+   		<div class="header-stockclub-actions col-listheader collistheader-noorder">{% if admin %}stock{% else %}nova comanda{% endif %}</div>
+	</div>
+</div>
+<div class="table-scroll">
+	<div class="list-data">
+    {% for stock in stockclub %}
+		<div class="data-detall">
+			<div class="data-detall-cell stockclub-id hidden">{{ stock.kit.id }}</div>
+			<div class="data-detall-cell stockclub-abreviatura">{{ stock.kit.abreviatura }}</div>
+			<div class="data-detall-cell stockclub-producte">{{ stock.kit.descripcio }}</div>
+			<div class="data-detall-cell stockclub-titol">{% if stock.titol != null %} {{ stock.titol.llistaText }} {% endif %}</div>
+			<div class="data-detall-cell stockclub-stock systemblue">{{ stock.stock }}</div>
+			<div class="data-detall-cell stockclub-actions systemblue">
+				<div class="form-inline">
+    				<div class="input-group" >
+    					<span class="input-group-addon">{% if admin %}(Admin){% endif %}</span>
+    					
+    					{% set classes = 'form-control form-control-center form-control-unitats' %}
+    					{% if admin and stock.stock > 0 %}
+    						{% set classes = classes~' form-control-stock' %}
+    					{% endif %}
+    					{% if admin and stock.stock < 0 %}
+    						{% set classes = classes~' form-control-outoffstock' %}
+    					{% endif %}
+    					{{ form_widget(form.stocks[stock.kit.id], { 'attr': {'class': classes, 
+    									'data-id':stock.kit.id, 'data-min': 0, 'data-max': stock.kit.stock }}) }} 
+    					
+    					<span class="input-group-addon input-group-addon-icon">
+                            {% if not admin %}
+            	      			<a class="stockclub-addtocart btn btn-default btn-xs" href="{{ path('FecdasBundle_afegircistella', { 'tipus': constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_KITS'), 'id': stock.kit.id }) }}" alt="Nova comanda" title="Nova comanda">
+                	   				<i class="fa fa-shopping-cart blue"></i> afegir
+                   				</a>
+                			{% endif %}
+    					</span>
+    				</div>
+    			</div>
+			</div>
+		</div>
+    {% endfor %} 
+    </div>
+</div>

@@ -81,14 +81,40 @@ input.form-control-updated, .form-control.form-control-updated {
 
 .form-control.form-select { padding: 6px; }
 
-/*
-input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
-    background: -moz-linear-gradient(top, #fff 0%, #e0e0e0 100%);
+.btn.btn-default {
+	text-shadow: 0 1px 0 rgba(0,0,0,.2); 
+  	box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 3px 3px rgba(0,0,0,.075);
+  	background-color: #fff; 
+  	background: -moz-linear-gradient(top, #fff 0%, #e0e0e0 100%);
 	background: -webkit-gradient(left top, left bottom, color-stop(0%, #fff), color-stop(100%, #e0e0e0));
 	background: -webkit-linear-gradient(top, #fff 0%, #e0e0e0 100%);
 	background: -o-linear-gradient(top, #fff 0%, #e0e0e0 100%);
 	background: -ms-linear-gradient(top,#fff 0%, #e0e0e0 100%);
-   	background: linear-gradient(to bottom, #fff 0px, #e0e0e0 100%);
+   	background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0px, rgba(200,200,200,0.5) 100%);
+    color: #1240a0;
+    -webkit-transition: background-color 0.3s ease-in-out;
+  	-moz-transition: background-color 0.3s ease-in-out;
+  	-ms-transition: background-color 0.3s ease-in-out;
+  	-o-transition: background-color 0.3s ease-in-out;
+  	transition: all 0.3s ease-in-out;
+}
+
+.btn.btn-default:hover {
+	/*background: rgba(200,200,200,1);*/
+	background-color: #e0e0e0; 
+	/*background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,255,255,1)), color-stop(100%, rgba(200,200,200,1)));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: -o-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(200,200,200,1) 100%);
+	background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, rgba(200,200,200,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#cccccc', GradientType=0 );*/
+	background-position: 0 0;
+}
+
+/*
+input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
+   
    	font-size: 14px;
     padding: 7px 16px;
    	-webkit-border-radius: 5px;
@@ -259,7 +285,7 @@ input.disabled label
 	padding: 0 0 10px;
 }
 
-#dialeg #datapagament { width: 120px; text-align: center; }
+/*#dialeg #datapagament { width: 120px; text-align: center; } */
 #dialeg button.ui-datepicker-trigger { padding: 2px 10px; }
 #dialeg .ui-datepicker-month, #dialeg .ui-datepicker-month { color: #333333; } 
 
@@ -653,10 +679,14 @@ label { color: #555555; font-weight: normal; }
 .col-listheader.header-stockclub-producte, .data-detall-cell.stockclub-producte	 { width: 30%; text-align: left; }
 .col-listheader.header-stockclub-titol, .data-detall-cell.stockclub-titol	 { width: 30%; text-align: left; }
 .col-listheader.header-stockclub-stock, .data-detall-cell.stockclub-stock	 { width: 10%; text-align: center; }
-.col-listheader.header-stockclub-actions, .data-detall-cell.stockclub-actions 	 { width: 10%; text-align: center; }
+.col-listheader.header-stockclub-actions, .data-detall-cell.stockclub-actions 	 { width: 18%; text-align: center; }
 
+.stockclub-actions .input-group .input-group-addon.input-group-addon-icon { padding: 2px 4px; }
 
 .table-stockclub tbody.list-data { display: table-row-group; }
+
+.table-stockclub input.form-control-stock { font-weight: bold; background: #A4D65E; background: rgba(92, 184, 92, 0.5);/*#5cb85c;*/ }
+.table-stockclub input.form-control-outoffstock { font-weight: bold; background: #E56A54; background: rgba(169, 68, 66, 0.5);/*#a94442;*/ }
 
 
 /*************** stock club FI ****************/
@@ -2965,7 +2995,7 @@ p.info-bold {
 	text-indent: 0px;
 }
 
-#dialeg #datafacturacio { width: 120px; text-align: center;}
+/*#dialeg #datafacturacio { width: 120px; text-align: center;}*/
 
 
 /*****************************************************************************************************************/

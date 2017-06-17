@@ -146,143 +146,138 @@
 {% block javascripts %}
 
 	{{ parent() }}
-
-	
 	
 	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
 	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 	
-<script type="text/javascript">
-
-$(document).ready(function() {
-
-	setMenuActive("menu-parte");
-	
-	{% if parte.esnova == true %}
-		$('#parte_tipus').val(0);
-		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
-
-		var current = new Date();
-
-console.log({{ datesparte['min']['any'] }}+' '+{{ datesparte['min']['mes'] }}+' '+ {{ datesparte['min']['dia'] }});		
-console.log({{ datesparte['max']['any'] }}+' '+{{ datesparte['max']['mes'] }}+' '+ {{ datesparte['max']['dia'] }});
-		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});
-		var maxdate = new Date ( {{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }});
-		initDateTimePicker ( 
-			$( '#parte_dataalta' ), 
-			mindate, 
-			maxdate, 
-			current, 
-			'dataalta-picker', 
-			true,
-			function (ct) {
-				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
-				
-				if ($.browser.msie) $('#formparte-llicencia').hide(); 
-		    	else $('#formparte-llicencia').slideUp('fast');
-
-		    	// Update select tipus parte	
-				var params = { day: ct.getDate(), month: (ct.getMonth()+1), year: ct.getFullYear()  };
-				$.get(url,	params,
-				function(data) {
-					$('select#parte_tipus').html(data); 
-					$('#parte_any').val(ct.getFullYear());
-				});
-			}
-		);
-		
-		
-	{% endif %} 
-	
-	{% if parte.allowedit == true %}
-		reloadParteTipus();
-	{% endif %} 
-	
-	removeLlicenciaClick();
-
-	$('.confirmar-pagament').click(function(e) {
-		e.preventDefault();
-		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-	});
-
-	tramitarPagamentButton("#formparte-payment", "{{ iban }}" );
-	
-	showResumParteDetall();
-
-	sortLlista("col-listheader", "list-data");
-
-	$('.table-scroll').each(function() {
-		if ($(this).hasOverflowY()) {
-			$(this).css({"width":"101.5%"});
-		}
-	});
-
-
-	$('#button-llicencies-remove').click(function(e) {
-		e.preventDefault();
-
-		var url = $(this).attr('href');
-		var idsLlicencies = [];
-		// Comprovar que hi hagi alguna llicències seleccionada
-		$('input.check-llicencia-remove').each( function() {
-			if ( $(this).is(':checked') ) {
-				var idCurrent = $(this).attr('data-id');
-				idsLlicencies.push(idCurrent);
-			}
-	    });
-
-		if (idsLlicencies.length == 0) {
-			dialegError("Error", "No hi ha cap llicència seleccionada", 400, 0);
-			return false;
-		}
-
-		var strHtml = '<p>Segur que vols anul·lar les llicències?</p>';
-		strHtml += "   <p>Data factura anul·lació<br/>";
-		strHtml += "	  <input type='text' id='datafacturacio' disabled='disabled'/>";
-		strHtml += "   </p>";
-		
-		dialegConfirmacio( strHtml, "Abans de continuar...", 0, 400, function() {
-			url += '&datafacturacio='+$('#datafacturacio').val()+'&llicencies='+encodeURIComponent(JSON.stringify(idsLlicencies));
-    		window.location = url;	
-        }, 
-        function() { closeDialegConfirmacio(); /* Cancel */ }, 
-        function() {
-
-        	var current = new Date();
-    		var mindate = new Date (current.getFullYear()-1, current.getMonth(), current.getDay());
-    		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+    <script type="text/javascript">
+    
+    $(document).ready(function() {
+    
+    	setMenuActive("menu-parte");
+    	
+    	{% if parte.esnova == true %}
+    		$('#parte_tipus').val(0);
+    		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
+    
+    		var current = new Date();
+    		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});
+    		var maxdate = new Date ( {{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }});
     		initDateTimePicker ( 
-    			$( '#datafacturacio' ), 
+    			$( '#parte_dataalta' ), 
     			mindate, 
     			maxdate, 
     			current, 
-    			'facturacio-picker', 
-    			false,
-    			function (selectedDateTime) {
-    				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");  
+    			'dataalta-picker', 
+    			true,
+    			function (ct) {
+    				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
+    				
+    				if ($.browser.msie) $('#formparte-llicencia').hide(); 
+    		    	else $('#formparte-llicencia').slideUp('fast');
+    
+    		    	// Update select tipus parte	
+    				var params = { day: ct.getDate(), month: (ct.getMonth()+1), year: ct.getFullYear()  };
+    				$.get(url,	params,
+    				function(data) {
+    					$('select#parte_tipus').html(data); 
+    					$('#parte_any').val(ct.getFullYear());
+    				});
     			}
     		);
-        });
-		
-	});
-	
-	if ($("#parte_tipus option").length == 1) {
-	/* Només si hi ha disponible més d'una llicència */
-		$("#help-tipusparte").hide();
-	} else {
-		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
-			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
-			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 31/08</p>\
-			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
-			<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
-			<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
-			<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
-			<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
-			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
-			No habilitada per competició ni per fer cursos federats.</p>\
-			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
-	};	
-});
+    		
+    		
+    	{% endif %} 
+    	
+    	{% if parte.allowedit == true %}
+    		reloadParteTipus();
+    	{% endif %} 
+    	
+    	removeLlicenciaClick();
+    
+    	$('.confirmar-pagament').click(function(e) {
+    		e.preventDefault();
+    		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+    	});
+    
+    	tramitarPagamentButton("#formparte-payment", "{{ iban }}" );
+    	
+    	showResumParteDetall();
+    
+    	sortLlista("col-listheader", "list-data");
+    
+    	$('.table-scroll').each(function() {
+    		if ($(this).hasOverflowY()) {
+    			$(this).css({"width":"101.5%"});
+    		}
+    	});
+    
+    
+    	$('#button-llicencies-remove').click(function(e) {
+    		e.preventDefault();
+    
+    		var url = $(this).attr('href');
+    		var idsLlicencies = [];
+    		// Comprovar que hi hagi alguna llicències seleccionada
+    		$('input.check-llicencia-remove').each( function() {
+    			if ( $(this).is(':checked') ) {
+    				var idCurrent = $(this).attr('data-id');
+    				idsLlicencies.push(idCurrent);
+    			}
+    	    });
+    
+    		if (idsLlicencies.length == 0) {
+    			dialegError("Error", "No hi ha cap llicència seleccionada", 400, 0);
+    			return false;
+    		}
+    
+    		var strHtml = '<p>Segur que vols anul·lar les llicències?</p>';
+    		strHtml += "   <p>Data factura anul·lació<br/>";
+    		strHtml += "	  <input type='text' id='datafacturacio' disabled='disabled'/>";
+    		strHtml += "   </p>";
+    		
+    		dialegConfirmacio( strHtml, "Abans de continuar...", 0, 400, function() {
+    			url += '&datafacturacio='+$('#datafacturacio').val()+'&llicencies='+encodeURIComponent(JSON.stringify(idsLlicencies));
+        		window.location = url;	
+            }, 
+            function() { closeDialegConfirmacio(); /* Cancel */ }, 
+            function() {
+    
+            	var current = new Date();
+        		var mindate = new Date (current.getFullYear()-1, current.getMonth(), current.getDay());
+        		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+        		initDateTimePicker ( 
+        			$( '#datafacturacio' ), 
+        			mindate, 
+        			maxdate, 
+        			current, 
+        			'facturacio-picker', 
+        			false,
+        			function (selectedDateTime) {
+        				//asseguratsReload("{# path('FecdasBundle_assegurats', sortparams)|raw #}");  
+        			}
+        		);
+            });
+    		
+    	});
+    	
+    	if ($("#parte_tipus option").length == 1) {
+    	/* Només si hi ha disponible més d'una llicència */
+    		$("#help-tipusparte").hide();
+    	} else {
+    		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
+    			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
+    			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 31/08</p>\
+    			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
+    			<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
+    			<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
+    			<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
+    			<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
+    			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
+    			No habilitada per competició ni per fer cursos federats.</p>\
+    			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
+    	};	
+    });
 
 </script>
 

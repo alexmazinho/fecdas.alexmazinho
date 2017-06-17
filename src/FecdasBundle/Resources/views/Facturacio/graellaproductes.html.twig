@@ -4,6 +4,7 @@
 {% block stylesheets %}
 	<!-- Select2 styles -->
 	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
 	
 	{{ parent() }}
 {% endblock %}
@@ -102,7 +103,8 @@
 {% block javascripts %}
 
 	{{ parent() }}
-	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 	
  	<script src="{{ asset('js/utils/masonry.pkgd.min.js') }}"></script>
  	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/3.3.2/masonry.pkgd.min.js"></script> -->
@@ -129,7 +131,7 @@
 
 			var url = $(this).attr("href")+'&club='+$('#form_clubs').val();
 			
-			dialegConfirmacio( pagamentComandaSMS( {% if admin == true %} true {% else %} false {% endif %}, "{{ iban }}", "{{ ibanescola }}" ), "Abans de continuar...", 0, 550, function() {
+			dialegConfirmacio( pagamentComandaSMS( {% if admin == true %} true {% else %} false {% endif %}, "{{ iban }}", "{{ ibanescola }}" ), "Abans de continuar...", 0, 500, function() {
 				var datafacturacio = '';
 
 				if ($('#datafacturacio').length != 0) {
@@ -148,15 +150,19 @@
 
 	        }, function() { closeDialegConfirmacio(); }, function() {
 
-	        	$( "#datafacturacio" ).datepicker({
-		      		showOn: "button",
-		            //buttonImage: "/images/icon-calendar.gif",
-		            buttonText: "<i class='fa fa-calendar fa-1x blue'></i>",
-		            //buttonImageOnly: true,
-		            dateFormat: 'dd/mm/yy'
-		      	});
-			    
-			  	$( "#datafacturacio" ).datepicker( "setDate", new Date() );
+	        	var current = new Date();
+	    		var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
+
+				initDateTimePicker ( 
+					$( '#datafacturacio' ), 
+					mindate, 
+					current,
+					current, 
+					'datafacturacio-picker', 
+					false,
+					function() {} 
+				);
+	        	
 			});
 			
 		});
@@ -169,6 +175,7 @@
 		
 		
 		$( ".grid-productes" ).on( "click", ".producte-action-add-cart", function(e) {
+
 			e.preventDefault();			
 			
 			var unitats = $(this).prev().val();

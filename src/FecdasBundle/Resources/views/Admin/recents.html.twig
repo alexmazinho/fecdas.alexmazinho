@@ -1,6 +1,12 @@
 {# src/Fecdas/PartesBundle/Resources/views/Admin/recents.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
+{% block stylesheets %}
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
 {% block javascriptshead %}
  	{{ parent() }}
 {% endblock %}
@@ -88,250 +94,252 @@
 {% block javascripts %}
 
 {{ parent() }}
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
-<script type="text/javascript">
+	<script type="text/javascript">
 
-recentsParams = function() {
-	var params = []; 
-	params.push( {'name':'clubs','value': $('#form_clubs').val()} );
-	params.push( {'name':'estat','value': $('#form_estat').val()} );
-	
-	params.push( {'name':'numrebut','value': $('#form_numrebut').val()} );
-	params.push( {'name':'anyrebut','value': $('#form_anyrebut').val()} );
-	params.push( {'name':'numfactura','value': $('#form_numfactura').val()} );
-	params.push( {'name':'anyfactura','value': $('#form_anyfactura').val()} );
-	
-	params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
-	params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
-	params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
-	params.push( {'name':'compta','value': ($('#form_compta').is(':checked'))?1:0} );
-	
-	//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
-	
-	return params;
-};
-
-
-obrirTaulaSortidaLlicencies = function(url, title, txtSubmit, callbackSubmit) {
-	$('.alert.alert-dismissible').remove();
-	
-	$.get(url, function(data) {
-		
-		$("#dialeg").html(data);
-					
-		var ewidth = $(window).width()*0.8;
-		if (ewidth > 800) ewidth = 800;
-		var eheight = $(document).height()*0.8;
-					
-		$("#dialeg").dialog({
-			buttons :[
-			            {
-			              text: txtSubmit,
-			              click: callbackSubmit
-						},
-						{
-				          text: "Cancel·lar",
-				          click: function() {
-				        	  $(this).dialog("destroy");
-				          }
-						}
-			          ], 
-		    show: 1000,
-		    modal: true,
-		    resizable: true,
-		    width: ewidth,
-		    height: eheight,
-		    minWidth: 400,
-		    title: title
-		 });
-	
-		eventFilterTable("#formfederatssortida", "#table-federats", url);
-		
-	}).fail( function(xhr, status, error) {
-		 var sms = smsResultAjax('KO', xhr.responseText);
-		 
-		 $("#list-forms").prepend(sms);
-	});
-
-};
-
-submitEnviarLllicencies = function(action, parteRow) {
-	var url = $('#formfederatssortida').attr("action");
-	var params = $('#formfederatssortida').serializeArray();
-	//params.push( {'name':'submitaction','value': action} );
-
-	obrirMascaraBlock( '#table-federats' );
-	
-	$.post(url, params, function(data) {
-
-		var sms = smsResultAjax('OK', data);
-
-		//if ($('#form_noimpres').is(':checked')) parteRow.remove();
-		printTaulaRecents();
-
-		$("#list-forms").prepend(sms);
-
-		$("#dialeg").dialog("destroy");
-	}).fail( function(xhr, status, error) {
-		 // xhr.status + " " + xhr.statusText, status, error
-		 var sms = smsResultAjax('KO', xhr.responseText);
-		 
-		 $("#list-federats-sortida-llicencies").prepend(sms);
-
-		 tancarMascaraBlock( '#table-federats' );
-	     
-	});
-};
+    recentsParams = function() {
+    	var params = []; 
+    	params.push( {'name':'clubs','value': $('#form_clubs').val()} );
+    	params.push( {'name':'estat','value': $('#form_estat').val()} );
+    	
+    	params.push( {'name':'numrebut','value': $('#form_numrebut').val()} );
+    	params.push( {'name':'anyrebut','value': $('#form_anyrebut').val()} );
+    	params.push( {'name':'numfactura','value': $('#form_numfactura').val()} );
+    	params.push( {'name':'anyfactura','value': $('#form_anyfactura').val()} );
+    	
+    	params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
+    	params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
+    	params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
+    	params.push( {'name':'compta','value': ($('#form_compta').is(':checked'))?1:0} );
+    	
+    	//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
+    	
+    	return params;
+    };
 
 
-eventFilterTable = function (containerSel, taulaSel, url) {
+    obrirTaulaSortidaLlicencies = function(url, title, txtSubmit, callbackSubmit) {
+    	$('.alert.alert-dismissible').remove();
+    	
+    	$.get(url, function(data) {
+    		
+    		$("#dialeg").html(data);
+    					
+    		var ewidth = $(window).width()*0.8;
+    		if (ewidth > 800) ewidth = 800;
+    		var eheight = $(document).height()*0.8;
+    					
+    		$("#dialeg").dialog({
+    			buttons :[
+    			            {
+    			              text: txtSubmit,
+    			              click: callbackSubmit
+    						},
+    						{
+    				          text: "Cancel·lar",
+    				          click: function() {
+    				        	  $(this).dialog("destroy");
+    				          }
+    						}
+    			          ], 
+    		    show: 1000,
+    		    modal: true,
+    		    resizable: true,
+    		    width: ewidth,
+    		    height: eheight,
+    		    minWidth: 400,
+    		    title: title
+    		 });
+    	
+    		eventFilterTable("#formfederatssortida", "#table-federats", url);
+    		
+    	}).fail( function(xhr, status, error) {
+    		 var sms = smsResultAjax('KO', xhr.responseText);
+    		 
+    		 $("#list-forms").prepend(sms);
+    	});
+    
+    };
+    
+    submitEnviarLllicencies = function(action, parteRow) {
+    	var url = $('#formfederatssortida').attr("action");
+    	var params = $('#formfederatssortida').serializeArray();
+    	//params.push( {'name':'submitaction','value': action} );
+    
+    	obrirMascaraBlock( '#table-federats' );
+    	
+    	$.post(url, params, function(data) {
+    
+    		var sms = smsResultAjax('OK', data);
+    
+    		//if ($('#form_noimpres').is(':checked')) parteRow.remove();
+    		printTaulaRecents();
+    
+    		$("#list-forms").prepend(sms);
+    
+    		$("#dialeg").dialog("destroy");
+    	}).fail( function(xhr, status, error) {
+    		 // xhr.status + " " + xhr.statusText, status, error
+    		 var sms = smsResultAjax('KO', xhr.responseText);
+    		 
+    		 $("#list-federats-sortida-llicencies").prepend(sms);
+    
+    		 tancarMascaraBlock( '#table-federats' );
+    	     
+    	});
+    };
+    
+    
+    eventFilterTable = function (containerSel, taulaSel, url) {
+    
+    	var timeout;
+    	// Camp de text per a filtre. Detect input filtre. Si text = '' o text >= 3 sends ajax call		
+    	$(containerSel).on( 'input', '#form_filtre', function(e) {
+    		if(timeout) {
+    		    clearTimeout(timeout);
+    		    timeout = null;
+    		}
+    					
+    		var filtre = $(this).val(); 
+    					  
+    		if ( $(this).data('lastval') != filtre ) {
+    			 
+    			$(this).data('lastval', filtre);
+    
+    		    if (filtre == '' || filtre.length >= 3) {
+    		    	obrirMascaraBlock(  taulaSel );
+    
+    		    	$('.alert.alert-dismissible').remove();
+    		    	
+    		    	timeout = setTimeout( function() {
+    					
+    					url += '&filtre='+filtre;
+    
+    					$.get(url, function(data) {
+    
+    						$(taulaSel).remove();
+    						$(containerSel).append(data);
+    
+    						tancarMascaraBlock( taulaSel );
+    					}).fail( function(xhr, status, error) {
+    						 var sms = smsResultAjax('KO', xhr.responseText);
+    						 
+    						 $(containerSel).prepend(sms);
+    
+    						 tancarMascaraBlock( taulaSel );
+    					});	
+    					
+    				}, 1000);
+    			}
+    		};
+    	});
+    }
 
-	var timeout;
-	// Camp de text per a filtre. Detect input filtre. Si text = '' o text >= 3 sends ajax call		
-	$(containerSel).on( 'input', '#form_filtre', function(e) {
-		if(timeout) {
-		    clearTimeout(timeout);
-		    timeout = null;
-		}
-					
-		var filtre = $(this).val(); 
-					  
-		if ( $(this).data('lastval') != filtre ) {
-			 
-			$(this).data('lastval', filtre);
-
-		    if (filtre == '' || filtre.length >= 3) {
-		    	obrirMascaraBlock(  taulaSel );
-
-		    	$('.alert.alert-dismissible').remove();
-		    	
-		    	timeout = setTimeout( function() {
-					
-					url += '&filtre='+filtre;
-
-					$.get(url, function(data) {
-
-						$(taulaSel).remove();
-						$(containerSel).append(data);
-
-						tancarMascaraBlock( taulaSel );
-					}).fail( function(xhr, status, error) {
-						 var sms = smsResultAjax('KO', xhr.responseText);
-						 
-						 $(containerSel).prepend(sms);
-
-						 tancarMascaraBlock( taulaSel );
-					});	
-					
-				}, 1000);
-			}
-		};
-	});
-}
-
-printTaulaRecents = function() {
-
-	$('.alert.alert-dismissible').remove();
-	
-	var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
-	var params = recentsParams();
-
-	for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
-	
-	$.get(url, function(data) {
-
-		$("#list-recents").html(data);
-
-	}).fail( function(xhr, status, error) {
-		 // xhr.status + " " + xhr.statusText, status, error
-		 var sms = smsResultAjax('KO', xhr.responseText);
-		 
-		 $("#list-forms").prepend(sms);
-	});
-};
-
-
-$(document).ready(function(){
-	setMenuActive("menu-admllistes");
-
-	$("#menu-adm").click();
-
-	selectRecentsClub();
-
-	$('#form_clubs, #form_numfactura, #form_numrebut, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
-		// Recarrega consulta afegint la dades del formulari
-		var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
-		var params = recentsParams();
-
-		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
-		window.location = url; 
-	});
-
-	/*$('.imprimir-pendents').click(function (e) {
-		e.preventDefault();
-		
-		var url = $(this).attr('href');
-		var params = recentsParams();
-
-		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
-		window.location = url; 
-	});*/
-
-	// Delegate
-	$( "#main-col" ).on( "click", ".confirmar-pagament", function(e) {
-		e.preventDefault();
-		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-	});
-
-	// Delegate
-	$( "#main-col" ).on( "click", ".parterecents-action-print", function(e) {
-		e.preventDefault();
-
-		// Obrir form selecció federats
-		var url = $(this).attr("href");
-
-		obrirTaulaSortidaLlicencies(url, 'Impressió llicències plàstic', 'Imprimir', function() {
-			$('.alert.alert-dismissible').remove();
-			$('#formfederatssortida').submit();
-			printTaulaRecents();
-			$("#dialeg").dialog("destroy");
-	    });
-	});
-
-	// Delegate
-	$( "#main-col" ).on( "click", ".enviament-llicencies", function(e) {
-		e.preventDefault();
-
-		var parteRow = $(this).parents('li.data-detall');  // Si només s'estan mostrant les no impreses, després de l'eviament s'esborrarà la fila
-		
-		// Obrir form selecció federats
-		var url = $(this).attr("href");
-
-		obrirTaulaSortidaLlicencies(url, 'Enviament llicències per mail', 'Enviar', function() {
-			$('.alert.alert-dismissible').remove();
-	   		submitEnviarLllicencies('final', parteRow);
-	    });
-		
-	});
-
-	$( "#dialeg" ).on( "click", "#form_checkall", function() {
-		var checked = $(this).is(':checked');
-	
-		if (checked) {
-			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = true; });				
-		} else {
-			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = false; });
-		};
-	});
-	
-	//sortLlista("col-listheader", "list-data");
-
-	var tableScroll = $('.table-scroll');
-	if (tableScroll.hasOverflowY()) {
-		$('.table-scroll').css({"width":"101.5%"});
-	}
-
-});
+    printTaulaRecents = function() {
+    
+    	$('.alert.alert-dismissible').remove();
+    	
+    	var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
+    	var params = recentsParams();
+    
+    	for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+    	
+    	$.get(url, function(data) {
+    
+    		$("#list-recents").html(data);
+    
+    	}).fail( function(xhr, status, error) {
+    		 // xhr.status + " " + xhr.statusText, status, error
+    		 var sms = smsResultAjax('KO', xhr.responseText);
+    		 
+    		 $("#list-forms").prepend(sms);
+    	});
+    };
+    
+    
+    $(document).ready(function(){
+    	setMenuActive("menu-admllistes");
+    
+    	$("#menu-adm").click();
+    
+    	selectRecentsClub();
+    
+    	$('#form_clubs, #form_numfactura, #form_numrebut, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
+    		// Recarrega consulta afegint la dades del formulari
+    		var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
+    		var params = recentsParams();
+    
+    		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+    		window.location = url; 
+    	});
+    
+    	/*$('.imprimir-pendents').click(function (e) {
+    		e.preventDefault();
+    		
+    		var url = $(this).attr('href');
+    		var params = recentsParams();
+    
+    		for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+    		window.location = url; 
+    	});*/
+    
+    	// Delegate
+    	$( "#main-col" ).on( "click", ".confirmar-pagament", function(e) {
+    		e.preventDefault();
+    		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+    	});
+    
+    	// Delegate
+    	$( "#main-col" ).on( "click", ".parterecents-action-print", function(e) {
+    		e.preventDefault();
+    
+    		// Obrir form selecció federats
+    		var url = $(this).attr("href");
+    
+    		obrirTaulaSortidaLlicencies(url, 'Impressió llicències plàstic', 'Imprimir', function() {
+    			$('.alert.alert-dismissible').remove();
+    			$('#formfederatssortida').submit();
+    			printTaulaRecents();
+    			$("#dialeg").dialog("destroy");
+    	    });
+    	});
+    
+    	// Delegate
+    	$( "#main-col" ).on( "click", ".enviament-llicencies", function(e) {
+    		e.preventDefault();
+    
+    		var parteRow = $(this).parents('li.data-detall');  // Si només s'estan mostrant les no impreses, després de l'eviament s'esborrarà la fila
+    		
+    		// Obrir form selecció federats
+    		var url = $(this).attr("href");
+    
+    		obrirTaulaSortidaLlicencies(url, 'Enviament llicències per mail', 'Enviar', function() {
+    			$('.alert.alert-dismissible').remove();
+    	   		submitEnviarLllicencies('final', parteRow);
+    	    });
+    		
+    	});
+    
+    	$( "#dialeg" ).on( "click", "#form_checkall", function() {
+    		var checked = $(this).is(':checked');
+    	
+    		if (checked) {
+    			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = true; });				
+    		} else {
+    			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = false; });
+    		};
+    	});
+    	
+    	//sortLlista("col-listheader", "list-data");
+    
+    	var tableScroll = $('.table-scroll');
+    	if (tableScroll.hasOverflowY()) {
+    		$('.table-scroll').css({"width":"101.5%"});
+    	}
+    
+    });
 
 </script>
 

@@ -25,15 +25,15 @@ class FormEnquesta extends AbstractType {
 		$builder->add('datainici', 'datetime', array(
 				'widget' 	=> 'single_text',
 				'input' 	=> 'datetime',
-				'format' 	=> 'dd/MM/yyyy',
-				'attr'		=>	array('readonly' => true)
+				'format' 	=> 'dd/MM/yyyy'
+				
 		));
 
 		$builder->add('datafinal', 'datetime', array(
 				'widget' 	=> 'single_text',
 				'input' 	=> 'datetime',
-				'format' 	=> 'dd/MM/yyyy',
-				'attr'		=>	array('readonly' => true)
+				'format' 	=> 'dd/MM/yyyy'
+				
 		));
 	}
 	

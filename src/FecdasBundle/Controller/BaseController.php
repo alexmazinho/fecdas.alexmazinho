@@ -22,6 +22,7 @@ use FecdasBundle\Entity\EntityComanda;
 use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Entity\EntityComandaDetall;
 use FecdasBundle\Entity\EntityArxiu;
+use FecdasBundle\Entity\EntityStock;
 
 
 include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
@@ -2737,9 +2738,11 @@ class BaseController extends Controller {
             $this->removeParteDetalls($parte, $llicenciesBaixa, $dataFacturacio); // Crea factura si escau (comanda consolidada)
             
         } else {
+			$originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
             $detallsBaixa = array();
             $extra = array();
             foreach ($comanda->getDetalls() as $detall) {
+            	$originalDetalls->add(clone $detall);
                 if (!$detall->esBaixa()) {
                     $detallsBaixa[] = $this->removeComandaDetall($comanda, $detall->getProducte(), $detall->getUnitats());
                 }
@@ -2750,6 +2753,9 @@ class BaseController extends Controller {
                 $maxNumRebut = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::REBUTS) + 1;
             
                 $this->crearFacturaRebutAnulacio($dataFacturacio, $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
+				
+				// Gestionar stock
+				$this->registreComanda($comanda, $originalDetalls);
             }
         }
 
@@ -2958,6 +2964,119 @@ class BaseController extends Controller {
 		$comanda->setDatamodificacio(new \DateTime());
 		
 		//if ($persist == true) $em->flush();	// Si d'ha canviat el num factura	
+	}
+
+	protected function consultaStock($idproducte, $club, $baixes = true, $order = 'ASC') {
+		$em = $this->getDoctrine()->getManager();
+	
+		$codi = $club != null?$club->getCodi():'';
+	
+		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
+		$strQuery .= " WHERE 1 = 1 ";
+		$strQuery .= " AND s.club = :codi";
+		if ($idproducte > 0) $strQuery .= " AND s.producte = :idproducte ";
+		if (! $baixes) $strQuery .= " AND s.databaixa IS NULL ";
+		$strQuery .= " ORDER BY s.dataregistre ".$order.", s.id ".$order." ";
+		$query = $em->createQuery($strQuery);
+		$query->setParameter('codi', $codi);
+		if ($idproducte > 0) $query->setParameter('idproducte', $idproducte);
+		return $query;
+	}
+	
+	protected function consultaStockInicialProducte($idproducte, $club) {
+		if ($idproducte == null || $idproducte == 0) return null;
+	
+		$query = $this->consultaStock($idproducte, $club, false);
+		
+		$stock = $query->getResult();
+		
+		return ($stock != null  && count($stock) > 0?$stock[0]:null);
+	}
+	
+	protected function consultaStockProducte($idproducte, $club) {
+		if ($idproducte == null || $idproducte == 0) return null;
+	
+		$query = $this->consultaStock($idproducte, $club, false, "DESC");
+		
+		$stock = $query->getResult();
+		
+		return ($stock != null  && count($stock) > 0?$stock[0]:null);
+	}
+
+	protected function registreComanda($comanda, $originalDetalls = null) {
+		$em = $this->getDoctrine()->getManager();
+		
+		if ($originalDetalls == null) $originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
+
+		$productesNotificacio = array();
+		foreach ($comanda->getDetalls() as $detall) {
+
+			$producte = $detall->getProducte();	
+			$unitats = $detall->getUnitats();
+
+			if ($producte->getStockable() == true) {
+
+				$factura = $comanda->getFactura();
+				if (!$comanda->esNova()) {
+					$ultimafactura = $comanda->getFacturaAnulacioNova();
+					if ($ultimafactura != null) $factura = $ultimafactura; // Cercar factura anul·lació corresponent
+					
+					// Cercar original corresponent per veure canvis unitats comanda
+					foreach ($originalDetalls as $detallOriginal) {
+						if ($detallOriginal->getId() == $detall->getId()) $unitats = $detall->getUnitats() - $detallOriginal->getUnitats();
+					}
+				}
+				
+				if ($unitats != 0) {
+					// Afegir registre i actualitzar stock
+					if ($unitats > $producte->getStock()) {
+						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
+					}
+					
+					$comentaris = 'Sortida stock '.$unitats.'x'.$producte->getDescripcio();
+					
+					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+						
+					$registreStock = new EntityStock($fede, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
+					$em->persist($registreStock);
+						
+					$this->recalcularStockProducte($registreStock);
+					
+					$club = $comanda->getClub();
+					
+					if ($club != $fede) {
+						$stockProducte = $this->consultaStockProducte($producte->getId(), $club);
+						$comentaris = 'Entrada stock '.$unitats.'x'.$producte->getDescripcio();
+						$registreStockClub = new EntityStock($club, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_ENTRADA, $factura);
+						if ($stockProducte == null) $registreStockClub->setStock($unitats);
+						else $registreStockClub->setStock($stockProducte->getStock() + $unitats);
+						$em->persist($registreStockClub);
+					}
+						
+					// Control notificació stock
+					if ($producte->getStock() < $producte->getLimitnotifica()) {
+						$productesNotificacio[] = $producte; // Afegir a la llista de productes per notificar manca stock
+					} 
+				}
+			}
+		}
+
+		if (count($productesNotificacio) > 0) {
+			// Enviar notificacions
+			$body = '';
+			foreach ($productesNotificacio as $producte) {
+				$body .= '<li>El producte \''.$producte->getDescripcio().'\' té '.$producte->getStock().
+							' en stock (valor de notificació '.$producte->getLimitNotifica().'). </li>'; 
+			}
+			$body = '<p>Cal revisar l\'stock dels següents productes</p>'. 
+					 '<ul>'.$body.'</ul>';
+	
+			$subject = "Revisió stock. Federació Catalana d'Activitats Subaquàtiques";
+				
+			$tomails = self::getCarnetsMails();
+				
+			$this->buildAndSendMail($subject, $tomails, $body);
+		}		
 	}
 
 	protected function tramitarComanda($comanda, $originalDetalls = null, $informarPagament = false, $form = null) {

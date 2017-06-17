@@ -1613,39 +1613,50 @@
 		
 		var dialegHtml = '';
 				
-		dialegHtml += "<div class='sms-pagament'> ";
+		dialegHtml += "<div class='sms-pagament row'> ";
 		
 		if (admin == true) {
-			dialegHtml += "   <div class='form-group'>";
-			dialegHtml += "      <label for='comanda_datafactura'>Data facturació</label>";
-			dialegHtml += "      <div id='formcomanda-datafactura'>";
-			dialegHtml += "	         <input type='text' id='datafacturacio' disabled='disabled'/>";
-			dialegHtml += "      </div>";
+			dialegHtml += "   <div class='col-md-6'>";
+			dialegHtml += "   	<div class='form-group'>";
+			dialegHtml += "     	<label for='comanda_datafactura'>Factura</label>";
+			dialegHtml += "      	<div class='input-group'>";
+			dialegHtml += "				<span class='input-group-addon'>Data</span>";
+			dialegHtml += "	        	<input type='text' id='datafacturacio' class='form-control form-control-center' />";
+			dialegHtml += "	        	<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
+			dialegHtml += "      	</div>";
+			dialegHtml += "   	</div>";
 			dialegHtml += "   </div>";
-			dialegHtml += "   <div class='form-group'>";
-			dialegHtml += "      <label for='comanda_comptefactura'>Núm. Compte Factura</label>";
-			dialegHtml += "      <div id='comanda_comptefactura'>";
-			dialegHtml += "	         <select id='comptefactura' class='form-control'>";
-			dialegHtml += "	              <option value='"+iban+"'>Núm compte general: "+iban+"</option>";
-			dialegHtml += "	              <option value='"+ibanescola+"'>Núm compte escola: "+ibanescola+"</option>";
-			dialegHtml += "          </select>";
-			dialegHtml += "      </div>";
+			dialegHtml += "   <div class='col-md-12'>";
+			dialegHtml += "   	<div class='form-group'>";
+			dialegHtml += "     	<label for='comanda_comptefactura'>Núm. Compte</label>";
+			dialegHtml += "      	<div class='input-group'>";
+			dialegHtml += "				<span class='input-group-addon'>IBAN</span>";
+			dialegHtml += "	         	<select id='comptefactura' class='form-control'>";
+			dialegHtml += "	            	<option value='"+iban+"'>Núm compte general: "+iban+"</option>";
+			dialegHtml += "	              	<option value='"+ibanescola+"'>Núm compte escola: "+ibanescola+"</option>";
+			dialegHtml += "          	</select>";
+			dialegHtml += "      	</div>";
+			dialegHtml += "   	</div>";
 			dialegHtml += "   </div>";
 		} else {
-			dialegHtml += " <p>Per pagar la comanda ";
-			dialegHtml += " pot fer la transferència en qualsevol moment al número de compte:</p> "; 
-			dialegHtml += "   <p>"+iban+"</p> ";
-			dialegHtml += "   <ul><li>Amb targeta de crèdit o dèbit</li> ";
-			dialegHtml += "      <li>Amb un compte de \'La Caixa\'</li> ";
-			dialegHtml += "      <li>Mitjançant transferència des d\'una altra entitat</li></ul> ";
-			dialegHtml += "   <p>Gràcies</p>";
+			dialegHtml += "   <div class='col-md-12'>";	
+			dialegHtml += "		<p>Per pagar la comanda ";
+			dialegHtml += " 	pot fer la transferència en qualsevol moment al número de compte:</p> "; 
+			dialegHtml += "   	<p>"+iban+"</p> ";
+			dialegHtml += "   	<ul><li>Amb targeta de crèdit o dèbit</li> ";
+			dialegHtml += "     	<li>Amb un compte de \'La Caixa\'</li> ";
+			dialegHtml += "      	<li>Mitjançant transferència des d\'una altra entitat</li></ul> ";
+			dialegHtml += "   	<p>Gràcies</p>";
+			dialegHtml += "   </div>";
 		}
 		
-		dialegHtml += "   <div class='form-group'>";
-		dialegHtml += "      <label for='comanda_comentaris'>Comentaris</label>";
-		dialegHtml += "      <div id='formcomanda-comentaris'>";
-		dialegHtml += "	        <textarea class='form-control' rows='3' name='comanda[comentaris]' id='comanda_comentaris'></textarea>";
-		dialegHtml += "      </div>";
+		dialegHtml += "   <div class='col-md-12'>";	
+		dialegHtml += "   	<div class='form-group'>";
+		dialegHtml += "     	<label for='comanda_comentaris'>Comentaris</label>";
+		dialegHtml += "      	<div id='formcomanda-comentaris'>";
+		dialegHtml += "	        	<textarea class='form-control' rows='3' name='comanda[comentaris]' id='comanda_comentaris'></textarea>";
+		dialegHtml += "      	</div>";
+		dialegHtml += "   	</div>";
 		dialegHtml += "   </div>";
 		dialegHtml += "</div>";
 		

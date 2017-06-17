@@ -1,5 +1,13 @@
 {% extends 'FecdasBundle::layout.html.twig' %}
 
+{% block stylesheets %}
+	<!-- Select2 styles -->
+	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
+	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
+	
+	{{ parent() }}
+{% endblock %}
+
 {% block javascriptshead %}
  	{{ parent() }}
 	<script src="http://jquery-ui.googlecode.com/svn/tags/latest/ui/jquery.effects.core.js"></script>
@@ -25,6 +33,7 @@
 					</div>
 				</div>
 				<div id="formduplicats-dades" class="form-row clearfix"></div>
+				<div id="formduplicats-rest" class="hidden">{{ form_rest(form) }}</div>
 		    {{ form_end(form) }}
     	</div>
     </div>
@@ -153,34 +162,36 @@
 
 {% block javascripts %}
 
-{{ parent() }}
+    {{ parent() }}
+	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
+	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
-<script type="text/javascript">
-
-$(document).ready(function(){
-
-	setMenuActive("menu-duplicats");
-
-	actionsFormDuplicats("{{ path('FecdasBundle_duplicatsform') }}");
-
-	varisAdminPeticioDuplicat();
-	
-	//sortLlista("col-listheader", "list-data");
-
-	var tableScroll = $('.table-scroll');
-	if (tableScroll.hasOverflowY()) {
-		$('.table-scroll').css({"width":"101.5%"});
-	}
-
-	$('.confirmar-pagament').click(function(e) {
-		e.preventDefault();
-		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
-	});
+    <script type="text/javascript">
     
-	
-});
-
-</script>
+    $(document).ready(function(){
+    
+    	setMenuActive("menu-duplicats");
+    
+    	actionsFormDuplicats("{{ path('FecdasBundle_duplicatsform') }}");
+    
+    	varisAdminPeticioDuplicat();
+    	
+    	//sortLlista("col-listheader", "list-data");
+    
+    	var tableScroll = $('.table-scroll');
+    	if (tableScroll.hasOverflowY()) {
+    		$('.table-scroll').css({"width":"101.5%"});
+    	}
+    
+    	$('.confirmar-pagament').click(function(e) {
+    		e.preventDefault();
+    		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+    	});
+        
+    	
+    });
+    
+    </script>
 
 
 {% endblock %}

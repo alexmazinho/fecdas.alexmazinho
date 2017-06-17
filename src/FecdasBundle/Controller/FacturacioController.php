@@ -423,8 +423,61 @@ class FacturacioController extends BaseController {
 		
 		$stockclub = $this->consultaStockPerProducte($club, $idproducte);
 			
-		$this->logEntryAuth('KITS CLUB', ' producte: '.$idproducte.' club '.$club->getCodi().' '.$club->getNom());
-			
+		$this->logEntryAuth('KITS CLUB', $request->getMethod().' producte: '.$idproducte.' club '.$club->getCodi().' '.$club->getNom());
+		
+		
+		if ($request->isXmlHttpRequest()) {
+			$em = $this->getDoctrine()->getManager();
+			try {
+				if ($request->getMethod() == 'POST') {
+					if (!$this->isCurrentAdmin()) throw new \Exception("Només es pot modificar l'stock manualment des de la Federació");
+					
+					$form = $request->request->get('form', null);
+					
+					if ($form == null) throw new \Exception("Dades incorrectes");
+	
+					if (!isset($form['stocks'])) throw new \Exception("Dades no trobades");
+					
+					$current = new \DateTime('today');
+					$sms = ' club '.$club->getCodi().' '.$club->getNom();
+					foreach ($form['stocks'] as $id => $stock) {
+						
+						if (!isset($stockclub[$id]) ) throw new \Exception("Kit no trobat ".$id);
+						
+						$producte = $stockclub[$id]['kit'];
+						$unitats = $stock - $stockclub[$id]['stock'];
+						
+						if ($unitats != 0) {
+							// Actualització stock
+							$sms .= '. '.$id.' canvi stock '.$stockclub[$id]['stock'].' => '.$stock;
+							$tipus = $unitats > 0?BaseController::REGISTRE_STOCK_ENTRADA:BaseController::REGISTRE_STOCK_SORTIDA;
+							
+							$comentaris = 'Ajust stock manual administradors '.$unitats.'x'.$producte->getDescripcio();
+							
+							$registreStock = new EntityStock($club, $producte, $unitats, $comentaris, $current, $tipus); // Manual, sense factura
+							$registreStock->setStock($stock);
+							$em->persist($registreStock);
+							// No cal recalcular saldo perquè sempre s'afegeixen al final 	
+							
+							$stockclub[$id]['stock'] = $stock;
+						}	
+					}
+				}	
+
+				$em->flush();
+				
+				$this->logEntryAuth('KITS CLUB UPDATE OK',	$sms);
+
+			} catch (\Exception $e) {
+				$em->clear();
+				$this->logEntryAuth('KITS CLUB UPDATE KO',	$e->getMessage());
+				
+				$response = new Response($e->getMessage());
+				$response->setStatusCode(500);
+				return $response;
+			}
+		}
+		
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'entity', array(
 							'class' => 'FecdasBundle:EntityProducte',
@@ -441,11 +494,30 @@ class FacturacioController extends BaseController {
 							'data' => ($idproducte>0?$this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte):"")
 		));
 		
+		$dades = array();
+		foreach ($stockclub as $stock) {
+			$producte = $stock['kit'];
+			if ($this->isCurrentAdmin()) $dades[$producte->getId()] = $stock['stock'];	// Administradors gestió stock
+			else  $dades[$producte->getId()] = 0;								// Clubs, indicar unitats per fer nova comanda
+		}
+			
+		$formBuilder->add('stocks', 'collection', array(
+			'type'   => 'integer',
+			'data'	 => $dades
+		));
+		
 		/* Selecció club */
     	if ($this->isCurrentAdmin()) {
 			$this->addClubsActiusForm($formBuilder, $club);  // clubs
     	}
     	
+		if ($request->isXmlHttpRequest()) {
+			return $this->render('FecdasBundle:Facturacio:taulastockclub.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+					'stockclub' => $stockclub)
+				));
+		}
+		
 		return $this->render('FecdasBundle:Facturacio:stockclub.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'stockclub' => $stockclub)
@@ -2094,77 +2166,7 @@ class FacturacioController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_graellaproductes', array( 'tipus' => $tipus, 'club' => $club->getCodi())));
 	}
 
-	public function registreComanda($comanda, $originalDetalls = null) {
-		$em = $this->getDoctrine()->getManager();
-		
-		if ($originalDetalls == null) $originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
-
-		$productesNotificacio = array();
-		foreach ($comanda->getDetalls() as $detall) {
-
-			$producte = $detall->getProducte();	
-			$unitats = $detall->getUnitats();
-
-			if ($producte->getStockable() == true) {
-
-				$factura = $comanda->getFactura();
-				if (!$comanda->esNova()) {
-					$ultimafactura = $comanda->getFacturaAnulacioNova();
-					if ($ultimafactura != null) $factura = $ultimafactura; // Cercar factura anul·lació corresponent
-					
-					// Cercar original corresponent per veure canvis unitats comanda
-					foreach ($originalDetalls as $detallOriginal) {
-						if ($detallOriginal->getId() == $detall->getId()) $unitats = $detall->getUnitats() - $detallOriginal->getUnitats();
-					}
-				}
-				
-				if ($unitats != 0) {
-					// Afegir registre i actualitzar stock
-					if ($unitats > $producte->getStock()) {
-						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
-					}
-					
-					$comentaris = 'Sortida stock '.$unitats.'x'.$producte->getDescripcio();
-					
-					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
-						
-					$registreStock = new EntityStock($fede, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
-					$em->persist($registreStock);
-						
-					$this->recalcularStockProducte($registreStock);
-					
-					$club = $comanda->getClub();
-					
-					if ($club != $fede) {
-						$registreStockClub = new EntityStock($club, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_ENTRADA, $factura);
-						$em->persist($registreStockClub);
-					}
-						
-					// Control notificació stock
-					if ($producte->getStock() < $producte->getLimitnotifica()) {
-						$productesNotificacio[] = $producte; // Afegir a la llista de productes per notificar manca stock
-					} 
-				}
-			}
-		}
-
-		if (count($productesNotificacio) > 0) {
-			// Enviar notificacions
-			$body = '';
-			foreach ($productesNotificacio as $producte) {
-				$body .= '<li>El producte \''.$producte->getDescripcio().'\' té '.$producte->getStock().
-							' en stock (valor de notificació '.$producte->getLimitNotifica().'). </li>'; 
-			}
-			$body = '<p>Cal revisar l\'stock dels següents productes</p>'. 
-					 '<ul>'.$body.'</ul>';
 	
-			$subject = "Revisió stock. Federació Catalana d'Activitats Subaquàtiques";
-				
-			$tomails = self::getCarnetsMails();
-				
-			$this->buildAndSendMail($subject, $tomails, $body);
-		}		
-	}
 
 	public function afegircistellaAction(Request $request) {
 		// Afegir producte a la cistella (desada temporalment en cookie)
@@ -2992,40 +2994,17 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
-	protected function consultaStock($idproducte, $club, $baixes = true) {
-		$em = $this->getDoctrine()->getManager();
 	
-		$codi = $club != null?$club->getCodi():'';
-	
-		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
-		$strQuery .= " WHERE 1 = 1 ";
-		$strQuery .= " AND s.club = :codi";
-		if ($idproducte > 0) $strQuery .= " AND s.producte = :idproducte ";
-		if (! $baixes) $strQuery .= " AND s.databaixa IS NULL ";
-		$strQuery .= " ORDER BY s.dataregistre ASC, s.id ASC ";
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('codi', $codi);
-		if ($idproducte > 0) $query->setParameter('idproducte', $idproducte);
-		return $query;
-	}
-	
-	private function consultaStockInicialProducte($idproducte, $club) {
-		if ($idproducte == null || $idproducte == 0) return null;
-	
-		$query = $this->consultaStock($idproducte, $club, false);
-		
-		$stock = $query->getResult();
-		
-		return ($stock != null  && count($stock) > 0?$stock[0]:null);
-	}
 	
 	private function consultaStockPerProducte($club, $idproducte = 0) {
 		$em = $this->getDoctrine()->getManager();
 			
 		$codi = $club != null?$club->getCodi():'';
 		
-		if ($idproducte > 0) $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'producte' => $idproducte, 'databaixa' => null));
-		else $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'databaixa' => null));
+		if ($idproducte > 0) $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'producte' => $idproducte, 'databaixa' => null, 
+																								array('dataregistre' => 'DESC', 'id' => 'DESC')));
+		else $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'databaixa' => null), 
+																				array('dataregistre' => 'DESC', 'id' => 'DESC'));
 		
 		$stockProductesClub = array(); // Obtenir productes amb stock
 		$anterior = null;
@@ -3053,7 +3032,8 @@ class FacturacioController extends BaseController {
 			
 			$producte = $em->getRepository('FecdasBundle:EntityProducte')->find($idproducte);
 			
-			$stock = array( array('kit' 	=> $producte,
+			$stock = array( $producte->getId() =>
+							 array('kit' 	=> $producte,
 						 			'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
 									'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0));
 			return $stock;
@@ -3063,9 +3043,9 @@ class FacturacioController extends BaseController {
 																				array('descripcio' => 'ASC'));
 		$stock = array();		
 		foreach ($productes as $producte) {
-			$stock[] = array('kit' => $producte,
-							 'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
-							 'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0);
+			$stock[$producte->getId()] = array('kit' => $producte,
+											 'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
+											 'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0);
 		}
 		
 		return $stock;

@@ -25,6 +25,7 @@
     <div class="row">
     	<div class="col-md-12">    
             <div id="stock-club">
+            	{{ form_start(form, {'action': path('FecdasBundle_stockclub'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formstockclub'}}) }}
         	    <div id="list-forms">
         	    	<div class="row">
         				{% if admin %}
@@ -43,43 +44,13 @@
         				</div>
         				{% if admin %}
         				<div class="col-md-offset-2 col-md-3 col-last-right">
-        					<a type="submit" class="btn btn-default registrestock-action-new" href="{{ path('FecdasBundle_registrestock', { 'action': 'new', 'id': 0 }) }}" alt="Nou registre" title="Nou registre"><i class="fa fa-plus-circle"></i> (Admins) afegir</a>
+        					<a type="submit" class="btn btn-default stockclub-submit" href="{{ path('FecdasBundle_stockclub') }}" alt="Desar stock club" title="Desar stock club"><i class="fa fa-save green"></i> (Admins) desar</a>
         				</div>
         				{% endif %}
         			</div>
         	    </div>
-        	    <div class="table-stockclub">
-                    <div class="table-scroll">
-                    	<table>	
-                	    	<thead id="list-header">
-                			   	<tr>
-                			   		<th class="header-stockclub-id hidden">Id</th>
-                			   		<th class="header-stockclub-abreviatura col-listheader collistheader-noorder">Abr.</th>
-                			   		<th class="header-stockclub-producte col-listheader collistheader-noorder">Kit</th>
-                			   		<th class="header-stockclub-titol col-listheader collistheader-noorder">títol/curs</th>
-                			   		<th class="header-stockclub-stock col-listheader collistheader-noorder">total</th>
-                			   		<th class="header-stockclub-actions col-listheader collistheader-noorder"></th>
-                			   	</tr>
-                		   	</thead>
-                		   	<tbody class="list-data">
-                			{% for stock in stockclub %} 
-               					<tr class="data-detall">
-               						<td class="data-detall-cell stockclub-id hidden">{{ stock.kit.id }}</td>
-               						<td class="data-detall-cell stockclub-abreviatura">{{ stock.kit.abreviatura }}</td>
-               						<td class="data-detall-cell stockclub-producte">{{ stock.kit.descripcio }}</td>
-               						<td class="data-detall-cell stockclub-titol">{% if stock.titol != null %} {{ stock.titol.llistaText }} {% endif %}</td>
-               						<td class="data-detall-cell stockclub-stock systemblue">{{ stock.stock }}</td>
-               						<td class="data-detall-cell stockclub-actions systemblue">
-           								<a class="btn btn-default btn-xs stockclub-comanda" href="{{ path('FecdasBundle_graellaproductes', { 'tipus': constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_KITS'), 'id': stock.kit.id }) }}" alt="Nova comanda" title="Nova comanda">
-           									<i class="fa fa-shopping-cart"></i> Nova comanda
-           								</a>
-               						</td>
-               					</tr>
-                		   	{% endfor %} 
-                			</tbody>
-                		</table>
-                	</div>
-        		</div>
+        	    <div class="table-stockclub">{% include 'FecdasBundle:Facturacio:taulastockclub.html.twig' %}</div>
+        	    {{ form_end(form) }}
         	</div>
 		</div>
 	</div>
@@ -88,22 +59,27 @@
 {% block javascripts %}
 
 	{{ parent() }}
-	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
-	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
-	<script src="{{ asset('js/jquery.ui.datepicker-ca.js') }}" type="text/javascript"></script>
-	
 	<script type="text/javascript">
 
-	function getUrlStock() {
-		var url = "{{ path('FecdasBundle_stockclub') }}";
+	function reloadTaulaStock() {
+		var url = $('#formstockclub').attr('action');
 		url += "?cerca="+$('#form_cerca').val();
 		if ($('#form_clubs').val() != '') url += "&clubs="+$('#form_clubs').val();
-		
-		return url;
+
+		showMask();	
+		$.get(url, function(data) {
+			$(".table-stockclub").html(data);
+			hideMask();
+		}).fail( function(xhr, status, error) {
+			 // xhr.status + " " + xhr.statusText, status, error
+			 hideMask();
+			 var sms = smsResultAjax('KO', xhr.responseText);
+			 $(".table-stockclub").prepend(sms);
+		});
 	}
 
 	$(document).ready(function(){
-		setMenuActive("menu-kits");
+		setMenuActive("menu-stockkits");
 
 		{% if admin == true  %}
     		$("select#form_clubs").select2({
@@ -113,165 +89,7 @@
     		});
     	{% endif %}
 		
-		// Delegate event
-		$( "#stock-main" ).on( "click", ".registrestock-action-new, .registrestock-action-edit", function( e ) {
-			e.preventDefault();
-			
-			var url = $(this).attr("href");
-
-			if ($(this).hasClass('registrestock-action-new') && $('#form_cerca').val() != '') {
-				url += '&producte='+$('#form_cerca').val();
-			}
-			
-			$('.alert').remove();
-			
-			showMask();
-			
-			$.get(url, function(data) {
-
-				$( '#dialeg' ).html(data);
-				
-				$( '#dialeg' ).dialog({
-					 resizable: false,
-					 title: "Registre stock",
-					 height: "auto",
-					 width:  600,
-					 modal: false, /* Important sinó tabindex=-1 dona error amb els selec2 */
-					 buttons: {
-					 	"Desar": function() {
-
-							var url = $('#formregistrestock').attr("action");
-					 		var params = $('#formregistrestock').serializeArray();
-
-					 		$('#progressbar').show();  // Rellotge
-
-					 		$('#formregistrestock .alert').remove();
-					 		
-							$.post(url, params, function(data, textStatus) {
-								$('#progressbar').hide();  // Rellotge
-
-								hideMask();
-								
-								var sms = smsResultAjax('OK', 'El registre s\'ha desat correctament');
-
-								$(".table-stock").remove();
-								$("#stock-main").append(sms);
-								$("#stock-main").append(data);
-
-								$("#form_view_0").prop("checked", true);	// Vista detall
-								
-						 		$( '#dialeg' ).html('');
-						 		$( '#dialeg' ).dialog( "close" );
-						 		
-							}).fail( function(xhr, status, error) {
-								 var sms = smsResultAjax('KO', xhr.responseText);
-								 
-								 $('#progressbar').hide();  // Rellotge
-							    	
-							     $("#formregistrestock").prepend(sms);
-							});
-					 	},
-					 	"Cancel·lar": function() {
-
-					 		hideMask();					 		
-	
-					 		$( '#dialeg' ).html('');
-					 		$( '#dialeg' ).dialog( "close" );
-					 	}
-					 },
-					 close: function() {
-						 hideMask();
-						 $( '#dialeg' ).html('');
-					 	 $( '#dialeg' ).dialog( "close" );
-					 },	 
-					 open: function() {
-
-						// Select factura
-						init_cercagenerica_JSON('#registrestock_factura', 'Cercar factura', "{{ path('FecdasBundle_jsonfactures') }}");
-						 
-						$("select#registrestock_producte").select2({
-							minimumInputLength: 2,
-							allowClear: true,
-							placeholder: 'Escollir producte'
-						});
-
-						var maxdate = new Date (current.getFullYear(), current.getMonth()+2, current.getDay());
-
-						initDateTimePicker ( 
-							$( '#registrestock_dataregistre' ), 
-							mindate, 
-							maxdate,
-							current, 
-							'dataregistre-picker', 
-							false,
-							function() {} 
-						);
-
-						if ($( '#registrestock_databaixa' ).val() != '') {
-							initDateTimePicker ( 
-								$( '#registrestock_databaixa' ), 
-								mindate, 
-								maxdate,
-								current, 
-								'databaixa-picker', 
-								false,
-								function() {} 
-							);
-						}
-					
-					 }
-				});
-
-			}).fail( function(xhr, status, error) {
-				 // xhr.status + " " + xhr.statusText, status, error
-				 hideMask();
-				 
-				 var sms = smsResultAjax('KO', xhr.responseText);
-	 			 
-				 $("#stock-main").prepend(sms);
-			});	
-		});
 		
-		$( "#stock-main" ).on( "click", ".registrestock-action-baixa", function( e ) {
-			e.preventDefault();
-
-			$('.alert').remove();
-
-			var row = $(this).parents('.data-detall');
-			
-			var url = $(this).attr('href');
-			
-			var strHtml = '<p>Segur que vols anul·lar el registre?</p>';
-
-			dialegConfirmacio(strHtml, 'Baixa registre', 'auto', 400, function() { 
-
-				showMask();
-				
-				$.get(url, function(data) {
-					hideMask();
-
-					var sms = smsResultAjax('OK', 'Registre esborrat correctament');
-
-					$(".table-stock").remove();
-					$("#stock-main").append(sms);
-					$("#stock-main").append(data);
-
-					$("#form_view_0").prop("checked", true);	// Vista detall
-
-					closeDialegConfirmacio();
-
-				}).fail( function(xhr, status, error) {
-					 // xhr.status + " " + xhr.statusText, status, error
-					 hideMask();
-					 
-					 var sms = smsResultAjax('KO', xhr.responseText);
-		 			 
-					 $("#stock-main").prepend(sms);
-				});	
-				 
-			}, function() { closeDialegConfirmacio(); }, function() { });
-		});
-
 		// Descripcio producte
 		$("#form_cerca").select2({
 			minimumInputLength: 2,
@@ -280,17 +98,84 @@
 		});
 
 		$("#form_cerca").change(function() {
-			url = getUrlStock();
-			window.location = url;
+			reloadTaulaStock();
 	    });
 
 		$("#form_clubs").change(function() {
-			url = getUrlStock();
-			window.location = url;
+			reloadTaulaStock();
 	    });
+
+
+		$(".stockclub-submit").click(function(e) {
+			e.preventDefault();
+			
+			url = $(this).attr('href');
+
+			$('.alert-dismissible').remove();	
+
+			showMask();	
+			var params = $('#formstockclub').serializeArray();
+			$.post(url, params, function(data) {
+				$(".table-stockclub").html(data);
+				
+				var sms = smsResultAjax('OK', 'Stock de Kits del club desat correctament');
+				
+				$(".table-stockclub").prepend(sms);
+
+				hideMask();
+
+			}).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 hideMask();
+				 
+				 var sms = smsResultAjax('KO', xhr.responseText);
+	 			 
+				 $(".table-stockclub").prepend(sms);
+			});
+	    });
+
+
+		{% if admin != true  %}
+    		$( ".table-stockclub" ).on( "change", "input.form-control-unitats", function(e) {
+    			//e.preventDefault();			
+    			
+    			var unitats = $(this).val()*1;
+    			var max = $(this).attr('data-max')*1;
+    			var min = $(this).attr('data-min')*1;
+    
+    			if (max > 0 && unitats > max) {
+    				$(this).val(max);
+    			} else {
+    				if (unitats < min) {
+    					$(this).val(min);
+    				}
+    			}
+    		});
+		{% endif %}
+
+		$( ".table-stockclub" ).on( "click", ".stockclub-addtocart", function(e) {
+
+			e.preventDefault();			
+			
+			var unitats = $(this).parent().prev().val();
+			var url = $(this).attr('href')+'&unitats='+unitats;
+
+			$('.alert-dismissible').remove();
+	
+			$.get(url, function(data) {
+
+				// Redirecció a la cistella de la compra	
+				window.location = '{{ path('FecdasBundle_graellaproductes', { 'tipus': constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_KITS') }) }}';	
+					
+			}).fail( function(xhr, status, error) {
+				 // xhr.status + " " + xhr.statusText, status, error
+				 var sms = smsResultAjax('KO', xhr.responseText);
+
+				 $('.table-stockclub').prepend(sms);
+			}); 
+		});
 		
-		
-		if ($('#list-data').height() > $('.table-scroll').height()) {
+		if ($('.list-data').height() > $('.table-scroll').height()) {
 			// Scroll
 			$('.table-scroll').width($('.table-scroll').width() + 12 );
 		}

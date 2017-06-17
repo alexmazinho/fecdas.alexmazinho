@@ -2966,7 +2966,7 @@ class BaseController extends Controller {
 		//if ($persist == true) $em->flush();	// Si d'ha canviat el num factura	
 	}
 
-	protected function consultaStock($idproducte, $club, $baixes = true, $order = 'ASC') {
+	protected function consultaStock($idproducte, $club, $baixes = true, $desde = null, $order = 'ASC') {
 		$em = $this->getDoctrine()->getManager();
 	
 		$codi = $club != null?$club->getCodi():'';
@@ -2976,10 +2976,12 @@ class BaseController extends Controller {
 		$strQuery .= " AND s.club = :codi";
 		if ($idproducte > 0) $strQuery .= " AND s.producte = :idproducte ";
 		if (! $baixes) $strQuery .= " AND s.databaixa IS NULL ";
+		if ($desde != null) $strQuery .= " AND s.dataregistre >= :desde ";
 		$strQuery .= " ORDER BY s.dataregistre ".$order.", s.id ".$order." ";
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('codi', $codi);
 		if ($idproducte > 0) $query->setParameter('idproducte', $idproducte);
+		if ($desde != null) $query->setParameter('desde', $desde->format('Y-m-d'));
 		return $query;
 	}
 	
@@ -2996,7 +2998,7 @@ class BaseController extends Controller {
 	protected function consultaStockProducte($idproducte, $club) {
 		if ($idproducte == null || $idproducte == 0) return null;
 	
-		$query = $this->consultaStock($idproducte, $club, false, "DESC");
+		$query = $this->consultaStock($idproducte, $club, false, null, "DESC");
 		
 		$stock = $query->getResult();
 		

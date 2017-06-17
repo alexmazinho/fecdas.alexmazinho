@@ -109,7 +109,7 @@ class FacturacioController extends BaseController {
 					$this->getCommonRenderArrayOptions(array('stockacumulat' => $stockAcumulat)));
 			}
 		} else {
-			$query = $this->consultaStock($idproducte, $desde, $fede);
+			$query = $this->consultaStock($idproducte, $fede, false, $desde);
 			
 			if ($format == 'csv') {
 			
@@ -1985,7 +1985,7 @@ class FacturacioController extends BaseController {
 			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 			if ($club != null) {
 				$checkRole = $this->get('fecdas.rolechecker');	
-				$checkRole->setCurrentClubRole( $codi );
+				$checkRole->setCurrentClubRole( $club, $checkRole->getCurrentRole() );
 			}
 		}
 		if ($club == null) $club = $this->getCurrentClub();

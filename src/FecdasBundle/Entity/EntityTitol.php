@@ -104,6 +104,17 @@ class EntityTitol {
 	}
 	
 	
+	/**
+     * kit necessari ? Si kit != null cal un kit per cada alumne dún curs d'aquest títol 
+     *
+     * @return boolean 
+     */
+    public function esKitNecessari()
+    {
+        return $this->kit != null;
+    }
+	
+	
 	public function getRequerimentsSortedByContextCategoria($context = '', $actius = true)
     {
     	/* Ordenats per context i categoria */

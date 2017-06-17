@@ -131,6 +131,19 @@ class EntityCurs {
 	}
 	
 	/**
+     * get kit si és necessari o null en cas contrari 
+     *
+     * @return boolean 
+     */
+    public function getKit()
+    {
+        if ($this->titol == null) return null;	
+		
+        return $this->titol->esKitNecessari()?$this->titol->getKit():null;
+    }
+	
+	
+	/**
 	 * @return curs anul·lat?
 	 */
 	public function anulat() {

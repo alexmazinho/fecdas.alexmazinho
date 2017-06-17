@@ -304,11 +304,16 @@ class TitulacionsController extends BaseController {
 		$instructors = null;
 		$collaboradors = null;
 		$action = '';
+		$titol = null;
+		$kit = null;
+		$stock = '';  // stock desconegut
 		
 		$participantscurrent = null;
 
 		$checkRole = $this->get('fecdas.rolechecker');
     	
+		$club = $this->getCurrentClub();
+		
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
 			$action = $request->query->get('action', '');
@@ -328,19 +333,26 @@ class TitulacionsController extends BaseController {
     	if ($curs == null) {
     		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST').' action: '.$action);
     	
-    		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $this->getCurrentClub());
+    		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $club);
 			$em->persist($curs);
     	} else {
 	    	$this->logEntryAuth('CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
+			
+			$titol = $curs->getTitol();
+			if ($titol != null && $titol->getKit() != null) $kit = $titol->getKit();
+			
+			if ($kit != null) {
+				$registrestock = $this->consultaStockProducte($kit->getId(), $club);
+				if ($registrestock == null) $stock = 0;  // sense stock
+				else $stock = $registrestock->getStock();	// stock disponible 
+			}
     	}
-    	
+		
 		if ($request->getMethod() == 'POST') {
-			
 			$this->initDadesPostCurs($request->request->get('curs'), $curs);
-			
 		}
 			
-    	$form = $this->createForm(new FormCurs($checkRole->isCurrentInstructor()), $curs);
+    	$form = $this->createForm(new FormCurs( array('instructor' => $checkRole->isCurrentInstructor(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
     		
@@ -348,7 +360,7 @@ class TitulacionsController extends BaseController {
 				if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrorsAsString() );
 				
 				// Comprovacions genèriques
-				$this->validacionsCurs($curs, $form, $action);
+				$this->validacionsCurs($curs, $stock, $form, $action);
 				
 				// Fotos i arxius
 				foreach ($form->get('participants') as $formparticipant) {
@@ -552,7 +564,7 @@ class TitulacionsController extends BaseController {
 		}
 	}
 
-	private function validacionsCurs($curs, $form, $action) {
+	private function validacionsCurs($curs, $stock, $form, $action) {
 		
 		$checkRole = $this->get('fecdas.rolechecker');
 		
@@ -565,7 +577,8 @@ class TitulacionsController extends BaseController {
 		if ($action == 'finalize' 	&& !$checkRole->isCurrentAdmin()) throw new \Exception('Només des de la Federació es pot finalitzar el curs');
 		
 		// Generals 
-		if ($curs->getTitol() == null) {
+		$titol = $curs->getTitol();
+		if ($titol == null) {
 			$form->get('titol')->addError(new FormError('Obligatori'));
 			throw new \Exception('Cal escollir el títol que s\'impartirà en aquest curs');
 		}
@@ -640,6 +653,13 @@ class TitulacionsController extends BaseController {
 			
 			if ($action == 'finalize') $this->validaDadesFinalitzacioCurs($participant);
 		}
+		
+		// Valida stock
+		if ($titol->esKitNecessari()) {
+			$kit = $titol->getKit();
+			// El club no té prous kits per tots els alumnes del curs. No es pot validar
+			if ($action == 'validate' && count($participants) > $stock) throw new \Exception('El club no disposa de prou kits "'.$kit->getDescripcio().'" per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
+		}
 	}
 
 	private function validaDocenciaHores($docencia) {
@@ -665,6 +685,8 @@ class TitulacionsController extends BaseController {
 	private function accionsPostValidacions($curs, $action) {
 		
 		$current = new \DateTime('now');
+		$club = $curs->getClub();
+		$titol = $curs->getTitol();
 			
 		switch ($action) {
 			case 'save':	// Instructor.
@@ -681,7 +703,6 @@ class TitulacionsController extends BaseController {
 				$curs->setFinalitzat(false);
 				
 				// Enviar mail al club
-				$club = $curs->getClub();
 				$subject = "Federació Catalana d'Activitats Subaquàtiques. Curs pendent de validació ";
 				$tomails = $club->getMail();
 				if (count($tomails) == 0) $subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
@@ -709,6 +730,28 @@ class TitulacionsController extends BaseController {
 				$curs->setEditable(false);		
 				$curs->setValidat(true);	
 				$curs->setFinalitzat(false);
+				
+				
+				// Registrar sortida de kits
+				if ($titol->esKitNecessari()) {
+					$kit = $titol->getKit();
+					$stockProducte = $this->consultaStockProducte($kit->getId(), $club);
+					
+					
+					
+					$unitats = count($curs->getParticipantsSortedByCognomsNom());
+					$comentaris = 'Sortida stock '.$unitats.'x'.$kit->getDescripcio().', utilitzats en un curs';
+					
+					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA);
+					
+					if ($stockProducte == null) throw new \Exception('Nombre de kits "'.$kit->getDescripcio().'" disponibles insuficient per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
+					
+					$registreStockClub->setStock($stockProducte->getStock() - $unitats);
+					
+					if ($stockProducte->getStock() < 0)  throw new \Exception('No hi ha prou kits "'.$kit->getDescripcio().'" disponibles per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
+					
+					$em->persist($registreStockClub);
+				}
 				
 				// Enviar mail a Federació
 				$club = $curs->getClub();

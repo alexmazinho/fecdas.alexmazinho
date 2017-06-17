@@ -16,10 +16,12 @@ use FecdasBundle\Form\FormTitulacio;
 class FormCurs extends AbstractType  implements EventSubscriberInterface {
 
 	private $instructor;
+	private $stock;
 	
-	public function __construct($instructor = false)
+	public function __construct( $options )
 	{
-		$this->instructor = $instructor;
+		$this->instructor = isset($options['instructor'])?$options['instructor']:false;
+		$this->stock = isset($options['stock'])?$options['stock']:'';
 	}
 
 	public static function getSubscribedEvents() {
@@ -189,11 +191,13 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		$builder->addEventSubscriber ( new FormCurs ($this->instructor) );
-		
+		$builder->addEventSubscriber ( new FormCurs ( array('instructor' => $this->instructor, 'stock' => $this->stock ) ));
+	
 		$builder->add('id', 'hidden');
 		
 		$builder->add('action', 'hidden', array('mapped' => false) );
+		
+		$builder->add('stock', 'hidden', array('mapped' => false, 'data' => $this->stock) );
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

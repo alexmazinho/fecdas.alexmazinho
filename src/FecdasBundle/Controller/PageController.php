@@ -6,11 +6,7 @@ use FecdasBundle\Classes\CSVReader;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Form\FormError;
 
-//use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
-use FecdasBundle\Classes\Funcions;
 use FecdasBundle\Form\FormContact;
 use FecdasBundle\Form\FormParte;
 use FecdasBundle\Form\FormPersona;

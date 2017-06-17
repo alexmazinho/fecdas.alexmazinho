@@ -81,18 +81,8 @@ input.form-control-updated, .form-control.form-control-updated {
 
 .form-control.form-select { padding: 6px; }
 
+/*
 input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
-	/*border-top: 1px solid #FFFFFF;*/
-  	/* background: #CCCCCC;
-   	padding: 5px 10px;
-   -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
-   -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
-   box-shadow: rgba(0,0,0,1) 0 1px 0;
-   text-shadow: rgba(0,0,0,.4) 0 1px 0;
-   text-decoration: none;
-   vertical-align: middle;*/
-    /*background: url("../images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50% #E6E6E6;*/
-    
     background: -moz-linear-gradient(top, #fff 0%, #e0e0e0 100%);
 	background: -webkit-gradient(left top, left bottom, color-stop(0%, #fff), color-stop(100%, #e0e0e0));
 	background: -webkit-linear-gradient(top, #fff 0%, #e0e0e0 100%);
@@ -102,19 +92,16 @@ input[type="submit"], button:not(.ui-dialog-titlebar-close)  {
    	font-size: 14px;
     padding: 7px 16px;
    	-webkit-border-radius: 5px;
-   	/*-moz-border-radius: 5px;*/
     border-radius: 6px;
     border-color: #ccc;
     color: #1240a0;
     text-transform: uppercase;
     text-shadow: 0 1px 0 #fff;
     cursor: pointer;
-    /*-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
-    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);*/
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 1px 1px rgba(0, 0, 0, 0.075);
-}
+}*/
 
+/*
 input[type="submit"]:hover, button:hover, .btn-default:hover,
 input[type="submit"]:active, button:active,  .btn-default:active  {
    	border-color: #555555;
@@ -130,7 +117,7 @@ input[type="submit"]:active, button:active,  .btn-default:active  {
 }
 
 
-input[type="submit"]:hover, button:hover { text-decoration: none; }
+input[type="submit"]:hover, button:hover { text-decoration: none; } */
 
 input[type="image"] {
 	border: none;
@@ -397,7 +384,7 @@ html[xmlns] .clearfix {
 
 label { color: #555555; font-weight: normal; }
 
-button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } 
+/*button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } */ 
 
 #left-menu { display:none; }
 
@@ -659,6 +646,20 @@ button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; }
 .table-scroll-vertical .stockacumulat-void  { border-right: 1px solid #cccccc; }
 
 
+
+/*************** stock club ****************/
+
+.col-listheader.header-stockclub-abreviatura, .data-detall-cell.stockclub-abreviatura { width: 10%; text-align: center; }
+.col-listheader.header-stockclub-producte, .data-detall-cell.stockclub-producte	 { width: 30%; text-align: left; }
+.col-listheader.header-stockclub-titol, .data-detall-cell.stockclub-titol	 { width: 30%; text-align: left; }
+.col-listheader.header-stockclub-stock, .data-detall-cell.stockclub-stock	 { width: 10%; text-align: center; }
+.col-listheader.header-stockclub-actions, .data-detall-cell.stockclub-actions 	 { width: 10%; text-align: center; }
+
+
+.table-stockclub tbody.list-data { display: table-row-group; }
+
+
+/*************** stock club FI ****************/
 
 /*************** FECDAS NOU productes ****************/
 

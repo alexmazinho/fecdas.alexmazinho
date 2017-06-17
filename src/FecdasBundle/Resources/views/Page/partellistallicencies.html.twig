@@ -135,7 +135,7 @@
 	<div class="col-md-9"><div class="sms-footer">Per esborrar alguna llicència cal posar-se en contacte amb la Federació</div></div>
 	{% if parte.numLlicencies > 0 and admin == true %}
 		<div class="col-md-3 col-last-right">
-			<a id="button-llicencies-remove" href="{{ path('FecdasBundle_baixallicencies', { 'id': parte.id}) }}" class="btn btn-default btn-lg"><i class="fa fa-trash"></i> Anul·lar seleccionades</a>
+			<a id="button-llicencies-remove" href="{{ path('FecdasBundle_baixallicencies', { 'id': parte.id}) }}" class="btn btn-default"><i class="fa fa-trash"></i> Anul·lar seleccionades</a>
 		</div>
 	{% endif %}
 </div>

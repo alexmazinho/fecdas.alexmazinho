@@ -39,6 +39,7 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin()) 
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
+		$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 		$idproducte = $request->query->get('cerca', 0);
 		$format = $request->query->get('format', 'html');
 		$vista = $request->query->get('view', 'M'); // Mensual
@@ -53,7 +54,7 @@ class FacturacioController extends BaseController {
 			if ($vista != 'M') $this->get('session')->getFlashBag()->add('error-notice', 'Per veure el detall cal escollir un producte'); // EScollir detall sense producte
 			
 			$vista = 'M';
-			$stockAcumulat = $this->consultaStockAcumulat($idproducte, $desde);
+			$stockAcumulat = $this->consultaStockAcumulat($idproducte, $desde, $fede);
 			
 			if ($format == 'csv') {
 				$this->logEntryAuth('CSV STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
@@ -108,7 +109,7 @@ class FacturacioController extends BaseController {
 					$this->getCommonRenderArrayOptions(array('stockacumulat' => $stockAcumulat)));
 			}
 		} else {
-			$query = $this->consultaStock($idproducte, $desde);
+			$query = $this->consultaStock($idproducte, $desde, $fede);
 			
 			if ($format == 'csv') {
 			
@@ -403,6 +404,54 @@ class FacturacioController extends BaseController {
 		
 		if (BaseController::esFederacio($club)) $producte->setStock($stock);  // Si és la federació actualitza stock de productes	
 	}
+	
+	public function stockclubAction(Request $request) {
+		// Llista de productes i edició massiva
+
+		if (!$this->isAuthenticated())
+			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+
+		$idproducte = $request->query->get('cerca', 0);
+		
+		$club = null;
+		$codi = $request->query->get('clubs', ''); // filtra club
+		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		
+		if ($club == null || !$this->isCurrentAdmin()) { // Cada club lo seu, els administradors tot   
+			$club = $this->getCurrentClub();
+		}
+		
+		$stockclub = $this->consultaStockPerProducte($club, $idproducte);
+			
+		$this->logEntryAuth('KITS CLUB', ' producte: '.$idproducte.' club '.$club->getCodi().' '.$club->getNom());
+			
+		$formBuilder = $this->createFormBuilder()
+			->add('cerca', 'entity', array(
+							'class' => 'FecdasBundle:EntityProducte',
+							'query_builder' => function($repository) {
+								return $repository->createQueryBuilder('p')
+										->where('p.stockable = 1')
+										->andWhere('p.tipus = '.BaseController::TIPUS_PRODUCTE_KITS)
+										->andWhere('p.databaixa IS NULL')
+										->orderBy('p.descripcio', 'ASC');
+									},
+							'choice_label' => 'descripcio',
+							'placeholder' => '',
+							'required'  => true,
+							'data' => ($idproducte>0?$this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte):"")
+		));
+		
+		/* Selecció club */
+    	if ($this->isCurrentAdmin()) {
+			$this->addClubsActiusForm($formBuilder, $club);  // clubs
+    	}
+    	
+		return $this->render('FecdasBundle:Facturacio:stockclub.html.twig',
+				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
+						'stockclub' => $stockclub)
+						));
+	}
+	
 		
 	public function registresaldosAction(Request $request) {
 		// Llistat de comandes
@@ -2649,7 +2698,7 @@ class FacturacioController extends BaseController {
 						$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 						if ($producte->getId() != 0) {
 							// Si no existeix stock pel producte es crea.   
-							$query = $this->consultaStock($producte->getId(), false);
+							$query = $this->consultaStock($producte->getId(), $fede, false);
 							$registres = $query->getResult();
 						}
 						if ($producte->getId() == 0 || $registres == null || count($registres) == 0) {
@@ -2943,39 +2992,97 @@ class FacturacioController extends BaseController {
 		return $response;
 	}
 	
-	protected function consultaStock($idproducte, $baixes = true) {
+	protected function consultaStock($idproducte, $club, $baixes = true) {
 		$em = $this->getDoctrine()->getManager();
+	
+		$codi = $club != null?$club->getCodi():'';
 	
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
 		$strQuery .= " WHERE 1 = 1 ";
+		$strQuery .= " AND s.club = :codi";
 		if ($idproducte > 0) $strQuery .= " AND s.producte = :idproducte ";
 		if (! $baixes) $strQuery .= " AND s.databaixa IS NULL ";
 		$strQuery .= " ORDER BY s.dataregistre ASC, s.id ASC ";
 		$query = $em->createQuery($strQuery);
+		$query->setParameter('codi', $codi);
 		if ($idproducte > 0) $query->setParameter('idproducte', $idproducte);
 		return $query;
 	}
 	
-	private function consultaStockInicialProducte($idproducte) {
-		$em = $this->getDoctrine()->getManager();
-	
+	private function consultaStockInicialProducte($idproducte, $club) {
 		if ($idproducte == null || $idproducte == 0) return null;
 	
-		$query = $this->consultaStock($idproducte, false);
+		$query = $this->consultaStock($idproducte, $club, false);
 		
 		$stock = $query->getResult();
 		
 		return ($stock != null  && count($stock) > 0?$stock[0]:null);
 	}
 	
-	protected function consultaStockAcumulat($idproducte, $desde) {
+	private function consultaStockPerProducte($club, $idproducte = 0) {
 		$em = $this->getDoctrine()->getManager();
+			
+		$codi = $club != null?$club->getCodi():'';
+		
+		if ($idproducte > 0) $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'producte' => $idproducte, 'databaixa' => null));
+		else $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'databaixa' => null));
+		
+		$stockProductesClub = array(); // Obtenir productes amb stock
+		$anterior = null;
+		foreach ($stockclub as $registrestock) {
+			if ($anterior == null || $anterior !== $registrestock->getProducte()) {
+				$producte = $registrestock->getProducte();
+				$stockProductesClub[$producte->getId()] = $registrestock->getStock(); 
+				$anterior = $producte;
+			}
+		}
+		
+		if ($idproducte > 0) $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('kit' => $idproducte, 'actiu' => true));
+		else $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('actiu' => true));
+		
+		$titolsProductes = array(); // Obtenir titols pels productes
+		foreach ($titols as $titol) {
+			if ($titol->esCMAS() && $titol->getKit() != null) {
+				$producte = $titol->getKit();
+				$titolsProductes[$producte->getId()] = $titol; 
+			}
+		}
+		
+		
+		if ($idproducte > 0) {
+			
+			$producte = $em->getRepository('FecdasBundle:EntityProducte')->find($idproducte);
+			
+			$stock = array( array('kit' 	=> $producte,
+						 			'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
+									'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0));
+			return $stock;
+		}
+		
+		$productes = $em->getRepository('FecdasBundle:EntityProducte')->findBy(array('tipus' => BaseController::TIPUS_PRODUCTE_KITS, 'stockable' => true, 'databaixa' => null),
+																				array('descripcio' => 'ASC'));
+		$stock = array();		
+		foreach ($productes as $producte) {
+			$stock[] = array('kit' => $producte,
+							 'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
+							 'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0);
+		}
+		
+		return $stock;
+	}
+	
+	
+	protected function consultaStockAcumulat($idproducte, $desde, $club) {
+		$em = $this->getDoctrine()->getManager();
+	
+		$codi = $club != null?$club->getCodi():'';
 	
 		// Consultar saldos entre dates acumulats per mes per a l'exercici en curs
 		$strQuery  = " SELECT s.tipus, s.producte, p.abreviatura, p.descripcio, p.stock, YEAR(s.dataregistre) as anyregistre, MONTH(s.dataregistre) as mesregistre, ";
 		$strQuery .= " SUM(s.unitats) as total, SUM(s.unitats * s.preuunitat) as importtotal ";
 		$strQuery .= " FROM m_stock s INNER JOIN m_productes p ON s.producte = p.id ";
 		$strQuery .= " WHERE s.databaixa IS NULL ";
+		$strQuery .= " AND s.club = '".$codi."'";
 		$strQuery .= " GROUP BY s.tipus, s.producte, p.abreviatura, p.descripcio, p.stock, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
 		$strQuery .= " ORDER BY p.descripcio, s.tipus, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
 	    
@@ -3009,7 +3116,7 @@ class FacturacioController extends BaseController {
 			$producteCurrent = $acumulatMensual['producte'];
 				
 			if ($producteAnterior != $producteCurrent) {
-				$registreInicial = $this->consultaStockInicialProducte($producteCurrent);
+				$registreInicial = $this->consultaStockInicialProducte($producteCurrent, $club);
 				$stockInicial = ($registreInicial!=null?$registreInicial->getStock():0);
 				$stockAcumulat = $stockInicial;
 				

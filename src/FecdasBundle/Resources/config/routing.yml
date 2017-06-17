@@ -514,6 +514,12 @@ FecdasBundle_registrestock:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_stockclub:
+    path:  /stockclub
+    defaults: { _controller: "FecdasBundle:Facturacio:stockclub" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_comandes:
     path:  /comandes
     defaults: { _controller: "FecdasBundle:Facturacio:comandes" }

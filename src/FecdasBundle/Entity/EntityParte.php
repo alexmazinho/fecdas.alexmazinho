@@ -227,7 +227,7 @@ class EntityParte extends EntityComanda {
 	 */
 	public function getDescripcioPagament()
 	{
-		return 'Pagament a FECDAS, llista d\'assegurats del club ' . $this->club->getCodi() . 
+		return 'Pagament a FECDAS, llista d\'assegurats del club ' . $this->club->getNom() . 
 				' en data ' . $this->getDataalta()->format('d/m/Y');	
 	}			
 

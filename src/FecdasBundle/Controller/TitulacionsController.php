@@ -151,6 +151,36 @@ class TitulacionsController extends BaseController {
 		return $response;
 	}
 	
+	public function titulacionsfederatAction(Request $request) {
+	
+		if ($this->isAuthenticated() != true) return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$checkRole = $this->get('fecdas.rolechecker');
+    	
+		if (!$checkRole->isCurrentInstructor() && !$checkRole->isCurrentFederat())
+					 return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$user = $checkRole->getCurrentUser();
+		$llicencies = array();
+		$altresllicencies = array();
+		$metapersona = null;
+		
+		try {
+			if ($user == null || $user->getMetapersona() == null) throw new \Exception('No es poden mostrar les dades d\'aquest usuari');
+		
+			$metapersona = $user->getMetapersona();
+			$llicencies = $user->getMetapersona()->getTitulacionsSortedByDate();
+			$altresllicencies = $user->getMetapersona()->getAltrestitulacions();
+			
+		} catch (\Exception $e) {
+    		// Ko, 
+    		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+    	}
+		
+		return $this->render('FecdasBundle:Page:titulacionsfederat.html.twig',
+				$this->getCommonRenderArrayOptions(array('metapersona' => $metapersona, 'titulacions' => $titulacions, 'altrestitulacions' => $altrestitulacions)));
+	}
+	
 	
 	public function historialllicenciesAction(Request $request) {
 		
@@ -307,6 +337,7 @@ class TitulacionsController extends BaseController {
 		$titol = null;
 		$kit = null;
 		$stock = '';  // stock desconegut
+		$requeriments = array( 'titol' => '', 'errors' => array( 'total' => 0 ));
 		
 		$participantscurrent = null;
 
@@ -336,15 +367,17 @@ class TitulacionsController extends BaseController {
     		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $club);
 			$em->persist($curs);
     	} else {
-	    	$this->logEntryAuth('CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
-			
-			$titol = $curs->getTitol();
-			if ($titol != null && $titol->getKit() != null) $kit = $titol->getKit();
-			
-			if ($kit != null) {
-				$registrestock = $this->consultaStockProducte($kit->getId(), $club);
-				if ($registrestock == null) $stock = 0;  // sense stock
-				else $stock = $registrestock->getStock();	// stock disponible 
+	    	$this->logEntryAuth($request->getMethod() != 'POST'?'CURS VIEW':'CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
+
+			if (!$curs->finalitzat()) {			
+				$titol = $curs->getTitol();
+				if ($titol != null && $titol->getKit() != null) $kit = $titol->getKit();
+				
+				if ($kit != null) {
+					$registrestock = $this->consultaStockProducte($kit->getId(), $club);
+					if ($registrestock == null) $stock = 0;  // sense stock
+					else $stock = $registrestock->getStock();	// stock disponible 
+				}
 			}
     	}
 		
@@ -411,11 +444,13 @@ class TitulacionsController extends BaseController {
     		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     	}
 		
-		// Resultat check Requeriments titulació
-		$resultat = $this->comprovaRequerimentsCurs($curs);
-
-		// Dades estructurades requeriments
-		$requeriments = $this->getRequerimentsEstructuraInforme($curs->getTitol(), $resultat);
+		if (!$curs->finalitzat()) {	
+			// Resultat check Requeriments titulació
+			$resultat = $this->comprovaRequerimentsCurs($curs);
+	
+			// Dades estructurades requeriments
+			$requeriments = $this->getRequerimentsEstructuraInforme($curs->getTitol(), $resultat);
+		}
 
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs, 'requeriments' => $requeriments)));
@@ -1118,7 +1153,7 @@ class TitulacionsController extends BaseController {
     {
     	if ($titol == null) return array('titol' => '', 'errors' => '');
 		
-    	// Format tipus fitxa per poder fer el rende ren alguna vista funcionalment
+    	// Format tipus fitxa per poder fer el render en alguna vista funcionalment
 		$dades = array(
 			'titol' => $titol->getLlistaText(),
 			'errors' => array(

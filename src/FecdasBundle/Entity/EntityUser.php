@@ -38,6 +38,12 @@ class EntityUser {
 	protected $clubs;	// Owning side of the relationship
 	
 	/**
+	 * @ORM\OneToOne(targetEntity="EntityMetaPersona", inversedBy="usuari")
+	 * @ORM\JoinColumn(name="metapersona", referencedColumnName="id")
+	 */
+	protected $metapersona;			// Un usuari pot estar associat a una metapersona (federat o instructor)
+	
+	/**
 	 * @ORM\Column(type="string", length=40, nullable=true)
 	 */
 	protected $recoverytoken;
@@ -57,10 +63,11 @@ class EntityUser {
 	 */
 	protected $databaixa;
 	
-	public function __construct( $user = null, $pwd = null ) {
+	public function __construct( $user = null, $pwd = null, $metapersona = null ) {
 		$this->id = 0;
 		$this->user = $user;
 		$this->pwd 	= $pwd;
+		$this->metapersona = $metapersona;
 		$this->clubs = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
@@ -290,6 +297,26 @@ class EntityUser {
     	}
     }
 	
+    /**
+     * Get metapersona
+     *
+     * @return FecdasBundle\Entity\EntityMetaPersona 
+     */
+    public function getMetapersona()
+    {
+        return $this->metapersona;
+    }	
+	
+	/**
+     * Set metapersona
+     *
+     * @param FecdasBundle\Entity\EntityMetaPersona $metapersona
+     */
+    public function setMetapersona(\FecdasBundle\Entity\EntityMetaPersona $metapersona)
+    {
+        $this->metapersona = $metapersona;
+    }
+
     /**
      * Set recoverytoken
      *

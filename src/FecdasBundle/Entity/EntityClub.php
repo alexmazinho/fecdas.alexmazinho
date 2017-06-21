@@ -282,7 +282,7 @@ class EntityClub {
      *
      * @param FecdasBundle\Entity\EntityUser $user
      */
-    public function addUsuariRole($user, $role, $metapersona)
+    public function addUsuariRole($user, $role)
     {
     	$userClubRole = new EntityUserClub($this, $user, $role);
     	

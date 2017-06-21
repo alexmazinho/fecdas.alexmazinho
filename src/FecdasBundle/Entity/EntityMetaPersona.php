@@ -50,6 +50,11 @@ class EntityMetaPersona {
 	protected $persones;	
 
 	/**
+	 * @ORM\OneToOne(targetEntity="EntityUser", mappedBy="metapersona")
+	 */
+	protected $usuari;
+
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -408,7 +413,27 @@ class EntityMetaPersona {
     {
         return $this->persones;
     }
+
+    /**
+     * Get usuari
+     *
+     * @return FecdasBundle\Entity\EntityUser 
+     */
+    public function getUsuari()
+    {
+        return $this->usuari;
+    }	
 	
+	/**
+     * Set usuari
+     *
+     * @param FecdasBundle\Entity\EntityUser $usuari
+     */
+    public function setUsuari(\FecdasBundle\Entity\EntityUser $usuari)
+    {
+        $this->usuari = $usuari;
+    }
+
 	/**
      * Set dataentrada
      *

@@ -39,22 +39,14 @@ class EntityUserClub {
 	protected $role;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityMetaPersona")
-	 * @ORM\JoinColumn(name="metapersona", referencedColumnName="id")
-	 */
-	protected $metapersona;			// Varis Usuari-club-rol poden estar associat a una metapersona (federat o instructor)
-	
-	/**
 	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	protected $databaixa;
 	
-	public function __construct( $club, $usuari, $role, $metapersona = null ) {
+	public function __construct( $club, $usuari, $role ) {
 		$this->club = $club;	
 		$this->usuari = $usuari;	
 		$this->role = $role;
-		$this->metapersona = $metapersona;
-		
 	}
 	
 	public function __toString() {
@@ -191,26 +183,6 @@ class EntityUserClub {
     {
     	return $this->role;
     }
-
-	/**
-     * Set metapersona
-     *
-     * @param FecdasBundle\Entity\EntityMetaPersona $metapersona
-     */
-    public function setMetapersona(\FecdasBundle\Entity\EntityMetaPersona $metapersona)
-    {
-        $this->metapersona = $metapersona;
-    }
-
-    /**
-     * Get metapersona
-     *
-     * @return FecdasBundle\Entity\EntityMetaPersona 
-     */
-    public function getMetapersona()
-    {
-        return $this->metapersona;
-    }	
 
     /**
      * Set databaixa

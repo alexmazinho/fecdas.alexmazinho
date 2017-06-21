@@ -36,6 +36,12 @@ FecdasBundle_llicenciesParte:
     requirements:
         methods:  GET
 
+FecdasBundle_llicenciesfederat: 
+    path:  /llicenciesfederat
+    defaults: { _controller: "FecdasBundle:Page:llicenciesfederat" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_busseig:
     path:  /consultadni
     defaults: { _controller: "FecdasBundle:Page:busseig" }
@@ -356,6 +362,12 @@ FecdasBundle_cursostopdf:
 FecdasBundle_actacurspdf:
     path:  /actacurspdf
     defaults: { _controller: "FecdasBundle:PDF:actacurspdf" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_titulacionsfederat: 
+    path:  /titulacionsfederat
+    defaults: { _controller: "FecdasBundle:Titulacions:titulacionsfederat" }
     requirements:
         methods:  GET
 

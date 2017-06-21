@@ -897,7 +897,12 @@ class SecurityController extends BaseController
 	private function checkUsuariClub($nou, $club, &$info, $userrole, $useruser, $randomPassword, $idInstructor = 0) {
 		$em = $this->getDoctrine()->getManager();
 		
-		$metaPersona = null;
+		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($useruser)));
+
+		$metaPersona = $checkuser->getMetapersona();
+		// Check Roles existents pel mateix mail
+		
+		if (count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu ");
 		
 		// Check NEW Role				
 		if ($userrole == BaseController::ROLE_FEDERAT) throw new \Exception("No es poden afegir federats"); // Encara no
@@ -909,6 +914,7 @@ class SecurityController extends BaseController
 			if ($instructor == null) throw new \Exception("Instructor no trobat ".$idInstructor);
 									
 			// Validar llicència instructor
+			if ($metaPersona != null && $metaPersona !== $instructor->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
 			$metaPersona = $instructor->getMetapersona();
 			
 			$llicenciaVigent = $metaPersona->getLlicenciaVigent();
@@ -927,19 +933,13 @@ class SecurityController extends BaseController
 			if ($userrole == BaseController::ROLE_ADMIN && !BaseController::esFederacio($club)) throw new \Exception("Només es poden afegir Administradors a la Federació");
 		}
 				
-		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($useruser)));
-
-		// Check Roles existents pel mateix mail
-		
-		if (count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu ");
-		
 		if ($checkuser != null)  {
 			
 			if ($checkuser->anulat()) {
 				$checkuser->setDatabaixa(null); // Tornar a activar
 				$info = "Aquest usuari s'ha tornat a activar".PHP_EOL;
 			}
-							
+			
 			/*
 			 	Validacions mail per a tots els rols de l'usuari
 			 		Un mail no pot tenir el mateix role al mateix  club
@@ -960,15 +960,6 @@ class SecurityController extends BaseController
 						$checkUserRole->getRole() == BaseController::ROLE_CLUB &&
 						$club !== $checkUserRole->getClub()) throw new \Exception("Aquest usuari pertany a un altre club: ".$useruser.
 																				($this->isCurrentAdmin()?".(Admins) Club ".$checkUserRole->getClub()->getNom():"") ); 	
-
-					if ($metaPersona == null){
-						if ($checkUserRole->getMetapersona() != null) $metapersona = $checkUserRole->getMetapersona();
-					} 
-					else {
-						// Si usuari existent validar que sigui de la mateixa persona 
-						if ($checkUserRole->getMetapersona() != null &&
-							$metaPersona !== $checkUserRole->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
-					}
 				}
 			}
 			
@@ -976,7 +967,7 @@ class SecurityController extends BaseController
 			
 					
 		} else {
-			$userclub = new EntityUser($useruser, sha1($randomPassword));
+			$userclub = new EntityUser($useruser, sha1($randomPassword), $metaPersona);
 			$userclub->setPwd(sha1($randomPassword));
 			$em->persist($userclub);
 			
@@ -984,7 +975,7 @@ class SecurityController extends BaseController
 		}
 				
 		// Tot OK afegir role usuari al club
-		$userClubRole = $club->addUsuariRole($userclub, $userrole, $metaPersona);
+		$userClubRole = $club->addUsuariRole($userclub, $userrole);
 		$info .= "Nou accés ".$userrole." per a  ".$useruser;
 		$em->persist($userClubRole);
 		return $userclub;

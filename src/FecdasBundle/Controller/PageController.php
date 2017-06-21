@@ -343,6 +343,35 @@ class PageController extends BaseController {
 		 
 	}
 	
+	public function llicenciesfederatAction(Request $request) {
+	
+		if ($this->isAuthenticated() != true) return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	
+		$checkRole = $this->get('fecdas.rolechecker');
+    	
+		if (!$checkRole->isCurrentInstructor() && !$checkRole->isCurrentFederat())
+					 return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		
+		$user = $checkRole->getCurrentUser();
+		$llicencies = array();
+		$metapersona = null;
+		
+		try {
+			if ($user == null || $user->getMetapersona() == null) throw new \Exception('No es poden mostrar les dades d\'aquest usuari');
+		
+			$metapersona = $user->getMetapersona();
+			$llicencies = $user->getMetapersona()->getLlicenciesSortedByDate();
+			
+		} catch (\Exception $e) {
+    		// Ko, 
+    		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+    	}
+		
+		return $this->render('FecdasBundle:Page:llicenciesfederat.html.twig',
+				$this->getCommonRenderArrayOptions(array('metapersona' => $metapersona, 'llicencies' => $llicencies)));
+	}
+	
+	
 	public function partesAction(Request $request) {
 
 		if ($this->isAuthenticated() != true)

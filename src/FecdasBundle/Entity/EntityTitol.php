@@ -43,7 +43,7 @@ class EntityTitol {
 	/**
 	 * @ORM\Column(type="string", length=2, nullable=false)
 	 */
-	protected $tipus;   //  BU – Títol bussejador, TE – Títol tècnic, ES - Especialitat 
+	protected $tipus;   //  BU – Títol bussejador, TE – Títol tècnic/Instructor, ES - Especialitat, 'CO' - Competició
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="EntityProducte")
@@ -70,10 +70,10 @@ class EntityTitol {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $actiu;
+	protected $curs;
 
 	public function __construct() {
-		$this->actiu = true;
+		$this->curs = true;
 		
 		$this->requeriments = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -91,6 +91,16 @@ class EntityTitol {
     public function esCMAS()
     {
         return $this->organisme == BaseController::ORGANISME_CMAS;
+    }
+    
+    /**
+     * Es instructor
+     *
+     * @return boolean 
+     */
+    public function esInstructor()
+    {
+        return $this->tipus == BaseController::TIPUS_TITOL_TECNIC;
     }
 
 	/**
@@ -327,15 +337,15 @@ class EntityTitol {
 	/**
 	 * @return boolean
 	 */
-	public function getActiu() {
-		return $this->actiu;
+	public function getCurs() {
+		return $this->curs;
 	}
 
 	/**
-	 * @param boolean $actiu
+	 * @param boolean $curs
 	 */
-	public function setActiu($actiu) {
-		$this->actiu = $actiu;
+	public function setCurs($curs) {
+		$this->curs = $curs;
 	}
 
 }

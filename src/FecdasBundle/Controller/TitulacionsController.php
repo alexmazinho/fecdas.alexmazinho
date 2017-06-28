@@ -120,9 +120,9 @@ class TitulacionsController extends BaseController {
 
 		$this->addClubsActiusForm($formBuilder, $club);
 		
-		$this->addTitolsForm($formBuilder, $titol, true, 'titols');
+		$this->addTitolsFilterForm($formBuilder, $titol, true, 'titols');
 		
-		$this->addTitolsForm($formBuilder, $titolExtern, false, 'titolsexterns');
+		$this->addTitolsFilterForm($formBuilder, $titolExtern, false, 'titolsexterns');
 		
 		$form = $formBuilder->getForm(); 
 	
@@ -307,7 +307,7 @@ class TitulacionsController extends BaseController {
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		if ($this->isCurrentAdmin()) $this->addClubsActiusForm($formBuilder, $club);
 		
-		$this->addTitolsForm($formBuilder, $titol, true, 'titols');
+		$this->addTitolsFilterForm($formBuilder, $titol, true, 'titols');
 		
 		$form = $formBuilder->getForm(); 
 		
@@ -364,8 +364,11 @@ class TitulacionsController extends BaseController {
     	if ($curs == null) {
     		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST').' action: '.$action);
     	
-    		$curs = new EntityCurs(null, new \DateTime(), new \DateTime(), $club);
+    		$curs = new EntityCurs($checkRole->getCurrentUser(), null, new \DateTime(), new \DateTime(), $club);
 			$em->persist($curs);
+			
+			$this->novaDocenciaCurs($checkRole->getCurrentUser()->getMetapersona(), array(), $curs, BaseController::DOCENT_DIRECTOR);
+			
     	} else {
 	    	$this->logEntryAuth($request->getMethod() != 'POST'?'CURS VIEW':'CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
 
@@ -385,7 +388,7 @@ class TitulacionsController extends BaseController {
 			$this->initDadesPostCurs($request->request->get('curs'), $curs);
 		}
 			
-    	$form = $this->createForm(new FormCurs( array('instructor' => $checkRole->isCurrentInstructor(), 'stock' => $stock )), $curs);
+    	$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser() || $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
     		
@@ -875,7 +878,7 @@ class TitulacionsController extends BaseController {
 		$tipus = $requeriment->getRequeriment();	
 			
 		$res = array('result' => 'OK', 'errors' => array());   
-		
+	
 		switch ($tipus->getId()) {
 			case 100:  // teoria.
 			case 101:  // aula.
@@ -1151,7 +1154,7 @@ class TitulacionsController extends BaseController {
 
 	public function getRequerimentsEstructuraInforme($titol, $resultat)
     {
-    	if ($titol == null) return array('titol' => '', 'errors' => '');
+    	if ($titol == null) return array('titol' => '', 'errors' => array( 'total' => 0 ));
 		
     	// Format tipus fitxa per poder fer el render en alguna vista funcionalment
 		$dades = array(

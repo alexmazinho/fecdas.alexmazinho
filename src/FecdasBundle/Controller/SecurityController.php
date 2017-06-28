@@ -930,7 +930,7 @@ class SecurityController extends BaseController
 			if ($userrole == BaseController::ROLE_ADMIN && !$this->isCurrentAdmin()) throw new \Exception("Privilegis insuficients per afegir Administradors");
 				
 			// Un mail pot tenir role administrador només a la FEDERACIÓ ¿? 
-			if ($userrole == BaseController::ROLE_ADMIN && !BaseController::esFederacio($club)) throw new \Exception("Només es poden afegir Administradors a la Federació");
+			if ($userrole == BaseController::ROLE_ADMIN && !$club->esFederacio()) throw new \Exception("Només es poden afegir Administradors a la Federació");
 		}
 				
 		if ($checkuser != null)  {

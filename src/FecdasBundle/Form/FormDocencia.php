@@ -12,11 +12,11 @@ use FecdasBundle\Entity\EntityDocencia;
 
 class FormDocencia extends AbstractType {
 
-	private $instructor;
+	private $editable;
 	
-	public function __construct($instructor = false)
+	public function __construct($editable = false)
 	{
-		$this->instructor = $instructor;
+		$this->editable = $editable;
 	}
 
 	public function buildForm(FormBuilderInterface $builder, array $options)
@@ -28,14 +28,13 @@ class FormDocencia extends AbstractType {
 			$metadocent = null;
 
 			/* Check we're looking at the right data/form */
-			$editable = $this->instructor;	
 		
 			if ($docencia instanceof EntityDocencia) {
 				$metadocent = $docencia->getMetadocent();
 				$curs = $docencia->getCurs();
 				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
-					$editable = false;	
+					$this->editable = false;	
 				}
 			}
 		
@@ -61,7 +60,7 @@ class FormDocencia extends AbstractType {
 				'scale' 	=> 0,
 				'data'		=> $docencia!=null?$docencia->getHteoria():0,
 				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$editable)
+				'attr'		=>	array('readonly' => !$this->editable)
 			));
 				
 			$form->add ('haula', 'integer', array (
@@ -69,7 +68,7 @@ class FormDocencia extends AbstractType {
 				'scale' 	=> 0,
 				'data'		=> $docencia!=null?$docencia->getHaula():0,
 				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$editable)
+				'attr'		=>	array('readonly' => !$this->editable)
 			));
 				
 			$form->add ('hpiscina', 'integer', array (
@@ -77,7 +76,7 @@ class FormDocencia extends AbstractType {
 				'scale' 	=> 0,
 				'data'		=> $docencia!=null?$docencia->getHpiscina():0,
 				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$editable)
+				'attr'		=>	array('readonly' => !$this->editable)
 			));
 				
 			$form->add ('hmar', 'integer', array (
@@ -85,12 +84,12 @@ class FormDocencia extends AbstractType {
 				'scale' 	=> 0,
 				'data'		=> $docencia!=null?$docencia->getHmar():0,
 				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$editable)
+				'attr'		=>	array('readonly' => !$this->editable)
 			));
 				
 			$form->add('carnet', 'text', array(
 				'required' 	=> false,
-				'attr'		=>	array('readonly' => !$editable)
+				'attr'		=>	array('readonly' => !$this->editable)
 			));
 			
 		});

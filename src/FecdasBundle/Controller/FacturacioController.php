@@ -402,7 +402,7 @@ class FacturacioController extends BaseController {
 			}			
 		}
 		
-		if (BaseController::esFederacio($club)) $producte->setStock($stock);  // Si és la federació actualitza stock de productes	
+		if ($club->esFederacio()) $producte->setStock($stock);  // Si és la federació actualitza stock de productes	
 	}
 	
 	public function stockclubAction(Request $request) {
@@ -3016,12 +3016,13 @@ class FacturacioController extends BaseController {
 			}
 		}
 		
-		if ($idproducte > 0) $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('kit' => $idproducte, 'actiu' => true));
-		else $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('actiu' => true));
+		if ($idproducte > 0) $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('kit' => $idproducte, 'curs' => true));
+		else $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('curs' => true));
 		
 		$titolsProductes = array(); // Obtenir titols pels productes
 		foreach ($titols as $titol) {
-			if ($titol->esCMAS() && $titol->getKit() != null) {
+			if ($titol->esCMAS() && $titol->getKit() != null &&
+				($club->esFederacio() || (!$club->esFederacio() && !$titol->esInstructor()))) {
 				$producte = $titol->getKit();
 				$titolsProductes[$producte->getId()] = $titol; 
 			}

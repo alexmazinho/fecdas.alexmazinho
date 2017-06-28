@@ -26,8 +26,30 @@
 		<tbody id="list-data">
 			{% for userdistinct in club.getUsuarisDistinct %}
 				{% set userclub = userdistinct.userclub %}
+				{% set metapersona = userclub.metapersona %}
+				{% set llicenciaVigent = null %}
 				<tr class="data-detall">
-					<td class="data-detall-cell userclub-user">{{ userclub.user }}</td>
+					<td class="data-detall-cell userclub-user">
+					    {{ userclub.user }}
+					    {% if metapersona != null %}
+							{% set nomuserclub = metapersona.nomCognoms %}
+							{% set llicenciaVigent = metapersona.llicenciaVigent %}
+							{% set persona = metapersona.personaClub(club) %}
+							<br/>
+							<span class="title-comment">
+								{% if persona != null %}
+									{% set nomuserclub = persona.nomCognoms %}
+									<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal" 
+								 		alt="Veure les dades d'aquesta persona" title="Veure les dades d'aquesta persona">
+								 		{{ nomuserclub }}  <i class="fa fa-user fa-1x red"></i>
+								 	</a>
+								{% else %}
+									{# Persona d'un altre club. No es poden consultar les seves dades  #}
+									{{ nomuserclub }}
+								{% endif %}
+							</span>
+						{% endif %}	
+					</td>
 					<td class="data-detall-cell userclub-lastaccess">
 						{% if userclub.lastaccess is not null %}
 						{{ userclub.lastaccess|date("d/m/Y H:i:s") }}
@@ -52,30 +74,7 @@
 								<a class="remove-userroleclub link" href="{{ path('FecdasBundle_usuariclub',{ 'action': 'removerole', 'id': userclubrole.id } ) }}" alt="{{ smsDel }}" title="{{ smsDel }}">
 									<i class="fa fa-lock fa-1x orange"></i>
 								</a>
-								{% if userclubrole.metapersona != null %}
-									{% set id = 0 %}
-									{% set nomuserclub = userclubrole.metapersona.nomCognoms %}
-									{% set llicenciaVigent = userclubrole.metapersona.llicenciaVigent %}
-									{% if admin %}
-										{% set id = userclubrole.metapersona.id %} {# Admins consulten dades personals de les metapersones #}
-									{% else %}
-										{% set persona = userclubrole.metapersona.personaClub(club) %}
-										{% if persona != null %}
-										 	{% set id = persona.id %}
-										 	{% set nomuserclub = persona.nomCognoms %}
-										{% endif %}
-									{% endif %}
-									<br/><span class="title-comment">
-										{% if id > 0 %}
-											<a class="link-dades-userclub link" href="{{ path('FecdasBundle_dadespersonals', { 'id': id }) }}"
-										 		alt="Veure les dades d'aquesta persona" title="Veure les dades d'aquesta persona">
-										 		{{ nomuserclub }}
-										 	</a>
-										{% else %}
-											{# Persona d'un altre club. No es poden consultar les seves dades  #}
-											{{ nomuserclub }}
-										{% endif %}
-									</span>
+								{% if userclubrole.isRoleInstructor %}
 									{% if llicenciaVigent == null %}
 										<br/><span class="title-comment">(No disposa de llicència vigent)</span>
 									{% else %}

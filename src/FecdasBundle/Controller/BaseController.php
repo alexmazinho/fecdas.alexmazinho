@@ -179,7 +179,7 @@ class BaseController extends Controller {
 	const TIPUS_TITOL_BUSSEIG	= 'BU';
 	const TIPUS_TITOL_TECNIC	= 'TE';
 	const TIPUS_ESPECIALITAT	= 'ES';
-	const TIPUS_MONITOR			= 'MO';
+	const TIPUS_COMPETICIO		= 'CO';
 	const ORGANISME_CMAS		= 'CMAS';
 	
 	// Rols docents
@@ -597,7 +597,7 @@ class BaseController extends Controller {
 		
 	}
 
-	protected function addTitolsForm($formBuilder, $titol, $cmas = true, $nom = 'titols') {
+	protected function addTitolsFilterForm($formBuilder, $titol, $cmas = true, $nom = 'titols') {
 			
 		$formBuilder->add($nom, 'entity', array(
 				'class' 		=> 'FecdasBundle:EntityTitol',
@@ -606,7 +606,7 @@ class BaseController extends Controller {
 							return $repository->createQueryBuilder('t')
 									->orderBy('t.titol', 'ASC')
 									->where('t.organisme = \''.BaseController::ORGANISME_CMAS.'\'')
-									->where('t.actiu = 1');
+									->where('t.curs = 1');
 						}
 						return $repository->createQueryBuilder('t')
 								->orderBy('t.titol', 'ASC')
@@ -682,10 +682,6 @@ class BaseController extends Controller {
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		return $checkRole->isCurrentAdmin();
-	}
-
-	public static function esFederacio($club) {
-		return $club->getCodi() == self::CODI_FECDAS;
 	}
 
 	protected function getCurrentClub() {

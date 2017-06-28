@@ -15,12 +15,12 @@ use FecdasBundle\Form\FormTitulacio;
 
 class FormCurs extends AbstractType  implements EventSubscriberInterface {
 
-	private $instructor;
+	private $editor;
 	private $stock;
 	
 	public function __construct( $options )
 	{
-		$this->instructor = isset($options['instructor'])?$options['instructor']:false;
+		$this->editor = isset($options['editor'])?$options['editor']:false;
 		$this->stock = isset($options['stock'])?$options['stock']:'';
 	}
 
@@ -45,7 +45,9 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		/* Check we're looking at the right data/form */
 		if ($curs instanceof EntityCurs) {
 			
-			$editable = $curs->editable() && $this->instructor;
+			$club = $curs->getClub();
+			
+			$editable = $curs->editable() && $this->editor;
 		
 			$form->add('num', 'text', array(
 				'required' 	=> true,
@@ -73,12 +75,16 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 				));	
 			}	
 			
+			$tipusTitols = '\''.BaseController::TIPUS_TITOL_BUSSEIG.'\', \''.BaseController::TIPUS_ESPECIALITAT.'\'';
+			if ($club->esFederacio()) $tipusTitols .= ', \''.BaseController::TIPUS_TITOL_TECNIC.'\'';
+			// Només federació pot fer cursos tècnic / instructor
 			$form->add('titol', 'entity', array(
 						'class' 		=> 'FecdasBundle:EntityTitol',
-						'query_builder' => function($repository) {
+						'query_builder' => function($repository) use($tipusTitols) {
 								return $repository->createQueryBuilder('t')
 									->where('t.organisme = \''.BaseController::ORGANISME_CMAS.'\'' )
-									->andWhere('t.actiu = 1')
+									->andWhere('t.curs = 1')
+									->andWhere('t.tipus IN ('.$tipusTitols.')')
 									->orderBy('t.titol', 'ASC');
 								}, 
 						'choice_label' 	=> 'llistaText',
@@ -86,7 +92,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 						'required'  	=> true,
 						'disabled'		=> !$editable  		// No es pot canviar el títol
 			));	
-				
+	
 				
 			$form->add('datadesde', 'datetime', array(
 				'required' 		=> false,
@@ -112,7 +118,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$collaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 			
 			$persona = null;
-			if ($director != null && $director->getMetadocent() != null) $persona = $director->getMetadocent()->getPersona($curs->getClub());
+			if ($director != null && $director->getMetadocent() != null) $persona = $director->getMetadocent()->getPersona($club);
 			$form->add('auxdirector', 'text', array(
 				'mapped'	=> false,
 				'data'  	=> $persona != null?$persona->getId():'',
@@ -125,7 +131,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			));	
 			
 			$persona = null;
-			if ($codirector != null && $codirector->getMetadocent() != null) $persona = $codirector->getMetadocent()->getPersona($curs->getClub());
+			if ($codirector != null && $codirector->getMetadocent() != null) $persona = $codirector->getMetadocent()->getPersona($club);
 			$form->add('auxcodirector', 'text', array(
 				'mapped'	=> false,
 				'required' 	=> false,
@@ -153,7 +159,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('instructors', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'		 	=> $instructors,
-		        'type' 		   	=> new FormDocencia($this->instructor),
+		        'type' 		   	=> new FormDocencia($editable),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -162,7 +168,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('collaboradors', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'			=> $collaboradors,
-		        'type' 			=> new FormDocencia($this->instructor),
+		        'type' 			=> new FormDocencia($editable),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -180,7 +186,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('participants', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'			=> $participants,
-		        'type' 			=> new FormTitulacio($this->instructor),
+		        'type' 			=> new FormTitulacio($editable),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -191,7 +197,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		$builder->addEventSubscriber ( new FormCurs ( array('instructor' => $this->instructor, 'stock' => $this->stock ) ));
+		$builder->addEventSubscriber ( new FormCurs ( array('editor' => $this->editor, 'stock' => $this->stock ) ));
 	
 		$builder->add('id', 'hidden');
 		

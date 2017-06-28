@@ -63,7 +63,7 @@ class FormDuplicat extends AbstractType {
 						'placeholder' => ' ... escull un títol ', 
 							'query_builder' => function($repository)  use ($duplicat) {
 								return $repository->createQueryBuilder('t')
-									->where('t.carnet = :carnet AND t.actiu = 1')
+									->where('t.carnet = :carnet AND t.organisme = \''.BaseController::ORGANISME_CMAS.'\'')
 									->setParameter('carnet', $duplicat['carnet'])
 									->orderby('t.titol');
 								},
@@ -88,7 +88,7 @@ class FormDuplicat extends AbstractType {
 								'placeholder' => ' ... escull un títol ',
 								'query_builder' => function($repository)  use ($duplicat) {
 									return $repository->createQueryBuilder('t')
-										->where('t.carnet = :carnet AND t.actiu = 1')
+										->where('t.carnet = :carnet AND t.organisme = \''.BaseController::ORGANISME_CMAS.'\'')
 										->setParameter('carnet', $duplicat->getCarnet())
 										->orderby('t.titol');
 									},

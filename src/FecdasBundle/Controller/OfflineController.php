@@ -130,7 +130,7 @@ class OfflineController extends BaseController {
 					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
 					
 					if ($curs == null) {
-						$curs = new EntityCurs($titol, $datadesde, $datafins, $club, $clubhistoric);			
+						$curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club, $clubhistoric);			
 						$curs->setNum($num);
 						$curs->setValidat(true);
 						$curs->setFinalitzat(true);

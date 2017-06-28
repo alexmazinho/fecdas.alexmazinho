@@ -120,7 +120,7 @@
         $(id).css('left', winW/2-$(id).width()/2);
      
         //transition effect
-        $(id).fadeIn(2000);
+        $(id).stop().fadeIn(1500);
 	};
 	
 	helpBubbles = function(t, ht) {
@@ -504,8 +504,12 @@
 	    	height: (dheight !== undefined?dheight:"auto"),
 	    	title: titol,
 	        buttons: {
-	            Ok: function() {
-	              $( this ).dialog( "close" );
+	            Ok: {
+	            	click: function() {
+	            		$( this ).dialog( "close" );
+	            	},
+	            	text: "Ok",
+	                class: "btn btn-default"
 	            }
 	        }
     	});
@@ -523,8 +527,12 @@
 	    	height: (dheight !== undefined?dheight:"auto"),
 	    	title: titol,
 	        buttons: {
-	            Ok: function() {
-	              $( this ).dialog( "close" );
+	            Ok: {
+	            	click: function() {
+	            		$( this ).dialog( "close" );
+	            	},
+	            	text: "Ok",
+	                class: "btn btn-default"
 	            }
 	        }
     	});
@@ -542,9 +550,13 @@
 	    	height: (dheight !== undefined?dheight:"auto"),
 	    	title: titol,
 	        buttons: {
-	            Ok: function() {
-	              $( this ).dialog( "close" );
-	              callbackko();
+	            Ok: {
+	            	click: function() {
+	            		$( this ).dialog( "close" );
+	            		callbackko();
+	            	},
+	            	text: "Ok",
+	                class: "btn btn-default"
 	            }
 	        }
     	});
@@ -570,14 +582,20 @@
 			 width:  (w !== undefined?w:300),
 			 modal: true,
 			 buttons: {
-				 "Continuar": function() {
-					 
-					 callbackok();
-					 // El retorn de callback no funciona després de crida asíncrona $.get o $.post
+				 "Continuar": {
+					 click: function() {
+						 callbackok();
+						 // El retorn de callback no funciona després de crida asíncrona $.get o $.post
+					 },
+					 text: "Continuar",
+	                 class: "btn btn-default"
 				 },
-				 "Cancel·lar": function() {
-
-					 callbackko();
+				 "Cancel·lar": {
+					 click: function() {
+						 callbackko();
+					 },
+					 text: "Cancel·lar",
+	                 class: "btn btn-default"
 				 }
 			 },
 			 open: callbackopen
@@ -595,10 +613,13 @@
 			 width:  (w !== undefined?w:300),
 			 modal: true,
 			 buttons: {
-				 "Tancar": function() {
-
-					 callbackclose();
-				 }
+				"Tancar": { 
+					 click: function() {
+						 callbackclose();
+					 },
+					 text: "Tancar",
+	                 class: "btn btn-default"
+			 	}
 			 },
 			 open: callbackopen
 		});
@@ -686,7 +707,7 @@
 	        	});
 	        	
 	        	if ($.browser.msie) subMenu.show(); 
-		    	else subMenu.slideDown('fast');
+		    	else subMenu.stop().slideDown('fast');
 		        
 	        	$(this).addClass("left-menu-active");
 
@@ -701,7 +722,7 @@
 		var subMenu = mainMenuItem.children('.submenu');
 		
 		if ($.browser.msie) subMenu.hide(); 
-    	else subMenu.slideUp('fast');
+    	else subMenu.stop().slideUp('fast');
 		
 		mainAction.removeClass("left-menu-active");
 		mainAction.find('.menu-icon').addClass('ui-icon-triangle-1-e'); // East
@@ -820,7 +841,7 @@
 		$('#parte_tipus').change(function() {
 			if ($('#parte_tipus').val() == "") {
 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-		    	else $('#formparte-llicencia').slideUp('fast');
+		    	else $('#formparte-llicencia').stop().slideUp('fast');
 			} else {
 				loadLlicencia(0);				
 			}
@@ -855,7 +876,7 @@
 	        index++;
 	        
 	        if ($.browser.msie) $('#historial-overlay').hide(); 
-	    	else $('#historial-overlay').fadeOut('fast');
+	    	else $('#historial-overlay').stop().fadeOut('fast');
 	        $('#historial-overlay').html('');
 
 	        tancarMascaraBlock( '' );
@@ -866,7 +887,7 @@
 	        	$('#historial-overlay').append(data);
 		        	
 	        	if ($.browser.msie) $('#historial-overlay').show(); 
-		    	else $('#historial-overlay').fadeIn('fast');
+		    	else $('#historial-overlay').stop().fadeIn('fast');
 		        	
 	        	var cssTop = (index * 35);
 	        	if ($('#historial-overlay').height() + cssTop > $('#llista-dadespersonals').height() ) {
@@ -886,7 +907,7 @@
 			        tancarMascaraBlock( '' );
 			        
 			        if ($.browser.msie) $('#historial-overlay').hide(); 
-			    	else $('#historial-overlay').fadeOut('fast');
+			    	else $('#historial-overlay').stop().fadeOut('fast');
 			        $('#historial-overlay').html('');
 			    }); 
         	}).fail( function(xhr, status, error) {
@@ -906,12 +927,12 @@
         //Set height and width to mask to fill up the whole screen
         $('.mask').css({'width':maskWidth,'height':maskHeight});
         //transition effect    
-        $('.mask').fadeTo("slow",0.6); 
+        $('.mask').stop().fadeTo("slow",0.6); 
 	};
 
 	hideMask = function() {
         //transition effect    
-        $('.mask').fadeOut("slow"); 
+        $('.mask').stop().fadeOut("slow"); 
 	};
 
 	
@@ -932,7 +953,7 @@
         var offsetLeft = element.offset().left - $(window).scrollLeft();
 
         //transition effect    
-        $('.mask').fadeTo("slow",0.6);
+        $('.mask').stop().fadeTo("slow",0.6);
         $('.mask').offset( { top: offsetTop, left: offsetLeft } );
         if ( showImage == false ) {
         	$( '.mask-progress' ).hide();
@@ -944,7 +965,7 @@
 		$(block).prepend('<div class="block-mask"><div><span class="fa fa-spinner fa-spin fa-2x green"></span></div></div>');
 		$(block).css({'min-height':'200px'});
 		$(block).css({'position':'relative'});
-		$('.block-mask').fadeTo("slow",0.5); 
+		$('.block-mask').stop().fadeTo("slow",0.5); 
 	};
 
 	tancarMascaraBlock = function(block) {
@@ -959,10 +980,10 @@
         //Set height and width to mask to fill up the whole screen
         $('.mask').css({'width':maskWidth,'height':maskHeight});
         //transition effect    
-        $('.mask').fadeTo("slow",0.6); 
+        $('.mask').stop().fadeTo("slow",0.6); 
         
 		$.get(url, function(data, textStatus) {
-			
+
 			$("#edicio-persona").html(data);
 			// Reload DOM events. Add handlers again. Only inside reloaded divs
 			var current = new Date();
@@ -980,7 +1001,7 @@
 			
 			
 			formFocus();
-			autocompleters( $('#formpersona-autocompleters').attr('href'), $('#parte_persona_addrpob'), $('#parte_persona_addrcp'), $('#parte_persona_addrprovincia'), $('#parte_persona_addrcomarca'), "#edicio-persona" );
+			autocompleters( $('#formpersona-autocompleters').attr('href'), $('#persona_addrpob'), $('#persona_addrcp'), $('#persona_addrprovincia'), $('#persona_addrcomarca'), "#edicio-persona" );
 			actionsModalOverlay();
 			actionsPersonaForm(origen);
 			
@@ -998,23 +1019,23 @@
 			
 			$( "#tabs-persona" ).tabs();
 			
-			$("select#parte_persona_addrprovincia").select2({
+			$("select#persona_addrprovincia").select2({
 				minimumInputLength: 2,
 				allowClear: true,
 				placeholder: "Província",
 			});
-			$("select#parte_persona_addrcomarca").select2({
+			$("select#persona_addrcomarca").select2({
 				minimumInputLength: 2,
 				allowClear: true,
 				placeholder: "Comarca",
 			});
-			$("select#parte_persona_addrnacionalitat").select2({
+			$("select#persona_addrnacionalitat").select2({
 				minimumInputLength: 1,
 				allowClear: true,
 				placeholder: "ESP",
 			});
 			/* Check estranger */
-			if ($('#parte_persona_id').val() != 0) {
+			if ($('#persona_id').val() != 0) {
 				//$("#formpersona-estranger").hide();
 				var error = validarDadesPersona($("#persona_dni").val(), $("#persona_estranger").is(':checked'));
 	    		if (error != "") {
@@ -1186,45 +1207,53 @@
 	        var i = '';
 	        $("#dialeg").dialog({
 	          	buttons : {
-	            	"Confirmar" : function() {
-	    	        	$(this).dialog("close");
-	    	        	if ($('#persona_mail').val() != "") {  // Múltiples adreces acceptades mail 1; mail 2; ...
-	    	        		var mails = $('#persona_mail').val().split(";");
-
-	    	        		for (i in mails) {
-	    	        			if (mails[i].trim() != "" && !isValidEmailAddress( mails[i].trim() ) ) {
-						        	dialegError("Error", "L'adreça de correu -"+mails[i]+"- no té un format correcte", 400);
-									return false;
-				   	        	}
-							}
-	    	        	}	
-	    	        	if ($('#parte_persona_id').val() != 0) {
-	    	        		// Modificació no valida DNI
-	    	        		submitPerson("save", origen);
-	    	        	} else {
-	    	        		/* Alex. Validar nou check estranger */
-	    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#parte_persona_addrnacionalitat").val());*/
-	    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#persona_estranger").is(':checked'));
-	    	        		if (error == "") {
-	    	        			submitPerson("save", origen);
-	    	        		} else {
-	    	        			dialegError("Error", error, 400, 0);
-	    	        		};
-	    	        	};
-	        	    	return false;  
+	            	"Confirmar" : {
+	            		click: function() {
+		    	        	$(this).dialog("close");
+		    	        	if ($('#persona_mail').val() != "") {  // Múltiples adreces acceptades mail 1; mail 2; ...
+		    	        		var mails = $('#persona_mail').val().split(";");
+	
+		    	        		for (i in mails) {
+		    	        			if (mails[i].trim() != "" && !isValidEmailAddress( mails[i].trim() ) ) {
+							        	dialegError("Error", "L'adreça de correu -"+mails[i]+"- no té un format correcte", 400);
+										return false;
+					   	        	}
+								}
+		    	        	}	
+		    	        	if ($('#persona_id').val() != 0) {
+		    	        		// Modificació no valida DNI
+		    	        		submitPerson("save", origen);
+		    	        	} else {
+		    	        		/* Alex. Validar nou check estranger */
+		    	        		/*var error = validarDadesPersona($("#persona_dni").val(), $("#persona_addrnacionalitat").val());*/
+		    	        		var error = validarDadesPersona($("#persona_dni").val(), $("#persona_estranger").is(':checked'));
+		    	        		if (error == "") {
+		    	        			submitPerson("save", origen);
+		    	        		} else {
+		    	        			dialegError("Error", error, 400, 0);
+		    	        		};
+		    	        	};
+		        	    	return false;  
+	            		},
+	            		text: "Confirmar",
+	            		class: "btn btn-default"
 	        		},
-	            	"Cancel·lar" : function() {
-	              		$(this).dialog("close");
+	            	"Cancel·lar" : {
+	            		click: function() {
+	            			$(this).dialog("close");
+	            		},
+	            		text: "Cancel·lar",
+	            		class: "btn btn-default"
 	            	}
 	          	},
 	        	title: "Desar les dades",
-	        	height: 'auto',
+	        	height: "auto",
 	        	width: 400,
 	        	zIndex:	350
 	        });
 			
 			var htmlRecordatori = "";
-			if ($('#parte_persona_id').val() == 0) {
+			if ($('#persona_id').val() == 0) {
 				htmlRecordatori += "<p>Comproveu que el <strong>DNI és correcte</strong> i està ben escrit.<br/>Després no el podreu modificar.</p>";	
 			}
 			if ($('#persona_mail').val() == "") {
@@ -1339,7 +1368,7 @@
         var altadata = $("#parte_dataalta").val();
 
     	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-    	else $('#formparte-llicencia').slideUp('fast');
+    	else $('#formparte-llicencia').stop().slideUp('fast');
         $('#progressbar').show();  // Rellotge
         var part = { 'id' : $("#parte_id").val(), 'dataalta': altadata, 'tipus': tipusparte };
         var llic = { 'id' : n };
@@ -1379,16 +1408,16 @@
 	
 	loadLlicenciaData = function(data) {
 		if ($('#formparte-llicencia').not(':hidden')) {
-			//$("#formparte-llicencia").slideUp('fast');
-			//$("#formparte-llicencia").fadeTo("slow",0.6); 
-			//$("#formparte-llicencia").fadeIn(2000);
+			//$("#formparte-llicencia").stop().slideUp('fast');
+			//$("#formparte-llicencia").stop().fadeTo("slow",0.6); 
+			//$("#formparte-llicencia").stop().fadeIn(2000);
 		};
 		
     	$('#formparte-llicencia').html(data);
     	
     	$('#progressbar').hide();  // Rellotge
     	if ($.browser.msie) $('#formparte-llicencia').show(); 
-    	else $('#formparte-llicencia').slideDown('fast');
+    	else $('#formparte-llicencia').stop().slideDown('fast');
     	
     	// Reload DOM events. Add handlers again
     	$("select#parte_llicencies_persona_select").select2({
@@ -1426,7 +1455,7 @@
 	        //Cancel the link behavior
 	        e.preventDefault();
 	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
+	    	else $('#formparte-llicencia').stop().slideUp('fast');
 	    });    
 	};
 	
@@ -1440,7 +1469,7 @@
 	        $('#summary-data-hidden').css('display', 'table');
 /*
 	    	if ($.browser.msie) $('#summary-data-hidden').show(); 
-	    	else $('#summary-data-hidden').slideDown('fast');*/
+	    	else $('#summary-data-hidden').stop().slideDown('fast');*/
 	    	$(this).hide();
 	    	$("#parte-resum-more-hide").show();
 	    });    
@@ -1449,7 +1478,7 @@
 	        //Cancel the link behavior
 	        e.preventDefault();
 	    	if ($.browser.msie) $('#summary-data-hidden').hide(); 
-	    	else $('#summary-data-hidden').slideUp('fast');
+	    	else $('#summary-data-hidden').stop().slideUp('fast');
 	    	$(this).hide();
 	    	$("#parte-resum-more-show").show();
 	    });    
@@ -1494,7 +1523,7 @@
 	 	        	sortLlista("col-listheader", "list-data");
 	 	        	// Hide llicencia
 	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	 		    	else $('#formparte-llicencia').slideUp('fast');
+	 		    	else $('#formparte-llicencia').stop().slideUp('fast');
 	 		    	
 	 		    	closeDialegConfirmacio();
 	 		    	
@@ -1545,7 +1574,7 @@
 			}
 			
 	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').slideUp('fast');
+	    	else $('#formparte-llicencia').stop().slideUp('fast');
 
 			$('#progressbar').show();  // Rellotge
 			
@@ -1719,7 +1748,7 @@
 	        if (current.hasClass('data-detall-llicencies')) {
 	        	current.removeClass('data-detall-llicencies');
 		        if ($.browser.msie) current.children('.parte-llicencies').hide(); 
-		    	else current.children('.parte-llicencies').slideUp('slow');
+		    	else current.children('.parte-llicencies').stop().slideUp('slow');
 
 	        } else {
 	        	current.children('.parte-llicencies').remove();
@@ -1729,7 +1758,7 @@
 		        	current.addClass('data-detall-llicencies');
 		        	current.append(data);
 			        if ($.browser.msie) current.children('.parte-llicencies').show(); 
-			    	else current.children('.parte-llicencies').slideDown('slow');
+			    	else current.children('.parte-llicencies').stop().slideDown('slow');
 
 			        //if close button is clicked
 				    $('.parte-llicencies .close').click(function (e) {
@@ -1737,7 +1766,7 @@
 				        e.preventDefault();
 				        current.removeClass('data-detall-llicencies');
 				        if ($.browser.msie) current.children('.parte-llicencies').hide(); 
-				    	else current.children('.parte-llicencies').slideUp('slow');
+				    	else current.children('.parte-llicencies').stop().slideUp('slow');
 				    }); 
 	        	});
 	        };
@@ -2368,7 +2397,7 @@
 			if (e.val != "") {
 				/* Persona escollida. Carregar dades: dni, nom, cognoms */
 				if ($.browser.msie) $('select#duplicat_carnet').show(); 
-			    else $('select#duplicat_carnet').slideLeftShow('slow');
+			    else $('select#duplicat_carnet').stop().slideLeftShow('slow');
 			}
 		});
 		
@@ -2386,10 +2415,10 @@
 					$("#formduplicats .form-row").first().append(titols);
 					
 					if ($.browser.msie) $('select#duplicat_titol').show(); 
-				    else $('select#duplicat_titol').slideLeftShow('slow');
+				    else $('select#duplicat_titol').stop().slideLeftShow('slow');
 					
 					if ($.browser.msie) $('#formduplicats-dades').show(); 
-				    else $('#formduplicats-dades').slideDown('slow');
+				    else $('#formduplicats-dades').stop().slideDown('slow');
 					
 					imageUploadForm("#duplicat_fotoupld", 104);
 					
@@ -2427,14 +2456,14 @@
 	initFormDuplicats = function(tot) {
 		if (tot) {
 			if ($.browser.msie) $('select#duplicat_carnet').hide(); 
-		    else $('select#duplicat_carnet').slideLeftHide('slow');
+		    else $('select#duplicat_carnet').stop().slideLeftHide('slow');
 		}
 		
 		if ($.browser.msie) $('select#duplicat_titol').hide(); 
-	    else $('select#duplicat_titol').slideLeftHide('slow');
+	    else $('select#duplicat_titol').stop().slideLeftHide('slow');
 		
 		if ($.browser.msie) $('#formduplicats-dades').hide(); 
-	    else $('#formduplicats-dades').slideUp('slow');
+	    else $('#formduplicats-dades').stop().slideUp('slow');
 	};
 
 	

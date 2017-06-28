@@ -278,6 +278,16 @@ class EntityClub {
 	
 	
 	/**
+     * Es Federacio
+     *
+     * @return boolean 
+     */
+    public function esFederacio()
+    {
+        return $this->codi == BaseController::CODI_FECDAS;
+    }
+	
+	/**
      * Add user, role, metadata
      *
      * @param FecdasBundle\Entity\EntityUser $user
@@ -326,7 +336,7 @@ class EntityClub {
      */
     public function getRolsDistinct($baixes = false)
     {
-    	$roles = BaseController::getRoles( BaseController::esFederacio($this) || $this->codi == BaseController::CODI_CLUBTEST);
+    	$roles = BaseController::getRoles( $this->esFederacio() || $this->codi == BaseController::CODI_CLUBTEST);
 		
 		return $roles;
 	}

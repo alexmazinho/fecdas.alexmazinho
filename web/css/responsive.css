@@ -24,7 +24,10 @@ Examples
 	    width: 970px;
 	}
 }
-@media (min-width: 1200px) {
+
+/* BOOTSTRAP -LG */
+
+@media (min-width: 1210px) {
 	.logo img { width : 110px; }
 	
 	/* #header .title { padding-left: 130px; } */
@@ -44,45 +47,63 @@ Examples
 	}
 }
 
-@media only screen and (max-width: 1400px) {
+@media only screen and (max-width: 1680px) {
 	.nav > li > a { padding: 15px 10px;  }
-	.navbar-default .navbar-text { display:none; }
+	.navbar-text { display: none; }
 }
 
-@media only screen and (max-width: 1200px) {
-	.nav > li > a { padding: 10px 5px; }
 
-	.logo img { width: 90px; }
+
+@media only screen and (max-width: 1210px) {
+	.nav > li > a { padding: 10px 5px; }
+	
+	.navbar { min-height: 0; }
+	
+	.logo img { width: 80px; }
 	
 	/*.title { padding-left: 110px; }*/
 	
 	#header { margin-bottom: 10px; }
+
+	.title { font-size: 14px; line-height: 1.1; }
+	.title i { font-size: 13px; }
 	
 	/*#main-col .content-center { margin: 0; }*/
-	
+	#header .notifications .notifications-title { font-size: 0.85em; }
+	#header .notifications .dev-environment { font-size: 0.6em; }
 }
 
-@media only screen and (min-width: 960px) {
+/* BOOTSTRAP -MD */
+
+@media only screen and (min-width: 992px) {
 }
 
-@media only screen and (max-width: 959px) {
+
+
+@media only screen and (max-width: 991px) {
 	.nav > li > a { padding: 10px 5px; font-size: 0.9em; }
-	.navbar-text { display: none; }
-	.title { font-size: 17px; line-height: 1.1; }
-	.title i { font-size: 15px; }
 	
+	.title { font-size: 16px; line-height: 1.1; }
+	.title i { font-size: 14px; }
+	
+	#header .notifications .notifications-title { font-size: 0.75em; }
+	#header .notifications .dev-environment { font-size: 0.5em; }
 	
 	
 }
 
-@media only screen and (min-width: 768px) and (max-width: 959px) {
+/* BOOTSTRAP -SM */
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
 	#header .notifications { display: none;  }
 }
+
+/* BOOTSTRAP -XS */
 
 @media only screen and (max-width: 767px) {
 	input { min-width: inherit; }
 	
-	.navbar-text { display: block; padding: 0 10px; margin: 0; border-bottom: 1px solid  #cccccc; border-top: 1px solid  #cccccc; }
+	.navbar-default .navbar-text { display: block; padding: 10px; margin: 0; border-bottom: 1px solid  #cccccc; border-top: 1px solid  #cccccc; background: #337ab7; color: #ffffff; }
 	
 	.navbar-right li {
     	text-align: left;
@@ -97,7 +118,7 @@ Examples
 	
 	#main-col .page-center { /*margin: 15px auto 0; width: auto;*/ }
 	
-	#header .notifications { font-size: 20px; text-align:center; }
+	#header .notifications { font-size: 30px; }
 	
 /*	#menu-user {
 	    float: none;
@@ -153,7 +174,8 @@ Examples
 	}*/
 	
 	.logo img {
-	    width: 60px;
+	    width: 85px;
+	    position: absolute;
 	}
 	
 	.title { font-size: 15px; line-height: 1; }

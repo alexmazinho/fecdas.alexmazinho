@@ -5,7 +5,7 @@
 	<div class="row">
 		<div class="col-md-10">
 			<div class="row">
-				{{ form_widget(formpersona.id, { 'id': 'parte_persona_id' }) }}
+				{{ form_widget(formpersona.id) }}
 				<div id="formpersona-nom" class="col-md-3  col-xs-3">
 				  	<div class="form-group">
 						{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -125,13 +125,13 @@
 		<div id="formpersona-addrpob" class="col-md-4  col-xs-4">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrpob, 'Població', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'form-control', 'placeholder': 'Població'}, 'id': 'parte_persona_addrpob'  }) }}
+				{{ form_widget(formpersona.addrpob, { 'attr': {'class': 'form-control', 'placeholder': 'Població'} }) }}
 			</div>
 		</div>
 		<div id="formpersona-addrcp" class="col-md-2  col-xs-2">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrcp, 'CP', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'form-control', 'placeholder': 'CP'}, 'id': 'parte_persona_addrcp'  }) }}
+				{{ form_widget(formpersona.addrcp, { 'attr': {'class': 'form-control', 'placeholder': 'CP'}  }) }}
 			</div>
 		</div>
 	</div> 
@@ -139,19 +139,19 @@
 		<div id="formpersona-addrprovincia" class="col-md-3  col-xs-3">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrprovincia, 'Província', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'form-control  form-control-center', 'placeholder': 'Província'}, 'separator': '=====', 'id': 'parte_persona_addrprovincia'  }) }}
+				{{ form_widget(formpersona.addrprovincia, { 'attr': {'class': 'form-control  form-control-center', 'placeholder': 'Província'}, 'separator': '=====' }) }}
 			</div>
 		</div>
 		<div id="formpersona-addrcomarca" class="col-md-3  col-xs-3">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrcomarca, 'Comarca', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'form-control  form-control-center', 'placeholder': 'Comarca'}, 'id': 'parte_persona_addrcomarca'  }) }}
+				{{ form_widget(formpersona.addrcomarca, { 'attr': {'class': 'form-control  form-control-center', 'placeholder': 'Comarca'} }) }}
 			</div>
 		</div>
 		<div id="formpersona-addrnacionalitat" class="col-md-offset-3 col-md-3 col-xs-offset-3 col-xs-3">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrnacionalitat, 'Nacionalitat', { 'label_attr': {'class': 'sr-only required'} }) }}
-				{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'form-control', 'placeholder': 'Nacionalitat'}, 'id': 'parte_persona_addrnacionalitat'  }) }}
+				{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'form-control', 'placeholder': 'Nacionalitat'} }) }}
 			</div>
 		</div>
 	</div> 

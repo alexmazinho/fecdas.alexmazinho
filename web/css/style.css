@@ -530,12 +530,12 @@ label { color: #555555; font-weight: normal; }
     white-space: nowrap;
 }
 
-#header .notifications { /*color: #fff;*/ font-weight: 400; font-size: 30px; /*line-height: 0.9;*/ }
+#header .notifications { /*color: #fff;*/ font-weight: 400; font-size: 30px; line-height: 0.9; }
 
 #header .notifications .notifications-title,
-#header .notifications .dev-environment { vertical-align: middle; }
+#header .notifications .dev-environment { vertical-align: middle; display: block; }
 
-#header .notifications .dev-environment { color: red; font-style: italic; font-size: 0.8em; text-shadow: -1px 2px 2px #fff; text-transform: uppercase; padding-bottom: 6px; }
+#header .notifications .dev-environment { color: red; font-style: italic; font-size: 0.7em; text-shadow: -1px 2px 2px #fff; text-transform: uppercase; padding-bottom: 6px; }
 
 #slider {
   position: relative;
@@ -1376,21 +1376,17 @@ ul.detalls li .alert { margin: 10px 0; }
     padding: 15px;
 }
 
-.nav > li { display: table-cell; }
-
 .nav > li > a { padding: 15px; }
 
 .navbar-default .nav .dropdown-menu > li.separator  {
 	border-bottom: 1px solid #e5e5e5; 
 }
 
-.navbar-right ~ .navbar-right {
-    margin-right: 15px;
-}
-
 .dropdown-menu .divider { height: 1px; background-color: #2281CF; background-image: linear-gradient(to bottom, #82CFFA 0px, #2281CF 100%); }
 
-.navbar-default .nav > li > a, .navbar-default .nav .dropdown-menu > li > a  {  color: #1240a0; } 
+.navbar-default .nav > li > a, .navbar-default .nav .dropdown-menu > li > a, 
+.navbar-default .navbar-nav .open .dropdown-menu > li > a  {  color: #1240a0; } 
+
 
 .navbar-default .nav > li > a:hover,
 .navbar-default .nav > .active > a,  .navbar-default .nav .dropdown-menu > li.active > a,
@@ -2355,87 +2351,6 @@ input#formuserclub-randompassword { width: 150px; }
 
 #formpersona-sexe {  padding-top: 8px; }
 
-/*
-#persona_sexe label {
-	padding-left: 3px;
-    padding-right: 10px;
-}
-
-
-input#persona_telefon1,
-input#persona_telefon2 {
-	width: 120px;
-}
-
-input#persona_mail {
-	width: 435px;
-}
-
-input#persona_nom {
-	width: 240px;
-}
-
-input#persona_cognoms {
-	width: 260px;
-}
-
-input#persona_dni {
-	width: 150px;
-}
-
-input#persona_addradreca,
-input#parte_persona_addrpob {
-	width: 290px;
-}
-
-input#parte_persona_addrcp {
-	width: 70px;
-}
-
-select#parte_persona_addrprovincia {
-	width: 130px;
-}
-
-select#parte_persona_addrcomarca {
-	width: 177px;
-}
-
-select#parte_persona_addrnacionalitat {
-	width: 365px;
-}
-
-#formpersona-dni {
-	position: relative;
-}
-
-#formpersona-estranger {
-	position: absolute;
-	top: 40px;
-}
-#formpersona-estranger label {
-	display: block !important;
-}
-
-input#parte_persona_addrpob {
-	width: 290px;
-}
-
-input#parte_persona_addrcp {
-	width: 70px;
-}
-
-select#parte_persona_addrprovincia {
-	width: 130px;
-}
-
-select#parte_persona_addrcomarca {
-	width: 177px;
-}
-
-select#parte_persona_addrnacionalitat {
-	width: 365px;
-}
-*/
 #adreca-header { display: block; width:100%; position: relative; margin-bottom: 7px; }
 
 #sms-mailpersona { float:right; color: #555555; font-style: italic; font-size: 12px; /*position:absolute; right: 20px; top: 0;*/}

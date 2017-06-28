@@ -26,6 +26,12 @@ class EntityCurs {
 	protected $club;	// FK taula m_clubs
 	
 	/**
+	 * @ORM\ManyToOne(targetEntity="EntityUser")
+	 * @ORM\JoinColumn(name="editor", referencedColumnName="id", nullable=true)
+	 */
+	protected $editor;	// FK taula m_users
+	
+	/**
 	 * @ORM\Column(type="string", length=100, nullable=true)
 	 */
 	protected $clubhistoric;  // Clubs que ja no existeixen
@@ -64,7 +70,7 @@ class EntityCurs {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $editable;  // Pel tècnic
+	protected $editable;  // Pel director
 	
 	/**
 	 * @ORM\Column(type="boolean")
@@ -94,10 +100,11 @@ class EntityCurs {
 	/**
 	 * Constructor
 	 */
-	public function __construct($titol = null, $datadesde = null, $datafins = null, $club = null, $clubhistoric = '')
+	public function __construct($editor, $titol = null, $datadesde = null, $datafins = null, $club = null, $clubhistoric = '')
 	{
 	
 		$this->id = 0;
+		$this->editor = $editor;
 		$this->num = '';  // pendent
 		$this->titol = $titol;
 		$this->club = $club;
@@ -414,6 +421,26 @@ class EntityCurs {
 	public function getClub()
 	{
 		return $this->club;
+	}
+
+	/**
+	 * Set editor
+	 *
+	 * @param \FecdasBundle\Entity\EntityUser $editor
+	 */
+	public function setEditor(\FecdasBundle\Entity\EntityUser $editor = null)
+	{
+		$this->editor = $editor;
+	}
+	
+	/**
+	 * Get editor
+	 *
+	 * @return \FecdasBundle\Entity\EntityUser
+	 */
+	public function getEditor()
+	{
+		return $this->editor;
 	}
 
 	/**

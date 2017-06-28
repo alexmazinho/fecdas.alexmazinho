@@ -11,11 +11,11 @@ use FecdasBundle\Entity\EntityTitulacio;
 
 class FormTitulacio extends AbstractType {
 
-	private $instructor;
+	private $editable;
 	
-	public function __construct($instructor = false)
+	public function __construct($editable = false)
 	{
-		$this->instructor = $instructor;
+		$this->editable = $editable;
 	}
 
 	public function buildForm(FormBuilderInterface $builder, array $options)
@@ -26,7 +26,6 @@ class FormTitulacio extends AbstractType {
 			$titulacio = $event->getData();
 			$metapersona = null;
 			$persona = null;
-			$editable = $this->instructor;	
 		
 			/* Check we're looking at the right data/form */
 			if ($titulacio instanceof EntityTitulacio) {
@@ -35,7 +34,7 @@ class FormTitulacio extends AbstractType {
 				if ($curs != null && $curs->getClub() != null && $metapersona != null)  $persona = $metapersona->getPersona($curs->getClub());
 				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
-					$editable = false;	
+					$this->editable = false;	
 				}
 			}
 		
@@ -57,12 +56,12 @@ class FormTitulacio extends AbstractType {
 			
 			$form->add('num', 'text', array(
 				'required'  => false, 
-				'attr' =>	array('readonly' => !$editable)
+				'attr' =>	array('readonly' => !$this->editable)
 			));	
 			
 			$form->add('fotoupld', 'file', array(
 				'mapped' => false, 
-				'disabled'	=> !$editable,
+				'disabled'	=> !$this->editable,
 				'attr' => array('accept' => 'image/*')
 			));
 			
@@ -70,7 +69,7 @@ class FormTitulacio extends AbstractType {
 				
 			$form->add('certificatupld', 'file', array(
 				'mapped' => false,
-				'disabled'	=> !$editable, 
+				'disabled'	=> !$this->editable, 
 				'attr' => array('accept' => 'pdf/*')
 			));
 			

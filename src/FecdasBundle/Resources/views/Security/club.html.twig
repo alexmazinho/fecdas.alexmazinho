@@ -546,6 +546,8 @@
 		</div> 
 
     {{ form_end(form) }}
+
+	<div id="edicio-persona" class="finestra-overlay"></div>
     
 {% endblock %}
 
@@ -582,6 +584,22 @@
 		addUserRoleClick( urlJSONpersona, keysCercaPersona,  roltecnic);
 		
 		actionsUserRolePwdClick(); 
+
+
+		//select all the a tag with name equal to modal
+		$('.formpersona-openmodal')
+	    .off('click')
+	   	.click(function(e) {
+			//Cancel the link behavior
+	        e.preventDefault();
+	         
+	        var url = $(this).attr("href");
+	        showPersonModal(url, 'usersclub', function () {
+		        // Reload 
+	        	location.reload();
+	        });
+	    });
+
 		
 		/*************************************************************************************/  
 		/*********************************** Gestió club *************************************/

@@ -102,11 +102,9 @@ class EntityMetaPersona {
     public function getPersonaClub($club = null)
     {
     	if ($club == null) return null;
-		
     	foreach ($this->persones as $persona) {
     		if (!$persona->esBaixa() && $persona->checkClub($club)) return $persona;
     	}
-
     	return null;
     }
 	

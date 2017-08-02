@@ -791,18 +791,30 @@
 					
 					$("#dialeg").dialog({
 						buttons : {
-			            	"Desar i continuar després" : function() {
-			            		$(this).dialog("destroy");
-			            		if (!$('#enquesta-preview').length) submitEnquesta('desar');
-			            		else alert("Mode previsualització, les dades no es desaran");
-			        		},
-			            	"Finalitzar" : function() {
-			            		$(this).dialog("destroy");
-			            		if (!$('#enquesta-preview').length) submitEnquesta('final');
-			            		else alert("Mode previsualització, les dades no es desaran");
-			        		},
-			            	"Cancel·lar" : function() {
-			              		$(this).dialog("destroy");
+			            	"Desar i continuar després" : {
+			            		click: function() {
+				            		$(this).dialog("destroy");
+				            		if (!$('#enquesta-preview').length) submitEnquesta('desar');
+				            		else alert("Mode previsualització, les dades no es desaran");
+				        		},
+				        		text: "Desar i continuar després",
+				                class: "btn btn-default"
+			            	},
+			            	"Finalitzar" : {
+			            		click: function() {
+				            		$(this).dialog("destroy");
+				            		if (!$('#enquesta-preview').length) submitEnquesta('final');
+				            		else alert("Mode previsualització, les dades no es desaran");
+				        		},
+			            		text: "Finalitzar",
+				                class: "btn btn-default"
+			            	},
+			            	"Cancel·lar" : {
+			            		click: function() {
+			            			$(this).dialog("destroy");
+			            		},
+			            		text: "Cancel·lar",
+				                class: "btn btn-default"
 			            	}
 			          	},
 			          	show: 1000,
@@ -1181,14 +1193,21 @@
 	
 	        $("#dialeg").dialog({
 	          	buttons : {
-	            	"Confirmar" : function() {
-		              //window.location.href = targetUrl;
-	    	        	$(this).dialog("close");
-	    	        	//$("#formpersona").submit();	 // Submit form
-	    	        	submitPerson("remove", origen);
-	        		},
-	            	"Cancel·lar" : function() {
-	              		$(this).dialog("close");
+	            	"Confirmar" : {
+	            		click: function() {
+		    	        	$(this).dialog("close");
+		    	        	//$("#formpersona").submit();	 // Submit form
+		    	        	submitPerson("remove", origen);
+	            		},
+	            		text: "Confirmar",
+		                class: "btn btn-default"
+	            	},
+	            	"Cancel·lar" : {
+	            		click: function() {
+		              		$(this).dialog("close");
+		            	},
+	            		text: "Cancel·lar",
+		                class: "btn btn-default"
 	            	}
 	          	},
 	        	title: "Confirmació per esborrar",
@@ -1713,15 +1732,23 @@
 			var url = $(this).attr("href");
 			$("#dialeg").dialog({
 	          	buttons : {
-	            	"Continuar" : function() {
-	    	        	$(this).dialog("close");
-	    	        	
-	    	        	window.location = url;
-	    	        },
-		            "Sortir" : function() {
-		    			//Cancel submit behavior
-		            	$(this).dialog("close");
-		            }
+	            	"Continuar" : { 
+	            		click: function() {
+		    	        	$(this).dialog("close");
+		    	        	
+		    	        	window.location = url;
+		            	},
+		            	text: "Continuar",
+		                class: "btn btn-default"
+		            },
+		            "Sortir" : {
+		            	click: function() {
+			    			//Cancel submit behavior
+			            	$(this).dialog("close");
+			            },
+		            	text: "Sortir",
+		                class: "btn btn-default"
+		            }	
 		        },
 		        title: "Abans de continuar...",
 		        height: 'auto',
@@ -1786,13 +1813,21 @@
 
 				$("#dialeg").dialog({
 		          	buttons : {
-		            	"Confirmar" : function() {
-		    	        	$(this).dialog("close");
-		    	        	document.location = source.attr('href');
-		    	        },
-			            "Cancel·lar" : function() {
-			    			//Cancel submit behavior
-			            	$(this).dialog("close");
+		            	"Confirmar" : {
+		            		click: function() {
+			    	        	$(this).dialog("close");
+			    	        	document.location = source.attr('href');
+			    	        },
+			    	        text: "Confirmar",
+			                class: "btn btn-default"
+		            	},
+			            "Cancel·lar" : {
+			            	click: function() {
+				    			//Cancel submit behavior
+				            	$(this).dialog("close");
+				            },
+				            text: "Cancel·lar",
+			                class: "btn btn-default"
 			            }
 			        },
 			        title: "Confirmació per esborrar",

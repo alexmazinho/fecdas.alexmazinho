@@ -76,7 +76,7 @@
 	   			{{ form_widget(formpayment.signatura, { 'name': 'Ds_Signature'} ) }}
 	   			{{ form_widget(formpayment.version, { 'name': 'Ds_SignatureVersion'} ) }}
 	   			<div id="formpayment-buttons" class="payment-submit">
-					<input type="submit" id="formpayment-button-payment" class="forminput-inside" value="Confirmar" name="formpayment-button-payment"/>
+					<input type="submit" id="formpayment-button-payment" class="btn btn-default" value="Confirmar" name="formpayment-button-payment"/>
 				</div> 
 	   		{{ form_end(formpayment) }}
 	   	</div>
@@ -126,7 +126,7 @@
 			</ol>
 		</div>
 		{%  if (comanda.totalIVADetalls == 0) %}
-		<div class="sms-footer">Exempt d'I.V.A. segons la llei 49/2002</div>
+		<div class="sms-footer">Factura exempta d'I.V.A. d'acord a l'article UNO 20.13 de la llei de l'IVA</div>
 		{% endif %}
   	 {% endif %}
 

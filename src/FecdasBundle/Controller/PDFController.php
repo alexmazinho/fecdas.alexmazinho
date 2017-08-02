@@ -4,11 +4,7 @@ namespace FecdasBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
 use FecdasBundle\Classes\TcpdfBridge;
-use FecdasBundle\Entity\EntityLlicencia;
 
 include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
 
@@ -1074,8 +1070,8 @@ class PDFController extends BaseController {
 		//$pdf->SetAutoPageBreak 	(false, 0);
 		$pdf->SetTextColor(0, 0, 0); 
 				
-		$width = 86; //Original
-		$height = 54; //Original
+		//$width = 86; //Original
+		//$height = 54; //Original
 
 		// 	Image ($file, $x='', $y='', 
 		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
@@ -1107,12 +1103,12 @@ class PDFController extends BaseController {
 	
 	private function printPlasticCarnet($pdf, $dades) {
 		// Posicions
-		$wLogo = 8;
+		/*$wLogo = 8;
 		$hLogo = 0;
 		$xLogo = 75;
 		$yLogo = 1;		
 		$xLogoC = 75;
-		$yLogoC = 10;		
+		$yLogoC = 10;*/		
 		$xNom = 13;
 		$yNom =	4.4;		
 		$xCognoms = 15;
@@ -1208,14 +1204,14 @@ class PDFController extends BaseController {
 		$y_ini = $pdf->getY();
 		$x_ini = $pdf->getX();
 				
-		$y = $y_ini;
-		$x = $x_ini;
+		//$y = $y_ini;
+		//$x = $x_ini;
 
 		$pageWidth = $pdf->getPageWidth()-PDF_MARGIN_LEFT-PDF_MARGIN_RIGHT;
 
 		$rowH = 12;
 		$cellH = 8;
-		$tableRowH = 7.5;
+		//$tableRowH = 7.5;
 		$alumneRowH = 8;
 		$wSmall = 15;
 		$wMed = 30;
@@ -1248,11 +1244,11 @@ class PDFController extends BaseController {
 		$yTaulaInstructors = $ySubtitolInstructors + $rowH;
 		$nFilesInstructors = max(count($docents) + 1, 5);
 		
-		$ySubtitolCollaboradors = $yTaulaInstructors + ($nFilesInstructors * $tableRowH) + $rowH + $rowH + 10;  /* $rowH ~ capçalera taula docents */
-		$yTaulaCollaboradors = $ySubtitolCollaboradors + $rowH;
+		//$ySubtitolCollaboradors = $yTaulaInstructors + ($nFilesInstructors * $tableRowH) + $rowH + $rowH + 10;  /* $rowH ~ capçalera taula docents */
+		//$yTaulaCollaboradors = $ySubtitolCollaboradors + $rowH;
 		$nFilesCollaboradors = max(count($collaboradors) + 1, 3);
 		
-		$yTitolAlumnes = 0;  // Pàgina següent
+		//$yTitolAlumnes = 0;  // Pàgina següent
 
 		$styleSeparador = array('width' => 0.2, 'cap' => 'butt', 'join' => 'miter', 'dash' => '', 'phase' => 10, 'color' => array(0, 0, 0)); // Gris
 		

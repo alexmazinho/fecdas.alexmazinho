@@ -27,6 +27,7 @@ use FecdasBundle\Entity\EntityStock;
 
 include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
 
+
 define('CR', "\r");          // Carriage Return: Mac
 define('LF', "\n");          // Line Feed: Unix
 define('CRLF', "\r\n");      // Carriage Return and Line Feed: Windows
@@ -886,7 +887,7 @@ class BaseController extends Controller {
 	
 	protected function validaPersonaRepetida(EntityParte $parte, EntityLlicencia $llicencia) {
 		// Parte ja té llicència aquesta persona
-		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+		foreach ($parte->getLlicencies() as $llicencia_iter) {
 			//if ($llicencia_iter->getId() != $llicencia->getId() &&
 			if ($llicencia_iter !== $llicencia &&
 				$llicencia_iter->getDatabaixa() == null) {
@@ -902,7 +903,7 @@ class BaseController extends Controller {
 	
 	protected function validaDNIRepetit(EntityParte $parte, EntityLlicencia $llicencia) {
 		// Parte ja té aquest dni. Comprovar abans d'afegir la llicència
-		foreach ($parte->getLlicencies() as $c => $llicencia_iter) {
+		foreach ($parte->getLlicencies() as $llicencia_iter) {
 			if ($llicencia_iter->getDatabaixa() == null) {
 				if ($llicencia_iter->getPersona()->getDni() == $llicencia->getPersona()->getDni()) return false;
 			}
@@ -935,7 +936,7 @@ class BaseController extends Controller {
 		$inicivigencia_nova = $llicencia->getParte()->getDataalta();
 		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat($this->getLogMailUserData("validaPersonaTeLlicenciaVigent outer "));
 	
-		foreach ($lpersonaarevisar as $c => $llicencia_iter) {
+		foreach ($lpersonaarevisar as $llicencia_iter) {
 			if ($llicencia_iter->getId() != $llicencia->getId() and
 				$llicencia_iter->getDatabaixa() == null ) {
 				// No comprovo la pròpia llicència
@@ -1154,7 +1155,7 @@ class BaseController extends Controller {
 		$em = $this->getDoctrine()->getManager();
 	
 		$inici = $year."-01-01 00:00:00";
-		$final = $year."-12-31 59:59:59";
+		$final = $year."-12-31 23:59:59";
 	
 		$strQuery = '';
 		switch ($tipus) {
@@ -1173,10 +1174,9 @@ class BaseController extends Controller {
 			default:
 				return -1;
 		}
-	
+
 		$query = $em->createQuery($strQuery);
 		$result = $query->getSingleScalarResult();
-	
 		if ($result == null) return 0; // Primer de l'any
 			
 		return $result;
@@ -1282,12 +1282,12 @@ class BaseController extends Controller {
 		
 		$y_logos = $y_margin;
 		$x_logos = $l_margin;
-		$h_logos = 23;
-		$h_fedelogo = 24;
+		$h_logos = 16;
+		//$h_fedelogo = 24;
 		$w_fedelogo = 20;
 		$h_genelogo = 12;
 		$w_genelogo = 35;
-		$h_esportlogo = 12;
+		//$h_esportlogo = 12;
 		$w_esportlogo = 30;
 		
 		$y_fedeinfo = $y_margin;
@@ -1295,21 +1295,21 @@ class BaseController extends Controller {
 		$h_fedeinfo = 42;
 		$y_clubinfo = $y_margin + $h_logos;
 		$x_clubinfo = $l_margin;
-		$h_clubinfo = 41;
+		//$h_clubinfo = 41;
 		$y_factuinfo = $y_margin + $h_fedeinfo;
 		$offset_factuinfo = 30;
 		$x_factuinfo = $l_margin + $w_half+$offset_factuinfo;
-		$h_factuinfo = 22;
+		//$h_factuinfo = 22;
 		$y_taula = $y_margin + 64;
 		$x_taula = $l_margin;
-		$h_taula = 145;
+		//$h_taula = 145;
 		$y_taula2 = $y_taula + 78;
-		$y_rebut = $y_factuinfo + $h_factuinfo + $h_taula;
-		$x_rebut = $l_margin;
-		$h_rebut = 55;
+		//$y_rebut = $y_factuinfo + $h_factuinfo + $h_taula;
+		//$x_rebut = $l_margin;
+		//$h_rebut = 55;
 
-		$y = $y_clubinfo; //$pdf->getY();
-		$x = $x_clubinfo; //$pdf->getX();
+		//$y = $y_clubinfo; //$pdf->getY();
+		//$x = $x_clubinfo; //$pdf->getX();
 
 		
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
@@ -1355,7 +1355,7 @@ class BaseController extends Controller {
 			$tbl .= 'Adreça electrònica: info@fecdas.cat<br/>';
 			$tbl .= 'www.fecdas.cat<br/>';
 			$tbl .= 'NIF: Q5855006B</span></p>';
-			$pdf->writeHTMLCell($w_half+5, $h_fedeinfo, $x_fedeinfo, $y_fedeinfo, $tbl, '', 1, false, true, 'R', false);
+			$pdf->writeHTMLCell($w_half+5-5, $h_fedeinfo, $x_fedeinfo, $y_fedeinfo, $tbl, '', 1, false, true, 'R', false);
 		}	
 		
 		/* CLUB INFO */	
@@ -1364,7 +1364,7 @@ class BaseController extends Controller {
 		if ($factura->esAnulacio() == true) {
 			$text = '<br/><b>FACTURA ANUL·LACIÓ</b>';
 			
-			$pdf->writeHTMLCell($w_half, 0, $x_clubinfo, $y_clubinfo, $text, '', 1, false, true, 'L', false);
+			$pdf->writeHTMLCell($w_half * 2, 0, $x_clubinfo, $y_clubinfo+40, $text, '', 1, false, true, 'C', false);
 		}
 		
 		/*$pdf->SetFontSize(11);
@@ -1384,20 +1384,19 @@ class BaseController extends Controller {
 		$pdf->MultiCell($w_half,5,$club->getAddradreca(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 15, true, 3, false, true, 5, 'M', true);
 		$pdf->MultiCell($w_half,5,$club->getAddrcp() . " - " . $club->getAddrpob(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 20, true, 3, false, true, 5, 'M', true);
 		$pdf->MultiCell($w_half,5,$club->getAddrprovincia(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 25, true, 3, false, true, 5, 'M', true);
-		if ($club->getTelefon() != null && $club->getTelefon() > 0) $pdf->MultiCell($w_half,5,'Telf: ' . $club->getTelefon(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 30, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$club->getCif(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 30, true, 3, false, true, 5, 'M', true);
+		if ($club->getTelefon() != null && $club->getTelefon() > 0) $pdf->MultiCell($w_half,5,'Telf: ' . $club->getTelefon(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 35, true, 3, false, true, 5, 'M', true);
 		
 		/* FACTU INFO */	
-		$pdf->SetFontSize(8);
+		$pdf->SetFontSize(10);
 		if ($showTemplate == true) {
-			$tbl = '<p align="left" style="padding:0; color: #003366;">Factura número:</p><br/>';
-			$tbl .= '<p align="left" style="padding:0; color: #003366;">Data:<br/>';
-			$tbl .= 'NIF:</p>';
+			$tbl = '<p align="left" style="padding:0; color: #003366; line-height: 1.5;">Factura número:<br/>';
+			$tbl .= 'Data:</p>';
 			$pdf->writeHTMLCell($w_half - $offset_factuinfo, 0, $x_factuinfo, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
 		}
 		
-		$tbl  = '<p align="right" style="padding:0;"><b>' . $factura->getNumfactura(). '</p><br/>';
-		$tbl .= '<p align="right" style="padding:0;">' . $factura->getDatafactura()->format('d/m/Y') . '<br/>';
-		$tbl .= $club->getCif() . '</p>';
+		$tbl  = '<p align="right" style="padding:0; line-height: 1.5;"><b>'.$factura->getNumfactura().'</b><br/>';
+		$tbl .= ''.$factura->getDatafactura()->format('d/m/Y').'</p>';
 		$pdf->writeHTMLCell($w_half - $offset_factuinfo-8, 0, $x_factuinfo+8, $y_factuinfo, $tbl, '', 1, false, true, 'R', false);
 		
 		/* TAULA DETALL */
@@ -1476,7 +1475,7 @@ class BaseController extends Controller {
 				foreach ($detallsArray as $lineafactura) {
 					if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
 						
-					$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
+					//$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 					
 					/*$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
 						<td width="96" align="center">'.$lineafactura['codi'].'</td>
@@ -1616,7 +1615,8 @@ class BaseController extends Controller {
 			// set color for text
 			$pdf->SetTextColor(0, 51, 102); // Blau
 			$pdf->SetFont('dejavusans', '', 7.5, '', true);
-			$text = '<p>Factura exempta d\'I.V.A. segons la llei 49/2002</p>';
+			//$text = '<p>Factura exempta d\'I.V.A. segons la llei 49/2002</p>';
+			$text = '<p>Factura exempta d\'I.V.A. d\'acord a l\'article UNO 20.13 de la llei de l\'IVA</p>';
 			$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+26, $text, '', 1, false, true, 'L', false);
 		}
 		
@@ -1641,7 +1641,7 @@ class BaseController extends Controller {
 			
 		return $pdf;
 	}
-	
+	 
 	protected function rebuttopdf($rebut, $pdf = null) {
 		/* Printar rebut */
 		$club = $rebut->getClub();
@@ -1684,11 +1684,11 @@ class BaseController extends Controller {
 		$ry_corp = 45;
 		$rx_corp = 20;
 		
-		$h_fedelogo = 12;
+		//$h_fedelogo = 12;
 		$w_fedelogo = 10;
 		$h_genelogo = 6;
 		$w_genelogo = 16;
-		$h_esportlogo = 6;
+		//$h_esportlogo = 6;
 		$w_esportlogo = 13;
 		$w_fedeinfo = 80;
 		$h_fedeinfo = 20;
@@ -2092,7 +2092,7 @@ class BaseController extends Controller {
 						'', false, false, 1, false, false, false);
 		
 		$parte = $llicencia->getParte();
-		$polissa = $parte->getTipus()->getPolissa();
+		//$polissa = $parte->getTipus()->getPolissa();
 		
 		// Dades
 		$persona = $llicencia->getPersona();
@@ -2252,7 +2252,7 @@ class BaseController extends Controller {
 						'', false, false, 1, false, false, false);
 		
 		$parte = $llicencia->getParte();
-		$polissa = $parte->getTipus()->getPolissa();
+		//$polissa = $parte->getTipus()->getPolissa();
 		
 		// Dades
 		$persona = $llicencia->getPersona();
@@ -2354,8 +2354,8 @@ class BaseController extends Controller {
 		//$pdf->SetAutoPageBreak 	(false, 0);
 		$pdf->SetTextColor(0, 0, 0); 
 			
-		$width = 86; //Original
-		$height = 54; //Original
+		//$width = 86; //Original
+		//$height = 54; //Original
 
 		foreach ($llicencies as $llicencia) {
 			$parte = $llicencia->getParte();
@@ -3108,7 +3108,7 @@ class BaseController extends Controller {
 		$formdetalls = null;				
 		if ($form != null) $formdetalls = $form->get('detalls');
 		
-		$productesNotificacio = array();
+		//$productesNotificacio = array();
 		$detallsPerAnulacio = array();
 		foreach ($comanda->getDetalls() as $detall) {
 			// Nou detall
@@ -3232,7 +3232,8 @@ class BaseController extends Controller {
 		// Actualitzar import i detalls factura
 		if ($datafacturacio == null) $datafacturacio = $this->getCurrentDate();
 		
-		$factura = $this->crearFactura($datafacturacio, $duplicat, $duplicat->getComentariDefault());
+		//$factura = $this->crearFactura($datafacturacio, $duplicat, $duplicat->getComentariDefault());
+		$this->crearFactura($datafacturacio, $duplicat, $duplicat->getComentariDefault());
 		
 		return $detall;
 	}
@@ -3267,7 +3268,7 @@ class BaseController extends Controller {
 	protected function getPesComandaCart($cart)
     {
 		$pesComanda = 0;
-		foreach ($cart['productes'] as $id => $info) {
+		foreach ($cart['productes'] as $info) {
 			if (isset($info['transport']) && $info['transport'] == true)	{
 				$pesComanda += $info['pes'];
 			}
@@ -3406,7 +3407,7 @@ class BaseController extends Controller {
     	$variacions = $stmt->fetchAll();
 		
 		foreach ($variacions as $variacio) {
-			$currentClub = $variacio['codi'];
+			//$currentClub = $variacio['codi'];
 			$saldosComptables[$variacio['codi']] = $variacio['romanent'] + $variacio['variacio'];
 		}		
 		
@@ -3574,8 +3575,8 @@ class BaseController extends Controller {
 
     	$csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//TRANSLIT',implode('";"',$header)).'"'.CRLF;
     	
-    	$infoseccionsCSV = array();
-    	foreach ($data as $k => $row) {
+    	//$infoseccionsCSV = array();
+    	foreach ($data as $row) {
     		$row = '"'.implode('";"', $row).'"';
     		
     		$csvTxt .= iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $row.CRLF);
@@ -3602,7 +3603,8 @@ class BaseController extends Controller {
 		$query = $em->createQuery("SELECT distinct m.provincia FROM FecdasBundle\Entity\EntityMunicipi m
 				ORDER BY m.provincia");
 		$result = $query->getResult();
-		foreach ($result as $c => $res)
+		$provincies = array();
+		foreach ($result as $res)
 			$provincies[$res['provincia']] = $res['provincia'];
 		return $provincies;
 	}
@@ -3612,7 +3614,8 @@ class BaseController extends Controller {
 		$query = $em->createQuery("SELECT distinct m.comarca FROM FecdasBundle\Entity\EntityMunicipi m
 				ORDER BY m.comarca");
 		$result = $query->getResult();
-		foreach ($result as $c => $res)
+		$comarques = array();
+		foreach ($result as $res)
 			$comarques[$res['comarca']] = $res['comarca'];
 		return $comarques;
 	}
@@ -3622,7 +3625,8 @@ class BaseController extends Controller {
 		$query = $em->createQuery("SELECT distinct m.municipi FROM FecdasBundle\Entity\EntityMunicipi m
 				ORDER BY m.municipi");
 		$result = $query->getResult();
-		foreach ($result as $c => $res)
+		$municipis = array();
+		foreach ($result as $res)
 			$municipis[$res['municipi']] = $res['municipi'];
 		return $municipis;
 	}
@@ -3632,7 +3636,8 @@ class BaseController extends Controller {
 		$query = $em->createQuery("SELECT n FROM FecdasBundle\Entity\EntityNacio n
 				ORDER BY n.codi");
 		$result = $query->getResult();
-		foreach ($result as $c => $res)
+		$nacions = array();
+		foreach ($result as $res)
 			$nacions[$res->getCodi()] = $res->getCodi() . ' - ' . $res->getPais();
 		return $nacions;
 	}
@@ -3645,7 +3650,7 @@ class BaseController extends Controller {
 		$clubs = $query->getResult();
 	
 		$clubsvalues = array();
-		foreach ($clubs as $c => $v) $clubsvalues[$v->getCodi()] = $v->getLlistaText();
+		foreach ($clubs as $v) $clubsvalues[$v->getCodi()] = $v->getLlistaText();
 	
 		return $clubsvalues;
 	}
@@ -3665,7 +3670,7 @@ class BaseController extends Controller {
 										->setParameter('value', '%' . $value . '%');
 			$result = $query->getResult();
 			
-			foreach ($result as $c => $res) {
+			foreach ($result as $res) {
 				$muni = array();
 				//$search[] = $res['municipi'];
 				$muni['value'] = ($tipus == 'cp'?$res['cp']:$res['municipi']);
@@ -3696,7 +3701,7 @@ class BaseController extends Controller {
 						->setParameter('value','%' . $value . '%');
 			$result = $query->getResult();
 				
-			foreach ($result as $c => $res) {
+			foreach ($result as $res) {
 				$clubnom = array();
 				$clubnom['value'] = $res['nom'];
 				$clubnom['label'] = $res['nom'];
@@ -3801,7 +3806,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function logEntryAuth($accio = null, $extrainfo = '') {
-		$request = $this->container->get('request_stack')->getCurrentRequest();
+		//$request = $this->container->get('request_stack')->getCurrentRequest();
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		$this->logEntry($checkRole->getCurrentUserName(), $accio, $checkRole->getCurrentRemoteAddr(), $checkRole->getCurrentHTTPAgent(), $extrainfo);
@@ -3834,7 +3839,7 @@ class BaseController extends Controller {
 	}
 	
 	protected function getLogMailUserData($source = null) {
-		$request = $this->container->get('request_stack')->getCurrentRequest();
+		//$request = $this->container->get('request_stack')->getCurrentRequest();
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		return $source." ".$checkRole->getCurrentUserName()." (".$checkRole->getCurrentHTTPAgent().")";
@@ -3957,8 +3962,8 @@ class BaseController extends Controller {
 			else $thumb->scaleImage(0, $maxheight);
 		}
 	
-		$i = 0;
-		/*while ($thumb->getImageLength() > 35840 and $i < 10 ) {  /// getImageLength no funciona
+		/*$i = 0;
+		while ($thumb->getImageLength() > 35840 and $i < 10 ) {  /// getImageLength no funciona
 		 $width = $image->getImageWidth();
 		$width = $width*0.8; // 80%
 		$thumb->scaleImage($width,0);

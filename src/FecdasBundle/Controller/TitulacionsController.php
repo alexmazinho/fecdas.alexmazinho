@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use FecdasBundle\Form\FormCurs;
 use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Entity\EntityDocencia;
+use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Entity\EntityTitulacio;
 
 use FecdasBundle\Form\FormRebut;

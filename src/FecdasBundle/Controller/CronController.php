@@ -6,13 +6,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use FecdasBundle\Classes\FlushHelper;
-use FecdasBundle\Entity\EntityParte;
-use FecdasBundle\Entity\EntityLlicencia;
-use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Form\FormLlicenciaRenovar;
-use FecdasBundle\Entity\EntitySaldos;
 
 class CronController extends BaseController {
 
@@ -520,14 +515,14 @@ class CronController extends BaseController {
 		
 		$club = $comanda->getClub();
 		
+		$subject = "Federació Catalana d'Activitats Subaquàtiques. Notificació comanda ".$comanda->getNumComanda();
+		
 		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
 			$tomails = self::getCarnetsMails();
 			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';
 		}
-		
-		$subject = "Federació Catalana d'Activitats Subaquàtiques. Notificació comanda ".$comanda->getNumComanda();
-		
+				
 		$body = "<p>Benvolgut club ".$club->getNom()."</p>";
 		$body .= "<p>Us fem arribar els següents documents relacionats amb la comanda <b>".$comanda->getNumComanda()."</b> tramitada en data <b>".$comanda->getDataentrada()->format('d/m/Y')."</b></p>";
 		

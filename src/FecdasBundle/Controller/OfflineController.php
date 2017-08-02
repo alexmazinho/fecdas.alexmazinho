@@ -5,22 +5,252 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
-use FecdasBundle\Entity\EntityRebut;
-use FecdasBundle\Entity\EntityDuplicat;
-use FecdasBundle\Entity\EntityComanda;
+use FecdasBundle\Entity\EntityMetaPersona;
 use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Entity\EntityTitulacio;
-use FecdasBundle\Controller\BaseController;
-
-
+use FecdasBundle\Entity\EntityPersona;
 
 class OfflineController extends BaseController {
 	
+    public function historictitolserrorsAction(Request $request) {
+        // http://www.fecdas.dev/historictitolserrors?max=10&pag=1
+        // http://www.fecdas.dev/historictitolserrors?id=1234
+        // Script de migració. Executar per migrar errors i desactivar
+        
+        if (!$this->isAuthenticated())
+            return $this->redirect($this->generateUrl('FecdasBundle_login'));
+            
+        if (!$this->isCurrentAdmin())
+            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+                
+        $em = $this->getDoctrine()->getManager();
+                
+        $id = $request->query->get('id', 0);
+        $max = $request->query->get('max', 2000);
+        $pag = $request->query->get('pag', 1);
+        $offset = $max * ($pag -1);
+                
+        //$batchSize = 20;
+                
+        $strQuery  = " SELECT * ";
+        $strQuery .= " FROM importtitulacions ";
+        $strQuery .= " WHERE error IS NOT NULL AND error <> 'Corregit' ";
+        if ($id > 0) $strQuery .= " AND id = ".$id;
+        $strQuery .= " ORDER BY numcurso, numtitulo ";
+        if ($id == 0) $strQuery .= " LIMIT ".$max. " OFFSET ".$offset;
+        $stmt = $em->getConnection()->prepare($strQuery);
+        $stmt->execute();
+        $titolserrors = $stmt->fetchAll();
+                
+        $cursosNous = 0;
+        $personesNoves = 0;
+        $titulacions = 0;
+                
+        $cursos = array();
+        $errors = array();
+        $ids = array();
+         
+        $federacio = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+        
+        for ($i = 0; $i < count($titolserrors); $i++) {
+            $currentTitolError = $titolserrors[$i];
+                    
+            $id = $currentTitolError['id'];
+            $ids[] = $id;
+            $dni = $currentTitolError['dni']."";
+            $error = $currentTitolError['error']; 
+                
+            try {
+                $pos = strpos($error, 'Persona no trobada');
+                if ($pos === false) throw new \Exception($id.'#INFO. Altres errors: '.$error);
+                    
+                // Cercar títol (NO pot ser null i només pot trobar un)
+                $titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->findOneBy(array('codi' => $currentTitolError['abreviatura']));
+                
+                if ($titol == null || count($titol) != 1) throw new \Exception($id.'#ERROR. Títol no trobat: #'.$currentTitolError['abreviatura']); //ERROR
+                
+                // Cercar club. Si no es troba no crear dades personals
+                $club = null;
+                if ($currentTitolError['club'] == '') {
+                    // Validar Federació per a cursos Instructors  => Titols tipus 'TE'
+                    if (!$titol->esInstructor()) throw new \Exception($id.'#ERROR. Club no trobat curs no tècnic: '.$currentTitolError['numcurso'].' '.$currentTitolError['club'].' '.$currentTitolError['abreviatura']);
+                    
+                    $club = $federacio;
+                }
+                else {        
+                    $nomClub = str_replace(".", "", $currentTitolError['club']);
+                            
+                    $strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+                    $strQuery .= " WHERE  c.nom LIKE :club ";
+                    $query = $em->createQuery($strQuery);
+                    $query->setParameter('club', '%'.$nomClub.'%' );
+                    $clubs = $query->getResult();
+                            
+                    if ($clubs == null) throw new \Exception($id.'#ERROR. Club no trobat 2: '.$currentTitolError['club']);
+                        
+                    if (count($clubs) > 1)  throw new \Exception($id.'#ERROR. Varis clubs candidats 2: '.$currentTitolError['club']);
+                        
+                    $clubs = array_values($clubs);
+                    $club = $clubs[0];
+                }                    
+                // Meta persona no hauria d'existir
+                $metapersona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dni));
+                            
+                if ($metapersona == null) {
+                    $metapersona = new EntityMetaPersona( $dni );
+                    $em->persist($metapersona);
+                        
+                    $persona = new EntityPersona($metapersona, $club);
+                    $persona->setVAlidat(true);
+                    $nomCognoms = $currentTitolError['federado'];
+                    $nomArray = explode(",", $nomCognoms); // Cognoms + Nom
+                    
+                    if (!isset($nomArray[0])) throw new \Exception($id.'#ERROR. Persona sense cognoms: '.$nomCognoms);
+                    if (!isset($nomArray[1])) throw new \Exception($id.'#ERROR. Persona sense nom: '.$nomCognoms);
+                    if (count($nomArray) != 2) throw new \Exception($id.'#ERROR. Persona nom incorrecte: '.$nomCognoms);
+                    $persona->setCognoms(mb_strtoupper($nomArray[0]));
+                    $persona->setNom($nomArray[1]);
+                    
+                    $persona->setSexe($currentTitolError['sexo']);  // H o M
+                    
+                    if ($currentTitolError['nacimiento'] == '' || 
+                        $currentTitolError['nacimiento'] == null) throw new \Exception($id.'#ERROR. Persona sense data naixement: '.$currentTitolError['nacimiento']);
+                    
+                    $naixement = \DateTime::createFromFormat('Y-m-d', $currentTitolError['nacimiento']); // YYYY-MM-DD
+                    $persona->setDatanaixement($naixement);
+                    
+                    if ($currentTitolError['email'] != '' && 
+                        $currentTitolError['email'] != null) $persona->setMail($currentTitolError['email']);
+                    
+                    if ($currentTitolError['movil'] != '' && 
+                        $currentTitolError['movil'] != null &&
+                        is_numeric($currentTitolError['movil'])) $persona->setTelefon1($currentTitolError['movil']);
+                    
+                    if ($currentTitolError['direccion'] != '' &&
+                        $currentTitolError['direccion'] != null) $persona->setAddradreca($currentTitolError['direccion']);
+                        
+                    if ($currentTitolError['cp'] != '' &&
+                        $currentTitolError['cp'] != null) {
+                        
+                        $persona->setAddrcp($currentTitolError['cp']);
+                        if (is_numeric($currentTitolError['cp'])) {
+                            $persona->setAddrnacionalitat('ESP');
+                            
+                            // Provincia catalana => cercar comarca
+                            if (substr($currentTitolError['cp']."", 0, 2) == '17' ||
+                                substr($currentTitolError['cp']."", 0, 2) == '08' ||
+                                substr($currentTitolError['cp']."", 0, 2) == '25' ||
+                                substr($currentTitolError['cp']."", 0, 2) == '43') {
+                                    
+                                $municipis = $this->consultaAjaxPoblacions($currentTitolError['cp'], 'cp');
+                                
+                                if ($municipis == null) throw new \Exception($id.'#ERROR. Municipi / Comarca persona  no trobat: '.$currentTitolError['cp']);
+                                $municipi = $municipis[0];
+                                
+                                $persona->setAddrcomarca($municipi['comarca']);
+                            }
+                        }
+                        else {
+                            
+                            switch ($currentTitolError['cp']) {
+                            case 'AD300':
+                                $persona->setAddrnacionalitat('AND');
+                                break;
+                            case 'BH228':
+                                $persona->setAddrnacionalitat('GBR');
+                                break;
+                            case '3114T':
+                                $persona->setAddrnacionalitat('GER');
+                                break;
+                            case 'L5531':
+                                $persona->setAddrnacionalitat('FRA');
+                                break;
+                            case 'l5531':
+                                $persona->setAddrnacionalitat('FRA');
+                                break;
+                            default:  
+                                throw new \Exception($id.'#ERROR. Persona estrangera ?: '.$currentTitolError['cp']);
+                            }
+                        }
+                    } else {
+                        $persona->setAddrnacionalitat('ESP');
+                    }
+                            
+                    if ($currentTitolError['poblacion'] != '' &&
+                        $currentTitolError['poblacion'] != null) $persona->setAddrpob($currentTitolError['poblacion']);
+                            
+                    if ($currentTitolError['provincia'] != '' &&
+                        $currentTitolError['provincia'] != null) $persona->setAddrprovincia($currentTitolError['provincia']);
+                                
+                            
+                    $em->persist($persona);
+                    $personesNoves++;
+                }
+                            
+                $datadesde = $currentTitolError['iniciocurso'] != ''?\DateTime::createFromFormat('Y-m-d', $currentTitolError['iniciocurso']):null;
+                $datafins = $currentTitolError['fincurso'] != ''?\DateTime::createFromFormat('Y-m-d', $currentTitolError['fincurso']):null;
+                        
+                if ($datadesde == null || $datafins == null) throw new \Exception($id.'#ERROR. Dates del curs incorrectes: '.$currentTitolError['iniciocurso'].'-'.$currentTitolError['fincurso']); //ERROR
+                        
+                // Cercar existent o crear curs sense docents
+                $num = $currentTitolError['numcurso'];
+                if (!isset($cursos[ $num ])) {
+                    $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
+                            
+                    if ($curs == null) {
+                        $curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club);
+                        $curs->setNum($num);
+                        $curs->setValidat(true);
+                        $curs->setFinalitzat(true);
+                                
+                        $em->persist($curs);
+                                
+                        $cursosNous++;
+                    }
+                    $cursos[$curs->getNumActa()] = $curs;  // Afegir als cursos consultats
+                            
+                } else {
+                    $curs = $cursos[ $num ];
+                }
+                        
+                // Crear titulacions
+                $titulacio = new EntityTitulacio($persona, $curs);
+                $titulacio->setNum($currentTitolError['numtitulo']);
+                $titulacio->setDatasuperacio($datafins);
+                        
+                $em->persist($titulacio);
+                        
+                $titulacions++;
+                        
+            } catch (\Exception $e) {
+                //$em->getConnection()->rollback();
+                //echo "Problemes durant la transacció : ". $e->getMessage();
+                        
+                $errors[ $id ] = $e->getMessage();
+            }
+                    
+        }
+                
+        
+            
+        if (count($errors) != 0) {
+            //$em->flush();
+            return new Response("KO, registres ".count($ids)."(errors ".count($errors).")<br/><br/>".implode("<br/>",$errors));
+        }
+        
+        if (count($ids) != 0) {
+            $sql = "UPDATE importtitulacions SET error = 'Corregit' WHERE id IN (".implode(",", $ids).") ";
+            $stmt = $em->getConnection()->prepare($sql);
+            $stmt->execute();
+        }
+        
+        $em->flush();
+                
+        return new Response("OK pesones noves ".$personesNoves." cursos nous ".$cursosNous." i titulacions ".$titulacions );
+    }
+    
 	public function historictitolsAction(Request $request) {
-		// http://www.fecdas.dev/historictitols?desde=1&fins=40
 		// http://www.fecdas.dev/historictitols?max=10&pag=1
 		// http://www.fecdas.dev/historictitols?id=1234
 		// Script de migració. Executar per migrar i desactivar

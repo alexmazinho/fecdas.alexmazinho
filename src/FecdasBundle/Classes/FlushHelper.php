@@ -12,8 +12,8 @@ class FlushHelper {
 
 	function out($output) {
 
-		if (!is_scalar($output))
-			throw new InvalidArgumentException();
+		/*if (!is_scalar($output))
+			throw new InvalidArgumentException();*/
 
 		echo $output;
 		echo str_repeat(' ', min($this -> bufferSize, $this -> bufferSize - strlen($output)));

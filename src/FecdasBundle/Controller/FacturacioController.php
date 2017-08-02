@@ -1206,7 +1206,7 @@ class FacturacioController extends BaseController {
 	}
 
 
-	private function consultaFacturesConsolidades($desde = null, $fins = null, $club = null, $pendents = true) {
+	private function consultaFacturesConsolidades($desde = null, $fins = null, $club = null, $pendents = true, $consolidades = true) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT f FROM FecdasBundle\Entity\EntityFactura f ";
@@ -1228,7 +1228,8 @@ class FacturacioController extends BaseController {
 			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
 			else $comanda = $factura->getComanda();
 
-			if ($comanda != null && $comanda->comandaConsolidada()) {
+			//if ($comanda != null && $comanda->comandaConsolidada()) {
+			if ($comanda != null && (($consolidades && $comanda->comandaConsolidada()) || !$consolidades)) {
 				if ($club != null) {
 					if ($comanda->getClub()->getCodi() == $club->getCodi()) $factures[] = $factura;
 				} else {
@@ -1805,7 +1806,7 @@ class FacturacioController extends BaseController {
  		$apunts = $this->consultaApunts($club, $datadesde, $datafins);
 
 		if ($action == 'csv') {
-			$filename = "export_apunts_".Funcions::netejarPath($club->getNom())."_".$datadesde->format('Y-m-d')."_".$datafins->format('Y-m-d')."_".date('Hms').".csv";
+			$filename = "export_apunts_".Funcions::netejarPath($club->getNom())."_".$datadesde->format('Y-m-d')."_".$datafins->format('Y-m-d')."_".date('His').".csv";
 			
 			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Comanda', 'Concepte', 'Saldo a '.$datafins->format('Y-m-d'), 'Entrada'); 
 			
@@ -1889,7 +1890,7 @@ class FacturacioController extends BaseController {
 
 	private function consultaApunts($club, $datadesde, $datafins) {
 		// Consulta per $datafins null => calcular saldos des de saldo actual endarrera 
-		$factures = $this->consultaFacturesConsolidades($datadesde, null, $club, false);
+		$factures = $this->consultaFacturesConsolidades($datadesde, null, $club, false, false);
 		$rebuts = $this->consultaRebutsConsolidats($datadesde, null, $club, false);
 		$apunts = array();
 		

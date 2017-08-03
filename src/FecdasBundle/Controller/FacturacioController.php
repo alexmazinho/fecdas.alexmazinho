@@ -5,8 +5,6 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -16,13 +14,10 @@ use FecdasBundle\Entity\EntityProducte;
 use FecdasBundle\Form\FormStock;
 use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Form\FormRebut;
-use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormComanda;
-use FecdasBundle\Entity\EntityComanda;
 use FecdasBundle\Form\FormPayment;
 use FecdasBundle\Entity\EntityPayment;
 use FecdasBundle\Entity\EntityPreu;
-use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityComptabilitat;
 use FecdasBundle\Classes\RedsysAPI;
 use FecdasBundle\Classes\Funcions;
@@ -541,7 +536,7 @@ class FacturacioController extends BaseController {
 		$strDesde = $request->query->get('desde', ''); 
 		$strFins = $request->query->get('fins', '');
 		$format = $request->query->get('format', '');
-		$page = $request->query->get('page', 1);
+		//$page = $request->query->get('page', 1);
 
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
@@ -776,11 +771,9 @@ class FacturacioController extends BaseController {
 		$formatter->setPattern('MMMM yyyy');
 		
 		$clubAnterior = '';
-		$clubNom = '';
 		$saldoComptableCurrent = 0;
 		foreach ($acumulats as $saldo) {
 			$clubCurrent = $saldo['codi'];
-			
 				
 			if ($clubAnterior != $clubCurrent) {
 				// Canvi de club 
@@ -3266,7 +3259,7 @@ class FacturacioController extends BaseController {
 			$codi = $request->query->get('codi', '');
 			if ($codi != '') {
 				$checkRole = $this->get('fecdas.rolechecker');	
-				$checkRole->setCurrentClubRole( $codi );
+				$checkRole->setCurrentClubRole( $codi, $checkRole->getCurrentRole() );
 			}
 		} else {
 			$formdata = $request->request->get('rebut');
@@ -3305,42 +3298,41 @@ class FacturacioController extends BaseController {
 			try {
 				$form->handleRequest($request);
 
-				if ($form->isValid()) {
-					
-					$maxNumRebut = $this->getMaxNumEntity($rebut->getDatapagament()->format('Y'), BaseController::REBUTS) + 1;
-					$rebut->setNum($maxNumRebut);
+				if (!$form->isValid())  throw new \Exception('Dades del formulari incorrectes. '.$form->getErrors(true, false));
+				
+				$maxNumRebut = $this->getMaxNumEntity($rebut->getDatapagament()->format('Y'), BaseController::REBUTS) + 1;
+				$rebut->setNum($maxNumRebut);
 
-					if ($current->format('Y-m-d') == $rebut->getDatapagament()->format('Y-m-d')) {
-						// Update de les hores, el form només gestiona dies i posa les hores a 00:00:00
-						$rebut->setDatapagament($current);
-					}
-
-					$comandesIds = json_decode($request->request->get('comandesSelected', ''));
-
-					foreach ($comandesIds as $comandaId) {
-						$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
-					
-						// Comanda de la selecció no trobada
-						if ($comanda == null) throw new \Exception('La comanda '.$comanda->getNumComanda().' no està disponible' );
-					
-						if ($comanda->comandaPagada() == true) throw new \Exception('La comanda '.$comanda->getNumComanda().' ja está pagada' );
-					
-						$rebut->addComanda($comanda);
-						$comanda->setDatamodificacio(new \DateTime());
-						$comanda->setRebut($rebut); 
-						if ($comanda->esParte()) $comanda->setPendent(false);
-					}
-
-					$this->validIngresosRebuts($form, $rebut);
-					
-					$rebut->updateClubPagaments($rebut->getImport());
-					
-					$em->flush();
-					$this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi.' => '.$maxNumRebut.' '.$rebut->getImport());
-					// Redirect json
-					$response = new Response("OK");
-					return $response;
+				if ($current->format('Y-m-d') == $rebut->getDatapagament()->format('Y-m-d')) {
+					// Update de les hores, el form només gestiona dies i posa les hores a 00:00:00
+					$rebut->setDatapagament($current);
 				}
+
+				$comandesIds = json_decode($request->request->get('comandesSelected', ''));
+
+				foreach ($comandesIds as $comandaId) {
+					$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($comandaId);
+					
+					// Comanda de la selecció no trobada
+					if ($comanda == null) throw new \Exception('La comanda '.$comanda->getNumComanda().' no està disponible' );
+				
+					if ($comanda->comandaPagada() == true) throw new \Exception('La comanda '.$comanda->getNumComanda().' ja está pagada' );
+					
+					$rebut->addComanda($comanda);
+					$comanda->setDatamodificacio(new \DateTime());
+					$comanda->setRebut($rebut); 
+					if ($comanda->esParte()) $comanda->setPendent(false);
+				}
+
+				$this->validIngresosRebuts($form, $rebut);
+					
+				$rebut->updateClubPagaments($rebut->getImport());
+					
+				$em->flush();
+				$this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi.' => '.$maxNumRebut.' '.$rebut->getImport());
+				// Redirect json
+				$response = new Response("OK");
+				return $response;
 
 			} catch (\Exception $e) {
 					
@@ -3514,6 +3506,13 @@ class FacturacioController extends BaseController {
 	
 	private function validIngresosRebuts($form, $rebut, $rebutOriginal = null) {
 		
+	    // Parse import format , decimal
+	    $fmt = new \NumberFormatter( 'es_CA', \NumberFormatter::DECIMAL );
+	    $import = $fmt->parse($rebut->getImport()); 
+	    
+	    if (!$import) throw new \Exception('Format de l\'import incorrecte '.$rebut->getImport() );
+	    $rebut->setImport($import);
+	    
 		if ($rebut->getImport() <= 0) {
 			/*$form->get('import')->addError(new FormError('Valor incorrecte'));
 			throw new \Exception('Cal indicar un import superior a 0' );*/
@@ -3548,8 +3547,9 @@ class FacturacioController extends BaseController {
 					$total += $comanda->getTotalComanda();		
 				}
 				
-				//if (abs($rebut->getImport() - $rebut->getComanda()->getTotalComanda()) > 0.01) {
-				if ($total > $rebut->getImport()) {	
+				// Import rebut > 0
+				if ($rebut->getImport() - $total < -0.01) {
+				//if ($total > $rebut->getImport()) {	
 									
 					$form->get('import')->addError(new FormError('Valor incorrecte'));
 					throw new \Exception('El total de les comandes supera l\'import de l\'ingrés');

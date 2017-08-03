@@ -88,9 +88,9 @@ class FormRebut extends AbstractType {
 						'disabled' 		=>  !$editable || $rebut->estaComptabilitzat(),		
 				));
 				
-				$form->add ( 'import', 'number', array (
+				$form->add ( 'import', 'text', array (
 						'required' 		=> true,
-						'scale' 		=> 2,
+						//'scale' 		=> 2,
 						//'disabled' 		=> $rebut->estaComptabilitzat() || !$rebut->esIngres(),
 						'disabled'		=> !$editable || $rebut->estaComptabilitzat()		
 				));

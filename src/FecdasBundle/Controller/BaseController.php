@@ -476,9 +476,8 @@ class BaseController extends Controller {
 		if ($club == null) return $llistatipus;  // Sense info del club!!?
 	
 		$tipuspartes = $club->getTipusparte();
-			
 		foreach ($tipuspartes as $tipusparte) {
-			if ($tipusparte->getActiu() == true &&
+            if ($tipusparte->getActiu() == true &&
 				$tipusparte->validarPreusAny($any) == true) {
 				if ($tipusparte->getEs365() == true) {
 					/* 365 directament sempre. Es poden usar en qualsevol moment  */

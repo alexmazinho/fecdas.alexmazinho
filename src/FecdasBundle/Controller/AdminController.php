@@ -2077,7 +2077,11 @@ GROUP BY c.nom
 			
 			if ($duplicat->getClub()->getMail() != null) {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();
-				$tomails = array($duplicat->getClub()->getMail());
+				
+				$tomails = explode(";",$duplicat->getClub()->getMail());
+				if (!is_array($tomails)) $tomails = array($tomails);
+				//$tomails = array($duplicat->getClub()->getMail());
+		
 				$bccmails = $fedeMail;
 			} else {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " CLUB SENSE CORREU!! ";

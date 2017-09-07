@@ -97,6 +97,8 @@ class BaseController extends Controller {
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
 	const CODI_PAGAMENT_ESCOLA			= 5720002;		// 5720002  La Caixa Escola
 	
+	const CODI_DESPESES_FECDAS			= 6590002;		// 6590002  Despeses FECDAS
+	
 	const PRODUCTE_262_CARNET_CMAS		= 262;		// 262 Carnet CMAS sense llicència
 		
 	
@@ -840,12 +842,14 @@ class BaseController extends Controller {
 															$parteoverlap->getDataalta()->format('d/m/Y'));
 
 		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
-			
+		
+		$club = $parte->getClub();
 		if ($current->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d') && 
-			$parte->getClub()->controlCredit() == true) {
+		    $club->controlCredit() == true) {  // Comprovació sobre el club de la comanda != getClubparte()
+			    
 			// Comprovació de saldos clubs DIFE
 /***************  SALDOS ENCARA NO ************************************************************************************************************************/					
-			/*if ($parte->getPreuTotal() > $parte->getClub()->getSaldo() + $parte->getClub()->getLimitcredit()) {
+			/*if ($parte->getPreuTotal() > $club->getSaldo() + $club->getLimitcredit()) {
 					throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
 					Per poder fer noves gestions, cal que contacteu amb la FECDAS');
 			}*/
@@ -963,7 +967,7 @@ class BaseController extends Controller {
 		$anulaIds = array();
 		
 		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
+		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t JOIN p.clubparte c JOIN c.estat e ";
 		$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365)) AND ( 1 = 1 ";
@@ -982,7 +986,7 @@ class BaseController extends Controller {
 			if ($numfactura != '') $strQuery .= " AND f.num = :numfactura ";
 		}
 		
-		if ($club != null) $strQuery .= " AND p.club = '" .$club->getCodi() . "' "	;
+		if ($club != null) $strQuery .= " AND p.clubparte = '" .$club->getCodi() . "' "	;
 		if ($estat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
 		
 		
@@ -1067,7 +1071,7 @@ class BaseController extends Controller {
 	
 		// Consultar no només les vigents sinó totes
 		$strQuery = "SELECT p, COUNT(l.id) AS HIDDEN numllicencies FROM FecdasBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t ";
-		$strQuery .= "WHERE p.club = :club ";
+		$strQuery .= "WHERE p.clubparte = :club ";
 		$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
 		if ($desde != null) $strQuery .= " AND p.dataalta >= :ininormal";
 		if ($fins != null) $strQuery .= " AND p.dataalta <= :finormal";
@@ -1447,8 +1451,8 @@ class BaseController extends Controller {
 			}
 			
 			// Sistema nou del 2015.
-			//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
-			$detallsArray = json_decode($factura->getDetalls(), true);
+			//$detallsArray = json_decode($factura->getDetalls(), true, 512, JSON_UNESCAPED_UNICODE);
+			$detallsArray = json_decode($factura->getDetalls(), true); 
 			
 			$pdf->SetTextColor(0, 0, 0); // Negre	
 			//$pdf->setY($y_taula + 10);
@@ -1505,31 +1509,48 @@ class BaseController extends Controller {
 					$pdf->SetFont('', '');
 	
 					$strExtra = '';
-					if (isset($lineafactura['extra']) && is_array($lineafactura['extra'])) {  // Noms persones llicències
-						$strExtra = '';
-						foreach ($lineafactura['extra'] as $extra) {
-							//$strExtra .= '<br/> -&nbsp;'.$extra;
-							$strExtra .= $extra.', ';
-						}
-						if (count($lineafactura['extra']) > 0) $strExtra = substr($strExtra, 0, -2); 
-						$strExtra .= '';
-					}	
-					
 					$row_h_extra = $row_h;
-					
-					if (count($lineafactura['extra']) > 30 || $strExtra == '') {
-						$strExtra = '';
-					} else {
-						if (count($lineafactura['extra']) <= 10) $row_h_extra = 7;	
-						else $row_h_extra = max($row_h_extra_max * count($lineafactura['extra']) / 30, 10);
-					}				
-	
 					$row_y = $pdf->getY();
 					$pdf->SetFont('', 'I', 7);
 					$pdf->SetTextColor(100, 100, 100); //Gris
 					
-					$pdf->MultiCell($w_producte - 4, $row_h_extra, $strExtra, 0, 'L', true, 2, $x_producte + 2, $row_y, 
-									true, 0, false, true, $row_h_extra, 'T', true);
+					if (isset($lineafactura['extra'])) { 
+					    if (is_array($lineafactura['extra'])) {  // Noms persones llicències
+					
+    						$strExtra = '';
+    						foreach ($lineafactura['extra'] as $extra) {
+    							//$strExtra .= '<br/> -&nbsp;'.$extra;
+    							$strExtra .= $extra.', ';
+    						}
+    						if (count($lineafactura['extra']) > 0) $strExtra = substr($strExtra, 0, -2); 
+    						$strExtra .= '';
+        					
+        					if (count($lineafactura['extra']) > 30 || $strExtra == '') {
+        						$strExtra = '';
+        					} else {
+        						if (count($lineafactura['extra']) <= 10) $row_h_extra = 7;	
+        						else $row_h_extra = max($row_h_extra_max * count($lineafactura['extra']) / 30, 10);
+        					}	
+        					$pdf->MultiCell($w_producte - 4, $row_h_extra, $strExtra, 0, 'L', true, 2, $x_producte + 2, $row_y,
+        					    true, 0, false, true, $row_h_extra, 'T', true);
+    					} else {
+    					    // Possible personalització factures != llicències
+    					    
+    					    // Javascript UNICODE escape (Opcional)
+    					    // https://r12a.github.io/apps/conversion/
+    					    
+    					    $strExtra = $lineafactura['extra'];
+    					    
+    					    $row_h_extra = 0;
+    					    
+    					    // $w, $h, $txt, $border = 0, $align = 'J',                      $fill = false, $ln = 1, $x = '', $y = '',
+    					    // $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 0, $valign = 'T', $fitcell = false )
+    					    
+    					    $pdf->MultiCell($w_producte - 4, $row_h_extra, $strExtra, 0, 'L', true, 2, $x_producte + 2, $row_y,
+    					        true, 0, true, true, $row_h_extra, 'T', false);
+    					}
+					}
+					
 					$pdf->SetTextColor(0, 0, 0); //Negre
 					$pdf->SetFont('', '', 10);				
 				}
@@ -2091,6 +2112,7 @@ class BaseController extends Controller {
 						'', false, false, 1, false, false, false);
 		
 		$parte = $llicencia->getParte();
+		$club = $parte->getClubparte();
 		//$polissa = $parte->getTipus()->getPolissa();
 		
 		// Dades
@@ -2126,12 +2148,12 @@ class BaseController extends Controller {
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCat, '<span style="font-size: small;">Categoria/Nivell: </span>'.$llicencia->getCategoria()->getCategoria(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yNai, '<span style="font-size: small;">Data Naixement: </span>'.$persona->getDatanaixement()->format('d/m/Y'), 0, 0, false, true, 'L', true);
-		$pdf->writeHTMLCell(0, 0, $x_titols, $yClu, '<span style="font-size: small;">Entitat: </span>'.$parte->getClub()->getNom(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yClu, '<span style="font-size: small;">Entitat: </span>'.$club->getNom(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
 		$pdf->SetFont('dejavusans', 'B', 10);
 		
-		$pdf->writeHTMLCell(0, 0, $x_titols, $yTlf, '<span style="font-size: small;">Telf. Entitat: </span>'.$parte->getClub()->getTelefon(), 0, 0, false, true, 'R', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yTlf, '<span style="font-size: small;">Telf. Entitat: </span>'.$club->getTelefon(), 0, 0, false, true, 'R', true);
 
 		//$pdf->setFontSpacing(0.5);
     	//$pdf->setFontStretching(80);
@@ -2415,6 +2437,7 @@ class BaseController extends Controller {
 		/*********** Alex Test Fi *************/
 		
 		$parte = $llicencia->getParte();
+		$club = $parte->getClubparte();
 		$persona = $llicencia->getPersona();
 		if ( $persona == null) return;
 		
@@ -2446,10 +2469,10 @@ class BaseController extends Controller {
 		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
 				
 		$pdf->SetXY($xClu, $yClu);
-		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
 
 		$pdf->SetXY($xTlf, $yTlf);
-		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
 				
 		$pdf->SetXY($xCad, $yCad);
 		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
@@ -2479,6 +2502,7 @@ class BaseController extends Controller {
 		$yCad =	49.1+0.5;
 		
 		$parte = $llicencia->getParte();
+		$club = $parte->getClubparte();
 		$polissa = $parte->getTipus()->getPolissa();
 		
 		// Dades
@@ -2513,11 +2537,11 @@ class BaseController extends Controller {
 		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
 				
 		$pdf->SetXY($xClu, $yClu);
-		$pdf->Cell(0, 0, $parte->getClub()->getNom(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
 
 		$pdf->SetFont('dejavusans', 'B', 7);
 		$pdf->SetXY($xTlf, $yTlf);
-		$pdf->Cell(0, 0, $parte->getClub()->getTelefon(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
 				
 		$pdf->SetXY($xCad, $yCad);
 		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
@@ -3193,7 +3217,6 @@ class BaseController extends Controller {
 		}
 		return null;		
 	}
-	
 	
 	protected function crearComandaParte($data, $tipus = null, $club = null, $comentaris = '', $factura = null) {
 		if ($data == null) $data = $this->getCurrentDate();

@@ -314,69 +314,6 @@ class AdminController extends BaseController {
 				));
 		$form = $formBuilder->getForm();
 		
-		/*
-		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t JOIN p.club c JOIN c.estat e ";
-		$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
-		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
-		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365))";
-
-		
-		if ($currentNumrebut == '' && $currentNumfactura == '') {
-			// Dates normals
-			$inianual = $this->getSQLIniciAnual();
-			$ini365 = $this->getSQLInici365();
-		} else {
-			// dates dels anys escollits a les factures / rebuts
-			$inianual = min($currentAnyrebut, $currentAnyfactura).'-01-01 00:00:00';
-			$ini365 = $inianual;
-		
-			if ($currentNumrebut != '') $strQuery .= " AND r.num = :numrebut ";
-			if ($currentNumfactura != '') $strQuery .= " AND f.num = :numfactura ";
-		}
-		
-		if ($currentClub != null) $strQuery .= " AND p.club = '" .$currentClub->getCodi() . "' "	;
-		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
-		
-		
-		if ($currentBaixa == false) $strQuery .= " AND p.databaixa IS NULL ";
-		if ($currentNoPagat == true) $strQuery .= " AND p.rebut IS NULL ";
-		if ($currentNoImpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 ";
-		if ($currentCompta == true) $strQuery .= " AND f.comptabilitat <> 1 ";
-		*/
-		/* Quan es sincronitza es posa la data modificació a NULL de partes i llicències (No de persones que funcionen amb el check validat). 
-		 * Els canvis des del gestor també deixen la data a NULL per detectar canvis del web que calgui sincronitzar */ 
-		//if ($currentNoSincro == true) $strQuery .= " AND (p.idparte_access IS NULL OR (p.idparte_access IS NOT NULL AND p.datamodificacio IS NOT NULL) ) ";
-
-		/*$strQuery .= " ORDER BY ".$sort; 
-
-		$query = $em->createQuery($strQuery)
-			->setParameter('ininormal', $inianual)
-			->setParameter('ini365', $ini365);
-		
-
-		if ($currentNumrebut == '' && $currentNumfactura == '') {
-			// Dates normals
-		} else {
-			// dates dels anys escollits a les factures / rebuts
-			//if ($currentNumrebut == true) $partesrecents->setParam('numrebut',$currentNumrebut);
-			//if ($currentNumfactura == true) $partesrecents->setParam('numfactura',$currentNumfactura);
-			if ($currentNumrebut == true) $query->setParameter('numrebut',$currentNumrebut);
-			if ($currentNumfactura == true) $query->setParameter('numfactura',$currentNumfactura);
-		}
-		*/
-		
-		/*if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $query->setParameter('filtreestat', $states[$currentEstat]);
-	
-		// Paràmetres URL sort i pagination 
-		if ($currentClub != null) $partesrecents->setParam('clubs',$currentClub->getCodi());
-		if ($currentEstat != self::TOTS_CLUBS_DEFAULT_STATE) $partesrecents->setParam('estat',$currentEstat);
-		
-		if ($currentBaixa == true) $partesrecents->setParam('baixa',true);
-		//if ($currentNoSincro == false) $partesrecents->setParam('nosincro',false);
-		if ($currentNoPagat == true) $partesrecents->setParam('nopagat',true);
-		if ($currentNoImpres == true) $partesrecents->setParam('noimpres',true);*/
-				
 		$sortparams = array('sort' => $sort,'direction' => $direction, 
 							/*'numrebut' => $currentNumrebut, 'anyrebut' => $currentAnyrebut,
 							'numfactura' => $currentNumfactura, 'anyfactura' => $currentAnyfactura,
@@ -537,7 +474,7 @@ class AdminController extends BaseController {
 			if ($groupQuey != true) {
 				// PREPARAR CONSULTA SENSE AGRUPAR
 				$strQuery = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l 
-								JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.club c WHERE 1 = 1 ";
+								JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c WHERE 1 = 1 ";
 				
 			} else {
 				//$groupQuey = $intervals || $edats || $grouptipus || $groupcategoria || $groupsexe || $groupmunicipi || $groupcomarca || $groupprovincia;
@@ -623,12 +560,12 @@ class AdminController extends BaseController {
 				// Només consultar preus a partir de l'any 2012
 				if ($datainici->format('Y') > 2012 && $datafinal->format('Y') > 2012) {	
 					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, SUM(r.preu) AS import FROM FecdasBundle\Entity\EntityLlicencia l 
-									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.club c 
+									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c 
 									JOIN a.producte o JOIN o.preus r
 									WHERE (YEAR(p.dataalta) = r.anypreu AND o.id = r.producte) ";  // Funció YEAR afegida a la configuració de $em => addCustomDatetimeFunction('YEAR', 'FecdasBundle\Classes\MysqlYear');
 				} else {
 					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, 'NS/NC' AS import FROM FecdasBundle\Entity\EntityLlicencia l 
-									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.club c 
+									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c 
 									WHERE 1 = 1 ";
 				}		
 								
@@ -637,7 +574,7 @@ class AdminController extends BaseController {
 			}
 
 			if (count($clubs) > 0) {
-				$strQuery .= " AND p.club IN (:clubs) ";
+				$strQuery .= " AND p.clubparte IN (:clubs) ";
 				$params['clubs'] = $clubs;
 			}
 			if ($activats == true) {
@@ -738,7 +675,7 @@ GROUP BY c.nom
 										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
 										'comandaid' 	=> array('hidden' => true, 	'val' => $parte->getId(), 'align' => 'center'), 
 										'comandanum' 	=> array('hidden' => false, 'val' => $numcomanda, 'align' => 'center'),
-										'club' 			=> array('hidden' => false, 'val' => $parte->getClub()->getNom(), 'align' => 'left'),
+				                        'club' 			=> array('hidden' => false, 'val' => $parte->getClubparte()->getNom(), 'align' => 'left'),
 										'tipus'			=> array('hidden' => false, 'val' => $parte->getTipus()->getCodi(), 'align' => 'left'),
 										'dataalta' 		=> array('hidden' => false, 'val' => $parte->getDataalta()->format('d/m/y'), 'align' => 'center'),      
 										'datacaducitat' => array('hidden' => false, 'val' => $parte->getDatacaducitat('')->format('d/m/y'), 'align' => 'center'),
@@ -2146,7 +2083,7 @@ GROUP BY c.nom
 			
 				$persona = $llicencia->getPersona();
 				
-				$duplicat = $this->crearComandaDuplicat('Petició duplicat de llicència '.$persona->getNomCognoms(), $llicencia->getParte()->getClub());
+				$duplicat = $this->crearComandaDuplicat('Petició duplicat de llicència '.$persona->getNomCognoms(), $llicencia->getParte()->getClubparte());
 				
 				$duplicat->setPersona($persona);
 				$duplicat->setCarnet($carnet);

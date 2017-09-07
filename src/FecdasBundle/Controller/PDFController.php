@@ -503,6 +503,8 @@ class PDFController extends BaseController {
 			if ($parte == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 			
 			if ($parte) {
+			    $club = $parte->getClubparte();
+			    
 				$this->logEntry($this->get('session')->get('username'), 'PRINT PARTE',
 						$this->get('session')->get('remote_addr'),
 						$request->server->get('HTTP_USER_AGENT'), $parte->getId());
@@ -551,7 +553,7 @@ class PDFController extends BaseController {
 
 				$pdf->SetFont('dejavusans', '', 10, '', true);
 				$text = '<p>Llista d\'esportistes que representen el CLUB:   ';
-				$text .= '<b>' . $parte->getClub()->getNom() . '</b></p>';
+				$text .= '<b>' . $club->getNom() . '</b></p>';
 				$text .= '<p>Vigència de les llicències des del <b>' . $datainici->format("d/m/Y") . '</b>';
 				$text .= ' fins el <b>' . $datafi->format("d/m/Y") . '</b></p>';
 				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'L', true);
@@ -664,7 +666,7 @@ class PDFController extends BaseController {
 				$pdf->lastPage();
 			
 				// Close and output PDF document
-				$response = new Response($pdf->Output("llicencies_" . $parte->getClub()->getCodi() . "_" . $parte->getId() . ".pdf", "D"));
+				$response = new Response($pdf->Output("llicencies_" . $club->getCodi() . "_" . $parte->getId() . ".pdf", "D"));
 				$response->headers->set('Content-Type', 'application/pdf');
 				return $response;
 			}
@@ -718,6 +720,10 @@ class PDFController extends BaseController {
 			if ($llicencia->getDatabaixa() != null) $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 			
 			if ($llicencia) {
+			    $parte = $llicencia->getParte();
+			    $club = $parte->getClubparte();
+			    $persona = $llicencia->getPersona();
+			    
 				$this->logEntry($this->get('session')->get('username'), 'PRINT LLICENCIA',
 						$this->get('session')->get('remote_addr'),
 						$request->server->get('HTTP_USER_AGENT'), $llicencia->getId());
@@ -726,7 +732,7 @@ class PDFController extends BaseController {
 				$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	
 				$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència FECDAS ' . date("Y")), true, $llicencia->getParte()->getClub()->getNom());
+				    'title' => 'Llicència FECDAS ' . date("Y")), true, $club->getNom());
 				
 				// Add a page
 				$pdf->AddPage();
@@ -774,32 +780,32 @@ class PDFController extends BaseController {
 				
 				$x = $x_ini + 47;
 				$y = $y_ini + 35;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Nom: " . $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Nom: " . $persona->getNom() . " " . $persona->getCognoms(), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "DNI/Passaport: " . $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "DNI/Passaport: " . $persona->getDni(), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Categoria/Nivell: " . $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Data naixement: " . $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Data naixement: " . $persona->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Entitat: " . $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Entitat: " . $club->getNom(), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $club->getTelefon(), 0, 0, 0, true, 'L', true);
 
 				//$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
 				
 				/*$x = $x_ini + 54.2;
 				$y = $y_ini + 38.6; // 39.2
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, $persona->getNom() . " " . $persona->getCognoms(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 62.5;
 				$y = $y_ini + 42.4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDni(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, $persona->getDni(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 65;
 				$y = $y_ini + 46.1;
@@ -807,22 +813,22 @@ class PDFController extends BaseController {
 				
 				$x = $x_ini + 63.6;
 				$y = $y_ini + 49.9;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getPersona()->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, $persona->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 56;
 				$y = $y_ini + 53.7;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getNom(), 0, 0, 0, true, 'L', true);
+				$pdf->writeHTMLCell(0, 0, $x, $y, $club->getNom(), 0, 0, 0, true, 'L', true);
 				
 				$x = $x_ini + 60;
 				$y = $y_ini + 57.5;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getParte()->getClub()->getTelefon(), 0, 0, 0, true, 'L', true);*/
+				$pdf->writeHTMLCell(0, 0, $x, $y, $club->getTelefon(), 0, 0, 0, true, 'L', true);*/
 				
 				//$datacaduca = $llicencia->getParte()->getDataalta();
 				// Caducat 30 dies des de data impressió
 				$datacaduca = $this->getCurrentDate();
 				$datacaduca->add(new \DateInterval('P30D'));  // 30 dies
 				
-				if ($datacaduca > $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 1 "))) $datacaduca = $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 2 "));
+				if ($datacaduca > $parte->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 1 "))) $datacaduca = $parte->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 2 "));
 				
 				$x += 32;
 				$pdf->writeHTMLCell(0, 0, $x, $y + 4, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
@@ -831,7 +837,7 @@ class PDFController extends BaseController {
 				
 				/* Tipus de llicència
 				 * Taula TipoParte LL_L1 + LL_L1 + LL_L3 */
-				$titolPlastic = $this->getTitolPlastic($llicencia->getParte(), $datacaduca);
+				$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 
 				$pdf->SetFont('helvetica', 'B', 9, '', true);
 				//$pdf->SetTextColor(230, 230, 230); // Gris
@@ -844,7 +850,7 @@ class PDFController extends BaseController {
 				
 				
 				// Alex 20/12/2014 Afegir texte legal llicències tipus F
-				if ($llicencia->getParte()->getTipus()->getId() == 8) {
+				if ($parte->getTipus()->getId() == 8) {
 					
 					$padding = 15;
 					$x = $x_ini + $padding; // Padding
@@ -869,7 +875,7 @@ class PDFController extends BaseController {
 				$pdf->lastPage();
 				
 				// Close and output PDF document
-				$response = new Response($pdf->Output("llicencia_" . $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms(). ".pdf", "D"));
+				$response = new Response($pdf->Output("llicencia_" . $persona->getNom() . " " . $persona->getCognoms(). ".pdf", "D"));
 				$response->headers->set('Content-Type', 'application/pdf');
 				return $response;
 			}

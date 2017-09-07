@@ -1,7 +1,7 @@
 {# src/Fecdas/PartesBundle/Resources/views/Admin/sortidallicenciesform.html.twig #}
 <div id="list-federats-sortida-llicencies">
   	{{ form_start(form, {'action': action, 'method': 'POST', 'attr': {'class': 'appform', 'id':'formfederatssortida'}}) }}
-   		<div class="row"><div class="col-md-12"><h3 class="title blue">{{ parte.club.nom }}, llista {{ parte.numcomanda }}</h3></div></div>
+   		<div class="row"><div class="col-md-12"><h3 class="title blue">{{ parte.clubparte.nom }}, llista {{ parte.numcomanda }}</h3></div></div>
    		<div class="row">{{ form_widget(form.id) }}{% include 'FecdasBundle:Includes:messages.html.twig' %}</div>
 
 		{%  include includetaula %}

@@ -26,7 +26,7 @@ class FormLlicencia extends AbstractType {
 			if ($llicencia instanceof EntityLlicencia) {
 		
 				$parte = $llicencia->getParte(); 
-				$club = $parte->getClub();
+				$club = $parte->getClubparte();
 				
 				$form->add('persona', 'entity', array(
 							'class' => 'FecdasBundle:EntityPersona',

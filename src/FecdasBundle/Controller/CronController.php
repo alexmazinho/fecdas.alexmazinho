@@ -190,7 +190,7 @@ class CronController extends BaseController {
 		 * wget -O - -q http://fecdas.dev/checkrenovacio?secret=abc... >> mailsrenovacio.txt*/
 		
 		/*
-		 * (SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.club), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
+		 * (SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.clubparte), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
 		 		 DATE_FORMAT(p.dataalta + INTERVAL 365 DAY, '%d/%m/%Y') as datacaducitat, 
 		 		 DATE_FORMAT(p.dataalta + INTERVAL 335 DAY, '%d/%m/%Y') as datanotificacio,
 		 		 p.numrelacio, t.id, t.descripcio  
@@ -198,7 +198,7 @@ class CronController extends BaseController {
 		 		 WHERE p.tipus IN (7,10) AND 
 				(YEAR(p.dataalta) = YEAR(now()) OR (YEAR(p.dataalta) = YEAR(now()) - 1 AND MONTH(p.dataalta) >= MONTH(now())))
 			) UNION
-			(SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.club), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
+			(SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.clubparte), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
 		 		 DATE_FORMAT(p.dataalta + INTERVAL 365 DAY, '%d/%m/%Y') as datacaducitat, 
 		 		 DATE_FORMAT(p.dataalta + INTERVAL 350 DAY, '%d/%m/%Y') as datanotificacio,
 		 		 p.numrelacio, t.id, t.descripcio  
@@ -206,7 +206,7 @@ class CronController extends BaseController {
 		 		 WHERE p.tipus IN (7,10) AND 
 				(YEAR(p.dataalta) = YEAR(now()) OR (YEAR(p.dataalta) = YEAR(now()) - 1 AND MONTH(p.dataalta) >= MONTH(now())))
 			) UNION
-			(SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.club), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
+			(SELECT p.id, (SELECT c.nom FROM m_clubs c WHERE c.codi = p.clubparte), DATE_FORMAT(p.dataalta, '%d/%m/%Y'), 
 		 		 DATE_FORMAT(p.dataalta + INTERVAL 365 DAY, '%d/%m/%Y') as datacaducitat, 
 		 		 DATE_FORMAT(p.dataalta + INTERVAL 363 DAY, '%d/%m/%Y') as datanotificacio,
 		 		 p.numrelacio, t.id, t.descripcio  
@@ -299,28 +299,29 @@ class CronController extends BaseController {
 		$partesrenovar = array_merge ($partesrenovar, $query->getResult());
 		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 		
-		foreach ($partesrenovar as $parte_iter) {
+		foreach ($partesrenovar as $parte) {
 			$tomails = array();
 			$subject = "Notificació. Renovació llicència FECDAS";
+			$club = $parte->getClubparte();
 			/* Per cada parte */
-			if ($parte_iter->getClub()->getMail() == null) {
+			if ($club->getMail() == null || $club->getMail() == '') { 
 				$subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
 			} else {
-				$tomails[] = $parte_iter->getClub()->getMail();
+			    $tomails = $club->getMails();
 			}
 			
-			foreach ($parte_iter->getLlicencies() as $llicencia_iter) {
+			foreach ($parte->getLlicencies() as $llicencia) {
 				/* Per cada llicència del parte */
-				if ($this->checkSendMail($llicencia_iter) == true) {
+				if ($this->checkSendMail($llicencia) == true) {
 					$body = $this->renderView('FecdasBundle:Cron:renovacioEmail.html.twig',
-							array('llicencia' => $llicencia_iter, 'dies' => $dies));
+							array('llicencia' => $llicencia, 'dies' => $dies));
 					$this->buildAndSendMail($subject, $tomails, $body);
 					$sortida .= $body;
 						
 					$this->logEntry('alexmazinho@gmail.com', 'CRON RENEW',
 							$request->server->get('REMOTE_ADDR'),
 							$request->server->get('HTTP_USER_AGENT'), 
-							'club ' . $parte_iter->getClub()->getNom() . ', llicència ' . $llicencia_iter->getId() . ', dies ' .  $dies);
+					    'club ' . $club->getNom() . ', llicència ' . $llicencia->getId() . ', dies ' .  $dies);
 				}
 			}
 		}
@@ -642,6 +643,7 @@ class CronController extends BaseController {
 		$llicenciaid = 0;
 		
 		$currentClub = $this->getCurrentClub()->getCodi();
+		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('llicencia_renovar')) {
 				$l = $request->request->get('llicencia_renovar');
@@ -656,11 +658,11 @@ class CronController extends BaseController {
 		
 		if ($llicenciaarenovar == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 
-		if ($request->getMethod() != 'POST')  $this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$llicenciaarenovar->getParte()->getId());
+		$parterenovar = $llicenciaarenovar->getParte();
+		if ($request->getMethod() != 'POST')  $this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$parterenovar->getId());
 		
 		/* Validació impedir modificacions altres clubs */
-		if ($this->isCurrentAdmin() != true and $llicenciaarenovar->getParte()->getClub()->getCodi() != $currentClub)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		if ($this->isCurrentAdmin() != true && $parterenovar->getClubparte()->getCodi() != $currentClub) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
 		$em = $this->getDoctrine()->getManager();
 
@@ -680,7 +682,7 @@ class CronController extends BaseController {
 				$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 			}
 			/* Crear el nou parte */
-			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus(), $llicenciaarenovar->getParte()->getClub(), 'Renovació llicència');
+			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus(), $parterenovar->getClubparte(), 'Renovació llicència');
 
 			// Afegir llicència		
 			$cloneLlicencia = clone $llicenciaarenovar;
@@ -1140,21 +1142,21 @@ class CronController extends BaseController {
     		
     		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
     		$index = 1;
-    		foreach ($clubs as $club_iter) {
+    		foreach ($clubs as $club) {
     			$incidencies = "";
     			
-    			$filaClub = "<tr><td class='codi'>" . $club_iter->getCodi() . "</td>";
-    			$filaClub .= "<td class='club'>" . $index."-".$club_iter->getNom() . "</td>";
+    			$filaClub = "<tr><td class='codi'>" . $club->getCodi() . "</td>";
+    			$filaClub .= "<td class='club'>" . $index."-".$club->getNom() . "</td>";
     
-    			$dadesClub = $club_iter->getDadesCurrent(true, $update);
+    			$dadesClub = $club->getDadesCurrent(true, $update);
     
-    			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències valor
-    			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalduplicats(), 2, ',', '.') . "€</td>"; // Import Kits valor
-    			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalaltres(), 2, ',', '.') . "€</td>"; // Import altres valor
-    			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getTotalpagaments(), 2, ',', '.') . "€</td>"; // Import pagaments valor
-    			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getAjustsubvencions(), 2, ',', '.') . "€</td>"; // Import ajust per subvencions valor
-    			$filaClub .= "<td class='importclub'>" . number_format($club_iter->getRomanent(), 2, ',', '.') . "€</td>"; // Romanent valor
-    			$filaClub .= "<td class='importclub saldo'>" . number_format($club_iter->getSaldo(), 2, ',', '.') . "€</td>"; // Saldo valor
+    			$filaClub .= "<td class='importclub'>" . number_format($club->getTotalllicencies(), 2, ',', '.') . "€</td>"; // Import llicències valor
+    			$filaClub .= "<td class='importclub'>" . number_format($club->getTotalduplicats(), 2, ',', '.') . "€</td>"; // Import Kits valor
+    			$filaClub .= "<td class='importclub'>" . number_format($club->getTotalaltres(), 2, ',', '.') . "€</td>"; // Import altres valor
+    			$filaClub .= "<td class='importclub'>" . number_format($club->getTotalpagaments(), 2, ',', '.') . "€</td>"; // Import pagaments valor
+    			$filaClub .= "<td class='importclub'>" . number_format($club->getAjustsubvencions(), 2, ',', '.') . "€</td>"; // Import ajust per subvencions valor
+    			$filaClub .= "<td class='importclub'>" . number_format($club->getRomanent(), 2, ',', '.') . "€</td>"; // Romanent valor
+    			$filaClub .= "<td class='importclub saldo'>" . number_format($club->getSaldo(), 2, ',', '.') . "€</td>"; // Saldo valor
     			$filaClub .= "<td class='totalclub'>" . number_format($dadesClub['comandes'], 0, ',', '.') . "</td>"; // total comandes
     			$filaClub .= "<td class='totalclub'>" . number_format($dadesClub['pagats'], 0, ',', '.');
     			$filaClub .= " (".number_format($dadesClub['pagatsweb'], 0, ',', '.')."/".number_format($dadesClub['pagatsmanual'], 0, ',', '.').")</td>"; // total pagades
@@ -1171,45 +1173,45 @@ class CronController extends BaseController {
     			$filaClub .= "<td class='importclub saldo'>" . number_format($dadesClub['saldocalculat'], 2, ',', '.') . "€</td>"; // SAldo calculat
     			
     			if (false) { // Desactivat
-    				if ($club_iter->controlCredit() &&
+    				if ($club->controlCredit() &&
     					$this->getCurrentDate()->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d')) {
     						
-    					if ($club_iter->getLimitcredit() == null || $club_iter->getLimitcredit() <= 0) {
+    					if ($club->getLimitcredit() == null || $club->getLimitcredit() <= 0) {
     						// Init data notificació
-    						$club_iter->setLimitnotificacio(null);
-    						$dadesClub['errors'][] = ">> (Incidència) Límit de crèdit del club incorrecte " . $club_iter->getLimitcredit();
+    						$club->setLimitnotificacio(null);
+    						$dadesClub['errors'][] = ">> (Incidència) Límit de crèdit del club incorrecte " . $club->getLimitcredit();
     					} else {
-    						if ($club_iter->getSaldo() > $club_iter->getLimitcredit()) {
+    						if ($club->getSaldo() > $club->getLimitcredit()) {
     							// Comprovar si ja s'ha enviat la notificació
-    							if ($club_iter->getLimitnotificacio() == null) {
+    							if ($club->getLimitnotificacio() == null) {
     								$dadesClub['errors'][] = ">> (Notificació) Superat el límit de dèbit, s'envia la notificació al club per correu";
     								
     								// Enviar notificació mail
     								$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-    								//if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+    								//if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
     									
     								/*$bccmails = $this->getFacturacioMails();
-    								$tomails = array($club_iter->getMail());
-    								$body = "<p>Benvolgut club ".$club_iter->getNom()."</p>";
+    								$tomails = $club->getMails();
+    								$body = "<p>Benvolgut club ".$club->getNom()."</p>";
     								$body .= "<p>Us fem saber que l'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
     								Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";*/
     									
     								$tomails = $this->getFacturacioMails();
                                     $bccmails = $this->getAdminMails(); 
-    								$body = "<p>Club ".$club_iter->getNom()."</p>";
+    								$body = "<p>Club ".$club->getNom()."</p>";
     								$body .= "<p>L'import de les tramitacions que ha fet a dèbit en aquest sistema ha arribat als límits establerts</p>";
-    								$body .= "<p>El saldo actual del club és ".number_format($club_iter->getSaldo(), 2, ',', '.')." €</p>";
+    								$body .= "<p>El saldo actual del club és ".number_format($club->getSaldo(), 2, ',', '.')." €</p>";
     								
     								$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
     								
-    								$club_iter->setLimitnotificacio($this->getCurrentDate());
+    								$club->setLimitnotificacio($this->getCurrentDate());
     							} else {
-    								$dadesClub['errors'][] = ">> (Notificació) Límit de dèbit superat des del dia " . $club_iter->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
+    								$dadesClub['errors'][] = ">> (Notificació) Límit de dèbit superat des del dia " . $club->getLimitnotificacio()->format('d-m-Y') . "<br/>"; 
     							}
     							// Estat -> sense tramitació 
-    							$club_iter->setEstat($this->getDoctrine()->getRepository('FecdasBundle:EntityClubEstat')->find(self::CLUB_SENSE_TRAMITACIO));
+    							$club->setEstat($this->getDoctrine()->getRepository('FecdasBundle:EntityClubEstat')->find(self::CLUB_SENSE_TRAMITACIO));
     						} else {
-    							$club_iter->setLimitnotificacio(null);
+    							$club->setLimitnotificacio(null);
     						}
     					}
     				}
@@ -1278,30 +1280,30 @@ class CronController extends BaseController {
     		$bccmails = array();
     		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
     		
-    		foreach ($clubs as $club_iter) {
-    			if ($club_iter->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+    		foreach ($clubs as $club) {
+    		    if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
     			else $subject = "Notificació trimestral de l'estat de comptes";
     			
-    			$body = "<p>Benvolgut club ".$club_iter->getNom()."</p>";
+    			$body = "<p>Benvolgut club ".$club->getNom()."</p>";
     			$body .= "<p>Us fem arribar l'estat dels comptes del vostre club amb la Federació a data " . $this->getCurrentDate()->format('d/m/Y') . "</p>";
     			$body .= "<div style='display:table;border-collapse: collapse;'>";
     			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Deute acumulat de l'any anterior:</div>";
-    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getRomanent(), 2, ',', '.') . " €</div></div>";
+    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club->getRomanent(), 2, ',', '.') . " €</div></div>";
     			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Despesa total en llicències durant l'any actual:</div>";
-    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalllicencies(), 2, ',', '.') . " €</div></div>";
+    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club->getTotalllicencies(), 2, ',', '.') . " €</div></div>";
     			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Despesa total en kits durant l'any actual:</div>";
-    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalduplitas(), 2, ',', '.') . " €</div></div>";
+    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club->getTotalduplitas(), 2, ',', '.') . " €</div></div>";
     			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Altres despeses durant l'any actual:</div>";
-    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalaltres(), 2, ',', '.') . " €</div></div>";
+    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club->getTotalaltres(), 2, ',', '.') . " €</div></div>";
     			$body .= "<div style='display: table-row'><div style='display: table-cell; padding-right: 10px'>Pagaments realitzats durant l'any actual:</div>";
-    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getTotalpagaments(), 2, ',', '.') . " €</div></div>";
+    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club->getTotalpagaments(), 2, ',', '.') . " €</div></div>";
     			$body .= "<div style='display: table-row'><div style='display: table-cell; '></div></div>";
     			$body .= "<div style='display: table-row;'><div style='display: table-cell;height: 20px;'></div>";
     			$body .= "<div style='display: table-cell;'></div></div>";
     			$body .= "<div style='display: table-row;border-top:1px solid #eeeeee;'><div style='display: table-cell;height: 20px;'></div>";
     			$body .= "<div style='display: table-cell;'></div></div>";
     			$body .= "<div style='display: table-row;'><div style='display: table-cell; padding-right: 10px'>Saldo total amb la Federació:</div>";
-    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club_iter->getSaldo(), 2, ',', '.') . " €</div></div>";
+    			$body .= "<div style='display: table-cell;text-align:right'>" . number_format($club->getSaldo(), 2, ',', '.') . " €</div></div>";
     			$body .= "</div>";
     				
     				
@@ -1404,7 +1406,7 @@ class CronController extends BaseController {
         $current = $this->getCurrentDate();
         
         foreach ($pendents as $comanda) {
-            $club = $comanda->getClub()->getNom();
+            $club = $comanda->getClub();
             $dataentrada = $comanda->getDataentrada()->format('d-m-Y');
             
             $interval = $current->diff($comanda->getDataentrada());
@@ -1414,11 +1416,11 @@ class CronController extends BaseController {
                 // Enviar mail notificació duplicat nou pendent a Federació
                 $subject = ":: Notificació. ".$tipus." pendent ::";
                 $tomails = $this->getFacturacioMails();
-                $body = "<p>".$tipus." pendent de pagament del club ".$club;
+                $body = "<p>".$tipus." pendent de pagament del club ".$club->getNom();
                 $body .= " en data del " . $dataentrada . "</p>";
                         
                 $this->buildAndSendMail($subject, $tomails, $body);
-                $sortida .= " ".$tipus." pendent >> Notificació Federació ". $club;
+                $sortida .= " ".$tipus." pendent >> Notificació Federació ". $club->getNom();
                 $sortida .= " (".$tipus." ". $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
                 
                 continue;  // següent iteració
@@ -1430,11 +1432,11 @@ class CronController extends BaseController {
                 $databaixa->add(new \DateInterval('P'.self::DIES_PENDENT_MAX.'D')); // Add 10 dies
                             
                 $subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-                if ($comanda->getClub()->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+                if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
                             
                 $bccmails = $this->getFacturacioMails();
-                $tomails = array($comanda->getClub()->getMail());
-                $body = "<p>Benvolgut club ".$club."</p>";
+                $tomails = $club->getMails();
+                $body = "<p>Benvolgut club ".$club->getNom()."</p>";
                     
                 $itemPendent = "";
                 if ($comanda->esParte()) $itemPendent = "de llicències/assegurances";
@@ -1451,7 +1453,7 @@ class CronController extends BaseController {
                          és de 10 dies a partir del moment de la tramitació. Gràcies per la vostra comprensió</p>";
                               
                 $this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-                $sortida .= " ".$tipus." pendent >> Notificació per mail falten 2 dies ". $club;
+                $sortida .= " ".$tipus." pendent >> Notificació per mail falten 2 dies ". $club->getNom();
                 $sortida .= " (".$tipus." ".  $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
                     
                 continue;  // següent iteració
@@ -1463,13 +1465,13 @@ class CronController extends BaseController {
                     $this->baixaComanda($comanda);
                     $em->flush();
                                     
-                    $sortida .= " ".$tipus." pendent >> Baixa més de 10 dies ". $club;
+                    $sortida .= " ".$tipus." pendent >> Baixa més de 10 dies ". $club->getNom();
                     $sortida .= " (".$tipus." ".  $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
                                 
                 } catch (\Exception $e) {
                     $em->clear();
                                     
-                    $sortida .= " ERROR Baixa ".$tipus." pendent ". $club;
+                    $sortida .= " ERROR Baixa ".$tipus." pendent ". $club->getNom();
                     $sortida .= " (".$tipus." " .  $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
                     $sortida .= " (error: " . $e->getMessage() .")</br>";
                 }
@@ -1478,7 +1480,7 @@ class CronController extends BaseController {
             }
             
             // Esperar
-            $sortida .= " ".$tipus." pendent >> ". $club;
+            $sortida .= " ".$tipus." pendent >> ". $club->getNom();
             $sortida .= " (".$tipus." ". $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
         }
         return $sortida;
@@ -1490,10 +1492,11 @@ class CronController extends BaseController {
 		$subject = ":: Incidència revisió partes pendents ::";
 		$bccmails = array();
 		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+		$club = $parte->getClubparte();
 		
 		if ($parte->getIdparteAccess() != null) {
 			$body = "<h1>Parte pendent sincronitzat</h1>";
-			$body .= "<h2>Club : " . $parte->getClub()->getNom() . "</h2>";
+			$body .= "<h2>Club : " . $club->getNom() . "</h2>";
 			$body .= "<p>Parte " .  $parte->getId() . " entrat el dia ". $parte->getDataentrada()->format('d-m-Y') ."</p>";
 			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 			return true;
@@ -1501,7 +1504,7 @@ class CronController extends BaseController {
 		
 		if ($parte->getDatapagament() != null || $parte->getImportpagament() != null) {
 			$body = "<h1>Parte pendent pagat</h1>";
-			$body .= "<h2>Club : " . $parte->getClub()->getNom() . "</h2>";
+			$body .= "<h2>Club : " . $club->getNom() . "</h2>";
 			$body .= "<h3>Valor 'pendent' no atualitzat  correctament</h3>";
 			$body .= "<p>Parte " .  $parte->getId() . " entrat el dia ". $parte->getDataentrada()->format('d-m-Y') ."</p>";
 			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
@@ -1541,9 +1544,10 @@ class CronController extends BaseController {
     	
     		$partesavui = $query->getResult();
     	
-    		foreach ($partesavui as $parte_iter) {
-    			foreach ($parte_iter->getLlicencies() as $llicencia_iter) {
-    				if ($llicencia_iter->getDatabaixa() == null) {
+    		foreach ($partesavui as $parte) {
+    			foreach ($parte->getLlicencies() as $llicencia) {
+    			    $club = $parte->getClubparte();
+    				if ($llicencia->getDatabaixa() == null) {
     					// Comprovar que no hi ha llicències vigents de la persona en difents clubs, per DNI
     					// Les persones s'associen a un club, mirar si existeix a un altre club
     					$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
@@ -1552,13 +1556,13 @@ class CronController extends BaseController {
     					$strQuery .= " AND p.databaixa IS NULL";
     														
     					$query = $em->createQuery($strQuery)
-    						->setParameter('dni', $llicencia_iter->getPersona()->getDni())
-    						->setParameter('club', $llicencia_iter->getPersona()->getClub()->getCodi());
+    						->setParameter('dni', $llicencia->getPersona()->getDni())
+    						->setParameter('club', $llicencia->getPersona()->getClub()->getCodi());
     												
     					$personaaltresclubs = $query->getResult();
     												
-    					foreach ($personaaltresclubs as $persona_iter) {
-    						$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia_iter, $persona_iter);
+    					foreach ($personaaltresclubs as $persona) {
+    						$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $persona);
     						if ($parteoverlap != null) {
     							// Enviar mail a FECDAS
     							
@@ -1568,12 +1572,12 @@ class CronController extends BaseController {
     							
     							$body = "<h1>Detectada una llicència duplicada, en data ".$dataavui->format('Y-m-d')."</h1>";
     							$body .= "<h2>Tramitació nova</h2>";
-    							$body .= "<p><strong>Club</strong> : " . $parte_iter->getClub()->getNom() . "</p>";
+    							$body .= "<p><strong>Club</strong> : " . $club->getNom() . "</p>";
     							$body .= "<p><strong>Llicència per</strong> : ";
-    							$body .= $llicencia_iter->getPersona()->getNom() . " " . $llicencia_iter->getPersona()->getCognoms();
-    							$body .= " (" . $llicencia_iter->getPersona()->getDni() . ")</p>";
+    							$body .= $llicencia->getPersona()->getNom() . " " . $llicencia->getPersona()->getCognoms();
+    							$body .= " (" . $llicencia->getPersona()->getDni() . ")</p>";
     							$body .= "<h2>Dades de la llicència existent</h2>";
-    							$body .= "<p><strong>Club</strong> : " . $persona_iter->getClub()->getNom() . "</p>";
+    							$body .= "<p><strong>Club</strong> : " . $persona->getClub()->getNom() . "</p>";
     							
     							if ($parteoverlap->getNumrelacio() != null)
     								$body .= "<p><strong>Relació </strong> : " . $parteoverlap->getNumrelacio() . "</p>";

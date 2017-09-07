@@ -184,7 +184,7 @@
 							{% endif %}
 							{% if admin == true %}
 								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': persona.llicenciaVigent.id}) }}" 
-									data-club="{{ persona.llicenciaVigent.parte.club.nom }}"
+									data-club="{{ persona.llicenciaVigent.parte.clubparte.nom }}"
 									data-persona="{{ persona.nomcognoms }}" alt="Duplicat llicència" title="Duplicat llicència">
 									<i class="fa fa-copy fa-1x lightblue"></i></a>
 							{% endif  %}

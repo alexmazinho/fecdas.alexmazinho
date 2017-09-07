@@ -1625,7 +1625,7 @@ class OfflineController extends BaseController {
 					$query = $em->createQuery("SELECT p FROM FecdasBundle:EntityParte p 
 											WHERE p.numrelacio = :rel AND 
 											p.dataalta >= '2015-01-01 00:00:00' AND
-											p.club = :club AND
+											p.clubparte = :club AND
 											p.databaixa IS NULL	")->setParameter('rel', $relacio)
 											->setParameter('club', $anulacio['codiclub']);
 					
@@ -1689,7 +1689,7 @@ class OfflineController extends BaseController {
 					$query = $em->createQuery("SELECT p FROM FecdasBundle:EntityParte p 
 											WHERE p.numrelacio = :rel AND 
 											p.dataalta >= '2015-01-01 00:00:00' AND
-											p.club = :club AND
+											p.clubparte = :club AND
 											p.databaixa IS NULL	")->setParameter('rel', $relacio)
 											->setParameter('club', $anulacio['codiclub']);
 					
@@ -1699,7 +1699,7 @@ class OfflineController extends BaseController {
 						$query = $em->createQuery("SELECT p FROM FecdasBundle:EntityParte p 
 											WHERE p.numrelacio = :rel AND 
 											p.dataalta >= '2014-01-01 00:00:00' AND
-											p.club = :club AND
+											p.clubparte = :club AND
 											p.databaixa IS NULL	")->setParameter('rel', $relacio)
 											->setParameter('club', $anulacio['codiclub']);
 					

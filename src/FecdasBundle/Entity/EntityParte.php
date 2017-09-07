@@ -29,6 +29,12 @@ class EntityParte extends EntityComanda {
 	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $numrelacio;   // =================================================> PER ESBORRAR
+
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityClub")
+	 * @ORM\JoinColumn(name="clubparte", referencedColumnName="codi", nullable=false)
+	 */
+	protected $clubparte;	// FK taula m_clubs => pot ser NULL només informar en cas que club comanda sigui diferent
 	
 	/**
 	 * @ORM\Column(type="datetime")
@@ -74,13 +80,15 @@ class EntityParte extends EntityComanda {
 		
 		// Hack per permetre múltiples constructors
 		parent::__construct(); // Sense paràmetres
-		
 		$a = func_get_args();
 		$i = func_num_args();
 		
 		if ($i > 1 && method_exists($this,$f='__constructParams')) {
 			call_user_func_array(array($this,$f),$a);
 		}
+		
+		error_log('NEW PARTE');
+		$this->clubparte = $this->club; // Club de la comanda per defecte
 	}
 	
 
@@ -120,7 +128,6 @@ class EntityParte extends EntityComanda {
 	protected function updateClubSaldoTipusComanda($import) {
 		$this->club->setTotalllicencies($this->club->getTotalllicencies() + $import);
 	}
-	
 	
 	public function baixa()
 	{
@@ -788,7 +795,7 @@ class EntityParte extends EntityComanda {
  	/**
 	 * Get datapreu. Reescriptura
 	 *
-	 * @return date
+	 * @return \Datetime
 	 */
 	public function getDatapreu()
 	{
@@ -835,11 +842,31 @@ class EntityParte extends EntityComanda {
     {
         return $this->numrelacio;
     }
+    
+    /**
+     * Set clubparte
+     *
+     * @param \FecdasBundle\Entity\EntityClub $club
+     */
+    public function setClubparte(\FecdasBundle\Entity\EntityClub $clubparte = null)
+    {
+        $this->clubparte = $clubparte;
+    }
+    
+    /**
+     * Get clubparte. Get club del parte o si és null de la comanda
+     *
+     * @return \FecdasBundle\Entity\EntityClub
+     */
+    public function getClubparte()
+    {
+        return $this->clubparte;
+    }
 
     /**
      * Set dataalta
      *
-     * @param datetime $dataalta
+     * @param \Datetime $dataalta
      */
     public function setDataalta($dataalta)
     {
@@ -849,7 +876,7 @@ class EntityParte extends EntityComanda {
     /**
      * Get dataalta
      *
-     * @return datetime
+     * @return \Datetime
      */
     public function getDataalta()
     {
@@ -859,7 +886,7 @@ class EntityParte extends EntityComanda {
     /**
      * Set comentari
      *
-     * @param text $comentari
+     * @param string $comentari
      */
     public function setComentari($comentari)
     {
@@ -869,7 +896,7 @@ class EntityParte extends EntityComanda {
     /**
      * Get comentari
      *
-     * @return text
+     * @return string
      */
     public function getComentari()
     {
@@ -899,7 +926,7 @@ class EntityParte extends EntityComanda {
     /**
      * Set tipus
      *
-     * @param FecdasBundle\Entity\EntityParteType $tipus
+     * @param \FecdasBundle\Entity\EntityParteType $tipus
      */
     public function setTipus(\FecdasBundle\Entity\EntityParteType $tipus)
     {
@@ -909,7 +936,7 @@ class EntityParte extends EntityComanda {
     /**
      * Get tipus
      *
-     * @return FecdasBundle\Entity\EntityParteType 
+     * @return \FecdasBundle\Entity\EntityParteType 
      */
     public function getTipus()
     {
@@ -979,7 +1006,7 @@ class EntityParte extends EntityComanda {
     /**
      * Add llicencia
      *
-     * @param FecdasBundle\Entity\EntityLlicencia $llicencia
+     * @param \FecdasBundle\Entity\EntityLlicencia $llicencia
      */
     public function addLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
     {
@@ -990,7 +1017,7 @@ class EntityParte extends EntityComanda {
     /**
      * Remove llicencia
      *
-     * @param FecdasBundle\Entity\EntityLlicencia $llicencia
+     * @param \FecdasBundle\Entity\EntityLlicencia $llicencia
      */
     public function removeLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
     {
@@ -1001,19 +1028,21 @@ class EntityParte extends EntityComanda {
     /**
      * Get llicencies
      *
-     * @return Doctrine\Common\Collections\ArrayCollection 
+     * @return \Doctrine\Common\Collections\ArrayCollection 
      */
     public function getLlicencies()
     {
     	return $this->llicencies;
     }
 
+    /*
+    
     /**
      * Set llicencies
      *
-     * @param $llicencies Doctrine\Common\Collections\ArrayCollection
-     */
-	/*
+     * @param $llicencies \Doctrine\Common\Collections\ArrayCollection
+     * /
+	
     public function setLlicencies(ArrayCollection $llicencies)
     {
     	$this->llicencies = $llicencies;

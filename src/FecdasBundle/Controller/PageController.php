@@ -258,6 +258,7 @@ class PageController extends BaseController {
 		// Marcar pendent per a clubs pagament immediat
 		if ($persist == true) $em->persist($parte);
 		
+		$club = $parte->getClubparte();
 		$fila = 0;
 		
 		implode($reader->getLayout());
@@ -282,13 +283,11 @@ class PageController extends BaseController {
 				if ($metapersona == null) {
 					$metapersona = new EntityMetaPersona( $row['dni'] );
 				} else {
-					$persona = $metapersona->getPersonaClub($parte->getClub());	
+				    $persona = $metapersona->getPersonaClub($club);	
 				}	
 	
 				if ($persona == null) {
-					$persona = new EntityPersona($metapersona, $parte->getClub());
-					
-					$persona = new EntityPersona($metapersona, $this->getCurrentClub());
+				    $persona = new EntityPersona($metapersona, $club);
 	
 					$persona->setNom(mb_convert_case($row['nom'], MB_CASE_TITLE, "utf-8"));
 					$persona->setCognoms(mb_strtoupper($row['cognoms'], "utf-8"));
@@ -681,8 +680,9 @@ class PageController extends BaseController {
 			
 		if ($partearenovar == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
+		$clubrenovar = $partearenovar->getClubparte();
 		/* Validació impedir modificacions altres clubs */
-		if ($this->isCurrentAdmin() != true and $partearenovar->getClub()->getCodi() != $currentClub)
+		if ($this->isCurrentAdmin() != true && $clubrenovar->getCodi() != $currentClub)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
 		/* Si abans data caducitat renovació per tot el periode
@@ -697,7 +697,7 @@ class PageController extends BaseController {
 			$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
 		}
 
-		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $partearenovar->getClub(), 'Renovació llicències');
+		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $clubrenovar, 'Renovació llicències');
 		
 		// Crear factura
 		$this->crearFactura($dataalta, $parte);
@@ -789,6 +789,7 @@ class PageController extends BaseController {
 		
 		$parteid = 0;
 		
+		
 		if ($request->getMethod() == 'POST') {
 			if ($request->request->has('parte')) { 
 				$response = $this->forward('FecdasBundle:Facturacio:pagamentcomanda');  // Pagament continuar
@@ -813,6 +814,8 @@ class PageController extends BaseController {
 			
 			$parte = $this->crearComandaParte($dataalta);
 			$this->crearFactura($dataalta, $parte);
+			
+error_log('Club NOU parte. Comanda => ' . $parte->getClub()->getNom().'  Parte => '.$parte->getClubparte()->getNom()); 
 		}
 		
 		$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
@@ -878,14 +881,33 @@ class PageController extends BaseController {
 					// Nou parte
 					if (!isset($p['dataalta'])) throw new \Exception('Error data alta. Contacti amb la Federació');
 					if (!isset($p['tipus'])) throw new \Exception('Error tipus. Contacti amb la Federació</div>');
-	
+					
 					$partedataalta = \DateTime::createFromFormat('d/m/Y H:i', $p['dataalta']);
 					$tipusid = $p['tipus'];
 	
 					$tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find($tipusid);
-						
+                    
+					$club = null;
+					$clubparte = null;
+					if ($this->isCurrentAdmin() && isset($p['club'])) {  // Admins poden escollir el club
+                        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($p['club']);
+                        
+                        if ($tipus->esLlicenciaDespeses()) { // Comanda FECDAS, parte al club. Llicències col·laboradors FECDAS A compte de despeses 659.0002 de FECDAS
+                            $clubparte = $club;
+                            $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+                        }
+                        
+					} else {
+    					$club = $this->getCurrentClub();
+					}
+error_log('Club comanda ' . $club->getNom()); 
+
+if ($clubparte != null && $clubparte != $club) error_log('Club parte diferent ' . $clubparte->getNom());
+
 					// Crear parte nou per poder carregar llista
-					$parte = $this->crearComandaParte($partedataalta, $tipus, $this->getCurrentClub(), 'Comanda llicències');
+					$parte = $this->crearComandaParte($partedataalta, $tipus, $club, 'Comanda llicències');
+
+					if ($clubparte != null && $clubparte != $club)	$parte->setClubparte($clubparte); // Pot ser diferent del club de la comanda  
 					
 					$this->crearFactura($partedataalta, $parte);
 				} else {
@@ -894,6 +916,8 @@ class PageController extends BaseController {
 					if ($parte == null) throw new \Exception('No s\'ha trobat la llista '.$id);
 				}
 					
+error_log($id . ' ' . $parte->getClub()->getNom() . ' ' . ( $parte->getClubparte()!= null?$parte->getClubparte()->getNom():'idem '.$parte->getClub()->getNom() ) );
+				
 				// Noves llicències, permeten edició no pdf
 				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
 				$em->persist($llicencia);
@@ -1584,10 +1608,18 @@ class PageController extends BaseController {
 		$day = $request->get('day');
 		$month = $request->get('month');
 		$year = $request->get('year');
+		$codi = $request->get('club', '');
+		
+		$club = null;
+		if ($this->isCurrentAdmin() && $codi != '') {  // Admins poden escollir el club
+		    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		} else {
+		    $club = $this->getCurrentClub();
+		}
 		
 		$dataconsulta = \DateTime::createFromFormat('d/m/Y', $day.'/'.$month.'/'.$year );
 		
-		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataconsulta);
+		$llistatipus = BaseController::getLlistaTipusParte($club, $dataconsulta);
 		
 		$tipuspermesos = "";
 		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus

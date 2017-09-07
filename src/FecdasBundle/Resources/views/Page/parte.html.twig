@@ -67,6 +67,12 @@
 		{% endif %}	
 
 		<div class="row">
+			<div class="{% if admin != true %}hidden{% else %}col-md-3 col-xs-8{% endif %}">
+			  	<div class="form-group">
+			    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+					{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+				</div>
+			</div>
 			 <div class="col-md-1 col-xs-2">
 				<div class="form-group">
 					{{ form_label(form.any) }}
@@ -76,7 +82,12 @@
 					</div>
 				</div>
 			 </div>
-			 <div class="col-md-4 col-xs-5">
+	 {% if admin == true %}	
+	 	</div>
+	 	<div class="row">
+	 {% endif %}
+			 
+			 <div class="col-md-3 col-xs-5">
 				<div class="form-group">
 					{{ form_label(form.dataalta, 'Validesa') }}
 					<div id="formparte-dataalta" class="input-group">
@@ -174,15 +185,19 @@
     				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
     				
     				if ($.browser.msie) $('#formparte-llicencia').hide(); 
-    		    	else $('#formparte-llicencia').slideUp('fast');
-    
-    		    	// Update select tipus parte	
-    				var params = { day: ct.getDate(), month: (ct.getMonth()+1), year: ct.getFullYear()  };
-    				$.get(url,	params,
-    				function(data) {
+    				else $('#formparte-llicencia').slideUp('fast');
+    				
+    				queryParteTipus(url, $("select#parte_clubs").val(), ct, 
+    	    		function( data ) {
+    	        		//callbackko
+    	        		
     					$('select#parte_tipus').html(data); 
     					$('#parte_any').val(ct.getFullYear());
-    				});
+
+    					if ($('select#parte_tipus').val() != "") {
+    						loadLlicencia(0);
+    					}
+    	        	});
     			}
     		);
     		
@@ -192,6 +207,35 @@
     	{% if parte.allowedit == true %}
     		reloadParteTipus();
     	{% endif %} 
+
+    	// Comanda filtre clubs disponible per admin's
+		{% if admin == true  %} 
+			$("select#parte_clubs").select2({
+				minimumInputLength: 2,
+				allowClear: true,
+				placeholder: 'Escollir club'
+			});
+
+			$("select#parte_clubs").change(function() {
+
+				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
+				
+				if ($.browser.msie) $('#formparte-llicencia').hide(); 
+				else $('#formparte-llicencia').slideUp('fast');
+				
+				queryParteTipus(url, $(this).val(), $( '#parte_dataalta' ).datetimepicker('getValue'), function( data ) {
+	        		//callbackko
+	        		
+					$('select#parte_tipus').html(data); 
+
+					if ($('select#parte_tipus').val() != "") {
+						loadLlicencia(0);
+					}
+	        	});
+				
+		    });
+			
+		{% endif %}
     	
     	removeLlicenciaClick();
     

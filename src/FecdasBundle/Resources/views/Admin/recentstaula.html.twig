@@ -35,7 +35,7 @@
 			   			{% endfor %}
 			   		</div>
 		   			<div class="data-detall-cell parterecents-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/y') }}</time><br/><span>({{ parte.dataentrada|date('d/m/y') }})</span></div>
-		   			<div class="data-detall-cell parterecents-club">{{ parte.club.nom }}</div>
+		   			<div class="data-detall-cell parterecents-club">{{ parte.clubparte.nom }}</div>
 		   			<div class="data-detall-cell parterecents-tipus">{{ parte.tipus.codi }}</div>
 		   			<div class="data-detall-cell parterecents-enviar">{{ parte.numEnviar }}/{{ parte.numLlicencies }}</div>
 		   			<div class="data-detall-cell parterecents-sortida">{{ parte.numEnviadesMail }} + {{ parte.numImpreses }} / {{ parte.numLlicencies }}</div>

@@ -845,6 +845,21 @@
 	
 	/*****************************************************************************************************************/
 	
+	queryParteTipus = function(url, club, date, callbackOk ) {
+
+    	// Update select tipus parte	
+		var params = { 'day': date.getDate(), 'month': (date.getMonth()+1), 'year': date.getFullYear(), 'club': club  };
+		$.get(url,	params,
+		function(data) {
+			
+			callbackOk( data );
+			
+		}).fail( function(xhr, status, error) {
+			
+			return false;
+    	});
+	};
+	
 	reloadParteTipus = function() {
 		/* Inicialment selecció de cap tipus. Obligar usuari escollir*/
 		//$('#parte_tipus').val('');
@@ -1384,12 +1399,13 @@
 		
 		var url = $("#formllicencia").attr("action");
         var tipusparte = $("#parte_tipus").val();
+        var club = $("#parte_clubs").val();
         var altadata = $("#parte_dataalta").val();
 
     	if ($.browser.msie) $('#formparte-llicencia').hide(); 
     	else $('#formparte-llicencia').stop().slideUp('fast');
         $('#progressbar').show();  // Rellotge
-        var part = { 'id' : $("#parte_id").val(), 'dataalta': altadata, 'tipus': tipusparte };
+        var part = { 'id' : $("#parte_id").val(), 'dataalta': altadata, 'tipus': tipusparte, 'club': club };
         var llic = { 'id' : n };
         
         $.get(url, { source_ajax: 'edit-llicencia', parte: part, llicencia: llic},

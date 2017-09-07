@@ -208,10 +208,10 @@ class TitulacionsController extends BaseController {
 			}
 			*/
 			/* Ordenades de última a primera 
-			 * SELECT e.dni, COUNT(DISTINCT p.club) FROM m_partes p 
+			 * SELECT e.dni, COUNT(DISTINCT p.clubparte) FROM m_partes p 
 			 * INNER JOIN m_llicencies l ON p.id = l.parte 
 			 * INNER JOIN m_persones e ON l.persona = e.id 
-			 * GROUP BY e.dni HAVING COUNT(DISTINCT p.club) > 1
+			 * GROUP BY e.dni HAVING COUNT(DISTINCT p.clubparte) > 1
 			 * */
 			 
 			 $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->find($id);

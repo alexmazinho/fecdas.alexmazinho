@@ -365,7 +365,7 @@ class EntityPersona {
 			$llicenciaLast = EntityPersona::getLastLlicenciaStatic($llicencies, $desde, $fins);
 	    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null )  {
 	    		$parte = $llicenciaLast->getParte();
-				if ($admin) $txtClub = "(".$parte->getClub()->getNom().") ";
+	    		if ($admin) $txtClub = "(".$parte->getClubparte()->getNom().") ";
 				
     			if ($fins != null && $fins->format('Y-m-d') >= $parte->getDataalta()->format('Y-m-d')) return $txtClub . $llicenciaLast->getCategoria()->getDescripcio() . " fins al " . $parte->getDatacaducitat()->format('d/m/Y');
 				return $txtClub . "Darrera llicència finalitzada en data " . $parte->getDatacaducitat()->format('d/m/Y');	
@@ -377,14 +377,14 @@ class EntityPersona {
 		$llicenciaVigent = EntityPersona::getLlicenciaVigentStatic($llicencies);
     	if ($llicenciaVigent != null && $llicenciaVigent->getParte() != null) {
     		$parte = $llicenciaVigent->getParte();
-    		if ($admin) $txtClub = "(".$parte->getClub()->getNom().") ";
+    		if ($admin) $txtClub = "(".$parte->getClubparte()->getNom().") ";
     		return  $txtClub . $llicenciaVigent->getCategoria()->getDescripcio() . " fins al " . $parte->getDatacaducitat()->format('d/m/Y');
 		}
     		
 		$llicenciaLast = EntityPersona::getLastLlicenciaStatic($llicencies);
     	if ($llicenciaLast != null && $llicenciaLast->getParte() != null ) {
     		$parte = $llicenciaLast->getParte();
-			if ($admin) $txtClub = "(".$parte->getClub()->getNom().") ";
+    		if ($admin) $txtClub = "(".$parte->getClubparte()->getNom().") ";
     		return $txtClub . "Darrera llicència finalitzada en data " . $parte->getDatacaducitat()->format('d/m/Y');
 		}
     	

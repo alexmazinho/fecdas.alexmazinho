@@ -107,6 +107,20 @@ class EntityParteType {
 	}
 
 	
+	/**
+	 * és llicència col·laboradors FECDAS A compte de despeses 659.0002 de FECDAS. 
+	 * Tots els productes de les diferents categories han d'anar al compte de despeses 
+	 *
+	 * @return boolean
+	 */
+	public function esLlicenciaDespeses()
+	{
+	    foreach ($this->categories as $categoria) {
+	        if ($categoria->getCodisortida() != BaseController::CODI_DESPESES_FECDAS) return false;
+	    }
+	    return true;
+	}
+	
 	
     /**
      * Set id

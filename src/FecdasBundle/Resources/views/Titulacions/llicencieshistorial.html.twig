@@ -10,7 +10,7 @@
 				{{ llicencia.parte.dataalta|date('d/m/Y') }} - {{ llicencia.parte.datacaducitat|date('d/m/Y') }}
 				</div>
 				<div class="historial-camp historial-categoria">{{ llicencia.categoria.categoria }}</div>
-				<div class="historial-camp historial-club">({{ llicencia.parte.club.nom }})</div>
+				<div class="historial-camp historial-club">({{ llicencia.parte.clubparte.nom }})</div>
 				<div class="historial-camp historial-desc">{{ llicencia.categoria.descripcio }} {% if llicencia.isBaixa %}(anul·lada){% endif %}</div>
 				{% if admin == true %}
 					<div class="historial-camp historial-action"><a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': llicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">

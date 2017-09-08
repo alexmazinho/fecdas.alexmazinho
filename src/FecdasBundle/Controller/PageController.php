@@ -109,7 +109,7 @@ class PageController extends BaseController {
 				}
 		}
 		
-		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataalta);
+		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataalta, $this->isCurrentAdmin());
 		
 		$atributs = array('accept' => '.csv');
 		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
@@ -814,8 +814,6 @@ class PageController extends BaseController {
 			
 			$parte = $this->crearComandaParte($dataalta);
 			$this->crearFactura($dataalta, $parte);
-			
-error_log('Club NOU parte. Comanda => ' . $parte->getClub()->getNom().'  Parte => '.$parte->getClubparte()->getNom()); 
 		}
 		
 		$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
@@ -889,8 +887,8 @@ error_log('Club NOU parte. Comanda => ' . $parte->getClub()->getNom().'  Parte =
                     
 					$club = null;
 					$clubparte = null;
-					if ($this->isCurrentAdmin() && isset($p['club'])) {  // Admins poden escollir el club
-                        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($p['club']);
+					if ($this->isCurrentAdmin() && isset($p['clubs'])) {  // Admins poden escollir el club
+                        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($p['clubs']);
                         
                         if ($tipus->esLlicenciaDespeses()) { // Comanda FECDAS, parte al club. Llicències col·laboradors FECDAS A compte de despeses 659.0002 de FECDAS
                             $clubparte = $club;
@@ -900,10 +898,6 @@ error_log('Club NOU parte. Comanda => ' . $parte->getClub()->getNom().'  Parte =
 					} else {
     					$club = $this->getCurrentClub();
 					}
-error_log('Club comanda ' . $club->getNom()); 
-
-if ($clubparte != null && $clubparte != $club) error_log('Club parte diferent ' . $clubparte->getNom());
-
 					// Crear parte nou per poder carregar llista
 					$parte = $this->crearComandaParte($partedataalta, $tipus, $club, 'Comanda llicències');
 
@@ -916,8 +910,6 @@ if ($clubparte != null && $clubparte != $club) error_log('Club parte diferent ' 
 					if ($parte == null) throw new \Exception('No s\'ha trobat la llista '.$id);
 				}
 					
-error_log($id . ' ' . $parte->getClub()->getNom() . ' ' . ( $parte->getClubparte()!= null?$parte->getClubparte()->getNom():'idem '.$parte->getClub()->getNom() ) );
-				
 				// Noves llicències, permeten edició no pdf
 				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
 				$em->persist($llicencia);
@@ -964,14 +956,14 @@ error_log($id . ' ' . $parte->getClub()->getNom() . ' ' . ( $parte->getClubparte
 				} else {
 					// Update / insert llicència
 					$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
-					$formLlicencia = $this->createForm(new FormLlicencia(),$llicencia);
+					$formLlicencia = $this->createForm(new FormLlicencia($this->isCurrentAdmin()),$llicencia);
 
 					$form->handleRequest($request);
 					$formLlicencia->handleRequest($request);
 	
-					if (!$formLlicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formLlicencia->getErrorsAsString());
+					if (!$formLlicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formLlicencia->getErrors(true, false));
 						
-					if (!$form->isValid()) throw new \Exception('Error validant les dades de la llista: '.$form->getErrorsAsString());
+					if (!$form->isValid()) throw new \Exception('Error validant les dades de la llista: '.$form->getErrors(true, false));
 
 					// Errors generen excepció
 					$this->validaParteLlicencia($parte, $llicencia);
@@ -1002,7 +994,7 @@ error_log($id . ' ' . $parte->getClub()->getNom() . ' ' . ( $parte->getClubparte
 				
 			} else {
 				// Mostrar formulari
-				$formllicencia = $this->createForm(new FormLlicencia(), $llicencia);
+			    $formllicencia = $this->createForm(new FormLlicencia($this->isCurrentAdmin()), $llicencia);
 				if ($formllicencia->has('datacaducitatshow') == true)
 					$formllicencia->get('datacaducitatshow')->setData($formllicencia->get('datacaducitat')->getData());
 	
@@ -1619,7 +1611,7 @@ error_log($id . ' ' . $parte->getClub()->getNom() . ' ' . ( $parte->getClubparte
 		
 		$dataconsulta = \DateTime::createFromFormat('d/m/Y', $day.'/'.$month.'/'.$year );
 		
-		$llistatipus = BaseController::getLlistaTipusParte($club, $dataconsulta);
+		$llistatipus = BaseController::getLlistaTipusParte($club, $dataconsulta, $this->isCurrentAdmin());
 		
 		$tipuspermesos = "";
 		if (count($llistatipus) > 1) $tipuspermesos .= "<option value=''></option>"; // Excepte decathlon i tecnocampus

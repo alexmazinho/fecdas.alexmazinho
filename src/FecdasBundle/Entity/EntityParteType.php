@@ -60,6 +60,11 @@ class EntityParteType {
 	protected $actiu;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $admin;
+	
+	/**
 	 * @ORM\Column(type="string", length=100)
 	 */
 	protected $polissa;
@@ -116,7 +121,7 @@ class EntityParteType {
 	public function esLlicenciaDespeses()
 	{
 	    foreach ($this->categories as $categoria) {
-	        if ($categoria->getCodisortida() != BaseController::CODI_DESPESES_FECDAS) return false;
+	        if (!$categoria->esProducteDespeses()) return false;
 	    }
 	    return true;
 	}
@@ -302,6 +307,26 @@ class EntityParteType {
     	return $this->actiu;
     }
     
+    /**
+     * Set admin
+     *
+     * @param boolean $admin
+     */
+    public function setAdmin($admin)
+    {
+        $this->admin = $admin;
+    }
+    
+    /**
+     * Get admin
+     *
+     * @return boolean
+     */
+    public function getAdmin()
+    {
+        return $this->admin;
+    }
+    
 	/**
      * Set polissa
      *
@@ -345,7 +370,7 @@ class EntityParteType {
     /**
      * Add categories
      *
-     * @param FecdasBundle\Entity\EntityCategoria $categories
+     * @param \FecdasBundle\Entity\EntityCategoria $categories
      */
     public function addEntityCategoria(\FecdasBundle\Entity\EntityCategoria $categories)
     {
@@ -355,7 +380,7 @@ class EntityParteType {
     /**
      * Get categories
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getCategories()
     {

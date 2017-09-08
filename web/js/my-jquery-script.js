@@ -50,7 +50,6 @@
 	/*************************************************** Utils *******************************************************/		
 	isValidEmailAddress = function(emailAddress) {
 	    var pattern = new RegExp(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i);
-	    // alert( pattern.test(emailAddress) );
 	    return pattern.test(emailAddress);
 	};
 	
@@ -736,13 +735,10 @@
 	login = function() {
 		//$('loginbox').show(); 
 		if ($('#loginbox').is(':visible')) {
-			//alert("not hidden");
 	    	$('#loginbox').hide();
 	    	$("#login_user").RemoveBubblePopup();
 	    	$("#login_pwd").RemoveBubblePopup();
-	    	//alert("not hidden");
 	   	} else {
-	   		//alert("hidden");
 	       	$('#loginbox').show();  
 	       		
 	       	//autofillLoginCheck();
@@ -836,7 +832,6 @@
 		var params = $('#formenquesta').serializeArray();
 		params.push( {'name':'submitaction','value': action} );
 		$.post(url, params, function(data) {
-			//alert(data);
 			//$( ".selector" ).dialog( "destroy" );
 			dialegInfo("Enquesta desada", data, 350, 100);
 		});
@@ -1402,8 +1397,11 @@
         var club = $("#parte_clubs").val();
         var altadata = $("#parte_dataalta").val();
 
-    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-    	else $('#formparte-llicencia').stop().slideUp('fast');
+        $('#formparte-llicencia').hide();
+        
+    	//if ($.browser.msie) $('#formparte-llicencia').hide(); 
+    	//else $('#formparte-llicencia').stop().slideUp('fast');
+    	
         $('#progressbar').show();  // Rellotge
         var part = { 'id' : $("#parte_id").val(), 'dataalta': altadata, 'tipus': tipusparte, 'club': club };
         var llic = { 'id' : n };
@@ -1537,9 +1535,21 @@
 	        var url = $(this).attr('href');
 	        
 	        var strHtml = '<p>Segur que vols esborrar aquesta llicència?</p>';
-			strHtml += "   <p>Data factura anul·lació<br/>";
-			strHtml += "	  <input type='text' id='datafacturacio' disabled='disabled'/>";
-			strHtml += "   </p>";
+			strHtml += "	<div class='row'>";
+			strHtml += "		<div class='col-md-12'>";
+			strHtml += "			Data factura anul·lació";
+			strHtml += "		</div>";
+			strHtml += "	</div>";
+			strHtml += "	<div class='row'>";
+			strHtml += "		<div class='col-md-8'>";
+			strHtml += "			<div class='input-group'>";	
+			strHtml += "				<span class='input-group-addon'></span>";
+			strHtml += "				<input type='text' id='datafacturacio' name='datafacturacio' class='form-control form-control-center'>";
+			strHtml += "				<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
+			strHtml += "			</div'>";
+			strHtml += "		</div>";
+			strHtml += "	</div>";
+			
 			
 			dialegConfirmacio(strHtml, 'Confirmació baixa llicència', 'auto', 400, function() { 
 				
@@ -1560,7 +1570,13 @@
 	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	 		    	else $('#formparte-llicencia').stop().slideUp('fast');
 	 		    	
-	 		    	closeDialegConfirmacio();
+	 		    	//closeDialegConfirmacio();
+	 		    	if ( $('#llicencia-id').length == 0) {
+	 		    		// Cap llicència, tornar a partes
+	 		    		window.location = $(".link-parent").attr('href');
+	 		    	} else {
+	 		    		location.reload();
+	 		    	}
 	 		    	
 	 	        }).fail( function(xhr, status, error) {
 					 // xhr.status + " " + xhr.statusText, status, error
@@ -1575,15 +1591,19 @@
 				 
 			}, function() { closeDialegConfirmacio(); }, function() { 
 
-				$( "#datafacturacio" ).datepicker({
-		      		showOn: "button",
-		            //buttonImage: "/images/icon-calendar.gif",
-		            buttonText: "<span class='fa fa-calendar fa-1x'></span>",
-		            //buttonImageOnly: true,
-		            dateFormat: 'dd/mm/yy'
-		      	});
-			    
-			  	$( "#datafacturacio" ).datepicker( "setDate", new Date() );
+				var current = new Date();
+				
+	    		initDateTimePicker ( 
+	    			$( '#datafacturacio' ), 
+	    			new Date( current.getFullYear(), 1, 1), // min
+	    			new Date( current.getFullYear(), current.getMonth(), current.getDate() + 2), // max
+	    			current, 
+	    			'datafacturacio-picker', 
+	    			false,
+	    			function () { }
+	    		);
+				
+	    		$('#datafacturacio').datetimepicker({value: current.getDayFormatted()+'/'+current.getMonthFormatted()+'/'+current.getFullYear()});
 			});
 	        
 	    });
@@ -1595,6 +1615,8 @@
 	    .click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
+	        
+	        $('.alert-dismissible').remove();
 	        
 	        var url = $("#formllicencia").attr("action");
 			if ($("#parte_llicencies_persona_select").val() == "") {
@@ -1608,9 +1630,6 @@
 				return false;
 			}
 			
-	    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
-	    	else $('#formparte-llicencia').stop().slideUp('fast');
-
 			$('#progressbar').show();  // Rellotge
 			
 			var paramsParte = $('#formparte').serializeArray();
@@ -1619,6 +1638,8 @@
 			params.push( {'name':'action','value': 'persist'} );
 			
 			$.post(url, params, function(data, textStatus) {
+				
+				$('#formparte-llicencia').hide(); 
 				
 				$('#progressbar').hide();  // Rellotge
 		    	
@@ -1668,7 +1689,11 @@
 				 
 				 $('#progressbar').hide();  // Rellotge
 			    	
-			     $("#llista-llicencies").prepend(sms);
+				 $("select#parte_llicencies_persona_select").select2("data", "");
+
+				 $('.formpersona-openmodal').html('nou assegurat <i class="fa fa-users"></i>'); // Updates botó modifica => nou
+				 
+			     $("#edicio-llicencies").prepend(sms);
 			});
 	    });
 	};
@@ -1955,8 +1980,6 @@
 	
 	ordenarLlista = function() {
 		$(".col-listheader").click(function(){
-			alert($(this).html());
-			
 			SORTER.sort(".list-data");
 		});
 	};

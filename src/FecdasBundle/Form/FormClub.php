@@ -138,7 +138,7 @@ class FormClub extends AbstractType {
 				'required'  => false,
 		));
 		
-				// Junta
+		// Junta
 		$builder->add('dataalta', 'date', array(
 				'required'  	=> true,
 				'widget' 		=> 'single_text',

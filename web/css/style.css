@@ -162,7 +162,7 @@ input[type="text"],
 input[type="email"],
 input[type="search"],
 input[type="password"] { 
-	max-width: 400px; 
+	/*max-width: 400px;*/ 
 	line-height: 30px; 
 	min-height:30px; 
 	text-indent: 5px;
@@ -267,6 +267,7 @@ input.disabled label
 
 .input-group-addon-icon-search { padding: 6px 6px }
 
+.input-group-addon.group-addon-xs { padding: 6px 8px; }
 .input-group-addon.group-addon-sm { min-width: 30px; }
 .input-group-addon.group-addon-md { min-width: 60px; }
 .input-group-addon.group-addon-lg { min-width: 100px; }
@@ -1738,6 +1739,7 @@ input#parte_any {
 	width: 50px;
 	text-align: center;
 	text-indent: 0px;
+	padding: 5px; 
 }
 
 
@@ -1828,22 +1830,24 @@ select#parte_renovar_tipus { width: 240px; }
 #partes-club .titol-club-nom { font-size: 22px; border-bottom: 1px dashed #1240A0; padding: 0 5% 10px; line-height: 1.8; }
 #partes-import { /*width: 20%;*/ }
 
+#header-parteestat  { width: 2%; text-align: center; }
 #header-parteid { width: 6%; }
 #header-parteany {	width: 6%; }
 #header-partedata {	width: 6%; }
 #header-partetipusdesc { width: 21%; }
 #header-partetotal {	width: 8%;}
 #header-parteimport {	width: 8%; text-align:right;}
-#header-parteestat {	width: 19%; text-align: left; }
+#header-parteinfo {	width: 19%; text-align: left; }
 #header-parteactions { width: 10%; padding-right: 10px; }
 
+.parte-estat { width: 2%; text-align: left; }
 .parte-id {	width: 6%; }
 .parte-any { width: 6%;  }
 .parte-data { width: 6%; }
 .parte-tipusdesc { width: 21%; }
 .parte-total { width: 8%; }
 .parte-import {	width: 8%; text-align:right;}
-.parte-estat { width: 20%; text-align:left;}
+.parte-info { width: 20%; text-align:left;}
 .parte-actions { width: 10%; text-align:right; margin-top: -14px; padding-right: 10px }
 
 
@@ -1863,7 +1867,7 @@ select#parte_renovar_tipus { width: 240px; }
     box-shadow: -10px 0 10px -5px rgba(0, 0, 0, 0.2), 10px 0 10px -5px rgba(0, 0, 0, 0.2); 
     line-height: 24px;
     padding: 5px 20px;
-    margin: 5px 15%;
+    margin: 5px 25%;
 }
 
 .parte-llicencies .close {
@@ -1936,11 +1940,11 @@ select#parte_renovar_tipus { width: 240px; }
 
 
 #historial-overlay {
-	width: auto;
+	width: 80%;
 	min-width: 450px;
 	position: absolute;
 	padding: 5px;
-    margin: 5px 15%;
+    margin: 5px 10%;
 	line-height: 24px;
 	top: 100px;
 }
@@ -1955,7 +1959,8 @@ select#parte_renovar_tipus { width: 240px; }
     width: 35px;
 }
 
-.historial-titol { color: #2281CF; font-weight: bold; font-size: 1.1em; line-height: 2em; padding: 5px 20px 5px 0; }
+.historial-titol { color: #2281CF; font-size: 1.1em; line-height: 2em; padding: 5px 20px 5px 0; }
+.historial-titol span { font-weight: bold; }
 
 #historial-overlay .historial-titol { padding: 5px 20px; }
 #historial-overlay .taula-historial.historial-cmas { margin-bottom: 40px; }
@@ -2193,6 +2198,22 @@ select#parte_renovar_tipus { width: 240px; }
 
 #formclub-nouclub, #formclub-copiar {
 	margin: 28px 0 0 0;
+}
+
+.header-notes {
+	font-size: 0.8em;
+	font-style: italic;
+	color: #1240A0;
+}
+
+.header-notes textarea {
+	background: #faf3bf; /*#eee;*/
+	max-width: initial;
+	min-height: 60px;
+	max-height: 150px;
+	resize: vertical;
+	font-family: helvetica;
+	line-height: 1.2;
 }
 
 

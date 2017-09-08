@@ -33,7 +33,7 @@ class FormParte extends AbstractType {
 				$tipusparte = $parte->getTipus();
 				$dataalta = $parte->getDataalta();
 				if ($dataalta == null) $dataalta = new \DateTime();
-				$llistatipus = BaseController::getLlistaTipusParte($parte->getClubparte(), $dataalta);
+				$llistatipus = BaseController::getLlistaTipusParte($parte->getClubparte(), $dataalta, $this->admin);
 				
 				if ($parte->esNova() && $parte->isAllowEdit()) {
 					// Mostra només la llista dels permesos
@@ -63,21 +63,37 @@ class FormParte extends AbstractType {
 				
 				$form->add('tipus', 'entity', $tipusparteoptions);
 				
-				$form->add('clubs', 'entity', array(
-    				    'class' 		=> 'FecdasBundle:EntityClub',
-    				    'query_builder' => function($repository) {
-        				    return $repository->createQueryBuilder('c')
-        				    ->orderBy('c.nom', 'ASC')
-        				    ->where('c.databaixa IS NULL')
-        				    ->where('c.activat = 1');
-    				    },
-    				    'choice_label' 	=> 'nom',
-    				    'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
-    				    'required'  	=> false,
-    				    'data' 			=> $parte->getClubparte(),
-    				    'mapped' 	    => false,
-    				    'attr'		    =>	array('readonly' => !$this->admin || !$parte->esNova() || !$parte->isAllowEdit())
-				));
+				$club = $parte->getClubparte();
+				if (!$this->admin || !$parte->esNova() || !$parte->isAllowEdit()) {
+				    $form->add('clubs', 'entity', array(
+        				        'class' 		=> 'FecdasBundle:EntityClub',
+				                'query_builder' => function($repository) use ($club) {
+            				        return $repository->createQueryBuilder('c')
+            				        ->where('c.codi = :club')
+            				        ->setParameter('club', $club->getCodi());
+        				        },
+        				        'choice_label' 	=> 'nom',
+        				        'data' 			=> $club,
+        				        'mapped' 	    => false,
+        				        'attr'		    => array('readonly' => true)
+				        ));
+				} else {
+    				$form->add('clubs', 'entity', array(
+        				    'class' 		=> 'FecdasBundle:EntityClub',
+        				    'query_builder' => function($repository) {
+            				    return $repository->createQueryBuilder('c')
+            				    ->orderBy('c.nom', 'ASC')
+            				    ->where('c.databaixa IS NULL')
+            				    ->where('c.activat = 1');
+        				    },
+        				    'choice_label' 	=> 'nom',
+        				    'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
+        				    'required'  	=> false,
+        				    'data' 			=> $club,
+        				    'mapped' 	    => false,
+        				    'attr'		    => array('readonly' => false)
+    				));
+				}
 				
 				$form->add('any', 'text', array(
 						'mapped'  => false,

@@ -534,7 +534,7 @@ class PDFController extends BaseController {
 				$text = '<b>MODEL ' . $parte->getTipus()->getDescripcio() . '</b>';
 				$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, 'C', true);
 				
-				if ($parte->getWeb() == true and ($parte->getDatapagament() == null or $parte->getPendent() == true)) {
+				if ($parte->getWeb() && !$parte->esSenseCarrec() && (!$parte->comandaPagada() || $parte->getPendent())) {
 					// Si no les paguen o confirmen on-line surt el missatge
 					$y += 10;
 					$pdf->SetTextColor(100, 100, 100); // GRis
@@ -562,37 +562,39 @@ class PDFController extends BaseController {
 				$text = '<p>Data d\'entrada:  <b>' . $parte->getDataentrada()->format("d/m/Y") . '</b></p>';
 				$pdf->writeHTMLCell(0, 0, $x, $y + 20, $text, '', 1, 1, true, 'L', true);
 
-				$pdf->setY($y);
-				$pdf->setX($pdf->getPageWidth() - 122);
+				if ($this->isCurrentAdmin() || !$parte->esSenseCarrec()) {  // Llicències col·laboradors sense mostrar info preus
+    				$pdf->setY($y);
+    				$pdf->setX($pdf->getPageWidth() - 122);
+    				
+    				$factor = ($parte->getTipus()->getIva()/100) + 1;
+    				
+    				$pdf->SetFont('dejavusans', '', 9, '', true);
+    				
+    				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
+    				  <tr style="background-color:#DDDDDD;">
+    				  <td width="100" align="center">CATEGORIA</td>
+    				  <td width="100" align="center">P. UNITAT<br/>IVA ' . number_format($parte->getTipus()->getIva(), 2, ',', '.') . '&nbsp;%</td>
+    				  <td width="60" align="center">TOTAL</td>
+    				  <td width="120" align="center">PREU</td>
+    				 </tr>';
 				
-				$factor = ($parte->getTipus()->getIva()/100) + 1;
-				
-				$pdf->SetFont('dejavusans', '', 9, '', true);
-				
-				$tbl = '<table border="1" cellpadding="5" cellspacing="0">
-				  <tr style="background-color:#DDDDDD;">
-				  <td width="100" align="center">CATEGORIA</td>
-				  <td width="100" align="center">P. UNITAT<br/>IVA ' . number_format($parte->getTipus()->getIva(), 2, ',', '.') . '&nbsp;%</td>
-				  <td width="60" align="center">TOTAL</td>
-				  <td width="120" align="center">PREU</td>
-				 </tr>';
-				
-				foreach ($parte->getTipus()->getCategories() as $categoria) {
-					$numpercat = $parte->getNumLlicenciesCategoria($categoria->getSimbol());
-					$preu = $categoria->getPreuAny($parte->getAny());
-					$tbl .= '<tr><td width="100" align="right">' . $categoria->getCategoria() . '</td>';
-					$tbl .= '<td align="right">' . number_format($preu * $factor, 2, ',', '.') .  '&nbsp;€</td>';
-					$tbl .= '<td align="center">' . $numpercat . '</td>';
-					$tbl .= '<td align="right">' . number_format($preu * $numpercat * $factor, 2, ',', '.') .  '&nbsp;€</td></tr>';
-				}
-				$tbl .= '<tr><td colspan="2" align="right"><b>Total</b></td>';
-				$tbl .= '<td align="center">' . $parte->getNumLlicencies() . '</td>';
-				$tbl .= '<td align="right">' .  number_format($parte->getPreuTotal(), 2, ',', '.') . '&nbsp;€</td></tr>';
-				$tbl .= '</table>';
-				
-				$pdf->writeHTML($tbl, false, false, false, false, '');
-				
-				$pdf->Ln(10);	
+    				foreach ($parte->getTipus()->getCategories() as $categoria) {
+    					$numpercat = $parte->getNumLlicenciesCategoria($categoria->getSimbol());
+    					$preu = $categoria->getPreuAny($parte->getAny());
+    					$tbl .= '<tr><td width="100" align="right">' . $categoria->getCategoria() . '</td>';
+    					$tbl .= '<td align="right">' . number_format($preu * $factor, 2, ',', '.') .  '&nbsp;€</td>';
+    					$tbl .= '<td align="center">' . $numpercat . '</td>';
+    					$tbl .= '<td align="right">' . number_format($preu * $numpercat * $factor, 2, ',', '.') .  '&nbsp;€</td></tr>';
+    				}
+    				$tbl .= '<tr><td colspan="2" align="right"><b>Total</b></td>';
+    				$tbl .= '<td align="center">' . $parte->getNumLlicencies() . '</td>';
+    				$tbl .= '<td align="right">' .  number_format($parte->getPreuTotal(), 2, ',', '.') . '&nbsp;€</td></tr>';
+    				$tbl .= '</table>';
+    				
+    				$pdf->writeHTML($tbl, false, false, false, false, '');
+    				
+    				$pdf->Ln(10);	
+			    }
 				
 				/*$w = array(26, 44, 28, 26, 50, 16, 30, 10, 35);*/ // Amplades
 				$w = array(8, 26+3, 44+6, 28+3, 26+3, 50+8, 16+2, 30+4, 10); // Amplades

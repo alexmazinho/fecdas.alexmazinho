@@ -10,14 +10,7 @@
 		<div id="header-totals" class="col-listheader col-md-8">Resum - 
 		Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
 	  	fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
-	   	<div id="parte-preu" class="col-listheader col-md-4">Total: 
-	   		{% if parte.isFacturaModificada == true %}
-			<strike>{{ parte.getTotalDetalls|number_format(2, ',', '.') }}€</strike>
-			{{ parte.totalComanda|number_format(2, ',', '.') }}€
-			{% else %}
-			{{ parte.totalComanda|number_format(2, ',', '.') }}€
-			{% endif %}
-	   	 (iva inc.)</div>
+	   	<div id="parte-preu" class="col-listheader col-md-4">Total: {{ parte.getTotalParte( admin )|raw }}</div>
 	</div>
 </div>
 <div class="table-noscroll">

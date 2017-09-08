@@ -106,6 +106,15 @@ class RoleChecker
 		return $user;		
 	}
 	
+	public function getCurrentClub() {
+	    if (!$this->isAuthenticated()) return null;
+	    
+	    $repository = self::$em->getRepository('FecdasBundle:EntityClub');
+	    $club = $repository->find( $this->session->get('currentclub') );
+	    
+	    return $club;
+	}
+	
 	public function getCurrentRole() {
 		if (!$this->isAuthenticated()) return '';
 
@@ -131,8 +140,16 @@ class RoleChecker
 		$rolesArray = array();
 		foreach ($roles->roles as $userClubRole) {
 			
-			$key = $this->getUserRoleKey($userClubRole->role, $userClubRole->club);
-			$text = mb_strtoupper($userClubRole->role)."<br/><span class='title-comment'>".mb_strtoupper($userClubRole->nom)."</span>";
+		    $club = $userClubRole->club;
+		    $nomclub = $userClubRole->nom;
+		    if ($roles->admin) {
+		          $currentClub = $this->getCurrentClub();
+		          $club = $currentClub->getCodi();
+		          $nomclub =  $currentClub->getNom();
+		    }
+		    
+		    $key = $this->getUserRoleKey($userClubRole->role, $club);
+		    $text = mb_strtoupper($userClubRole->role)."<br/><span class='title-comment'>".mb_strtoupper($nomclub)."</span>";
 			$rolesArray[ $key ] = $text;
 		}
 		
@@ -182,7 +199,6 @@ class RoleChecker
 	
 	public function setCurrentClubRole( $club, $role ) {
 		if (!$this->isAuthenticated() || $club == '' || $role == '') return;
-
 		// json	=> {'admin':true, 'roles': [{'role': 'administrador', 'club': 'CAT999', 'nom': 'FECDAS' }, ...] }
 		$roles = $this->getUserRoles();
 	

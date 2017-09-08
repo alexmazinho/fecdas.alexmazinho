@@ -231,7 +231,7 @@ class TitulacionsController extends BaseController {
 			return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
 		});
 
-		return $this->render('FecdasBundle:Titulacions:llicencieshistorial.html.twig', array('llicencies' => $llicencies, 'admin' => $this->isCurrentAdmin()));
+		    return $this->render('FecdasBundle:Titulacions:llicencieshistorial.html.twig', array('llicencies' => $llicencies, 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));
 		
 	}
 
@@ -259,7 +259,7 @@ class TitulacionsController extends BaseController {
 		
 		return $this->render('FecdasBundle:Titulacions:titulacionshistorial.html.twig', 
 				array('titulacions' => $titulacions, 'altrestitulacions' => $altrestitulacions, 
-					   'club' => $this->getCurrentClub(), 'admin' => $this->isCurrentAdmin()));
+				    'club' => $this->getCurrentClub(), 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));
 		
 	}
 

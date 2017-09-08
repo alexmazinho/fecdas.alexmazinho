@@ -128,13 +128,13 @@ FecdasBundle_llicenciadigital:
         methods:  GET
 
 FecdasBundle_partetopdf:
-    path:  /printparte
+    path:  /partetopdf
     defaults: { _controller: "FecdasBundle:PDF:partetopdf" }
     requirements:
         methods:  GET
 
 FecdasBundle_asseguratstopdf:
-    path:  /printllistes
+    path:  /asseguratstopdf
     defaults: { _controller: "FecdasBundle:PDF:asseguratstopdf" }
     requirements:
         methods:  GET

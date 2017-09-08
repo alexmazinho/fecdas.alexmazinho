@@ -105,7 +105,6 @@ class EntityComanda {
 		$this->facturesanulacions = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->rebutsanulacions = new \Doctrine\Common\Collections\ArrayCollection();
 
-error_log('NEW COMANDA');
 		// Hack per permetre múltiples constructors
 		$a = func_get_args();
 		$i = func_num_args();

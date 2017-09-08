@@ -702,7 +702,7 @@ class CronController extends BaseController {
 			$em->persist($cloneLlicencia);
 
 			/* Preparar formulari */
-			$form = $this->createForm(new FormLlicenciaRenovar(),$cloneLlicencia);
+			$form = $this->createForm(new FormLlicenciaRenovar($this->isCurrentAdmin()),$cloneLlicencia);
 			
 			$form->get('cloneid')->setData($llicenciaid);  // Posar id
 			$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms

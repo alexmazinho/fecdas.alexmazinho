@@ -2,6 +2,7 @@
 namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -109,6 +110,17 @@ class EntityCategoria {
     }
 
     /**
+     * és llicència col·laboradors FECDAS A compte de despeses 659.0002 de FECDAS.
+     *
+     * @return boolean
+     */
+    public function esProducteDespeses() {
+        if ($this->getCodisortida() != BaseController::CODI_DESPESES_FECDAS) return false;
+        return true;
+    }
+    
+    
+    /**
      * Set simbol
      *
      * @param string $simbol
@@ -173,9 +185,9 @@ class EntityCategoria {
      *
      * @return string
      */
-    public function getLlistaText()
+    public function getLlistaText($admin = false)
     {
-    	return $this->getLlistaTextAny(Date('Y'));
+        return $this->getLlistaTextAny(Date('Y'), $admin);
     }
 
     /**
@@ -183,19 +195,23 @@ class EntityCategoria {
      *
      * @return string
      */
-    public function getLlistaTextPost()
+    public function getLlistaTextPost($admin = false)
     {
-    	return $this->getLlistaTextAny(Date('Y') + 1);
+    	return $this->getLlistaTextAny(Date('Y') + 1, $admin);
     }
     
-    public function getLlistaTextAny($any)
+    public function getLlistaTextAny($any, $admin = false)
     {
+        if ($this->esProducteDespeses() && !$admin) return $this->categoria; // Sense preu
+        
     	$preu = $this->getPreuAny($any);
     	//$factor = ($this->tipusparte->getIva()/100) + 1;
     	$factor = 1;
+    	
     	return $this->categoria . " " . number_format($preu * $factor, 2, ',', '') . " €";
+    	
     }
-        
+    
     /**
      * Set descripcio
      *

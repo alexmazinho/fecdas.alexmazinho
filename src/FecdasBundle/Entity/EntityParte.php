@@ -87,7 +87,7 @@ class EntityParte extends EntityComanda {
 			call_user_func_array(array($this,$f),$a);
 		}
 		
-		error_log('NEW PARTE');
+		// Primer es crida al constructor de comanda
 		$this->clubparte = $this->club; // Club de la comanda per defecte
 	}
 	
@@ -146,7 +146,7 @@ class EntityParte extends EntityComanda {
 	
 	
 	/**
-	 * Get id
+	 * Get si és baixa
 	 *
 	 * @return boolean
 	 */
@@ -154,6 +154,35 @@ class EntityParte extends EntityComanda {
 	{
 		return $this->databaixa != null;
 	}
+	
+	/**
+	 * Get si és sense càrrec
+	 *
+	 * @return boolean
+	 */
+	public function esSenseCarrec()
+	{
+	    return $this->tipus->getAdmin();
+	}
+
+	/**
+	 * Get html total parte si no és de despeses o és admin
+	 * Pels partes de despeses es mostra el text "0€ (sense cost)"
+	 *
+	 * @return double
+	 */
+	public function getTotalParte( $admin )
+	{
+	    if ($this->esSenseCarrec() && !$admin) return "0€<br/><span class='title-comment'>(sense cost)</span>";
+	    
+	    // Mostrar total comanda
+	    $html = ""; 
+	    if ($this->isFacturaModificada()) $html .= "<strike>".number_format($this->getTotalDetalls(),2, ',', '.')."€</strike><br/>";
+	    $html .= number_format($this->getTotalComanda(),2, ',', '.')."€";
+	    
+	    return $html;
+	}
+	
 	
 	/**
 	 * Es pot imprimir plàstic?

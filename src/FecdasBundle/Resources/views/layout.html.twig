@@ -70,8 +70,8 @@
 				{% endif %}	
 			    {% if roleform is defined %}
 			    	<li class="divider"></li>
-			    	<li><p>{{ form_widget(roleform.currentrole, { 'attr': {'class': 'select2-nosearch'} }) }} {% if admin == true %}<i class="fa fa-user-plus fa-fw"></i>{% else %}<i class="fa fa-exchange fa-fw"></i>{% endif %}</p></li>
-			    	{% if admin == true %}<li><p>{{ form_widget(roleform.currentclub) }} <i class="fa fa-exchange fa-fw"></i></p></li>{% endif %}
+			    	<li><p>{{ form_widget(roleform.currentrole, { 'attr': {'class': 'select2-nosearch', 'autocomplete': 'off'} }) }} {% if admin == true %}<i class="fa fa-user-plus fa-fw"></i>{% else %}<i class="fa fa-exchange fa-fw"></i>{% endif %}</p></li>
+			    	{% if admin == true %}<li><p>{{ form_widget(roleform.currentclub, { 'attr': {'autocomplete': 'off'} }) }} <i class="fa fa-exchange fa-fw"></i></p></li>{% endif %}
 				{% endif %}
 			  </ul>
 			</div>
@@ -329,6 +329,7 @@
 					var url =  "{{ path('FecdasBundle_changerole') }}";
 					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
 					var role = $("#menu-user #form_currentrole").length > 0?$("#menu-user #form_currentrole").val():'';
+
 					reloadCurrentClub( url, urlCallback, role, $(this).val());
 				});
 					
@@ -354,6 +355,7 @@
 					var url =  "{{ path('FecdasBundle_changerole') }}";
 					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
 					var club = $("#menu-user #form_currentclub").length > 0?$("#menu-user #form_currentclub").val():'';
+					
 					reloadCurrentClub( url, urlCallback, $(this).val(), club );
 				});
 			}

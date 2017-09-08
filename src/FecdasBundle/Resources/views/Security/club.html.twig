@@ -81,10 +81,22 @@
 			
 			<div id="formclub-dades-tab1" class="formclub-tab">		
 				<div class="row">
-					<div class="col-md-12">
+					<div class="col-md-4">
 						<h4 class="blue">Dades del club</h4>
 					</div>
+					
+                    {% if admin %}
+                    	<div class="col-md-8 header-notes">
+                    		<div class="space20">
+                    			<div class="form-group">
+                    				{{ form_label(form.notes, 'Notes', { 'label_attr': {'class': 'sr-only'} }) }}
+                    				{{ form_widget(form.notes, { 'attr': {'class': 'form-control title-comment','placeholder':'Notes (Només administradors)' } }) }}
+                    			</div>
+                    		</div>
+                    	</div>
+                    {% endif %}	
 				</div>
+
 				<div class="row">
 					<div class="col-md-5">
 			  			<div class="space20">

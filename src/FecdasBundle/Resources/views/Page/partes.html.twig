@@ -71,6 +71,7 @@
 		</div>
 	    <div class="table-header">	
 		   	<div id="list-header">
+		   		<div id="header-parteestat" class="col-listheader collistheader-noorder">&nbsp;</div>
 		   		<div id="header-parteid" class="col-listheader">{{ knp_pagination_sortable(partes, 'Albarà', 'p.id') }}
 		   			<span class="listheader-icon {% if partes.isSorted('p.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parteany" class="col-listheader">Any<span class="listheader-icon"></span></div>
@@ -81,7 +82,7 @@
 		   		<div id="header-partetotal" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(partes, 'Llicències', 'numllicencies', {'direction': 'desc'}) }}
 		   			<span class="listheader-icon {% if partes.isSorted('numllicencies') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-parteimport" class="col-listheader collistheader-noorder">Preu</div>
-		   		<div id="header-parteestat" class="col-listheader collistheader-noorder">Informació</div>
+		   		<div id="header-parteinfo" class="col-listheader collistheader-noorder">Informació</div>
 		   		<div id="header-parteactions" class="col-listheader collistheader-noorder"> &nbsp;</div>
 		   	</div>
 	   	</div>
@@ -90,6 +91,14 @@
 		   	<ol id="list-data">
 			{% for parte in partes %}
 		   		<li class="data-detall {% if parte.isPassat %} data-detall-fosc {% endif %}">
+		   			<div class="data-detall-cell parte-estat">
+		   				{% if admin == true  %}
+		   					{% if parte.comandaPagada != true  %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ parte.estat }}{% endif %}
+		   				{% else %}
+		   					{% if parte.comandaPagada != true  and parte.totalComanda > 0 and club.saldo < 0 %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% endif %}
+		   				{% endif %}
+		   			</div>
+		   			
 		   			<div class="data-detall-cell parte-id">{{ parte.numalbara }}</div>
 			   		<div class="data-detall-cell parte-any">{{ parte.any }}</div>
 			   		<div class="data-detall-cell parte-data"><time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time></div>
@@ -98,15 +107,8 @@
 			   		<a class="llista-llicencies link" href="{{ path('FecdasBundle_llicenciesParte', { 'id': parte.id }) }}" alt="Llicències" title="Llicències">{{ parte.numLlicencies }}
 			   			<i class="fa fa-history orange"></i></a>
 			   		</div>
-			   		<div class="data-detall-cell parte-import">
-			   			{% if parte.isFacturaModificada == true %}
-			   			<strike>{{ parte.getTotalDetalls|number_format(2, ',', '.') }}€</strike><br/>
-			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
-			   			{% else %}
-			   			{{ parte.totalComanda|number_format(2, ',', '.') }}€
-			   			{% endif %}
-			   		</div>
-			   		<div class="data-detall-cell parte-estat">{{ parte.getInfoLlistat|nl2br }}</div>
+			   		<div class="data-detall-cell parte-import">{{ parte.getTotalParte( admin )|raw }}</div>
+			   		<div class="data-detall-cell parte-info">{{ parte.getInfoLlistat|nl2br }}</div>
 		   			<div class="data-detall-cell parte-actions">
 		   				{% if parte.allowRenovar and parte.numLlicencies > 0 %}
 		   				<a class="parte-action-renew link" href="{{ path('FecdasBundle_renovar', { 'id': parte.id }) }}" alt="Renovar" title="Renovar"><i class="fa fa-retweet green"></i></a>

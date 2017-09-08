@@ -13,6 +13,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FormLlicencia extends AbstractType {
 
+    private $admin;
+    
+    public function __construct($admin = false)
+    {
+        $this->admin = $admin;
+    }
+    
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		
@@ -48,10 +55,10 @@ class FormLlicencia extends AbstractType {
 				$current = $parte->getAny();
 				$llistacategoria = function ($value, $key, $index) use ($current) {
 					if ($current > date('Y')) {  // Seleccionar preu post (any posterior)
-						return $value->getLlistaTextPost();
+					    return $value->getLlistaTextPost($this->admin);
 					}
 					
-					return $value->getLlistaTextAny($current);
+					return $value->getLlistaTextAny($current, $this->admin);
 			    };
 				
 				$tipusparte = $parte->getTipus()->getId();

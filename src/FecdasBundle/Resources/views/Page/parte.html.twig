@@ -14,33 +14,35 @@
 		{{ form_start(form, {'action': path('FecdasBundle_parte'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formparte'}}) }}
 		<div class="row">
 			<header>
-				<div class="col-md-6"><h1><a href="{{ path('FecdasBundle_partes') }}">Llistes d'assegurats</a> > Llicències</h1></div>
+				<div class="col-md-6"><h1><a href="{{ path('FecdasBundle_partes', { 'sort': 'p.dataalta', 'direction' : 'desc'}) }}" class="link-parent">Llistes d'assegurats</a> > Comunicat</h1></div>
 				 <div class="col-md-6 col-last-right">
 					<div class="buttons-top-bootstrap" {% if ((parte.esnova == true) or (parte.numLlicencies == 0))  %} style="display:none" {% endif %}>
-						{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
-						<!-- No Pagat -->
-			        	<div class="button-top">	
-			        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': parte.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
-			        			<i class="fa fa-credit-card fa-1x green"></i></a>
-			        		<span class="subtext">pagar</span>
-						</div>
-						{% endif %}	
-						{% if parte.comandaPagada %} 
-							<div id="rebut-to-pdf" class="button-top">
-								<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
-									<i class="fa fa-file-text fa-1x blue"></i></a>
-								<span class="subtext">rebuts</span>
-							</div>
-						{% endif %}
-						{% if parte.comandaConsolidada == true %} 
-							<div id="factures-to-pdf" class="button-top">
-							{% for factura in parte.factures %} 
-				   				<a class="factura-to-pdf {% if factura.esanulacio %} factura-anulacio {% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
-				   					<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-							{% endfor %}
-								<span class="subtext">factures</span>
-							</div>
-						{% endif %}
+						{% if not parte.esSenseCarrec %}
+    						{% if not parte.comandaPagada and (parte.pendent or parte.pendentSincronitzar)  %}
+    						<!-- No Pagat -->
+    			        	<div class="button-top">	
+    			        		<a id="formparte-payment" class="link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': parte.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
+    			        			<i class="fa fa-credit-card fa-1x green"></i></a>
+    			        		<span class="subtext">pagar</span>
+    						</div>
+    						{% endif %}	
+    						{% if parte.comandaPagada %} 
+    							<div id="rebut-to-pdf" class="button-top">
+    								<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
+    									<i class="fa fa-file-text fa-1x blue"></i></a>
+    								<span class="subtext">rebuts</span>
+    							</div>
+    						{% endif %}
+    						{% if parte.comandaConsolidada %} 
+    							<div id="factures-to-pdf" class="button-top">
+    							{% for factura in parte.factures %} 
+    				   				<a class="factura-to-pdf {% if factura.esanulacio %} factura-anulacio {% endif %} link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+    				   					<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+    							{% endfor %}
+    								<span class="subtext">factures</span>
+    							</div>
+    						{% endif %}
+    					{% endif %}
 						<div id="parte-to-pdf" class="button-top">
 							<a class="link" href="{{ path('FecdasBundle_partetopdf', { 'id': parte.id}) }}" alt="llista llicències" title="llista llicències">
 								<i class="fa fa-file-text-o fa-1x orange"></i></a>
@@ -66,27 +68,26 @@
 			</div>
 		{% endif %}	
 
-		<div class="row">
-			<div class="{% if admin != true %}hidden{% else %}col-md-3 col-xs-8{% endif %}">
-			  	<div class="form-group">
-			    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
-					{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+        {% if admin %}
+        <div class="row">
+			<div class="col-md-3 col-xs-6">
+		  		<div class="form-group">
+		    	    {{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+				    {{ form_widget(form.clubs, { 'attr': {'class': 'form-control', 'autocomplete': 'off'} }) }}
 				</div>
 			</div>
+		</div>
+        {% endif %}
+		<div class="row">
 			 <div class="col-md-1 col-xs-2">
 				<div class="form-group">
 					{{ form_label(form.any) }}
 					<div id="formparte-any"  class="input-group ">
-						<span class="input-group-addon"></span>		  				
+						<span class="input-group-addon group-addon-xs"></span>		  				
 						{{ form_widget(form.any, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				</div>
 			 </div>
-	 {% if admin == true %}	
-	 	</div>
-	 	<div class="row">
-	 {% endif %}
-			 
 			 <div class="col-md-3 col-xs-5">
 				<div class="form-group">
 					{{ form_label(form.dataalta, 'Validesa') }}
@@ -103,34 +104,42 @@
 					<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
 				</div>
 			  </div>
-  			  <div class="col-md-2 col-xs-5">
-				<div class="form-group">
-		  			{% if parte.datapagament is not null %}
-						<label>Data Pagament</label>
-						<div id="formparte-datapagament" class="input-group" >
-			  				<span class="input-group-addon required"></span>
-							{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
-						</div>
-					{% else %}
-						{% if admin == true and parte.esnova != true %}
-							<label>Pagament</label>
-							<div id="formparte-pagament" class="input-group" >
-								<a class="confirmar-pagament btn btn-default" 
-									href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></a>
-							</div>
-				  		{% endif %}
-			  		{% endif %}		
-				</div>
-			  </div>
-  			  <div class="col-md-1 col-last-right">
-			  {% if parte.esnova != true and parte.isAllowEdit == true %}		
-					<label>&nbsp;</label>
-					<a id="formparte-novallicencia" class="btn btn-default" 
-					{% if parte.esnova == true  %} style="display:none;" {% endif %}
-						 onclick="loadLlicencia.call(this, 0)"><i class="fa fa-plus"></i></a>
-						 
-			  {% endif %}	
-		   	  </div>
+  			 
+  			 
+              {% if parte.datapagament is not null %}
+                  <div class="col-md-2 col-xs-5">
+    				<div class="form-group">
+    			  		<label>Data Pagament</label>
+    					<div id="formparte-datapagament" class="input-group" >
+    			  			<span class="input-group-addon required"></span>
+    						{{ form_widget(form.datapagament, { 'attr': {'class': 'form-control form-control-center formtime-calendar'} }) }}
+    			  		</div>
+    			  	</div>
+    			  </div>
+              {% else %}
+				{% if not parte.esnova %}
+					{% if admin %}
+						<div class="col-md-1 col-last-right">
+							<div class="form-group">
+    							<label>Pagament</label>
+    							<div id="formparte-pagament" class="input-group" >
+    								<a class="confirmar-pagament btn btn-default" 
+    									href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></a>
+    							</div>  			 
+	      			 		</div>
+    	  			 	</div>
+      		 		{% endif %}
+      			 	{% if parte.isAllowEdit %}
+      			 		<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-last-right">
+							<div class="form-group">
+      			 				<label>&nbsp;</label>
+    							<a id="formparte-novallicencia" class="btn btn-default" 
+    								onclick="loadLlicencia.call(this, 0)"><i class="fa fa-plus"></i></a>
+	      			 		</div>
+    	  			 	</div>
+      			 	{% endif %}
+  			    {% endif %}
+  			 {% endif %}
 		</div>
          
 		<div id="formparte-rest">	{{ form_rest(form) }}</div>
@@ -184,9 +193,6 @@
     			function (ct) {
     				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
     				
-    				if ($.browser.msie) $('#formparte-llicencia').hide(); 
-    				else $('#formparte-llicencia').slideUp('fast');
-    				
     				queryParteTipus(url, $("select#parte_clubs").val(), ct, 
     	    		function( data ) {
     	        		//callbackko
@@ -196,7 +202,10 @@
 
     					if ($('select#parte_tipus').val() != "") {
     						loadLlicencia(0);
-    					}
+    					} else {
+    						if ($.browser.msie) $('#formparte-llicencia').hide(); 
+    	    				else $('#formparte-llicencia').stop().slideUp('fast');
+    	    			}
     	        	});
     			}
     		);
@@ -210,18 +219,18 @@
 
     	// Comanda filtre clubs disponible per admin's
 		{% if admin == true  %} 
-			$("select#parte_clubs").select2({
-				minimumInputLength: 2,
-				allowClear: true,
-				placeholder: 'Escollir club'
-			});
+
+			if ($("select#parte_clubs option").length > 1) {
+    			$("select#parte_clubs").select2({
+    				minimumInputLength: 2,
+    				allowClear: true,
+    				placeholder: 'Escollir club'
+    			});
+			}
 
 			$("select#parte_clubs").change(function() {
 
 				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
-				
-				if ($.browser.msie) $('#formparte-llicencia').hide(); 
-				else $('#formparte-llicencia').slideUp('fast');
 				
 				queryParteTipus(url, $(this).val(), $( '#parte_dataalta' ).datetimepicker('getValue'), function( data ) {
 	        		//callbackko
@@ -230,6 +239,9 @@
 
 					if ($('select#parte_tipus').val() != "") {
 						loadLlicencia(0);
+					} else {
+						if ($.browser.msie) $('#formparte-llicencia').hide(); 
+						else $('#formparte-llicencia').stop().slideUp('fast');
 					}
 	        	});
 				

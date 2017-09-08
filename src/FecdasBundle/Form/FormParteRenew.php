@@ -60,7 +60,7 @@ class FormParteRenew extends AbstractType {
 		
 		$builder->add('cloneid', 'hidden', array('mapped'  => false,));
 		
-		$builder->add('llicencies', 'collection', array('type' => new FormLlicenciaRenew()));				
+		$builder->add('llicencies', 'collection', array('type' => new FormLlicenciaRenew($this->admin)));				
 
 		$builder->add('datapagament', 'hidden', array());
 		

@@ -465,7 +465,7 @@ class BaseController extends Controller {
 		return $ivaArray;
 	}
 	
-	public static function getLlistaTipusParte($club, $dataconsulta) {
+	public static function getLlistaTipusParte($club, $dataconsulta, $admin = false) { 
 		$llistatipus = array();
 	
 		$day = $dataconsulta->format('d');
@@ -481,19 +481,25 @@ class BaseController extends Controller {
 		foreach ($tipuspartes as $tipusparte) {
             if ($tipusparte->getActiu() == true &&
 				$tipusparte->validarPreusAny($any) == true) {
-				if ($tipusparte->getEs365() == true) {
-					/* 365 directament sempre. Es poden usar en qualsevol moment  */
-					array_push($llistatipus, $tipusparte->getId());
+				    
+				if ($tipusparte->getAdmin() == true) {
+				    if ($admin) array_push($llistatipus, $tipusparte->getId());
 				} else {
-					$inici = '01-01';
-					$final = '12-31';
-					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
-					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
-						
-					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
-						array_push($llistatipus, $tipusparte->getId());
-					}
+    				if ($tipusparte->getEs365() == true) {
+    					/* 365 directament sempre. Es poden usar en qualsevol moment  */
+    					array_push($llistatipus, $tipusparte->getId());
+    				} else {
+    					$inici = '01-01';
+    					$final = '12-31';
+    					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
+    					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
+    						
+    					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+    						array_push($llistatipus, $tipusparte->getId());
+    					}
+    				}
 				}
+				
 			}
 		}
 	
@@ -687,16 +693,9 @@ class BaseController extends Controller {
 	}
 
 	protected function getCurrentClub() {
-		if (!$this->isAuthenticated()) return null;
-		
-		$em = $this->getDoctrine()->getManager();
-		
 		$checkRole = $this->get('fecdas.rolechecker');
 		
-		$codiClub = $checkRole->getCurrentClubRole();
-		$club =	$em->getRepository('FecdasBundle:EntityClub')->find( $codiClub );
-		
-		return $club;
+		return $checkRole->getCurrentClub();
 	}
 
 	protected function allowComandes() {

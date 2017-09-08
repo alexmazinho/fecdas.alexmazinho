@@ -62,10 +62,14 @@ class FormClubAdmin extends FormClub {
 				'attr'			=>	array('readonly' => true)
 		));
 		
+		$builder->add('notes', 'textarea', array(
+		          'required'            => false,
+		          'attr' 		=> array('rows' => 2, 'resize' => 'vertical')
+		));
 		
 		$builder->add('codi', 'text', array(
-			'required'  => true,
-			'attr'			=>	array('readonly' => true)
+			     'required'           => true,
+			     'attr'			     =>	array('readonly' => true)
 		));
 			
 		$tipuscluboptions = array('class' => 'FecdasBundle:EntityClubType', 'choice_label' => 'tipus',

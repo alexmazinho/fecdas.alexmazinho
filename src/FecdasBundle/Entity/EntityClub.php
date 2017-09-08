@@ -251,6 +251,11 @@ class EntityClub {
 	 */
 	protected $cursos;	// Owning side of the relationship
 
+	/**
+	 * @ORM\Column(type="text", nullable=true)
+	 */
+	protected $notes;      // Camp de notes per als administradors
+	
 
 	public function __construct() {
 		$this->activat = true;
@@ -290,7 +295,7 @@ class EntityClub {
 	/**
      * Add user, role, metadata
      *
-     * @param FecdasBundle\Entity\EntityUser $user
+     * @param \FecdasBundle\Entity\EntityUser $user
      */
     public function addUsuariRole($user, $role)
     {
@@ -306,7 +311,7 @@ class EntityClub {
 	/**
 	 * Get partes
 	 *
-	 * @return Doctrine\Common\Collections\ArrayCollection
+	 * @return \Doctrine\Common\Collections\ArrayCollection
 	 */
 	public function getPartes()
 	{
@@ -344,13 +349,11 @@ class EntityClub {
 	/**
      * Get usuaris diferents
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getUsuarisDistinct($baixes = false)
     {
     	$roles = $this->getRolsDistinct();
-		
-		$test = array_map(function ($n) { return null; }, $roles);
 		
     	$usuarisArray = array();
     	foreach ($this->usuaris as $userClubRole) {
@@ -1508,7 +1511,7 @@ class EntityClub {
 	/**
      * Set dataalta
      *
-     * @param date $dataalta
+     * @param \DateTime $dataalta
      */
     public function setDataalta($dataalta)
     {
@@ -1518,7 +1521,7 @@ class EntityClub {
     /**
      * Get dataalta
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDataalta()
     {
@@ -1528,7 +1531,7 @@ class EntityClub {
 	/**
      * Set databaixa
      *
-     * @param date $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -1538,7 +1541,7 @@ class EntityClub {
     /**
      * Get databaixa
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDatabaixa()
     {
@@ -1548,7 +1551,7 @@ class EntityClub {
 	/**
      * Set datacreacio
      *
-     * @param date $datacreacio
+     * @param \DateTime $datacreacio
      */
     public function setDatacreacio($datacreacio)
     {
@@ -1558,7 +1561,7 @@ class EntityClub {
     /**
      * Get datacreacio
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDatacreacio()
     {
@@ -1568,7 +1571,7 @@ class EntityClub {
 	/**
      * Set datajunta
      *
-     * @param date $datajunta
+     * @param \DateTime $datajunta
      */
     public function setDatajunta($datajunta)
     {
@@ -1578,7 +1581,7 @@ class EntityClub {
     /**
      * Get datajunta
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDatajunta()
     {
@@ -1631,7 +1634,7 @@ class EntityClub {
      *
      * @param string $carrecs
      */
-    public function setcarrecs($carrecs)
+    public function setCarrecs($carrecs)
     {
         $this->carrecs = $carrecs;
     }
@@ -1641,11 +1644,31 @@ class EntityClub {
      *
      * @return string 
      */
-    public function getcarrecs()
+    public function getCarrecs()
     {
         return $this->carrecs;
     }
-	
+
+    /**
+     * Set notes
+     *
+     * @param string $notes
+     */
+    public function setNotes($notes)
+    {
+        $this->notes = $notes;
+    }
+    
+    /**
+     * Get notes
+     *
+     * @return string
+     */
+    public function getNotes()
+    {
+        return $this->notes;
+    }
+    
 	/**
      * Set comptabilitat
      *
@@ -1669,7 +1692,7 @@ class EntityClub {
 	/**
      * Get usuaris
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getUsuaris()
     {
@@ -1710,7 +1733,7 @@ class EntityClub {
 	/**
      * Get cursos
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getCursos()
     {
@@ -1720,7 +1743,7 @@ class EntityClub {
 	/**
      * Add cursos
      *
-     * @param FecdasBundle\Entity\EntityCurs $curs
+     * @param \FecdasBundle\Entity\EntityCurs $curs
      */
     public function addCursos(\FecdasBundle\Entity\EntityCurs $curs)
     {

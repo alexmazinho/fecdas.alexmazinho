@@ -21,7 +21,6 @@ class SecurityController extends BaseController
 {
 	
 	public function changeroleAction(Request $request) {
-		
 		if (!$this->isAuthenticated()) return new Response(""); 
 		// Params => currentrole: role, currentclub: club
 		
@@ -42,7 +41,7 @@ class SecurityController extends BaseController
 			$currentclub = $currentroleArray[1];
 		}
 		$checkRole->setCurrentClubRole( $currentclub, $currentrole );
-		
+	
 		if (!$this->isCurrentAdmin()) return new Response("reload");
 		return new Response("");
 	}

@@ -1,0 +1,76 @@
+<div class="table-header">	
+		   	<div id="list-header">
+				<div id="header-ingres-id" class="col-listheader hidden">&nbsp;</div>
+		   		<div id="header-ingres-num" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Num.', 'r.num') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-club" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Club', 'r.club') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.club') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-data" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Data', 'r.datapagament') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.datapagament') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-import" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(ingresos, 'Import', 'c.total') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.import') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-comanda" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Comanda/es', 'c.dataentrada,c.num') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('c.dataentrada,c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-romanent" class="col-listheader collistheader-noorder">Romanent</div>
+		   		<div id="header-ingres-comentaris" class="col-listheader collistheader-noorder">Comentaris</div>
+		   		{% if admin == true %}
+		   		<div id="header-ingres-compta" class="col-listheader">{{ knp_pagination_sortable(ingresos, 'Enviat\nComptabilitat.', 'r.comptabilitat') }}
+		   			<span class="listheader-icon {% if ingresos.isSorted('r.comptabilitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-ingres-actions" class="col-listheader collistheader-noorder">&nbsp;</div>
+		   		{% endif %}
+		   	</div>
+	   	</div> 
+		{% if ingresos|length > 0 %} 
+		<div class="table-scroll">
+		   	<ol id="list-data"> 
+			{% for ingres in ingresos %} 
+		   		<li class="data-detall">
+		   			<div class="data-detall-cell ingres-id hidden">{{ ingres.id }}</div>
+		   			<div class="data-detall-cell ingres-num">
+		   				{{ ingres.numrebut }}<a id="rebut-to-pdf" class="link" href="{{ path('FecdasBundle_rebuttopdf', {'id': ingres.id }) }}"  title="PDF Rebut" alt="PDF Rebut">
+							<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+		   			</div>
+		   			<div class="data-detall-cell ingres-club">{{ ingres.club.nom }}</div>
+		   			<div class="data-detall-cell ingres-data">{{ ingres.datapagament|date('d/m/y') }}</div>
+		   			<div class="data-detall-cell ingres-import">{{ ingres.import|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell ingres-comanda">
+		   			{% if admin == true %}
+		   				{% if ingres.esAnulacio != true %}
+			   				{% for comanda in ingres.comandes %} 
+			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': comanda.id}) }}" alt="Veure comanda" title="Veure comanda">
+			   						{{ comanda.numComanda }} ({{ comanda.totalComanda|number_format(2, ',', '.') }} €)</a><br/>
+							{% endfor %}
+		   				{% else %}
+		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'id': ingres.comandaanulacio.id }) }}"  title="Veure comanda" alt="Veure comanda">
+			   					<span class="red">{{ ingres.comandaanulacio.numComanda }}</span></a>	
+		   				{% endif %}	
+		   			{% else %}
+		   				{% if ingres.esAnulacio != true %}
+			   				{% for comanda in ingres.comandes %} 
+			   					<a class="editar-comanda link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.numcomanda }) }}" alt="Veure comanda" title="Veure comanda">
+			   						{{ comanda.numComanda }} ({{ comanda.totalComanda|number_format(2, ',', '.') }} €)</a><br/>
+							{% endfor %}
+		   				{% else %}
+		   					<a class="editar-comanda link" href="{{ path('FecdasBundle_editarcomanda', {'numcomanda': ingres.comandaanulacio.numcomanda }) }}"  title="Veure comanda" alt="Veure comanda">
+			   					<span class="red">{{ ingres.comandaanulacio.numComanda }}</span></a>	
+		   				{% endif %}	
+		   			{% endif %}
+		   			</div>
+		   			<div class="data-detall-cell ingres-romanent">{{ ingres.romanent|number_format(2, ',', '.') }}€</div>
+		   			<div class="data-detall-cell ingres-comentaris">{{ ingres.comentari }}</div>
+		   			{% if admin == true %}
+		   			<div class="data-detall-cell ingres-compta">{% if  ingres.comptabilitat is not null %}{{ ingres.comptabilitat.dataenviament|date('d/m/Y') }}{% endif %}	</div>
+		   			<div class="data-detall-cell ingres-actions">
+						{% if ingres.esborrable %}<a class="remove-rebut link" href="{{ path('FecdasBundle_esborrarrebut', { 'rebut': ingres.id }) }}"><i class="fa fa-trash-o red"></i></a>{% endif %}
+		   				<a class="comanda-action-edit-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': ingres.id}) }}" 
+		   					alt="{{ ingres.infoToolTip(admin) }}" title="{{ ingres.infoToolTip(admin) }}"><i class="fa fa-pencil text-info blue"></i></a>
+		   			</div>
+		   			{% endif %}
+		   		</li>
+		   		{% endfor %}
+			</ol>
+		</div>
+		{% if ingresos.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(ingresos, null, sortparams) }}</div>{% endif %}
+	   	{% else %}
+	    <div class="sms-notice">No hi ha ingresos per mostrar</div>
+	    {% endif %}

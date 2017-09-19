@@ -134,8 +134,8 @@
 		<div class="table-header">	
 		   	<div id="list-header">
 		   		<div id="header-dadespersonalsid" class="col-listheader">id</div>
-		   		<div id="header-dadespersonalsdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'DNI', 'e.dni') }}
-		   				<span class="listheader-icon {% if persones.isSorted('e.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
+		   		<div id="header-dadespersonalsdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'DNI', 'm.dni') }}
+		   				<span class="listheader-icon {% if persones.isSorted('m.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-dadespersonalscognomsnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nom', 'e.cognoms') }}
 		   				<span class="listheader-icon {% if persones.isSorted('e.cognoms') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-dadespersonalsnaixement" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nascut/da', 'e.datanaixement') }}

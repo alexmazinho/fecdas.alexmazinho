@@ -1,6 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -179,6 +180,15 @@ class EntityRebut {
      */
     public function isCurrentYear() {
     	return (date("Y", $this->datapagament->getTimestamp()) == date("Y"));
+    }
+    
+    /**
+     * Es pot esborrar?
+     *
+     * @return boolean
+     */
+    public function esborrable() {
+        return $this->isCurrentYear() && $this->getTipuspagament() != BaseController::TIPUS_PAGAMENT_TPV;
     }
 
 	/**

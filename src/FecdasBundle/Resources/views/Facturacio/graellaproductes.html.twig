@@ -144,7 +144,7 @@
 				var params 	 = '&transport='+($('#form_transport_0').is(':checked')?1:0);
 				params 		+= '&comentaris='+$('#comanda_comentaris').val();
 				params 		+= '&datafacturacio='+datafacturacio;
-				params 		+= '&comptefactura='+$('#comptefactura').val();		
+				params 		+= '&comptefactura='+($('#comptefactura').length?$('#comptefactura').val():'');		
 				
 	        	window.location = url+params;
 

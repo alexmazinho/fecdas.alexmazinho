@@ -239,6 +239,7 @@ class OfflineController extends BaseController {
             return new Response("KO, registres ".count($ids)."(errors ".count($errors).")<br/><br/>".implode("<br/>",$errors));
         }
         
+        /*
         if (count($ids) != 0) {
             $sql = "UPDATE importtitulacions SET error = 'Corregit' WHERE id IN (".implode(",", $ids).") ";
             $stmt = $em->getConnection()->prepare($sql);
@@ -246,7 +247,7 @@ class OfflineController extends BaseController {
         }
         
         $em->flush();
-                
+        */        
         return new Response("OK pesones noves ".$personesNoves." cursos nous ".$cursosNous." i titulacions ".$titulacions );
     }
     

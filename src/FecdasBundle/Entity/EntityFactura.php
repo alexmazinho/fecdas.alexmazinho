@@ -176,7 +176,7 @@ class EntityFactura {
 	}
 	
 	/**
-	 * @return text extra. Federats factura
+	 * @return string extra. Federats factura
 	 */
 	public function getConcepteExtra($max = 0) {
 		$strExtra = '';

@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use FecdasBundle\Classes\TcpdfBridge;
 
-include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
+include_once (__DIR__.'/../../../vendor/tecnickcom/tcpdf/include/tcpdf_static.php');
 
 class PDFController extends BaseController {
 	const TITOL_ARMES = "INFORMACIÓ IMPORTANT PER ALS PESCADORS SUBMARINS";
@@ -113,7 +113,7 @@ class PDFController extends BaseController {
 		
 		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 		$pdf->init(array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
-				true, ($this->isCurrentAdmin()?'ADMINISTRADOR':$club->getNom()));
+		    true, ($this->isCurrentAdmin()?'ADMINISTRADOR - ':'').$club->getNom());
 			
 		$pdf->AddPage();
 		
@@ -130,8 +130,8 @@ class PDFController extends BaseController {
 		
 		$pdf->SetFont('dejavusans', '', 12, '', true);
 		// Titol segons filtre
-		if ($vigents) $text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
-		else $text = '<b>Històric d\'assegurats '.BaseController::getInfoTempsNomFitxer($desde, $fins, " ", "/").' </b>';
+		if ($vigents) $text = '<b>Llistat de persones en data '. date("d/m/Y") .'</b>';
+		else $text = '<b>Històric de persones '.BaseController::getInfoTempsNomFitxer($desde, $fins, " ", "/").' </b>';
 		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
 		
 		$pdf->Ln();

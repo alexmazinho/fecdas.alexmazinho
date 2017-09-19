@@ -5,11 +5,7 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use FecdasBundle\Form\FormCurs;
 use FecdasBundle\Entity\EntityCurs;
@@ -17,18 +13,7 @@ use FecdasBundle\Entity\EntityDocencia;
 use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Entity\EntityTitulacio;
 
-use FecdasBundle\Form\FormRebut;
-use FecdasBundle\Entity\EntityRebut;
-use FecdasBundle\Form\FormComanda;
-use FecdasBundle\Entity\EntityComanda;
-use FecdasBundle\Form\FormPayment;
-use FecdasBundle\Entity\EntityPayment;
-use FecdasBundle\Entity\EntityPreu;
 use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Controller\BaseController;
-use FecdasBundle\Entity\EntityComptabilitat;
-use FecdasBundle\Classes\RedsysAPI;
-use FecdasBundle\Classes\Funcions;
 
 
 class TitulacionsController extends BaseController {
@@ -86,7 +71,7 @@ class TitulacionsController extends BaseController {
 			$print = $request->query->has('print') && $request->query->get('print') == true?true:false;
 			
 			return $this->forward('FecdasBundle:PDF:dadespersonalstopdf', array(
-							        'persones'  => $query->getResult(),
+							        'persones'       => $query->getResult(),
 							        'print' 		=> $print,
 							        'desde'			=> $desde,
 							        'fins'			=> $fins,
@@ -152,44 +137,14 @@ class TitulacionsController extends BaseController {
 		return $response;
 	}
 	
-	public function titulacionsfederatAction(Request $request) {
-	
-		if ($this->isAuthenticated() != true) return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$checkRole = $this->get('fecdas.rolechecker');
-    	
-		if (!$checkRole->isCurrentInstructor() && !$checkRole->isCurrentFederat())
-					 return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
-		$user = $checkRole->getCurrentUser();
-		$llicencies = array();
-		$altresllicencies = array();
-		$metapersona = null;
-		
-		try {
-			if ($user == null || $user->getMetapersona() == null) throw new \Exception('No es poden mostrar les dades d\'aquest usuari');
-		
-			$metapersona = $user->getMetapersona();
-			$llicencies = $user->getMetapersona()->getTitulacionsSortedByDate();
-			$altresllicencies = $user->getMetapersona()->getAltrestitulacions();
-			
-		} catch (\Exception $e) {
-    		// Ko, 
-    		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-    	}
-		
-		return $this->render('FecdasBundle:Page:titulacionsfederat.html.twig',
-				$this->getCommonRenderArrayOptions(array('metapersona' => $metapersona, 'titulacions' => $titulacions, 'altrestitulacions' => $altrestitulacions)));
-	}
-	
-	
+
 	public function historialllicenciesAction(Request $request) {
 		
 		if ($this->isAuthenticated() != true) return new Response("");
 
 		if (!$request->query->has('id')) return new Response("");
 		
-		$em = $this->getDoctrine()->getManager();
+		//$em = $this->getDoctrine()->getManager();
 				
 		$id = $request->query->get('id');
 			
@@ -241,7 +196,7 @@ class TitulacionsController extends BaseController {
 
 		if (!$request->query->has('id')) return new Response("");
 		
-		$em = $this->getDoctrine()->getManager();
+		//$em = $this->getDoctrine()->getManager();
 				
 		$id = $request->query->get('id');
 		
@@ -310,8 +265,6 @@ class TitulacionsController extends BaseController {
 		
 		$this->addTitolsFilterForm($formBuilder, $titol, true, 'titols');
 		
-		$form = $formBuilder->getForm(); 
-		
 		return $this->render('FecdasBundle:Titulacions:cursos.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
 						'cursos' => $cursos, 'sortparams' => array('sort' => $sort,'direction' => $direction))
@@ -327,20 +280,20 @@ class TitulacionsController extends BaseController {
     	$em = $this->getDoctrine()->getManager();
     	
     	$curs = null;
-		$auxdirector = null;
+		/*$auxdirector = null;
 		$auxcarnet = null;
 		$auxcodirector = null;
 		$auxcocarnet = null;
 		$participants = null;
 		$instructors = null;
-		$collaboradors = null;
+		$collaboradors = null;*/
 		$action = '';
 		$titol = null;
 		$kit = null;
 		$stock = '';  // stock desconegut
 		$requeriments = array( 'titol' => '', 'errors' => array( 'total' => 0 ));
 		
-		$participantscurrent = null;
+		//$participantscurrent = null;
 
 		$checkRole = $this->get('fecdas.rolechecker');
     	
@@ -776,7 +729,7 @@ class TitulacionsController extends BaseController {
 					$kit = $titol->getKit();
 					$stockProducte = $this->consultaStockProducte($kit->getId(), $club);
 					
-					
+					$em = $this->getDoctrine()->getManager();
 					
 					$unitats = count($curs->getParticipantsSortedByCognomsNom());
 					$comentaris = 'Sortida stock '.$unitats.'x'.$kit->getDescripcio().', utilitzats en un curs';
@@ -1400,7 +1353,7 @@ class TitulacionsController extends BaseController {
 		if ($titolExtern != null) $strQuery .= " AND at = :titolextern ";
 		
 		if ($club != null) $strQuery .= " AND e.club = :club ";
-		if ($dni != "") $strQuery .= " AND e.dni LIKE :dni ";
+		if ($dni != "") $strQuery .= " AND m.dni LIKE :dni ";
 		if ($nom != "") $strQuery .= " AND e.nom LIKE :nom ";
 		if ($cognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
 
@@ -1432,7 +1385,7 @@ class TitulacionsController extends BaseController {
 		
 		$em = $this->getDoctrine()->getManager();
 	
-		$current = $this->getCurrentDate();
+		//$current = $this->getCurrentDate();
 		
 		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityCurs c JOIN c.titol t WHERE 1 = 1 ";
 		
@@ -1474,7 +1427,7 @@ class TitulacionsController extends BaseController {
 		$cerca = $request->get('cerca', '');
 		$cercanom = $request->get('nom', 0) == 1?true:false;
 		$cercamail = $request->get('mail', 0) == 1?true:false;
-		$admin = $request->get('admin', 0) == 1?true:false;
+		//$admin = $request->get('admin', 0) == 1?true:false;
 		$codi = $request->get('club', '');
 		// Validació de llicències
 		$tecnic = $request->get('tecnic', 0) == 1?true:false;

@@ -8,9 +8,7 @@ if (!defined('K_PATH_IMAGES')) {
 /**
 * TCPDF Bridge 
 */
-include_once (__DIR__.'/../../../vendor/tcpdf/tcpdf.php');
-
-//error_log(__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
+include_once (__DIR__.'/../../../vendor/tecnickcom/tcpdf/tcpdf.php');
 
 
 class TcpdfBridge extends \TCPDF {

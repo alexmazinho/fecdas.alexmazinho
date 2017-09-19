@@ -25,7 +25,7 @@ use FecdasBundle\Entity\EntityArxiu;
 use FecdasBundle\Entity\EntityStock;
 
 
-include_once (__DIR__.'/../../../vendor/tcpdf/include/tcpdf_static.php');
+include_once (__DIR__.'/../../../vendor/tecnickcom/tcpdf/include/tcpdf_static.php');
 
 
 define('CR', "\r");          // Carriage Return: Mac
@@ -3145,7 +3145,7 @@ class BaseController extends Controller {
 				throw new \Exception('Cal escollir algun producte de la llista'  );
 			}
 
-			if ($comanda->esNova() == true) {
+			if ($comanda->esNova()) {
 				
 				if ($unitats == 0) {
 					$camp = $this->cercarCampColleccio($formdetalls, $detall, 'unitats');

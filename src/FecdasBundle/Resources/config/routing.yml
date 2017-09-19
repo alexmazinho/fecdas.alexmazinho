@@ -365,12 +365,6 @@ FecdasBundle_actacurspdf:
     requirements:
         methods:  GET
 
-FecdasBundle_titulacionsfederat: 
-    path:  /titulacionsfederat
-    defaults: { _controller: "FecdasBundle:Titulacions:titulacionsfederat" }
-    requirements:
-        methods:  GET
-
 FecdasBundle_historialtitulacions: 
     path:  /historialtitulacions
     defaults: { _controller: "FecdasBundle:Titulacions:historialtitulacions" }
@@ -652,11 +646,11 @@ FecdasBundle_anulartraspas:
     requirements:
         methods:  GET
 
-FecdasBundle_rebutnegatiu:
-    path:  /rebutnegatiu
-    defaults: { _controller: "FecdasBundle:Facturacio:rebutnegatiu" }
+FecdasBundle_esborrarrebut:
+    path:  /esborrarrebut
+    defaults: { _controller: "FecdasBundle:Facturacio:esborrarrebut" }
     requirements:
-        methods:  GET
+        methods:  GET        
         
 FecdasBundle_esborrarultimrebut:
     path:  /esborrarultimrebut

@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block fecdas_title %}
-    Aplicació de tramitació de llistes d'assegurats<br/> <i>Federació Catalana d'Activitats Subaquàtiques</i>
+    Aplicació de gestió<br/> <i>Federació Catalana d'Activitats Subaquàtiques</i>
 {% endblock %}
 
 {% block fecdas_login %} 
@@ -139,7 +139,6 @@
 			          	<li id="menu-cursos" class="separator"><a href="{{ path('FecdasBundle_cursos') }}">Cursos</a></li>
 			          	<li id="menu-stockkits" class="separator"><a href="{{ path('FecdasBundle_stockclub') }}">Kits disponibles</a></li>
 			          	<li id="menu-persones" class="separator"><a href="{{ path('FecdasBundle_dadespersonals') }}">Titulacions i<br/>dades personals</a></li>
-			          	<li id="menu-assegurats"><a href="{{ path('FecdasBundle_assegurats', { 'sort': 'e.cognoms', 'direction':'asc' }) }}">Assegurats</a></li>
 						{% if busseig == true  %}
 				            <li class="divider"></li>
 							<li id="menu-busseig"><a href="{{ path('FecdasBundle_busseig') }}">Llicències amb el DNI</a></li>

@@ -360,44 +360,44 @@ class EntityRebut {
 	}
 	
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDatapagament() {
 		return $this->datapagament;
 	}
 
 	/**
-	 * @param datetime $datapagament
+	 * @param \DateTime $datapagament
 	 */
 	public function setDatapagament($datapagament) {
 		$this->datapagament = $datapagament;
 	}
 
 	/**
-	 * @return decimal
+	 * @return string
 	 */
 	public function getImport() {
 		return $this->import;
 	}
 
 	/**
-	 * @param decimal $import
+	 * @param string $import
 	 */
 	public function setImport($import) {
 		$this->import = $import;
 	}
 
 	/**
-	 * @return comandaanulacio
+	 * @return EntityComanda
 	 */
 	public function getComandaanulacio() {
 		return $this->comandaanulacio;
 	}
 	
 	/**
-	 * @param \FecdasBundle\Entity\EntityComanda $comandaanulacio
+	 * @param EntityComanda $comandaanulacio
 	 */
-	public function setComandaanulacio(\FecdasBundle\Entity\EntityComanda $comandaanulacio) {
+	public function setComandaanulacio(EntityComanda $comandaanulacio) {
 		$this->comandaanulacio = $comandaanulacio;
 	}
 
@@ -457,10 +457,10 @@ class EntityRebut {
 	/**
 	 * Set club
 	 *
-	 * @param \FecdasBundle\Entity\EntityClub $club
+	 * @param EntityClub $club
 	 * @return EntityRebut
 	 */
-	public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+	public function setClub(EntityClub $club = null)
 	{
 		$this->club = $club;
 	
@@ -470,7 +470,7 @@ class EntityRebut {
 	/**
 	 * Get club
 	 *
-	 * @return \FecdasBundle\Entity\EntityClub
+	 * @return EntityClub
 	 */
 	public function getClub()
 	{
@@ -481,10 +481,10 @@ class EntityRebut {
 	/**
 	 * Set comptabilitat
 	 *
-	 * @param \FecdasBundle\Entity\EntityComptabilitat $comptabilitat
+	 * @param EntityComptabilitat $comptabilitat
 	 * @return EntityRebut
 	 */
-	public function setComptabilitat(\FecdasBundle\Entity\EntityComptabilitat $comptabilitat = null)
+	public function setComptabilitat(EntityComptabilitat $comptabilitat = null)
 	{
 		$this->comptabilitat = $comptabilitat;
 	
@@ -494,7 +494,7 @@ class EntityRebut {
 	/**
 	 * Get comptabilitat
 	 *
-	 * @return \FecdasBundle\Entity\EntityComptabilitat
+	 * @return EntityComptabilitat
 	 */
 	public function getComptabilitat()
 	{
@@ -531,14 +531,14 @@ class EntityRebut {
 	}
 
 	/**
-	 * @return text
+	 * @return string
 	 */
 	public function getComentari() {
 		return $this->comentari;
 	}
 
 	/**
-	 * @param text $comentari
+	 * @param string $comentari
 	 */
 	public function setComentari($comentari) {
 		$this->comentari = $comentari;
@@ -566,14 +566,14 @@ class EntityRebut {
 	
 
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDataentrada() {
 		return $this->dataentrada;
 	}
 	
 	/**
-	 * @param datetime $dataentrada
+	 * @param \DateTime $dataentrada
 	 */
 	public function setDataentrada($dataentrada) {
 		$this->dataentrada = $dataentrada;

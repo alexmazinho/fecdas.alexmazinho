@@ -292,7 +292,7 @@ class PDFController extends BaseController {
 		if ($llicencia != null && $llicencia->getParte() != null) {
 			$text = $llicencia->getCategoria()->getDescripcio().". ";
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
-			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
+			$text .= $llicencia->getParte()->getDatacaducitat()->format('d/m/Y');
 		} else {
 			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
 		}
@@ -316,182 +316,6 @@ class PDFController extends BaseController {
 		$pdf->Ln();
 	}
 	
-	
-	public function  asseguratstopdfAction(Request $request) {
-		/* Llistat d'assegurats vigents */
-		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		$club = $this->getCurrentClub();
-		
-		$currentDNI = $request->query->get('dni', '');
-		$currentNom = $request->query->get('nom', '');
-		$currentCognoms = $request->query->get('cognoms', '');
-		
-		$interval = $this->intervalDatesPerDefecte($request);
-		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:null);
-		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:null);
-		
-		$currentVigent = false;
-		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
-		
-		$currentTots = false;
-		if ($this->isCurrentAdmin() && $this->get('request')->query->has('tots') && $this->get('request')->query->get('tots') == 1) $currentTots = true;
-		
-		$this->logEntryAuth('PRINT ASSEGURATS', $club->getCodi()." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
-		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php
-
-		$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-		$pdf->init(array('author' => 'FECDAS', 'title' => "Llista d'assegurats"),
-				true, $club->getNom());
-			
-		$pdf->AddPage();
-		
-		// set color for background
-		$pdf->SetFillColor(255, 255, 255); //Blanc
-		// set color for text
-		$pdf->SetTextColor(0, 0, 0); // Negre
-		
-		$y_ini = $pdf->getY();
-		$x_ini = $pdf->getX();
-		
-		$y = $y_ini;
-		$x = $x_ini;
-		
-		$pdf->SetFont('dejavusans', '', 12, '', true);
-		// Titol segons filtre
-		if ($currentVigent == true) $text = '<b>Llista d\'assegurats en data '. date("d/m/Y") .'</b>';
-		else $text = '<b>Històric d\'assegurats '.($desde != null?'des de '.$desde->format('d/m/Y').' ':'').' '.($fins != null?'fins '.$fins->format('d/m/Y'):'').' </b>';
-		$pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
-		
-		$pdf->Ln();
-
-		if ($currentDNI != "" or $currentNom != "" or $currentCognoms != "") {
-			// Afegir dades del filtre
-			$y += 10;
-			$pdf->SetFont('dejavusans', 'I', 10, '', true);
-			$pdf->writeHTMLCell(0, 0, $x, $y, 'Opcions de filtre', 'B', 1, 1, true, '', true);
-			$pdf->SetFont('dejavusans', '', 9, '', true);
-			if ($currentDNI != "") {
-				$y += 7;
-				$pdf->writeHTMLCell(0, 0, $x, $y, 'DNI\'s que contenen "'.$currentDNI.'"', '', 1, 1, true, '', true);
-			}
-			if ($currentNom != "") {
-				$y += 7;
-				$pdf->writeHTMLCell(0, 0, $x, $y, 'Noms que contenen "'.$currentNom.'"', '', 1, 1, true, '', true);
-			}
-			if ($currentCognoms != "") {
-				$y += 7;
-				$pdf->writeHTMLCell(0, 0, $x, $y, 'Cognoms que contenen "'.$currentCognoms.'"', '', 1, 1, true, '', true);
-			}
-			$y += 2;
-			$pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
-			
-			$pdf->Ln();
-		} else {
-			$y += 15;
-		}
-		
-		$w = array(8, 44, 20, 26, 82); // Amplades
-		$this->asseguratsHeader($pdf, $w);
-		$pdf->SetFillColor(255, 255, 255); //Blanc
-		$pdf->SetFont('dejavusans', '', 8, '', true);
-		
-		$total = 0;
-
-		$strOrderBY = $this->get('request')->query->get('sort', 'e.cognoms, e.nom'); // e.cognoms, e.nom per defecte
-		 
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $desde, $fins, $currentVigent, $strOrderBY); 
-		$persones = $query->getResult();
-		
-		
-		foreach ($persones as $persona) {
-			$total++;
-			
-			$num_pages = $pdf->getNumPages();
-			$pdf->startTransaction();
-			
-			$this->asseguratsRow($pdf, $persona, $desde, $fins, $total, $w);
-				
-			if($num_pages < $pdf->getNumPages()) {
-
-				//Undo adding the row.
-				$pdf->rollbackTransaction(true);
-			
-				$pdf->AddPage();
-				$this->asseguratsHeader($pdf, $w);
-				$pdf->SetFillColor(255, 255, 255); //Blanc
-				$pdf->SetFont('dejavusans', '', 9, '', true);
-				
-				$this->asseguratsRow($pdf, $persona, $desde, $fins, $total, $w);
-				
-			} else {
-				//Otherwise we are fine with this row, discard undo history.
-				$pdf->commitTransaction();
-			}
-		}
-		
-		$pdf->Ln(10);
-		
-		$pdf->setPage(1); // Move to first page
-		
-		$pdf->setY($y_ini);
-		$pdf->setX($pdf->getPageWidth() - 100);
-		
-		$pdf->SetFont('dejavusans', '', 13, '', true);
-		$text = '<b>Total : '. $total . '</b>';
-		$pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $text, '', 1, 1, true, 'R', true);
-		
-		// reset pointer to the last page
-		$pdf->lastPage();
-		
-		if ($request->query->has('print') and $request->query->get('print') == true) {
-			// force print dialog
-			$js = 'print(true);';
-			// set javascript
-			$pdf->IncludeJS($js);
-			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // inline
-		} else {
-		// Close and output PDF document
-			$response = new Response($pdf->Output("assegurats_" . $club->getCodi() . "_" . date("Ymd") . ".pdf", "D")); // save as...
-		}
-		$response->headers->set('Content-Type', 'application/pdf');
-		return $response;
-		
-	}
-	
-	private function asseguratsRow($pdf, $persona, $desde, $fins, $total, $w) {
-		$llicencia = $persona->getLlicenciaVigent();
-		
-		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-		$pdf->Cell($w[1], 6, $persona->getCognomsNom(), 'LRB', 0, 'L', 0, '', 1);
-		$pdf->Cell($w[2], 6, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
-		$pdf->Cell($w[3], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
-		if ($llicencia != null && $llicencia->getParte() != null) {
-			$text = $llicencia->getCategoria()->getDescripcio().". ";
-			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
-			$text .= $llicencia->getParte()->getDatacaducitat($this->getLogMailUserData("asseguratstopdfAction"))->format('d/m/Y');
-		} else {
-			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
-		}
-		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
-			
-		$pdf->Ln();
-		
-	}
-	
-	private function asseguratsHeader($pdf, $w) {
-		$pdf->SetFont('dejavusans', 'B', 9, '', true);
-		$pdf->SetFillColor(221, 221, 221); //Gris
-		
-		$pdf->Cell($w[0], 7, '', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
-		$pdf->Cell($w[1], 7, 'Nom', 1, 0, 'L', 1);
-		$pdf->Cell($w[2], 7, 'Nascut/da', 1, 0, 'C', 1);
-		$pdf->Cell($w[3], 7, 'DNI', 1, 0, 'C', 1);
-		$pdf->Cell($w[4], 7, 'Informació llicència / assegurança', 1, 0, 'C', 1, '', 1);
-		$pdf->Ln();
-	}
 	
 	public function partetopdfAction(Request $request) {
 	
@@ -549,7 +373,7 @@ class PDFController extends BaseController {
 				$y += 15;
 				
 				$datainici = $parte->getDataalta();
-				$datafi = $parte->getDataCaducitat($this->getLogMailUserData("partetopdfAction  "));
+				$datafi = $parte->getDataCaducitat();
 
 				$pdf->SetFont('dejavusans', '', 10, '', true);
 				$text = '<p>Llista d\'esportistes que representen el CLUB:   ';
@@ -830,7 +654,7 @@ class PDFController extends BaseController {
 				$datacaduca = $this->getCurrentDate();
 				$datacaduca->add(new \DateInterval('P30D'));  // 30 dies
 				
-				if ($datacaduca > $parte->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 1 "))) $datacaduca = $parte->getDatacaducitat($this->getLogMailUserData("licensetopdfAction 2 "));
+				if ($datacaduca > $parte->getDatacaducitat()) $datacaduca = $parte->getDatacaducitat();
 				
 				$x += 32;
 				$pdf->writeHTMLCell(0, 0, $x, $y + 4, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);

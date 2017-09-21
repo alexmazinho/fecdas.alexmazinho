@@ -662,8 +662,6 @@
 		}
 	});
 	
-	/* Mètode obsolet */
-
 	redirectLocationUrlParams = function(url, params) {
 		var i = 0;
 		for ( i in params ) {
@@ -868,19 +866,6 @@
 				loadLlicencia(0);				
 			}
 	    });
-	};
-	
-	asseguratsReload = function(url) {
-		var params = []; 
-		params.push( {'name':'tots','value': ($('#form_tots').is(':checked'))?1:0} );
-		params.push( {'name':'vigent','value': ($('#form_vigent').is(':checked'))?1:0} );
-		params.push( {'name':'dni','value': $('#form_dni').val()} );
-		params.push( {'name':'nom','value': $('#form_nom').val()} );
-		params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
-		params.push( {'name':'desde','value': $('#form_desde').val()} );
-		params.push( {'name':'fins','value': $('#form_fins').val()} );
-
-		redirectLocationUrlParams(url, params);
 	};
 	
 	showHistorialLlicencies = function() {

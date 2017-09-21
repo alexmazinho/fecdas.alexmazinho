@@ -178,16 +178,16 @@ class EntityTitol {
 	}
 
 	/**
-	 * @return FecdasBundle\Entity\EntityCarnet
+	 * @return EntityCarnet
 	 */
 	public function getCarnet() {
 		return $this->carnet;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityCarnet $carnet
+	 * @param EntityCarnet $carnet
 	 */
-	public function setCarnet(\FecdasBundle\Entity\EntityCarnet $carnet) {
+	public function setCarnet(EntityCarnet $carnet) {
 		$this->carnet = $carnet;
 	}
 
@@ -317,9 +317,9 @@ class EntityTitol {
 	/**
      * Add requeriments
      *
-     * @param FecdasBundle\Entity\EntityRequeriment $requeriments
+     * @param EntityRequeriment $requeriments
      */
-    public function addRequeriments(\FecdasBundle\Entity\EntityRequeriment $requeriments)
+    public function addRequeriments(EntityRequeriment $requeriments)
     {
         $this->requeriments->add($requeriments);
     }
@@ -327,7 +327,7 @@ class EntityTitol {
     /**
      * Get requeriments
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getRequeriments()
     {

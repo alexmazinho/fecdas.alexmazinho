@@ -78,30 +78,30 @@ class EntityRequeriment {
 	}
 
 	/**
-	 * @return FecdasBundle\Entity\EntityTitol
+	 * @return EntityTitol
 	 */
 	public function getTitol() {
 		return $this->titol;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityTitol $titol
+	 * @param EntityTitol $titol
 	 */
-	public function setTitol(\FecdasBundle\Entity\EntityTitol $titol) {
+	public function setTitol(EntityTitol $titol) {
 		$this->titol = $titol;
 	}
 
 	/**
-	 * @return FecdasBundle\Entity\EntityRequeriment
+	 * @return EntityRequeriment
 	 */
 	public function getRequeriment() {
 		return $this->requeriment;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityRequeriment $requeriment
+	 * @param EntityRequeriment $requeriment
 	 */
-	public function setRequeriment(\FecdasBundle\Entity\EntityRequeriment $requeriment) {
+	public function setRequeriment(EntityRequeriment $requeriment) {
 		$this->requeriment = $requeriment;
 	}
 

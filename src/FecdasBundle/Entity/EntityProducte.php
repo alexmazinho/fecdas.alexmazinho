@@ -142,7 +142,7 @@ class EntityProducte {
 	/**
 	 * Get preus persist
 	 *
-	 * @return decimal
+	 * @return string
 	 */
 	public function getPreusConsolidated()
 	{
@@ -593,7 +593,7 @@ class EntityProducte {
     /**
      * Get
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getPreus()
     {
@@ -603,7 +603,7 @@ class EntityProducte {
     /**
      * Get preu (objecte) any
      *
-     * @return decimal
+     * @return string
      */
     public function getPreu($any)
     {
@@ -619,7 +619,7 @@ class EntityProducte {
 	 * preu any actual si existeix o 
 	 * darrer preu anys anteriors
      *
-     * @return decimal
+     * @return string
      */
     public function getPreuAplicable($any)
     {
@@ -644,7 +644,7 @@ class EntityProducte {
     /**
      * Get preu any actual 
      *
-     * @return decimal
+     * @return string
      */
     public function getCurrentPreu()
     {
@@ -654,7 +654,7 @@ class EntityProducte {
 	/**
      * Get any preu any actual 
      *
-     * @return decimal
+     * @return string
      */
     public function getCurrentAny()
     {
@@ -667,7 +667,7 @@ class EntityProducte {
     /**
      * Get preu any
      *
-     * @return decimal
+     * @return string
      */
     public function getPreuAny($any)
     {
@@ -681,7 +681,7 @@ class EntityProducte {
     /**
      * Get iva any actual 
      *
-     * @return decimal
+     * @return string
      */
     public function getCurrentIva()
     {
@@ -691,7 +691,7 @@ class EntityProducte {
     /**
      * Get iva any
      *
-     * @return decimal
+     * @return string
      */
     public function getIvaAny($any)
     {

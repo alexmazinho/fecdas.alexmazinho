@@ -113,7 +113,7 @@ class EntityEnquesta {
     /**
      * Set dataalta
      *
-     * @param datetime $dataalta
+     * @param \DateTime $dataalta
      */
     public function setDataalta($dataalta)
     {
@@ -123,7 +123,7 @@ class EntityEnquesta {
     /**
      * Get dataalta
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataalta()
     {
@@ -133,7 +133,7 @@ class EntityEnquesta {
     /**
      * Set datainici
      *
-     * @param datetime $datainici
+     * @param \DateTime $datainici
      */
     public function setDatainici($datainici)
     {
@@ -143,7 +143,7 @@ class EntityEnquesta {
     /**
      * Get datainici
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatainici()
     {
@@ -153,7 +153,7 @@ class EntityEnquesta {
     /**
      * Set datafinal
      *
-     * @param datetime $datafinal
+     * @param \DateTime $datafinal
      */
     public function setDatafinal($datafinal)
     {
@@ -163,7 +163,7 @@ class EntityEnquesta {
     /**
      * Get datafinal
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatafinal()
     {
@@ -173,9 +173,9 @@ class EntityEnquesta {
     /**
      * Add preguntes
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityEnquestaPregunta $preguntes
+     * @param EntityEnquestaPregunta $preguntes
      */
-    public function addEntityEnquestaPregunta(\FecdasBundle\Entity\Enquestes\EntityEnquestaPregunta $preguntes)
+    public function addEntityEnquestaPregunta(EntityEnquestaPregunta $preguntes)
     {
     	$this->preguntes->add($preguntes);
     }
@@ -183,9 +183,9 @@ class EntityEnquesta {
     /**
      * Remove preguntes
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityEnquestaPregunta $preguntes
+     * @param EntityEnquestaPregunta $preguntes
      */
-    public function removeEntityEnquestaPregunta(\FecdasBundle\Entity\Enquestes\EntityEnquestaPregunta $preguntes)
+    public function removeEntityEnquestaPregunta(EntityEnquestaPregunta $preguntes)
     {
     	$preguntes->setEnquesta();
     	$this->preguntes->removeElement($preguntes);
@@ -194,7 +194,7 @@ class EntityEnquesta {
     /**
      * Get preguntes
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getPreguntes()
     {
@@ -227,9 +227,9 @@ class EntityEnquesta {
     /**
      * Add realitzacions
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityRealitzacio $realitzacions
+     * @param EntityRealitzacio $realitzacions
      */
-    public function addEntityRealitzacio(\FecdasBundle\Entity\Enquestes\EntityRealitzacio $realitzacions)
+    public function addEntityRealitzacio(EntityRealitzacio $realitzacions)
     {
     	$this->realitzacions->add($realitzacions);
     }
@@ -237,7 +237,7 @@ class EntityEnquesta {
     /**
      * Get realitzacions
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getRealitzacions()
     {
@@ -248,7 +248,7 @@ class EntityEnquesta {
      *  Retorna enquesta realitzada per usuari o null 
      */
     public function getRealitzada($username) {
-    	foreach ($this->realitzacions as $c => $realitzacio) {
+    	foreach ($this->realitzacions as $realitzacio) {
     		if ($realitzacio->getUsuari() != null and
     			$realitzacio->getUsuari()->getUser() == $username) return $realitzacio;
     	}
@@ -262,7 +262,7 @@ class EntityEnquesta {
     public function getResultats() {
     	$respostes = array();
     	
-    	foreach ($this->getPreguntesSortedByOrdre() as $c => $epregunta) {
+    	foreach ($this->getPreguntesSortedByOrdre() as $epregunta) {
     		$pregunta = $epregunta->getPregunta();
 
     		/* Arrays de respostes per cada pregunta */
@@ -271,7 +271,7 @@ class EntityEnquesta {
     		$array_open = array();	/* [0] - resposta 1,  [1] - resposta 2 ... */
     		
     		/* Omplir els arrays */
-    		foreach ($this->realitzacions as $c => $realitzacio) {
+    		foreach ($this->realitzacions as $realitzacio) {
     			$resposta = $realitzacio->getResposta($pregunta);
     			
 				if ($resposta != null) {
@@ -318,10 +318,10 @@ class EntityEnquesta {
      * Retorna mitjana de tote les respostes d'una pregunta de l'enquesta
      *
      */
-    public function getAvgPregunta(\FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta) {
+    public function getAvgPregunta(EntityPregunta $pregunta) {
     	$sum = 0;
     	$total = 0;
-    	foreach ($this->realitzacions as $c => $realitzacio) {
+    	foreach ($this->realitzacions as $realitzacio) {
     		$resposta = $realitzacio->getResposta($pregunta);
     		if ($resposta != null) {
     			$total++;
@@ -343,11 +343,11 @@ class EntityEnquesta {
      * Retorna total de respostes per valor (1-gens, 1-poc, etc...) d'una pregunta RANG de l'enquesta
      *
      */
-    public function getTotalPreguntaRang(\FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta) {
+    public function getTotalPreguntaRang(EntityPregunta $pregunta) {
     	$dadespregunta = array(0,0,0,0,0); /* [1] - gens,  [2] - poc, .... [5] - molt */ 
     	if ($pregunta->getTipus() != "RANG") return $dadespregunta;
     	
-    	foreach ($this->realitzacions as $c => $realitzacio) {
+    	foreach ($this->realitzacions as $realitzacio) {
     		$resposta = $realitzacio->getResposta($pregunta);
     		if ($resposta != null) {
     			$index_array = $resposta->getRespostarang();
@@ -362,11 +362,11 @@ class EntityEnquesta {
      * Retorna total de respostes per valor (0-No, 1-Si) d'una pregunta BOOL de l'enquesta
      *
      */
-    public function getTotalPreguntaBool(\FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta) {
+    public function getTotalPreguntaBool(EntityPregunta $pregunta) {
     	$dadespregunta = array(0,0); /* [0] - Si,  [1] - No */
     	if ($pregunta->getTipus() != "BOOL") return $dadespregunta;
     	 
-    	foreach ($this->realitzacions as $c => $realitzacio) {
+    	foreach ($this->realitzacions as $realitzacio) {
     		$resposta = $realitzacio->getResposta($pregunta);
     		if ($resposta != null) {
     			if ($resposta->getRespostabool() == 1) $dadespregunta[0] = $dadespregunta[0]+1; // incrementa si

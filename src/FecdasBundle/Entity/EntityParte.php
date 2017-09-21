@@ -551,21 +551,11 @@ class EntityParte extends EntityComanda {
     	return $this->getPreuTotalNet() * $factor;
     }
     
-    public function getDataCaducitat($source = null) {
+    public function getDataCaducitat() {
     	//$datacaducitat = clone $this->getDataalta(); // Important treballar amb còpies no amb referències
     	//$datacaducitat = clone $this->dataalta;
 
     	if ($this->dataalta == null) {
-    		// mime type to display message in HTML
-    		//$headers = "From: webadmin@fecdasgestio.cat\r\n";
-    		//$headers .= "MIME-Version: 1.0\r\n";
-    		//$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-    		/* Error punyetero. Debug */
-    		/*if ($source == null) {
-	    		error_log("getDataCaducitat amb dataalta null (Origen desconegut)", 1, "alexmazinho@gmail.com",$headers);
-    		} else {
-    			error_log("getDataCaducitat amb dataalta null (".$source.")", 1, "alexmazinho@gmail.com",$headers);
-    		}*/
     		$this->setDataalta(new \DateTime());
     	}
     	
@@ -682,7 +672,7 @@ class EntityParte extends EntityComanda {
 
     		/* Si falta menys d'un més per caducar o ja han caducat */
     		$current = new \DateTime();
-    		$interval = $current->diff($this->getDataCaducitat("allowRenovar"));
+    		$interval = $current->diff($this->getDataCaducitat());
     		
 			if ($interval->format('%r%a') <= 30 && $interval->format('%r%a') > -180) return true; // %r signo %a dias Menys d'un mes per caducar menys de 6 mesos que ha caducat
 			
@@ -749,7 +739,7 @@ class EntityParte extends EntityComanda {
     		($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);*/
     	   
     	return ( $this->dataalta->format('Y-m-d') <= $currentdate->format('Y-m-d') 
-    			&& $currentdate->format('Y-m-d') <= $this->getDataCaducitat("isVigent")->format("Y-m-d"));
+    			&& $currentdate->format('Y-m-d') <= $this->getDataCaducitat()->format("Y-m-d"));
     }
     
     
@@ -760,7 +750,7 @@ class EntityParte extends EntityComanda {
      */
     public function isPassat() {
     	$currentdate = new \DateTime();
-    	return ($currentdate->format('Y-m-d') > $this->getDataCaducitat("isPassat")->format("Y-m-d"));
+    	return ($currentdate->format('Y-m-d') > $this->getDataCaducitat()->format("Y-m-d"));
     }
     
    
@@ -875,9 +865,9 @@ class EntityParte extends EntityComanda {
     /**
      * Set clubparte
      *
-     * @param \FecdasBundle\Entity\EntityClub $club
+     * @param EntityClub $club
      */
-    public function setClubparte(\FecdasBundle\Entity\EntityClub $clubparte = null)
+    public function setClubparte(EntityClub $clubparte = null)
     {
         $this->clubparte = $clubparte;
     }
@@ -885,7 +875,7 @@ class EntityParte extends EntityComanda {
     /**
      * Get clubparte. Get club del parte o si és null de la comanda
      *
-     * @return \FecdasBundle\Entity\EntityClub
+     * @return EntityClub
      */
     public function getClubparte()
     {
@@ -955,9 +945,9 @@ class EntityParte extends EntityComanda {
     /**
      * Set tipus
      *
-     * @param \FecdasBundle\Entity\EntityParteType $tipus
+     * @param EntityParteType $tipus
      */
-    public function setTipus(\FecdasBundle\Entity\EntityParteType $tipus)
+    public function setTipus(EntityParteType $tipus)
     {
         $this->tipus = $tipus;
     }
@@ -965,7 +955,7 @@ class EntityParte extends EntityComanda {
     /**
      * Get tipus
      *
-     * @return \FecdasBundle\Entity\EntityParteType 
+     * @return EntityParteType 
      */
     public function getTipus()
     {
@@ -1035,9 +1025,9 @@ class EntityParte extends EntityComanda {
     /**
      * Add llicencia
      *
-     * @param \FecdasBundle\Entity\EntityLlicencia $llicencia
+     * @param EntityLlicencia $llicencia
      */
-    public function addLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
+    public function addLlicencia(EntityLlicencia $llicencia)
     {
     	$llicencia->setParte($this);
     	$this->llicencies->add($llicencia);
@@ -1046,9 +1036,9 @@ class EntityParte extends EntityComanda {
     /**
      * Remove llicencia
      *
-     * @param \FecdasBundle\Entity\EntityLlicencia $llicencia
+     * @param EntityLlicencia $llicencia
      */
-    public function removeLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencia)
+    public function removeLlicencia(EntityLlicencia $llicencia)
     {
     	$llicencia->setParte();
     	$this->llicencies->removeElement($llicencia);
@@ -1080,10 +1070,10 @@ class EntityParte extends EntityComanda {
     /**
      * Add llicencies
      *
-     * @param \FecdasBundle\Entity\EntityLlicencia $llicencies
+     * @param EntityLlicencia $llicencies
      * @return EntityParte
      */
-    public function addLlicency(\FecdasBundle\Entity\EntityLlicencia $llicencies)
+    public function addLlicency(EntityLlicencia $llicencies)
     {
         $this->llicencies[] = $llicencies;
 
@@ -1093,9 +1083,9 @@ class EntityParte extends EntityComanda {
     /**
      * Remove llicencies
      *
-     * @param \FecdasBundle\Entity\EntityLlicencia $llicencies
+     * @param EntityLlicencia $llicencies
      */
-    public function removeLlicency(\FecdasBundle\Entity\EntityLlicencia $llicencies)
+    public function removeLlicency(EntityLlicencia $llicencies)
     {
         $this->llicencies->removeElement($llicencies);
     }

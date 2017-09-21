@@ -438,7 +438,7 @@ class EntityComanda {
 	/**
 	 * Get datapreu
 	 *
-	 * @return date
+	 * @return \DateTime
 	 */
 	public function getDatapreu()
 	{
@@ -448,7 +448,7 @@ class EntityComanda {
 	/**
 	 * Get importpagament
 	 *
-	 * @return decimal
+	 * @return string
 	 */
 	public function getImportpagament()
 	{
@@ -458,7 +458,7 @@ class EntityComanda {
 	/**
 	 * Get datapagament
 	 *
-	 * @return date
+	 * @return \DateTime
 	 */
 	public function getDatapagament()
 	{

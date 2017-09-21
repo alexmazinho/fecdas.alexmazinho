@@ -6,11 +6,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormInterface;
-
-use FecdasBundle\Entity\EntityComandaDetall;
-use FecdasBundle\Entity\EntityProducte;
-
 
 class FormComandaDetall extends AbstractType {
 

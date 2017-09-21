@@ -66,7 +66,7 @@ class EntityResposta {
     /**
      * Set respostatxt
      *
-     * @param text $respostatxt
+     * @param string $respostatxt
      */
     public function setRespostatxt($respostatxt)
     {
@@ -76,7 +76,7 @@ class EntityResposta {
     /**
      * Get respostatxt
      *
-     * @return text 
+     * @return string 
      */
     public function getRespostatxt()
     {
@@ -126,9 +126,9 @@ class EntityResposta {
     /**
      * Set realitzacio
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityRealitzacio $realitzacio
+     * @param EntityRealitzacio $realitzacio
      */
-    public function setRealitzacio(\FecdasBundle\Entity\Enquestes\EntityRealitzacio $realitzacio = null)
+    public function setRealitzacio(EntityRealitzacio $realitzacio = null)
     {
         $this->realitzacio = $realitzacio;
     }
@@ -136,7 +136,7 @@ class EntityResposta {
     /**
      * Get realitzacio
      *
-     * @return FecdasBundle\Entity\Enquestes\EntityRealitzacio 
+     * @return EntityRealitzacio 
      */
     public function getRealitzacio()
     {
@@ -146,9 +146,9 @@ class EntityResposta {
     /**
      * Set pregunta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta
+     * @param EntityPregunta $pregunta
      */
-    public function setPregunta(\FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta)
+    public function setPregunta(EntityPregunta $pregunta)
     {
         $this->pregunta = $pregunta;
     }
@@ -156,7 +156,7 @@ class EntityResposta {
     /**
      * Get pregunta
      *
-     * @return FecdasBundle\Entity\Enquestes\EntityPregunta 
+     * @return EntityPregunta 
      */
     public function getPregunta()
     {

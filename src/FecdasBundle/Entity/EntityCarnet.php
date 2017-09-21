@@ -69,10 +69,10 @@ class EntityCarnet {
 	/**
 	 * Set producte
 	 *
-	 * @param \FecdasBundle\Entity\EntityProducte $producte
+	 * @param EntityProducte $producte
 	 * @return EntityCarnet
 	 */
-	public function setProducte(\FecdasBundle\Entity\EntityProducte $producte = null)
+	public function setProducte(EntityProducte $producte = null)
 	{
 		$this->producte = $producte;
 	
@@ -82,7 +82,7 @@ class EntityCarnet {
 	/**
 	 * Get producte
 	 *
-	 * @return \FecdasBundle\Entity\EntityProducte
+	 * @return EntityProducte
 	 */
 	public function getProducte()
 	{
@@ -124,7 +124,7 @@ class EntityCarnet {
 	}*/
 
 	/**
-	 * @return decimal
+	 * @return string
 	 */
 	public function getPreu() {
 		//return $this->preu;
@@ -134,7 +134,7 @@ class EntityCarnet {
 	}
 
 	/**
-	 * @param decimal $preu
+	 * @param string $preu
 	 */
 	/*public function setPreu($preu) {
 		$this->preu = $preu;
@@ -160,7 +160,7 @@ class EntityCarnet {
 	/**
 	 * Get titols
 	 *
-	 * @return Doctrine\Common\Collections\Collection
+	 * @return \Doctrine\Common\Collections\Collection
 	 */
 	public function getTitols()
 	{
@@ -170,9 +170,9 @@ class EntityCarnet {
 	/**
 	 * Add titol
 	 *
-	 * @param FecdasBundle\Entity\EntityLlicencia $titols
+	 * @param EntityLlicencia $titols
 	 */
-	public function addEntityTitol(\FecdasBundle\Entity\EntityTitol $titol)
+	public function addEntityTitol(EntityTitol $titol)
 	{
 		$this->titols->add($titol);
 	}

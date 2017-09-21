@@ -117,7 +117,7 @@ class EntityUser {
 	/**
      * Get roles club
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getRolesClubs($club)
     {
@@ -133,7 +133,7 @@ class EntityUser {
 	/**
      * Get main role
      *
-     * @return FecdasBundle\Entity\EntityUserClub 
+     * @return EntityUserClub 
      */
     public function getBaseRole()
     {
@@ -149,7 +149,7 @@ class EntityUser {
 	/**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityClub 
+     * @return EntityClub 
      */
     public function getBaseClub()
     {
@@ -162,7 +162,7 @@ class EntityUser {
 	/**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityUSerClub 
+     * @return EntityUSerClub 
      */
     public function getRoleAdmin()
     {
@@ -174,7 +174,7 @@ class EntityUser {
 	/**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityUSerClub 
+     * @return EntityUSerClub 
      */
     public function getRoleClub()
     {
@@ -186,7 +186,7 @@ class EntityUser {
 	/**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityUSerClub 
+     * @return EntityUSerClub 
      */
     public function getRoleInstructor()
     {
@@ -198,7 +198,7 @@ class EntityUser {
 	/**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityUSerClub 
+     * @return EntityUSerClub 
      */
     public function getRoleFederat()
     {
@@ -271,7 +271,7 @@ class EntityUser {
 	/**
      * Get clubs
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getClubs()
     {
@@ -281,9 +281,9 @@ class EntityUser {
 	/**
      * Add user club
      *
-     * @param FecdasBundle\Entity\EntityUserClub $club
+     * @param EntityUserClub $club
      */
-    public function addClub(\FecdasBundle\Entity\EntityUserClub $userClub)
+    public function addClub(EntityUserClub $userClub)
     {
     	$this->clubs->add($userClub);
     }
@@ -300,7 +300,7 @@ class EntityUser {
     /**
      * Get metapersona
      *
-     * @return FecdasBundle\Entity\EntityMetaPersona 
+     * @return EntityMetaPersona 
      */
     public function getMetapersona()
     {
@@ -310,9 +310,9 @@ class EntityUser {
 	/**
      * Set metapersona
      *
-     * @param FecdasBundle\Entity\EntityMetaPersona $metapersona
+     * @param EntityMetaPersona $metapersona
      */
-    public function setMetapersona(\FecdasBundle\Entity\EntityMetaPersona $metapersona)
+    public function setMetapersona(EntityMetaPersona $metapersona)
     {
         $this->metapersona = $metapersona;
     }
@@ -360,7 +360,7 @@ class EntityUser {
     /**
      * Set lastaccess
      *
-     * @param datetime $lastaccess
+     * @param \DateTime $lastaccess
      */
     public function setLastaccess($lastaccess)
     {
@@ -370,7 +370,7 @@ class EntityUser {
     /**
      * Get lastaccess
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getLastaccess()
     {
@@ -380,7 +380,7 @@ class EntityUser {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
 
     public function setDatabaixa($databaixa)
@@ -391,7 +391,7 @@ class EntityUser {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

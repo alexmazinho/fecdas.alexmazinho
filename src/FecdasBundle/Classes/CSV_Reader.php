@@ -71,7 +71,7 @@ class CSV_Reader {
 	
 	/**
 	 * Initialize CSV, open file and get it ready for reading
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	protected function _init(){
 		//echo "locale " . system('locale -a'); 

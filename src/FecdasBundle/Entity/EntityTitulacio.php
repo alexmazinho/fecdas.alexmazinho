@@ -74,21 +74,24 @@ class EntityTitulacio {
 	}
 	
 	/**
-	 * @return titol del curs
+	 * Retorna titol del curs
+	 * @return string
 	 */
 	public function getTitol() {
 		return $this->curs->getTitol();
 	}
 	
 	/**
-	 * @return Nom del club
+	 * Retorna Nom del club
+	 * @return string
 	 */
 	public function getClub() {
 		return $this->curs->getClubInfo();
 	}
 	
 	/**
-	 * @return pertany al club?
+	 * Retorna pertany al club?
+	 * @return boolean
 	 */
 	public function checkClub($club) {
 		if ($this->curs->getClub() == null) return false;
@@ -96,14 +99,16 @@ class EntityTitulacio {
 	}
 	
 	/**
-	 * @return titulacio anul·lada?
+	 * Retorna titulacio anul·lada?
+	 * @return boolean
 	 */
 	public function anulada() {
 		return $this->databaixa != null;
 	}
 	
 	/**
-	 * @return baixa titulacio
+	 * Retorna baixa titulacio
+	 * @return boolean
 	 */
 	public function baixa() {
 		$this->setDatamodificacio(new \DateTime('now'));
@@ -111,7 +116,8 @@ class EntityTitulacio {
 	}
 	
 	/**
-	 * @return titulacio consolidada?
+	 * Retorna titulacio consolidada?
+	 * @return boolean
 	 */
 	public function consolidada() {
 		return !$this->anulada() && $this->datasuperacio != null;
@@ -187,14 +193,14 @@ class EntityTitulacio {
 	}
 	
 	/**
-	 * @param datetime $datasuperacio
+	 * @param \DateTime $datasuperacio
 	 */
 	public function setDatasuperacio($datasuperacio) {
 		$this->datasuperacio = $datasuperacio;
 	}
 	
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDatasuperacio() {
 		return $this->datasuperacio;
@@ -203,7 +209,7 @@ class EntityTitulacio {
 	/**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -213,7 +219,7 @@ class EntityTitulacio {
     /**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {
@@ -223,7 +229,7 @@ class EntityTitulacio {
     /**
      * Set datamodificacio
      *
-     * @param datetime $datamodificacio
+     * @param \DateTime $datamodificacio
      */
     public function setDatamodificacio($datamodificacio)
     {
@@ -233,7 +239,7 @@ class EntityTitulacio {
     /**
      * Get datamodificacio
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatamodificacio()
     {
@@ -243,7 +249,7 @@ class EntityTitulacio {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -253,7 +259,7 @@ class EntityTitulacio {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

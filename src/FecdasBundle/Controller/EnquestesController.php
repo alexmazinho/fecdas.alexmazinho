@@ -4,10 +4,8 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use FecdasBundle\Entity\Enquestes\EntityEnquesta;
 use FecdasBundle\Entity\Enquestes\EntityEnquestaPregunta;
-use FecdasBundle\Entity\Enquestes\EntityPregunta;
 use FecdasBundle\Entity\Enquestes\EntityRealitzacio;
 use FecdasBundle\Entity\Enquestes\EntityResposta;
 use FecdasBundle\Form\Enquestes\FormEnquesta;
@@ -108,8 +106,6 @@ class EnquestesController extends BaseController {
 			
 			$form->handleRequest($request);
 
-			$actiontext = (is_null($enquesta->getId()))?'NEW ENQUESTA OK':'UPD ENQUESTA OK';
-
 			
 			/* Seleccionar enquestes entre dues dates */
 			$strQuery = "SELECT e FROM FecdasBundle\Entity\Enquestes\EntityEnquesta e";
@@ -127,7 +123,7 @@ class EnquestesController extends BaseController {
 			}
 			
 			if ($error == "") {
-				foreach ($enquestes as $c => $enquesta_iter) {
+				foreach ($enquestes as $enquesta_iter) {
 					/* Validacions de dates, que no solapin */
 					if ($enquesta_iter != $enquesta){
 						if ($enquesta_iter->getDatafinal() == null) $error = "Encara hi ha una enquesta activa, cal tancar-la";
@@ -156,14 +152,14 @@ class EnquestesController extends BaseController {
 					parse_str($request->request->get('preguntes'));  // Parse array $pregunta
 					// Esborrar primer totes les preguntes  array clear() no funciona
 					
-					foreach ($enquesta->getPreguntes() as $c => $preguntacheck) {
+					foreach ($enquesta->getPreguntes() as $preguntacheck) {
 						//$enquesta->removeEntityEnquestaPregunta($preguntacheck);
 						$em->remove($preguntacheck);  // e_enquestes_preguntes USER necessita delete 
 					}
 					$enquesta->clearPreguntes();
 					
-					foreach ($preguntestotes as $c => $preguntacheck) {
-						$pos = array_search($preguntacheck->getId(), $pregunta);
+					foreach ($preguntestotes as $preguntacheck) {
+					    $pos = array_search($preguntacheck->getId(), $preguntesno);
 						$pos++;  // Ordenades comencen per 1
 						
 						if (!($pos === false)) { // Compte false avalua 0, no fer servir ==
@@ -212,7 +208,7 @@ class EnquestesController extends BaseController {
 				$preguntesno = $preguntestotes;
 				$preguntestotes = array();
 				
-				foreach ($enquesta->getPreguntesSortedByOrdre()  as $c => $epregunta) {
+				foreach ($enquesta->getPreguntesSortedByOrdre()  as $epregunta) {
 					$pregunta = $epregunta->getPregunta();
 					
 					$pos = array_search($pregunta,$preguntesno);
@@ -356,7 +352,7 @@ class EnquestesController extends BaseController {
 		$realitzacio = $enquesta->getRealitzada($this->get('session')->get('username'));
 		$resposta = null;
 		
-		foreach ($enquesta->getPreguntesSortedByOrdre() as $c => $epregunta) {
+		foreach ($enquesta->getPreguntesSortedByOrdre() as $epregunta) {
 			$pregunta = $epregunta->getPregunta();
 			
 			if ($realitzacio != null) $resposta = $realitzacio->getResposta($pregunta);
@@ -478,13 +474,13 @@ class EnquestesController extends BaseController {
 		
 		$enquestes = $query->getResult();
 		
-		foreach ($preguntes as $c => $pregunta) {
+		foreach ($preguntes as $pregunta) {
 			if ($pregunta->getTipus() == "RANG" or $pregunta->getTipus() == "BOOL") {
 				/* Només preguntes resultat numèric */
 				$dadespregunta = array();
 				$enunciats[] = array("label" => $pregunta->getEnunciat());
 				
-				foreach ($enquestes as $c => $enquesta) {
+				foreach ($enquestes as $enquesta) {
 					/* Només enquestes amb dades */
 					if (count($enquesta->getRealitzacions()) > 0) {
 						$avgpreguntaenquesta = array();
@@ -545,14 +541,14 @@ class EnquestesController extends BaseController {
 		$dadespreguntasi = array();
 		$dadespreguntano = array();
 		
-		foreach ($enquestes as $c => $enquesta) {
+		foreach ($enquestes as $enquesta) {
 			/* Només enquestes amb dades */
 			if (count($enquesta->getRealitzacions()) > 0) {
 				if ($pregunta->getTipus() == "RANG") {
 					/* Totals per resposta de cada pregunta */
 					/*error_log($enquesta->getId() . " - " . $pregunta->getId(), 0);*/
 					$totals = $enquesta->getTotalPreguntaRang($pregunta);
-					$totalRespostes = $totals[0]+$totals[1]+$totals[2]+$totals[3]+$totals[4];
+					//$totalRespostes = $totals[0]+$totals[1]+$totals[2]+$totals[3]+$totals[4];
 					/*error_log($enquesta->getId() . " - " . $pregunta->getId() . " fi : " . $totalRespostes 
 							. "(" . $totals[0]." ".$totals[1]." ".$totals[2]." ".$totals[3]." ".$totals[4] .")" , 0);*/
 					/*$dadespreguntagens[] = ($totalRespostes == 0)?0:($totals[0]/$totalRespostes)*100;

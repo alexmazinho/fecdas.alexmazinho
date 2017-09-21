@@ -106,7 +106,7 @@ class EntityPreu {
     /**
      * Set preu
      *
-     * @param decimal $preu
+     * @param string $preu
      * @return EntityPreu
      */
     public function setPreu($preu)
@@ -119,7 +119,7 @@ class EntityPreu {
     /**
      * Get preu
      *
-     * @return decimal 
+     * @return string 
      */
     public function getPreu()
     {
@@ -129,10 +129,10 @@ class EntityPreu {
     /**
      * Set producte
      *
-     * @param FecdasBundle\Entity\EntityProducte $producte
+     * @param EntityProducte $producte
      * @return EntityPreu
      */
-    public function setProducte(\FecdasBundle\Entity\EntityProducte $producte = null)
+    public function setProducte(EntityProducte $producte = null)
     {
     	$this->producte = $producte;
     	
@@ -142,7 +142,7 @@ class EntityPreu {
     /**
      * Get producte
      *
-     * @return FecdasBundle\Entity\EntityProducte
+     * @return EntityProducte
      */
     public function getProducte()
     {

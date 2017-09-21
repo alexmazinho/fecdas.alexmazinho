@@ -6,9 +6,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 //use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Entity\EntityLlicencia;
-
 class ServeisController extends BaseController {
 	
 	/**
@@ -86,7 +83,7 @@ class ServeisController extends BaseController {
 						foreach ($llicencies as $llicencia) {
 							$parte = $llicencia->getParte();	
 							
-							$finalvigencia = $parte->getDataCaducitat('dades competició')->format('Y-m-d H:i:s');
+							$finalvigencia = $parte->getDataCaducitat()->format('Y-m-d H:i:s');
 
 							if ($finalvigencia >= $current) {
 								// OK. vigència correcte	

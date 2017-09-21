@@ -67,10 +67,10 @@ class EntityCategoria {
 	/**
 	 * Set producte
 	 *
-	 * @param \FecdasBundle\Entity\EntityProducte $producte
+	 * @param EntityProducte $producte
 	 * @return EntityCategoria
 	 */
-	public function setProducte(\FecdasBundle\Entity\EntityProducte $producte = null)
+	public function setProducte(EntityProducte $producte = null)
 	{
 		$this->producte = $producte;
 	
@@ -80,7 +80,7 @@ class EntityCategoria {
 	/**
 	 * Get producte
 	 *
-	 * @return \FecdasBundle\Entity\EntityProducte
+	 * @return EntityProducte
 	 */
 	public function getProducte()
 	{
@@ -163,9 +163,9 @@ class EntityCategoria {
     /**
      * Set tipusparte
      *
-     * @param FecdasBundle\Entity\EntityParteType $tipusparte
+     * @param EntityParteType $tipusparte
      */
-    public function setTipusparte(\FecdasBundle\Entity\EntityParteType $tipusparte)
+    public function setTipusparte(EntityParteType $tipusparte)
     {
         $this->tipusparte = $tipusparte;
     }
@@ -173,7 +173,7 @@ class EntityCategoria {
     /**
      * Get tipusparte
      *
-     * @return FecdasBundle\Entity\EntityParteType 
+     * @return EntityParteType 
      */
     public function getTipusparte()
     {
@@ -237,7 +237,7 @@ class EntityCategoria {
     /**
      * Get preus
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getPreus()
     {
@@ -250,7 +250,7 @@ class EntityCategoria {
     /**
      * Get preu any
      *
-     * @return decimal
+     * @return string
      */
     public function getPreuAny($any)
     {

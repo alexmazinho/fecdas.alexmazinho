@@ -635,7 +635,7 @@ class CronController extends BaseController {
 
 		if (!$this->getCurrentClub()->potTramitar()) {
 			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
-			$response = $this->redirect($this->generateUrl('FecdasBundle_assegurats'));
+			$response = $this->redirect($this->generateUrl('FecdasBundle_dadespersonals'));
 			return $response;
 		}
 		
@@ -676,8 +676,8 @@ class CronController extends BaseController {
 			 * En cas contrari només des d'ara
 			*/
 			$dataalta = $this->getCurrentDate('now');
-			if ($llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 1 ")) > $dataalta) {
-				$dataalta = $llicenciaarenovar->getParte()->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 2 "));
+			if ($llicenciaarenovar->getParte()->getDataCaducitat() > $dataalta) {
+				$dataalta = $llicenciaarenovar->getParte()->getDataCaducitat();
 				$dataalta->setTime(00, 00);
 				$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 			}
@@ -689,7 +689,7 @@ class CronController extends BaseController {
 			
 	
 			/* Init camps */
-			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 3 ")));
+			$cloneLlicencia->setDatacaducitat($parte->getDataCaducitat());
 			$cloneLlicencia->setDatamodificacio($this->getCurrentDate());
 			
 			$cloneLlicencia->setImpresa(false);
@@ -706,7 +706,7 @@ class CronController extends BaseController {
 			
 			$form->get('cloneid')->setData($llicenciaid);  // Posar id
 			$form->get('personashow')->setData($cloneLlicencia->getPersona()->getLlistaText());  // Nom + cognoms
-			$form->get('datacaducitatshow')->setData($parte->getDataCaducitat($this->getLogMailUserData("renovarllicenciaAction 4 "))); 
+			$form->get('datacaducitatshow')->setData($parte->getDataCaducitat()); 
 			
 			
 			if ($request->getMethod() == 'POST') {

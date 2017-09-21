@@ -127,9 +127,9 @@ class EntityUserClub {
 	/**
      * Set club
      *
-     * @param FecdasBundle\Entity\EntityClub $club
+     * @param EntityClub $club
      */
-    public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+    public function setClub(EntityClub $club = null)
     {
        $this->club = $club;
     }
@@ -137,7 +137,7 @@ class EntityUserClub {
     /**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityClub 
+     * @return EntityClub 
      */
     public function getClub()
     {
@@ -149,7 +149,7 @@ class EntityUserClub {
      *
      * @param string $usuari
      */
-    public function setUsuari(\FecdasBundle\Entity\EntityUser $usuari = null)
+    public function setUsuari(EntityUser $usuari = null)
     {
         $this->usuari = $usuari;
     }
@@ -157,7 +157,7 @@ class EntityUserClub {
     /**
      * Get usuari
      *
-     * @return FecdasBundle\Entity\EntityUser 
+     * @return EntityUser 
      */
     public function getUsuari()
     {
@@ -187,7 +187,7 @@ class EntityUserClub {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
 
     public function setDatabaixa($databaixa)
@@ -198,7 +198,7 @@ class EntityUserClub {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

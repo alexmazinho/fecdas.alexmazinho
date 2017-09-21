@@ -4,14 +4,8 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\File\File;
-
 use FecdasBundle\Classes\CSVReader;
 
-use FecdasBundle\Classes\MysqlYear;
-use FecdasBundle\Entity\EntityParte;
-use FecdasBundle\Entity\EntityClub;
 use FecdasBundle\Form\FormLlicenciaMail;
 use FecdasBundle\Form\FormLlicenciaImprimir;
 
@@ -27,8 +21,6 @@ class AdminController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_home'));
 				 
-		$em = $this->getDoctrine()->getManager();
-		
 		$current = $this->getCurrentDate();
 		$emissio = $current; 
 		$caducitat = $this->getCurrentDate();
@@ -678,7 +670,7 @@ GROUP BY c.nom
 				                        'club' 			=> array('hidden' => false, 'val' => $parte->getClubparte()->getNom(), 'align' => 'left'),
 										'tipus'			=> array('hidden' => false, 'val' => $parte->getTipus()->getCodi(), 'align' => 'left'),
 										'dataalta' 		=> array('hidden' => false, 'val' => $parte->getDataalta()->format('d/m/y'), 'align' => 'center'),      
-										'datacaducitat' => array('hidden' => false, 'val' => $parte->getDatacaducitat('')->format('d/m/y'), 'align' => 'center'),
+										'datacaducitat' => array('hidden' => false, 'val' => $parte->getDatacaducitat()->format('d/m/y'), 'align' => 'center'),
 										'databaixa'		=> array('hidden' => false, 'val' => $databaixa, 'align' => 'center'), 
 										'categoria'		=> array('hidden' => false, 'val' => $llicencia->getCategoria()->getCategoria(), 'align' => 'center'), 
 										'preu'			=> array('hidden' => false, 'val' => number_format($llicencia->getCategoria()->getPreuAny($parte->getAny()), 2, ',', '.').'€', 'align' => 'right'),
@@ -1059,7 +1051,6 @@ GROUP BY c.nom
 		$offset = ($page - 1) * $pageSize; 
 		
 		$agrupats = array();
-		$colsHeaderIntervals = array();
 		$campsHeaderAgrupats = array();
 		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '40px', 'sort' => ''),
 									'codi' 			=> array('hidden' => false, 'nom' => 'Codi', 'width' => '80px', 'sort' => 'c.codi'),
@@ -1519,7 +1510,6 @@ GROUP BY c.nom
 				$llicenciesPerImprimir = array();				
 				
 				foreach ($llicencies as $llicenciaArray) {
-					$personaId = $llicenciaArray['personaid'];
 					$llicenciaId = $llicenciaArray['id'];
 					
 					if (isset($llicenciaArray['imprimir']) && $llicenciaArray['imprimir'] == 1) {
@@ -1635,7 +1625,6 @@ GROUP BY c.nom
 				$template = $parte->getTipus()->getTemplate();
 				
 				foreach ($llicencies as $llicenciaArray) {
-					$personaId = $llicenciaArray['personaid'];
 					$llicenciaId = $llicenciaArray['id'];
 					
 					if (isset($llicenciaArray['enviar']) && $llicenciaArray['enviar'] == 1) {
@@ -1723,9 +1712,6 @@ GROUP BY c.nom
 		if ($persona == null || ($persona != null && ($persona->getMail() == '' || $persona->getMail() == null))) 
 			throw new \Exception("Error en les dades de la persona");
 		
-		$bccmails = $this->getAdminMails();
-		
-
 		$tomails = array();
 		$mailsPersona = explode(";", $persona->getMail());
 		foreach ($mailsPersona as $mail) {

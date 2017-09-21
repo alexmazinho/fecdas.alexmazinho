@@ -151,49 +151,56 @@ class EntityCurs {
 	
 	
 	/**
-	 * @return curs anul·lat?
+	 * Retorna curs anul·lat?
+	 * @return boolean
 	 */
 	public function anulat() {
 		return $this->databaixa != null;
 	}
 	
 	/**
-	 * @return curs finalitzat?  Federació l'ha tancat
+	 * Retorna curs finalitzat?  Federació l'ha tancat
+	 * @return boolean
 	 */
 	public function finalitzat() {
 		return $this->finalitzat;
 	}
 	
 	/**
-	 * @return curs validat?  El club ha validat les dades
+	 * Retorna curs validat?  El club ha validat les dades
+	 * @return boolean
 	 */
 	public function validat() {
 		return $this->validat;
 	}
 	
 	/**
-	 * @return curs tancat? El tècnic ha omplert totes les dades i cal validació del club
+	 * Retorna curs tancat? El tècnic ha omplert totes les dades i cal validació del club
+	 * @return boolean
 	 */
 	public function tancat() {
 		return !$this->anulat() && !$this->editable && !$this->validat && !$this->finalitzat;
 	}
 	
 	/**
-	 * @return curs editable? El tècnic ha omplert algunes dades i l'ha desat, encara s'hi poden introduïr d'altres
+	 * Retorna curs editable? El tècnic ha omplert algunes dades i l'ha desat, encara s'hi poden introduïr d'altres
+	 * @return boolean
 	 */
 	public function editable() {
 		return $this->editable;
 	}
 	
 	/**
-	 * @return es un curs històric?
+	 * Retorna es un curs històric?
+	 * @return boolean
 	 */
 	public function historic() {
 		return $this->club == null;
 	}
 	
 	/**
-	 * @return estat: Pendent validació del club, Enviat a la federació, Finalitzat 
+	 * Retorna estat: Pendent validació del club, Enviat a la federació, Finalitzat 
+	 * @return boolean
 	 */
 	public function getEstat() {
 		
@@ -217,14 +224,16 @@ class EntityCurs {
 	}
 	
 	/**
-	 * @return Nom del club
+	 * Retorna Nom del club
+	 * @return string
 	 */
 	public function getClubInfo() {
 		return $this->club != null?$this->club->getNom():$this->clubhistoric;
 	}
 	
 	/**
-	 * @return participants
+	 * Retorna participants as string
+	 * @return string
 	 */
 	public function getAlumnes($admin = false) {
 			
@@ -246,7 +255,8 @@ class EntityCurs {
 	}
 	
 	/**
-	 * @return docents
+	 * Retorna docents as string
+	 * @return string
 	 */
 	public function getEquipDocent() {
 			
@@ -406,9 +416,9 @@ class EntityCurs {
 	/**
 	 * Set club
 	 *
-	 * @param \FecdasBundle\Entity\EntityClub $club
+	 * @param EntityClub $club
 	 */
-	public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+	public function setClub(EntityClub $club = null)
 	{
 		$this->club = $club;
 	}
@@ -416,7 +426,7 @@ class EntityCurs {
 	/**
 	 * Get club
 	 *
-	 * @return \FecdasBundle\Entity\EntityClub
+	 * @return EntityClub
 	 */
 	public function getClub()
 	{
@@ -426,9 +436,9 @@ class EntityCurs {
 	/**
 	 * Set editor
 	 *
-	 * @param \FecdasBundle\Entity\EntityUser $editor
+	 * @param EntityUser $editor
 	 */
-	public function setEditor(\FecdasBundle\Entity\EntityUser $editor = null)
+	public function setEditor(EntityUser $editor = null)
 	{
 		$this->editor = $editor;
 	}
@@ -436,7 +446,7 @@ class EntityCurs {
 	/**
 	 * Get editor
 	 *
-	 * @return \FecdasBundle\Entity\EntityUser
+	 * @return EntityUser
 	 */
 	public function getEditor()
 	{
@@ -478,28 +488,28 @@ class EntityCurs {
 	}
 
 	/**
-	 * @param datetime $datadesde
+	 * @param \DateTime $datadesde
 	 */
 	public function setDatadesde($datadesde) {
 		$this->datadesde = $datadesde;
 	}
 	
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDatadesde() {
 		return $this->datadesde;
 	}
 
 	/**
-	 * @param datetime $datafins
+	 * @param \DateTime $datafins
 	 */
 	public function setDatafins($datafins) {
 		$this->datafins = $datafins;
 	}
 	
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDatafins() {
 		return $this->datafins;
@@ -508,9 +518,9 @@ class EntityCurs {
 	/**
 	 * Set titol
 	 *
-	 * @param \FecdasBundle\Entity\EntityTitol $titol
+	 * @param EntityTitol $titol
 	 */
-	public function setTitol(\FecdasBundle\Entity\Entitytitol $titol = null)
+	public function setTitol(Entitytitol $titol = null)
 	{
 		$this->titol = $titol;
 	}
@@ -518,7 +528,7 @@ class EntityCurs {
 	/**
 	 * Get titol
 	 *
-	 * @return \FecdasBundle\Entity\EntityTitol
+	 * @return EntityTitol
 	 */
 	public function getTitol()
 	{
@@ -528,9 +538,9 @@ class EntityCurs {
 	/**
      * Add docencia
      *
-     * @param FecdasBundle\Entity\EntityDocencia $docencia
+     * @param EntityDocencia $docencia
      */
-    public function addDocencia(\FecdasBundle\Entity\EntityDocencia $docencia)
+    public function addDocencia(EntityDocencia $docencia)
     {
         $this->docents->add($docencia);
     }
@@ -538,9 +548,9 @@ class EntityCurs {
 	/**
      * Remove docencia
      *
-     * @param FecdasBundle\Entity\EntityDocencia $docencia
+     * @param EntityDocencia $docencia
      */
-    public function removeDocencia(\FecdasBundle\Entity\EntityDocencia $docencia)
+    public function removeDocencia(EntityDocencia $docencia)
     {
         $this->docents->removeElement($docencia);
     }
@@ -548,7 +558,7 @@ class EntityCurs {
     /**
      * Get docencies
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getDocencies()
     {
@@ -558,9 +568,9 @@ class EntityCurs {
 	/**
      * Add participant
      *
-     * @param FecdasBundle\Entity\EntityTitulacio $participants
+     * @param EntityTitulacio $participants
      */
-    public function addParticipant(\FecdasBundle\Entity\EntityTitulacio $participant)
+    public function addParticipant(EntityTitulacio $participant)
     {
         $this->participants->add($participant);
     }
@@ -568,9 +578,9 @@ class EntityCurs {
 	/**
      * Remove participant
      *
-     * @param FecdasBundle\Entity\EntityTitulacio $participants
+     * @param EntityTitulacio $participants
      */
-    public function removeParticipant(\FecdasBundle\Entity\EntityTitulacio $participant)
+    public function removeParticipant(EntityTitulacio $participant)
     {
         $this->participants->removeElement($participant);
     }
@@ -578,7 +588,7 @@ class EntityCurs {
     /**
      * Get participants
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getParticipants()
     {
@@ -648,7 +658,7 @@ class EntityCurs {
 	/**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -658,7 +668,7 @@ class EntityCurs {
     /**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {
@@ -668,7 +678,7 @@ class EntityCurs {
     /**
      * Set datamodificacio
      *
-     * @param datetime $datamodificacio
+     * @param \DateTime $datamodificacio
      */
     public function setDatamodificacio($datamodificacio)
     {
@@ -678,7 +688,7 @@ class EntityCurs {
     /**
      * Get datamodificacio
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatamodificacio()
     {
@@ -688,7 +698,7 @@ class EntityCurs {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -698,7 +708,7 @@ class EntityCurs {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

@@ -154,84 +154,84 @@ class EntityDuplicat extends EntityComanda {
 	}
 
 	/**
-	 * @return FecdasBundle\Entity\EntityPersona
+	 * @return EntityPersona
 	 */
 	public function getPersona() {
 		return $this->persona;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityPersona $persona
+	 * @param EntityPersona $persona
 	 */
-	public function setPersona(\FecdasBundle\Entity\EntityPersona $persona) {
+	public function setPersona(EntityPersona $persona) {
 		$this->persona = $persona;
 	}
 
 	/**
-	 * @return FecdasBundle\Entity\EntityCarnet
+	 * @return EntityCarnet
 	 */
 	public function getCarnet() {
 		return $this->carnet;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityCarnet $carnet
+	 * @param EntityCarnet $carnet
 	 */
-	public function setCarnet(\FecdasBundle\Entity\EntityCarnet $carnet) {
+	public function setCarnet(EntityCarnet $carnet) {
 		$this->carnet = $carnet;
 	}
 
 	/**
-	 * @return FecdasBundle\Entity\EntityTitol
+	 * @return EntityTitol
 	 */
 	public function getTitol() {
 		return $this->titol;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityTitol $titol
+	 * @param EntityTitol $titol
 	 */
-	public function setTitol(\FecdasBundle\Entity\EntityTitol $titol) {
+	public function setTitol(EntityTitol $titol) {
 		$this->titol = $titol;
 	}
 
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDatapeticio() {
 		return $this->datapeticio;
 	}
 
 	/**
-	 * @param datetime $datapeticio
+	 * @param \DateTime $datapeticio
 	 */
 	public function setDatapeticio($datapeticio) {
 		$this->datapeticio = $datapeticio;
 	}
 
 	/**
-	 * @return text
+	 * @return string
 	 */
 	public function getObservacions() {
 		return $this->observacions;
 	}
 
 	/**
-	 * @param text $observacions
+	 * @param string 
 	 */
 	public function setObservacions($observacions) {
 		$this->observacions = $observacions;
 	}
 	
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDataimpressio() {
 		return $this->dataimpressio;
 	}
 
 	/**
-	 * @param datetime $dataimpressio
+	 * @param \DateTime $dataimpressio
 	 */
 	public function setDataimpressio($dataimpressio) {
 		$this->dataimpressio = $dataimpressio;
@@ -240,10 +240,10 @@ class EntityDuplicat extends EntityComanda {
 	/**
 	 * Set foto
 	 *
-	 * @param FecdasBundle\Entity\EntityArxiu $imatge
+	 * @param EntityArxiu $imatge
 	 * @return EntityArxiu
 	 */
-	public function setFoto(\FecdasBundle\Entity\EntityArxiu $foto = null)
+	public function setFoto(EntityArxiu $foto = null)
 	{
 		$this->foto = $foto;
 	}
@@ -251,7 +251,7 @@ class EntityDuplicat extends EntityComanda {
 	/**
 	 * Get foto
 	 *
-	 * @return FecdasBundle\Entity\EntityArxiu
+	 * @return EntityArxiu
 	 */
 	public function getFoto()
 	{

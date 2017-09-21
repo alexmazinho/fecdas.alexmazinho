@@ -120,7 +120,7 @@ class EntityMetaPersona {
 	/**
      * Totes les llicències de totes les persones del grup
 	 * 
-     * @return FecdasBundle\Entity\EntityLlicencia
+     * @return EntityLlicencia
      */
     public function getLlicencies() {
     	if (count($this->persones) == 1) return $this->persones[0]->getLlicencies();
@@ -252,7 +252,7 @@ class EntityMetaPersona {
 	/**
      * Get datanaixement
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDatanaixement()
     {
@@ -264,7 +264,7 @@ class EntityMetaPersona {
 	/**
      * Get mail or mails: mail 1; mail 2; ...
      *
-     * @return text 
+     * @return array 
      */
     public function getMails()
     {
@@ -324,9 +324,9 @@ class EntityMetaPersona {
 	/**
      * Add titulacions
      *
-     * @param FecdasBundle\Entity\EntityTitulacio $titulacio
+     * @param EntityTitulacio $titulacio
      */
-    public function addTitulacions(\FecdasBundle\Entity\EntityTitulacio $titulacio)
+    public function addTitulacions(EntityTitulacio $titulacio)
     {
         $this->titulacions->add($titulacio);
     }
@@ -334,7 +334,7 @@ class EntityMetaPersona {
     /**
      * Get titulacions
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getTitulacions()
     {
@@ -344,9 +344,9 @@ class EntityMetaPersona {
 	/**
      * Add altrestitulacions
      *
-     * @param FecdasBundle\Entity\EntityTitol $titolextern
+     * @param EntityTitol $titolextern
      */
-    public function addAltrestitulacions(\FecdasBundle\Entity\EntityTitol $titolextern)
+    public function addAltrestitulacions(EntityTitol $titolextern)
     {
         $this->altrestitulacions->add($titolextern);
     }
@@ -354,9 +354,9 @@ class EntityMetaPersona {
 	/**
      * Remove altrestitulacions
      *
-     * @param FecdasBundle\Entity\EntityTitol $titolextern
+     * @param EntityTitol $titolextern
      */
-    public function removeAltrestitulacions(\FecdasBundle\Entity\EntityTitol $titolextern)
+    public function removeAltrestitulacions(EntityTitol $titolextern)
     {
         $this->altrestitulacions->removeElement($titolextern);
     }
@@ -364,7 +364,7 @@ class EntityMetaPersona {
     /**
      * Get altrestitulacions
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getAltrestitulacions()
     {
@@ -375,9 +375,9 @@ class EntityMetaPersona {
 	/**
      * Add docencies
      *
-     * @param FecdasBundle\Entity\EntityDocencia $docencia
+     * @param EntityDocencia $docencia
      */
-    public function addDocencies(\FecdasBundle\Entity\EntityDocencia $docencia)
+    public function addDocencies(EntityDocencia $docencia)
     {
         $this->docencies->add($docencia);
     }
@@ -385,7 +385,7 @@ class EntityMetaPersona {
     /**
      * Get docencies
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getDocencies()
     {
@@ -395,9 +395,9 @@ class EntityMetaPersona {
 	/**
      * Add persones
      *
-     * @param FecdasBundle\Entity\EntityPersona $persona
+     * @param EntityPersona $persona
      */
-    public function addPersones(\FecdasBundle\Entity\EntityPersona $persona)
+    public function addPersones(EntityPersona $persona)
     {
         $this->persones->add($persona);
     }
@@ -405,7 +405,7 @@ class EntityMetaPersona {
     /**
      * Get persones
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getPersones()
     {
@@ -415,7 +415,7 @@ class EntityMetaPersona {
     /**
      * Get usuari
      *
-     * @return FecdasBundle\Entity\EntityUser 
+     * @return EntityUser 
      */
     public function getUsuari()
     {
@@ -425,9 +425,9 @@ class EntityMetaPersona {
 	/**
      * Set usuari
      *
-     * @param FecdasBundle\Entity\EntityUser $usuari
+     * @param EntityUser $usuari
      */
-    public function setUsuari(\FecdasBundle\Entity\EntityUser $usuari)
+    public function setUsuari(EntityUser $usuari)
     {
         $this->usuari = $usuari;
     }
@@ -435,7 +435,7 @@ class EntityMetaPersona {
 	/**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -445,7 +445,7 @@ class EntityMetaPersona {
 	/**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {

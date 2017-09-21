@@ -1,8 +1,6 @@
 <?php
 namespace FecdasBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use FecdasBundle\Form\FormLogin;
@@ -11,10 +9,7 @@ use FecdasBundle\Form\FormClub;
 use FecdasBundle\Form\FormClubAdmin;
 use FecdasBundle\Form\FormClubUser;
 use FecdasBundle\Entity\EntityUser;
-use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityClub;
-
-
 
 
 class SecurityController extends BaseController
@@ -381,7 +376,6 @@ class SecurityController extends BaseController
 			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
 
 			$key = -1; 
-			$ncUpd = 0;
 			foreach ($jsonCarrecs as $k => $value) {
 
 				if ($value->cid.'-'.$value->nc == $keyid) {
@@ -485,7 +479,7 @@ class SecurityController extends BaseController
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));*/
     	
     	$club  = $this->getCurrentClub();
-		$tab	= $id = $request->query->get('tab', 0);;    	
+		$tab	= $request->query->get('tab', 0);;    	
     	$nouclub = false;
 		$clubCodi = '';
 		$form = null;
@@ -557,7 +551,7 @@ class SecurityController extends BaseController
 			
 	   		if ($request->getMethod() == 'POST') {
 	   			
-				$currentMails = $club->getMails(); // Array
+				//$currentMails = $club->getMails(); // Array
 				
 	   			$form->handleRequest($request);
 	   			
@@ -626,7 +620,7 @@ class SecurityController extends BaseController
 					
 					// Tot OK afegir primer usuari al club role club
 					$info = "";
-					$userclub = $this->checkUsuariClub(true, $club, $info, BaseController::ROLE_CLUB, $mails[0], $randomPassword);
+					$this->checkUsuariClub(true, $club, $info, BaseController::ROLE_CLUB, $mails[0], $randomPassword);
 
     				$this->get('session')->getFlashBag()->add('sms-notice', 'Club creat correctament. '.$info);
     			} else {
@@ -655,7 +649,7 @@ class SecurityController extends BaseController
 	private function getArrayCarrecs($jsonCarrecs) {
 
 		$carrecs = array();
-		foreach ($jsonCarrecs as $key => $value) {
+		foreach ($jsonCarrecs as $value) {
 			
 			if ($value->id == 0 || $value->id != '') {
 				$carrecs[$value->cid."-".$value->nc] = array(
@@ -699,7 +693,7 @@ class SecurityController extends BaseController
     	if ($this->isAuthenticated() != true)
     		return $this->redirect($this->generateUrl('FecdasBundle_login'));
     	
-		$codi	= $id = $request->query->get('club', '');    	
+		$codi	= $request->query->get('club', '');    	
 
 		$em = $this->getDoctrine()->getManager();
 	    

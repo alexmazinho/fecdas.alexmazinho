@@ -230,7 +230,7 @@ class EntityParteType {
     /**
      * Set iva
      *
-     * @param decimal $iva
+     * @param string $iva
      */
     public function setIva($iva)
     {
@@ -240,7 +240,7 @@ class EntityParteType {
     /**
      * Get iva
      *
-     * @return decimal
+     * @return string
      */
     public function getIva()
     {

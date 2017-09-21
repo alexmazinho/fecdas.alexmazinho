@@ -2,7 +2,6 @@
 namespace FecdasBundle\Entity\Enquestes;
 
 use Doctrine\ORM\Mapping as ORM;
-use FecdasBundle\Entity\EntityUser;
 
 /**
  * @ORM\Entity
@@ -74,7 +73,7 @@ class EntityRealitzacio {
     /**
      * Set datadarreraccess
      *
-     * @param datetime $datadarreraccess
+     * @param \DateTime $datadarreraccess
      */
     public function setDatadarreraccess($datadarreraccess)
     {
@@ -84,7 +83,7 @@ class EntityRealitzacio {
     /**
      * Get datadarreraccess
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatadarreraccess()
     {
@@ -94,7 +93,7 @@ class EntityRealitzacio {
     /**
      * Set datafinal
      *
-     * @param datetime $datafinal
+     * @param \DateTime $datafinal
      */
     public function setDatafinal($datafinal)
     {
@@ -104,7 +103,7 @@ class EntityRealitzacio {
     /**
      * Get datafinal
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatafinal()
     {
@@ -114,7 +113,7 @@ class EntityRealitzacio {
     /**
      * Set usuari
      *
-     * @param FecdasBundle\Entity\EntityUser $usuari
+     * @param \FecdasBundle\Entity\EntityUser $usuari
      */
     public function setUsuari(\FecdasBundle\Entity\EntityUser $usuari)
     {
@@ -124,7 +123,7 @@ class EntityRealitzacio {
     /**
      * Get usuari
      *
-     * @return FecdasBundle\Entity\EntityUser 
+     * @return \FecdasBundle\Entity\EntityUser 
      */
     public function getUsuari()
     {
@@ -134,9 +133,9 @@ class EntityRealitzacio {
     /**
      * Set enquesta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityEnquesta $enquesta
+     * @param EntityEnquesta $enquesta
      */
-    public function setEnquesta(\FecdasBundle\Entity\Enquestes\EntityEnquesta $enquesta)
+    public function setEnquesta(EntityEnquesta $enquesta)
     {
         $this->enquesta = $enquesta;
     }
@@ -144,7 +143,7 @@ class EntityRealitzacio {
     /**
      * Get enquesta
      *
-     * @return FecdasBundle\Entity\Enquestes\EntityEnquesta 
+     * @return EntityEnquesta 
      */
     public function getEnquesta()
     {
@@ -154,9 +153,9 @@ class EntityRealitzacio {
     /**
      * Set darrerapregunta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityPregunta $darrerapregunta
+     * @param EntityPregunta $darrerapregunta
      */
-    public function setDarrerapregunta(\FecdasBundle\Entity\Enquestes\EntityPregunta $darrerapregunta)
+    public function setDarrerapregunta(EntityPregunta $darrerapregunta)
     {
         $this->darrerapregunta = $darrerapregunta;
     }
@@ -164,7 +163,7 @@ class EntityRealitzacio {
     /**
      * Get darrerapregunta
      *
-     * @return FecdasBundle\Entity\Enquestes\EntityPregunta 
+     * @return EntityPregunta 
      */
     public function getDarrerapregunta()
     {
@@ -174,9 +173,9 @@ class EntityRealitzacio {
     /**
      * Add resposta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityResposta $resposta
+     * @param EntityResposta $resposta
      */
-    public function addEntityResposta(\FecdasBundle\Entity\Enquestes\EntityResposta $resposta)
+    public function addEntityResposta(EntityResposta $resposta)
     {
     	$this->respostes->add($resposta);
     }
@@ -184,9 +183,9 @@ class EntityRealitzacio {
     /**
      * Remove resposta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityResposta $resposta
+     * @param EntityResposta $resposta
      */
-    public function removeEntityResposta(\FecdasBundle\Entity\Enquestes\EntityResposta $resposta)
+    public function removeEntityResposta(EntityResposta $resposta)
     {
     	$this->respostes->removeElement($resposta);
     }
@@ -196,7 +195,7 @@ class EntityRealitzacio {
      * Get resposta per una pregunta concreta o null
      *  
      */
-    public function getResposta(\FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta)
+    public function getResposta(EntityPregunta $pregunta)
     {
     	if ($pregunta == null) return null;
     	foreach($this->respostes as $resposta) {
@@ -208,7 +207,7 @@ class EntityRealitzacio {
     /**
      * Get respostes
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getRespostes()
     {

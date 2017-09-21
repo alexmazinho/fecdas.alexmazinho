@@ -156,7 +156,7 @@ class EntityFactura {
 	}
 	
 	/**
-	 * @return \FecdasBundle\Entity\EntityComanda
+	 * @return EntityComanda
 	 */
 	public function getComandaFactura() {
 		if ($this->comandaanulacio == null && $this->comanda == null) return null;
@@ -233,14 +233,14 @@ class EntityFactura {
 	}
 
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDatafactura() {
 		return $this->datafactura;
 	}
 
 	/**
-	 * @param datetime $datafactura
+	 * @param \DateTime $datafactura
 	 */
 	public function setDatafactura($datafactura) {
 		$this->datafactura = $datafactura;
@@ -261,14 +261,14 @@ class EntityFactura {
 	}
 
 	/**
-	 * @return decimal
+	 * @return string
 	 */
 	public function getImport() {
 		return $this->import;
 	}
 
 	/**
-	 * @param decimal $import
+	 * @param string $import
 	 */
 	public function setImport($import) {
 		// Update import comanda
@@ -284,68 +284,68 @@ class EntityFactura {
 	}
 
 	/**
-	 * @return text
+	 * @return string
 	 */
 	public function getConcepte() {
 		return $this->concepte;
 	}
 
 	/**
-	 * @param text $concepte
+	 * @param string $concepte
 	 */
 	public function setConcepte($concepte) {
 		$this->concepte = $concepte;
 	}
 
 	/**
-	 * @return text
+	 * @return string
 	 */
 	public function getDetalls() {
 		return $this->detalls;
 	}
 
 	/**
-	 * @param text $detalls
+	 * @param string $detalls
 	 */
 	public function setDetalls($detalls) {
 		$this->detalls = $detalls;
 	}
 
 	/**
-	 * @return comanda
+	 * @return EntityComanda
 	 */
 	public function getComanda() {
 		return $this->comanda;
 	}
 	
 	/**
-	 * @param \FecdasBundle\Entity\EntityComanda $comanda
+	 * @param EntityComanda $comanda
 	 */
-	public function setComanda(\FecdasBundle\Entity\EntityComanda $comanda = null) {
+	public function setComanda(EntityComanda $comanda = null) {
 		$this->comanda = $comanda;
 	}
 	
 	/**
-	 * @return comandaanulacio
+	 * @return EntityComanda
 	 */
 	public function getComandaanulacio() {
 		return $this->comandaanulacio;
 	}
 	
 	/**
-	 * @param \FecdasBundle\Entity\EntityComanda $comandaanulacio
+	 * @param EntityComanda $comandaanulacio
 	 */
-	public function setComandaanulacio(\FecdasBundle\Entity\EntityComanda $comandaanulacio = null) {
+	public function setComandaanulacio(EntityComanda $comandaanulacio = null) {
 		$this->comandaanulacio = $comandaanulacio;
 	}
 	
     /**
      * Set comptabilitat
      *
-     * @param \FecdasBundle\Entity\EntityComptabilitat $comptabilitat
+     * @param EntityComptabilitat $comptabilitat
      * @return EntityComanda
      */
-    public function setComptabilitat(\FecdasBundle\Entity\EntityComptabilitat $comptabilitat = null)
+    public function setComptabilitat(EntityComptabilitat $comptabilitat = null)
     {
         $this->comptabilitat = $comptabilitat;
 
@@ -355,7 +355,7 @@ class EntityFactura {
     /**
      * Get comptabilitat
      *
-     * @return \FecdasBundle\Entity\EntityComptabilitat 
+     * @return EntityComptabilitat 
      */
     public function getComptabilitat()
     {
@@ -398,14 +398,14 @@ class EntityFactura {
 	
 	
 	/**
-	 * @return datetime
+	 * @return \DateTime
 	 */
 	public function getDataentrada() {
 		return $this->dataentrada;
 	}
 	
 	/**
-	 * @param datetime $dataentrada
+	 * @param \DateTime $dataentrada
 	 */
 	public function setDataentrada($dataentrada) {
 		$this->dataentrada = $dataentrada;

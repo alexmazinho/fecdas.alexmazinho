@@ -18,12 +18,6 @@ FecdasBundle_contact:
     requirements:
         methods:  GET|POST
         
-FecdasBundle_assegurats:
-    path:  /assegurats
-    defaults: { _controller: "FecdasBundle:Page:assegurats" }
-    requirements:
-        methods:  GET|POST
-
 FecdasBundle_partes:
     path:  /partes
     defaults: { _controller: "FecdasBundle:Page:partes" }
@@ -133,19 +127,11 @@ FecdasBundle_partetopdf:
     requirements:
         methods:  GET
 
-FecdasBundle_asseguratstopdf:
-    path:  /asseguratstopdf
-    defaults: { _controller: "FecdasBundle:PDF:asseguratstopdf" }
-    requirements:
-        methods:  GET
-
 FecdasBundle_dadespersonalstopdf:
     path:  /dadespersonalstopdf
     defaults: { _controller: "FecdasBundle:PDF:dadespersonalstopdf" }
     requirements:
         methods:  GET
-
-
 
 FecdasBundle_facturatopdf:
     path:  /printfactura

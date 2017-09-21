@@ -13,14 +13,11 @@ use FecdasBundle\Form\FormPersona;
 use FecdasBundle\Form\FormLlicencia;
 use FecdasBundle\Form\FormDuplicat;
 use FecdasBundle\Form\FormParteRenew;
-use FecdasBundle\Entity\EntityParteType;
 use FecdasBundle\Entity\EntityContact;
 use FecdasBundle\Entity\EntityParte;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityMetaPersona;
 use FecdasBundle\Entity\EntityLlicencia;
-use FecdasBundle\Entity\EntityDuplicat;
-use FecdasBundle\Entity\EntityCarnet;
 use FecdasBundle\Entity\EntityArxiu; 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -319,7 +316,7 @@ class PageController extends BaseController {
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				$llicencia->setCategoria($categoria);
 				$llicencia->setPersona($persona);
-				$llicencia->setDatacaducitat($parte->getDatacaducitat($this->getLogMailUserData("importFileCSVData ")));
+				$llicencia->setDatacaducitat($parte->getDatacaducitat());
 				
 				if ($persist == true) $em->persist($llicencia);
 		
@@ -467,129 +464,7 @@ class PageController extends BaseController {
 	
 		return $this->render('FecdasBundle:Page:partesllicencies.html.twig', array('parte' => $parte, 'llicencies' => $llicencies));
 	}
-	
-	public function asseguratsAction(Request $request) {
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$currentClub = $this->getCurrentClub()->getCodi();
-		
-		$page = $request->query->get('page', 1);
-		$sort = $request->query->get('sort', 'e.cognoms, e.nom');
-		$format = $request->query->get('format', '');
-		$direction = $request->query->get('direction', 'desc');
-		$currentDNI = $request->query->get('dni', '');
-		$currentNom = $request->query->get('nom', '');
-		$currentCognoms = $request->query->get('cognoms', '');
-		
-		$interval = $this->intervalDatesPerDefecte($request);
-		$desde = (isset($interval['desde']) && $interval['desde'] != null?$interval['desde']:null);
-		$fins = (isset($interval['fins']) && $interval['fins'] != null?$interval['fins']:null);
-		
-		$currentDNI = trim($currentDNI);
-		$currentNom = trim($currentNom);
-		$currentCognoms = trim($currentCognoms);
-		
-		$currentVigent = false;
-		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
-		    
-		$currentTots = false; // Admins poden cerca tots els clubs
-		if ($this->isCurrentAdmin() && $request->query->has('tots') && $request->query->get('tots') == 1) $currentTots = true;
-		
-		$currentTots = $this->isCurrentAdmin() && $request->query->get('tots', false);
-				
-		if ($request->getMethod() == 'POST') {
-			// Criteris de cerca.Desactivat JQuery 
-			$this->logEntryAuth('VIEW PERSONES POST', ($format != ''?$format:''). "club: ". $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".$currentTots);
-			
-		} else {
-			$this->logEntryAuth('VIEW PERSONES', ($format != ''?$format:'')."club: " . $currentClub);
-		}
-	
-		$query = $this->consultaAssegurats($currentTots, $currentDNI, $currentNom, $currentCognoms, $desde, $fins, $currentVigent, $sort);
-		
-		if ($format == 'csv') {
-			// Generar CSV
-			return $this->exportAssegurats($request, $query->getResult(), $desde, $fins);
-		}
-		
-		$paginator  = $this->get('knp_paginator');
-		$persones = $paginator->paginate(
-				$query,
-				$page,
-				10 /*limit per page*/
-		); 
-		/* Paràmetres URL sort i pagination */
-		if ($desde != null) $persones->setParam('desde',$desde->format('d/m/Y'));
-		if ($fins != null) $persones->setParam('fins',$fins->format('d/m/Y'));
-		if ($currentDNI != '') $persones->setParam('dni',$currentDNI);
-		if ($currentNom != '') $persones->setParam('nom',$currentNom);
-		if ($currentCognoms != '') $persones->setParam('cognoms',$currentCognoms);
-		if ($currentVigent == true) $persones->setParam('vigent',true);
-		if ($currentTots == true) $persones->setParam('tots',true);
-		
-		$formBuilder = $this->createFormBuilder()->add('dni', 'search', array('required'  => false, 'data' => $currentDNI)); 
-		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
-		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
-		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
-		$formBuilder->add('tots', 'checkbox', array('required'  => false, 'data' => $currentTots) );
-		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
-		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
-		
-		$form = $formBuilder->getForm(); 
-	
-		return $this->render('FecdasBundle:Page:assegurats.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
-						'sortparams' => array('sort' => $sort,'direction' => $direction)) 
-						));
-	}
-	
-	private function exportAssegurats($request, $persones, $desde, $fins) {
-			
-		$strTemps = "data".date("Y_m_d_His");
-		$strTitol = "Llicències a data ".date("d/m/Y"); 
-		
-		if ($desde != null || $fins != null) {
-			$strTemps = "periode";
-			$strTitol = "Llicències període ";
-			if ($desde != null) {
-				$strTemps .= "_desde_".$desde->format("Y_m_d");
-				$strTitol .= " desde ".$desde->format("d/m/Y");
-			}
-			if ($fins != null) {
-				$strTemps .= "_fins_".$desde->format("Y_m_d");
-				$strTitol .= " fins ".$desde->format("d/m/Y");
-			}
-			
-		}
-					
-		$filename = "export_assegurats_".$strTemps.".csv";
-			
-		$headerLic = array();
-		if ($this->isCurrentAdmin()) $headerLic = array('club');
-		$headerLic[] = $strTitol;	
-			
-		$header = array_merge(array ('num'), EntityPersona::csvHeader(), $headerLic);
-			
-		$data = array(); // Get only data matrix
-		$i = 1;
-		foreach ($persones as $persona) {
-			
-			$rowLic = array();
-			if ($this->isCurrentAdmin()) $rowLic = array( $persona->getClub()->getNom() );
-			$rowLic[] = $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d"));	
-			
-			
-			$rowdata = array_merge(array ( $i ), $persona->csvRow( $this->isCurrentAdmin(), $desde->format("Y-m-d"), $fins->format("Y-m-d") ), $rowLic);
-			$data[] = $rowdata;
-			$i++; 
-		}
-			
-		$response = $this->exportCSV($request, $header, $data, $filename);
-		return $response;
-	}
-	
+
 	public function busseigAction(Request $request) {
 
 		if ($this->isAuthenticated() != true)
@@ -620,7 +495,7 @@ class PageController extends BaseController {
 				
 				if ($vigent != null) {
 					$trobada = true;
-					$smsok .= $vigent->getParte()->getDatacaducitat($this->getLogMailUserData("busseigAction "))->format('d/m/Y');
+					$smsok .= $vigent->getParte()->getDatacaducitat()->format('d/m/Y');
 				}
 			}
 			
@@ -689,8 +564,8 @@ class PageController extends BaseController {
 		 * En cas contrari només des d'ara
 		*/
 		$dataalta = $this->getCurrentDate('now');
-		if ($partearenovar->getDataCaducitat($this->getLogMailUserData("renovarAction 1 ")) >= $dataalta) {
-			$dataalta = $partearenovar->getDataCaducitat($this->getLogMailUserData("renovarAction 2 "));
+		if ($partearenovar->getDataCaducitat() >= $dataalta) {
+			$dataalta = $partearenovar->getDataCaducitat();
 			$dataalta->setTime(00, 00);
 			$dataalta->add(new \DateInterval('P1D')); // Add 1
 		} else {
@@ -911,7 +786,7 @@ class PageController extends BaseController {
 				}
 					
 				// Noves llicències, permeten edició no pdf
-				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat($this->getLogMailUserData("llicenciaAction  ")));
+				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat());
 				$em->persist($llicencia);
 				
 				$parte->addLlicencia($llicencia);
@@ -976,8 +851,8 @@ class PageController extends BaseController {
 						$this->updateParteDetall($parte, $llicencia, $llicenciaOriginal);
 					}
 					// Comprovació datacaducitat
-					if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat($this->getLogMailUserData("updateParte  "))->format('d/m/Y')) {
-							$llicencia->setDatacaducitat($parte->getDataCaducitat($this->getLogMailUserData("updateParte 2 ")));
+					if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat()->format('d/m/Y')) {
+							$llicencia->setDatacaducitat($parte->getDataCaducitat());
 					}
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
 					
@@ -1051,8 +926,6 @@ class PageController extends BaseController {
 		
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 		
-		$detallsBaixa = array();
-		$extra = array();
 		$llicenciesBaixa = array( );
 		
 		$idsLlicencies = $request->query->get('llicencies', '');
@@ -1461,7 +1334,7 @@ class PageController extends BaseController {
 						$duplicat->getPersona()->setValidat(false);
 					}
 					
-					$detall = $this->addDuplicatDetall($duplicat);
+					$this->addDuplicatDetall($duplicat);
 							
 					$em->flush();
 					

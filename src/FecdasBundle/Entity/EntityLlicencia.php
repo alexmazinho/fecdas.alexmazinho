@@ -320,9 +320,9 @@ class EntityLlicencia {
     /**
      * Set persona
      *
-     * @param FecdasBundle\Entity\EntityPersona $persona
+     * @param EntityPersona $persona
      */
-    public function setPersona(\FecdasBundle\Entity\EntityPersona $persona)
+    public function setPersona(EntityPersona $persona)
     {
         $this->persona = $persona;
     }
@@ -330,7 +330,7 @@ class EntityLlicencia {
     /**
      * Get persona
      *
-     * @return FecdasBundle\Entity\EntityPersona 
+     * @return EntityPersona 
      */
     public function getPersona()
     {
@@ -340,9 +340,9 @@ class EntityLlicencia {
     /**
      * Set parte
      *
-     * @param FecdasBundle\Entity\EntityParte $parte
+     * @param EntityParte $parte
      */
-    public function setParte(\FecdasBundle\Entity\EntityParte $parte = null)
+    public function setParte(EntityParte $parte = null)
     {
         $this->parte = $parte;
     }
@@ -350,7 +350,7 @@ class EntityLlicencia {
     /**
      * Get parte
      *
-     * @return FecdasBundle\Entity\EntityParte 
+     * @return EntityParte 
      */
     public function getParte()
     {
@@ -360,9 +360,9 @@ class EntityLlicencia {
     /**
      * Set categoria
      *
-     * @param FecdasBundle\Entity\EntityCategoria $categoria
+     * @param EntityCategoria $categoria
      */
-    public function setCategoria(\FecdasBundle\Entity\EntityCategoria $categoria)
+    public function setCategoria(EntityCategoria $categoria)
     {
         $this->categoria = $categoria;
     }
@@ -370,7 +370,7 @@ class EntityLlicencia {
     /**
      * Get categoria
      *
-     * @return FecdasBundle\Entity\EntityCategoria 
+     * @return EntityCategoria 
      */
     public function getCategoria()
     {
@@ -701,7 +701,7 @@ class EntityLlicencia {
     /**
      * Set datacaducitat
      *
-     * @param date $datacaducitat
+     * @param \DateTime $datacaducitat
      */
     public function setDatacaducitat($datacaducitat)
     {
@@ -711,7 +711,7 @@ class EntityLlicencia {
     /**
      * Get datacaducitat
      *
-     * @return date
+     * @return \DateTime
      */
     public function getDatacaducitat()
     {
@@ -741,7 +741,7 @@ class EntityLlicencia {
 	/**
      * Set dataimpressio
      *
-     * @param date $dataimpressio
+     * @param \DateTime $dataimpressio
      */
     public function setDataimpressio($dataimpressio)
     {
@@ -751,7 +751,7 @@ class EntityLlicencia {
     /**
      * Get dataimpressio
      *
-     * @return date
+     * @return \DateTime
      */
     public function getDataimpressio()
     {
@@ -781,7 +781,7 @@ class EntityLlicencia {
 	/**
      * Set datamail
      *
-     * @param date $datamail
+     * @param \DateTime $datamail
      */
     public function setDatamail($datamail)
     {
@@ -791,7 +791,7 @@ class EntityLlicencia {
     /**
      * Get datamail
      *
-     * @return date
+     * @return \DateTime
      */
     public function getDatamail()
     {
@@ -801,7 +801,7 @@ class EntityLlicencia {
     /**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -811,7 +811,7 @@ class EntityLlicencia {
     /**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {
@@ -821,7 +821,7 @@ class EntityLlicencia {
     /**
      * Set datamodificacio
      *
-     * @param datetime $datamodificacio
+     * @param \DateTime $datamodificacio
      */
     public function setDatamodificacio($datamodificacio)
     {
@@ -831,7 +831,7 @@ class EntityLlicencia {
     /**
      * Get datamodificacio
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatamodificacio()
     {
@@ -841,7 +841,7 @@ class EntityLlicencia {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -851,7 +851,7 @@ class EntityLlicencia {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

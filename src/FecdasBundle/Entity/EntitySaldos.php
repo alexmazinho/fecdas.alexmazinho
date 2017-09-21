@@ -111,7 +111,7 @@ class EntitySaldos {
 	/**
 	 * Retorna el saldo del registre 
 	 *
-	 * @return decimal
+	 * @return string
 	 */
 	public function getSaldo() {
 		return round($this->totalpagaments + $this->ajustsubvencions + $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
@@ -151,7 +151,7 @@ class EntitySaldos {
 	/**
      * Set entrades (comptables, segons data rebut i data factura)
      *
-     * @param decimal $entrades
+     * @param string $entrades
      */
     public function setEntrades($entrades)
     {
@@ -161,7 +161,7 @@ class EntitySaldos {
     /**
      * Get entrades (comptables, segons data rebut i data factura)
      *
-     * @return decimal
+     * @return string
      */
     public function getEntrades()
     {
@@ -171,7 +171,7 @@ class EntitySaldos {
 	/**
      * Set sortides (comptables, segons data rebut i data factura)
      *
-     * @param decimal $sortides
+     * @param string $sortides
      */
     public function setSortides($sortides)
     {
@@ -181,7 +181,7 @@ class EntitySaldos {
     /**
      * Get sortides (comptables, segons data rebut i data factura)
      *
-     * @return decimal
+     * @return string
      */
     public function getSortides()
     {
@@ -212,7 +212,7 @@ class EntitySaldos {
     /**
      * Set romanent
      *
-     * @param decimal $romanent
+     * @param string $romanent
      */
     public function setRomanent($romanent)
     {
@@ -222,7 +222,7 @@ class EntitySaldos {
     /**
      * Get romanent
      *
-     * @return decimal
+     * @return string
      */
     public function getRomanent()
     {
@@ -232,7 +232,7 @@ class EntitySaldos {
     /**
      * Set totalpagaments
      *
-     * @param decimal $totalpagaments
+     * @param string $totalpagaments
      */
     public function setTotalpagaments($totalpagaments)
     {
@@ -242,7 +242,7 @@ class EntitySaldos {
     /**
      * Get totalpagaments
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalpagaments()
     {
@@ -252,7 +252,7 @@ class EntitySaldos {
     /**
      * Set totalllicencies
      *
-     * @param decimal $totalllicencies
+     * @param string $totalllicencies
      */
     public function setTotalllicencies($totalllicencies)
     {
@@ -262,7 +262,7 @@ class EntitySaldos {
     /**
      * Get totalllicencies
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalllicencies()
     {
@@ -272,7 +272,7 @@ class EntitySaldos {
     /**
      * Set totalduplicats
      *
-     * @param decimal $totalduplicats
+     * @param string $totalduplicats
      */
     public function setTotalduplicats($totalduplicats)
     {
@@ -282,7 +282,7 @@ class EntitySaldos {
     /**
      * Get totalduplicats
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalduplicats()
     {
@@ -292,7 +292,7 @@ class EntitySaldos {
     /**
      * Set totalaltres
      *
-     * @param decimal $totalaltres
+     * @param string $totalaltres
      */
     public function setTotalaltres($totalaltres)
     {
@@ -302,7 +302,7 @@ class EntitySaldos {
     /**
      * Get totalaltres
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalaltres()
     {
@@ -312,7 +312,7 @@ class EntitySaldos {
     /**
      * Set ajustsubvencions
      *
-     * @param decimal $ajustsubvencions
+     * @param string $ajustsubvencions
      */
     public function setAjustsubvencions($ajustsubvencions)
     {
@@ -322,7 +322,7 @@ class EntitySaldos {
     /**
      * Get ajustsubvencions
      *
-     * @return decimal
+     * @return string
      */
     public function getAjustsubvencions()
     {
@@ -332,7 +332,7 @@ class EntitySaldos {
 	/**
      * Set comentaris
      *
-     * @param text $comentaris
+     * @param string $comentaris
      */
     public function setComentaris($comentaris)
     {
@@ -342,7 +342,7 @@ class EntitySaldos {
     /**
      * Get comentaris
      *
-     * @return text 
+     * @return string 
      */
     public function getComentaris()
     {
@@ -352,7 +352,7 @@ class EntitySaldos {
 	/**
      * Set dataregistre
      *
-     * @param date $dataregistre
+     * @param \DateTime $dataregistre
      */
     public function setDataregistre($dataregistre)
     {
@@ -362,7 +362,7 @@ class EntitySaldos {
     /**
      * Get dataregistre
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDataregistre()
     {
@@ -373,7 +373,7 @@ class EntitySaldos {
 	/**
      * Set dataentrada
      *
-     * @param date $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -383,7 +383,7 @@ class EntitySaldos {
     /**
      * Get dataentrada
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {

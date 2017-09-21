@@ -80,7 +80,7 @@ class EntityPregunta {
     /**
      * Set enunciat
      *
-     * @param text $enunciat
+     * @param string $enunciat
      */
     public function setEnunciat($enunciat)
     {
@@ -90,7 +90,7 @@ class EntityPregunta {
     /**
      * Get enunciat
      *
-     * @return text 
+     * @return string 
      */
     public function getEnunciat()
     {

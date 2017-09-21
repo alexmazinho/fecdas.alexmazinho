@@ -247,7 +247,7 @@ class EntityComandaDetall {
     /**
      * Set preuunitat
      *
-     * @param decimal $preuunitat
+     * @param string $preuunitat
      * @return EntityComandaDetall
      */
     public function setPreuunitat($preuunitat)
@@ -260,7 +260,7 @@ class EntityComandaDetall {
     /**
      * Get preuunitat
      *
-     * @return decimal
+     * @return string
      */
     public function getPreuunitat()
     {
@@ -270,7 +270,7 @@ class EntityComandaDetall {
     /**
      * Set ivaunitat
      *
-     * @param decimal $ivaunitat
+     * @param string $ivaunitat
      * @return EntityComandaDetall
      */
     public function setIvaunitat($ivaunitat)
@@ -283,7 +283,7 @@ class EntityComandaDetall {
     /**
      * Get ivaunitat
      *
-     * @return decimal
+     * @return string
      */
     public function getIvaunitat()
     {

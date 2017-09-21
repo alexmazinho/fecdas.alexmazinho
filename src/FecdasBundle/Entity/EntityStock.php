@@ -132,7 +132,7 @@ class EntityStock {
 	/**
 	 * Retorna el saldo del registre 
 	 *
-	 * @return decimal
+	 * @return string
 	 */
 	public function getSaldo() {
 		return round($this->totalpagaments + $this->ajustsubvencions + $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
@@ -161,9 +161,9 @@ class EntityStock {
 	/**
      * Set producte
      *
-     * @param \FecdasBundle\Entity\EntityProducte $producte
+     * @param EntityProducte $producte
      */
-    public function setProducte(\FecdasBundle\Entity\EntityProducte $producte = null)
+    public function setProducte(EntityProducte $producte = null)
     {
         $this->producte = $producte;
     }
@@ -171,7 +171,7 @@ class EntityStock {
     /**
      * Get producte
      *
-     * @return \FecdasBundle\Entity\EntityProducte 
+     * @return EntityProducte 
      */
     public function getProducte()
     {
@@ -181,7 +181,7 @@ class EntityStock {
 	/**
      * Set dataregistre
      *
-     * @param date $dataregistre
+     * @param \DateTime $dataregistre
      */
     public function setDataregistre($dataregistre)
     {
@@ -191,7 +191,7 @@ class EntityStock {
     /**
      * Get dataregistre
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDataregistre()
     {
@@ -241,7 +241,7 @@ class EntityStock {
 	/**
      * Set preuunitat 
      *
-     * @param decimal $preuunitat
+     * @param string $preuunitat
      */
     public function setPreuunitat($preuunitat)
     {
@@ -251,7 +251,7 @@ class EntityStock {
     /**
      * Get preuunitat 
      *
-     * @return decimal
+     * @return string
      */
     public function getPreuunitat()
     {
@@ -282,9 +282,9 @@ class EntityStock {
 	/**
      * Set factura
      *
-     * @param \FecdasBundle\Entity\EntityFactura $factura
+     * @param EntityFactura $factura
      */
-    public function setFactura(\FecdasBundle\Entity\EntityFactura $factura = null)
+    public function setFactura(EntityFactura $factura = null)
     {
         $this->factura = $factura;
     }
@@ -292,7 +292,7 @@ class EntityStock {
     /**
      * Get factura
      *
-     * @return \FecdasBundle\Entity\EntityFactura
+     * @return EntityFactura
      */
     public function getFactura()
     {
@@ -302,7 +302,7 @@ class EntityStock {
 	/**
      * Set comentaris
      *
-     * @param text $comentaris
+     * @param string $comentaris
      */
     public function setComentaris($comentaris)
     {
@@ -312,7 +312,7 @@ class EntityStock {
     /**
      * Get comentaris
      *
-     * @return text 
+     * @return string 
      */
     public function getComentaris()
     {
@@ -322,9 +322,9 @@ class EntityStock {
 	/**
      * Set club
      *
-     * @param FecdasBundle\Entity\EntityClub $club
+     * @param EntityClub $club
      */
-    public function setClub(\FecdasBundle\Entity\EntityClub $club = null)
+    public function setClub(EntityClub $club = null)
     {
         $this->club = $club;
     }
@@ -332,7 +332,7 @@ class EntityStock {
     /**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityClub 
+     * @return EntityClub 
      */
     public function getClub()
     {
@@ -342,7 +342,7 @@ class EntityStock {
 	/**
      * Set dataentrada
      *
-     * @param date $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -352,7 +352,7 @@ class EntityStock {
     /**
      * Get dataentrada
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {
@@ -362,7 +362,7 @@ class EntityStock {
 	/**
      * Set databaixa
      *
-     * @param date $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -372,7 +372,7 @@ class EntityStock {
     /**
      * Get databaixa
      *
-     * @return date
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

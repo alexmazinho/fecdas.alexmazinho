@@ -127,7 +127,7 @@ class EntityUserLog {
     /**
      * Set datetime
      *
-     * @param datetime $timestamp
+     * @param \DateTime $timestamp
      */
     public function setTimestamp($timestamp)
     {
@@ -137,7 +137,7 @@ class EntityUserLog {
     /**
      * Get timestamp
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getTimestamp()
     {

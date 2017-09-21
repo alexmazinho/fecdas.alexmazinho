@@ -936,7 +936,7 @@ class BaseController extends Controller {
 		$lpersonaarevisar = $query->getResult();
 	
 		$inicivigencia_nova = $llicencia->getParte()->getDataalta();
-		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat($this->getLogMailUserData("validaPersonaTeLlicenciaVigent outer "));
+		$fivigencia_nova = $llicencia->getParte()->getDataCaducitat();
 	
 		foreach ($lpersonaarevisar as $llicencia_iter) {
 			if ($llicencia_iter->getId() != $llicencia->getId() and
@@ -947,7 +947,7 @@ class BaseController extends Controller {
 	
 				// Cal anar en compte, les llicències importades tenen un dia més
 				//$fivigencia_existent = $llicencia_iter->getDatacaducitat();
-				$fivigencia_existent = $llicencia_iter->getParte()->getDataCaducitat($this->getLogMailUserData("validaPersonaTeLlicenciaVigent inner "));
+				$fivigencia_existent = $llicencia_iter->getParte()->getDataCaducitat();
 	
 				// Comprovar si sol·lapen
 				if (($fivigencia_nova >= $inicivigencia_existent) &&
@@ -1102,55 +1102,6 @@ class BaseController extends Controller {
 		$interval['fins'] = \DateTime::createFromFormat('d/m/Y', $request->query->get('fins', $finsDefault));
 		
 		return $interval;
-	}
-	
-	protected function consultaAssegurats($tots, $dni, $nom, $cognoms, $desde, $fins, $vigent = true, $strOrderBY = '') { 
-		$em = $this->getDoctrine()->getManager();
-	
-		$current = $this->getCurrentDate();
-		if ($vigent == true) {
-			$strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e JOIN e.llicencies l JOIN l.parte p ";
-			$strQuery .= " WHERE e.databaixa IS NULL AND l.databaixa IS NULL AND p.databaixa IS NULL ";
-			$strQuery .= " AND p.pendent = 0 ";
-			$strQuery .= " AND p.dataalta <= :currenttime ";
-			$strQuery .= " AND l.datacaducitat >= :currentdate ";
-		} else {
-		    if ($desde != null || $fins != null) { 
-    			$strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e JOIN e.llicencies l JOIN l.parte p ";
-    			$strQuery .= " WHERE e.databaixa IS NULL AND p.databaixa IS NULL ";
-    			$strQuery .= " AND p.pendent = 0 ";
-    			if ($desde != null) $strQuery .= " AND p.dataalta >= :desde ";
-    			if ($fins != null) $strQuery .= " AND p.dataalta <= :fins ";
-            } else {
-                $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
-                $strQuery .= " WHERE e.databaixa IS NULL ";
-            }
-		}
-		
-		if ($tots == false) $strQuery .= " AND e.club = :club ";
-		if ($dni != "") $strQuery .= " AND e.dni LIKE :dni ";
-		if ($nom != "") $strQuery .= " AND e.nom LIKE :nom ";
-		if ($cognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
-
-		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  // Només per PDF el paginator ho fa sol mentre el mètode de crida sigui POST
-		
-		$query = $em->createQuery($strQuery);
-				
-		// Algun filtre
-		$query = $em->createQuery($strQuery);
-		if ($tots == false) $query->setParameter('club', $this->getCurrentClub()->getCodi());
-		if ($dni != "") $query->setParameter('dni', "%" . $dni . "%");
-		if ($nom != "") $query->setParameter('nom', "%" . $nom . "%");
-		if ($cognoms != "") $query->setParameter('cognoms', "%" . $cognoms . "%");
-		if ($vigent == true) {
-			$query->setParameter('currenttime', $current->format('Y-m-d').' 00:00:00');
-			$query->setParameter('currentdate', $current->format('Y-m-d'));
-		} else {
-			if ($desde != null) $query->setParameter('desde', $desde->format('Y-m-d').' 00:00:00');
-			if ($fins != null) $query->setParameter('fins', $fins->format('Y-m-d').' 23:59:59');
-		}
-	
-		return $query;
 	}
 	
 	protected function getMaxNumEntity($year, $tipus) {
@@ -2118,7 +2069,7 @@ class BaseController extends Controller {
 		$persona = $llicencia->getPersona();
 		if ( $persona == null) return;
 		
-		$datacaduca = $parte->getDatacaducitat('printparte');
+		$datacaduca = $parte->getDatacaducitat();
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 				
 		$pdf->SetTextColor(0, 0, 255);
@@ -2278,7 +2229,7 @@ class BaseController extends Controller {
 		$persona = $llicencia->getPersona();
 		if ( $persona == null) return;
 		
-		$datacaduca = $parte->getDatacaducitat('printparte');
+		$datacaduca = $parte->getDatacaducitat();
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 				
 		$pdf->SetFont('dejavusans', 'B', 15, '', true);
@@ -2327,7 +2278,7 @@ class BaseController extends Controller {
 	protected function getTitolPlastic($parte, $datacaduca = null) {
 		/*if ($parte == null) return '';
 		$anyLlicencia = $parte->getDataalta()->format('Y');
-		if ($datacaduca == null) $datacaduca = $parte->getDatacaducitat('titolPlastic');
+		if ($datacaduca == null) $datacaduca = $parte->getDatacaducitat();
 		$anyFinalLlicencia = $datacaduca->format('Y');
 		$tipus = $parte->getTipus();
 	
@@ -2440,7 +2391,7 @@ class BaseController extends Controller {
 		$persona = $llicencia->getPersona();
 		if ( $persona == null) return;
 		
-		$datacaduca = $parte->getDatacaducitat('printparte');
+		$datacaduca = $parte->getDatacaducitat();
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 
 		//$pdf->SetFont('helvetica', 'B', 10, '', true);
@@ -2513,7 +2464,7 @@ class BaseController extends Controller {
 		$persona = $llicencia->getPersona();
 		if ( $persona == null) return;
 		
-		$datacaduca = $parte->getDatacaducitat('printparte');
+		$datacaduca = $parte->getDatacaducitat();
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 				
 		$pdf->SetFont('helvetica', 'B', 10, '', true);

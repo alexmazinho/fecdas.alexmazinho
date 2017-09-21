@@ -229,19 +229,21 @@ class EntityPersona {
 	 */
 	public function getPersonesSortedById($baixes = false)
     {
-		if (!$persona->esBaixa() || $baixes == true) return array( $this ); 		
+        if (!$this->esBaixa() || $baixes == true) return array( $this ); 		
     	return array( );
     }
 	
 	/**
-	 * @return titulacio baixa?
+	 * titulacio baixa?
+	 * @return boolean
 	 */
 	public function esBaixa() {
 		return $this->databaixa != null;
 	}
 	
 	/**
-	 * @return pertany al club?
+	 * pertany al club?
+	 * @return boolean
 	 */
 	public function checkClub($club) {
 		if ($this->club == null || $club == null || !is_object($club)) return false;
@@ -311,7 +313,7 @@ class EntityPersona {
     		if ($a === $b) {
     			return 0;
     		}
-    		return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
+    		return ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? -1:1;;
     	});
     	return $arr;
     }
@@ -324,7 +326,7 @@ class EntityPersona {
 
 	/**
      * 
-     * @return FecdasBundle\Entity\EntityLlicencia
+     * @return \FecdasBundle\Entity\EntityLlicencia
      */
     public static function getLlicenciaVigentStatic($llicencies) {
     	foreach ($llicencies as $llicencia) {
@@ -414,7 +416,7 @@ class EntityPersona {
 	/**
      * Get altrestitulacions
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getAltrestitulacions()
     {
@@ -424,7 +426,7 @@ class EntityPersona {
 	/**
      * Get altrestitulacions
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getAltrestitulacionsIds()
     {
@@ -561,7 +563,7 @@ class EntityPersona {
     /**
      * Set datanaixement
      *
-     * @param date $datanaixement
+     * @param \DateTime $datanaixement
      */
     public function setDatanaixement($datanaixement)
     {
@@ -571,7 +573,7 @@ class EntityPersona {
     /**
      * Get datanaixement
      *
-     * @return date 
+     * @return \DateTime 
      */
     public function getDatanaixement()
     {
@@ -641,7 +643,7 @@ class EntityPersona {
     /**
      * Set mail
      *
-     * @param text $mail
+     * @param string $mail
      */
     public function setMail($mail)
     {
@@ -651,7 +653,7 @@ class EntityPersona {
     /**
      * Get mail or mails: mail 1; mail 2; ...
      *
-     * @return text 
+     * @return string 
      */
     public function getMail()
     {
@@ -781,9 +783,9 @@ class EntityPersona {
     /**
      * Add llicencies
      *
-     * @param FecdasBundle\Entity\EntityLlicencia $llicencies
+     * @param EntityLlicencia $llicencies
      */
-    public function addLlicencia(\FecdasBundle\Entity\EntityLlicencia $llicencies)
+    public function addLlicencia(EntityLlicencia $llicencies)
     {
         $this->llicencies->add($llicencies);
     }
@@ -791,7 +793,7 @@ class EntityPersona {
     /**
      * Get llicencies
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getLlicencies()
     {
@@ -812,10 +814,10 @@ class EntityPersona {
 	/**
 	 * Set foto
 	 *
-	 * @param FecdasBundle\Entity\EntityArxiu $foto
+	 * @param EntityArxiu $foto
 	 * @return EntityArxiu
 	 */
-	public function setFoto(\FecdasBundle\Entity\EntityArxiu $foto = null)
+	public function setFoto(EntityArxiu $foto = null)
 	{
 		$this->foto = $foto;
 		if ($foto != null) $foto->setPersona($this);
@@ -825,7 +827,7 @@ class EntityPersona {
 	/**
 	 * Get foto
 	 *
-	 * @return FecdasBundle\Entity\EntityArxiu
+	 * @return EntityArxiu
 	 */
 	public function getFoto()
 	{
@@ -835,10 +837,10 @@ class EntityPersona {
 	/**
 	 * Set certificat
 	 *
-	 * @param FecdasBundle\Entity\EntityArxiu $certificat
+	 * @param EntityArxiu $certificat
 	 * @return EntityArxiu
 	 */
-	public function setCertificat(\FecdasBundle\Entity\EntityArxiu $certificat = null)
+	public function setCertificat(EntityArxiu $certificat = null)
 	{
 		$this->certificat = $certificat;
 		if ($certificat != null) $certificat->setPersona($this);
@@ -847,7 +849,7 @@ class EntityPersona {
 	/**
 	 * Get certificat
 	 *
-	 * @return FecdasBundle\Entity\EntityArxiu
+	 * @return EntityArxiu
 	 */
 	public function getCertificat()
 	{
@@ -858,9 +860,9 @@ class EntityPersona {
 	/**
      * Add arxius
      *
-     * @param FecdasBundle\Entity\EntityArxiu $arxiu
+     * @param EntityArxiu $arxiu
      */
-    public function addArxius(\FecdasBundle\Entity\EntityArxiu $arxiu)
+    public function addArxius(EntityArxiu $arxiu)
     {
     	if ($arxiu != null) {
 	        $this->arxius->add($arxiu);
@@ -871,7 +873,7 @@ class EntityPersona {
     /**
      * Get arxius
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getArxius()
     {
@@ -881,7 +883,7 @@ class EntityPersona {
     /**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -891,7 +893,7 @@ class EntityPersona {
     /**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {
@@ -901,7 +903,7 @@ class EntityPersona {
     /**
      * Set datamodificacio
      *
-     * @param datetime $datamodificacio
+     * @param \DateTime $datamodificacio
      */
     public function setDatamodificacio($datamodificacio)
     {
@@ -911,7 +913,7 @@ class EntityPersona {
     /**
      * Get datamodificacio
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatamodificacio()
     {
@@ -921,7 +923,7 @@ class EntityPersona {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -931,7 +933,7 @@ class EntityPersona {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {
@@ -941,9 +943,9 @@ class EntityPersona {
     /**
      * Set club
      *
-     * @param FecdasBundle\Entity\EntityClub $club
+     * @param EntityClub $club
      */
-    public function setClub(\FecdasBundle\Entity\EntityClub $club)
+    public function setClub(EntityClub $club)
     {
         $this->club = $club;
     }
@@ -951,7 +953,7 @@ class EntityPersona {
     /**
      * Get club
      *
-     * @return FecdasBundle\Entity\EntityClub 
+     * @return EntityClub 
      */
     public function getClub()
     {
@@ -961,9 +963,9 @@ class EntityPersona {
 	/**
      * Set metapersona
      *
-     * @param FecdasBundle\Entity\EntityMetaPersona $metapersona
+     * @param EntityMetaPersona $metapersona
      */
-    public function setMetapersona(\FecdasBundle\Entity\EntityMetaPersona $metapersona)
+    public function setMetapersona(EntityMetaPersona $metapersona)
     {
         $this->metapersona = $metapersona;
     }
@@ -971,7 +973,7 @@ class EntityPersona {
     /**
      * Get metapersona
      *
-     * @return FecdasBundle\Entity\EntityMetaPersona 
+     * @return EntityMetaPersona 
      */
     public function getMetapersona()
     {

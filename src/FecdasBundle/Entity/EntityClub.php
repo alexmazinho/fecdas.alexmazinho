@@ -295,7 +295,7 @@ class EntityClub {
 	/**
      * Add user, role, metadata
      *
-     * @param \FecdasBundle\Entity\EntityUser $user
+     * @param EntityUser $user
      */
     public function addUsuariRole($user, $role)
     {
@@ -633,7 +633,7 @@ class EntityClub {
 	/**
 	 * Retorna el saldo del club amb les dades del gestor
 	 *
-	 * @return decimal
+	 * @return string
 	 */
 	public function getSaldo() {
 		return round($this->totalpagaments + $this->ajustsubvencions + $this->romanent - $this->totalllicencies - $this->totalduplicats - $this->totalaltres, 2);
@@ -642,7 +642,7 @@ class EntityClub {
 	/**
 	 * Retorna l'import dels ingresos no associats a cap comanda
 	 *
-	 * @return decimal
+	 * @return string
 	 */
 	public function getTotalIngresos($current = 0)
 	{
@@ -789,9 +789,9 @@ class EntityClub {
     /**
      * Set tipus
      *
-     * @param FecdasBundle\Entity\EntityClubType $tipus
+     * @param EntityClubType $tipus
      */
-    public function setTipus(\FecdasBundle\Entity\EntityClubType $tipus)
+    public function setTipus(EntityClubType $tipus)
     {
         $this->tipus = $tipus;
     }
@@ -799,7 +799,7 @@ class EntityClub {
     /**
      * Get tipus
      *
-     * @return FecdasBundle\Entity\EntityClubType 
+     * @return EntityClubType 
      */
     public function getTipus()
     {
@@ -925,7 +925,7 @@ class EntityClub {
     /**
      * Set mail
      *
-     * @param text $mail
+     * @param string $mail
      */
     public function setMail($mail)
     {
@@ -935,7 +935,7 @@ class EntityClub {
     /**
      * Get mail
      *
-     * @return text 
+     * @return string 
      */
     public function getMail()
     {
@@ -1185,7 +1185,7 @@ class EntityClub {
     /**
      * Get comandes
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getComandes()
     {
@@ -1195,9 +1195,9 @@ class EntityClub {
     /**
      * Add comanda
      *
-     * @param FecdasBundle\Entity\EntityComanda $comanda
+     * @param EntityComanda $comanda
      */
-    public function addEntityComanda(\FecdasBundle\Entity\EntityComanda $comanda)
+    public function addEntityComanda(EntityComanda $comanda)
     {
     	$comanda->setClub($this);
     	$this->comandes->add($comanda);
@@ -1219,7 +1219,7 @@ class EntityClub {
    /**
      * Get ingresos
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getIngresos()
     {
@@ -1229,9 +1229,9 @@ class EntityClub {
     /**
      * Add ingrés
      *
-     * @param FecdasBundle\Entity\EntityRebut $ingres
+     * @param EntityRebut $ingres
      */
-    public function addEntityRebut(\FecdasBundle\Entity\EntityRebut $ingres)
+    public function addEntityRebut(EntityRebut $ingres)
     {
     	$ingres->setClub($this);
     	$this->ingresos->add($ingres);
@@ -1253,7 +1253,7 @@ class EntityClub {
     /**
      * Get tipusparte
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getTipusparte()
     {
@@ -1263,9 +1263,9 @@ class EntityClub {
     /**
      * Add tipusparte
      *
-     * @param FecdasBundle\Entity\EntityParteType $tipusparte
+     * @param EntityParteType $tipusparte
      */
-    public function addTipusparte(\FecdasBundle\Entity\EntityParteType $tipusparte)
+    public function addTipusparte(EntityParteType $tipusparte)
     {
     	$this->tipusparte->add($tipusparte);
     }
@@ -1273,9 +1273,9 @@ class EntityClub {
     /**
      * Remove tipusparte
      *
-     * @param FecdasBundle\Entity\EntityParteType $tipusparte
+     * @param EntityParteType $tipusparte
      */
-    public function removeTipusparte(\FecdasBundle\Entity\EntityParteType $tipusparte)
+    public function removeTipusparte(EntityParteType $tipusparte)
     {
     	$this->tipusparte->removeElement($tipusparte);
     }
@@ -1289,9 +1289,9 @@ class EntityClub {
     /**
      * Set estat
      *
-     * @param FecdasBundle\Entity\EntityClubEstat $estat
+     * @param EntityClubEstat $estat
      */
-    public function setEstat(\FecdasBundle\Entity\EntityClubEstat $estat)
+    public function setEstat(EntityClubEstat $estat)
     {
     	$this->estat = $estat;
     }
@@ -1299,7 +1299,7 @@ class EntityClub {
     /**
      * Get estat
      *
-     * @return FecdasBundle\Entity\EntityClubEstat
+     * @return EntityClubEstat
      */
     public function getEstat()
     {
@@ -1330,7 +1330,7 @@ class EntityClub {
     /**
      * Set limitcredit
      *
-     * @param decimal $limitcredit
+     * @param string $limitcredit
      */
     public function setLimitcredit($limitcredit)
     {
@@ -1340,7 +1340,7 @@ class EntityClub {
     /**
      * Get limitcredit
      *
-     * @return decimal
+     * @return string
      */
     public function getLimitcredit()
     {
@@ -1350,7 +1350,7 @@ class EntityClub {
     /**
      * Set limitnotificacio
      *
-     * @param datetime $limitnotificacio
+     * @param \DateTime $limitnotificacio
      */
     public function setLimitnotificacio($limitnotificacio)
     {
@@ -1360,7 +1360,7 @@ class EntityClub {
     /**
      * Get limitnotificacio
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getLimitnotificacio()
     {
@@ -1390,7 +1390,7 @@ class EntityClub {
     /**
      * Set romanent
      *
-     * @param decimal $romanent
+     * @param string $romanent
      */
     public function setRomanent($romanent)
     {
@@ -1400,7 +1400,7 @@ class EntityClub {
     /**
      * Get romanent
      *
-     * @return decimal
+     * @return string
      */
     public function getRomanent()
     {
@@ -1410,7 +1410,7 @@ class EntityClub {
     /**
      * Set totalpagaments
      *
-     * @param decimal $totalpagaments
+     * @param string $totalpagaments
      */
     public function setTotalpagaments($totalpagaments)
     {
@@ -1420,7 +1420,7 @@ class EntityClub {
     /**
      * Get totalpagaments
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalpagaments()
     {
@@ -1430,7 +1430,7 @@ class EntityClub {
     /**
      * Set totalllicencies
      *
-     * @param decimal $totalllicencies
+     * @param string $totalllicencies
      */
     public function setTotalllicencies($totalllicencies)
     {
@@ -1440,7 +1440,7 @@ class EntityClub {
     /**
      * Get totalllicencies
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalllicencies()
     {
@@ -1450,7 +1450,7 @@ class EntityClub {
     /**
      * Set totalduplicats
      *
-     * @param decimal $totalduplicats
+     * @param string $totalduplicats
      */
     public function setTotalduplicats($totalduplicats)
     {
@@ -1460,7 +1460,7 @@ class EntityClub {
     /**
      * Get totalduplicats
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalduplicats()
     {
@@ -1470,7 +1470,7 @@ class EntityClub {
     /**
      * Set totalaltres
      *
-     * @param decimal $totalaltres
+     * @param string $totalaltres
      */
     public function setTotalaltres($totalaltres)
     {
@@ -1480,7 +1480,7 @@ class EntityClub {
     /**
      * Get totalaltres
      *
-     * @return decimal
+     * @return string
      */
     public function getTotalaltres()
     {
@@ -1490,7 +1490,7 @@ class EntityClub {
     /**
      * Set ajustsubvencions
      *
-     * @param decimal $ajustsubvencions
+     * @param string $ajustsubvencions
      */
     public function setAjustsubvencions($ajustsubvencions)
     {
@@ -1500,7 +1500,7 @@ class EntityClub {
     /**
      * Get ajustsubvencions
      *
-     * @return decimal
+     * @return string 
      */
     public function getAjustsubvencions()
     {
@@ -1710,10 +1710,10 @@ class EntityClub {
     /**
      * Add comandes
      *
-     * @param \FecdasBundle\Entity\EntityComanda $comandes
+     * @param EntityComanda $comandes
      * @return EntityClub
      */
-    public function addComande(\FecdasBundle\Entity\EntityComanda $comandes)
+    public function addComande(EntityComanda $comandes)
     {
         $this->comandes[] = $comandes;
 
@@ -1723,9 +1723,9 @@ class EntityClub {
     /**
      * Remove comandes
      *
-     * @param \FecdasBundle\Entity\EntityComanda $comandes
+     * @param EntityComanda $comandes
      */
-    public function removeComande(\FecdasBundle\Entity\EntityComanda $comandes)
+    public function removeComande(EntityComanda $comandes)
     {
         $this->comandes->removeElement($comandes);
     }
@@ -1743,9 +1743,9 @@ class EntityClub {
 	/**
      * Add cursos
      *
-     * @param \FecdasBundle\Entity\EntityCurs $curs
+     * @param EntityCurs $curs
      */
-    public function addCursos(\FecdasBundle\Entity\EntityCurs $curs)
+    public function addCursos(EntityCurs $curs)
     {
         $this->cursos->add($curs);
     }

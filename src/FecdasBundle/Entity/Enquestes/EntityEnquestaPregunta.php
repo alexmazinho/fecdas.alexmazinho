@@ -86,9 +86,9 @@ class EntityEnquestaPregunta {
     /**
      * Set enquesta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityEnquesta $enquesta
+     * @param EntityEnquesta $enquesta
      */
-    public function setEnquesta(\FecdasBundle\Entity\Enquestes\EntityEnquesta $enquesta = null)
+    public function setEnquesta(EntityEnquesta $enquesta = null)
     {
         $this->enquesta = $enquesta;
     }
@@ -96,7 +96,7 @@ class EntityEnquestaPregunta {
     /**
      * Get enquesta
      *
-     * @return FecdasBundle\Entity\Enquestes\EntityEnquesta 
+     * @return EntityEnquesta 
      */
     public function getEnquesta()
     {
@@ -106,9 +106,9 @@ class EntityEnquestaPregunta {
     /**
      * Set pregunta
      *
-     * @param FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta
+     * @param EntityPregunta $pregunta
      */
-    public function setPregunta(\FecdasBundle\Entity\Enquestes\EntityPregunta $pregunta)
+    public function setPregunta(EntityPregunta $pregunta)
     {
         $this->pregunta = $pregunta;
     }
@@ -116,7 +116,7 @@ class EntityEnquestaPregunta {
     /**
      * Get pregunta
      *
-     * @return FecdasBundle\Entity\Enquestes\EntityPregunta 
+     * @return EntityPregunta 
      */
     public function getPregunta()
     {

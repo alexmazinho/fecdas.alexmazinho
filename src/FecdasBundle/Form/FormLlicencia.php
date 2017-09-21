@@ -1,14 +1,14 @@
 <?php
 namespace FecdasBundle\Form;
 
-use FecdasBundle\Entity\EntityLlicencia;
-use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Controller\BaseController;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
+use FecdasBundle\Entity\EntityLlicencia;
+use FecdasBundle\Controller\BaseController;
 
 
 class FormLlicencia extends AbstractType {

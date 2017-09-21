@@ -6,8 +6,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use FecdasBundle\Entity\EntityPersona;
-use FecdasBundle\Entity\EntityCarnet;
 use FecdasBundle\Controller\BaseController;
 
 

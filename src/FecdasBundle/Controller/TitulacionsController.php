@@ -183,7 +183,7 @@ class TitulacionsController extends BaseController {
 			if ($a === $b) {
 				return 0;
 			}
-			return ($a->getParte()->getDatacaducitat("getLlicenciesSortedByDate") > $b->getParte()->getDatacaducitat("getLlicenciesSortedByDate"))? -1:1;;
+			return ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? -1:1;;
 		});
 
 		    return $this->render('FecdasBundle:Titulacions:llicencieshistorial.html.twig', array('llicencies' => $llicencies, 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));

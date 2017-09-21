@@ -96,14 +96,16 @@ class EntityDocencia {
 	}
 	
 	/**
-	 * @return docència anul·lada?
+	 * Retorna docència anul·lada?
+	 * @return boolean
 	 */
 	public function anulada() {
 		return $this->databaixa != null;
 	}
 	
 	/**
-	 * @return baixa docència
+	 * Retorna baixa docència
+	 * @return boolean
 	 */
 	public function baixa() {
 		$this->setDatamodificacio(new \DateTime('now'));
@@ -272,7 +274,7 @@ class EntityDocencia {
 	/**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -282,7 +284,7 @@ class EntityDocencia {
     /**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {
@@ -292,7 +294,7 @@ class EntityDocencia {
     /**
      * Set datamodificacio
      *
-     * @param datetime $datamodificacio
+     * @param \DateTime $datamodificacio
      */
     public function setDatamodificacio($datamodificacio)
     {
@@ -302,7 +304,7 @@ class EntityDocencia {
     /**
      * Get datamodificacio
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDatamodificacio()
     {
@@ -312,7 +314,7 @@ class EntityDocencia {
     /**
      * Set databaixa
      *
-     * @param datetime $databaixa
+     * @param \DateTime $databaixa
      */
     public function setDatabaixa($databaixa)
     {
@@ -322,7 +324,7 @@ class EntityDocencia {
     /**
      * Get databaixa
      *
-     * @return datetime
+     * @return \DateTime
      */
     public function getDatabaixa()
     {

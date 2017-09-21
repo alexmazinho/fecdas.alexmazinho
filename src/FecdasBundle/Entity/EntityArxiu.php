@@ -3,7 +3,6 @@ namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Validator\Constraints as Assert;
 use FecdasBundle\Classes\Funcions;
 use FecdasBundle\Controller\BaseController;
 
@@ -305,23 +304,23 @@ class EntityArxiu {
     }
     
 	/**
-	 * @return FecdasBundle\Entity\EntityPersona
+	 * @return EntityPersona
 	 */
 	public function getPersona() {
 		return $this->persona;
 	}
 
 	/**
-	 * @param FecdasBundle\Entity\EntityPersona $persona
+	 * @param EntityPersona $persona
 	 */
-	public function setPersona(\FecdasBundle\Entity\EntityPersona $persona) {
+	public function setPersona(EntityPersona $persona) {
 		$this->persona = $persona;
 	}
 	
 	/**
      * Set dataentrada
      *
-     * @param datetime $dataentrada
+     * @param \DateTime $dataentrada
      */
     public function setDataentrada($dataentrada)
     {
@@ -331,7 +330,7 @@ class EntityArxiu {
     /**
      * Get dataentrada
      *
-     * @return datetime 
+     * @return \DateTime 
      */
     public function getDataentrada()
     {

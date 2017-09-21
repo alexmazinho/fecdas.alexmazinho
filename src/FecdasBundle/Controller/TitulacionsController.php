@@ -347,7 +347,7 @@ class TitulacionsController extends BaseController {
     		if ($request->getMethod() == 'POST') {
     		
 			 	$form->handleRequest($request);
-				if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrorsAsString() );
+			 	if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrors(true, true) );
 				
 				// Comprovacions genèriques
 				$this->validacionsCurs($curs, $stock, $form, $action);

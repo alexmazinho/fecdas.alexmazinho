@@ -555,7 +555,7 @@ class SecurityController extends BaseController
 				
 	   			$form->handleRequest($request);
 	   			
-	   			if (!$form->isValid()) throw new \Exception("error validant les dades". $form->getErrorsAsString());
+	   			if (!$form->isValid()) throw new \Exception("error validant les dades ". $form->getErrors(true, true));
 				
 	   			/* Validacions dades obligatories*/
 	   			if (trim($club->getNom()) == "") {
@@ -851,7 +851,7 @@ class SecurityController extends BaseController
 	    		// Alta nou usuari de club
 	    		$form->handleRequest($request);
 
-	   			if (!$form->isValid()) throw new \Exception("error validant les dades -".$randomPassword."-". $form->getErrors()."     -     ".$form->getErrorsAsString());
+	   			if (!$form->isValid()) throw new \Exception("error validant les dades -".$randomPassword."-". $form->getErrors(true, true));
 								
    				$em->flush();
 	   				

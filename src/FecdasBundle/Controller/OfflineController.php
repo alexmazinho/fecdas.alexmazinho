@@ -1051,11 +1051,11 @@ class OfflineController extends BaseController {
 				
 				$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
 				
-				$key = -1; 
-				$ncUpd = 0;
+				//$key = -1; 
+				//$ncUpd = 0;
 				
 				$jsonCarrecsUpd = array();
-				foreach ($jsonCarrecs as $k => $value) {
+				foreach ($jsonCarrecs as $value) {
 					
 					$federat = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
 					
@@ -1458,7 +1458,7 @@ class OfflineController extends BaseController {
 			
 			//$em->getConnection()->beginTransaction(); // suspend auto-commit
 			
-			$repository = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda');
+			//$repository = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda');
 			
 			$strQuery = " SELECT c FROM FecdasBundle\Entity\EntityComanda c ";
 			$strQuery .= " WHERE c.id >= :id AND c.factura IS NOT NULL ";
@@ -1510,8 +1510,8 @@ class OfflineController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
 		echo 'Inicia omplirdetallsfacturesAction';
-		$batchSize = 20;
-		$current = $request->query->get('current', date('Y')); 
+		//$batchSize = 20;
+		//$current = $request->query->get('current', date('Y')); 
 		$id = $request->query->get('id', 0); // min id
 		try {
 			$em = $this->getDoctrine()->getManager();
@@ -1598,7 +1598,7 @@ class OfflineController extends BaseController {
 	
 		$facturanum = '';
 		$relacio = 0;
-		$comanda = null;
+		//$comanda = null;
 		$detalls = '';
 		$dataanulacio = null;
 		$import = 0;
@@ -1763,7 +1763,7 @@ class OfflineController extends BaseController {
 		$num = $request->query->get('num', 0); // min num
 		$codi = $request->query->get('codi', 0); // Club
 		
-		$batchSize = 20;
+		//$batchSize = 20;
 	
 		$strQuery = "SELECT p.*, e.preu, e.iva FROM m_productes p LEFT JOIN m_preus e ON e.producte = p.id WHERE e.anypreu = 2015 ORDER BY p.codi ";
 		$stmt = $em->getConnection()->prepare($strQuery);
@@ -1820,7 +1820,7 @@ class OfflineController extends BaseController {
 			}
 			
 			$apuntsClub = array(); 
-			foreach ($numapuntsClub as $key => $value) {
+			foreach ($numapuntsClub as $value) {
 				//echo json_encode($value);
 				$apuntsClub[] = $value['num'];
 			}
@@ -2168,7 +2168,7 @@ if ($persist == false) return;
 							return;
 					}
 					$concepteAux = $altres['D'][0]['concepte'];	// FW:00063/2015 o Factura: 00076/2015 o Fra. 2541/2015 o FW:00510/2015 o F. 1456/2014
-					$ingres = true; 
+					//$ingres = true; 
 					$numFactura = 'NA';
 					$datapagament = $data;
 					$dataentrada = $data; 
@@ -2489,7 +2489,7 @@ if ($persist == false) return;
 			
 			$testArrayFactures = explode("-", trim($concepte));
 			
-			foreach ($testArrayFactures as $key => $numFactura) {
+			foreach ($testArrayFactures as $numFactura) {
 				if (!is_numeric( trim($numFactura) )) return null;
 			}
 			return $testArrayFactures;

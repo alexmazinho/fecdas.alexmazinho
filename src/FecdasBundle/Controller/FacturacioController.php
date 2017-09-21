@@ -100,7 +100,7 @@ class FacturacioController extends BaseController {
 			$this->logEntryAuth('CONSULTA STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
 			
 			if ($request->isXmlHttpRequest()) {
-				return $this->render('FecdasBundle:Facturacio:taulastockacumulat.html.twig',
+				return $this->render('FecdasBundle:Facturacio:stockacumulattaula.html.twig',
 					$this->getCommonRenderArrayOptions(array('stockacumulat' => $stockAcumulat)));
 			}
 		} else {
@@ -144,7 +144,7 @@ class FacturacioController extends BaseController {
 			$this->logEntryAuth('CONSULTA STOCK DETALL', ' producte: '.$idproducte.' desde '.$strDesde);
 			
 			if ($request->isXmlHttpRequest()) {
-				return $this->render('FecdasBundle:Facturacio:taulastock.html.twig',
+				return $this->render('FecdasBundle:Facturacio:stocktaula.html.twig',
 					$this->getCommonRenderArrayOptions(array('stock' => $stock)));
 			}
 		}
@@ -257,7 +257,7 @@ class FacturacioController extends BaseController {
     		if ($request->getMethod() == 'POST') {
     			$form->handleRequest($request);
     			
-    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del registre ' .$form->getErrorsAsString()); 
+    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del registre ' .$form->getErrors(true, true)); 
 
 				if ($registreStock->getProducte() == null || $registreStock->getProducte() == '') {
     				throw new \Exception('Cal indicar algun producte' );
@@ -507,7 +507,7 @@ class FacturacioController extends BaseController {
     	}
     	
 		if ($request->isXmlHttpRequest()) {
-			return $this->render('FecdasBundle:Facturacio:taulastockclub.html.twig',
+			return $this->render('FecdasBundle:Facturacio:stockclubtaula.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 					'stockclub' => $stockclub)
 				));
@@ -1853,7 +1853,7 @@ class FacturacioController extends BaseController {
 		
 		if ($request->isXmlHttpRequest()) {
 			// Crida ajax. Recarrega taula
-			return $this->render('FecdasBundle:Facturacio:taulaapunts.html.twig',
+			return $this->render('FecdasBundle:Facturacio:apuntstaula.html.twig',
 				$this->getCommonRenderArrayOptions(array(
 						'apunts' => $apunts, 'pagination' => $pagination, 'club' => $club)
 				));
@@ -2404,7 +2404,7 @@ class FacturacioController extends BaseController {
 					$this->registreComanda($comanda, $originalDetalls);
 		
 				} else {
-					throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda ' ); //$form->getErrorsAsString()
+				    throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda '.$form->getErrors(true, true) ); 
 				}
 		
 				$em->flush();
@@ -2662,7 +2662,7 @@ class FacturacioController extends BaseController {
     				throw new \Exception('Cal indicar un preu vàlid 1'.$importpreu  );
     			}
     			
-    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrorsAsString());
+    			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrors(true, true));
     				
     			if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
     				
@@ -3447,12 +3447,6 @@ class FacturacioController extends BaseController {
                 throw new \Exception("No es poden esborrar rebuts d'anys anteriors o del TPV");
             }
 	                    
-            // Any actual   => 
-            //  Avui        => pagaments Club
-            //  Anterior    => pagaments Club + Saldos
-            // Anterior     => No es pot
-            
-            
 	        // Esborrar el rebut de totes les comandes
 	        foreach ($rebut->getComandes() as $comanda) $comanda->setRebut(null);
 	                    
@@ -3460,16 +3454,38 @@ class FacturacioController extends BaseController {
 	                    
             // Actualitzar saldo club
             $rebut->updateClubPagaments(-1 * $rebut->getImport());
-	                   
+
+            // Any actual   
+            //  Avui        => pagaments Club
+            //  Anterior    => pagaments Club + Saldos pagaments + saldos entrades
+            //
+            //                      saldos pagaments : >= dia dataentrada rebut
+            //                      saldos entrades : == dia pagament
+            // Anterior     => No es pot
+            
+            // Modificar valor Totalpagaments des de la data d'entrada
+            $saldos = $this->saldosEntre($rebut->getDataentrada(), null, $rebut->getClub());
+            foreach ($saldos as $registre) $registre->setTotalpagaments( $registre->getTotalpagaments() - $rebut->getImport());
+	        
+            // Modificar valor Entrades del dia de pagament si existeix
+            $registre = $this->getDoctrine()->getRepository('FecdasBundle:EntitySaldos')->findOneBy(array('dataregistre' => $rebut->getDatapagament() ));
+            if ($registre) $registre->setEntrades( $registre->getEntrades() - $rebut->getImport());
+            
             $em->remove($rebut);
             $em->flush();
             $this->logEntryAuth('REBUT BAIXA OK', ' Rebut '.$rebutid);
 	                    
 	        if ($rebut->estaComptabilitzat()) {
-	                        
-	           // ENVIAR MAIL RECORDATORI 
-	                        
+ 	            // ENVIAR MAIL RECORDATORI 
 	            $this->get('session')->getFlashBag()->add('sms-notice', "El rebut s'havia enviat a comptabilitat i cal esborrar-lo. S'ha enviat un correu recordatori");
+	            
+	            $subject = ":: Acció comptabilitat pendent. Esborrar rebut ".$rebut->getNumRebut()."::";
+	            
+	            $tomails = $this->getFacturacioMails();
+	            $body = "<h1>Recordatori: Esborrar rebut a comptabilitat</h1>";
+	            $body .= "<p>El rebut ".$rebut->getNumRebut()." s'havia enviat a comptabilitat i cal esborrar-lo de comptabilitat</p>"; 
+	            
+	            $this->buildAndSendMail($subject, $tomails, $body, arrray());
 	        } else {
 	            $this->get('session')->getFlashBag()->add("sms-notice", "Rebut esborrat correctament ");
             }
@@ -3549,7 +3565,7 @@ class FacturacioController extends BaseController {
 					$rebut->updateClubPagaments( $rebut->getImport() - $rebutOriginal->getImport() );
 		
 				} else {
-					throw new \Exception('Dades incorrectes, cal revisar les dades del rebut ' ); //$form->getErrorsAsString()
+				    throw new \Exception('Dades incorrectes, cal revisar les dades del rebut '.$form->getErrors(true, true) ); 
 				}
 		
 				$em->flush();

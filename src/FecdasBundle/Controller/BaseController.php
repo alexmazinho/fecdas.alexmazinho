@@ -3405,20 +3405,20 @@ class BaseController extends Controller {
 	}
 	
 
-	protected function saldosEntre($desde, $fins, $club) {
+	protected function saldosEntre($desde, $fins = null, $club = null) {
 		$em = $this->getDoctrine()->getManager();
 		
 		// Consultar saldos entre dates per un club
 		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntitySaldos s ";
 		$strQuery .= " WHERE s.dataregistre >= :desde ";
-		$strQuery .= " AND   s.dataregistre <=  :fins ";
+		if ($fins != null) $strQuery .= " AND   s.dataregistre <=  :fins ";
 		if ($club != null) $strQuery .= " AND   s.club = :club ";
 		$strQuery .= " ORDER BY s.dataregistre ASC ";
 			
 		$query = $em->createQuery($strQuery);
-		if ($club != null) $query->setParameter('club', $club->getCodi() );
 		$query->setParameter('desde', $desde->format('Y-m-d') );
-		$query->setParameter('fins',  $fins->format('Y-m-d') );
+		if ($fins != null) $query->setParameter('fins',  $fins->format('Y-m-d') );
+		if ($club != null) $query->setParameter('club', $club->getCodi() );
 		
 		$saldos = $query->getResult();
 		

@@ -186,7 +186,7 @@ class PageController extends BaseController {
 				// Fitxer massa gran normalment
 				$this->logEntryAuth('IMPORT CSV ERROR', "Error desconegut");
 				
-				$this->get('session')->getFlashBag()->add('error-notice',"Error important el fitxer".$form->getErrorsAsString());
+				$this->get('session')->getFlashBag()->add('error-notice',"Error important el fitxer".$form->getErrors(true, true));
 			}
 
 		} else {
@@ -593,7 +593,7 @@ class PageController extends BaseController {
 	
 				if ($parte->getTipus()->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 
-				if (!$form->isValid() || !$request->request->has('parte_renew')) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador'.$form->getErrorsAsString());
+				if (!$form->isValid() || !$request->request->has('parte_renew')) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador '.$form->getErrors(true, true) ); 
 					
 				$p = $request->request->get('parte_renew');
 				$i = 0; 
@@ -1378,9 +1378,9 @@ class PageController extends BaseController {
 					}
 				}*/
 				if ($duplicat != null) $em->detach($duplicat);
-				$this->logEntryAuth('INVALID DUPLICAT', 'club ' . $currentClub . ' ' .$form->getErrorsAsString());
+				$this->logEntryAuth('INVALID DUPLICAT', 'club ' . $currentClub . ' ' .$form->getErrors(true, true));
 				
-				$this->get('session')->getFlashBag()->add('error-notice',"Dades incorrectes .".$form->getErrorsAsString());
+				$this->get('session')->getFlashBag()->add('error-notice',"Dades incorrectes ".$form->getErrors(true, true));
 			}
 
 			/* reenvia pàgina per evitar F5 */

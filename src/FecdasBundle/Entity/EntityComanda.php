@@ -141,7 +141,7 @@ class EntityComanda {
 	
 	public function comandaPagada()
 	{
-		return $this->rebut != null;
+	    return $this->rebut != null && !$this->rebut->esBaixa();
 	}
 
 	/**
@@ -365,7 +365,7 @@ class EntityComanda {
 	public function getLlistaNumsRebuts()
 	{
 		$concepte = '';
-		if ($this->comandaPagada() == true) $concepte = $this->rebut->getNumRebut().', ';
+		if ($this->comandaPagada()) $concepte = $this->rebut->getNumRebut().', ';
 		
 		foreach ($this->rebutsanulacions as $rebut) {
 			$concepte .= $rebut->getNumRebut().', '; 	
@@ -382,7 +382,7 @@ class EntityComanda {
 	public function getNumRebuts()
 	{
 		$total = 0;
-		if ($this->rebut != null) $total++;
+		if ($this->comandaPagada()) $total++;
 		
 		$total += count($this->rebutsanulacions);
 		
@@ -420,7 +420,7 @@ class EntityComanda {
 	public function getEstat()
 	{
 		if ($this->esBaixa() == true) return 'baixa';
-		return $this->comandaPagada() != true?'pendent':'';
+		return $this->comandaPagada()?'pendent':'';
 	}
 	
 	/**
@@ -452,7 +452,7 @@ class EntityComanda {
 	 */
 	public function getImportpagament()
 	{
-		return ($this->rebut != null?$this->rebut->getImport():0);
+	    return ($this->comandaPagada()?$this->rebut->getImport():0);
 	}
 	
 	/**
@@ -462,7 +462,7 @@ class EntityComanda {
 	 */
 	public function getDatapagament()
 	{
-		return ($this->rebut != null?$this->rebut->getDatapagament():null);
+	    return ($this->comandaPagada()?$this->rebut->getDatapagament():null);
 	}
 	
 	/**
@@ -510,7 +510,7 @@ class EntityComanda {
 	 * @return integer
 	 */
 	public function getTipuspagament() {
-		return ($this->rebut != null?$this->rebut->getTipuspagament():null);
+	    return ($this->comandaPagada()?$this->rebut->getTipuspagament():null);
 	}
 	
 	/**
@@ -520,7 +520,7 @@ class EntityComanda {
 	 */
 	public function isRebutValid()
 	{
-		if ($this->rebut == null) return false;
+	    if ($this->comandaPagada()) return false;
 		return abs($this->rebut->getImport() - $this->getTotalComanda() <= 0.01);
 	}
 	

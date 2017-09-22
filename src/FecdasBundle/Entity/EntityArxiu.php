@@ -5,6 +5,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use FecdasBundle\Classes\Funcions;
 use FecdasBundle\Controller\BaseController;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity 

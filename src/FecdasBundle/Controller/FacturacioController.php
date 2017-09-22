@@ -407,7 +407,8 @@ class FacturacioController extends BaseController {
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
 		$idproducte = $request->query->get('cerca', 0);
-		
+
+		$sms = '';
 		$club = null;
 		$codi = $request->query->get('clubs', ''); // filtra club
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
@@ -419,7 +420,6 @@ class FacturacioController extends BaseController {
 		$stockclub = $this->consultaStockPerProducte($club, $idproducte);
 			
 		$this->logEntryAuth('KITS CLUB', $request->getMethod().' producte: '.$idproducte.' club '.$club->getCodi().' '.$club->getNom());
-		
 		
 		if ($request->isXmlHttpRequest()) {
 			$em = $this->getDoctrine()->getManager();
@@ -925,7 +925,7 @@ class FacturacioController extends BaseController {
 		$rebuts = count($rebutsArray);
 		/*		
 		$strQuery = "SELECT COUNT(r.id) FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.comptabilitat IS NULL ";
+		$strQuery .= " WHERE r.comptabilitat IS NULL AND r.databaixa IS NULL ";
 		$strQuery .= " AND r.import != 0 ";
 		$query = $em->createQuery($strQuery);				
 		$rebuts = $query->getSingleScalarResult();*/				
@@ -1019,7 +1019,7 @@ class FacturacioController extends BaseController {
 
 			// Rebuts
 			$strQuery = "SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-			$strQuery .= " WHERE r.comptabilitat = :id ";
+			$strQuery .= " WHERE r.comptabilitat = :id AND r.databaixa IS NULL ";
 						
 			$query = $em->createQuery($strQuery)->setParameter('id', $enviament->getId());
 					
@@ -1237,7 +1237,7 @@ class FacturacioController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.import != 0 ";
+		$strQuery .= " WHERE r.import != 0 AND r.databaixa IS NULL ";
 		if ($desde != null)  $strQuery .= " AND r.datapagament >= :ini ";
 		if ($fins != null)  $strQuery .= " AND r.datapagament <= :final ";
 		if ($pendents == true) $strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara
@@ -1296,7 +1296,7 @@ class FacturacioController extends BaseController {
 		/*$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.import != 0 ";
+		$strQuery .= " WHERE r.import != 0 AND r.databaixa IS NULL ";
 		if ($enviament->getDatadesde() != null)  $strQuery .= " AND r.dataentrada >= :ini ";
 		if ($enviament->getDatafins() != null)  $strQuery .= " AND r.dataentrada <= :final ";
 		$strQuery .= " AND (r.comptabilitat IS NULL) ";	// Pendent d'enviar encara 
@@ -3219,7 +3219,7 @@ class FacturacioController extends BaseController {
 	
 		//$strQuery = "SELECT r, c FROM FecdasBundle\Entity\EntityRebut r LEFT JOIN r.comanda c ";
 		$strQuery = "SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= "WHERE 1 = 1 ";
+		$strQuery .= "WHERE r.databaixa IS NULL ";
 		//$strQuery .= "WHERE c IS NULL "; 								// Ingrés no associat a cap comanda
 		if ($codi != '') $strQuery .= " AND r.club = :codi ";
 	
@@ -3455,27 +3455,25 @@ class FacturacioController extends BaseController {
             // Actualitzar saldo club
             $rebut->updateClubPagaments(-1 * $rebut->getImport());
 
-            // Any actual   
-            //  Avui        => pagaments Club
-            //  Anterior    => pagaments Club + Saldos pagaments + saldos entrades
-            //
-            //                      saldos pagaments : >= dia dataentrada rebut
-            //                      saldos entrades : == dia pagament
-            // Anterior     => No es pot
-            
-            // Modificar valor Totalpagaments des de la data d'entrada
+            // Modificar Saldos valor Totalpagaments des de la data d'entrada
             $saldos = $this->saldosEntre($rebut->getDataentrada(), null, $rebut->getClub());
-            foreach ($saldos as $registre) $registre->setTotalpagaments( $registre->getTotalpagaments() - $rebut->getImport());
+            foreach ($saldos as $registre) {
+                $registre->setTotalpagaments( $registre->getTotalpagaments() - $rebut->getImport());
+            }
 	        
-            // Modificar valor Entrades del dia de pagament si existeix
-            $registre = $this->getDoctrine()->getRepository('FecdasBundle:EntitySaldos')->findOneBy(array('dataregistre' => $rebut->getDatapagament() ));
-            if ($registre) $registre->setEntrades( $registre->getEntrades() - $rebut->getImport());
+            // Modificar Saldos valor Entrades del dia de pagament si existeix
+            $registre = $this->getDoctrine()->getRepository('FecdasBundle:EntitySaldos')->findOneBy(array('club' => $rebut->getClub(), 'dataregistre' => $rebut->getDatapagament() ));
+            if ($registre) {
+                $registre->setEntrades( $registre->getEntrades() - $rebut->getImport());
+            } 
             
-            $em->remove($rebut);
+            $rebut->setDatabaixa($this->getCurrentDate('now'));
             $em->flush();
             $this->logEntryAuth('REBUT BAIXA OK', ' Rebut '.$rebutid);
 	                    
 	        if ($rebut->estaComptabilitzat()) {
+	            $rebut->getComptabilitat()->setRebuts($rebut->getComptabilitat()->getRebuts() - 1);
+	            
  	            // ENVIAR MAIL RECORDATORI 
 	            $this->get('session')->getFlashBag()->add('sms-notice', "El rebut s'havia enviat a comptabilitat i cal esborrar-lo. S'ha enviat un correu recordatori");
 	            
@@ -3485,7 +3483,8 @@ class FacturacioController extends BaseController {
 	            $body = "<h1>Recordatori: Esborrar rebut a comptabilitat</h1>";
 	            $body .= "<p>El rebut ".$rebut->getNumRebut()." s'havia enviat a comptabilitat i cal esborrar-lo de comptabilitat</p>"; 
 	            
-	            $this->buildAndSendMail($subject, $tomails, $body, arrray());
+	            $this->buildAndSendMail($subject, $tomails, $body, array());
+         
 	        } else {
 	            $this->get('session')->getFlashBag()->add("sms-notice", "Rebut esborrat correctament ");
             }

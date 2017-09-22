@@ -391,6 +391,7 @@ class CronController extends BaseController {
     
     		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r "; 
     		$strQuery .= " WHERE r.enviat = 0 ";
+    		$strQuery .= " AND r.databaixa IS NULL ";
     		$strQuery .= " AND r.dataentrada >= :datadesde ";
     		$strQuery .= " ORDER BY r.dataentrada ";
     		

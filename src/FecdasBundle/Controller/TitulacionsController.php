@@ -345,7 +345,8 @@ class TitulacionsController extends BaseController {
     	$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser() || $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
-    		
+    		    throw new \Exception('Operació pendent. No es poden desar les dades del curs');
+    		    
 			 	$form->handleRequest($request);
 			 	if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrors(true, true) );
 				

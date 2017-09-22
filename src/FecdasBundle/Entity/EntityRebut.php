@@ -88,6 +88,11 @@ class EntityRebut {
 	protected $datamodificacio;
 	
 	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $databaixa;
+	
+	/**
 	 * Constructor
 	 */
 	public function __construct()
@@ -162,6 +167,13 @@ class EntityRebut {
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}
+	
+	public function esBaixa()
+	{
+	    return $this->databaixa != null;
+	}
+	
+	
 	
 	/**
      * Get any
@@ -597,6 +609,26 @@ class EntityRebut {
 	public function getDatamodificacio()
 	{
 		return $this->datamodificacio;
+	}
+	
+	/**
+	 * Set databaixa
+	 *
+	 * @param \DateTime $databaixa
+	 */
+	public function setDatabaixa($databaixa)
+	{
+	    $this->databaixa = $databaixa;
+	}
+	
+	/**
+	 * Get databaixa
+	 *
+	 * @return \DateTime
+	 */
+	public function getDatabaixa()
+	{
+	    return $this->databaixa;
 	}
 	
 }

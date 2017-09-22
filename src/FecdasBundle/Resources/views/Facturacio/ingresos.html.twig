@@ -93,7 +93,7 @@
 
 		$( '#llista-ingresos' ).on( "click", ".remove-rebut", function( e ) {
 			e.preventDefault();	
-			var url = $(this).attr("href")+"?cerca="+$( "#form_clubs" ).val();
+			var url = $(this).attr("href")+"&cerca="+$( "#form_clubs" ).val();
 			var strHtml = '<h4>Segur que vols esborrar aquest rebut?</h4>';
 			strHtml += '<p>Aquest canvi no es podrà recuperar</p>';
 			

@@ -1114,7 +1114,7 @@ class BaseController extends Controller {
 		switch ($tipus) {
 			case BaseController::REBUTS:
 				$strQuery = "SELECT MAX(r.num) FROM FecdasBundle\Entity\EntityRebut r ";
-				$strQuery .= " WHERE r.datapagament >= '".$inici."' AND r.datapagament <= '".$final."'";
+				$strQuery .= " WHERE r.databaixa IS NULL AND r.datapagament >= '".$inici."' AND r.datapagament <= '".$final."'";
 				break;
 			case BaseController::FACTURES:
 				$strQuery = " SELECT MAX(f.num) FROM FecdasBundle\Entity\EntityFactura f ";
@@ -3448,7 +3448,8 @@ class BaseController extends Controller {
 		
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.dataentrada >= :desde ";
+		$strQuery .= " WHERE r.databaixa IS NULL ";
+		$strQuery .= " AND   r.dataentrada >= :desde ";
 		$strQuery .= " AND   r.dataentrada <=  :fins ";
 		if ($codiclub != '') $strQuery .= " AND   r.club = :club ";
 			
@@ -3469,7 +3470,8 @@ class BaseController extends Controller {
 		
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.dataentrada >= :canviany ";
+		$strQuery .= " WHERE r.databaixa IS NULL ";
+		$strQuery .= " AND   r.dataentrada >= :canviany ";
 		$strQuery .= " AND   r.datapagament < :canviany ";
 		if ($codiclub != '') $strQuery .= " AND r.club = :club ";
 		$strQuery .= " ORDER BY r.num ";

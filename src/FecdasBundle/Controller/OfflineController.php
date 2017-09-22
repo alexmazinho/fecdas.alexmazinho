@@ -632,7 +632,7 @@ class OfflineController extends BaseController {
 		$result .= "Total factures ".$totalFactures."<br/>";
 		$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE dataentrada >= '".$desde->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
 		$result .= "Total rebuts ".$totalRebuts."<br/>";
-		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada >= '".$desde->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE databaixa IS NULL AND dataentrada >= '".$desde->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
 		
 		return new Response($result);
 	}
@@ -736,10 +736,10 @@ class OfflineController extends BaseController {
 			$clubsArray[ $club->getCodi() ][ $data->format('Y-m-d') ] = $saldo;
 		}	
 		
-		//SELECT COUNT(*) FROM m_rebuts WHERE dataentrada < '2016-01-01 00:00:00' AND datapagament >= '2016-01-01 00:00:00'; ==> 0
+		//SELECT COUNT(*) FROM m_rebuts WHERE databaixa IS NULL AND dataentrada < '2016-01-01 00:00:00' AND datapagament >= '2016-01-01 00:00:00'; ==> 0
 		/*	
 		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.dataentrada < :desde ";
+		$strQuery .= " WHERE r.databaixa IS NULL AND r.dataentrada < :desde ";
 		$strQuery .= " AND   r.datapagament >= :desde ";
 		if ($codiclub != '') $strQuery .= " AND r.club = :club ";
 				
@@ -750,7 +750,7 @@ class OfflineController extends BaseController {
 		$rebutsAcumularInici = $query->getResult();			
 			
 		$result .= "Total de rebuts per acumular a l'inici ".count($rebutsAcumularInici)."<br/>";
-		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada < '".$desdeTime."' AND datapagament >= '".$desdeTime."'; <br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE databaixa IS NULL AND dataentrada < '".$desdeTime."' AND datapagament >= '".$desdeTime."'; <br/>";
 		
 		foreach ($rebutsAcumularInici as $rebutAcumularInici) {
 			$club = $rebutAcumularInici->getClub();
@@ -926,7 +926,7 @@ class OfflineController extends BaseController {
 					$clubs[$club->getCodi()]['entrades'] += $import;
 					
 					if ($rebut->getDatapagament()->format('Y') < $current->format('Y')) {
-						// Només per a rebuts posteriors al recull dels saldos per inicialitzar 2016-04-01 => SELECT * FROM `m_rebuts` WHERE dataentrada >= '2016-04-01 00:00:00' AND YEAR(datapagament) < 2016; // 0
+						// Només per a rebuts posteriors al recull dels saldos per inicialitzar 2016-04-01 => SELECT * FROM `m_rebuts` WHERE databaixa IS NULL AND  dataentrada >= '2016-04-01 00:00:00' AND YEAR(datapagament) < 2016; // 0
 						if ($rebut->getDataentrada()->format('Y-m-d H:i:s') > '2016-04-01 00:00:00') $clubs[$club->getCodi()]['romanent'] += $import;  // Romanent
 					} else {
 						$clubs[$club->getCodi()]['totalpagaments'] += $import;
@@ -983,9 +983,9 @@ class OfflineController extends BaseController {
 		$result .= "Total factures anteriors ".$totalFacturesAnteriors."<br/>";
 		$result .= "        check: SELECT COUNT(*) FROM m_factures WHERE YEAR(dataentrada) < YEAR(datafactura) AND datafactura >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND datafactura < '".$current->format('Y-m-d H:i:s')."';<br/>";
 		$result .= "Total rebuts ".$totalRebuts."<br/>";
-		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE dataentrada >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE databaixa IS NULL AND dataentrada >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND dataentrada < '".$current->format('Y-m-d H:i:s')."';<br/>";
 		$result .= "Total rebuts anteriors ".$totalRebutsAnteriors."<br/>";
-		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE YEAR(dataentrada) < YEAR(datapagament) AND datapagament >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND datapagament < '".$current->format('Y-m-d H:i:s')."';<br/>";
+		$result .= "        check: SELECT COUNT(*) FROM m_rebuts WHERE databaixa IS NULL AND YEAR(dataentrada) < YEAR(datapagament) AND datapagament >= '".$inicirevisio->format('Y-m-d H:i:s')."' AND datapagament < '".$current->format('Y-m-d H:i:s')."';<br/>";
 		
 		
 		return new Response($result);
@@ -1014,7 +1014,8 @@ class OfflineController extends BaseController {
 		
 		// Consultar factures entrades entrats dia current
 		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.datapagament >= :desde ";
+		$strQuery .= " WHERE r.databaixa IS NULL ";
+		$strQuery .= " AND   r.datapagament >= :desde ";
 		$strQuery .= " AND   r.datapagament <  :fins ";
 		$strQuery .= " AND   r.dataentrada <  '2016-01-01 00:00:00' ";
 			

@@ -71,6 +71,11 @@ class EntityMetaPersona {
 		$this->docencies = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 
+	public function __toString() {
+	    $valor = $this->getCognomsNom();
+	    return ($valor==null?"":$this->id.$valor);
+	}
+	
 	public function getPersonesSortedById($baixes = false)
     {
     	if (count($this->persones) == 1) return array($this->persones[0]);		
@@ -274,11 +279,6 @@ class EntityMetaPersona {
 		}
         return $mails;
     }
-
-
-	public function __toString() {
-		return $this->id;
-	}
 
     /**
      * Get id

@@ -1404,7 +1404,7 @@ class EntityClub {
      */
     public function getRomanent()
     {
-    	return $this->romanent;
+        return $this->romanent;
     }
     
     /**
@@ -1424,7 +1424,7 @@ class EntityClub {
      */
     public function getTotalpagaments()
     {
-    	return $this->totalpagaments;
+        return $this->totalpagaments;
     }
     
     /**
@@ -1444,7 +1444,7 @@ class EntityClub {
      */
     public function getTotalllicencies()
     {
-    	return $this->totalllicencies;
+        return $this->totalllicencies;
     }
 
     /**
@@ -1464,7 +1464,7 @@ class EntityClub {
      */
     public function getTotalduplicats()
     {
-    	return $this->totalduplicats;
+        return $this->totalduplicats;
     }
     
     /**
@@ -1484,7 +1484,7 @@ class EntityClub {
      */
     public function getTotalaltres()
     {
-    	return $this->totalaltres;
+        return $this->totalaltres;
     }
     
     /**

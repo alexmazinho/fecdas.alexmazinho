@@ -890,7 +890,7 @@ class CronController extends BaseController {
 				// $dadesAnyAnterior => comandes entrades 2016 però amb factura 2015 ¿?
 				
 				$dades = $club->getDadesCurrent(true, false, $current);  // Generar errors
-				
+			
 				//$dadesAnySeguent = $club->getDadesAnySeguent($current);  // Només poden ser comandes de llicències
 				$dadesAnySeguent = $club->getDadesCurrent(true, false, $current + 1);  // Només poden ser comandes de llicències
 				
@@ -933,7 +933,7 @@ class CronController extends BaseController {
 					$row['sumacomandescalc']	= number_format($dades['importpartes']+$dades['importduplicats']+$dades['importaltres'], 2, ',', '.');
 					$row['sumacomandes'] 		= number_format($dades['import'], 2, ',', '.');
 				}
-					
+
 				if ($format == 'html') {
 					$row['sumafactures']	= number_format($dades['importfactures'], 2, ',', '.') .' '.
 											number_format($dades['importanulacions'], 2, ',', '.').' = '.
@@ -943,7 +943,7 @@ class CronController extends BaseController {
 					$row['sumaanulacions']	= number_format($dades['importanulacions'], 2, ',', '.');
 					$row['sumafacturat']	= number_format($dades['importfactures']+$dades['importanulacions'], 2, ',', '.');
 				}
-				
+
 				// Comprovació => comandes facturades == suma factures
 				$row['errorfacturacio']		=  abs($dades['import'] - ($dades['importfactures']+$dades['importanulacions'])) < 0.01?'':
 											number_format(abs($dades['import'] - ($dades['importfactures']+$dades['importanulacions'])), 2, ',', '.');
@@ -954,7 +954,7 @@ class CronController extends BaseController {
 					$row['sumafacturesseguent'] 	= number_format($dadesAnySeguent['importfactures'], 2, ',', '.');
 					$row['sumaanulacionsseguent'] 	= number_format($dadesAnySeguent['importanulacions'], 2, ',', '.');
 				}	
-				
+
 				// Comprovació => comandes facturades any següent == suma factures any següent 
 				$row['errorfacturacioseguent']	= abs($dadesAnySeguent['import'] - ($dadesAnySeguent['importfactures']+$dadesAnySeguent['importanulacions'])) < 0.01?'':
 														number_format(abs($dadesAnySeguent['import'] - ($dadesAnySeguent['importfactures']+$dadesAnySeguent['importanulacions'])), 2, ',', '.');
@@ -967,7 +967,7 @@ class CronController extends BaseController {
 					$row['sumapagaments']		= number_format($dades['pagaments'], 2, ',', '.');
 					$row['sumapagamentsseguent']= number_format($dadesAnySeguent['pagaments'], 2, ',', '.');
 				}					
-					
+
 				// Comprovacions => totalpagaments == sumapagaments + sumapagaments any següent
 				$row['errorpagaments']	= abs($club->getTotalpagaments() - $dades['pagaments'] - $dadesAnySeguent['pagaments']) < 0.01?'':number_format(abs($club->getTotalpagaments() - $dades['pagaments'] - $dadesAnySeguent['pagaments']), 2, ',', '.');
 
@@ -993,22 +993,21 @@ class CronController extends BaseController {
 				$noutotalduplicats 	= $dadesAnySeguent['importduplicats'];
 				$noutotalaltres 	= $dadesAnySeguent['importaltres'];
 				$nousaldocalculat 	= $nouromanent + $dadesAnySeguent['pagaments'] - $noutotalllicencies - $noutotalduplicats - $noutotalaltres;
-				 
+
 				  
 				if (abs($noutotalanyseguent - $noutotalllicencies - $noutotalduplicats - $noutotalaltres) > 0.01) {
 					$noutotalllicencies	= 'ERROR REVISAR';
 					$noutotalduplicats 	= 'ERROR REVISAR';
 					$noutotalaltres 	= 'ERROR REVISAR';
 				}
-				
+
 				$row['updateromanent'] = number_format($nouromanent, 2, ',', '.');
 				$row['updatetotalpagaments'] = number_format($dadesAnySeguent['pagaments'], 2, ',', '.');
-				$row['updatetotalllicencies'] = number_format($noutotalllicencies, 2, ',', '.');
-				$row['updatetotalduplicats'] = number_format($noutotalduplicats, 2, ',', '.');
-				$row['updatetotalaltres'] = number_format($noutotalaltres, 2, ',', '.');
+                $row['updatetotalllicencies'] = is_numeric($noutotalllicencies)?number_format($noutotalllicencies, 2, ',', '.'):$noutotalllicencies;
+                $row['updatetotalduplicats'] = is_numeric($noutotalduplicats)?number_format($noutotalduplicats, 2, ',', '.'):$noutotalduplicats;
+                $row['updatetotalaltres'] = is_numeric($noutotalaltres)?number_format($noutotalaltres, 2, ',', '.'):$noutotalaltres;
 				$row['updateajustsubvencions'] = 0;
 				$row['saldoresultant'] = number_format( $nousaldocalculat, 2, ',', '.'); // romanent + pagaments + subvencions - llicencies - duplicats - altres 
-
 				
 				if (abs($club->getSaldo() - $nousaldocalculat) > 0.01) {
 					$row['saldoresultant']	= 'ERROR REVISAR';
@@ -1022,7 +1021,7 @@ class CronController extends BaseController {
 				if ($format == 'html') $sortidaHtml .= "<tr><td>".implode("</td><td>", $row)."</td></tr>"; 
 				
 				$total++;
-				
+
 				if ($update) {
 					$club->setRomanent($nouromanent);
 					$club->setTotalpagaments($dadesAnySeguent['pagaments']);

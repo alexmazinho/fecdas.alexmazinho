@@ -83,7 +83,12 @@ class PageController extends BaseController {
 		$em = $this->getDoctrine()->getManager();
 		
 		/* Form importcsv */
-		$currentClub = $this->getCurrentClub();
+		$currentClub = null;
+		$codi = $request->query->get('cerca', ''); // Admin filtra club
+		if ($this->isCurrentAdmin() && $codi != '') {  // Users normals només consulten comandes pròpies
+		    $currentClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		if ($currentClub == null) $currentClub = $this->getCurrentClub();
 		$dataalta = $this->getCurrentDate('now');
 		$parte = null;
 		
@@ -106,7 +111,7 @@ class PageController extends BaseController {
 				}
 		}
 		
-		$llistatipus = BaseController::getLlistaTipusParte($this->getCurrentClub(), $dataalta, $this->isCurrentAdmin());
+		$llistatipus = BaseController::getLlistaTipusParte($currentClub, $dataalta, $this->isCurrentAdmin());
 		
 		$atributs = array('accept' => '.csv');
 		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
@@ -126,6 +131,8 @@ class PageController extends BaseController {
 						}, 'choice_label' => 'descripcio', 'required'  => count($llistatipus) == 1
 					));
 		
+		$this->addClubsActiusForm($formbuilder, $currentClub);
+		
 		$form = $formbuilder->getForm();
 		
 		if ($request->getMethod() == 'POST') {
@@ -138,7 +145,6 @@ class PageController extends BaseController {
 					if ($file == null) throw new \Exception('Cal escollir un fitxer');
 					
 					if (!$file->isValid()) throw new \Exception('La mida màxima del fitxer és ' . $file->getMaxFilesize());
-
 					$this->logEntryAuth('IMPORT CSV SUBMIT', $file->getFileName());
 					
 					$tipusparte = $form->get('tipus')->getData();
@@ -154,7 +160,6 @@ class PageController extends BaseController {
 					$temppath = $file->getPath()."/".$file->getFileName();
 					
 					$this->importFileCSVData($temppath, $parte);					
-					
 					$this->get('session')->getFlashBag()->add('sms-notice','Fitxer correcte, validar dades i confirmar per tramitar les llicències');
 					
 					$tempname = $this->getCurrentDate()->format('Ymd')."_".$currentClub->getCodi()."_".$file->getFileName();
@@ -164,13 +169,13 @@ class PageController extends BaseController {
 					/* Generate URL to send CSV confirmation */
 					
 					$urlconfirm = $this->generateUrl('FecdasBundle_confirmcsv', array(
-							'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->format('YmdHi'),
+					        'club' => $currentClub->getCodi(), 'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->format('YmdHi'),
 							'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
-					
 					// Redirect to confirm page		
 					return $this->render('FecdasBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
+				
 				} catch (\Exception $e) {
 					/*if ($factura != null) $em->detach($factura);
 					if ($parte != null) $em->detach($parte);*/
@@ -202,18 +207,23 @@ class PageController extends BaseController {
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
-		if (!$request->query->has('tipus') or 
-			!$request->query->has('dataalta') or !$request->query->has('tempfile'))
+		if (!$request->query->has('club') || 
+		    !$request->query->has('tipus') || 
+			!$request->query->has('dataalta') || 
+		    !$request->query->has('tempfile'))
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
 		/* Registre abans de tractar fitxer per evitar flush en cas d'error */
 		$this->logEntryAuth('CONFIRM CSV', $request->query->get('tempfile'));
 		
-		$currentClub = $this->getCurrentClub();
+		
+		$codi = $request->query->get('club', ''); // Admin filtra club
+		if ($this->isCurrentAdmin() && $codi != '') {  // Users normals només consulten comandes pròpies
+		    $currentClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		if ($currentClub == null) $currentClub = $this->getCurrentClub();
 		
 		$tipusparte = $request->query->get('tipus');
 		$dataalta = \DateTime::createFromFormat('YmdHi', $request->query->get('dataalta'));
-		
 		$temppath = $request->query->get('tempfile');
 		
 		try {
@@ -222,7 +232,7 @@ class PageController extends BaseController {
 			$tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find($tipusparte);
 			
 			$parte = $this->crearComandaParte($dataalta, $tipus, $currentClub, 'Importació llicències');
-			
+
 			$this->crearFactura($dataalta, $parte);
 			
 			$this->importFileCSVData($temppath, $parte, true);
@@ -230,13 +240,12 @@ class PageController extends BaseController {
 			$parte->setComentaris('Importació llicències:'.' '.$parte->getComentariDefault());
 			
 			$em->flush();
-			
+
 			$this->get('session')->getFlashBag()->add('sms-notice',"Llicències enviades correctament");
 			
 			return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')));
 
 		} catch (\Exception $e) {
-
 			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 		}
 		
@@ -279,6 +288,8 @@ class PageController extends BaseController {
 				
 				if ($metapersona == null) {
 					$metapersona = new EntityMetaPersona( $row['dni'] );
+					
+					if ($persist == true) $em->persist($metapersona);
 				} else {
 				    $persona = $metapersona->getPersonaClub($club);	
 				}	
@@ -307,7 +318,7 @@ class PageController extends BaseController {
 				if (isset($row['cp']) and $row['cp'] != null and $row['cp'] != "") $persona->setAddrcp($row['cp']);
 				if (isset($row['provincia']) and $row['provincia'] != null and $row['provincia'] != "") $persona->setAddrprovincia(mb_convert_case($row['provincia'], MB_CASE_TITLE, "utf-8"));
 				if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
-				
+
 				$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'S';
 				$this->validarDadesPersona($persona, $estranger);
 			
@@ -322,8 +333,8 @@ class PageController extends BaseController {
 		
 				$llicencia->setDatamodificacio($this->getCurrentDate());
 				$parte->addLlicencia($llicencia);
-							
-				$this->addParteDetall($parte, $llicencia);
+				
+                $this->addParteDetall($parte, $llicencia);
 		
 				// Errors generen excepció
 				$this->validaParteLlicencia($parte, $llicencia);
@@ -1181,7 +1192,12 @@ class PageController extends BaseController {
         if ($persona->getMail() != null) {
         	$mails = explode(";", $persona->getMail());
 			foreach ($mails as $mail) {
-				if (trim($mail) != "" && filter_var(trim($mail), FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".trim($mail)."- no és vàlida");	
+			    $posArroba = strpos($mail, '@');
+			    $posGuio = strpos($mail, '-');
+			    
+			    if ($posArroba !== false && $posGuio !== false && $posGuio < $posArroba) $mail = str_replace('-', '', $mail); // Reemplazar "-" abans de @ perquè surten invàlids
+			    
+			    if (trim($mail) != "" && filter_var(trim($mail), FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".trim($mail)."- no és vàlida");	
 			}
 		}
 		

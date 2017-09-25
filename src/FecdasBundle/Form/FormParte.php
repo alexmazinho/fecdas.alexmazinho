@@ -65,7 +65,7 @@ class FormParte extends AbstractType {
 				
 				$club = $parte->getClubparte();
 				if (!$this->admin || !$parte->esNova() || !$parte->isAllowEdit()) {
-				    $form->add('clubs', 'entity', array(
+				    $form->add('club', 'entity', array(
         				        'class' 		=> 'FecdasBundle:EntityClub',
 				                'query_builder' => function($repository) use ($club) {
             				        return $repository->createQueryBuilder('c')
@@ -78,7 +78,7 @@ class FormParte extends AbstractType {
         				        'attr'		    => array('readonly' => true)
 				        ));
 				} else {
-    				$form->add('clubs', 'entity', array(
+    				$form->add('club', 'entity', array(
         				    'class' 		=> 'FecdasBundle:EntityClub',
         				    'query_builder' => function($repository) {
             				    return $repository->createQueryBuilder('c')

@@ -16,6 +16,10 @@ class OfflineController extends BaseController {
     public function historictitolserrorsAction(Request $request) {
         // http://www.fecdas.dev/historictitolserrors?max=10&pag=1
         // http://www.fecdas.dev/historictitolserrors?id=1234
+        /*
+         * http://www.fecdas.dev/historictitolserrors?max=1000&pag=1
+         * http://www.fecdas.dev/historictitolserrors?max=1000&pag=2
+         */
         // Script de migració. Executar per migrar errors i desactivar
         
         if (!$this->isAuthenticated())
@@ -49,6 +53,7 @@ class OfflineController extends BaseController {
                 
         $cursos = array();
         $errors = array();
+        $warnings = array();
         $ids = array();
          
         $federacio = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
@@ -72,11 +77,12 @@ class OfflineController extends BaseController {
                 
                 // Cercar club. Si no es troba no crear dades personals
                 $club = null;
+                $clubhistoric = '';
                 if ($currentTitolError['club'] == '') {
                     // Validar Federació per a cursos Instructors  => Titols tipus 'TE'
-                    if (!$titol->esInstructor()) throw new \Exception($id.'#ERROR. Club no trobat curs no tècnic: '.$currentTitolError['numcurso'].' '.$currentTitolError['club'].' '.$currentTitolError['abreviatura']);
-                    
-                    $club = $federacio;
+                    //if (!$titol->esInstructor()) throw new \Error($id.'#WARN. Club no trobat ("'.$currentTitolError['club'].'") curs no tècnic: '.$currentTitolError['numcurso'].' '.$currentTitolError['club'].' '.$currentTitolError['abreviatura']);
+                    if (!$titol->esInstructor()) $clubhistoric = 'Sense informació del club';
+                    else $club = $federacio;
                 }
                 else {        
                     $nomClub = str_replace(".", "", $currentTitolError['club']);
@@ -119,6 +125,8 @@ class OfflineController extends BaseController {
                     
                     $naixement = \DateTime::createFromFormat('Y-m-d', $currentTitolError['nacimiento']); // YYYY-MM-DD
                     $persona->setDatanaixement($naixement);
+                    
+                    $persona->setDatamodificacio($this->getCurrentDate('now'));
                     
                     if ($currentTitolError['email'] != '' && 
                         $currentTitolError['email'] != null) $persona->setMail($currentTitolError['email']);
@@ -199,7 +207,7 @@ class OfflineController extends BaseController {
                     $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
                             
                     if ($curs == null) {
-                        $curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club);
+                        $curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club, $clubhistoric);
                         $curs->setNum($num);
                         $curs->setValidat(true);
                         $curs->setFinalitzat(true);
@@ -215,7 +223,7 @@ class OfflineController extends BaseController {
                 }
                         
                 // Crear titulacions
-                $titulacio = new EntityTitulacio($persona, $curs);
+                $titulacio = new EntityTitulacio($persona->getMetapersona(), $curs);
                 $titulacio->setNum($currentTitolError['numtitulo']);
                 $titulacio->setDatasuperacio($datafins);
                         
@@ -223,6 +231,9 @@ class OfflineController extends BaseController {
                         
                 $titulacions++;
                         
+            } catch (\Error $e) {
+                
+                $warnings[ $id ] = $e->getMessage();
             } catch (\Exception $e) {
                 //$em->getConnection()->rollback();
                 //echo "Problemes durant la transacció : ". $e->getMessage();
@@ -232,14 +243,21 @@ class OfflineController extends BaseController {
                     
         }
                 
-        
-            
+        $html = "";
         if (count($errors) != 0) {
-            //$em->flush();
-            return new Response("KO, registres ".count($ids)."(errors ".count($errors).")<br/><br/>".implode("<br/>",$errors));
+            $html = "KO, errors ".count($errors)."<br/><br/>".implode("<br/>",$errors);
         }
         
-        /*
+        if (count($warnings) != 0) {
+            $html = "WARN, avisos ".count($warnings)."<br/><br/>".implode("<br/>",$warnings);
+        }
+        
+        if ($html != "") {
+            $html = "TOTAL registres tractats: ".count($ids)."<br/><hr><br/>".$html;
+            //return new Response($html);
+        }
+        
+        
         if (count($ids) != 0) {
             $sql = "UPDATE importtitulacions SET error = 'Corregit' WHERE id IN (".implode(",", $ids).") ";
             $stmt = $em->getConnection()->prepare($sql);
@@ -247,18 +265,18 @@ class OfflineController extends BaseController {
         }
         
         $em->flush();
-        */        
-        return new Response("OK pesones noves ".$personesNoves." cursos nous ".$cursosNous." i titulacions ".$titulacions );
+                
+        return new Response("OK pesones noves ".$personesNoves." cursos nous ".$cursosNous." i titulacions ".$titulacions."<br/><hr><br/>".$html );
     }
     
 	public function historictitolsAction(Request $request) {
 		// http://www.fecdas.dev/historictitols?max=10&pag=1
 		// http://www.fecdas.dev/historictitols?id=1234
 		// Script de migració. Executar per migrar i desactivar
-	
+
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
+
 		if (!$this->isCurrentAdmin())
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
@@ -270,6 +288,7 @@ class OfflineController extends BaseController {
 		$offset = $max * ($pag -1);
 		
 		//$batchSize = 20;
+		$federacio = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 		
 		$strQuery  = " SELECT id, federado, dni, numcurso, iniciocurso, fincurso, ";
 		$strQuery .= " club, abreviatura, numtitulo ";
@@ -342,9 +361,11 @@ class OfflineController extends BaseController {
 						 $clubhistoric = $currentTitol['club'];
 					}
 				} else {
-					$clubhistoric = 'Sense informació del club';
+				    // Mirar si llicència tipus tècnic => club sense informar FECDAS
+				    // Validar Federació per a cursos Instructors  => Titols tipus 'TE'
+				    if (!$titol->esInstructor()) $clubhistoric = 'Sense informació del club';
+				    else $club = $federacio;
 				}
-				
 				
 				$datadesde = $currentTitol['iniciocurso'] != ''?\DateTime::createFromFormat('Y-m-d', $currentTitol['iniciocurso']):null;
 				$datafins = $currentTitol['fincurso'] != ''?\DateTime::createFromFormat('Y-m-d', $currentTitol['fincurso']):null;  

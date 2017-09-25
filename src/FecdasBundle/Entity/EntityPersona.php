@@ -64,7 +64,7 @@ class EntityPersona {
 	protected $addradreca;
 
 	/**
-	 * @ORM\Column(type="string", length=25, nullable=true)
+	 * @ORM\Column(type="string", length=50, nullable=true)
 	 */
 	protected $addrpob;
 	
@@ -507,7 +507,7 @@ class EntityPersona {
      */
     public function setNom($nom)
     {
-        $this->nom = $nom;
+        $this->nom = substr($nom,0,20);
     }
 
     /**
@@ -527,7 +527,7 @@ class EntityPersona {
      */
     public function setCognoms($cognoms)
     {
-        $this->cognoms = $cognoms;
+        $this->cognoms = substr($cognoms,0,30);
     }
 
     /**
@@ -667,7 +667,7 @@ class EntityPersona {
      */
     public function setAddradreca($addradreca)
     {
-        $this->addradreca = $addradreca;
+        $this->addradreca = substr($addradreca,0,75);
     }
 
     /**
@@ -687,7 +687,7 @@ class EntityPersona {
      */
     public function setAddrpob($addrpob)
     {
-        $this->addrpob = $addrpob;
+        $this->addrpob = substr($addrpob,0,50);
     }
 
     /**
@@ -707,7 +707,7 @@ class EntityPersona {
      */
     public function setAddrcp($addrcp)
     {
-        $this->addrcp = $addrcp;
+        $this->addrcp = substr($addrcp,0,5);
     }
 
     /**
@@ -727,7 +727,7 @@ class EntityPersona {
      */
     public function setAddrprovincia($addrprovincia)
     {
-        $this->addrprovincia = $addrprovincia;
+        $this->addrprovincia = substr($addrprovincia,0,20);
     }
 
     /**
@@ -747,7 +747,7 @@ class EntityPersona {
      */
     public function setAddrcomarca($addrcomarca)
     {
-        $this->addrcomarca = $addrcomarca;
+        $this->addrcomarca = substr($addrcomarca,0,50);
     }
 
     /**

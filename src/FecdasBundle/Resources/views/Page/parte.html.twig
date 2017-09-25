@@ -72,8 +72,8 @@
         <div class="row">
 			<div class="col-md-3 col-xs-6">
 		  		<div class="form-group">
-		    	    {{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
-				    {{ form_widget(form.clubs, { 'attr': {'class': 'form-control', 'autocomplete': 'off'} }) }}
+		    	    {{ form_label(form.club, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+				    {{ form_widget(form.club, { 'attr': {'class': 'form-control', 'autocomplete': 'off'} }) }}
 				</div>
 			</div>
 		</div>
@@ -193,7 +193,7 @@
     			function (ct) {
     				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
     				
-    				queryParteTipus(url, $("select#parte_clubs").val(), ct, 
+    				queryParteTipus(url, $("select#parte_club").val(), ct, 
     	    		function( data ) {
     	        		//callbackko
     	        		
@@ -220,15 +220,15 @@
     	// Comanda filtre clubs disponible per admin's
 		{% if admin == true  %} 
 
-			if ($("select#parte_clubs option").length > 1) {
-    			$("select#parte_clubs").select2({
+			if ($("select#parte_club option").length > 1) {
+    			$("select#parte_club").select2({
     				minimumInputLength: 2,
     				allowClear: true,
     				placeholder: 'Escollir club'
     			});
 			}
 
-			$("select#parte_clubs").change(function() {
+			$("select#parte_club").change(function() {
 
 				var url = "{{ path('FecdasBundle_gettipuspartes') }}";
 				

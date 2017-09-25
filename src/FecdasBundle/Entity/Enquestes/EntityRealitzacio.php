@@ -21,9 +21,9 @@ class EntityRealitzacio {
 
 	
 	/**
-	 * @ORM\Column(type="string", length=50)
+	 * @ORM\Column(type="integer")
 	 * @ORM\ManyToOne(targetEntity="EntityUser")
-	 * @ORM\JoinColumn(name="usuari", referencedColumnName="usuari")
+	 * @ORM\JoinColumn(name="usuari", referencedColumnName="id")
 	 */ 
 	protected $usuari;	// Mail del club
 	

@@ -476,13 +476,13 @@ class BaseController extends Controller {
 	
 		/* Llista tipus parte administrador en funció del club seleccionat. Llista d'un club segons club de l'usuari */
 		if ($club == null) return $llistatipus;  // Sense info del club!!?
-	
+
 		$tipuspartes = $club->getTipusparte();
 		foreach ($tipuspartes as $tipusparte) {
             if ($tipusparte->getActiu() == true &&
 				$tipusparte->validarPreusAny($any) == true) {
 				    
-				if ($tipusparte->getAdmin() == true) {
+				if ($tipusparte->getAdmin()) {
 				    if ($admin) array_push($llistatipus, $tipusparte->getId());
 				} else {
     				if ($tipusparte->getEs365() == true) {
@@ -1302,7 +1302,7 @@ class BaseController extends Controller {
 			/* FEDE INFO */
 			
 			$tbl = '<p align="right" style="padding:0;"><span style="font-size:16px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
-			$tbl .= '<span style="font-size:11px;">Moll de la Vela, 1 (Zona Forum)<br/>';
+			$tbl .= '<span style="font-size:11px;">Moll de la Vela, 1 (Zona Fòrum)<br/>';
 			$tbl .= '08930 Sant Adrià de Besòs<br/>';
 			$tbl .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
 			$tbl .= 'Adreça electrònica: info@fecdas.cat<br/>';
@@ -1730,7 +1730,7 @@ class BaseController extends Controller {
 			
 			/* FEDE INFO */
 			$txt = '<p align="left" style="padding:0;line-height: 1"><span style="font-size:12px;">FEDERACIÓ CATALANA<br/>D\'ACTIVITATS SUBAQUÀTIQUES</span><br/>';
-			$txt .= '<span style="font-size:6.5px;">Moll de la Vela, 1 (Zona Forum)<br/>';
+			$txt .= '<span style="font-size:6.5px;">Moll de la Vela, 1 (Zona Fòrum)<br/>';
 			$txt .= '08930 Sant Adrià de Besòs<br/>';
 			$txt .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
 			$txt .= 'Adreça electrònica: info@fecdas.cat<br/>';
@@ -2333,10 +2333,12 @@ class BaseController extends Controller {
 								
 			// Add a page
 			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
-
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL ||
 				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TIPUS_F ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR) $this->printPlasticGeneral($pdf, $llicencia);
+			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
+			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME) {
+			        $this->printPlasticGeneral($pdf, $llicencia);
+			}
 				
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
 				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {

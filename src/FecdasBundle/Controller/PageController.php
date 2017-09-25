@@ -69,7 +69,7 @@ class PageController extends BaseController {
 
 	public function importcsvAction(Request $request) {
 		
-		$request->getSession()->getFlashBag()->clear();
+		//$request->getSession()->getFlashBag()->clear();
 		
 		if ($this->isAuthenticated() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
@@ -84,11 +84,7 @@ class PageController extends BaseController {
 		
 		/* Form importcsv */
 		$currentClub = null;
-		$codi = $request->query->get('cerca', ''); // Admin filtra club
-		if ($this->isCurrentAdmin() && $codi != '') {  // Users normals només consulten comandes pròpies
-		    $currentClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
-		}
-		if ($currentClub == null) $currentClub = $this->getCurrentClub();
+		$codi = '';
 		$dataalta = $this->getCurrentDate('now');
 		$parte = null;
 		
@@ -109,7 +105,17 @@ class PageController extends BaseController {
 				if (isset($formdata['tipus'])) {
 					$tipusparte = $em->getRepository('FecdasBundle:EntityParteType')->find($formdata['tipus']);
 				}
+				if (isset($formdata['clubs'])) {
+				    $codi = $formdata['clubs']; // Admin filtra club
+				}
+		} else {
+		    $codi = $request->query->get('cerca', ''); // Admin filtra club
 		}
+		
+		if ($this->isCurrentAdmin() && $codi != '') {  // Users normals només consulten comandes pròpies
+		    $currentClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		}
+		if ($currentClub == null) $currentClub = $this->getCurrentClub();
 		
 		$llistatipus = BaseController::getLlistaTipusParte($currentClub, $dataalta, $this->isCurrentAdmin());
 		
@@ -172,6 +178,7 @@ class PageController extends BaseController {
 					        'club' => $currentClub->getCodi(), 'tipus' => $parte->getTipus()->getId(), 'dataalta' => $parte->getDataalta()->format('YmdHi'),
 							'tempfile' => $this->getTempUploadDir()."/".$tempname
 					));
+			
 					// Redirect to confirm page		
 					return $this->render('FecdasBundle:Page:importcsvconfirm.html.twig',
 							$this->getCommonRenderArrayOptions(array('parte' => $parte, 'urlconfirm' => $urlconfirm)));
@@ -757,11 +764,14 @@ class PageController extends BaseController {
 
 			$id = is_numeric($p['id']) && $p['id'] > 0?$p['id']:0;
 			$lid = is_numeric($l['id']) && $l['id'] > 0?$l['id']:0;
-			if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
-	
+			//if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
+			$currentPerson = isset($l['persona']) && is_numeric($l['persona']) && $l['persona'] > 0?$l['persona']:0;
+			
+			
 			if ($lid == 0) {
 				// Insert
 				if ($id == 0) {
+
 					// Nou parte
 					if (!isset($p['dataalta'])) throw new \Exception('Error data alta. Contacti amb la Federació');
 					if (!isset($p['tipus'])) throw new \Exception('Error tipus. Contacti amb la Federació</div>');
@@ -773,9 +783,10 @@ class PageController extends BaseController {
                     
 					$club = null;
 					$clubparte = null;
-					if ($this->isCurrentAdmin() && isset($p['clubs'])) {  // Admins poden escollir el club
-                        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($p['clubs']);
-                        
+
+					if ($this->isCurrentAdmin() && isset($p['club'])) {  // Admins poden escollir el club
+                        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($p['club']);
+
                         if ($tipus->esLlicenciaDespeses()) { // Comanda FECDAS, parte al club. Llicències col·laboradors FECDAS A compte de despeses 659.0002 de FECDAS
                             $clubparte = $club;
                             $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
@@ -784,11 +795,12 @@ class PageController extends BaseController {
 					} else {
     					$club = $this->getCurrentClub();
 					}
+					if ($clubparte == null) $clubparte = $club;
+					
 					// Crear parte nou per poder carregar llista
 					$parte = $this->crearComandaParte($partedataalta, $tipus, $club, 'Comanda llicències');
 
-					if ($clubparte != null && $clubparte != $club)	$parte->setClubparte($clubparte); // Pot ser diferent del club de la comanda  
-					
+					$parte->setClubparte($clubparte); // Pot ser diferent del club de la comanda  
 					$this->crearFactura($partedataalta, $parte);
 				} else {
 					$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($id);
@@ -799,7 +811,6 @@ class PageController extends BaseController {
 				// Noves llicències, permeten edició no pdf
 				$llicencia = $this->prepareLlicencia($tipusid, $parte->getDataCaducitat());
 				$em->persist($llicencia);
-				
 				$parte->addLlicencia($llicencia);
 
 			} else {
@@ -815,11 +826,10 @@ class PageController extends BaseController {
 				
 			$tipusid = $parte->getTipus()->getId();
 			$partedataalta = $parte->getDataalta();
-	
+
 			// Person submitted
 			if ($currentPerson > 0) {
 				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($currentPerson);
-				if ($persona == null) throw new \Exception('No s\'ha trobat les dades personals '.$currentPerson);
 				$llicencia->setPersona($persona);
 			}
 				
@@ -840,10 +850,11 @@ class PageController extends BaseController {
 					
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència esborrada correctament');
 				} else {
+				    if ($llicencia->getPersona() == null) throw new \Exception('No s\'ha pogut escollir aquesta persona '.$currentPerson);
+				    
 					// Update / insert llicència
 					$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
 					$formLlicencia = $this->createForm(new FormLlicencia($this->isCurrentAdmin()),$llicencia);
-
 					$form->handleRequest($request);
 					$formLlicencia->handleRequest($request);
 	

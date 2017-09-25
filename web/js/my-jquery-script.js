@@ -1379,7 +1379,7 @@
 		
 		var url = $("#formllicencia").attr("action");
         var tipusparte = $("#parte_tipus").val();
-        var club = $("#parte_clubs").val();
+        var club = $("#parte_club").val();
         var altadata = $("#parte_dataalta").val();
 
         $('#formparte-llicencia').hide();
@@ -1608,7 +1608,7 @@
 				dialegError("Error", "cal seleccionar una persona de la llista d'assegurats", 400);
 				return false;
 			}
-
+console.log('perosna => '+$("#parte_llicencies_persona_select").val() );
 			if ($("#llicencia_enviarllicencia_0").prop("checked") == false &&
 				$("#llicencia_enviarllicencia_1").prop("checked") == false) { // Radio button
 				dialegError("Error", "cal indicar si es vol rebre la llicència per correu", 400);

@@ -101,6 +101,12 @@ class FormParte extends AbstractType {
 						'data'		=> $parte->getAny()
 				));
 
+				$form->add('dataalta', 'datetime', array(
+				    'widget' 	=> 'single_text',
+				    'format' 	=> 'dd/MM/yyyy HH:mm',
+				    'attr'		=>	array('readonly' => !($parte->esNova() && $parte->isAllowEdit()))
+				));
+				
 				if ($parte->getRebut() != null) {
 					$form->add('datapagament', 'date', array(
 							'widget'	=> 'single_text',
@@ -118,13 +124,6 @@ class FormParte extends AbstractType {
 				
 		
 		$builder->add('id', 'hidden');
-
-		$builder->add('dataalta', 'datetime', array(
-				'widget' 	=> 'single_text',
-				'format' 	=> 'dd/MM/yyyy HH:mm',
-				'attr'		=>	array('readonly' => !$this->admin)
-		));
-		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

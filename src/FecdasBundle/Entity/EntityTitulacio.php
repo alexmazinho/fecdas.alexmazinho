@@ -94,7 +94,7 @@ class EntityTitulacio {
 	 * @return boolean
 	 */
 	public function checkClub($club) {
-		if ($this->curs->getClub() == null) return false;
+	    if ($this->curs->getClub() == null || $club == null) return false;
 		return $this->curs->getClub()->getCodi() == $club->getCodi();
 	}
 	

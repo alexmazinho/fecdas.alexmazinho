@@ -181,7 +181,7 @@
     		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
     
     		var current = new Date();
-    		var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});
+   			var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});	
     		var maxdate = new Date ( {{ datesparte['max']['any'] }}, {{ datesparte['max']['mes'] }} - 1, {{ datesparte['max']['dia'] }});
     		initDateTimePicker ( 
     			$( '#parte_dataalta' ), 

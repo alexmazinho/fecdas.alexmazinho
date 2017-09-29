@@ -857,7 +857,7 @@ class BaseController extends Controller {
  
 	protected function validaDataLlicencia(\DateTime $dataalta, $tipus) {
 		$avui = $this->getCurrentDate('now');
-		if (!$this->isCurrentAdmin() and $dataalta < $avui) return 'No es poden donar d\'alta ni actualitzar llicències amb data passada';
+		if (!$this->isCurrentAdmin() && $dataalta < $avui) return 'No es poden donar d\'alta ni actualitzar llicències amb data passada';
 		
 		/* ALEX. Validació eliminada 13/07/2016
 		  if ($tipus->getEs365() == true and $tipus->getFinal() != null) {

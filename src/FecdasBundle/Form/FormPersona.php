@@ -50,7 +50,7 @@ class FormPersona extends AbstractType {
 			
 		$builder->add('id', 'hidden');
 
-		$readonly = ! $this->options['edit'];
+		//$readonly = ! $this->options['edit'];
 		
 		$builder->add('nom', 'text');
 		$builder->add('cognoms', 'text');

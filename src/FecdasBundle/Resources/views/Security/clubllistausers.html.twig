@@ -64,7 +64,7 @@
 								Sense accés 
 								<a class="add-userroleclub link" href="{{ path('FecdasBundle_usuariclub',{ 'action': 'addrole', 'id': userclub.id, 'role': rolsDistinct|keys[loop.index0] } ) }}" 
 									data-role="{{ rolsDistinct|keys[loop.index0] }}" data-user="{{ userclub.user }}" data-id="{{ userclub.id }}" alt="Afegir accés {{ rolsDistinct|keys[loop.index0] }}" title="Afegir accés {{ rolsDistinct|keys[loop.index0] }}">
-									<i class="fa fa-unlock fa-1x green"></i>
+									<i class="fa fa-lock fa-active fa-1x orange"></i>
 								</a>
 							</td>
 						{% else %}
@@ -72,7 +72,7 @@
 								{{ userclubrole.role|capitalize }}
 								{% set smsDel = "Desactivar l'accés "~userclubrole.role~" per l'usuari "~userclubrole.usuari.user %}
 								<a class="remove-userroleclub link" href="{{ path('FecdasBundle_usuariclub',{ 'action': 'removerole', 'id': userclubrole.id } ) }}" alt="{{ smsDel }}" title="{{ smsDel }}">
-									<i class="fa fa-lock fa-1x orange"></i>
+									<i class="fa fa-unlock fa-active fa-1x green"></i>
 								</a>
 								{% if userclubrole.isRoleInstructor %}
 									{% if llicenciaVigent == null %}

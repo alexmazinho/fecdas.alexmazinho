@@ -817,6 +817,23 @@
 			reloadScrollTable($('.table-scroll'), $('.table-header'), $('.col-listheader'), $('#header-userclubactions'));	
 		});
 
+
+		$("i.fa.fa-lock").hover(function() {
+			$(this).removeClass("fa-lock orange");
+		    $(this).addClass("fa-unlock green");
+		}, function(){
+			$(this).removeClass("fa-unlock green");
+			$(this).addClass("fa-lock orange");
+		});
+
+		$("i.fa.fa-unlock").hover(function() {
+			$(this).removeClass("fa-unlock green");
+		    $(this).addClass("fa-lock orange");
+		}, function(){
+			$(this).removeClass("fa-lock orange");
+			$(this).addClass("fa-unlock green");
+		});
+
 	});
 
 </script>

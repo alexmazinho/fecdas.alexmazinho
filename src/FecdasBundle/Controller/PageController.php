@@ -766,7 +766,7 @@ class PageController extends BaseController {
 			$lid = is_numeric($l['id']) && $l['id'] > 0?$l['id']:0;
 			//if (isset($requestParams['currentperson'])) $currentPerson = $requestParams['currentperson'];
 			$currentPerson = isset($l['persona']) && is_numeric($l['persona']) && $l['persona'] > 0?$l['persona']:0;
-			
+			if ($currentPerson == 0 && isset($requestParams['currentperson']) && $requestParams['currentperson'] > 0) $currentPerson = $requestParams['currentperson'];
 			
 			if ($lid == 0) {
 				// Insert

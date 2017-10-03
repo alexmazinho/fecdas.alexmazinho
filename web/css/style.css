@@ -2304,7 +2304,14 @@ input#formuserclub-randompassword { width: 150px; }
 .data-detall-cell.userclub-lastaccess { width: 17%; border-right: 1px solid #96c4ea;   }
 .data-detall-cell.userclub-rol { text-align: left;  text-align: center;  }
 .data-detall-cell.userclub-rol a.link { font-size: 1.3em; padding-left: 5px;}
-.data-detall-cell.userclub-rol i.fa { width: 24px; }
+.data-detall-cell.userclub-rol i.fa { 
+	width: 26px; 
+	-webkit-transition: none;
+	-moz-transition: none;
+	-ms-transition: none;
+	-o-transition: none;
+	transition: none;
+}
 
 .userclub-rol-3 { width: 20%; }
 .userclub-rol-4 { width: 15%; }

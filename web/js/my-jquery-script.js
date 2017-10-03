@@ -1608,7 +1608,6 @@
 				dialegError("Error", "cal seleccionar una persona de la llista d'assegurats", 400);
 				return false;
 			}
-console.log('perosna => '+$("#parte_llicencies_persona_select").val() );
 			if ($("#llicencia_enviarllicencia_0").prop("checked") == false &&
 				$("#llicencia_enviarllicencia_1").prop("checked") == false) { // Radio button
 				dialegError("Error", "cal indicar si es vol rebre la llicència per correu", 400);
@@ -2478,8 +2477,13 @@ console.log('perosna => '+$("#parte_llicencies_persona_select").val() );
 					
 					if ($.browser.msie) $('#formduplicats-dades').show(); 
 				    else $('#formduplicats-dades').stop().slideDown('slow');
-					
+			
 					imageUploadForm("#duplicat_fotoupld", 104);
+					
+					prepareRemoveFotoGaleria( "#formduplicats", function() {
+						// Accions addicionals
+						$('#duplicat_fotoupld').val( '' );
+					});
 					
 					
 					$('#duplicat_submit').click(function(e) {
@@ -2597,7 +2601,6 @@ console.log('perosna => '+$("#parte_llicencies_persona_select").val() );
 	
 	imageUploadForm = function(formsel, imgwidth) {
 		var galeria = $(formsel).next(".galeria-upload");
-
 		galeria.click(function(e) {
 		    e.preventDefault();
 		    // Make as the real input was clicked

@@ -18,9 +18,9 @@
 			{{ form_widget(form.cognoms, { 'attr': {'class': 'formfield-right'} }) }}
 		</div>
 	</div>
-	{% if form.fotoupld is defined %} 
-	{{ form_widget(form.fotoupld) }}  
 	<div id="formduplicats-foto" class="colform colmiddle">
+    	{% if form.fotoupld is defined %} 
+    	    {{ form_widget(form.fotoupld) }}  
 		{# form_label(form.foto, 'Foto', { 'label_attr': {'class': 'formlabel-outside'} }) #}
 		<div class="galeria-upload">
 			<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>

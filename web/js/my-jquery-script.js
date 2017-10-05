@@ -2116,9 +2116,9 @@
 			//Cancel the link behavior
 	        e.preventDefault();
 
-	        $('.alert').remove();
+	        $('.alert.alert-dismissible').remove();
 	        
-	        var url = $(this).attr("href");
+	        var url = $(this).attr("href")+'&club='+$('#club_codi').val();
 	        var userid = $(this).attr("data-id");
 	        var role = $(this).attr("data-role");
 	        var userMail = $(this).attr("data-user");
@@ -2294,7 +2294,7 @@
 			/*
 			{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 			*/
-			$(".alert").remove();
+			$(".alert.alert-dismissible").remove();
 			if (added.mail == null) {  // Aquest instructor no té mail. => Avís
 				var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
 					 
@@ -2310,10 +2310,10 @@
 			}
 		}, function( item ) {
 	    	//Selection format Function
-	        return item.text+"-"+item.nom+" ("+item.mail+")";
+	        return item.text+"-"+item.nom+(item.mail != ""?" ("+item.mail+")":"");
 	    }, function( item ) {
 	    	//Result format Function
-	        return item.text+"-"+item.nom+" ("+item.mail+")";
+	        return item.text+"-"+item.nom+(item.mail != ""?" ("+item.mail+")":"");
 	    }, function( e ) {
 			//  select2-clearing
 	    	$("#user_user").attr('readonly', 'readonly');
@@ -2345,7 +2345,7 @@
 		$( "#llista-usuarisclub" ).on( "click", ".remove-userroleclub, .del-userclub, .reset-pwduserclub", function( e ) {
 			//Cancel the link behavior
 	        e.preventDefault();
-	        var url = $(this).attr("href");
+	        var url = $(this).attr("href")+'&club='+$('#club_codi').val();
 	        
 	        var strHtml = '<p>Segur que vols '+$(this).attr('title').toLowerCase()+'?';	
 	        dialegConfirmacio(strHtml, 'Confirmació', 'auto', 500, function() {
@@ -2360,6 +2360,8 @@
 			    	
 				}).fail( function(xhr, status, error) {
 	        		// xhr.status + " " + xhr.statusText, status, error
+					closeDialegConfirmacio();
+					
 		        	var sms = smsResultAjax('KO', xhr.responseText);
 		    			 
 		        	$("#llista-usuarisclub").prepend(sms);

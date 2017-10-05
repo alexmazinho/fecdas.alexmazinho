@@ -37,12 +37,16 @@ class FormClubUser extends AbstractType {
 					'required' => false,
 					'mapped' => false
 				));
-	   				
 			}
 		});
 		
 		/* Camps nou usuari */
 		$builder->add('id', 'hidden');
+
+		$builder->add('club', 'hidden', array(
+		    'data' => $this->options['club'],
+		    'mapped' => false
+		));
 		
 		$builder->add('user', 'email', array(
 				'required' => false

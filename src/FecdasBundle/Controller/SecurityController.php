@@ -735,10 +735,12 @@ class SecurityController extends BaseController
 		$id = 0;
 		$info = "";
 		$action = "";
+		$codiclub = "";
     	try {
-			$optionsForm = array( 'admin' => $this->isCurrentAdmin() );
-			
-			if ($request->getMethod() != 'POST') $id = $request->query->get('id');
+			if ($request->getMethod() != 'POST') {
+			    $id = $request->query->get('id');
+			    $codiclub = $request->query->get('club', '');
+			}
 			else {
 				$requestParams = $request->request->all();
 				$useruser = $requestParams['user']['user'];
@@ -746,12 +748,17 @@ class SecurityController extends BaseController
 	    		$userrole = $requestParams['user']['role'];
 				$idInstructor = $requestParams['user']['auxinstructordni'];
 				$id = isset($requestParams['user']['id'])?$requestParams['user']['id']:0;
+				$codiclub = isset($requestParams['user']['club'])?$requestParams['user']['club']:"";
 			}
 
 			$checkRole = $this->get('fecdas.rolechecker');
-			$codiclub = $checkRole->getCurrentClubRole();
-    		
-			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
+			//$codiclub = $checkRole->getCurrentClubRole();
+
+            if ($codiclub != "" && $this->isCurrentAdmin())  $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codiclub);
+			else $club = $checkRole->getCurrentClub();
+			
+			$optionsForm = array( 'admin' => $this->isCurrentAdmin(), 'club' => $codiclub );
+			
 			if ($club == null) throw new \Exception("Error. Contacti amb l'administrador (200)");
 			
 			if (!$checkRole->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception("Acció no permesa");
@@ -892,10 +899,11 @@ class SecurityController extends BaseController
 		
 		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($useruser)));
 
-		$metaPersona = $checkuser->getMetapersona();
+		$metaPersona = null;
+		if ($checkuser != null) $metaPersona = $checkuser->getMetapersona();
 		// Check Roles existents pel mateix mail
 		
-		if (count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu ");
+		if ($checkuser != null && count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu "); 
 		
 		// Check NEW Role				
 		if ($userrole == BaseController::ROLE_FEDERAT) throw new \Exception("No es poden afegir federats"); // Encara no
@@ -916,7 +924,6 @@ class SecurityController extends BaseController
 			
 			$mailsPersona = $metaPersona->getMails();
 			if (!in_array($useruser, $mailsPersona)) throw new \Exception("El mail no és d'aquesta persona ");
-			
 			
 		} else {
 			// Només poden fer altes Administradors els propis Administradors
@@ -943,7 +950,7 @@ class SecurityController extends BaseController
 				
 				if (!$checkUserRole->anulat()) {
 					if ($userrole == $checkUserRole->getRole() &&
-						$club === $checkUserRole->getClub()) throw new \Exception("Aquest usuari ja disposa d'accés ".$userrole." per aquest club: ".$useruser); 	
+						$club === $checkUserRole->getClub()) throw new \Exception("Aquest usuari ja disposa d'accés amb rol ".$userrole." per aquest usuari: ".$useruser); 	
 					
 					if ($userrole != $checkUserRole->getRole() &&
 						$nou &&

@@ -44,7 +44,8 @@ class BaseController extends Controller {
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
-	const ID_LLICENCIES_DIA = 11;	
+	const ID_LLICENCIES_DIA = 11;
+	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 15/12 any en curs
@@ -3841,9 +3842,24 @@ class BaseController extends Controller {
     }
 	
 	protected function buildAndSendMail($subject, $tomails, $innerbody, $bccmails = array(), $attachmentPath = null, $attachments = array(), $width = 600, $salutacio = '') {
-		$bccmails[] = $this->getParameter('MAIL_ADMINTEST');
+		
 		if ($this->get('kernel')->getEnvironment() != 'prod') {
 			$tomails = array($this->getParameter('MAIL_ADMINTEST'));  // Entorns de test
+			$bccmails = array(); // Entorns de test
+		} else {
+		    // Producció
+		    $bccmails[] = $this->getParameter('MAIL_ADMIN');
+		    // Mails producció prefix [bcc] es mouen tomails => bcc
+		    $tomails = array_filter($tomails, function($e) use (&$bccmails) {
+		        $bcc = strpos($e, BaseController::PREFIX_MAIL_BCC);
+		        
+		        if ($bcc !== false && $bcc ==  0) { 
+		            $bccmails[] = str_replace(BaseController::PREFIX_MAIL_BCC, "", $e);
+		            return false;
+		        }
+		        
+		        return true;  // si retorna true, l'element s'afegirà al vector resultant  
+		    });
 		}
 		
 		$from = $this->container->getParameter('fecdas_partes.emails.contact_email');
@@ -3900,7 +3916,11 @@ class BaseController extends Controller {
 		
 		$message->setBody($body, 'text/html');
 		
-		$this->get('mailer')->send($message); 
+		$this->get('mailer')->send($message);
+/*		error_log('========');
+		error_log('to mails '.print_r($tomails, true));
+		error_log('bcc mails '.print_r($bccmails, true));
+		error_log('');*/
 	}
 	
 	protected function uploadAndScale($file, $name, $maxwidth, $maxheight) {

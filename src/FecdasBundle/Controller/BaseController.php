@@ -138,8 +138,8 @@ class BaseController extends Controller {
 	
 	// Docs assegurança
 	const POLISSA_BUSSEIG = 'polissa_busseig_2017.pdf';
-	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus.pdf';
-	const POLISSA_ESCOLAR = 'polissa_escolar.pdf';
+	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2017-18.pdf';
+	const POLISSA_ESCOLAR = 'polissa_escolar_2017-18.pdf';
 	
 	const COMUNICAT_INCIDENT_POLISSA_BUSSEIG = 'comunicat_incident_polissa_busseig.pdf';
 	const COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS = 'comunicat_incident_polissa_tecnocampus.pdf';

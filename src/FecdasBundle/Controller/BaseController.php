@@ -64,6 +64,7 @@ class BaseController extends Controller {
 	const EDAT_MINIMA = 4;
 	const INDEX_ENVIARLLICENCIA = 1;
     const INDEX_NOENVIARLLICENCIA = 0;
+    const MAX_TELEFON = 999999999;
     
 	//const TIPUS_CLUBS_NO_COMANDES = array(6, 7);
 	const REGISTRE_STOCK_ENTRADA = 'E';

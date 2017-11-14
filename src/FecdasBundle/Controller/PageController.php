@@ -1027,7 +1027,6 @@ class PageController extends BaseController {
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 				}
 
-
 				if ($p['foto'] != '') $fotoPath = $p['foto'];
 				if ($p['certificat'] != '') $certificatPath = $p['certificat'];
 				
@@ -1191,6 +1190,10 @@ class PageController extends BaseController {
 		
 		if ($persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
 
+		
+		if ($persona->getTelefon1() > BaseController::MAX_TELEFON) throw new \Exception("El número de telèfon no és correcte"); 
+		if ($persona->getTelefon2() > BaseController::MAX_TELEFON) throw new \Exception("El número de mòbil no és correcte");
+		
 		/*if ($persona->getId() == 0 &&
 			($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
 			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&

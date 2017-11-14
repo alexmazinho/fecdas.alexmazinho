@@ -573,6 +573,21 @@ class SecurityController extends BaseController
 					throw new \Exception("Cal indicar un mail");
 				}
 	   			
+				if ($club->getTelefon() > BaseController::MAX_TELEFON) {
+				    $tab = 0;
+				    throw new \Exception("El número de telèfon no és correcte"); 
+				}
+				
+				if ($club->getFax() > BaseController::MAX_TELEFON) {
+				    $tab = 0;
+				    throw new \Exception("El número de fax no és correcte");
+				}
+				
+				if ($club->getMobil() > BaseController::MAX_TELEFON) {
+				    $tab = 0;
+				    throw new \Exception("El número de mòbil no és correcte");
+				}
+				
 				if ($this->isCurrentAdmin() == true) {	
 					if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
 						$tab = 2;

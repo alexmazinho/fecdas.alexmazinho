@@ -55,6 +55,33 @@
 						</div>
 					</div>
 				</div>
+				<div class="col-md-3">
+				    <div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon input-group-addon-2-inline">DNI</div>
+                            {{ form_label(form.dni, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(form.dni, { 'attr': {'class': 'form-control form-select form-2-control-inline '} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+				    <div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon input-group-addon-2-inline">Nom</div>
+                            {{ form_label(form.nom, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(form.nom, { 'attr': {'class': 'form-control form-select form-2-control-inline '} }) }}
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+				    <div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon input-group-addon-2-inline"><i class="fa"><b>@</b></i> e-Mail</div>
+                            {{ form_label(form.mail, 'e-Mail', { 'label_attr': {'class': 'sr-only'} }) }}
+							{{ form_widget(form.mail, { 'attr': {'class': 'form-control form-select form-2-control-inline '} }) }}
+						</div>
+					</div>
+				</div>
 				<div class="col-md-8">
 					<div class="checkbox-inline">
 				    	<label>
@@ -108,6 +135,10 @@
     	params.push( {'name':'anyrebut','value': $('#form_anyrebut').val()} );
     	params.push( {'name':'numfactura','value': $('#form_numfactura').val()} );
     	params.push( {'name':'anyfactura','value': $('#form_anyfactura').val()} );
+
+    	params.push( {'name':'dni','value': $('#form_dni').val()} );
+    	params.push( {'name':'nom','value': $('#form_nom').val()} );
+    	params.push( {'name':'mail','value': $('#form_mail').val()} );
     	
     	params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
     	params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
@@ -128,7 +159,7 @@
     		$("#dialeg").html(data);
     					
     		var ewidth = $(window).width()*0.8;
-    		if (ewidth > 800) ewidth = 800;
+    		if (ewidth > 840) ewidth = 840;
     		var eheight = $(document).height()*0.8;
     					
     		$("#dialeg").dialog({
@@ -152,7 +183,7 @@
     		    minWidth: 400,
     		    title: title
     		 });
-    	
+
     		eventFilterTable("#formfederatssortida", "#table-federats", url);
     		
     	}).fail( function(xhr, status, error) {
@@ -266,7 +297,7 @@
     
     	selectRecentsClub();
     
-    	$('#form_clubs, #form_numfactura, #form_numrebut, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
+    	$('#form_clubs, #form_numfactura, #form_numrebut, #form_nom, #form_dni, #form_mail, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
     		// Recarrega consulta afegint la dades del formulari
     		var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
     		var params = recentsParams();
@@ -331,6 +362,44 @@
     			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = false; });
     		};
     	});
+
+    	$( "#dialeg" ).on( "click", ".desar-email", function(e) {
+    		e.preventDefault();
+    		
+    		$('.alert.alert-dismissible').remove();
+
+			var input = $(this).parent().prev().find('input');
+        	var email = input.val();
+        	var url = $(this).attr("href")+'&mail='+email;
+        	input.removeClass('form-control-changed');
+        	
+        	$.get(url, function(data) {
+        		input.attr('data-value-init', email);
+        		input.addClass('form-control-saved');
+        		input.removeClass('form-control-error');
+                
+        	}).fail( function(xhr, status, error) {
+        		 // xhr.status + " " + xhr.statusText, status, error
+        		input.addClass('form-control-error');
+        		input.removeClass('form-control-saved');
+        		 
+        		var sms = smsResultAjax('KO', xhr.responseText);
+        		 
+        		$("#table-federats").prepend(sms);
+        	});
+    		
+    	});
+
+    	$( "#dialeg" ).on( "change", "input.form-control", function() {
+
+		//$( '#dialeg input.form-control' ).change(function(e) {
+			var initValue = $(this).attr('data-value-init');
+			if (typeof initValue === 'undefined') initValue = "";
+			
+			if ($(this).val() == initValue) $(this).removeClass('form-control-changed');
+			else $(this).addClass('form-control-changed');
+		});
+    	
     	
     	//sortLlista("col-listheader", "list-data");
     

@@ -322,10 +322,11 @@ class EntityParte extends EntityComanda {
 				
 			}
     	}*/
-    	
+
     	foreach ($this->llicencies as $llicencia) {
     		if (!$llicencia->esBaixa() || $baixes == true) {
-    			$producte = $llicencia->getCategoria()->getProducte();		
+    			$producte = $llicencia->getCategoria()->getProducte();
+
     			if (isset($acumulades[$producte->getId()]) &&
 					isset($acumulades[$producte->getId()]['extra'])) {
     				$acumulades[$producte->getId()]['extra'][] = $llicencia->getPersona()->getNomCognoms();  
@@ -349,7 +350,7 @@ class EntityParte extends EntityComanda {
 			}
     	}
 
-		return $acumulades;
+    	return $acumulades;
 	}
 	
 	

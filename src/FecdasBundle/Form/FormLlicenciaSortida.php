@@ -43,7 +43,7 @@ class FormLlicenciaSortida extends AbstractType {
 				$form->add('mail', 'text', array(
 					'mapped' 	=> false,
 					'data'		=> $persona->getMail(),
-					'attr'		=>	array('readonly' => true)
+					//'attr'		=>	array('readonly' => true)
 				));
 			}
 		});

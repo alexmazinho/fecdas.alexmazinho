@@ -219,6 +219,11 @@ class AdminController extends BaseController {
 		$currentAnyfactura = $request->query->get('anyfactura', '');
 		$currentAnyrebut = $request->query->get('anyrebut', '');
 		
+		
+		$currentDni = $request->query->get('dni', '');
+		$currentNom = $request->query->get('nom', '');
+		$currentMail = $request->query->get('mail', '');
+		
 		//$currentClub = null;
 		$currentClub = $em->getRepository('FecdasBundle:EntityClub')->find($request->query->get('clubs', ''));
 		
@@ -251,7 +256,8 @@ class AdminController extends BaseController {
 				
 			}*/
 			$this->logEntryAuth('ADMIN PARTES POST', "club: " . ($currentClub==null)?"":$currentClub->getNom() . " filtre estat: " . $states[$currentEstat] .
-					" factura " .$currentNumfactura . " rebut " .$currentNumrebut . " pagament: " . $currentNoPagat . " baixa: " . $currentBaixa );
+					" factura " .$currentNumfactura . " rebut " .$currentNumrebut . " pagament: " . $currentNoPagat . " baixa: " . $currentBaixa .
+			         " dni ". $currentDni . " nom ". $currentNom . " mail ". $currentMail);
 		} else {
 			$this->logEntryAuth('ADMIN PARTES');
 		}
@@ -291,19 +297,32 @@ class AdminController extends BaseController {
 		$formBuilder->add('nopagat', 'checkbox', array(
 					'required'  => false,
 					'data' => $currentNoPagat,
-				));
+		));
 		$formBuilder->add('noimpres', 'checkbox', array(
 					'required'  => false,
 					'data' => $currentNoImpres,
-				));
+		));
 		$formBuilder->add('baixa', 'checkbox', array(
     				'required'  => false,
 					'data' => $currentBaixa,
-				));
+		));
 		$formBuilder->add('compta', 'checkbox', array(
     				'required'  => false,
 					'data' => $currentCompta,
-				));
+		));
+		$formBuilder->add('dni', 'text', array(
+        		    'required'  => false,
+        		    'data' => $currentDni,
+		));
+		$formBuilder->add('nom', 'text', array(
+        		    'required'  => false,
+        		    'data' => $currentNom,
+		));
+		$formBuilder->add('mail', 'text', array(
+        		    'required'  => false,
+        		    'data' => $currentMail,
+		));
+		        
 		$form = $formBuilder->getForm();
 		
 		$sortparams = array('sort' => $sort,'direction' => $direction, 
@@ -314,7 +333,8 @@ class AdminController extends BaseController {
 		$query = $this->consultaPartesRecents($currentClub, $currentEstat, $currentBaixa, 
 											$currentNoPagat, $currentNoImpres, $currentCompta, 
 											$currentNumfactura, $currentAnyfactura,
-											$currentNumrebut, $currentAnyrebut, $sort.' '.$direction);
+											$currentNumrebut, $currentAnyrebut, 
+		                                    $currentDni, $currentNom, $currentMail, $sort.' '.$direction);
 
 		$paginator  = $this->get('knp_paginator');
 		$partesrecents = $paginator->paginate(
@@ -338,6 +358,53 @@ class AdminController extends BaseController {
 						'sortparams' => $sortparams
 				)));
 	}
+	
+	public function desarmailAction(Request $request) {
+	    /* Desar e-Mail */
+	    $email = '';
+	    $id = 0;
+	    $result = "";
+	    try {
+	        if ($this->isCurrentAdmin() != true) throw new \Exception ('Acció no permesa. L\'esdeveniment a quedat registrat'); 
+	        
+	        $em = $this->getDoctrine()->getManager();
+	        
+	        $id = $request->query->get("id", 0);
+	        $email = $request->query->get("mail", "");
+	        
+	        $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($id);
+	        
+	        if ($persona == null)  throw new \Exception ('Persona no trobada');
+	        if ($email == "")   throw new \Exception ('Cal indicar un correu');
+	        
+            $mails = explode(";", $email);
+	        foreach ($mails as $mail) {
+	           $posArroba = strpos($mail, '@');
+	           $posGuio = strpos($mail, '-');
+	                
+	           if ($posArroba !== false && $posGuio !== false && $posGuio < $posArroba) $mail = str_replace('-', '', $mail); // Reemplazar "-" abans de @ perquè surten invàlids
+	                
+	           if (trim($mail) != "" && filter_var(trim($mail), FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".trim($mail)."- no és vàlida");
+	        }
+	        
+	        $persona->setMail($email);
+	        
+            $em->flush();
+	            
+            $this->logEntryAuth('DESAR MAIL OK', 'persona ' . $id . ' mail '.$email);
+	        
+	        return $response = new Response("");
+	        
+	    } catch (\Exception $e) {
+	        $this->logEntryAuth('DESAR MAIL KO', 'persona ' . $id . ' mail '.$email.':'.$e->getMessage() );
+	        $result = $e->getMessage();
+	    }
+	    $response = new Response($result);
+	    $response->setStatusCode(500);
+	    
+	    return $response;
+	}
+	
 	
 	public function consultaadminAction(Request $request) {
 	
@@ -1948,14 +2015,10 @@ GROUP BY c.nom
 		if ($duplicat != null && $duplicat->getCarnet() != null && $producte = $duplicat->getCarnet()->getProducte() != null) {
 			$producte = $duplicat->getCarnet()->getProducte();
 
-			$data = $this->getCurrentDate();
-			$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
-			$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-
 			$detallsBaixa = array();
 			$detallsBaixa[] = $this->removeComandaDetall($duplicat, $producte, 1);	
 			
-			$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $duplicat, $detallsBaixa, $maxNumFactura, $maxNumRebut);
+			$this->crearFacturaRebutAnulacio($duplicat, $detallsBaixa);
 			
 			$em->flush();
 		
@@ -2049,7 +2112,7 @@ GROUP BY c.nom
 		if ($request->query->has('factura') && $request->query->get('factura') == 1) $factura = true;
 		
 		$strDatafacturacio = $request->query->get('datafacturacio', '');
-		$dataFacturacio = $this->getCurrentDate();
+		$dataFacturacio = null;
 		if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
 		
 		$duplicat = null;

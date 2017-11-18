@@ -44,11 +44,11 @@ class BaseController extends Controller {
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
-	const ID_LLICENCIES_DIA = 11;
+	const ID_LLICENCIES_DIA = 12;
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_MES = 11; // a partir de 15/12 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -962,13 +962,15 @@ class BaseController extends Controller {
 	}
 	
 	protected function consultaPartesRecents($club, $estat, $baixa, $nopagat, $noimpres, $compta, 
-											$numfactura, $anyfactura, $numrebut, $anyrebut, $strOrderBY = '') {
+											$numfactura, $anyfactura, $numrebut, $anyrebut, 
+	                                        $dni, $nom, $mail, $strOrderBY = '') {
 		$em = $this->getDoctrine()->getManager();
 	
 		$anulaIds = array();
 		
 		// Crear índex taula partes per data entrada
-		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.llicencies l JOIN p.tipus t JOIN p.clubparte c JOIN c.estat e ";
+		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.llicencies l JOIN l.persona o JOIN o.metapersona m ";
+		$strQuery .= " JOIN p.tipus t JOIN p.clubparte c JOIN c.estat e ";
 		$strQuery .= " LEFT JOIN p.rebut r LEFT JOIN p.factura f WHERE ";
 		$strQuery .= " ((t.es365 = 0 AND p.dataalta >= :ininormal) OR ";
 		$strQuery .= " (t.es365 = 1 AND p.dataalta >= :ini365)) AND ( 1 = 1 ";
@@ -986,6 +988,10 @@ class BaseController extends Controller {
 			if ($numrebut != '') $strQuery .= " AND r.num = :numrebut ";
 			if ($numfactura != '') $strQuery .= " AND f.num = :numfactura ";
 		}
+		
+		if ($dni != '') $strQuery .= " AND m.dni LIKE '%" .$dni . "%' "	;
+		if ($nom != '') $strQuery .= " AND (CONCAT(o.nom, ' ', o.cognoms) LIKE '%" .$nom . "%') "	;
+		if ($mail != '') $strQuery .= " AND o.mail LIKE '%" .$mail . "%' "	;
 		
 		if ($club != null) $strQuery .= " AND p.clubparte = '" .$club->getCodi() . "' "	;
 		if ($estat != self::TOTS_CLUBS_DEFAULT_STATE) $strQuery .= " AND e.descripcio = :filtreestat ";
@@ -1180,23 +1186,36 @@ class BaseController extends Controller {
 		return $rebut;
 	}
 
-	protected function crearFactura($data, $comanda = null, $concepte = '', $compte = '') { 
-		if ($data == null) $data = $this->getCurrentDate();
+	protected function crearFactura($comanda, $datafactura= null, $concepte = '', $compte = '') { 
+		/* Data factura
+		 *    - Si les dates son del mateix any posar datafactura = datacomanda : Comandes, duplicats i partes
+		 *    - Si "any data llicències" > "any entrada" => Posar datafactura 01/01/any llicencies: Partes
+		 */   
+	    if ($comanda == null) throw new \Exception('No es pot crear la factura. Contacti amb l\'administrador');
+	    
+	    $current = $this->getCurrentDate();
+	    $anyFactura = $comanda->getAny();
+	    if ($datafactura == null) $datafactura = $comanda->getDataentrada();  
+	    else $anyFactura = $datafactura->format('Y'); // Només admins
+        
+        if ($anyFactura > $current->format('Y')) {
+            // Factura a 1 de gener
+            $datafactura = \DateTime::createFromFormat('Y-m-d H:i:s', $anyFactura.'-01-01 00:00:00');
+        }
 		
 		if ($compte == '') $compte = $this->getIbanGeneral();
 		
 		$em = $this->getDoctrine()->getManager();
 
-		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
+		$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
 		
-		$factura = new EntityFactura($data, $maxNumFactura, $comanda, 0, $concepte, null, $compte);
+		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, 0, $concepte, null, $compte);
 		
 		$em->persist($factura);
-		if ($comanda != null) {
-			$factura->setComanda($comanda);
-			$factura->setComandaanulacio(null);
-			$comanda->setFactura($factura);
-		}
+		
+		$factura->setComanda($comanda);
+		$factura->setComandaanulacio(null);
+		$comanda->setFactura($factura);
 		
 		return $factura;
 	}
@@ -2697,8 +2716,7 @@ class BaseController extends Controller {
 	}
 
     protected function baixaComanda($comanda, $dataFacturacio = null) {
-        if ($dataFacturacio == null) $dataFacturacio = $this->getCurrentDate();
-        
+
         if ($comanda->esParte()) {
             $parte = $comanda;
             $llicenciesBaixa = array();
@@ -2722,10 +2740,7 @@ class BaseController extends Controller {
             }
             
             if (count($detallsBaixa) > 0) {
-                $maxNumFactura = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::FACTURES) + 1;
-                $maxNumRebut = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::REBUTS) + 1;
-            
-                $this->crearFacturaRebutAnulacio($dataFacturacio, $comanda, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra); 
+                $this->crearFacturaRebutAnulacio($comanda, $detallsBaixa, $dataFacturacio, $extra); 
 				
 				// Gestionar stock
 				$this->registreComanda($comanda, $originalDetalls);
@@ -2815,11 +2830,7 @@ class BaseController extends Controller {
 			// Consolidada, crear factura anul·lació					
 			if (count($detallsBaixa) == 0) throw new \Exception('No ha estat possible esborrar les llicències. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 		
-			if ($dataFacturacio == null) $dataFacturacio = $current;
-			$maxNumFactura = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::FACTURES) + 1;
-			$maxNumRebut = $this->getMaxNumEntity($dataFacturacio->format('Y'), BaseController::REBUTS) + 1;
-							
-			$this->crearFacturaRebutAnulacio($dataFacturacio, $parte, $detallsBaixa, $maxNumFactura, $maxNumRebut, $extra);
+			$this->crearFacturaRebutAnulacio($parte, $detallsBaixa, $dataFacturacio, $extra);
 		}		
 	}
 
@@ -2856,11 +2867,15 @@ class BaseController extends Controller {
 		return $detallBaixa;
 	}
 	
-	protected function crearFacturaRebutAnulacio($datafactura, $comanda, $detalls, &$maxNumFactura = 0, &$maxNumRebut = 0, $extra = '') {
+	protected function crearFacturaRebutAnulacio($comanda, $detalls, $datafactura = null, $extra = '') {
 
-		if ($comanda == null || !is_array($detalls) || count($detalls) == 0) return null; // Error
-				 
-		if ($datafactura == null) $datafactura = $this->getCurrentDate();
+	    if ($comanda == null || !is_array($detalls) || count($detalls) == 0) throw new \Exception('No es pot crear la factura. Contacti amb l\'administrador');
+		
+		$current = $this->getCurrentDate();   // Per defecte data actual
+		$datafacturaComanda = $comanda->getFactura()->getDatafactura();
+		if ($datafactura == null) $datafactura = $current;
+		
+		if ($datafactura->format('Y-m-d') < $datafacturaComanda->format('Y-m-d')) $datafactura = $datafacturaComanda; // Baixa amb data igual o posterior
 		
 		$em = $this->getDoctrine()->getManager();
 
@@ -2906,10 +2921,7 @@ class BaseController extends Controller {
 			}
 		} */
 
-		if ($maxNumFactura == 0) {
-			$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
-			//$persist = true;
-		}
+		$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
 		
 		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, $import, $concepte, $detallsFactura, $this->getIbanGeneral());
 		
@@ -2921,19 +2933,6 @@ class BaseController extends Controller {
 		$factura->setComandaanulacio($comanda);
 		$factura->setComanda(null);
 
-		/*if ($comanda->comandaPagada()) {
-
-			$tipuspagament = $comanda->getRebut()->getTipuspagament();
-			
-			$em = $this->getDoctrine()->getManager();
-			
-			if ($maxNumRebut == 0) $maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-			$rebut = new EntityRebut($data, $tipuspagament, $maxNumRebut, $comanda, $comanda->getClub(), $import); 
-			
-			$maxNumRebut++;
-			
-			$em->persist($rebut);
-		}*/
 		$comanda->setDatamodificacio(new \DateTime());
 		
 		//if ($persist == true) $em->flush();	// Si d'ha canviat el num factura	
@@ -3077,10 +3076,6 @@ class BaseController extends Controller {
 			}
 		//} 		
 	
-		$data = $this->getCurrentDate();
-		$maxNumFactura = $this->getMaxNumEntity($data->format('Y'), BaseController::FACTURES) + 1;
-		$maxNumRebut = $this->getMaxNumEntity($data->format('Y'), BaseController::REBUTS) + 1;
-		
 		// Nous detalls, baixes i validació
 		$formdetalls = null;				
 		if ($form != null) $formdetalls = $form->get('detalls');
@@ -3153,7 +3148,7 @@ class BaseController extends Controller {
 		}
 
 		if (count($detallsPerAnulacio) > 0) {
-			$this->crearFacturaRebutAnulacio($this->getCurrentDate(), $comanda, $detallsPerAnulacio, $maxNumFactura, $maxNumRebut);
+		    $this->crearFacturaRebutAnulacio($comanda, $detallsPerAnulacio);
 		}
 		
 		return $comanda;
@@ -3205,11 +3200,7 @@ class BaseController extends Controller {
 
 		if ($detall != null) $duplicat->setComentaris($duplicat->getComentariDefault());
 		
-		// Actualitzar import i detalls factura
-		if ($datafacturacio == null) $datafacturacio = $this->getCurrentDate();
-		
-		//$factura = $this->crearFactura($datafacturacio, $duplicat, $duplicat->getComentariDefault());
-		$this->crearFactura($datafacturacio, $duplicat, $duplicat->getComentariDefault());
+		$this->crearFactura($duplicat, $datafacturacio, $duplicat->getComentariDefault());
 		
 		return $detall;
 	}

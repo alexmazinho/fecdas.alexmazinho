@@ -716,7 +716,7 @@ class CronController extends BaseController {
 				if ($form->isValid() && $request->request->has('llicencia_renovar')) {
 	
 				    // Crear factura
-					$this->crearFactura($dataalta, $parte);
+				    $this->crearFactura($parte);
 			
 					$this->addParteDetall($parte, $cloneLlicencia);
 					$this->validaParteLlicencia($parte, $cloneLlicencia);

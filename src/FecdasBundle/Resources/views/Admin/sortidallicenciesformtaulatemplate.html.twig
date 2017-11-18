@@ -24,6 +24,7 @@
 				   		<th id="header-personanom" class="col-listheader listheader-noorder">Nom i cognoms</th>
 				   		<th id="header-personadni" class="col-listheader listheader-noorder">DNI</th>
 				   		<th id="header-personamail" class="col-listheader listheader-noorder">Mail</th>
+				   		<th id="header-personadesarmail" class="col-listheader listheader-noorder"></th>
 				   		{% block variableheader %}
 				   		{% endblock %}
 				   	</tr>
@@ -38,7 +39,13 @@
 						   		<td class="data-detall-cell federat-personaindex">{{ loop.index }}</td>
 						   		<td class="data-detall-cell federat-personanom">{{ form_widget(llicencia.nom) }}</td>
 						   		<td class="data-detall-cell federat-personadni">{{ form_widget(llicencia.dni) }}</td>
-						   		<td class="data-detall-cell federat-personamail">{{ form_widget(llicencia.mail) }}</td>
+						   		<td class="data-detall-cell federat-personamail">
+						   		    {{ form_widget(llicencia.mail, {'attr': {'class': 'form-control', 'data-value-init': llicencia.vars.value.persona.mail}}) }}
+						   		</td>
+						   		<td class="data-detall-cell federat-personadesarmail">
+                            		<a class="desar-email link" href="{{ path('FecdasBundle_desarmail', { 'id': llicencia.vars.value.persona.id }) }}" 
+                            			alt="Desar e-Mail" title="Desar e-Mail"><i class="fa fa-save green"></i></a>
+                            	</td>
 						   		{% block variablecols %}
 						   		{% endblock %}
 					   		</tr>

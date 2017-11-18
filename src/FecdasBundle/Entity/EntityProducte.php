@@ -624,6 +624,8 @@ class EntityProducte {
     public function getPreuAplicable($any)
     {
     	// Ordenar per any	
+        if (count($this->preus) == 0) return null;
+        
     	$preus = $this->preus->toArray(); 
 		
     	usort($preus, function($a, $b) {

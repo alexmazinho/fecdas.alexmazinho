@@ -2043,13 +2043,14 @@ class FacturacioController extends BaseController {
 		$comptefactura = $request->query->get('comptefactura', $this->getIbanGeneral());
 
 		$club = null;
-		$datafacturacio = $this->getCurrentDate();
-		$strDatafacturacio = $request->query->get('datafacturacio', '');
-		
-		if ($strDatafacturacio != '') $datafacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio); 
+		$datafacturacio = null; // Per defecte la data de la comanda excepte admins
 				
 		if ($this->isCurrentAdmin()) {  // Admins poden escollir el club i data facturacio 
-			$codi = $request->query->get('club', ''); 
+		    $strDatafacturacio = $request->query->get('datafacturacio', '');
+		    
+		    if ($strDatafacturacio != '') $datafacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
+		    
+		    $codi = $request->query->get('club', ''); 
 			if ($codi != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		}
 		if ($club == null) $club = $this->getCurrentClub();
@@ -2061,7 +2062,7 @@ class FacturacioController extends BaseController {
 	
 			if ($action == 'desar' || $action == 'pagar') {
 				// Comanda nova. Crear factura
-				$comanda = $this->crearComanda($this->getCurrentDate(), $comentaris);
+			    $comanda = $this->crearComanda($datafacturacio, $comentaris);
 				
 				$cart = $this->getSessionCart();
 				
@@ -2094,7 +2095,7 @@ class FacturacioController extends BaseController {
 				// Validacions comuns i anotacions stock
 				$this->tramitarComanda($comanda);
 
-				$this->crearFactura($datafacturacio, $comanda, '', $comptefactura);
+				$this->crearFactura($comanda, $datafacturacio, '', $comptefactura);
 			
 				// Gestionar stock
 				$this->registreComanda($comanda);
@@ -2355,15 +2356,10 @@ class FacturacioController extends BaseController {
 			if ($id > 0) $comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
 		
 			if ($comanda == null) {
-				
-				// Comanda nova. Crear factura => Opció no disponible, només tramitar comandes noves a través de la cistella
-				$current = $this->getCurrentDate();
-				
-				$comanda = $this->crearComanda($current);
-				
-				$detall = $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
-			
-				$this->crearFactura($current, $comanda);
+			    // No trobada
+			    $this->logEntryAuth('COMANDA POST KO',	'Comanda : ' . $id);
+			    $this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
+			    return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 
 			} else {
 				// Create an ArrayCollection of the current detalls
@@ -2439,7 +2435,7 @@ class FacturacioController extends BaseController {
 		$id = $request->get('id', 0);
 		
 		$strDatafacturacio = $request->query->get('datafacturacio', '');
-		$dataFacturacio = $this->getCurrentDate();
+		$dataFacturacio = null; // Per defecte data comanda excepte admins
 		if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
 	
 		$comanda = $em->getRepository('FecdasBundle:EntityComanda')->find($id);

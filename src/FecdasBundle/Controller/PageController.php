@@ -158,7 +158,7 @@ class PageController extends BaseController {
 					
 					$parte = $this->crearComandaParte($dataalta, $tipusparte, $currentClub, 'Importació llicències');
 
-					$this->crearFactura($dataalta, $parte);
+					$this->crearFactura($parte);
 
 					if ($form->get('importfile')->getData()->guessExtension() != 'txt'
 						|| $form->get('importfile')->getData()->getMimeType() != 'text/plain' ) throw new \Exception('El fitxer no té el format correcte');
@@ -240,7 +240,7 @@ class PageController extends BaseController {
 			
 			$parte = $this->crearComandaParte($dataalta, $tipus, $currentClub, 'Importació llicències');
 
-			$this->crearFactura($dataalta, $parte);
+			$this->crearFactura($parte);
 			
 			$this->importFileCSVData($temppath, $parte, true);
 			
@@ -568,7 +568,7 @@ class PageController extends BaseController {
 			if ($request->query->has('id') and $request->query->get('id') != "")
 				$parteid = $request->query->get('id');
 		}
-			
+ 
 		$partearenovar = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 			
 		if ($partearenovar == null) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -593,29 +593,23 @@ class PageController extends BaseController {
 		$parte = $this->crearComandaParte($dataalta, $partearenovar->getTipus(), $clubrenovar, 'Renovació llicències');
 		
 		// Crear factura
-		$this->crearFactura($dataalta, $parte);
+		$this->crearFactura($parte);
 
 		// Clone llicències
 		$parte->cloneLlicencies($partearenovar, $this->getCurrentDate());
 
 		$form = $this->createForm(new FormParteRenew($this->isCurrentAdmin()), $parte);
-		
 		$form->get('cloneid')->setData($parteid);
 
 		$em = $this->getDoctrine()->getManager();
 		try {
 			$avisos = "";
 			if ($request->getMethod() == 'POST') {
-					
 				$form->handleRequest($request);
-	
 				if ($parte->getTipus()->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
-
 				if (!$form->isValid() || !$request->request->has('parte_renew')) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador '.$form->getErrors(true, true) ); 
-					
 				$p = $request->request->get('parte_renew');
 				$i = 0; 
-				
 				/*
 				 * Validacions  de les llicències
 				 */
@@ -633,7 +627,6 @@ class PageController extends BaseController {
 					}
 					$i++;
 				}
-
 				if ($avisos != '') throw new \Exception($avisos);
 				 
 				foreach ($parte->getLlicencies() as $llicencia) {
@@ -662,7 +655,7 @@ class PageController extends BaseController {
 			
 			$this->logEntryAuth('RENOVAR KO', ' Parte renovar '.$partearenovar->getId().' '.$e->getMessage());
 		}
-			
+		
 		return $this->render('FecdasBundle:Page:renovar.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte)));
 	}
@@ -706,7 +699,7 @@ class PageController extends BaseController {
 			$this->logEntryAuth('PARTE NEW', $parteid);
 			
 			$parte = $this->crearComandaParte($dataalta);
-			$this->crearFactura($dataalta, $parte);
+			$this->crearFactura($parte);
 		}
 		
 		$form = $this->createForm(new FormParte($this->isCurrentAdmin()), $parte);
@@ -801,7 +794,7 @@ class PageController extends BaseController {
 					$parte = $this->crearComandaParte($partedataalta, $tipus, $club, 'Comanda llicències');
 
 					$parte->setClubparte($clubparte); // Pot ser diferent del club de la comanda  
-					$this->crearFactura($partedataalta, $parte);
+					$this->crearFactura($parte);
 				} else {
 					$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($id);
 	
@@ -842,7 +835,7 @@ class PageController extends BaseController {
 					if (!$parte->allowRemoveLlicencia($this->isCurrentAdmin())) throw new \Exception('Esteu fora de termini per poder esborrar llicències d\'aquesta llista. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 
 					$strDatafacturacio = isset($requestParams['datafacturacio'])?$requestParams['datafacturacio']:'';
-					$dataFacturacio = $this->getCurrentDate();
+					$dataFacturacio = null;    // Per defecte calcular segons data comanda
 					if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
 
 					$llicenciesBaixa = array( $llicencia );
@@ -943,7 +936,7 @@ class PageController extends BaseController {
 		$parteid = $request->query->get('id', 0);
 
 		$strDatafacturacio = $request->query->get('datafacturacio', '');
-		$dataFacturacio = $this->getCurrentDate();
+		$dataFacturacio = null;   // Per defecte calcular segons data comanda
 		if ($strDatafacturacio != '') $dataFacturacio = \DateTime::createFromFormat('d/m/Y', $strDatafacturacio);
 		
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);

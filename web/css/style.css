@@ -79,6 +79,51 @@ input.form-control-updated, .form-control.form-control-updated {
     outline-width: 0;
 }
 
+input.form-control-changed {  /* Orange */
+	border-color: #f7931d !important; 
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(247, 147, 29, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(247, 147, 29, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(247, 147, 29, 0.6);
+	outline: 0 none;
+}
+
+input.form-control-changed:focus {
+	border-color: #f57031 !important;
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(245, 112, 49, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(245, 112, 49, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(245, 112, 49, 0.6);
+}
+
+input.form-control-saved {  /* Green */
+	border-color: #5cb85c !important; /*#7ac3f3; Blue */
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(92, 184, 92, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(92, 184, 92, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(92, 184, 92, 0.6);
+	outline: 0 none;
+}
+
+input.form-control-saved:focus {
+	border-color: #4e9a06 !important; /* #66afe9; */
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(78, 154, 6, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(78, 154, 6, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(78, 154, 6, 0.6);
+}
+
+input.form-control-error {  /* Red */
+	border-color: #de2b33 !important; /*#dc4c53;*/
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(222, 43, 52, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(222, 43, 52, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(222, 43, 52, 0.6);
+}
+
+input.form-control-error:focus {
+	border-color: #fc929b !important;
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(252, 146, 155, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(252, 146, 155, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 10px rgba(252, 146, 155, 0.6);
+}
+
+
 .form-control.form-select { padding: 6px; }
 
 .btn.btn-default {
@@ -2396,24 +2441,24 @@ input#formuserclub-randompassword { width: 150px; }
 
 
 #header-personaindex {	width: 4%; text-align: left;}
-#header-personanom { width: 23%;  text-align: left; }
-#header-personadni { width: 14%;  text-align: left; }
-#header-personamail { width: 31%;  text-align: left; }
-#header-personadigitalpdf, #header-personaplasticpdf { width: 4%;  text-align: left; }
-#header-personacheck { width: 11%; font-size: 0.9em; }
-#header-personaenviada, #header-personaimpresa { width: 12%; text-align: right; }
+#header-personanom { width: 18%;  text-align: left; }
+#header-personadni { width: 13%;  text-align: left; }
+#header-personamail { width: 41%;  text-align: left; }
+#header-personadesarmail, #header-personadigitalpdf, #header-personaplasticpdf { width: 4%;  text-align: left; }
+#header-personacheck { width: 6%; font-size: 0.9em; }
+#header-personaenviada, #header-personaimpresa { width: 11%; text-align: right; }
 
-.data-detall-cell.federat-personaindex {	width: 4%; text-align: left;  vertical-align: middle;}
-.data-detall-cell.federat-personanom { width: 23%;  text-align: left; }
-.data-detall-cell.federat-personadni { width: 14%;  text-align: left; }
+.data-detall-cell.federat-personaindex {	width: 4%; text-align: left;  vertical-align: middle; font-size: 0.9em; padding: 8px 4px;}
+.data-detall-cell.federat-personanom { width: 18%;  text-align: left; }
+.data-detall-cell.federat-personadni { width: 13%;  text-align: left; }
 .data-detall-cell.federat-personadni input { text-align: center; }
-.data-detall-cell.federat-personamail { width: 31%;  text-align: left; }
-.data-detall-cell.federat-personadigitalpdf, .data-detall-cell.federat-personaplasticpdf { width: 4%;  text-align: left; font-size: 1.2em;  vertical-align: middle; }
-.data-detall-cell.federat-personacheck { width: 11%;  vertical-align: middle; }
-.data-detall-cell.federat-personaenviada, .data-detall-cell.federat-personaimpresa { width: 12%; color: #2281cf; font-size: 0.9em; font-weight: bold; text-align: right;  vertical-align: middle; }
+.data-detall-cell.federat-personamail { width: 41%;  text-align: left;  }
+.data-detall-cell.federat-personadesarmail, .data-detall-cell.federat-personadigitalpdf, .data-detall-cell.federat-personaplasticpdf { width: 4%;  text-align: left; font-size: 1.2em;  vertical-align: middle; padding: 8px 4px; }
+.data-detall-cell.federat-personacheck { width: 6%;  vertical-align: middle; }
+.data-detall-cell.federat-personaenviada, .data-detall-cell.federat-personaimpresa { width: 11%; color: #2281cf; font-size: 0.9em; font-weight: bold; text-align: right;  vertical-align: middle; }
 
 #table-federats table .data-detall-cell input[type="text"],
-#table-federats table .data-detall-cell input[type="text"] { width: 100%; font-size: 0.9em; }
+#table-federats table .data-detall-cell input[type="text"] { width: 100%; font-size: 0.85em; }
 
 #table-federats .input-group-addon { background-color: #fff; }
 

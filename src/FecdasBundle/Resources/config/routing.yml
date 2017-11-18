@@ -381,6 +381,12 @@ FecdasBundle_recents:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_desarmail:
+    path:  /desarmail
+    defaults: { _controller: "FecdasBundle:Admin:desarmail" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_consultaadmin:
     path:  /consultaadmin
     defaults: { _controller: "FecdasBundle:Admin:consultaadmin" }

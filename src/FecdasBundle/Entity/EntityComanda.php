@@ -599,13 +599,11 @@ class EntityComanda {
 		}
 		ksort($acumulades); // Ordenada per codi
 		return $acumulades;*/
-		
 		if ($this->isFacturaModificada()) {
 			
 			$detallsArray = json_decode($this->getFactura()->getDetalls(), false, 512);
 			
 			foreach ($detallsArray as $id => $d) {
-						
 					$acumulades[$id] = array('total' => $d->total,
 						'totalbaixa' => $d->totalbaixa,	 
 						'preuunitat' => $d->preuunitat,
@@ -626,7 +624,6 @@ class EntityComanda {
 					$d->getProducte() != null) {
 				
 				$id = $d->getProducte()->getId();
-
 				if (isset($acumulades[$id])) {
 					$acumulades[$id]['total'] += $d->getUnitats();
 					if ($baixes == true) $acumulades[$id]['total'] += $d->getUnitatsbaixa();

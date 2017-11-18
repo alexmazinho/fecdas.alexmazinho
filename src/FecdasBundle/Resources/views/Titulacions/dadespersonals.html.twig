@@ -348,8 +348,6 @@
 	    	else $('.dadespersonals-historial').slideUp('slow');
 		});
 		
-		
-
 
 		$( ".llicencia-duplicat" ).click(function (e) {
 			e.preventDefault();
@@ -368,21 +366,24 @@
 			strHtml += "			Cal crear una comanda nova per aquest duplicat a càrrec del club "+club+"?";
 			strHtml += "		</label>";
 			strHtml += "	  </div>";
-			strHtml += "      <div id='formduplicat-datafactura' style='display:none'>";
+			/*strHtml += "      <div id='formduplicat-datafactura' style='display:none'>";
 			strHtml += "      	<label for='comanda_datafactura'>Data facturació</label>";
 			strHtml += "	    <input type='text' id='datafacturacio' disabled='disabled'/>";
-			strHtml += "      </div>";
+			strHtml += "      </div>";*/
 			strHtml += "  </div>";
 
 			dialegConfirmacio(strHtml, 'Comanda duplicat', 'auto', 400, function() { 
 				
-				url += '&factura='+($('#checkfactura').is(':checked')?1:0)+'&datafacturacio='+$('#datafacturacio').val();
+				//url += '&factura='+($('#checkfactura').is(':checked')?1:0)+'&datafacturacio='+$('#datafacturacio').val();
+				url += '&factura='+($('#checkfactura').is(':checked')?1:0);
 					
 				window.location = url;
+
+				closeDialegConfirmacio();
 				 
 			}, function() { closeDialegConfirmacio(); }, function() {
 
-				$("#checkfactura").click(function(){
+				/*$("#checkfactura").click(function(){
 					var checked = $(this).is(':checked');
 					if (checked) {
 						$( "#datafacturacio" ).datepicker({
@@ -401,7 +402,7 @@
 
 						$( "#datafacturacio" ).datepicker('destroy');
 					}
-				});
+				});*/
 	        	
 			});
 		});

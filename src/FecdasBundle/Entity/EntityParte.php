@@ -805,11 +805,15 @@ class EntityParte extends EntityComanda {
     {
     	if ($this->web == false) return false;  // No web no permet imprimir
     	
-    	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_PAGAMENT_DIFERIT && $this->club->getImpressio() == true) return true;  // DIFE amb impressio sempre
+    	if ($this->comandaPagada()) return true; // Comanda pagada
     	
-    	if ($this->club->getEstat()->getCodi() == BaseController::CLUB_SENSE_TRAMITACIO) return false; // NOTR mai 
-
-    	return $this->comandaPagada();  // La resta poden imprimir si està pagat
+    	if (!$this->club->pendentPagament() && $this->club->getImpressio()) return true; // DIFE amb impressio sempre
+    	
+    	if (!$this->club->potTramitar()) return false; // Clubs no tramitació
+    	
+    	if ($this->club->pendentPagament() && !$this->pendent) return true;   // IMMEDIAT si el parte no està pendent és que tenia saldo quan es va pagar 
+    	
+    	return false;     // DIFE sense impressió
     }
  
  	/**

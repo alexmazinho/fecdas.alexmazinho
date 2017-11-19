@@ -48,7 +48,7 @@ class BaseController extends Controller {
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_ANUAL_MES = 11; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 15/12 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -842,19 +842,6 @@ class BaseController extends Controller {
 		if ($parteoverlap != null) throw new \Exception($llicencia->getPersona()->getNomCognoms(). ' - Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
 															$parteoverlap->getDataalta()->format('d/m/Y'));
 
-		$datainiciRevisarSaldos = new \DateTime(date("Y-m-d", strtotime(date("Y") . "-".self::INICI_REVISAR_CLUBS_MONTH."-".self::INICI_REVISAR_CLUBS_DAY)));
-		
-		$club = $parte->getClub();
-		if ($current->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d') && 
-		    $club->controlCredit() == true) {  // Comprovació sobre el club de la comanda != getClubparte()
-			    
-			// Comprovació de saldos clubs DIFE
-/***************  SALDOS ENCARA NO ************************************************************************************************************************/					
-			/*if ($parte->getPreuTotal() > $club->getSaldo() + $club->getLimitcredit()) {
-					throw new \Exception('L\'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
-					Per poder fer noves gestions, cal que contacteu amb la FECDAS');
-			}*/
-		}
 	}
  
 	protected function validaDataLlicencia(\DateTime $dataalta, $tipus) {
@@ -2634,10 +2621,15 @@ class BaseController extends Controller {
 		$detall = $this->addComandaDetall($parte, $producte, 1, 0, $anotacions);
 
 		if ($detall != null) $parte->setComentaris($parte->getComentaris().' '.$parte->getComentariDefault());
-		
+	
+		$import = $parte->getTotalDetalls();
+        $club = $parte->getClub(); 		
+
+        if ($club != null && $club->pendentPagament() && $club->getSaldo() > $import) $parte->setPendent(false);
+		    // Revisar saldo clubs pagament immediat, si tenen saldo el parte no es queda pendent, va contra el saldo del club.
 		
 		// Actualitzar import i detalls factura
-		$factura->setImport($parte->getTotalDetalls());
+		$factura->setImport($import);
 				
 		$detalls = $parte->getDetallsAcumulats();
 		//$factura->setDetalls(json_encode($detalls, JSON_UNESCAPED_UNICODE)); // Desar estat detalls a la factura

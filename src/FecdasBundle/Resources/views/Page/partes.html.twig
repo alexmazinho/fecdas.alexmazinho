@@ -93,9 +93,9 @@
 		   		<li class="data-detall {% if parte.isPassat %} data-detall-fosc {% endif %}">
 		   			<div class="data-detall-cell parte-estat">
 		   				{% if admin == true  %}
-		   					{% if parte.comandaPagada != true  %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ parte.estat }}{% endif %}
+		   					{% if not parte.comandaPagada  %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ parte.estat }}{% endif %}
 		   				{% else %}
-		   					{% if parte.comandaPagada != true  and parte.totalComanda > 0 and club.saldo < 0 %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% endif %}
+		   					{% if not parte.comandaPagada and parte.totalComanda > 0 and club.saldo < 0 %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% endif %}
 		   				{% endif %}
 		   			</div>
 		   			

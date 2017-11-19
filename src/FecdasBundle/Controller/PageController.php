@@ -986,7 +986,7 @@ class PageController extends BaseController {
 			
 			$this->logEntryAuth('BAIXA LLICENCIES KO', 'parte '.$parteid . ' llicencies ' . $idsLlicencies .' '. $e->getMessage());	
 			
-			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
+			$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 		}
 
 		return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parteid, 'action' => 'view') ));

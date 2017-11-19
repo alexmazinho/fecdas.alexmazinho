@@ -420,7 +420,7 @@ class EntityComanda {
 	public function getEstat()
 	{
 		if ($this->esBaixa() == true) return 'baixa';
-		return $this->comandaPagada()?'pendent':'';
+		return !$this->comandaPagada()?'pendent':'';
 	}
 	
 	/**

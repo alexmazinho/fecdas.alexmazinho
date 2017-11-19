@@ -1173,7 +1173,7 @@ class CronController extends BaseController {
     			$filaClub .= "<td class='importclub saldo'>" . number_format($dadesClub['saldocalculat'], 2, ',', '.') . "€</td>"; // SAldo calculat
     			
     			if (false) { // Desactivat
-    				if ($club->controlCredit() &&
+    			    if (!$club->pendentPagament() &&     // Clubs amb crèdit
     					$this->getCurrentDate()->format('Y-m-d') >= $datainiciRevisarSaldos->format('Y-m-d')) {
     						
     					if ($club->getLimitcredit() == null || $club->getLimitcredit() <= 0) {

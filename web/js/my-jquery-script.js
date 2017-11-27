@@ -1521,7 +1521,7 @@
 	        var url = $(this).attr('href');
 	        
 	        var strHtml = '<p>Segur que vols esborrar aquesta llicència?</p>';
-			strHtml += "	<div class='row'>";
+			/*strHtml += "	<div class='row'>";
 			strHtml += "		<div class='col-md-12'>";
 			strHtml += "			Data factura anul·lació";
 			strHtml += "		</div>";
@@ -1534,14 +1534,14 @@
 			strHtml += "				<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
 			strHtml += "			</div'>";
 			strHtml += "		</div>";
-			strHtml += "	</div>";
+			strHtml += "	</div>";*/
 			
 			
 			dialegConfirmacio(strHtml, 'Confirmació baixa llicència', 'auto', 400, function() { 
 				
 	        	$('#progressbar').show();  // Rellotge
 	        	
-	        	params += '&'+$.param({ 'datafacturacio': $('#datafacturacio').val() });
+	        	//params += '&'+$.param({ 'datafacturacio': $('#datafacturacio').val() });
 	        	
 	 	        $.post(url, params,
 	 	        	function(data, textStatus) {
@@ -1577,7 +1577,7 @@
 				 
 			}, function() { closeDialegConfirmacio(); }, function() { 
 
-				var current = new Date();
+				/*var current = new Date();
 				
 	    		initDateTimePicker ( 
 	    			$( '#datafacturacio' ), 
@@ -1589,7 +1589,7 @@
 	    			function () { }
 	    		);
 				
-	    		$('#datafacturacio').datetimepicker({value: current.getDayFormatted()+'/'+current.getMonthFormatted()+'/'+current.getFullYear()});
+	    		$('#datafacturacio').datetimepicker({value: current.getDayFormatted()+'/'+current.getMonthFormatted()+'/'+current.getFullYear()});*/
 			});
 	        
 	    });
@@ -1690,7 +1690,7 @@
 		dialegHtml += "<div class='sms-pagament row'> ";
 		
 		if (admin == true) {
-			dialegHtml += "   <div class='col-md-6'>";
+			/*dialegHtml += "   <div class='col-md-6'>";
 			dialegHtml += "   	<div class='form-group'>";
 			dialegHtml += "     	<label for='comanda_datafactura'>Factura</label>";
 			dialegHtml += "      	<div class='input-group'>";
@@ -1699,7 +1699,7 @@
 			dialegHtml += "	        	<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
 			dialegHtml += "      	</div>";
 			dialegHtml += "   	</div>";
-			dialegHtml += "   </div>";
+			dialegHtml += "   </div>";*/
 			dialegHtml += "   <div class='col-md-12'>";
 			dialegHtml += "   	<div class='form-group'>";
 			dialegHtml += "     	<label for='comanda_comptefactura'>Núm. Compte</label>";

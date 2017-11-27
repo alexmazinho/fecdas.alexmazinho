@@ -132,25 +132,25 @@
 			var url = $(this).attr("href")+'&club='+$('#form_clubs').val();
 			
 			dialegConfirmacio( pagamentComandaSMS( {% if admin == true %} true {% else %} false {% endif %}, "{{ iban }}", "{{ ibanescola }}" ), "Abans de continuar...", 0, 500, function() {
-				var datafacturacio = '';
+				/*var datafacturacio = '';
 
 				if ($('#datafacturacio').length != 0) {
 					datafacturacio = $('#datafacturacio').val();
 				} else {
 					var current = new Date();
 					datafacturacio = current.getDate()+'/'+(current.getMonth()+1)+'/'+current.getFullYear();
-				}
+				}*/
 
 				var params 	 = '&transport='+($('#form_transport_0').is(':checked')?1:0);
 				params 		+= '&comentaris='+$('#comanda_comentaris').val();
-				params 		+= '&datafacturacio='+datafacturacio;
+				//params 		+= '&datafacturacio='+datafacturacio;
 				params 		+= '&comptefactura='+($('#comptefactura').length?$('#comptefactura').val():'');		
 				
 	        	window.location = url+params;
 
 	        }, function() { closeDialegConfirmacio(); }, function() {
 
-	        	var current = new Date();
+	        	/*var current = new Date();
 	    		var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
 
 				initDateTimePicker ( 
@@ -166,7 +166,7 @@
 				$( '#datafacturacio' ).datetimepicker({
 					value: current,
 					format:'d/m/Y'
-				});
+				});*/
 	        	
 			});
 			

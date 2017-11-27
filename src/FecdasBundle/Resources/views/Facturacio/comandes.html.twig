@@ -297,7 +297,7 @@
 				
 				var strHtml = '<p>Segur que vols anul·lar la comanda?</p>';
 
-				strHtml += "<div class='form-group'>";
+				/*strHtml += "<div class='form-group'>";
 				strHtml += "	<label for='comanda_datafactura'>Factura anul·lació</label>";
 				strHtml += "    <div class='input-group'>";
 				strHtml += "    	<span class='input-group-addon'>Data</span>";
@@ -306,16 +306,17 @@
 				strHtml += "      		<span class='fa fa-calendar fa-1x'></span>";
 				strHtml += "      	</span>";
 				strHtml += "	</div>";
-				strHtml += "</div>";
+				strHtml += "</div>";*/
 
 				
 				dialegConfirmacio(strHtml, 'Baixa comanda', 'auto', 350, function() { 
 					
-					window.location = url+'&datafacturacio='+$('#datafacturacio').val();
+					//window.location = url+'&datafacturacio='+$('#datafacturacio').val();
+					window.location = url;
 					 
 				}, function() { closeDialegConfirmacio(); }, function() { 
 
-					var current = new Date();
+					/*var current = new Date();
 					var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
 					var maxdate = new Date (current.getFullYear(), current.getMonth()+2, current.getDay());
 
@@ -327,7 +328,7 @@
 						'datafacturacio-picker', 
 						false,
 						function() {} 
-					);
+					);*/
 				});
 			});
 		

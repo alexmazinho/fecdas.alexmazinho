@@ -59,7 +59,7 @@ class EntityClub {
 	protected $web;
 	
 	/**
-	 * @ORM\Column(type="string", length=12)
+	 * @ORM\Column(type="string", length=20)
 	 * @Assert\NotBlank()
 	 */
 	protected $cif;
@@ -765,7 +765,7 @@ class EntityClub {
      */
     public function setNom($nom)
     {
-        $this->nom = $nom;
+        $this->nom = substr($nom,0,100);
     }
 
     /**
@@ -881,7 +881,7 @@ class EntityClub {
      */
     public function setCif($cif)
     {
-        $this->cif = $cif;
+        $this->cif = substr($cif,0,20);
     }
 
     /**
@@ -941,7 +941,7 @@ class EntityClub {
      */
     public function setWeb($web)
     {
-        $this->web = $web;
+        $this->web = substr($web,0,150);
     }
 
     /**
@@ -961,7 +961,7 @@ class EntityClub {
      */
     public function setAddradreca($addradreca)
     {
-        $this->addradreca = $addradreca;
+        $this->addradreca =  substr($addradreca,0,75);
     }
 
     /**
@@ -981,7 +981,7 @@ class EntityClub {
      */
     public function setAddrpob($addrpob)
     {
-        $this->addrpob = $addrpob;
+        $this->addrpob = substr($addrpob,0,35);
     }
 
     /**
@@ -1001,7 +1001,7 @@ class EntityClub {
      */
     public function setAddrcp($addrcp)
     {
-        $this->addrcp = $addrcp;
+        $this->addrcp = substr($addrcp,0,5);
     }
 
     /**
@@ -1021,7 +1021,7 @@ class EntityClub {
      */
     public function setAddrcomarca($addrcomarca)
     {
-    	$this->addrcomarca = $addrcomarca;
+        $this->addrcomarca = substr($addrcomarca,0,50);
     }
 	
     /**
@@ -1041,7 +1041,7 @@ class EntityClub {
      */
     public function setAddrprovincia($addrprovincia)
     {
-        $this->addrprovincia = $addrprovincia;
+        $this->addrprovincia = substr($addrprovincia,0,20);
     }
 
     /**
@@ -1061,7 +1061,7 @@ class EntityClub {
      */
     public function setAddradrecacorreu($addradrecacorreu)
     {
-    	$this->addradrecacorreu = $addradrecacorreu;
+        $this->addradrecacorreu = substr($addradrecacorreu,0,75);
     }
     
     /**
@@ -1081,7 +1081,7 @@ class EntityClub {
      */
     public function setAddrpobcorreu($addrpobcorreu)
     {
-    	$this->addrpobcorreu = $addrpobcorreu;
+        $this->addrpobcorreu = substr($addrpobcorreu,0,35);
     }
     
     /**
@@ -1101,7 +1101,7 @@ class EntityClub {
      */
     public function setAddrcpcorreu($addrcpcorreu)
     {
-    	$this->addrcpcorreu = $addrcpcorreu;
+        $this->addrcpcorreu = substr($addrcpcorreu,0,5);
     }
     
     /**
@@ -1121,7 +1121,7 @@ class EntityClub {
      */
     public function setAddrcomarcacorreu($addrcomarcacorreu)
     {
-    	$this->addrcomarcacorreu = $addrcomarcacorreu;
+        $this->addrcomarcacorreu = substr($addrcomarcacorreu,0,50);
     }
 	
     /**
@@ -1141,7 +1141,7 @@ class EntityClub {
      */
     public function setAddrprovinciacorreu($addrprovinciacorreu)
     {
-    	$this->addrprovinciacorreu = $addrprovinciacorreu;
+        $this->addrprovinciacorreu = substr($addrprovinciacorreu,0,20);
     }
     
     /**

@@ -44,7 +44,7 @@ class BaseController extends Controller {
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
-	const ID_LLICENCIES_DIA = 12;
+	const ID_LLICENCIES_DIA = 11;
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
@@ -2047,7 +2047,7 @@ class BaseController extends Controller {
 		$pdf = new TcpdfBridge('L', PDF_UNIT, $pageLayout, true, 'UTF-8', false);
 				
 		$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència Curs Escolar FECDAS' . date("Y")));
+		              'title' => ($template == BaseController::TEMPLATE_GENERAL?'Llicència FECDAS':'Llicència Curs Escolar FECDAS') . date("Y")));
 
 		$pdf->setPrintFooter(false);
 		$pdf->setPrintHeader(false);

@@ -329,7 +329,7 @@ class EntityPersona {
      * @return \FecdasBundle\Entity\EntityLlicencia
      */
     public static function getLlicenciaVigentStatic($llicencies) {
-    	foreach ($llicencies as $llicencia) {
+        foreach ($llicencies as $llicencia) {
     		if ($llicencia->isVigent() == true) return $llicencia;
     	} 
     	return null;
@@ -358,11 +358,10 @@ class EntityPersona {
      */
     public static function getInfoHistorialLlicenciesStatic($llicencies, $admin = false, $desde = '', $fins = '') {
     	$txtClub = "";
-    	  
+   	  
 		if ($desde != '' || $fins != '') {
 			$desde = ($desde != ''?\DateTime::createFromFormat('Y-m-d', $desde):null);
 			$fins = ($fins != ''?\DateTime::createFromFormat('Y-m-d', $fins):null);
-			
 			
 			$llicenciaLast = EntityPersona::getLastLlicenciaStatic($llicencies, $desde, $fins);
 	    	if ($llicenciaLast != null && $llicenciaLast->getParte() != null )  {
@@ -375,7 +374,7 @@ class EntityPersona {
 			
 			return $txtClub . "Persona sense llicències en aquestes dates";		
 		}
-		
+
 		$llicenciaVigent = EntityPersona::getLlicenciaVigentStatic($llicencies);
     	if ($llicenciaVigent != null && $llicenciaVigent->getParte() != null) {
     		$parte = $llicenciaVigent->getParte();

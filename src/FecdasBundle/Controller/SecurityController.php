@@ -493,11 +493,8 @@ class SecurityController extends BaseController
 				$formdata = $request->request->get('club');
 
 				if (isset($formdata['nouclub']) && $this->isCurrentAdmin() != true) throw new \Exception("Acció no permesa");	// Només admins poden crear clubs
-				
 		   		if (isset($formdata['nouclub']) && $this->isCurrentAdmin() == true) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find( $formdata['codi'] ); 
-
 		   		if ($club == null) {
-		   					
 		   			$club = new EntityClub();
 
 					if (!isset($formdata['codi'])) $codiNou = $this->obtenirCodiClub();
@@ -506,7 +503,6 @@ class SecurityController extends BaseController
 					$club->setCodi($codiNou);
 					
 					$em->persist($club);
-	
 					$nouclub = true;	
 				}
 			} else {
@@ -541,22 +537,17 @@ class SecurityController extends BaseController
 				if ($action == "nouclub") $em->persist($club);
 
 	   		}
-
 	   		if ($this->isCurrentAdmin() != true) $form = $this->createForm(new FormClub( $optionsForm ), $club);
 			else $form = $this->createForm(new FormClubAdmin( $optionsForm ), $club);
-			
 			$jsonCarrecs = ($club->getCarrecs() != ''?json_decode($club->getCarrecs()):array());
 			
 			$carrecs = $this->getArrayCarrecs($jsonCarrecs);
 			
 	   		if ($request->getMethod() == 'POST') {
-	   			
 				//$currentMails = $club->getMails(); // Array
 				
 	   			$form->handleRequest($request);
-	   			
 	   			if (!$form->isValid()) throw new \Exception("error validant les dades ". $form->getErrors(true, true));
-				
 	   			/* Validacions dades obligatories*/
 	   			if (trim($club->getNom()) == "") {
 	   				$tab = 0;	
@@ -587,7 +578,6 @@ class SecurityController extends BaseController
 				    $tab = 0;
 				    throw new \Exception("El número de mòbil no és correcte");
 				}
-				
 				if ($this->isCurrentAdmin() == true) {	
 					if ($club->getCompte() == '' || strlen($club->getCompte()) <> 7 || !is_numeric($club->getCompte())) {
 						$tab = 2;
@@ -601,7 +591,6 @@ class SecurityController extends BaseController
 		   			
 		   			if ($club->getDatabaixa() != null) $club->setActivat(false);
 		   		}
-					
 	   			/* Validacions mail no existeix en altres clubs */
 	   			foreach ($club->getMails() as $mail) {
 		   			$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($mail)));
@@ -621,12 +610,10 @@ class SecurityController extends BaseController
 		   				}
 		   			}
  				}
-	   					
     			if ($nouclub) {
     				// Nou club
     				$club->setEstat($this->getDoctrine()->getRepository('FecdasBundle:EntityClubEstat')->find(self::CLUB_PAGAMENT_DIFERIT));
     				$em->persist($club);
-	    				
 	    			// Crear el primer usuari de club, amb el mail del club
 	    			$randomPassword = $this->generateRandomPassword();
 	    			$mails = $club->getMails();
@@ -647,11 +634,12 @@ class SecurityController extends BaseController
 				
 	   		}
 		} catch (\Exception $e) {
-			$em->clear();
+			//$em->clear();
+            $em->refresh($club);
+
 			$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
 			$this->logEntryAuth(($nouclub)?"CLUB NEW ":"CLUB UPD ". 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());
 		}
-   		
 		if ($form == null) {
 			if ($this->isCurrentAdmin() != true) $form = $this->createForm(new FormClub( $optionsForm ), $club);
 			else $form = $this->createForm(new FormClubAdmin( $optionsForm ), $club);		

@@ -559,25 +559,24 @@ class EntityParte extends EntityComanda {
     	if ($this->dataalta == null) {
     		$this->setDataalta(new \DateTime());
     	}
-    	
     	$datacaducitat = new \DateTime($this->dataalta->format("Y-m-d"));
     	if ($this->getTipus() != null) {
-    	if ($this->getTipus()->getId() != BaseController::ID_LLICENCIES_DIA) { // No un dia
-    		if ($this->getTipus()->getEs365() == true) {
-    			/* Competició. En 365 datafinal indica data de caducitat */
-    			if ($this->getTipus()->getFinal() != null) {
-    				// Si dataalta > datafinal  --> any següent, sinó any dataalta 
-    				if ($datacaducitat->format("m-d") > $this->getTipus()->getFinal()) $currentYear = $datacaducitat->format("Y") + 1; 
-    				else $currentYear = $datacaducitat->format("Y");
-    				$datacaducitat = \DateTime::createFromFormat("Y-m-d", $currentYear."-".$this->getTipus()->getFinal());
-    			} else {
-    				$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
-    			}
-    		} else {
-    			/* Anuals caduquen a 31/12*/
-    			$datacaducitat = \DateTime::createFromFormat("Y-m-d", $datacaducitat->format("Y") . "-12-31");
-    		}
-    	}
+        	if ($this->getTipus()->getId() != BaseController::ID_LLICENCIES_DIA) { // No un dia
+        		if ($this->getTipus()->getEs365() == true) {
+        			/* Competició. En 365 datafinal indica data de caducitat */
+        			if ($this->getTipus()->getFinal() != null) {
+        				// Si dataalta > datafinal  --> any següent, sinó any dataalta 
+        				if ($datacaducitat->format("m-d") > $this->getTipus()->getFinal()) $currentYear = $datacaducitat->format("Y") + 1; 
+        				else $currentYear = $datacaducitat->format("Y");
+        				$datacaducitat = \DateTime::createFromFormat("Y-m-d", $currentYear."-".$this->getTipus()->getFinal());
+        			} else {
+        				$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
+        			}
+        		} else {
+        			/* Anuals caduquen a 31/12*/
+        			$datacaducitat = \DateTime::createFromFormat("Y-m-d", $datacaducitat->format("Y") . "-12-31");
+        		}
+        	}
     	}
 		return $datacaducitat;
     }

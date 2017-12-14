@@ -1,3 +1,6 @@
+
+$ app/console doctrine:schema:update --dump-sql
+
 $ php app/console list
 Symfony version 2.7.27 - app/dev/debug
 

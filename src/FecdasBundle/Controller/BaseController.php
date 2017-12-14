@@ -137,6 +137,17 @@ class BaseController extends Controller {
 	const TEMPLATE_ESCOLAR = 'ES';
 	const TEMPLATE_ESCOLAR_SUBMARINISME = 'CS';
 	
+	const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664.jpg';
+	const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664.jpg';
+	const IMATGE_ANVERS_ESCOLAR        = 'images/fonsanysescolar_1024x664.jpg';
+	const IMATGE_ANVERS_TECNOCAMPUS    = 'images/fonstecnocampus_910x600.jpg';
+	
+	const IMATGE_LOGO_FECDAS       = 'images/fecdaslogopdf.gif';
+	const IMATGE_LOGO_GENE         = 'images/logo-generalitat.jpg';
+	const IMATGE_LOGO_ESPORT       = 'images/esport-logo.jpg';
+	const IMATGE_LOGO_FECDAS_MAIL  = 'images/fecdaslogo-mail.png';
+	const IMATGE_BUTTON            = 'images/white_button.png';
+	
 	// Docs assegurança
 	const POLISSA_BUSSEIG = 'polissa_busseig_2017.pdf';
 	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2017-18.pdf';
@@ -1294,15 +1305,15 @@ class BaseController extends Controller {
 		if($showTemplate == true) {
 			/* LOGOS */		
 			// file, x, y, w, h, format, link alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
-			$pdf->Image('images/fecdaslogopdf.gif', $x_logos, $y_logos, 
+		    $pdf->Image(BaseController::IMATGE_LOGO_FECDAS, $x_logos, $y_logos, 
 						$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
 						'', false, false, array(''),
 						'LT', false, false);
-			$pdf->Image('images/logo-generalitat.jpg', $x_logos+$w_fedelogo+2, $y_logos, 
+			$pdf->Image(BaseController::IMATGE_LOGO_GENE, $x_logos+$w_fedelogo+2, $y_logos, 
 						$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
 						'', false, false, array(''),
 						'CT', false, false);
-			$pdf->Image('images/esport-logo.jpg', $x_logos+$w_fedelogo+4.5, $y_logos+$h_genelogo, 
+			$pdf->Image(BaseController::IMATGE_LOGO_ESPORT, $x_logos+$w_fedelogo+4.5, $y_logos+$h_genelogo, 
 						$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
 						'', false, false, array(''),
 						'CB', false, false);
@@ -1723,15 +1734,15 @@ class BaseController extends Controller {
 	   		$pdf->Rotate(90, $l_margin + $rx_corp , $y_corp + $ry_corp);
 			
 			// file, x, y, w, h, format, link,  alineacio, resize, dpi, palign, mask, mask, border, fit, hidden, fitpage, alt, altimg			
-			$pdf->Image('images/fecdaslogopdf.gif', $x_corp, $y_corp, 
+	   		$pdf->Image(BaseController::IMATGE_LOGO_FECDAS, $x_corp, $y_corp, 
 							$w_fedelogo, 0 , 'gif', '', 'LT', true, 320, 
 							'', false, false, array(''),
 							'LT', false, false);
-			$pdf->Image('images/logo-generalitat.jpg', $x_corp+$w_fedelogo+2, $y_corp, 
+			$pdf->Image(BaseController::IMATGE_LOGO_GENE, $x_corp+$w_fedelogo+2, $y_corp, 
 							$w_genelogo, 0 , 'jpeg', '', 'T', true, 320, 
 							'', false, false, array(''),
 							'CT', false, false);
-			$pdf->Image('images/esport-logo.jpg', $x_corp+$w_fedelogo+4.5, $y_corp+$h_genelogo, 
+			$pdf->Image(BaseController::IMATGE_LOGO_ESPORT, $x_corp+$w_fedelogo+4.5, $y_corp+$h_genelogo, 
 							$w_esportlogo, 0 , 'jpeg', '', 'B', true, 320, 
 							'', false, false, array(''),
 							'CB', false, false);
@@ -2032,9 +2043,9 @@ class BaseController extends Controller {
 		$yCat =	52-$offset;		
 		$yNai =	58-$offset;
 		if ($template == BaseController::TEMPLATE_GENERAL) $yCad = 71-$offset;		
-		else $yCad = (count($links) <= 3 ? 72-$offset: $yNai);
-		$yClu =	64-$offset;		
-		$yTlf =	64-$offset;	
+		else $yCad = (count($links) <= 3 ? 70-$offset: $yNai-0.2);
+		$yClu =	65-$offset;		
+		$yTlf =	$yClu-0.2;	
 
 		// Links docs
 		$x = $x_titols + 5;
@@ -2064,7 +2075,7 @@ class BaseController extends Controller {
 
 		$pdf->AddPage('L', $pageLayout);
 		
-		$srcImatge = ($template == BaseController::TEMPLATE_GENERAL?'images/fonsgeneral_1024x664.jpg':'images/fonsanysescolar_1024x664.jpg');
+		$srcImatge = ($template == BaseController::TEMPLATE_GENERAL?BaseController::IMATGE_ANVERS_GENERAL:BaseController::IMATGE_ANVERS_ESCOLAR);
 		
 		$pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
@@ -2086,7 +2097,8 @@ class BaseController extends Controller {
 //		$pdf->SetFillColor(224,224,224);
 //		$pdf->SetAlpha(0.7);
 	
-		$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
+		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
+		else $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
 		if ($template == BaseController::TEMPLATE_GENERAL) {
 			$pdf->SetFont('dejavusans', 'B', 14, '', true);
 		} else {
@@ -2100,13 +2112,21 @@ class BaseController extends Controller {
 		$pdf->SetFont('dejavusans', 'B', 11);
 		$pdf->SetTextColor(255, 255, 255);
 
-		$pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.3, 'depth_h' => 0.3, 'color' => array(53,153,179), 'opacity' => 0.6, 'blend_mode' => 'Normal'));		
+		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.6, 'blend_mode' => 'Normal'));		
+		else $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.3, 'depth_h' => 0.3, 'color' => array(53,153,179), 'opacity' => 0.6, 'blend_mode' => 'Normal'));
 		
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yNom, '<span style="font-size: small;">Nom: </span>'.$persona->getNomCognoms(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCat, '<span style="font-size: small;">Categoria/Nivell: </span>'.$llicencia->getCategoria()->getCategoria(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yNai, '<span style="font-size: small;">Data Naixement: </span>'.$persona->getDatanaixement()->format('d/m/Y'), 0, 0, false, true, 'L', true);
-		$pdf->writeHTMLCell(0, 0, $x_titols, $yClu, '<span style="font-size: small;">Entitat: </span>'.$club->getNom(), 0, 0, false, true, 'L', true);
+		$pdf->writeHTMLCell(0, 0, $x_titols, $yClu, '<span style="font-size: small;">Entitat: </span>', 0, 0, false, true, 'L', true);
+		
+		/* Ajustar nom del club */
+		$pdf->SetY($yClu-0.5);
+		$pdf->SetX(PDF_MARGIN_LEFT+4);
+		$pdf->Cell(78, 0, $club->getNom(), 0, 0, 'L', false, '', 1);
+		
+		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetRightMargin(PDF_MARGIN_RIGHT);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
 		$pdf->SetFont('dejavusans', 'B', 10);
@@ -2122,7 +2142,9 @@ class BaseController extends Controller {
 		$margins = $pdf->getMargins();
 		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right'];
 		
-		$pdf->SetTextColor(53,153,179);
+		
+		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetTextColor(39,65,140);
+		else  $pdf->SetTextColor(53,153,179);
 		$pdf->SetFont('helvetica', 'B', 10, '', true);
 
 		$margins = $pdf->getMargins();
@@ -2131,7 +2153,7 @@ class BaseController extends Controller {
 
 
 		for ($i=0; $i < count($links); $i++) {
-			$pdf->Image('images/white_button.png', $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
+		    $pdf->Image(BaseController::IMATGE_BUTTON, $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
 					'', true, 320, '', false, false, 0, false, false, false);
 			//$pdf->setPageMark(); 
 			$pdf->MultiCell($wLink, $hLink, $links[$i]['text'], 0, 'C', 0, 0, $x, $y, true, 0, false, true, $hLink, 'M', true);
@@ -2226,7 +2248,7 @@ class BaseController extends Controller {
 
 		$pdf->AddPage('L', $pageLayout);
 		
-		$pdf->Image('images/fonstecnocampus_910x600.jpg', 0, 0, 
+		$pdf->Image(BaseController::IMATGE_ANVERS_TECNOCAMPUS, 0, 0, 
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
@@ -2249,6 +2271,7 @@ class BaseController extends Controller {
 
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yNom, '<span style="font-size: small;">Nom: </span>'.$persona->getNomCognoms(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
+		
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
 		//$pdf->setFontSpacing(0.5);
@@ -2263,7 +2286,7 @@ class BaseController extends Controller {
 
 
 		for ($i=0; $i < count($links); $i++) {
-			$pdf->Image('images/white_button.png', $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
+		    $pdf->Image(BaseController::IMATGE_BUTTON, $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
 					'', true, 320, '', false, false, 0, false, false, false);
 			//$pdf->setPageMark(); 
 			$pdf->MultiCell($wLink, $hLink, $links[$i]['text'], 0, 'C', 0, 0, $x, $y, true, 0, false, true, $hLink, 'M', true);
@@ -3870,7 +3893,7 @@ class BaseController extends Controller {
 			$innerbody .= "<p>Atentament<br/>";
 			$innerbody .= "FECDAS, ".$this->getCurrentDate()->format("d/m/Y")."</p><br/>";
 		}
-		$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo-mail.png'));
+		$logosrc = $message->embed(\Swift_Image::fromPath(BaseController::IMATGE_LOGO_FECDAS_MAIL));
 		
 		/*$footer .= "<div style='float:left;padding-right:20px'><img src=".$logosrc." alt='FECDAS' /></div>";
 		$footer .= "<div style='float:left;text-align:right'>";

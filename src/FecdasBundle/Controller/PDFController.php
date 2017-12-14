@@ -582,18 +582,12 @@ class PDFController extends BaseController {
 				// Border dashed
 				$pdf->SetLineStyle(array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 4, 'color' => array(0, 0, 0)));
 				//$pdf->writeHTMLCell($width + 4, 2*($height + 2), $x - 2, $y - 2, '', 1, 0, 0, true, 'L', true);
-
 				
-				
-				
-				/*$pdf->Image('images/federativa-cara.jpg', $x, $y, 
-						$width, $height , 'jpg', '', '', false, 320, 
-						'', false, false, 1, false, false, false);*/
-				$pdf->Image('images/fonsgeneral_1024x664.jpg', $x, $y, 
+				$pdf->Image(BaseController::IMATGE_ANVERS_GENERAL, $x, $y, 
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 				
-				$pdf->Image('images/federativa_revers_1024x664.jpg', $x, $y + $height,
+						$pdf->Image(BaseController::IMATGE_REVERS_GENERAL, $x, $y + $height,
 						$width, $height , 'jpg', '', '', false, 320,
 						'', false, false, 1, false, false, false);
 				
@@ -606,7 +600,8 @@ class PDFController extends BaseController {
 				
 				$x = $x_ini + 47;
 				$y = $y_ini + 35;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Nom: " . $persona->getNom() . " " . $persona->getCognoms(), 0, 0, 0, true, 'L', true);
+			
+				$pdf->writeHTMLCell(0, 0, $x, $y, "Nom: " . $persona->getNom()." ".$persona->getCognoms(), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "DNI/Passaport: " . $persona->getDni(), 0, 0, 0, true, 'L', true);
@@ -656,7 +651,7 @@ class PDFController extends BaseController {
 				
 				if ($datacaduca > $parte->getDatacaducitat()) $datacaduca = $parte->getDatacaducitat();
 				
-				$x += 32;
+				$x += 28;
 				$pdf->writeHTMLCell(0, 0, $x, $y + 4, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				/*$x += 41;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);*/
@@ -821,10 +816,6 @@ class PDFController extends BaseController {
 		//			$w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, 
 		// 			$palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, 
 		//			$hidden=false, $fitonpage=false, $alt=false, $altimgs=array())
-		/*$pdf->Image('images/background_carnet.jpg', 0, 0, 
-							$width, $height, 'jpg', '', 'LT', true, 150, 
-							'', false, false, array(), true,
-							false, false, false, array());*/
 		
 		foreach ($carnetsArray as $dades) {
 			// Add a page

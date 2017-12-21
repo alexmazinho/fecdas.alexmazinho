@@ -1648,7 +1648,7 @@ GROUP BY c.nom
 		
 		if ($request->query->has('filtre')) {  // Recàrrega de la taula
 			return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig', 
-				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'filtre' => $filtre ) )
+			    $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte,'showFiltre' => true,  'filtre' => $filtre ) )
 			);
 		}
 		
@@ -1656,7 +1656,7 @@ GROUP BY c.nom
 				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 
 															'action' => $this->generateUrl('FecdasBundle_imprimirparte'),
 															'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig',	 
-															'parte' => $parte, 'filtre' => $filtre ) )
+				                                            'parte' => $parte, 'showFiltre' => true, 'filtre' => $filtre ) )
 		);
 	}
 	
@@ -1669,28 +1669,33 @@ GROUP BY c.nom
 		
 		$filtre = '';
 		$parteid = 0;
+		$llicenciaid = 0;
 		if ($request->getMethod() == 'POST') {
 			$formdata = $request->request->get('form');
 			$parteid = isset($formdata['id'])?$formdata['id']:0;
 		} else {
 			$parteid = $request->query->get('id', 0);
+			$llicenciaid = $request->query->get('llicencia', 0);
 			$filtre = $request->query->get('filtre', '');
 		}
 		
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 		
+		
 		try {
 			if ($parte == null) throw new \Exception ('Llista no trobada');  
 			
+			$club = $parte->getClub();
+			
 			if ($request->getMethod() == 'POST') {
-				$llicencies = $formdata['llicencies'];
+			    $llicencies = $formdata['llicencies'];      // PHP límit max_input_vars = 1000. El formulari té 6 camps per llicència => 166 llicències max.
+			                                                 // Valor canviat a 3000 => 500 llicències
 				$enviades = 0;
-				$res = 'Llicència enviada a <br/>';
+				$res = '';
 				$log = '';
 				if ($parte->getTipus()->getEs365()) $cursAny = $parte->getCurs();
 				else $cursAny = $parte->getAny();
 				$template = $parte->getTipus()->getTemplate();
-				
 				foreach ($llicencies as $llicenciaArray) {
 					$llicenciaId = $llicenciaArray['id'];
 					
@@ -1699,10 +1704,10 @@ GROUP BY c.nom
 						$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);						
 						
 						if ($llicencia != null) {
-							$this->enviarMailLlicencia($llicencia, $cursAny, $template);
+						    $this->enviarMailLlicencia($club, $llicencia, $cursAny, $template);
 							
 							$enviades++;
-							$res .= $llicenciaArray['nom']. ' '.$llicenciaArray['mail'].'</br>';
+							$res .= $llicenciaArray['nom']. ' '.($llicenciaArray['mail'] != ''?$llicenciaArray['mail']:'(Correu del club) '.$club->getMail()).'</br>';
 							$log .= $llicenciaArray['id'].' - '.$llicenciaArray['nom']. ' '.$llicenciaArray['mail'].' ; ';
 						}
 						
@@ -1710,18 +1715,21 @@ GROUP BY c.nom
 				}
 
 				if ($enviades == 0)  throw new \Exception ('No s\'ha enviat cap llicència digital');  
-				
 				// Marcar el parte com enviat (imprès)			
 				$parte->setDatamodificacio($this->getCurrentDate());
 				$em->flush();
 
-				$this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . '  '.$log );
+				$this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . ' enviades  '.$enviades.' : '.$log );
+				
+				if ($enviades > 1)  $res = 'Total de llicències enviades '.$enviades.'<br/>'.$res;
+				else $res = 'Llicència enviada a '.$res;
 				
 				return new Response($res);
 			} else {
 				// CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
-				
-				$llicencies = $parte->getLlicenciesSortedByName( $filtre );
+			    $llicencies = array();
+			    if ($llicenciaid == 0) $llicencies = $parte->getLlicenciesSortedByName( $filtre );
+			    else $llicencies[] = $parte->getLlicenciaById($llicenciaid);
 
 				$formBuilder = $this->createFormBuilder();
 								
@@ -1742,6 +1750,8 @@ GROUP BY c.nom
 					'data'	=> $llicencies
 				));
 				
+				$this->get('session')->getFlashBag()->add('sms-notice', 'Les llicències de les persones sense correu s\'enviaran a l\'adreça de correu del club ');
+				
 			}
 			
 		} catch (\Exception $e) {
@@ -1759,7 +1769,7 @@ GROUP BY c.nom
 		
 		if ($request->query->has('filtre')) {  // Recàrrega de la taula
 			return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig', 
-				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'filtre' => $filtre ) )
+			    $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'showFiltre' => true, 'filtre' => $filtre ) )
 			);
 		}
 		
@@ -1767,39 +1777,28 @@ GROUP BY c.nom
 				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 
 															'action' => $this->generateUrl('FecdasBundle_llicenciespermail'),
 															'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',	 
-															'parte' => $parte, 'filtre' => $filtre ) )
+				                                            'parte' => $parte, 'showFiltre' => ($llicenciaid == 0), 'filtre' => $filtre ) )
 		);
 	}
 
-	private function enviarMailLlicencia($llicencia, $cursAny, $template) {
+	private function enviarMailLlicencia($club, $llicencia, $cursAny, $template) {
+	    if ($club == null) throw new \Exception("Error en les dades del club");
+		
 		if ($llicencia == null) throw new \Exception("Error en les dades de la llicència");
 			
 		$persona = $llicencia->getPersona();
 		
-		if ($persona == null || ($persona != null && ($persona->getMail() == '' || $persona->getMail() == null))) 
-			throw new \Exception("Error en les dades de la persona");
+		if ($persona == null) throw new \Exception("Error en les dades de la persona");
 		
 		$tomails = array();
-		$mailsPersona = explode(";", $persona->getMail());
-		foreach ($mailsPersona as $mail) {
-			$tomails[] = trim($mail);	
+		if ($persona->getMail() == '' || $persona->getMail() == null) {
+		    // Si la persona no té mail s'envia al club
+		    if ($club->getMail() == '' || $club->getMail() == null) throw new \Exception($persona->getNomCognoms().' i club sense mail');
+		    
+		    $tomails = $club->getMails();
+		} else {
+		    $tomails = $persona->getMails();
 		}
-		//$tomails = array($persona->getMail());
-		
-		
-		/*$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$cursAny;
-		
-		$body = "<div style=''><p>Benvolgut/da esportista</p>";
-		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$cursAny."</p>";
-		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
-		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
-		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d’incidents.</p>";
-		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents.</p>";
-		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p></div>";
-		
-		$salutacio = "<p>Cordialment,</p>";
-		$salutacio .= "<p>Salvador Punsola<br/>";
-		$salutacio .= "President</p>";*/
 		
 		$attachments = array();
 
@@ -1904,7 +1903,7 @@ GROUP BY c.nom
 				
 				// Enviar notificació mail
 				$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-				if ($club->getMail() == null) $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+				if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
 				
 				$bccmails = $this->getFacturacioMails();
 				$tomails = $club->getMails();
@@ -2063,11 +2062,7 @@ GROUP BY c.nom
 			
 			if ($duplicat->getClub()->getMail() != null) {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();
-				
-				$tomails = explode(";",$duplicat->getClub()->getMail());
-				if (!is_array($tomails)) $tomails = array($tomails);
-				//$tomails = array($duplicat->getClub()->getMail());
-		
+				$tomails = $duplicat->getClub()->getMails();
 				$bccmails = $fedeMail;
 			} else {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " CLUB SENSE CORREU!! ";

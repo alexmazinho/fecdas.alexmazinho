@@ -65,6 +65,8 @@ class BaseController extends Controller {
 	const INDEX_ENVIARLLICENCIA = 1;
     const INDEX_NOENVIARLLICENCIA = 0;
     const MAX_TELEFON = 999999999;
+    const LANG_CA = 'CA';
+    const LANG_ES = 'ES';
     
 	//const TIPUS_CLUBS_NO_COMANDES = array(6, 7);
 	const REGISTRE_STOCK_ENTRADA = 'E';

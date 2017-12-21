@@ -11,28 +11,33 @@
 {% block title %}Aplicació gestió FECDAS. Informació de titulacions i dades personals del Club{% endblock %}
 
 {% block body %}
-   	{{ form_start(form, {'action': path('FecdasBundle_dadespersonals'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_dadespersonals'}}) }}
-		<header>
-			<div class="row">
-				<div class="col-md-8"><h1>Titulacions i dades personals</h1></div>
-    		    <div class="col-md-4 col-last-right">
-					{# if persones.getTotalItemCount <= 3000 #}
-						<div class="buttons-top-bootstrap">
-							<div class="button-top">
-								<a class="link export-csv" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'csv' })) }}" alt="Exportar les llistes de dades personals" 
-								title="Exportar les llistes de dades personals"><i class="fa fa-file-excel-o fa-1x green"></i></a>
-							</div>	
-							<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf', 'print': 1 })) }}" alt="Imprimir les llistes de dades personals" 
-								title="Imprimir les llistes de dades personals"><i class="fa fa-print fa-1x blue"></i></a>
-							</div>
-							<div class="button-top"><a class="link" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf' })) }}" alt="Descarregar les llistes de dades personals" 
-								title="Descarregar les llistes de dades personals"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
-							</div>	
-						</div> 
-					{# endif #}
-				</div>
+   	
+	<header>
+		<div class="row">
+			<div class="col-md-8"><h1>Titulacions i dades personals</h1></div>
+    	    <div class="col-md-4 col-last-right">
+				{# if persones.getTotalItemCount <= 3000 #}
+					<div class="buttons-top-bootstrap">
+						<div class="button-top">
+							<a class="link export-csv" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'csv' })) }}" alt="Exportar les llistes de dades personals" 
+							title="Exportar les llistes de dades personals"><i class="fa fa-file-excel-o fa-1x green"></i></a>
+						</div>	
+						<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf', 'print': 1 })) }}" alt="Imprimir les llistes de dades personals" 
+							title="Imprimir les llistes de dades personals"><i class="fa fa-print fa-1x blue"></i></a>
+						</div>
+						<div class="button-top"><a class="link" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf' })) }}" alt="Descarregar les llistes de dades personals" 
+							title="Descarregar les llistes de dades personals"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
+						</div>	
+					</div> 
+				{# endif #}
 			</div>
-   		</header>
+		</div>
+   	</header>
+   	
+   	{% include 'FecdasBundle:Includes:messages.html.twig' %}
+   	
+   	<div id="list-forms">	
+   		{{ form_start(form, {'action': path('FecdasBundle_dadespersonals'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_dadespersonals'}}) }}
    		<section class="form-dadespersonals">
 	   		<div class="row">
 				{% if admin == true %}
@@ -124,12 +129,8 @@
 			<div class="hidden">{{ form_rest(form) }}</div>
 		</section>
     {{ form_end(form) }}
-
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
+	</div>
+    
 	<div id="llista-dadespersonals" class="llista-dadespersonals">
 		<div class="table-header">	
 		   	<div id="list-header">
@@ -177,22 +178,31 @@
 			   				{% endif %}
 						</div>
 						<div class="data-detall-cell dadespersonals-actions">
-				   		{% if persona.llicenciaVigent is not null and persona.llicenciaVigent.parte is not null %}
-							{% if persona.llicenciaVigent.parte.allowPrintLlicencia == true %}
-								<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': persona.llicenciaVigent.id}) }}" alt="Imprimir llicència" title="Imprimir llicència">
+						{% set llicenciaVigent = persona.llicenciaVigent %}
+				   		{% if llicenciaVigent is not null and llicenciaVigent.parte is not null %}
+				   		    {% set parte = llicenciaVigent.parte %}
+							{% if parte.allowPrintLlicencia == true %}
+								<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': llicenciaVigent.id}) }}" alt="Llicència provisional" title="Llicència provisional">
 									<i class="fa fa-list-alt fa-1x orange"></i></a>
 							{% endif %}
 							{% if admin == true %}
-								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': persona.llicenciaVigent.id}) }}" 
-									data-club="{{ persona.llicenciaVigent.parte.clubparte.nom }}"
-									data-persona="{{ persona.nomcognoms }}" alt="Duplicat llicència" title="Duplicat llicència">
-									<i class="fa fa-copy fa-1x lightblue"></i></a>
+								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': llicenciaVigent.id}) }}" 
+									data-club="{{ parte.clubparte.nom }}"
+									data-persona="{{ persona.nomcognoms }}" alt="Imprimir llicència plàstic" title="Imprimir llicència plàstic">
+									<i class="fa fa-print blue"></i></a>
+								{% if parte.perEnviarFederat == true  %}
+        			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
+        			   					alt="Enviar llicència digital" title="Enviar llicència digital"><i class="fa systemblue"><b>@</b></i></a>
+        			   			{% endif %}
+        			   		{% else %}
+       			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
+       			   					alt="Demanar reenviament llicència digital" title="Demanar reenviament llicència digital"><i class="fa fa-reply fa-1x systemblue"></i></a>
 							{% endif  %}
-							{% if persona.llicenciaVigent.parte.allowRenovar %}
-								<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
+							{% if parte.allowRenovar %}
+								<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
 				   					<i class="fa fa-retweet fa-1x green"></i></a>
 			   				{% endif %}
-			   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.llicenciaVigent.parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
+			   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
 			   					<i class="fa fa-search fa-1x blue"></i></a>
 			   			{% else %}
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
@@ -406,6 +416,21 @@
 	        	
 			});
 		});
+
+
+		// Delegate. Form llicència digital
+    	$( "#main-col" ).on( "click", ".enviar-llicencia", function(e) {
+    		e.preventDefault();
+    
+    		// Obrir form selecció federats
+    		var url = $(this).attr("href");
+    
+    		obrirTaulaSortidaLlicencies(url, 'Enviar llicència per mail', 'Enviar', function() {
+    			$('.alert.alert-dismissible').remove();
+    	   		submitEnviarLllicencies( '', function(){} );
+    	    });
+    		
+    	});
 		
 	});
 	

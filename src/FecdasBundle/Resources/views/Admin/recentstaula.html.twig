@@ -55,9 +55,9 @@
 			   			{% endif %}
 			   			{% if parte.perEnviarFederat == true  %}
 			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 
-			   					alt="Enviament llicències per mail" title="Enviament llicències per mail"><i class="fa systemblue"><b>@</b></i></a>
+			   					alt="Enviament llicències digitals" title="Enviament llicències digitals"><i class="fa systemblue"><b>@</b></i></a>
 			   			{% endif %}
-		   				{% if parte.perImprimir == true  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir" title="Imprimir">
+		   				{% if parte.perImprimir == true  %}<a class="parterecents-action-print link" href="{{ path('FecdasBundle_imprimirparte', { 'id': parte.id }) }}" alt="Imprimir llicència plàstic" title="Imprimir llicència plàstic">
 		   					<i class="fa fa-print blue"></i></a>{% endif %}
 		   				<a class="parterecents-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}" alt="Veure" title="Veure">
 		   					<i class="fa fa-search orange"></i></a>

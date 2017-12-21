@@ -256,6 +256,12 @@ class EntityClub {
 	 */
 	protected $notes;      // Camp de notes per als administradors
 	
+	/**
+	 *
+	 * @ORM\Column(type="string", length=2, nullable=false)
+	 */
+	protected $lang;  // CA, ES
+	
 
 	public function __construct() {
 		$this->activat = true;
@@ -270,6 +276,7 @@ class EntityClub {
 		$this->ajustsubvencions = 0;
 		$this->dataalta = new \DateTime();
 		$this->exercici = $this->dataalta->format('Y');
+		$this->lang = BaseController::LANG_CA;
 		$this->usuaris = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->comandes = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->ingresos = new \Doctrine\Common\Collections\ArrayCollection();
@@ -1659,6 +1666,26 @@ class EntityClub {
     public function getNotes()
     {
         return $this->notes;
+    }
+    
+    /**
+     * Set lang
+     *
+     * @param string $lang
+     */
+    public function setLang($lang)
+    {
+        $this->lang = $lang;
+    }
+    
+    /**
+     * Get lang
+     *
+     * @return string
+     */
+    public function getLang()
+    {
+        return $this->lang;
     }
     
 	/**

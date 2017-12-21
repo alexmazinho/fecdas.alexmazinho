@@ -123,7 +123,7 @@ class PageController extends BaseController {
 		$formbuilder = $this->createFormBuilder()->add('importfile', 'file', array('attr' => $atributs, 'required' => false));
 		
 		$formbuilder->add('dataalta', 'text', array(
-				'attr'		=>	array('readonly' => !$this->isCurrentAdmin()),
+				//'attr'		=>	array('readonly' => !$this->isCurrentAdmin()),
 				'data' => $dataalta->format('d/m/Y')
 		));
 		

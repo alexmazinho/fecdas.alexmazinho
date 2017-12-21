@@ -279,6 +279,16 @@ class EntityPersona {
 		return implode(", ", $tlfs);
 	}
 	
+	/**
+	 * Get mails
+	 *
+	 * @return array
+	 */
+	public function getMails()
+	{
+	    return explode(";", trim($this->mail));
+	}
+	
     /**
      * Get adreça completa
      *

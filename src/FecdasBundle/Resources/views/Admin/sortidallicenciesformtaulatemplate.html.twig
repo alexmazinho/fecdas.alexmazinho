@@ -4,12 +4,14 @@
 		<div class="panel-heading">
 			<div class="row">	
 				<div class="col-md-8">
-		    		<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon blue">Filtre per nom o cognom</div>
-							{{ form_widget(form.filtre, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
+					{% if showFiltre %}
+    		    		<div class="form-group">
+    						<div class="input-group">
+    							<div class="input-group-addon blue">Filtre per nom o cognom</div>
+    							{{ form_widget(form.filtre, { 'attr': {'class': 'form-control'} }) }}
+    						</div>
+    					</div>
+					{% endif %}
 				</div>
 				<div class="col-md-4  col-last-right title blue">Total: {{ form.llicencies|length|number_format(0, ',', '.') }}</div>
 			</div>
@@ -59,7 +61,11 @@
 	    </div>			
 		<div class="panel-footer">
 			<div class="row">
-				<div class="col-md-12  col-last-right blue"><label class="checkbox-inline"><span>Seleccionar tots:</span>{{ form_widget(form.checkall) }}</label></div>
+				<div class="col-md-12  col-last-right blue">
+					{% if showFiltre %}
+						<label class="checkbox-inline"><span>Seleccionar tots:</span>{{ form_widget(form.checkall) }}</label>
+					{% endif %}
+				</div>
 			</div>
 		</div>
 	</div>

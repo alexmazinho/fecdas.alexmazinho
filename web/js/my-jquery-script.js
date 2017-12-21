@@ -1969,6 +1969,171 @@
 		});
 	};
 	
+	/*****************************************************************************************************************/
+	
+	
+	/************************************** Recents i  Enviament Llicències Digitals *********************************/
+	
+	recentsParams = function() {
+    	var params = []; 
+    	params.push( {'name':'clubs','value': $('#form_clubs').val()} );
+    	params.push( {'name':'estat','value': $('#form_estat').val()} );
+    	
+    	params.push( {'name':'numrebut','value': $('#form_numrebut').val()} );
+    	params.push( {'name':'anyrebut','value': $('#form_anyrebut').val()} );
+    	params.push( {'name':'numfactura','value': $('#form_numfactura').val()} );
+    	params.push( {'name':'anyfactura','value': $('#form_anyfactura').val()} );
+
+    	params.push( {'name':'dni','value': $('#form_dni').val()} );
+    	params.push( {'name':'nom','value': $('#form_nom').val()} );
+    	params.push( {'name':'mail','value': $('#form_mail').val()} );
+    	
+    	params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
+    	params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
+    	params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
+    	params.push( {'name':'compta','value': ($('#form_compta').is(':checked'))?1:0} );
+    	
+    	//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );
+    	
+    	return params;
+    };
+
+
+    obrirTaulaSortidaLlicencies = function(url, title, txtSubmit, callbackSubmit) {
+    	$('.alert.alert-dismissible').remove();
+    	
+    	$.get(url, function(data) {
+    		
+    		$("#dialeg").html(data);
+    					
+    		var ewidth = $(window).width()*0.8;
+    		if (ewidth > 840) ewidth = 840;
+    		var eheight = $(document).height()*0.8;
+    					
+    		$("#dialeg").dialog({
+    			buttons :[
+    			            {
+    			              text: txtSubmit,
+    			              click: callbackSubmit
+    						},
+    						{
+    				          text: "Cancel·lar",
+    				          click: function() {
+    				        	  $(this).dialog("destroy");
+    				          }
+    						}
+    			          ], 
+    		    show: 1000,
+    		    modal: true,
+    		    resizable: true,
+    		    width: ewidth,
+    		    height: eheight,
+    		    minWidth: 400,
+    		    title: title
+    		 });
+
+    		eventFilterTable("#formfederatssortida", "#table-federats", url);
+    		
+    	}).fail( function(xhr, status, error) {
+    		 var sms = smsResultAjax('KO', xhr.responseText);
+    		 
+    		 $("#list-forms").prepend(sms);
+    	});
+    
+    };
+    
+    submitEnviarLllicencies = function( urlCallback, callbackOk ) {
+    	var url = $('#formfederatssortida').attr("action");
+    	var params = $('#formfederatssortida').serializeArray();
+    
+    	obrirMascaraBlock( '#table-federats' );
+    	
+    	$.post(url, params, function(data) {
+    
+    		var sms = smsResultAjax('OK', data);
+    
+    		callbackOk( urlCallback );
+    
+    		$("#list-forms").prepend(sms);
+    
+    		$("#dialeg").dialog("destroy");
+    	}).fail( function(xhr, status, error) {
+    		 // xhr.status + " " + xhr.statusText, status, error
+    		 var sms = smsResultAjax('KO', xhr.responseText);
+    		 
+    		 $("#table-federats").prepend(sms);
+    
+    		 tancarMascaraBlock( '#table-federats' );
+    	});
+    };
+    
+    
+    eventFilterTable = function (containerSel, taulaSel, url) {
+    
+    	var timeout;
+    	// Camp de text per a filtre. Detect input filtre. Si text = '' o text >= 3 sends ajax call		
+    	$(containerSel).on( 'input', '#form_filtre', function(e) {
+    		if(timeout) {
+    		    clearTimeout(timeout);
+    		    timeout = null;
+    		}
+    					
+    		var filtre = $(this).val(); 
+    					  
+    		if ( $(this).data('lastval') != filtre ) {
+    			 
+    			$(this).data('lastval', filtre);
+    
+    		    if (filtre == '' || filtre.length >= 3) {
+    		    	obrirMascaraBlock(  taulaSel );
+    
+    		    	$('.alert.alert-dismissible').remove();
+    		    	
+    		    	timeout = setTimeout( function() {
+    					
+    					url += '&filtre='+filtre;
+    
+    					$.get(url, function(data) {
+    
+    						$(taulaSel).remove();
+    						$(containerSel).append(data);
+    
+    						tancarMascaraBlock( taulaSel );
+    					}).fail( function(xhr, status, error) {
+    						 var sms = smsResultAjax('KO', xhr.responseText);
+    						 
+    						 $(containerSel).prepend(sms);
+    
+    						 tancarMascaraBlock( taulaSel );
+    					});	
+    					
+    				}, 1000);
+    			}
+    		};
+    	});
+    }
+
+    printTaulaRecents = function( url ) {
+    
+    	$('.alert.alert-dismissible').remove();
+    	
+    	var params = recentsParams();
+    
+    	for ( var i in params ) url=url+'&'+params[i].name+'='+params[i].value;
+    	
+    	$.get(url, function(data) {
+    
+    		$("#list-recents").html(data);
+    
+    	}).fail( function(xhr, status, error) {
+    		 // xhr.status + " " + xhr.statusText, status, error
+    		 var sms = smsResultAjax('KO', xhr.responseText);
+    		 
+    		 $("#list-forms").prepend(sms);
+    	});
+    };
+	
+    /*****************************************************************************************************************/	
 	
 	/*************************************************** Clubs *******************************************************/	
 	

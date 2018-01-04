@@ -3,13 +3,6 @@
 
 {% block title %}Aplicació gestió FECDAS. Gestió de clubs i usuaris{% endblock %}
 
-{% block stylesheets %}
-	
-	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
-	
-	{{ parent() }}
-{% endblock %}
-
 {% block body %}
 	{{ form_start(form, {'action': path('FecdasBundle_club'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formclub'}}) }}
 	    <header>
@@ -566,8 +559,6 @@
 {% block javascripts %}
 
 {{ parent() }}
-
-<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
 <script type="text/javascript">
 

@@ -93,7 +93,7 @@
 	
 	confirmarPagament = function(url, titol, urlok) {
 		
-		$(".alert").remove();
+		$(".alert.alert-dismissible").remove();
 		
 		$("#dialeg").dialog({
 			autoOpen: false,
@@ -104,7 +104,8 @@
     	        	
     	        	$('#progressbar').show();  // Rellotge
         	
-    	    		var params = { 	datapagament: $( "#datapagament" ).val(), 
+    	    		var params = { 	datafacturacio: $( "#datafacturacio" ).val(), 
+    	    						datapagament: $( "#datapagament" ).val(), 
     	    						tipuspagament: $( "#tipuspagament" ).val(),
     	    						dadespagament: $( "#dadespagament" ).val(),
     	    						pagatcomentari: $( "#pagatcomentari" ).val() };
@@ -146,9 +147,19 @@
 		   
 		var dialegHtml = "";
 		dialegHtml += "<div class='row'>";
+		dialegHtml += "   <div class='col-md-10'>";
+		dialegHtml += "   	<div class='form-group'>";
+		dialegHtml += "     	<label for='rebut_datafactura'>Factura</label>";
+		dialegHtml += "      	<div class='input-group'>";
+		dialegHtml += "				<span class='input-group-addon'>Data</span>";
+		dialegHtml += "	        	<input type='text' id='datafacturacio' class='form-control form-control-center' />";
+		dialegHtml += "	        	<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
+		dialegHtml += "      	</div>";
+		dialegHtml += "   	</div>";
+		dialegHtml += "   </div>";
 		dialegHtml +="   <div class='col-md-10'>";
 		dialegHtml +="		<div class='form-group'>";
-		dialegHtml +="     		<label for='comanda_datafactura'>Rebut</label>";
+		dialegHtml +="     		<label for='rebut_datapagamentfactura'>Rebut</label>";
 	    dialegHtml +="      		<div class='input-group'>";
 	    dialegHtml +="				<span class='input-group-addon'>Data</span>";
 	    dialegHtml +="	        	<input type='text' id='datapagament' class='form-control form-control-center'  />";
@@ -158,7 +169,7 @@
 	    dialegHtml +="   </div>";
 	    dialegHtml +="   <div class='col-md-12'>";
 	    dialegHtml +="		<div class='form-group'>";
-	    dialegHtml +="     		<label for='comanda_datafactura'>Raó del pagament</label>";
+	    dialegHtml +="     		<label for='rebut_tipuspagament'>Raó del pagament</label>";
 	    dialegHtml +="      		<div class='input-group'>";
 	    dialegHtml +="				<span class='input-group-addon'></span>";
 	    dialegHtml +="	        	<select type='text' id='tipuspagament' required='required' class='form-control form-control-left'></select>";
@@ -167,7 +178,7 @@
 	    dialegHtml +="   </div>";
 	    dialegHtml +="   <div class='col-md-12'>";
 	    dialegHtml +="		<div class='form-group'>";
-	    dialegHtml +="     		<label for='comanda_datafactura'>Dades opcionals. Núm. comanda TPV, etc...</label>";
+	    dialegHtml +="     		<label for='rebut_dadespagament'>Dades opcionals. Núm. comanda TPV, etc...</label>";
 	    dialegHtml +="      		<div class='input-group'>";
 	    dialegHtml +="				<span class='input-group-addon'></span>";
 	    dialegHtml +="	        	<input type='text' id='dadespagament' class='form-control form-control-left'  />";
@@ -176,7 +187,7 @@
 	    dialegHtml +="   </div>";
 	    dialegHtml +="   <div class='col-md-12'>";
 	    dialegHtml +="		<div class='form-group'>";
-	    dialegHtml +="     		<label for='comanda_datafactura'>Comentaris</label>";
+	    dialegHtml +="     		<label for='rebut_comentaris'>Comentaris</label>";
 	    dialegHtml +="      		<div class='input-group'>";
 	    dialegHtml +="				<span class='input-group-addon'></span>";
 	    dialegHtml +="	        	<textarea id='pagatcomentari' required='required'  class='form-control form-control-left' />";
@@ -188,7 +199,7 @@
 	    $("#dialeg").html(dialegHtml);
 	    
 		var current = new Date();
-		var mindate = new Date (current.getFullYear() - 2, current.getMonth(), current.getDay());
+		var mindate = new Date (current.getFullYear() - 1, 12-1, 31); // 31/12 any anterior
 		
 		initDateTimePicker ( 
 			$( '#datapagament' ), 
@@ -201,6 +212,21 @@
 		);
 		
 		$( '#datapagament' ).datetimepicker({
+			value: current,
+			format:'d/m/Y'
+		});
+
+		initDateTimePicker ( 
+			$( '#datafacturacio' ), 
+			mindate, 
+			current,
+			current, 
+			'datafacturacio-picker', 
+			false,
+			function() {} 
+		);
+
+		$( '#datafacturacio' ).datetimepicker({
 			value: current,
 			format:'d/m/Y'
 		});

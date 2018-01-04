@@ -1,12 +1,6 @@
 {# src/Fecdas/PartesBundle/Resources/views/Admin/recents.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block stylesheets %}
-	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
-	
-	{{ parent() }}
-{% endblock %}
-
 {% block javascriptshead %}
  	{{ parent() }}
 {% endblock %}
@@ -121,8 +115,6 @@
 {% block javascripts %}
 
 {{ parent() }}
-	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
-	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
 	<script type="text/javascript">
 

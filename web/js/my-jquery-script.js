@@ -451,7 +451,7 @@
 		var curformat = 'd/m/Y';
 		if (showtime) curformat = 'd/m/Y H:i';
 	
-		$.datetimepicker.setLocale('ca');
+		//$.datetimepicker.setLocale('ca');
 		
 		elem.datetimepicker({
 			 onGenerate:function( ct, $input ) {
@@ -466,12 +466,16 @@
 			 onChangeDateTime:callback,
 			 closeOnDateSelect: true,
 			 timepicker: showtime,
-			 lang:'ca',
+			 lang: 'ca',
 			 id:  id,
 			 className: 'pickerclass',
 			 format: curformat, // '',
-			 minDate: min,
+			 /*minDate: min,
 			 maxDate: max,
+			 formatDate: curformat,*/
+			 minDate: min.getFullYear()+"-"+min.getMonthFormatted()+"-"+min.getDayFormatted(),
+			 maxDate: max.getFullYear()+"-"+max.getMonthFormatted()+"-"+max.getDayFormatted(),
+			 formatDate: 'Y-m-d',
 			 defaultDate: current,
 			 startDate: current,
 			 yearStart: min.getFullYear(),
@@ -1690,7 +1694,7 @@
 		dialegHtml += "<div class='sms-pagament row'> ";
 		
 		if (admin == true) {
-			/*dialegHtml += "   <div class='col-md-6'>";
+			dialegHtml += "   <div class='col-md-6'>";
 			dialegHtml += "   	<div class='form-group'>";
 			dialegHtml += "     	<label for='comanda_datafactura'>Factura</label>";
 			dialegHtml += "      	<div class='input-group'>";
@@ -1699,7 +1703,7 @@
 			dialegHtml += "	        	<span class='input-group-addon input-group-addon-icon open-calendar'><span class='fa fa-calendar fa-1x'></span></span>";
 			dialegHtml += "      	</div>";
 			dialegHtml += "   	</div>";
-			dialegHtml += "   </div>";*/
+			dialegHtml += "   </div>";
 			dialegHtml += "   <div class='col-md-12'>";
 			dialegHtml += "   	<div class='form-group'>";
 			dialegHtml += "     	<label for='comanda_comptefactura'>Núm. Compte</label>";

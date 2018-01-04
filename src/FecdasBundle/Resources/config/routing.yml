@@ -249,10 +249,10 @@ FecdasBundle_changerole:
 FecdasBundle_login:
     path:  /login
     defaults: { _controller: "FecdasBundle:Security:login" }
+    schemes:  [https]
     requirements:
-        schemes:  https
         methods:  GET|POST
-
+        
 FecdasBundle_pwdrecovery:
     path:  /pwdrecovery
     defaults: { _controller: "FecdasBundle:Security:pwdrecovery" }

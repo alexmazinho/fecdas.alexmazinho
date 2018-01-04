@@ -1221,7 +1221,7 @@ class PageController extends BaseController {
 			/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
 			if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
 						
-			if (BaseController::esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte');
+			if (BaseController::esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte ');
 		}
 		
 		/* Check persona amb dni no repetida al mateix club */

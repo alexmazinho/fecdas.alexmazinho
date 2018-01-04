@@ -2650,7 +2650,7 @@ class BaseController extends Controller {
 		$import = $parte->getTotalDetalls();
         $club = $parte->getClub(); 		
 
-        if ($club != null && $club->pendentPagament() && $club->getSaldo() > $import) $parte->setPendent(false);
+        if ($club != null && $club->pendentPagament() && $club->getSaldo() >= $import) $parte->setPendent(false);
 		    // Revisar saldo clubs pagament immediat, si tenen saldo el parte no es queda pendent, va contra el saldo del club.
 		
 		// Actualitzar import i detalls factura
@@ -3719,14 +3719,18 @@ class BaseController extends Controller {
 	public static function esDNIvalid ($cadena)
 	{
 		//Comprovar DNI
-		if (strlen($cadena) != 9 || !preg_match('/^[0-9]{8}[A-Z]$/i', $cadena)) return false;	// Format incorrecte
+	    if (strlen($cadena) != 9 || !preg_match('/^[0-9]{8}[A-Z]$/i', $cadena)) return false;	// Format incorrecte
 		
 		$dnisenselletra = (int) substr($cadena, 0, strlen($cadena) - 1);		
 			
 		// Lletra
 		$lletra = BaseController::getLletraDNI ($dnisenselletra); 		
-		
-		if (strtoupper($cadena[strlen($cadena) - 1]) != $lletra) return false;
+	
+		if (strtoupper($cadena[strlen($cadena) - 1]) != $lletra) {
+		    error_log($cadena.' '.strtoupper($cadena[strlen($cadena) - 1]). ' '.$lletra  );
+		    
+		    return false;
+		}
 			
 		//Ok
 		return true;

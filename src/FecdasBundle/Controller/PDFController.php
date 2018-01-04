@@ -763,7 +763,7 @@ class PDFController extends BaseController {
 			
 			$this->logEntryAuth('LLICENCIA DIGITAL OK ', $llicenciaid);
 				
-			$nom =  "llicencia_".$curs."_".$llicencia->getId().".pdf";
+			$nom =  "llicencia_".$curs."_".$llicencia->getId()."_".$llicencia->getPersona()->getDni().".pdf";
 
 			// Close and output PDF document
 			$response = new Response($pdf->Output($nom, "D"));

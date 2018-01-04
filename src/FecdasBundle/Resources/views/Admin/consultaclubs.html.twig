@@ -3,13 +3,6 @@
 
 {% block title %}Aplicació gestió FECDAS. Consulta dinàmica clubs segons criteris{% endblock %}
 
-{% block stylesheets %}
-	
-	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
-	
-	{{ parent() }}
-{% endblock %}
-
 {% block body %}
 	<header>
 		<div class="row">
@@ -253,8 +246,6 @@
 {% block javascripts %}
 
 {{ parent() }}
-
-<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
 <script type="text/javascript">
 

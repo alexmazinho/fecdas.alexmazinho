@@ -4,7 +4,6 @@
 {% block stylesheets %}
 	<!-- Select2 styles -->
 	<link href="{{ asset('css/select2.css') }}" type="text/css" rel="stylesheet" />
-	<link href="{{ asset('css/jquery.datetimepicker.css') }}" type="text/css" rel="stylesheet" />
 	
 	{{ parent() }}
 {% endblock %}
@@ -147,9 +146,6 @@
 {% block javascripts %}
 
  	{{ parent() }}
-
-	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
-	<script src="{{ asset('js/jquery.datetimepicker.js') }}" type="text/javascript"></script>
 
 	<script type="text/javascript">
 

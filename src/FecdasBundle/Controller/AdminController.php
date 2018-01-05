@@ -1821,7 +1821,7 @@ GROUP BY c.nom
 
 		$pdf = $this->$method( $llicencia );
 	
-		$nom =  "llicencia_".$cursAny."_".$llicencia->getId().".pdf";
+		$nom =  "llicencia_".$cursAny."_".$llicencia->getId()."_".$llicencia->getPersona()->getDni().".pdf";
 			
 		$attachments[] = array( 'name' => $nom,
 									//'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)

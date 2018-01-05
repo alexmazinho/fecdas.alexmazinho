@@ -3274,10 +3274,16 @@ class FacturacioController extends BaseController {
 		
 		$comandesPendents = $query->getResult(); // Comandes pendents rebut del club
 		
-		$comandes = array(); // Filter comandes amb anul·lacions 
+		$comandes = array(); // Filter comandes amb anul·lacions
+
+		// Només mostra comandes un any endarrera
+		$datadesde = $this->getCurrentDate(); 
+		$datadesde->sub(new \DateInterval('P1Y')); // Substract 1 year	
+		
 		foreach ($comandesPendents as $comanda) {
 			if ($comanda->getNumFactures(true) == 1 &&
-				$comanda->getTotalComanda() > 0) $comandes[] = $comanda;
+				$comanda->getTotalComanda() > 0 &&
+			    $comanda->getDataentrada()->format('Y-m-d') > $datadesde->format('Y-m-d')) $comandes[] = $comanda;
 			
 			
 		}

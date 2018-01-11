@@ -75,6 +75,7 @@ class BaseController extends Controller {
 	const TARIFA_MINPES3 = 10000; // 10 Kg
 	const TARIFA_MINPES2 = 5000; // 5 Kg
 	const PRODUCTE_CORREUS = 7590004;	// Abans juliol 2016 => 6290900 / 6290004
+	const COMPTE_COMPTA_IVA = 4770000;	 
 	const TARIFA_TRANSPORT1 = 6.00; // Tarifa <= 5 Kg (6.00 €)
 	const TARIFA_TRANSPORT2 = 12.00; // Tarifa > 5 Kg i < 10 Kg (12.00€)
 	const TARIFA_TRANSPORT3 = 18.00; // Tarifa > 10 Kg (18.00€)

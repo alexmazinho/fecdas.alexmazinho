@@ -102,6 +102,7 @@ class EntityFactura {
 		$this->datafactura = $datafactura;
 		$this->num = $num;
 		$this->import = $import;
+		$this->iva = $iva;
 		$this->concepte = $concepte;
 		//$this->detalls = json_encode($detalls, JSON_UNESCAPED_UNICODE);
 		$this->detalls = json_encode($detalls);

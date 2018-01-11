@@ -1461,6 +1461,8 @@ class FacturacioController extends BaseController {
 					
 		$linia++;
 		$importAcumula = 0;
+		$iva = $factura->getIva();
+		$ivaDetalls = 0;
 		$index = 1;
 		//$numApunts = count(json_decode($factura->getDetalls(), true)); // Compta en format array
 		//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
@@ -1469,9 +1471,16 @@ class FacturacioController extends BaseController {
 		foreach ($detallsArray as $id => $d) {
 		// APUNT/S PRODUCTE/S
 			//$desc = $this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
-			//$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".mb_convert_encoding($d->producte, 'UTF-8',  'auto');						
+			//$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".mb_convert_encoding($d->producte, 'UTF-8',  'auto');
+			
 			$conc = $d->total.' '.utf8_decode($d->producte);
-			$importDetall = $d->import;	
+			if (is_numeric($d->ivaunitat) && $d->ivaunitat > 0) {
+			    $ivaDetalls += $d->total*$d->preuunitat*$d->ivaunitat;
+			    $importDetall = $d->import - $d->total*$d->preuunitat*$d->ivaunitat;  // Detall sense IVA
+			} else {
+			    $importDetall = $d->import;
+			}
+				
 			$importAcumula += $importDetall;	
 			//$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi($compte);
             $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneById($id);
@@ -1485,6 +1494,17 @@ class FacturacioController extends BaseController {
 			$index++;
 		}
 
+		if ($iva != 0 || $ivaDetalls != 0) {
+		    // Validar que quadren ivas
+		    if (abs($iva - $ivaDetalls) > 0.01) throw new \Exception("IVA de la factura ".$doc." no quadra ".$iva." ".$ivaDetalls);
+		    
+		    // Assentament IVA
+		    $assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, BaseController::COMPTE_COMPTA_IVA, 'FRA/ '.' IVA REPERCUTIT', $producte->getDepartament(), $producte->getSubdepartament(), $doc, $iva, BaseController::HABER);
+		    
+		    $importAcumula += $iva;
+		}
+		
+		
 		// Validar que quadren imports		
 		if (abs($import - $importAcumula) > 0.01) throw new \Exception("Imports detall de la factura ".$doc." no quadren");
 			

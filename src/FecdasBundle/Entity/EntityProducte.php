@@ -699,7 +699,7 @@ class EntityProducte {
     {
     	$preu = $this->getPreuAplicable($any);
 		//$preu = $this->getPreu($any);
-    	if ($preu == null) return 0;
+    	if ($preu == null || $preu->getIva() == null) return 0;
     	return $preu->getIva();
     }
 

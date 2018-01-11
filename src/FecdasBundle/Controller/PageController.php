@@ -638,9 +638,7 @@ class PageController extends BaseController {
 				$partearenovar->setRenovat(true);
 					
 				$parte->setComentaris('Renovació llicències:'.' '.$parte->getComentariDefault());
-				
 				$em->flush();
-	
 				$this->logEntryAuth('RENOVAR OK', $parte->getId());
 					
 				$this->get('session')->getFlashBag()->add('sms-notice',	'Llista de llicències enviada correctament');
@@ -1196,16 +1194,10 @@ class PageController extends BaseController {
             ($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar l'adreça de correu electrònica");*/	
 		
 		if ($persona->getMail() == "") $persona->setMail(null);
+        
         if ($persona->getMail() != null) {
-        	$mails = explode(";", $persona->getMail());
-			foreach ($mails as $mail) {
-			    $posArroba = strpos($mail, '@');
-			    $posGuio = strpos($mail, '-');
-			    
-			    if ($posArroba !== false && $posGuio !== false && $posGuio < $posArroba) $mail = str_replace('-', '', $mail); // Reemplazar "-" abans de @ perquè surten invàlids
-			    
-			    if (trim($mail) != "" && filter_var(trim($mail), FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".trim($mail)."- no és vàlida");	
-			}
+            $strMails = $this->validateMails($persona->getMails());
+            $persona->setMail($strMails);
 		}
 		
 		$em = $this->getDoctrine()->getManager();							

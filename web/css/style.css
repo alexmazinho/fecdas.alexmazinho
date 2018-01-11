@@ -816,7 +816,8 @@ position: relative; padding: 7%; padding-bottom: 64px;
 
 .graella-item h4 { font-weight: bold; text-align: left; color: #000000; }
 
-.graella-item h4 .graella-item-preu { float: right; /*font-size: 1.1em;*/ color: #1240a0; }
+.graella-item h4 .graella-item-preu { float: right; /*font-size: 1.1em;*/ color: #1240a0; position:relative; }
+.graella-item h4 .graella-item-iva { font-size: 0.6em; position: absolute; right:0; bottom: 18px; font-style: italic; }
 
 .graella-item h5 { color: #555555;  word-wrap: break-word; }
 

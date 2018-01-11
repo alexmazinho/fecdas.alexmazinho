@@ -596,6 +596,12 @@ FecdasBundle_jsonpreu:
     requirements:
         methods:  GET
 
+FecdasBundle_jsonnumrebut:
+    path:  /jsonnumrebut
+    defaults: { _controller: "FecdasBundle:Facturacio:jsonnumrebut" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_jsonclubs:
     path:  /jsonclubs
     defaults: { _controller: "FecdasBundle:Facturacio:jsonclubs" }

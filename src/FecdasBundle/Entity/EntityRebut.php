@@ -298,7 +298,16 @@ class EntityRebut {
 	 * @return string
 	 */
 	public function getNumRebut() {
-		return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->datapagament->format("Y");
+	    return self::formatNumRebut($this->num, $this->datapagament->format("Y"));
+	}
+	
+	/**
+	 * format amb any  XXXXX/20XX
+	 *
+	 * @return string
+	 */
+	public static function formatNumRebut($num, $any) {
+	    return str_pad($num, 5,"0", STR_PAD_LEFT) . "/".$any;
 	}
 	
 	/**

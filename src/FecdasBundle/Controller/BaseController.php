@@ -760,6 +760,23 @@ class BaseController extends Controller {
 		return $mails;
 	}
 	
+	protected function validateMails($mails = array()) {
+	    for ($i = 0; $i < count($mails); $i++) {
+	        $mails[$i] = trim($mails[$i]);
+	        
+	        $mail = $mails[$i];
+	        
+	        $posArroba = strpos($mail, '@');
+	        $posGuio = strpos($mail, '-');
+	        
+	        
+	        if ($posArroba !== false && $posGuio !== false && $posGuio < $posArroba) $mail = str_replace('-', '', $mail); // Reemplazar "-" abans de @ perquè surten invàlids
+	        
+	        if ($mail != "" && filter_var($mail, FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".$mail."- no és vàlida");
+	    }
+	    return implode(";", $mails);
+	}
+	
 	protected function isCurrentBusseig() {
 		$club = $this->getCurrentClub();
 		if ($this->isCurrentAdmin()) return true;
@@ -1209,7 +1226,7 @@ class BaseController extends Controller {
 
 		$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
 		
-		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, 0, $concepte, null, $compte);
+		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, 0, 0, $concepte, null, $compte);
 		
 		$em->persist($factura);
 		
@@ -1375,7 +1392,7 @@ class BaseController extends Controller {
 		
 		/* TAULA DETALL */
 		$pdf->SetFontSize(8);
-		$facturaSenseIVA = true;
+		
 		if ($factura->getDetalls() != null) {
 			
 			if ($showTemplate == true) {	
@@ -1444,10 +1461,9 @@ class BaseController extends Controller {
 			$row_h_extra_max = 14;
 			$pdf->setY($y_taula + 8);
 			
-			if ($detallsArray == true) {
+			if ($detallsArray) {
 			
 				foreach ($detallsArray as $lineafactura) {
-					if ($lineafactura['ivaunitat'] > 0) $facturaSenseIVA = false;
 						
 					//$preuSenseIVA = $lineafactura['total'] * $lineafactura['preuunitat'];
 					
@@ -1470,19 +1486,26 @@ class BaseController extends Controller {
 									true, 0, false, true, $row_h, 'T', true);
 					$pdf->MultiCell($w_total, $row_h, $lineafactura['total'], 0, 'C', true, 0, $x_total, $row_y, 
 									true, 0, false, true, $row_h, 'T', true);
-					$pdf->MultiCell($w_preuu, $row_h, number_format($lineafactura['preuunitat'], 2, ',', '.').'€', 0, 'C', true, 0, $x_preuu, $row_y, 
+					
+				    $pdf->MultiCell($w_preuu, $row_h, number_format($lineafactura['preuunitat'], 2, ',', '.').'€', 0, 'C', true, 0, $x_preuu, $row_y, 
 									true, 0, false, true, $row_h, 'T', true);
 	
 					$pdf->SetFont('', 'B');
 					$pdf->MultiCell($w_import, $row_h, number_format($lineafactura['import'], 2, ',', '.').'€', 0, 'C', true, 2, $x_import, $row_y, 
 									true, 0, false, true, $row_h, 'T', true);
 	
-					$pdf->SetFont('', '');
-	
+					$pdf->SetFont('', 'I', 7);
+					if (is_numeric($lineafactura['ivaunitat']) && $lineafactura['ivaunitat'] > 0) {
+					    $row_y = $pdf->getY() + 0.8;
+					    $preuivaunitat =  number_format($lineafactura['preuunitat']*$lineafactura['ivaunitat'], 2, ',', '.').'€';
+					    $pdf->MultiCell($w_preuu, $row_h, 'IVA '.$preuivaunitat, 0, 'C', true, 0, $x_preuu, $row_y,
+					        true, 0, false, true, $row_h, 'T', true);
+					}
+					
+					
 					$strExtra = '';
 					$row_h_extra = $row_h;
 					$row_y = $pdf->getY();
-					$pdf->SetFont('', 'I', 7);
 					$pdf->SetTextColor(100, 100, 100); //Gris
 					
 					if (isset($lineafactura['extra'])) { 
@@ -1569,11 +1592,20 @@ class BaseController extends Controller {
 			//$pdf->SetFontSize(12);
 			// PEU 1 TOTAL PARCIAL
 			$pdf->setY($y_taula2+5);
+			
+			$baseimponible = '';
+			$iva = '';
+
+			if ($factura->getIva() != 0) {
+			    $baseimponible = number_format($factura->getImport()-$factura->getIva(), 2, ',', '.').' €';
+			    $iva = number_format($factura->getIva(), 2, ',', '.').' €';
+			}
+			
 			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
 					<td width="96" align="center">'.number_format($factura->getImport(), 2, ',', '.').' €</td>
 					<td width="95" align="center">--</td>
-					<td width="145" align="center">&nbsp;</td>
-					<td width="90" align="center">&nbsp;</td>
+					<td width="145" align="center">'.$baseimponible.'</td>
+					<td width="90" align="center">'.$iva.'</td>
 					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
 					</tr></table>';	
 			
@@ -1602,7 +1634,7 @@ class BaseController extends Controller {
 			$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 1, false, true, 'L', false);
 		}
 		
-		if ($facturaSenseIVA == true) {
+		if ($factura->getIva() == 0) {
 			// set color for text
 			$pdf->SetTextColor(0, 51, 102); // Blau
 			$pdf->SetFont('dejavusans', '', 7.5, '', true);
@@ -2031,34 +2063,39 @@ class BaseController extends Controller {
 		// Definir paper 13,3'' => 29cmx17cm (WxH) en 16:9
 		// Definir paper 7'' => => 15cmx9cm (WxH) en 16:9
 		
-		$width = 150; 
-		$height = 90; 
-		$x_titols = 5;
+	    //$width = 150; => 86         Mida nova = Mida actual * 86/150
+	    //$height = 90; => 54         Mida nova = Mida actual * 54/90
+	    $factor_w = 86/150;    //  0.573
+	    $factor_h = 54/90;     //  0.6
+	    
+	    $x_titols = 5*$factor_w;
 		
-
 		// Posicions
 		$xTit = 0;
-		$yTit =	($template == BaseController::TEMPLATE_GENERAL?12:8);
-		$offset = ($template == BaseController::TEMPLATE_GENERAL?3:5);		
-		$yNom =	40-$offset;		
-		$yDni =	46-$offset;	
-		$yCat =	52-$offset;		
-		$yNai =	58-$offset;
-		if ($template == BaseController::TEMPLATE_GENERAL) $yCad = 71-$offset;		
-		else $yCad = (count($links) <= 3 ? 70-$offset: $yNai-0.2);
-		$yClu =	65-$offset;		
-		$yTlf =	$yClu-0.2;	
+		$yTit =	($template == BaseController::TEMPLATE_GENERAL?12:8)*$factor_h;
+		$offset = ($template == BaseController::TEMPLATE_GENERAL?3:5)*$factor_h;		
+		$yNom =	40*$factor_h-$offset;		
+		$yDni =	46*$factor_h-$offset;	
+		$yCat =	52*$factor_h-$offset;		
+		$yNai =	58*$factor_h-$offset;
+		if ($template == BaseController::TEMPLATE_GENERAL) $yCad = 71*$factor_h-$offset;		
+		else $yCad = (count($links) <= 3 ? 70*$factor_h-$offset: $yNai-0.2);
+		$yClu =	65*$factor_h-$offset;		
+		$yTlf =	$yClu-0.3;	
+		
 
 		// Links docs
-		$x = $x_titols + 5;
-		$y = $yLinks;
-		$yOffset = 10;
-		$hLink = 6.8;
-		$buttonsMargin = 5;
+		$x = $x_titols + 5*$factor_w;
+		$y = $yLinks*$factor_h;
+		$yOffset = 10*$factor_h;
+		$hLink = 6.8*$factor_h;
+		$buttonsMargin = 5*$factor_w;
 
-		$pageLayout = array($width, $height); //  or array($height, $width) 
-		$pdf = new TcpdfBridge('L', PDF_UNIT, $pageLayout, true, 'UTF-8', false);
-				
+		//$pageLayout = array($width, $height); //  or array($height, $width) 
+		// Printer EVOLIS PEBBLE 4 - ISO 7810, paper size CR80 BUSINESS_CARD_ISO7810 => 54x86 mm 2.13x3.37 in
+		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
+		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
+		
 		$pdf->init(array('author' => 'FECDAS',
 		              'title' => ($template == BaseController::TEMPLATE_GENERAL?'Llicència FECDAS':'Llicència Curs Escolar FECDAS') . date("Y")));
 
@@ -2068,18 +2105,17 @@ class BaseController extends Controller {
 		// zoom - layout - mode
 		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
 		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-		$pdf->SetMargins(5, 5, 5);
-		$pdf->SetAutoPageBreak 	(false, 5);
+		$pdf->SetMargins(5*$factor_w, 5*$factor_h, 5*$factor_w);
+		$pdf->SetAutoPageBreak 	(false, 5*$factor_h);
 		//$pdf->SetMargins(0, 0, 0);
 		//$pdf->SetAutoPageBreak 	(false, 0);
 		$pdf->SetTextColor(255, 255, 255); 
 			
-
-		$pdf->AddPage('L', $pageLayout);
+		$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 		
 		$srcImatge = ($template == BaseController::TEMPLATE_GENERAL?BaseController::IMATGE_ANVERS_GENERAL:BaseController::IMATGE_ANVERS_ESCOLAR);
 		
-		$pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, 
+		$pdf->Image($srcImatge, 0, 0, $pdf->getPageWidth(), $pdf->getPageHeight(), 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
 		$parte = $llicencia->getParte();
@@ -2102,16 +2138,16 @@ class BaseController extends Controller {
 		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
 		else $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
 		if ($template == BaseController::TEMPLATE_GENERAL) {
-			$pdf->SetFont('dejavusans', 'B', 14, '', true);
+		    $pdf->SetFont('dejavusans', 'B', 8.5, '', true);
 		} else {
-			$pdf->SetFont('dejavusans', 'B', 15, '', true);
+		    $pdf->SetFont('dejavusans', 'B', 9, '', true);
 		}
 		$pdf->setFontStretching(100);		
 		//$pdf->SetXY($xTit, $yTit);
 		$pdf->MultiCell(0,0,$titolPlastic,0,'C', 0, 0, $xTit, $yTit);
 
 //		$pdf->SetAlpha(1);
-		$pdf->SetFont('dejavusans', 'B', 11);
+		$pdf->SetFont('dejavusans', 'B', 7);
 		$pdf->SetTextColor(255, 255, 255);
 
 		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.6, 'blend_mode' => 'Normal'));		
@@ -2125,13 +2161,13 @@ class BaseController extends Controller {
 		
 		/* Ajustar nom del club */
 		$pdf->SetY($yClu-0.5);
-		$pdf->SetX(PDF_MARGIN_LEFT+4);
-		$pdf->Cell(78, 0, $club->getNom(), 0, 0, 'L', false, '', 1);
+		$pdf->SetX(20*$factor_w);
+		$pdf->Cell(75*$factor_w, 0, $club->getNom(), 0, 0, 'L', false, '', 1);
 		
-		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetRightMargin(PDF_MARGIN_RIGHT);
+		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetRightMargin(10*$factor_w);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
-		$pdf->SetFont('dejavusans', 'B', 10);
+		$pdf->SetFont('dejavusans', 'B', 6);
 		
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yTlf, '<span style="font-size: small;">Telf. Entitat: </span>'.$club->getTelefon(), 0, 0, false, true, 'R', true);
 
@@ -2147,22 +2183,22 @@ class BaseController extends Controller {
 		
 		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetTextColor(39,65,140);
 		else  $pdf->SetTextColor(53,153,179);
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 
 		$margins = $pdf->getMargins();
 		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right']; 
 		$wLink = $width/3 - 2 * $buttonsMargin;
 
-
 		for ($i=0; $i < count($links); $i++) {
 		    $pdf->Image(BaseController::IMATGE_BUTTON, $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
-					'', true, 320, '', false, false, 0, false, false, false);
+					'', false, 300, '', false, false, 0, false, false, false);
+		    
 			//$pdf->setPageMark(); 
 			$pdf->MultiCell($wLink, $hLink, $links[$i]['text'], 0, 'C', 0, 0, $x, $y, true, 0, false, true, $hLink, 'M', true);
 
 			if ($i == 2) {
 				$y += $yOffset;
-				$x = $x_titols + 5;
+				$x = $x_titols + 5*$factor_w;
 			} else {
 				$x += $wLink + (2 * $buttonsMargin);
 			}
@@ -2209,28 +2245,27 @@ class BaseController extends Controller {
 		// Definir paper 13,3'' => 29cmx17cm (WxH) en 16:9
 		// Definir paper 7'' => => 15cmx9cm (WxH) en 16:9
 
+	    $factor_w = 86/150;    //  0.573
+	    $factor_h = 54/90;     //  0.6
+	    
 		// Posicions
 		$xTit = 0;
-		$yTit =	18;		
-		$yNom =	35;		
-		$yDni =	40;		
-		$yCad =	56.2;
+		$yTit =	18*$factor_h;		
+		$yNom =	35*$factor_h;		
+		$yDni =	40*$factor_h;		
+		$yCad =	56.2*$factor_h;
 		
 		// Títols
-		$x_titols = 11;
+		$x_titols = 11*$factor_w;
 
 		// Links docs
 		$x = $x_titols;
-		$y = $yLinks;
-		$yOffset = 10;
-		$hLink = 6.8;
-		$buttonsMargin = 5;
+		$y = $yLinks*$factor_h;
+		$yOffset = 10*$factor_h;
+		$hLink = 6.8*$factor_h;
+		$buttonsMargin = 3;
 				
-		$width = 150; 
-		$height = 90; 
-		
-		$pageLayout = array($width, $height); //  or array($height, $width) 
-		$pdf = new TcpdfBridge('L', PDF_UNIT, $pageLayout, true, 'UTF-8', false);
+		$pdf = new TcpdfBridge('L', PDF_UNIT, 'BUSINESS_CARD_ISO7810', true, 'UTF-8', false);
 				
 		$pdf->init(array('author' => 'FECDAS',
 						'title' => 'Llicència Tecnocampus FECDAS' . date("Y")));
@@ -2241,17 +2276,17 @@ class BaseController extends Controller {
 		// zoom - layout - mode
 		$pdf->SetDisplayMode('real', 'SinglePage', 'UseNone');
 		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-		$pdf->SetMargins(5, 5, 5);
-		$pdf->SetAutoPageBreak 	(false, 5);
+		$pdf->SetMargins(3, 3, 3);
+		$pdf->SetAutoPageBreak 	(false, 3);
 		//$pdf->SetMargins(0, 0, 0);
 		//$pdf->SetAutoPageBreak 	(false, 0);
 		$pdf->SetTextColor(255, 255, 255); 
 			
 
-		$pdf->AddPage('L', $pageLayout);
+		$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 		
 		$pdf->Image(BaseController::IMATGE_ANVERS_TECNOCAMPUS, 0, 0, 
-						$width, $height , 'jpg', '', '', false, 320, 
+		                $pdf->getPageWidth(), $pdf->getPageHeight() , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 		
 		$parte = $llicencia->getParte();
@@ -2264,12 +2299,12 @@ class BaseController extends Controller {
 		$datacaduca = $parte->getDatacaducitat();
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 				
-		$pdf->SetFont('dejavusans', 'B', 15, '', true);
+		$pdf->SetFont('dejavusans', 'B', 9, '', true);
 		$pdf->setFontStretching(100);		
 		$pdf->SetXY($xTit, $yTit);
 		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
 
-		$pdf->SetFont('dejavusans', 'B', 12);
+		$pdf->SetFont('dejavusans', 'B', 7);
 
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yNom, '<span style="font-size: small;">Nom: </span>'.$persona->getNomCognoms(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
@@ -2280,7 +2315,7 @@ class BaseController extends Controller {
     	//$pdf->setFontStretching(80);
 		
 		$pdf->SetTextColor(199,132,1);
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 
 		$margins = $pdf->getMargins();
 		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right']; 
@@ -2289,7 +2324,7 @@ class BaseController extends Controller {
 
 		for ($i=0; $i < count($links); $i++) {
 		    $pdf->Image(BaseController::IMATGE_BUTTON, $x, $y, $wLink, $hLink , 'png', $links[$i]['link'], 
-					'', true, 320, '', false, false, 0, false, false, false);
+					'', false, 320, '', false, false, 0, false, false, false);
 			//$pdf->setPageMark(); 
 			$pdf->MultiCell($wLink, $hLink, $links[$i]['text'], 0, 'C', 0, 0, $x, $y, true, 0, false, true, $hLink, 'M', true);
 
@@ -2344,7 +2379,7 @@ class BaseController extends Controller {
 		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
 				
 		$pdf->init(array('author' => 'FECDAS',
-						'title' => 'Llicència FECDAS' . date("Y")));
+		    'title' => 'Llicència FECDAS ' . date("Y")));
 
 		$pdf->setPrintFooter(false);
 		$pdf->setPrintHeader(false);
@@ -2648,6 +2683,7 @@ class BaseController extends Controller {
 		if ($detall != null) $parte->setComentaris($parte->getComentaris().' '.$parte->getComentariDefault());
 	
 		$import = $parte->getTotalDetalls();
+		$iva = $parte->getTotalIVADetalls();  // 0
         $club = $parte->getClub(); 		
 
         if ($club != null && $club->pendentPagament() && $club->getSaldo() >= $import) $parte->setPendent(false);
@@ -2655,6 +2691,7 @@ class BaseController extends Controller {
 		
 		// Actualitzar import i detalls factura
 		$factura->setImport($import);
+		$factura->setIva($iva);
 				
 		$detalls = $parte->getDetallsAcumulats();
 		//$factura->setDetalls(json_encode($detalls, JSON_UNESCAPED_UNICODE)); // Desar estat detalls a la factura
@@ -2723,6 +2760,7 @@ class BaseController extends Controller {
 			// Actualitzar import i detalls factura
 			if ($factura != null) {
 				$factura->setImport($parte->getTotalDetalls());
+				$factura->setIva($parte->getTotalIVADetalls());  // 0
 					
 				$detalls = $parte->getDetallsAcumulats();
 				//$factura->setDetalls(json_encode($detalls, JSON_UNESCAPED_UNICODE)); // Desar estat detalls a la factura
@@ -2826,6 +2864,7 @@ class BaseController extends Controller {
 			if ($parte->getNumDetalls() == 0) {
 				$em = $this->getDoctrine()->getManager();
 				$factura->setImport(0); // Actualitza saldo club
+				$factura->setIva(0);
 				$factura->setComanda(null);
 				$parte->setFactura(null);
 				//$parte->setDatabaixa($current);
@@ -2836,6 +2875,7 @@ class BaseController extends Controller {
 			// Actualitzar import i detalls factura
 			if ($factura != null) {
 				$factura->setImport($parte->getTotalDetalls());
+				$factura->setIva($parte->getTotalIVADetalls());  // 0
 				
 				$detalls = $parte->getDetallsAcumulats();
 				//$factura->setDetalls(json_encode($detalls, JSON_UNESCAPED_UNICODE)); // Desar estat detalls a la factura
@@ -2897,6 +2937,7 @@ class BaseController extends Controller {
 		$em = $this->getDoctrine()->getManager();
 
 		$import = 0;
+		$iva = 0;
 		$concepte = 'Anul·lació. ';
 		$detallsFactura = array();
 		foreach ($detalls as $detall) {
@@ -2904,6 +2945,7 @@ class BaseController extends Controller {
 			$unitats = $detall->getUnitats();
 			
 			$import += $detall->getTotal(true);
+			$iva += $detall->getIva(true);
 			
 			$concepte .= $unitats.'x'.$producte->getDescripcio().' ';
 			
@@ -2940,7 +2982,7 @@ class BaseController extends Controller {
 
 		$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
 		
-		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, $import, $concepte, $detallsFactura, $this->getIbanGeneral());
+		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, $import, $iva, $concepte, $detallsFactura, $this->getIbanGeneral());
 		
 		$em->persist($factura);
 		

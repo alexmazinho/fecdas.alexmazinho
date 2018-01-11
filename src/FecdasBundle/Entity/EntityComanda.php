@@ -726,7 +726,7 @@ class EntityComanda {
 	}
 
 	/**
-	 * Get total suma dels detalls sense IVA
+	 * Get total suma IVA dels detalls
 	 *
 	 * @return double
 	 */

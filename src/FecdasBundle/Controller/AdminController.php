@@ -377,17 +377,8 @@ class AdminController extends BaseController {
 	        if ($persona == null)  throw new \Exception ('Persona no trobada');
 	        if ($email == "")   throw new \Exception ('Cal indicar un correu');
 	        
-            $mails = explode(";", $email);
-	        foreach ($mails as $mail) {
-	           $posArroba = strpos($mail, '@');
-	           $posGuio = strpos($mail, '-');
-	                
-	           if ($posArroba !== false && $posGuio !== false && $posGuio < $posArroba) $mail = str_replace('-', '', $mail); // Reemplazar "-" abans de @ perquè surten invàlids
-	                
-	           if (trim($mail) != "" && filter_var(trim($mail), FILTER_VALIDATE_EMAIL) === false) throw new \Exception("L'adreça de correu -".trim($mail)."- no és vàlida");
-	        }
-	        
-	        $persona->setMail($email);
+	        $strMails = $this->validateMails(explode(";", $email));
+	        $persona->setMail($strMails);
 	        
             $em->flush();
 	            

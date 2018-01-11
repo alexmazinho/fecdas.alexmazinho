@@ -58,8 +58,15 @@
 			{% for producte in productes %}
 		   		<div class="col-md-2 col-sm-3 col-xs-6 graella-item graella-item-show {% if producte.disponible == false %} graella-item-esgotat {% endif %}">
 					<div {% if admin == true %}class="graella-item-admin"{% endif %}>
-						<h4>{{ producte.abreviatura }}<span class="graella-item-preu">{{ producte.getPreuAny("now"|date('Y'))|number_format(2, ',', '.') }} €</span></h4>
-							<h5>{{ producte.descripcio }}</h5>
+						<h4>{{ producte.abreviatura }}
+							<span class="graella-item-preu">
+							    {{ producte.getPreuAny("now"|date('Y'))|number_format(2, ',', '.') }} €
+							    {% if producte.getIvaAny("now"|date('Y')) > 0 %}
+							    	<span class="graella-item-iva red">(IVA {{ producte.getIvaAny("now"|date('Y'))*100|number_format(0, ',', '.') }}%)</span>
+							    {% endif %}
+							</span>
+						</h4>
+						<h5>{{ producte.descripcio }}</h5>
 						{% if producte.minim != null %}<div class="graella-item-with-min">Quantitat mínima: {{ producte.minim }}</div> {% endif %}
 						{% if producte.transport == true %}<div class="graella-item-transport">Transport a partir de {{ constant('FecdasBundle\\Controller\\BaseController::TARIFA_TRANSPORT1') }} €</div> {% endif %}
 						<p class="graella-item-add">

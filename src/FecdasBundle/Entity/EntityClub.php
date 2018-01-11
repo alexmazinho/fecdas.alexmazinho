@@ -337,9 +337,12 @@ class EntityClub {
      */
     public function getMails()
     {
-    	return explode(";", trim($this->mail));
+        $mails = explode(";", trim($this->mail));
+        for ($i = 0; $i < count($mails); $i++) {
+            $mails[$i] = trim($mails[$i]);
+        }
+        return $mails;
     }
-	
 	
 	/**
      * Get roles diferents

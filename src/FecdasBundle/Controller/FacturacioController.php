@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use FecdasBundle\Form\FormProducte;
 use FecdasBundle\Entity\EntityProducte;
+use FecdasBundle\Entity\EntityRebut;
 use FecdasBundle\Form\FormStock;
 use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Form\FormRebut;
@@ -2885,6 +2886,18 @@ class FacturacioController extends BaseController {
 		$response->headers->set('Content-Type', 'application/json');
 		$response->setContent(json_encode($preuArray));
 		return $response;
+	}
+	
+	public function jsonnumrebutAction(Request $request) {
+	    //fecdas.dev/jsonnumrebut?any=2015
+	    $response = new Response();
+	    
+	    $any = $request->get('any', date('Y'));
+
+	    $numRebut = $this->getMaxNumEntity($any, BaseController::REBUTS) + 1;
+	    
+	    $response->setContent(EntityRebut::formatNumRebut($numRebut, $any));
+	    return $response;
 	}
 	
 	public function jsonfacturesAction(Request $request) {

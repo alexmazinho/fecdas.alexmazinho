@@ -563,6 +563,9 @@ class SecurityController extends BaseController
 					$tab = 0;	
 					throw new \Exception("Cal indicar un mail");
 				}
+				
+				$strMails = $this->validateMails(explode(";", trim($club->getMail()) ));
+				$club->setMail($strMails);
 	   			
 				if ($club->getTelefon() > BaseController::MAX_TELEFON) {
 				    $tab = 0;

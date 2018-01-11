@@ -32,6 +32,11 @@ class EntityFactura {
 	 * @ORM\Column(type="decimal", precision=9, scale=2)
 	 */
 	protected $import;
+	
+	/**
+	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 */
+	protected $iva;
 
 	/**
 	 * @ORM\Column(type="text")
@@ -92,7 +97,7 @@ class EntityFactura {
 		}
 	}
 	
-	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $concepte = '', $detalls = array(), $numcompte = '') {
+	public function __constructParams($datafactura, $num, $comanda = null, $import = 0, $iva = 0, $concepte = '', $detalls = array(), $numcompte = '') {
 
 		$this->datafactura = $datafactura;
 		$this->num = $num;
@@ -106,6 +111,8 @@ class EntityFactura {
 
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();
+			if ($iva == 0) $this->iva = $comanda->getTotalIVADetalls();
+			
 			if (trim($concepte) == '') $this->concepte = $comanda->getConcepteComanda();
 			if ($detalls == null || count($detalls) == 0) {
 				$detalls = $comanda->getDetallsAcumulats();
@@ -282,6 +289,22 @@ class EntityFactura {
 
 		$this->import = $import;
 	}
+	
+	
+	/**
+	 * @return string
+	 */
+	public function getIva() {
+	    return $this->iva;
+	}
+	
+	/**
+	 * @param string $iva
+	 */
+	public function setIva($iva) {
+	    $this->iva = $iva;
+	}
+	
 
 	/**
 	 * @return string

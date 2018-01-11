@@ -101,11 +101,11 @@ class EntityComandaDetall {
 		if ($producte != null) {
 			$anypreu = ($comanda != null?$comanda->getDatapreu()->format('Y'):date('Y'));
 			$this->preuunitat = $producte->getPreuAny($anypreu);
+			$this->ivaunitat = $producte->getIvaAny($anypreu);   
 		} 
 		  
 		//$this->preuunitat = ($producte != null?$producte->getCurrentPreu():0);
 		//$this->ivaunitat = ($producte != null?$producte->getCurrentIva():0);
-		$this->ivaunitat = 0;  // Totes les comandes sense IVA, si cal després es modifiquen 
 		$this->descomptedetall = $descomptedetall;
 		$this->anotacions = $anotacions;
 	}
@@ -140,6 +140,16 @@ class EntityComandaDetall {
 		return $this->getTotalNet($baixes)*(1 + $this->ivaunitat);	
 	}
 
+	/**
+	 * Get iva
+	 *
+	 * @return double
+	 */
+	public function getIva($baixes = false)
+	{
+	    return $this->getTotalNet($baixes)*$this->ivaunitat;
+	}
+	
 	/**
 	 * Get detalls 
 	 *

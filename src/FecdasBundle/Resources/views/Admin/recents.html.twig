@@ -156,11 +156,12 @@
     
     		// Obrir form selecció federats
     		var url = $(this).attr("href");
+    		var urlCallback = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
     
     		obrirTaulaSortidaLlicencies(url, 'Impressió llicències plàstic', 'Imprimir', function() {
     			$('.alert.alert-dismissible').remove();
     			$('#formfederatssortida').submit();
-    			printTaulaRecents();
+    			printTaulaRecents( urlCallback );
     			$("#dialeg").dialog("destroy");
     	    });
     	});

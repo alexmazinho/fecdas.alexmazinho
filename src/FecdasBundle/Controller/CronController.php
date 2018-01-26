@@ -1408,17 +1408,24 @@ class CronController extends BaseController {
         foreach ($pendents as $comanda) {
             $club = $comanda->getClub();
             $dataentrada = $comanda->getDataentrada()->format('d-m-Y');
+            $factura = $comanda->getFactura();
             
             $interval = $current->diff($comanda->getDataentrada());
             $diesPendent = $interval->format('%a');  //r    Sign "-" when negative, empty when positive
     
             if ($diesPendent <= self::DIES_PENDENT_NOTIFICA) {
                 // Enviar mail notificació duplicat nou pendent a Federació
-                $subject = ":: Notificació. ".$tipus." pendent ::";
+                $subject = "Notificació tramitació pendent. Federació Catalana d'Activitats Subaquàtiques";
                 $tomails = $this->getFacturacioMails();
-                $body = "<p>".$tipus." pendent de pagament del club ".$club->getNom();
-                $body .= " en data del " . $dataentrada . "</p>";
-                        
+                //$body = "<p>".$tipus." pendent de pagament del club ".$club->getNom();
+                //$body .= " en data del " . $dataentrada . "</p>";
+                
+                $body  = "<p>Benvolgut club ".$club->getNom()."</p>";
+                $body .= "<p>La factura número ".$factura->getNumFactura()." consta, segons les nostres dades, ";
+                $body .= "com a pendent de pagament per part del club en data del ".$factura->getDatafactura()->format('d-m-Y').".</p>";
+                $body .= "<p>Us recordem que per consolidar la validesa de la tramitació cal fer efectiu el pagament abans de 10 dies, ";
+                $body .= "en cas contrari ens veurem obligats a donar-la de baixa. Gràcies per la vostra comprensió.</p>";
+                
                 $this->buildAndSendMail($subject, $tomails, $body);
                 $sortida .= " ".$tipus." pendent >> Notificació Federació ". $club->getNom();
                 $sortida .= " (".$tipus." ". $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
@@ -1448,6 +1455,7 @@ class CronController extends BaseController {
                     
                 $body .= "<p>Per motius de seguretat administrativa, ens veiem en l’obligació de fer-vos saber que no 
                          podem validar la tramitació ".$itemPendent." feta en la data " . $dataentrada . " 
+                         (factura número ".$factura->getNumFactura().") 
                          si no se’n fa el pagament abans de la data " . $databaixa->format('d-m-Y') . " 
                          perquè el marge que se’ns permet per a validar-les abans de procedir 
                          és de 10 dies a partir del moment de la tramitació. Gràcies per la vostra comprensió</p>";

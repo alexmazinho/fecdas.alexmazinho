@@ -1965,8 +1965,12 @@ class FacturacioController extends BaseController {
 			if ($a === $b) {
 				return 0;
 			}
-			if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['tipus'] > $b['tipus'])? -1:1;
+			/*if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['tipus'] > $b['tipus'])? -1:1;
+			return ($a['data'] > $b['data'])? -1:1;*/
+			
+			if ($a['data']->format('Y-m-d') == $b['data']->format('Y-m-d')) return ($a['entrada']->format('Y-m-d H:i:s') > $b['entrada']->format('Y-m-d H:i:s'))? -1:1;
 			return ($a['data'] > $b['data'])? -1:1;
+			
 		});
 		
 		$current = $this->getCurrentDate(); // Moviments data futura es tenen en compte també

@@ -3884,9 +3884,9 @@ class BaseController extends Controller {
         
         if ($secret == '' || $secret != $cronsecret) {
             // mail admin
-            $this->logEntryAuth('AUTH ERROR NOTIFICA', "ERROR ".$action.": ".$secret.' <> '.$cronsecret);
-            $errorAuth = " Error auth ".$action." ".$secret." <> ".$cronsecret."<br/>";
-            echo $errorAuth;
+            $this->logEntryAuth('AUTH ERROR NOTIFICA', "ERROR ".$action.": ".$secret.' clau incorrecta ');
+            $errorAuth = " Error auth ".$action." ".$secret." clau incorrecta <br/>";
+            //echo $errorAuth;
             
             $tomails = self::getAdminMails();
             $subject = "Federació Catalana d'Activitats Subaquàtiques. ERROR ".$action;

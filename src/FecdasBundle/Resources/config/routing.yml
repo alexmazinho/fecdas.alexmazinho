@@ -411,6 +411,12 @@ FecdasBundle_llicenciespermail:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_imprimirpartes:
+    path:  /imprimirpartes
+    defaults: { _controller: "FecdasBundle:Admin:imprimirpartes" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_imprimirparte:
     path:  /imprimirparte
     defaults: { _controller: "FecdasBundle:Admin:imprimirparte" }

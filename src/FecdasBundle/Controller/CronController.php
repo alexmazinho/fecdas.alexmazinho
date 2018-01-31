@@ -1421,7 +1421,7 @@ class CronController extends BaseController {
                 //$body .= " en data del " . $dataentrada . "</p>";
                 
                 $body  = "<p>Benvolgut club ".$club->getNom()."</p>";
-                $body .= "<p>La factura número ".$factura->getNumFactura()." consta, segons les nostres dades, ";
+                $body .= "<p>Se us acaba d'enviar la factura número ".$factura->getNumFactura()." . Segons les nostres dades aquesta factura consta ";
                 $body .= "com a pendent de pagament per part del club en data del ".$factura->getDatafactura()->format('d-m-Y').".</p>";
                 $body .= "<p>Us recordem que per consolidar la validesa de la tramitació cal fer efectiu el pagament abans de 10 dies, ";
                 $body .= "en cas contrari ens veurem obligats a donar-la de baixa. Gràcies per la vostra comprensió.</p>";

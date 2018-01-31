@@ -1539,7 +1539,66 @@ GROUP BY c.nom
 				)));
 	}
 	
+	
+	public function imprimirpartesAction(Request $request) {   
+	    // Permetre passar llista partes per paràmetre GET i imprimir totes les llicències. Funció auxiliar directament executar URL
+	    // https://www.fecdas.dev/imprimirpartes?secret=abc&partes=117036,XXXXX 
+	    
+	    if ($this->isCurrentAdmin() != true) 
+	        return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	   
+	    $em = $this->getDoctrine()->getManager();
+	        
+	    $partesid = explode(",", $request->query->get('partes', ''));
+	   
+	    $llicenciesPerImprimir = array();
+	    $impreses = 0;
+	    
+	    try {
+	        $this->validateCronAuth($request, "imprimir partes bulk"); 
+	        
+    	    foreach ($partesid as $parteid) {
+    	        
+    	        $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+    	        
+    	        if ($parte == null) throw new \Exception("La llista amb id "+$parteid+ " no existeix");
+    	        
+    	        $llicencies = $parte->getLlicenciesSortedByName( );
+    	        
+    	        $impreses += count($llicencies);
+    	        
+    	        $llicenciesPerImprimir = array_merge($llicenciesPerImprimir, $llicencies);
+    	        
+    	        $parte->setDatamodificacio($this->getCurrentDate());
+    	        
+    	    }
+	        
+    	    if ($impreses == 0)  throw new \Exception ('No s\'ha imprès cap llicència');
+    	    
+    	    $pdf = $this->printLlicencies( $llicenciesPerImprimir );
+    	    $em->flush();
+	            
+        } catch (\Exception $e) {
+	            
+            $this->logEntryAuth('IMPRES PARTES KO', 'partes ' . $request->query->get('partes', '') . ' error: '.$e->getMessage() );
+	            
+            $response = new Response('partes ' . $request->query->get('partes', '') . ' error: '.$e->getMessage());
+            $response->setStatusCode(500);
+            return $response;
+        }
+
+        $this->logEntryAuth('IMPRES PARTES OK', 'partes ' . $request->query->get('partes', '') );
+        
+        // Close and output PDF document
+        $response = new Response($pdf->Output("llicencies_impressio_partes_varis.pdf", "D"));
+        $response->headers->set('Content-Type', 'application/pdf');
+        return $response;
+	}
+	
+	
 	public function imprimirparteAction(Request $request) {
+	    // https://www.fecdas.dev/imprimirparte?id=117036&llicencies
+	    
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	

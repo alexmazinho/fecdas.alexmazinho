@@ -2992,6 +2992,17 @@ class BaseController extends Controller {
 		$comanda->addFacturaanulacio($factura);
 		$factura->setComandaanulacio($comanda);
 		$factura->setComanda(null);
+		
+		if ($comanda->comandaPagada() && $comanda->getRebut() != null) {
+		    // Crear rebut import negatiu
+		    $datapagament = $current;
+		    $rebut = $comanda->getRebut();
+		    if ($datapagament->format('Y-m-d') < $comanda->getRebut()->getDatapagament()->format('Y-m-d')) $datapagament = $comanda->getRebut()->getDatapagament(); // Baixa amb data igual o posterior
+		    
+		    $rebutanulacio = $this->crearIngres($datapagament, $rebut->getTipuspagament(), $comanda->getClub(), $import, $rebut->getDadespagament(), '(Anul·lació) '.$rebut->getComentari());
+
+		    $rebutanulacio->setComandaanulacio($comanda);
+		}
 
 		$comanda->setDatamodificacio(new \DateTime());
 		

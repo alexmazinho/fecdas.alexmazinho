@@ -3964,8 +3964,11 @@ class FacturacioController extends BaseController {
 					
 				if ($comanda == null) throw new \Exception('Error actualitzar comanda TPV. id: '.$id);
 				
-				// Afegir rebut
-				$this->crearRebut($this->getCurrentDate(), BaseController::TIPUS_PAGAMENT_TPV, $comanda, $tpvresponse['Ds_Response'].':'.$tpvresponse['Ds_Order']);
+				// Afegir rebut dia següent
+				$datapagament = $this->getCurrentDate();
+				$datapagament->add(new \DateInterval('P1D')); // Add 1
+				
+				$this->crearRebut($datapagament, BaseController::TIPUS_PAGAMENT_TPV, $comanda, $tpvresponse['Ds_Response'].':'.$tpvresponse['Ds_Order']);
 					
 				$em = $this->getDoctrine()->getManager();
 				

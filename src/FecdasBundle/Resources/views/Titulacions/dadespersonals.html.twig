@@ -188,8 +188,10 @@
         			   					alt="Enviar llicència digital" title="Enviar llicència digital"><i class="fa systemblue"><b>@</b></i></a>
         			   			{% endif %}
         			   		{% else %}
-       			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
-       			   					alt="Demanar reenviament llicència digital" title="Demanar reenviament llicència digital"><i class="fa fa-reply fa-1x systemblue"></i></a>
+        			   			{% if parte.comandaPagada == true or parte.club.saldo >= 0 %}
+           			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
+           			   					alt="Demanar reenviament llicència digital" title="Demanar reenviament llicència digital"><i class="fa fa-reply fa-1x systemblue"></i></a>
+       			   				{% endif %}
 							{% endif  %}
 							{% if parte.allowRenovar %}
 								<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">

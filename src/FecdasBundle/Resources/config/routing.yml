@@ -78,6 +78,12 @@ FecdasBundle_baixallicencies:
     requirements:
         methods:  GET
 
+FecdasBundle_llicenciespermail:
+    path:  /llicenciespermail
+    defaults: { _controller: "FecdasBundle:Page:llicenciespermail" }
+    requirements:
+        methods:  GET|POST
+
 FecdasBundle_persona:
     path:  /persona
     defaults: { _controller: "FecdasBundle:Page:persona" }
@@ -402,12 +408,6 @@ FecdasBundle_consultaclubs:
 FecdasBundle_clubs:
     path:  /clubs
     defaults: { _controller: "FecdasBundle:Admin:clubs" }
-    requirements:
-        methods:  GET|POST
-
-FecdasBundle_llicenciespermail:
-    path:  /llicenciespermail
-    defaults: { _controller: "FecdasBundle:Admin:llicenciespermail" }
     requirements:
         methods:  GET|POST
 

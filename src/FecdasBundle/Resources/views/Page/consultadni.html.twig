@@ -59,8 +59,16 @@
 $(document).ready(function(){
 	setMenuActive("menu-busseig");
 	
-	validarConsultaBusseig();
+	$("a.consulta-dni").click(function (e) {
+		//Cancel the link behavior
+        e.preventDefault();
+        
+        $(".sms-notice").hide();
 
+        $("#form-consultadni").submit();
+	});
+
+	
 	helpBubbles("#help-querydni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
 			<p align="left">En cas de menors que no disposin de DNI</p>\
 			<p align="left">cal afegir el prèfix \'P\' o \'M\' al DNI del</p>\

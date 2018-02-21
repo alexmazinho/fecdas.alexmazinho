@@ -1925,20 +1925,6 @@
 		
 	};
 
-	validarConsultaBusseig = function() {
-	    
-		
-		$(".consulta-dni").click(function (e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	        
-	        $(".sms-notice").hide();
-	        
-	        $("#form-consultadni").submit();
-		});
-		
-	};
-
 	validarRenovarNoBuida = function() {
 		$("#formrenovar-button-renovar").click(function(){
 			if ($(".renovar-checkbox:checked").length == 0) {

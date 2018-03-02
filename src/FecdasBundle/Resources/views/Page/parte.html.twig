@@ -21,8 +21,10 @@
     						{% endif %}	
     						{% if parte.comandaPagada %} 
     							<div id="rebut-to-pdf" class="button-top">
-    								<a class="link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': parte.rebut.id}) }}" alt="Rebut" title="Rebut">
+    								{% for rebut in parte.rebuts %} 
+    								<a class="rebut-to-pdf {% if rebut.esanulacio %} rebut-anulacio {% endif %} link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
     									<i class="fa fa-file-text fa-1x blue"></i></a>
+    								{% endfor %}	
     								<span class="subtext">rebuts</span>
     							</div>
     						{% endif %}

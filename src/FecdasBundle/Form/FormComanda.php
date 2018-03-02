@@ -45,11 +45,6 @@ class FormComanda extends AbstractType {
 				));
 				
 				if ($comanda->getRebut() == null) { // Comanda sense rebut
-					$form->add('numrebut', 'hidden', array(
-							'required' 	=> false,
-							'mapped'	=> false,
-					));
-					
 					$form->add('datapagament', 'datetime', array(
 							'required' 		=> false,
 							'mapped'		=> false,
@@ -65,14 +60,6 @@ class FormComanda extends AbstractType {
 							'placeholder' 	=> ''
 					));
 				} else {
-					$rebut = $comanda->getRebut();
-					$form->add('numrebut', 'text', array(
-							'required' 	=> false,
-							'mapped'	=> false,
-							'disabled' 	=> true,
-							'data'		=> $rebut!=null?$rebut->getNumRebut():''
-					)); 
-						
 					$form->add('datapagament', 'hidden', array(
 							'required' 		=> false,
 							'mapped'	=> false,

@@ -70,20 +70,7 @@
 					</div>{{ form_errors(form.tipuspagament)  }}
 				</div>
 			</div>
-			{% else %}
-			 <div class="col-md-2">
-			 	<div class="form-group">
-					{{ form_label(form.numrebut, 'Rebut') }}
-					<div class="label-actions">
-						<a id="rebut-to-pdf" class="link" href="{{ path('FecdasBundle_rebuttopdf', {'id': comanda.rebut.id }) }}"  title="PDF Rebut" alt="PDF Rebut">
-							<i class="fa fa-file-pdf-o fa-1x red"></i></a>
-					</div>
-					<div id="formcomanda-rebut">
-						{{ form_widget(form.numrebut, { 'attr': {'class': 'form-control form-control-center'} }) }}
-					</div>
-				</div>
-			 </div>
-			 {% endif %}{{ form_errors(form.numrebut)  }}
+			 {% endif %}
 			 <div class="col-md-3">
 				<div class="form-group">
 					{{ form_label(form.databaixa, 'Data de baixa') }}
@@ -116,13 +103,13 @@
 			 {% endif %}
 		</div>
 		<div class="row">
-			<div class="col-md-12"><h3 class="blue">Factures</h3> </div>
+			<div class="col-md-12"><h3 class="blue">Factures i Rebuts</h3> </div>
 			{% if comanda.mostrarFactura == true %}
 				{% for factura in comanda.factures %}
 					<div class="col-md-12"> 
 						<ul class="list-factures">
 							<li class="data-detall-cell">&nbsp;</li>
-							<li class="data-detall-cell"><a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
+							<li class="data-detall-cell">F/ <a class="comanda-action-factura link" href="{{ path('FecdasBundle_facturatopdf', { 'id': factura.id}) }}" alt="{{ factura.infoToolTip(admin) }}" title="{{ factura.infoToolTip(admin) }}">
 				   				<i class="fa fa-file-pdf-o fa-1x red"></i></a></li>
 							<li class="data-detall-cell">{{ factura.datafactura|date|date('Y-m-d') }}</li>
 							<li class="data-detall-cell"><span {% if factura.esanulacio == true %}class="red"{% endif %}>{{ factura.numfactura }}</span></li>
@@ -140,6 +127,19 @@
 							</ul>
 						</div>
 					</div>
+				{% endfor %}
+				{% for rebut in comanda.rebuts %}
+					<div class="col-md-12"> 
+   						<ul class="list-rebuts">
+   							<li class="data-detall-cell">&nbsp;</li>
+   							<li class="data-detall-cell">R/ <a class="comanda-action-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
+   				   				<i class="fa fa-file-pdf-o fa-1x red"></i></a></li>
+   							<li class="data-detall-cell">{{ rebut.datapagament|date|date('Y-m-d') }}</li>
+   							<li class="data-detall-cell"><span {% if rebut.esanulacio == true %}class="red"{% endif %}>{{ rebut.numrebut }}</span></li>
+   				   			<li class="data-detall-cell">{{ rebut.import|number_format(2, ',', '.') }} €</li>
+   							<li class="data-detall-cell">{{ rebut.concepteRebutCurt }}</li>
+   						</ul>
+   					</div>
 				{% endfor %}
 			{% else %}
 				<div class="col-md-12">

@@ -2797,7 +2797,6 @@ class BaseController extends Controller {
             
             if (count($detallsBaixa) > 0) {
                 $this->crearFacturaRebutAnulacio($comanda, $detallsBaixa, $dataFacturacio, $extra); 
-				
 				// Gestionar stock
 				$this->registreComanda($comanda, $originalDetalls);
             }
@@ -2999,9 +2998,10 @@ class BaseController extends Controller {
 		    $rebut = $comanda->getRebut();
 		    if ($datapagament->format('Y-m-d') < $comanda->getRebut()->getDatapagament()->format('Y-m-d')) $datapagament = $comanda->getRebut()->getDatapagament(); // Baixa amb data igual o posterior
 		    
-		    $rebutanulacio = $this->crearIngres($datapagament, $rebut->getTipuspagament(), $comanda->getClub(), $import, $rebut->getDadespagament(), '(Anul·lació) '.$rebut->getComentari());
+		    $rebutanulacio = $this->crearIngres($datapagament, $rebut->getTipuspagament(), $comanda->getClub(), $import, $rebut->getDadespagament(), 'Rebut factura anul·lació '.$factura->getNumFactura());
 
 		    $rebutanulacio->setComandaanulacio($comanda);
+		    $comanda->addrebutsanulacions($rebutanulacio);
 		}
 
 		$comanda->setDatamodificacio(new \DateTime());

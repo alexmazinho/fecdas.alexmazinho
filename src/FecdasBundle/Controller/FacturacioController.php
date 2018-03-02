@@ -2470,13 +2470,22 @@ class FacturacioController extends BaseController {
 			$this->get('session')->getFlashBag()->add('error-notice', 'Comanda no trobada ');
 			return $this->redirect($this->generateUrl('FecdasBundle_comandes'));
 		}
-		
+		$info = $comanda->getInfoComanda();
+		$factPrev = $comanda->getFactures();
+		$rebPrev = $comanda->getRebuts();
 		$this->baixaComanda($comanda, $dataFacturacio);
 	
 		$em->flush();
-	
-		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId());
-		$this->get('session')->getFlashBag()->add('sms-notice', 'Comanda '.$comanda->getInfoComanda().' donada de baixa ');
+
+		$factPost = array_diff($comanda->getFactures(), $factPrev);
+		$rebPost = array_diff($comanda->getRebuts(), $rebPrev);
+
+		$info = 'Anul·lació comanda '.$info.'. ';
+		if (count($factPost) > 0) $info .= 'Factura anul·lació creada: '.current($factPost)->getNumFactura().'. '; // Només hauria d'haver una factura anul·lació 
+		if (count($rebPost) > 0) $info .= 'Rebut anul·lació creat: '.current($rebPost)->getNumRebut(); // Si pagat crearà un rebut anul·lació
+		
+		$this->logEntryAuth('BAIXA COMANDA OK', 'Comanda: '.$comanda->getId().' '.$info );
+		$this->get('session')->getFlashBag()->add('sms-notice', $info);
 		
 		$params = $request->query->all();
 		if (isset($params['baixes'])) $params['baixes'] = true;

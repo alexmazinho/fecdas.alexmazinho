@@ -356,6 +356,18 @@ class EntityComanda {
 		return null;		
 	}
 	
+	/**
+	 * Get factures
+	 *
+	 * @return array
+	 */
+	public function getFactures() {
+	    $factures = array();
+	    if ($this->factura != null) $factures[] = $this->factura;
+	    
+	    return array_merge($factures, $this->facturesanulacions->toArray());
+	}
+	
 	
 	/**
 	 * Get nums rebuts totes 
@@ -388,6 +400,19 @@ class EntityComanda {
 		
 		return $total;		
 	}
+	
+	/**
+	 * Get rebuts
+	 *
+	 * @return array
+	 */
+	public function getRebuts() {
+	    $rebuts = array();
+	    if ($this->rebut != null) $rebuts[] = $this->rebut;
+	    
+	    return array_merge($rebuts, $this->rebutsanulacions->toArray());
+	}
+	
 	
 	/**
 	 * Get info llistat 
@@ -423,18 +448,7 @@ class EntityComanda {
 		return !$this->comandaPagada()?'pendent':'';
 	}
 	
-	/**
-	 * Get factures
-	 *
-	 * @return array
-	 */
-	public function getFactures() {
-		$factures = array();
-		if ($this->factura != null) $factures[] = $this->factura;
 	
-		return array_merge($factures, $this->facturesanulacions->toArray());
-	}
-
 	/**
 	 * Get datapreu
 	 *

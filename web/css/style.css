@@ -1647,7 +1647,9 @@ input#form_dni {
 }
 
 .buttons-top .link.factura-anulacio i.fa,
-.buttons-top-bootstrap .link.factura-anulacio i.fa { 
+.buttons-top-bootstrap .link.factura-anulacio i.fa,
+.buttons-top .link.rebut-anulacio i.fa,
+.buttons-top-bootstrap .link.rebut-anulacio i.fa { 
 	font-size: 1.3em;
     height: 20px;
     text-align: center;

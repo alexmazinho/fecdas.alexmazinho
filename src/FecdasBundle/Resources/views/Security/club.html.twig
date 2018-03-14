@@ -789,6 +789,11 @@
 				$('#club_carrecs').val(arrData.value);
 				$('#progressbar').hide();  // Rellotge
 
+				// Netejar camps
+				$('#club_nommembre').val('');
+				$("select#club_federats").select2("val", "");
+				$("#club_carrec").val('');
+
 				var sms = smsResultAjax('OK', "Junta actualitzada correctament");
 				$('.block-errors').html(sms);
 				

@@ -308,31 +308,40 @@ class SecurityController extends BaseController
 	
 			$key = -1; //nou
 			$num = 1;
-			if ($carrec == BaseController::CARREC_VOCAL) { // Vocal, afegir nou
-				foreach ($jsonCarrecs as $value) {
-					if ($value->cid == BaseController::CARREC_VOCAL) $num++;
-				}
-				$jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num, 'nom' => $nommembre);
-				
-			} else { // Altres càrrecs, substituir
-				foreach ($jsonCarrecs as $k => $value) {
-					if ($carrec == $value->cid) $key = $k;
-				}
-				// No existeix
-				if ($key < 0) $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre); // add
-				else $jsonCarrecs[$key] = (object)  array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
-				
-				usort($jsonCarrecs, function($a, $b) {
-		    		if ($a === $b) {
-		    			return 0;
-		    		}
-					
-					if ($a->cid == $b->cid) return ($a->nc < $b->nc? -1:1); 
-					
-		    		return ($a->cid*1 < $b->cid*1? -1:1);
-	    		});
-				
+			
+			switch ($carrec) {
+			    case BaseController::CARREC_VOCAL:
+			    case BaseController::CARREC_VICEPRESIDENT:
+			        
+			        foreach ($jsonCarrecs as $value) {
+			            if ($value->cid == $carrec) $num++;
+			        }
+			        $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => $num, 'nom' => $nommembre);
+			        
+			        break;
+			     
+			    default:
+			        // Altres càrrecs, substituir
+			        foreach ($jsonCarrecs as $k => $value) {
+			            if ($carrec == $value->cid) $key = $k;
+			        }
+			        // No existeix
+			        if ($key < 0) $jsonCarrecs[] = (object) array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre); // add
+			        else $jsonCarrecs[$key] = (object)  array('id' =>	$id, 'cid'	=>	$carrec, 'nc' => 1, 'nom' => $nommembre);		// upd
+			        
+			        break;
 			}
+			
+			usort($jsonCarrecs, function($a, $b) {
+			    if ($a === $b) {
+			        return 0;
+			    }
+			    
+			    if ($a->cid == $b->cid) return ($a->nc < $b->nc? -1:1);
+			    
+			    return ($a->cid*1 < $b->cid*1? -1:1);
+			});
+			
 			$club->setCarrecs(json_encode($jsonCarrecs));
 			$em->flush();
 				
@@ -655,19 +664,27 @@ class SecurityController extends BaseController
 	private function getArrayCarrecs($jsonCarrecs) {
 
 		$carrecs = array();
+		
+		$totalVice = 0;
+		foreach ($jsonCarrecs as $value) {
+		    if ($value->cid==BaseController::CARREC_VICEPRESIDENT) $totalVice++;
+		}
+		
 		foreach ($jsonCarrecs as $value) {
 			
+		    $mostrarNumeracio = $value->cid==BaseController::CARREC_VOCAL || ($totalVice > 1 && $value->cid==BaseController::CARREC_VICEPRESIDENT);
+		    
 			if ($value->id == 0 || $value->id != '') {
 				$carrecs[$value->cid."-".$value->nc] = array(
 						'id' 		=> 0, 
-						'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
+				        'carrec' 	=> BaseController::getCarrec($value->cid).($mostrarNumeracio?' '.$value->nc:''), 
 						'nom' 	 	=> (isset($value->nom) != true?'desconegut':$value->nom )
 				);
 			} else {
 				$membreJunta = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($value->id);
 				$carrecs[$value->cid."-".$value->nc] = array(
 						'id' 		=> $value->id, 
-						'carrec' 	=> BaseController::getCarrec($value->cid).($value->cid==BaseController::CARREC_VOCAL?' '.$value->nc:''), 
+				        'carrec' 	=> BaseController::getCarrec($value->cid).($mostrarNumeracio?' '.$value->nc:''), 
 						'nom' 	 	=> ($membreJunta != null? $membreJunta->getNomCognoms() : '' )
 				);
 			}

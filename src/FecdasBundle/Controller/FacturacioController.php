@@ -1842,9 +1842,9 @@ class FacturacioController extends BaseController {
 					$strComanda .= $comanda['num'].($comanda['import']!=0?' '.number_format($comanda['import'], 2, ',', '.'):'');
 				} 
 				
-				$strConcepte = $row['concepte'];
+                $strConcepte = mb_convert_encoding($row['concepte'], "UTF-8", "UTF-8");
 				if ($row['extra'] != false) {
-					$strExtra = $row['extra']['dades'];	
+				    $strExtra = mb_convert_encoding($row['extra']['dades'], "UTF-8", "UTF-8");	
 					if (strlen($strExtra) > 80) $strExtra = substr($strExtra, 0, 77).'...';
 					
 					$strConcepte .= PHP_EOL.$strExtra; 

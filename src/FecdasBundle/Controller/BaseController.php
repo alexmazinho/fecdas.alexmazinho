@@ -3613,13 +3613,13 @@ class BaseController extends Controller {
 
 	protected function exportCSV($request, $header, $data, $filename) {
 
-    	$csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//TRANSLIT',implode('";"',$header)).'"'.CRLF;
+	    //$csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//TRANSLIT',implode('";"',$header)).'"'.CRLF;
+    	$csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//IGNORE',implode('";"',$header)).'"'.CRLF;
     	
     	//$infoseccionsCSV = array();
     	foreach ($data as $row) {
     		$row = '"'.implode('";"', $row).'"';
-    		
-    		$csvTxt .= iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $row.CRLF);
+    		$csvTxt .= iconv('UTF-8', 'ISO-8859-1//IGNORE', $row.CRLF);
     	}
 
     	$response = new Response($csvTxt);

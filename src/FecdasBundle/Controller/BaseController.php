@@ -152,7 +152,7 @@ class BaseController extends Controller {
 	const IMATGE_BUTTON            = 'images/white_button.png';
 	
 	// Docs assegurança
-	const POLISSA_BUSSEIG = 'polissa_busseig_2017.pdf';
+	const POLISSA_BUSSEIG = 'polissa_busseig_2018.pdf';
 	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2017-18.pdf';
 	const POLISSA_ESCOLAR = 'polissa_escolar_2017-18.pdf';
 	

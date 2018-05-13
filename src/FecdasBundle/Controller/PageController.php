@@ -1485,9 +1485,15 @@ class PageController extends BaseController {
 		$form = $this->createForm(new FormDuplicat(array('club' => $currentClub)), $duplicat);
 		
 		if ($request->getMethod() == 'POST') {
-			$form->submit($request); 
+			//$form->submit($request); 
+			$form->handleRequest($request);
 			if ($form->isValid()) {
 				try {
+				    
+				    $data = $request->request->get('duplicat');
+				    $nom = (isset($data['nom'])?$data['nom']:'');
+				    $cognoms = (isset($data['cognoms'])?$data['cognoms']:'');
+				    
 					//$duplicat->setClub($this->getCurrentClub());
 					//$duplicat->setDatapeticio($this->getCurrentDate());
 					
@@ -1498,10 +1504,12 @@ class PageController extends BaseController {
 					//$em->persist($duplicat);
 					
 					// Comprovar canvis en el nom / cognoms
-					$nom = "";
+					/*$nom = "";
 					if ($form->has('nom')) $nom = $form->get('nom')->getData();
 					$cognoms = "";
-					if ($form->has('cognoms')) $cognoms = $form->get('cognoms')->getData();
+					if ($form->has('cognoms')) $cognoms = $form->get('cognoms')->getData();*/
+					
+					if (trim($nom) == "" || trim($cognoms) == "") throw new \Exception('Cal indicar el nom i cognoms de la persona');
 					
 					if ($form->has('fotoupld'))  {
 						$file = $form->get('fotoupld')->getData();
@@ -1523,11 +1531,10 @@ class PageController extends BaseController {
 						// Form sense foto
 						if ($duplicat->getCarnet()->getFoto() == true) throw new \Exception('Cal carregar una foto per demanar el duplicat');
 					}
-				
+
 					// Canvis en el nom i cognoms de la persona
 					$observacionsMail = "";
-					if ($duplicat->getPersona()->getNom() != $nom or
-					$duplicat->getPersona()->getCognoms() != $cognoms) {
+					if ($duplicat->getPersona()->getNom() != $nom || $duplicat->getPersona()->getCognoms() != $cognoms) {
 						$observacionsMail = "<p>Ha canviat el nom, abans " .
 								$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() ."</p>";
 						$duplicat->getPersona()->setNom($nom);

@@ -318,7 +318,7 @@ class CronController extends BaseController {
 					$this->buildAndSendMail($subject, $tomails, $body);
 					$sortida .= $body;
 						
-					$this->logEntry('alexmazinho@gmail.com', 'CRON RENEW',
+					$this->logEntry($this->getParameter('MAIL_ADMINLOG'), 'CRON RENEW',
 							$request->server->get('REMOTE_ADDR'),
 							$request->server->get('HTTP_USER_AGENT'), 
 					    'club ' . $club->getNom() . ', llicència ' . $llicencia->getId() . ', dies ' .  $dies);

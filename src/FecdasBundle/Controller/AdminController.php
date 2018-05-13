@@ -192,10 +192,6 @@ class AdminController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		// Només jo
-		/*if ($this->get('session')->get('username') != 'alexmazinho@gmail.com')
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));*/
-		
 		$em = $this->getDoctrine()->getManager();
 	
 		$states = explode(";", self::CLUBS_STATES);
@@ -1807,10 +1803,6 @@ GROUP BY c.nom
 	public function clubsAction(Request $request) {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	
-		// Només jo
-		/*if ($this->get('session')->get('username') != 'alexmazinho@gmail.com')
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));*/
 	
 		$em = $this->getDoctrine()->getManager();
 	

@@ -2643,11 +2643,8 @@
 						$('#duplicat_fotoupld').val( '' );
 					});
 					
-					
 					$('#duplicat_submit').click(function(e) {
 						e.preventDefault();
-						
-						
 						
 						// Validacions
 						if ($('select#duplicat_titol').length > 0 && $('select#duplicat_titol').val() == "") {
@@ -2666,6 +2663,7 @@
 							dialegError("Error", "Cal indicar els cognoms", 300, 100);
 							return false;
 						}
+						
 						$('#formduplicats').submit();
 					});	
 				}); 

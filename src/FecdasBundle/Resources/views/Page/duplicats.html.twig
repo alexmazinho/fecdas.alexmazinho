@@ -31,8 +31,9 @@
 						{{ form_widget(form.carnet, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				</div>
-				<div id="formduplicats-dades" class="form-row clearfix"></div>
-				<div id="formduplicats-rest" class="hidden">{{ form_rest(form) }}</div>
+				<div id="formduplicats-dades" class="form-row clearfix">
+					{{ form_rest(form) }}				
+				</div>
 		    {{ form_end(form) }}
     	</div>
     </div>

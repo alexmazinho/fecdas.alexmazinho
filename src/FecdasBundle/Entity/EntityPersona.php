@@ -355,7 +355,6 @@ class EntityPersona {
     
 	public static function getLastLlicenciaStatic($llicencies, $desde = null, $fins = null) {
     	$llicenciesOrdenades = EntityPersona::getLlicenciesSortedByDateStatic($llicencies, false, $desde, $fins);
-    	
     	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
     	
     	return null;
@@ -370,8 +369,8 @@ class EntityPersona {
      *
      * @return string
      */
-    public static function getInfoHistorialLlicenciesStatic($llicencies, $admin = false, $desde = '', $fins = '') {
-    	$txtClub = "";
+    public static function getInfoHistorialLlicenciesStatic($llicencies, $admin = false, $desde = '', $fins = '', $club = null) {
+        $txtClub = $club==null?"":"(".$club->getNom().") ";
    	  
 		if ($desde != '' || $fins != '') {
 			$desde = ($desde != ''?\DateTime::createFromFormat('Y-m-d', $desde):null);
@@ -402,12 +401,11 @@ class EntityPersona {
     		if ($admin) $txtClub = "(".$parte->getClubparte()->getNom().") ";
     		return $txtClub . "Darrera llicència finalitzada en data " . $parte->getDatacaducitat()->format('d/m/Y');
 		}
-    	
     	return $txtClub . "Persona sense historial de llicències";
     }
 
     public function getInfoHistorialLlicencies($admin = false, $desde = '', $fins = '') {
-    	return EntityPersona::getInfoHistorialLlicenciesStatic($this->llicencies, $admin, $desde, $fins);
+    	return EntityPersona::getInfoHistorialLlicenciesStatic($this->llicencies, $admin, $desde, $fins, $this->club);
 	}
 
 

@@ -604,6 +604,8 @@ class PageController extends BaseController {
 
 		$em = $this->getDoctrine()->getManager();
 		try {
+		    if (!$partearenovar->allowRenovar()) throw new \Exception('Aquest tipus de llicència no es pot renovar. Contacta amb la Federació');
+		    
 			$avisos = "";
 			if ($request->getMethod() == 'POST') {
 				$form->handleRequest($request);
@@ -1501,6 +1503,14 @@ class PageController extends BaseController {
 					if ($duplicat->getTitol() == null && $duplicat->getCarnet()->getId() != 1) throw new \Exception('Cal indicar un títol');  
 					if ($duplicat->getTitol() != null && $duplicat->getCarnet()->getId() == 1) throw new \Exception('Dades del títol incorrectes'); 
 
+					
+					
+					if ($duplicat->getCarnet()->esLlicencia()) {
+					    /* Validar duplicat llicència, llicència vigent */
+					    $vigent = $duplicat->getPersona()->getLlicenciaVigent();
+					    if ($vigent == null) throw new \Exception('Aquest federat no té cap llicència vigent per demanar-ne un duplicat'); 
+					}
+					
 					//$em->persist($duplicat);
 					
 					// Comprovar canvis en el nom / cognoms
@@ -1552,7 +1562,7 @@ class PageController extends BaseController {
 					
 					//$tomails = $this->getLlicenciesMails();
 					$tomails = array();
-					if ($duplicat->getCarnet()->esLlicencia() == true) $tomails = $this->getLlicenciesMails(); // Llicències Remei
+					if ($duplicat->getCarnet()->esLlicencia()) $tomails = $this->getLlicenciesMails(); // Llicències Remei
 					else $tomails = $this->getCarnetsMails(); // Carnets Albert
 					$body = "<h3>Petició de duplicat del club ". $duplicat->getClub()->getNom()."</h3>";
 					$body .= "<p>". $duplicat->getTextCarnet() ."</p>";

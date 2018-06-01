@@ -662,6 +662,7 @@ class CronController extends BaseController {
 		$parterenovar = $llicenciaarenovar->getParte();
 		if ($request->getMethod() != 'POST')  $this->logEntryAuth('RENOVAR LLICENCIA VIEW',	$parterenovar->getId());
 		
+		
 		/* Validació impedir modificacions altres clubs */
 		if ($this->isCurrentAdmin() != true && $parterenovar->getClubparte()->getCodi() != $currentClub) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	
@@ -682,6 +683,9 @@ class CronController extends BaseController {
 				$dataalta->setTime(00, 00);
 				$dataalta->add(new \DateInterval('P1D')); // Add 1 dia
 			}
+			
+			if (!$parterenovar->allowRenovar()) throw new \Exception('Aquest tipus de llicència no es pot renovar. Contacta amb la Federació');
+			
 			/* Crear el nou parte */
 			$parte = $this->crearComandaParte($dataalta, $llicenciaarenovar->getParte()->getTipus(), $parterenovar->getClubparte(), 'Renovació llicència');
 
@@ -734,7 +738,7 @@ class CronController extends BaseController {
 					return $this->redirect($this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view', 'source' => 'renovacio')));
 			
 				} else {
-					throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador');
+					throw new \Exception('Error validant les dades. Contacta amb la Federació');
 				}
 			}			
 		} catch (\Exception $e) {

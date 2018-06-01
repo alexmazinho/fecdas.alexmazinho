@@ -62,6 +62,26 @@ class EntityParteType {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
+	protected $asseguranca;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $renovable;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $imprimible;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $limittramit;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
 	protected $admin;
 	
 	/**
@@ -307,6 +327,88 @@ class EntityParteType {
     	return $this->actiu;
     }
     
+    /**
+     * Set asseguranca
+     *
+     * @param boolean $asseguranca
+     */
+    public function setAsseguranca($asseguranca)
+    {
+        $this->asseguranca = $asseguranca;
+    }
+    
+    /**
+     * Get asseguranca
+     *
+     * @return boolean
+     */
+    public function getAsseguranca()
+    {
+        return $this->asseguranca;
+    }
+    
+    /**
+     * Set renovable
+     *
+     * @param boolean $renovable
+     */
+    public function setRenovable($renovable)
+    {
+        $this->renovable = $renovable;
+    }
+    
+    /**
+     * Get renovable
+     *
+     * @return boolean
+     */
+    public function getRenovable()
+    {
+        return $this->renovable;
+    }
+    
+    /**
+     * Set imprimible
+     *
+     * @param boolean $imprimible
+     */
+    public function setImprimible($imprimible)
+    {
+        $this->imprimible = $imprimible;
+    }
+    
+    /**
+     * Get imprimible
+     *
+     * @return boolean
+     */
+    public function getImprimible()
+    {
+        return $this->imprimible;
+    }
+    
+    
+    /**
+     * Set limittramit
+     *
+     * @param boolean $limittramit
+     */
+    public function setLimittramit($limittramit)
+    {
+        $this->limittramit = $limittramit;
+    }
+    
+    /**
+     * Get limittramit
+     *
+     * @return boolean
+     */
+    public function getLimittramit()
+    {
+        return $this->limittramit;
+    }
+    
+   
     /**
      * Set admin
      *

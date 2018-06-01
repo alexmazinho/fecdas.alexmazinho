@@ -201,8 +201,11 @@
 			   					<i class="fa fa-search fa-1x blue"></i></a>
 			   			{% else %}
 			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-			   						<i class="fa fa-retweet fa-1x green"></i></a>
+			   					{% set parte = persona.lastLlicencia.parte %}
+			   					{% if parte.allowRenovar %}
+    			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
+    			   						<i class="fa fa-retweet fa-1x green"></i></a>
+			   					{% endif %}
 			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
 			   						<i class="fa fa-search fa-1x blue"></i></a>
 			   				{% endif %}

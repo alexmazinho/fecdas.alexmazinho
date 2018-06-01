@@ -839,6 +839,22 @@ class BaseController extends Controller {
             }     
         }
         
+        if ($tipus->getLimittramit()) {
+            // Tipus llicències limitades a un cop a la vida (per DNI a qualsevol club) per a qualsevol tipus limitat
+            $metapersona = $llicencia->getPersona()->getMetapersona();
+
+            foreach ($metapersona->getLlicencies() as $lic) {
+             
+                if ($lic->getParte()->getTipus()->getLimittramit()) 
+                    throw new \Exception('Aquest tipus de llicència no es pot tramitar novament per a '.
+                        $metapersona->getDni().' ('.$llicencia->getPersona()->getNomCognoms().'). '.
+                        ' Ja es va tramitar amb anterioritat per al periode  '.$lic->getParte()->getDataalta()->format('d/m/Y').
+                        ' fins '.$lic->getDatacaducitat()->format('d/m/Y'));
+                                
+            }
+        }
+        
+        
 		/* Modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 		/* id 4 - Competició --> és la única que es pot fer */
 		/* id 9 i 12 - Tecnocampus també es pot fer */
@@ -853,7 +869,7 @@ class BaseController extends Controller {
 		}*/
 		/* Fi modificacio 10/10/2014. Missatge no es poden tramitar 365 */
 		/* Valida tipus actiu --> és la única que es pot fer */
-		if ($tipus->getActiu() == false) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
+		if (!$tipus->getActiu()) throw new \Exception('Aquest tipus de llicència no es pot tramitar. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
 		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 
 		// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual

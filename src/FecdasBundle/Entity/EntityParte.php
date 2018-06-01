@@ -191,9 +191,11 @@ class EntityParte extends EntityComanda {
 	 */
 	public function perImprimir()
 	{
-		if ($this->tipus->esLlicenciaDia()) return false;
+		/*if ($this->tipus->esLlicenciaDia()) return false;
 		
-		return $this->tipus->getTemplate() != '';
+		return $this->tipus->getTemplate() != '';*/
+		
+		return $this->tipus->getImprimible();
 	}
 	
 	/**
@@ -553,31 +555,37 @@ class EntityParte extends EntityComanda {
     }
     
     public function getDataCaducitat() {
-    	//$datacaducitat = clone $this->getDataalta(); // Important treballar amb còpies no amb referències
-    	//$datacaducitat = clone $this->dataalta;
 
     	if ($this->dataalta == null) {
     		$this->setDataalta(new \DateTime());
     	}
     	$datacaducitat = new \DateTime($this->dataalta->format("Y-m-d"));
-    	if ($this->getTipus() != null) {
-        	if ($this->getTipus()->getId() != BaseController::ID_LLICENCIES_DIA) { // No un dia
-        		if ($this->getTipus()->getEs365() == true) {
-        			/* Competició. En 365 datafinal indica data de caducitat */
-        			if ($this->getTipus()->getFinal() != null) {
-        				// Si dataalta > datafinal  --> any següent, sinó any dataalta 
-        				if ($datacaducitat->format("m-d") > $this->getTipus()->getFinal()) $currentYear = $datacaducitat->format("Y") + 1; 
-        				else $currentYear = $datacaducitat->format("Y");
-        				$datacaducitat = \DateTime::createFromFormat("Y-m-d", $currentYear."-".$this->getTipus()->getFinal());
-        			} else {
-        				$datacaducitat->add(new \DateInterval('P364D')); // Add 364 dies
-        			}
-        		} else {
-        			/* Anuals caduquen a 31/12*/
-        			$datacaducitat = \DateTime::createFromFormat("Y-m-d", $datacaducitat->format("Y") . "-12-31");
-        		}
-        	}
-    	}
+    	
+    	if ($this->getTipus() == null) throw new \Exception("Tipus de llicència erroni, contacti amb la Federació");
+    	
+    	
+        if ($this->getTipus()->getEs365()) {
+        		    
+            $final = $this->getTipus()->getFinal();
+            if ($final == null) throw new \Exception("Error en el tipus de llicència, contacti amb la Federació");
+        		    
+            if (is_numeric($this->getTipus()->getFinal())) {
+                // final indica nombre de dies vigència
+                if ($final > 0) {
+        	        $interval = "P".$final."D";
+          		        
+        	        $datacaducitat->add(new \DateInterval($interval)); // Add $final dies
+                }
+            } else {
+        	    // final indica mes-dia de l'any actual finalització
+                if ($datacaducitat->format("m-d") > $final) $currentYear = $datacaducitat->format("Y") + 1;
+                else $currentYear = $datacaducitat->format("Y");
+                $datacaducitat = \DateTime::createFromFormat("Y-m-d", $currentYear."-".$final);
+            }
+        } else {
+        	/* Anuals caduquen a 31/12*/
+        	$datacaducitat = \DateTime::createFromFormat("Y-m-d", $datacaducitat->format("Y") . "-12-31");
+        }
 		return $datacaducitat;
     }
     
@@ -640,10 +648,11 @@ class EntityParte extends EntityComanda {
     
     public function isAsseguranca() {
     	// Per indicar si cal mostrar les estadístiques pantalla llicència parte
-    	if ($this->tipus->getId() == 2 || $this->tipus->getId() == 8 ||
+    	/*if ($this->tipus->getId() == 2 || $this->tipus->getId() == 8 ||
     		$this->tipus->getId() == 9 || $this->tipus->getId() == 10 ||
     		$this->tipus->getId() == 11) return true;
-    	return false;
+    	return false;*/
+    	return $this->tipus->getAsseguranca();
     }
 
 	public function allowRemoveLlicencia($admin = false) {
@@ -665,11 +674,13 @@ class EntityParte extends EntityComanda {
     	
     	if ($this->pendent == true) return false; // Pendents no s'han de renovar
     	// Només renoven alguns tipus de parte
-    	if ($this->tipus->getId() == 1 || $this->tipus->getId() == 2 ||
-    			$this->tipus->getId() == 4 || $this->tipus->getId() == 7 ||
-    			$this->tipus->getId() == 8 || $this->tipus->getId() == 10 ||
-				$this->tipus->getId() == 13) {
+    	/*if ($this->tipus->getId() == 1 || $this->tipus->getId() == 2 ||
+    		$this->tipus->getId() == 4 || $this->tipus->getId() == 7 ||
+    		$this->tipus->getId() == 8 || $this->tipus->getId() == 10 ||
+			$this->tipus->getId() == 13) {*/
 
+		if ($this->tipus->getRenovable()) {
+			    
     		/* Si falta menys d'un més per caducar o ja han caducat */
     		$current = new \DateTime();
     		$interval = $current->diff($this->getDataCaducitat());

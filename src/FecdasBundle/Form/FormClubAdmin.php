@@ -59,7 +59,7 @@ class FormClubAdmin extends FormClub {
 				'input' 		=> 'datetime',
 				'placeholder' 	=> '',
 				'format' 		=> 'dd/MM/yyyy',
-				'attr'			=>	array('readonly' => true)
+				//'attr'			=>	array('readonly' => true)
 		));
 		
 		$builder->add('notes', 'textarea', array(

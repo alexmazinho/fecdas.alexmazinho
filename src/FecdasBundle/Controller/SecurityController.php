@@ -601,7 +601,13 @@ class SecurityController extends BaseController
 						throw new \Exception("El compte ".$club->getCompte()." ja existeix per al club " . $checkcompte->getNom());
 					}
 		   			
-		   			if ($club->getDatabaixa() != null) $club->setActivat(false);
+					if ($club->getDatabaixa() != null) {
+					    if ($club->getActivat()) {
+					        $club->setActivat(false);
+					        $tab = 3;
+					        throw new \Exception("No es pot activar el club ".$club->getNom()." mentre tingui indicada la data de baixa");
+					    }
+					}
 		   		}
 	   			/* Validacions mail no existeix en altres clubs */
 	   			foreach ($club->getMails() as $mail) {

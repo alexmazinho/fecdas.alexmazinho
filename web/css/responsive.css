@@ -83,19 +83,25 @@ Examples
 @media only screen and (max-width: 991px) {
 	.nav > li > a { padding: 10px 5px; font-size: 0.9em; }
 	
-	.title { font-size: 16px; line-height: 1.1; }
-	.title i { font-size: 14px; }
+	/*.title { font-size: 16px; line-height: 1.1; }
+	.title i { font-size: 14px; }*/
 	
 	#header .notifications .notifications-title { font-size: 0.75em; }
 	#header .notifications .dev-environment { font-size: 0.5em; }
 	
+	#header .notifications { display: none;  }
 	
+	.login .btn-primary.user-login { width: 150px; }
 }
 
 /* BOOTSTRAP -SM */
 
 @media only screen and (min-width: 768px) and (max-width: 991px) {
-	#header .notifications { display: none;  }
+	/*.title { padding-left: 30px; }*/
+	
+	
+	
+	.logo img { width: 60px; }
 }
 
 /* BOOTSTRAP -XS */
@@ -118,7 +124,7 @@ Examples
 	
 	#main-col .page-center { /*margin: 15px auto 0; width: auto;*/ }
 	
-	#header .notifications { font-size: 30px; }
+	#header .notifications { font-size: 24px; }
 	
 /*	#menu-user {
 	    float: none;
@@ -154,6 +160,8 @@ Examples
 	    min-width: 420px;
 	    position: relative;
 	    width: auto;*/
+	    background-position: 50% 50%;
+	    
 	}
 	
 	#header {
@@ -162,6 +170,7 @@ Examples
 	    position: relative;*/
 	    background-image:none;
 	    background-color: #67A2CF;
+	    margin-bottom: 20px;
 	}
 	
 	#header.header-nologin {
@@ -174,7 +183,7 @@ Examples
 	}*/
 	
 	.logo img {
-	    width: 85px;
+	    width: 75px;
 	    position: absolute;
 	}
 	
@@ -189,6 +198,13 @@ Examples
 }
 
 @media only screen and (min-width: 480px) and (max-width: 767px) {
+	
+	.title { margin-left: -15px; }
+	
+	.logo img {
+	    width: 65px;
+	    position: absolute;
+	}
 }
 
 @media only screen and (max-width: 479px) {
@@ -201,8 +217,19 @@ Examples
 	    /*float: none;
 	    text-align: center;
 	    width: 100%;*/
+	    margin-left: 0;
+	    width: 100%;
 	}
 
+	.logo img {
+	    width: 60px;
+	    position: absolute;
+	}
+	
+	.title { padding-left: 30px; }
+	
+	#header #menu-user .menu-user-dropdown.open .dropdown-menu a { font-size: 13px; line-height: 2; }
+	
 	#main-col .content-center { padding: 0; }
 	
 	#menu-user .select2-container { width: 200px;}

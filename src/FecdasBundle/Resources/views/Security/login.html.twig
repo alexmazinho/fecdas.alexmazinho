@@ -1,4 +1,4 @@
-{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Security/login.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
 {% block title %}Aplicació gestió FECDAS. Autenticació {% endblock %}
@@ -17,14 +17,20 @@
 		        <h1>Entrada d'usuaris</h1>
 		    </header>
 		
-		    <div class="row">
-		    	<div class="col-md-12 block-errors">
-		    		{% include 'FecdasBundle:Includes:messages.html.twig' %}
-		    	</div>
-		    </div>
+		    <div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
 		    
-		   	{% include "FecdasBundle:Security:loginform.html.twig" %} 
-		   	<a href="{{ path('FecdasBundle_pwdrecovery') }}">Password perdut?</a>
+		   	<div class="row">
+		   	    {% include "FecdasBundle:Security:loginform.html.twig" %}
+		   	</div>
+		   	<div class="row">
+		   		<div class="col-md-12">
+		   			<div class="space20"></div>
+		   			<a class="link" href="{{ path('FecdasBundle_pwdrecovery') }}" alt="Recuperació de la clau" title="Recuperació de la clau">Password perdut?</a>
+		   		</div>
+		   		<div class="col-md-12">	
+		   			<a class="link" href="{{ path('FecdasBundle_registre') }}" alt="Registre nou usuari" title="Registre nou usuari">Registre nou usuari</a>
+		   		</div>
+		   	</div>
 	   	</div>
    	</div>
    	

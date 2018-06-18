@@ -1,0 +1,90 @@
+{# src/Fecdas/PartesBundle/Resources/views/Security/registre.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Registre d'usuari {% endblock %}
+
+{% block fecdas_login %}
+<!-- Login page doesn't load login (bubble) form) -->
+	
+{% endblock %}
+
+{% block body %}
+	<div class="registre page-center">
+
+		{{ parent() }}
+
+		<div class="registre-content content-center"> 
+		    <header>
+	        	<h1>Registre d'usuari</h1>
+		    </header>
+		
+		    <div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
+	   	 	
+	   		{{ form_start(form, {'action': path('FecdasBundle_registre'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-registre'}}) }}
+	   		 <div class="row">
+	   		 	<div class="col-md-12">
+	   				<p>Indica l'adreça de correu per cercar les dades associades.</p>
+	   			</div>
+	   			<div class="col-md-12">
+	   				<div class="input-group">
+	   					<span class="input-group-addon input-group-addon-icon"><i class="fa fa-envelope fa-1x blue"></i></span>
+					   	{{ form_label(form.user, 'Adreça de correu', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.user, { 'attr': {'class': 'form-control','placeholder':'Adreça de correu'} }) }}
+					</div>
+				</div>
+				{% if form.dni is defined %}
+    				<div class="col-md-12">
+    	   				<p class="space20">Indica també el document d'identitat (DNI)</p>
+    	   			</div>
+    	   			<div class="col-md-12">
+    	   				<div class="input-group">
+    	   					<span class="input-group-addon input-group-addon-icon"><i class="fa fa-id-card fa-1x blue"></i></span>
+    					   	{{ form_label(form.dni, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
+    						{{ form_widget(form.dni, { 'attr': {'class': 'form-control','placeholder':'DNI'} }) }}
+    					</div>
+    				</div>
+                {% endif %}
+				<div class="col-md-12">
+					<div class="checkbox">
+  					<label>
+    					{{ form_widget(form.newsletter, { 'attr': {'class': 'form-checkbox'} }) }}Rebre informació de la Federació
+  					</label>
+  					</div>
+				</div>
+				<div class="col-md-9">
+					<div class="checkbox">
+  					<label>
+    					{{ form_widget(form.terms, { 'attr': {'class': 'form-checkbox'} }) }}Acceptar els termes i condicions
+  					</label>
+  					</div>
+				</div>
+				<div class="col-md-3 col-last-right">
+					<a class="link-page link-italic space20" href="{{ path('FecdasBundle_termesicondicions') }}"><i class="fa fa-external-link  fa-1x blue"></i> veure</a>
+				</div>
+				<div id="formregistre-rest" class="hidden">{{ form_rest(form) }}</div>
+			   	<div class="col-md-12">
+			   		<button class="registre-cerca btn btn-default btn-block" type="submit"><i class="fa fa-search fa-1x blue"></i></button>
+				</div>
+	   
+			{{ form_end(form) }}
+	   	
+	   	</div>
+   	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	setMenuActive("menu-login");
+	
+	helpBubbles("#login_user", '<p>L\'usuari és una adreça de correu electrònic. p.e. </p>\
+				<p>maildelclub@domini.com</p>');
+				
+});
+</script>
+{% endblock %}

@@ -6,7 +6,7 @@
     <!--  <link href='http://fonts.googleapis.com/css?family=Irish+Grover' rel='stylesheet' type='text/css'>-->
     <!--  <link href='http://fonts.googleapis.com/css?family=La+Belle+Aurore' rel='stylesheet' type='text/css'>-->
     <!--  <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'> -->
-    <link href="{{ asset('css/layout.css?v=3.00') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/layout.css?v=3.01') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/bubble-popup/jquery-bubble-popup-v3.css') }}" type="text/css" rel="stylesheet" />
 	<!--  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"> -->
     <!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"> -->
@@ -24,8 +24,8 @@
     <link href="{{ asset('css/jquery.datetimepicker.css?v=2.5.14') }}" type="text/css" rel="stylesheet" />
     
     <link href="{{ asset('js/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/style.css?v=3.04') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/responsive.css?v=3.00') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css?v=3.05') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/responsive.css?v=3.01') }}" type="text/css" rel="stylesheet" />
 {% endblock %}
 
 {% block fecdas_logo %}
@@ -67,7 +67,9 @@
 					{% if roleclub == true  %}<li><a href="{{ path('FecdasBundle_club') }}">Dades del club <i class="fa fa-list-alt fa-fw"></i></a></li>{% endif %}
 					<li><a href="{{ path('FecdasBundle_logout') }}">Tancar sessió <i class="fa fa-sign-out fa-fw"></i></a></li>
 				{% else %}
-					<li><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió <i class="fa fa-sign-in fa-fw"></i></a></li>	
+					<li><a href="{{ path('FecdasBundle_login') }}">Iniciar sessió <i class="fa fa-sign-in fa-fw"></i></a></li>
+					<li><a href="{{ path('FecdasBundle_pwdrecovery') }}">Password perdut?<i class="fa fa-unlock fa-fw"></i></a></li>
+					<li><a href="{{ path('FecdasBundle_registre') }}">Registre nou usuari<i class="fa fa-user-plus fa-fw"></i></a></li>		
 				{% endif %}	
 			    {% if roleform is defined %}
 			    	<li class="divider"></li>

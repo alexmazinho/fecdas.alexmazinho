@@ -1,4 +1,4 @@
-{# src/Fecdas/PartesBundle/Resources/views/Page/contact.html.twig #}
+{# src/Fecdas/PartesBundle/Resources/views/Security/pwdrecovery.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
 {% block title %}Aplicació gestió FECDAS. Recuperació de contrasenya {% endblock %}
@@ -18,25 +18,28 @@
 		        <h1>Recuperació de clau</h1>
 		    </header>
 		
-		    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-		    <div class="sms-notice">
-				{{ flashMessage }}
-		  	</div>	
-			{% endfor %}
+		    <div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
 	   	 
 	   		{{ form_start(form, {'action': path('FecdasBundle_pwdrecovery'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-recovery'}}) }}
-	   			<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
+	   		<div class="row">
+	   			<div class="col-md-12">
+	   				<p>Indica l'usuari (adreça de correu) per reiniciar la paraula clau.</p>
+	   			</div>
 	
-		   		<div id="formlogin-user">
-					{{ form_label(form.user, 'Usuari', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
+				<div class="col-md-12">
+					<div class="form-group input-group">
+	   					<span class="input-group-addon input-group-addon-icon"><i class="fa fa-envelope fa-1x blue"></i></span>
+						{{ form_label(form.user, 'Adreça de correu', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.user, { 'attr': {'class': 'form-control','placeholder':'Adreça de correu'} }) }}
+					</div>
 				</div>
 		
 		    	<div id="formlogin-rest">	{{ form_rest(form) }}</div>
 		
-			    <div id="formlogin-submit">	
-					<input type="submit" class="forminput-inside" value="Envia" />
-				</div>        
+				<div class="col-md-12">
+					<input type="submit" class="btn btn-default forminput-inside btn-block" value="Envia" />
+				</div>   
+			</div>        
 	   
 			{{ form_end(form) }}
 	   	

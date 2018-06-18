@@ -314,7 +314,18 @@ FecdasBundle_usuariclub:
     defaults: { _controller: "FecdasBundle:Security:usuariclub" }
     requirements:
         methods:  GET|POST
+        
+FecdasBundle_registre:
+    path:  /registre
+    defaults: { _controller: "FecdasBundle:Security:registre" }
+    requirements:
+        methods:  GET
 
+FecdasBundle_termesicondicions:
+    path:  /termesicondicions
+    defaults: { _controller: "FecdasBundle:Security:termesicondicions" }
+    requirements:
+        methods:  GET
 
 # ---------------------------------------------------------------------------
 # -------------------------  TITULACIONS ------------------------------------

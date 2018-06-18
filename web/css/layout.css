@@ -211,9 +211,9 @@ a img {border: none; }
 .login { /*float: right; */ /*display: inline-block; width: auto;*/ }
 
 .login #menu-user { float: right; }
-.login .btn-primary.user-login { max-width: 240px; text-overflow: ellipsis; }
+.login .btn-primary.user-login { /*max-width: 240px;*/ text-overflow: ellipsis; width: 170px; }
 
-#menu-user { max-width: 270px; }
+#menu-user { /* max-width: 270px; */ }
 
 #header .login img { vertical-align: middle; padding: 0 10px; }
 #header a { color: #EEEEEE; }
@@ -337,11 +337,11 @@ html>body #left-menu a:hover {
 
 #main-col .page-center { margin: auto; max-width: 350px; }
 #main-col .narrow.page-center  { text-align: justify; max-width: 770px; }
-#main-col .content-center { margin-top: 50px; padding: 0 15px; }
+#main-col .content-center { /*margin-top: 30%;*/ padding: 0 15px; padding-top: 20%; }
 
-.content-center input { max-width: 100%; width: 100%; }
+/*.content-center input { max-width: 100%; width: 100%; }
 
-.content-center div { padding-bottom: 10px; }
+.content-center div { padding-bottom: 10px; }*/
 
 #footer { 
 	border-top: 1px solid #ccc; 

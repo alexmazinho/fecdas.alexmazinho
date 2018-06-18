@@ -458,6 +458,16 @@ label { color: #555555; font-weight: normal; }
 
 /*button.btn, a.btn { font-size: 14px; padding: 7px 16px;  color: #1240a0; } */ 
 
+form input::-webkit-validation-bubble-message, 
+form select::-webkit-validation-bubble-message,
+form textarea::-webkit-validation-bubble-message {
+    display:none;
+} 
+
+a.link-page:hover { text-decoration: underline; }
+
+a.link-italic { font-style: italic; }
+
 #left-menu { display:none; }
 
 .col-last-right { text-align: right; }
@@ -541,7 +551,7 @@ label { color: #555555; font-weight: normal; }
 	float:left;
 	color: #67a2cf;
 	/*background-color: #67a2cf;*/
-	min-width: 240px;
+	/*min-width: 200px;*/
     font-size: 16px;
     font-weight: bold;
     font-style: normal;
@@ -558,9 +568,9 @@ label { color: #555555; font-weight: normal; }
 
 #header #menu-user .menu-user-dropdown.open .dropdown-menu { width: 100%; text-align: right; left:inherit; right: 0; }
 
-#header #menu-user .menu-user-dropdown.open .dropdown-menu a { color: #555555; font-weight: normal;}
+#header #menu-user .menu-user-dropdown.open .dropdown-menu a { color: #555555; font-weight: normal; line-height: 2; }
 
-#header #menu-user .menu-user-dropdown.open .dropdown-menu a i.fa { color: #31708f; }
+#header #menu-user .menu-user-dropdown.open .dropdown-menu a i.fa { color: #31708f; margin-left: 4px; }
 
 #header #menu-user .menu-user-dropdown.open .dropdown-menu > li > p,
 #header #menu-user .menu-user-dropdown.open .dropdown-menu > li > label {

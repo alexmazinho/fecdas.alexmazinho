@@ -22,7 +22,7 @@ class EntityUser {
 	protected $id;	
 	
 	/**
-	 * @ORM\Column(name="usuari",type="string", length=50, nullable=false)
+	 * @ORM\Column(name="usuari",type="string", length=50, unique=true, nullable=false)
 	 * @Assert\Email()
 	 */
 	protected $user;	// Mail del club

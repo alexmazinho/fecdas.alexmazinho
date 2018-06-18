@@ -1,14 +1,20 @@
 {{ form_start(form, {'action': path('FecdasBundle_login'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-login'}}) }}
    	{{ form_errors(form) }}
 
-   	<div id="formlogin-user">
-		{{ form_label(form.user, 'Usuari', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-		{{ form_widget(form.user, { 'attr': {'class': 'forminput-inside'} }) }}
+   	<div class="col-md-12">
+   		<div class="form-group input-group">
+	   		<span class="input-group-addon input-group-addon-icon"><i class="fa fa-sign-in fa-1x blue"></i></span>
+		    {{ form_label(form.user, 'Usuari', { 'label_attr': {'class': 'sr-only'} }) }}
+		    {{ form_widget(form.user, { 'attr': {'class': 'form-control','placeholder':'Usuari'} }) }}
+		</div>
 	</div>
 
-	<div id="formlogin-pwd">
-		{{ form_label(form.pwd, 'Paraula clau', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-		{{ form_widget(form.pwd, { 'attr': {'class': 'forminput-inside'} }) }}
+	<div class="col-md-12">
+		<div class="form-group input-group">
+	   		<span class="input-group-addon input-group-addon-icon"><i class="fa fa-key fa-1x blue"></i></span>
+		    {{ form_label(form.pwd, 'Paraula clau', { 'label_attr': {'class': 'sr-only'} }) }}
+		    {{ form_widget(form.pwd, { 'attr': {'class': 'form-control','placeholder':'Paraula clau'} }) }}
+		</div>
 	</div>
 	
 	<!--  <input type="checkbox" id="remember_me" name="_remember_me" checked />
@@ -16,8 +22,8 @@
     
     <div id="formlogin-rest">	{{ form_rest(form) }}</div>
 
-    <div id="formlogin-submit">	
-		<input type="submit" class="btn btn-default forminput-inside" value="Entra" />
+    <div class="col-md-12">
+		<input type="submit" class="btn btn-default forminput-inside btn-block" value="Entra" />
 	</div>        
    
 {{ form_end(form) }}

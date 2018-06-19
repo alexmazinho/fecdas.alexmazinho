@@ -130,7 +130,31 @@ class EntityUser {
     	return $roles;
     }
 	
-	/**
+    /**
+     * Has role club
+     *
+     * @return boolean
+     */
+    public function hasRoleClub($club, $role)
+    {
+        foreach ($this->clubs as $userClubRole) {
+            if ($userClubRole->getClub() === $club && $userClubRole->getRole() === $role) return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Activar rol usuari
+     *
+     */
+    public function activarUsuariRole($metapersona, $role)
+    {
+        $this->databaixa = null;
+        $this->metapersona = $metapersona;
+        foreach ($this->clubs as $userClubRole) $userClubRole->activarRole($role);
+    }
+    
+    /**
      * Get main role
      *
      * @return EntityUserClub 
@@ -141,7 +165,7 @@ class EntityUser {
         $role = $this->getRoleAdmin();
 		if ($role == null) $role = $this->getRoleClub();
 		if ($role == null) $role = $this->getRoleInstructor();
-		//if ($role == null) $role = $this->getRoleFederat();  // => Desactivat de moment
+		if ($role == null) $role = $this->getRoleFederat();  // => Desactivat de moment
 		
 		return $role;
     }

@@ -229,30 +229,10 @@ class SecurityController extends BaseController
     			if (!$user) {
     				$this->get('session')->getFlashBag()->add('sms-notice', 'Aquest usuari no existeix a la base de dades');
     			} else {
-    				$token = base64_encode(openssl_random_pseudo_bytes(30));
-    				$expiration = $this->getCurrentDate('now');
-    				$expiration->add(new \DateInterval('PT4H'));
+    			    $this->sendMailRecuperacioAccess($user, "Recuperació de l'accés");
     				
-    				$em = $this->getDoctrine()->getManager();
-    				// Save token information encrypted
-    				$user->setRecoverytoken(sha1($token));
-    				$user->setRecoveryexpiration($expiration);
-    				$em->flush();
-    				
-    				$message = \Swift_Message::newInstance()
-    				->setSubject('::Recuperació accés aplicació gestió FECDAS::')
-    				->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-    				->setTo(array($userEmail));
-    				
-    				$logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));    				
-    				
-    				$body = $this->renderView('FecdasBundle:Security:recuperacioClauEmail.html.twig',
-    						array('user' => $user, 'token' => $token, 'logo' => $logosrc));
-    				
-    				$message->setBody($body, 'text/html');
-    				
-    				$this->get('mailer')->send($message);
-    				
+    			    $em->flush();
+    			    
     				$this->logEntry($userEmail, 'PWD RECOVER');
     				
     				$this->get('session')->clear();
@@ -268,7 +248,30 @@ class SecurityController extends BaseController
     			array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
     
-    
+    private function sendMailRecuperacioAccess($user, $action)
+    {
+        $token = base64_encode(openssl_random_pseudo_bytes(30));
+        $expiration = $this->getCurrentDate('now');
+        $expiration->add(new \DateInterval('PT4H'));
+        
+        // Save token information encrypted
+        $user->setRecoverytoken(sha1($token));
+        $user->setRecoveryexpiration($expiration);
+        
+        $message = \Swift_Message::newInstance()
+        ->setSubject("::".$action." a l'Aplicació de Gestió de FECDAS::")
+        ->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
+        ->setTo(array($user->getUser()));
+        
+        $logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
+        
+        $body = $this->renderView('FecdasBundle:Security:emailrecuperacioaccess.html.twig',
+            array('user' => $user, 'token' => $token, 'action' => $action, 'logo' => $logosrc));
+        
+        $message->setBody($body, 'text/html');
+        
+        $this->get('mailer')->send($message);
+    }
     
     public function termesicondicionsAction(Request $request)
     {
@@ -366,11 +369,8 @@ class SecurityController extends BaseController
                 
                 $form = $formbuilder->getForm(); // Tornar a demanar $form
                 $form->get('user')->setData($mail);
-                
 
-                if (count($metapersones) == 1) {
-                    $this->get('session')->getFlashBag()->add('sms-notice',	"Registre pendent de confirmació");
-                } else {
+                if (count($metapersones) != 1) {
                     if (isset($formdata['dni']) && !$dni) throw new \Exception("Cal indicar un document d'identitat");
                     
                     if ($dni != "") throw new \Exception("No existeixen dades per aquesta adreça de correu amb aquest document d'identitat");
@@ -378,71 +378,42 @@ class SecurityController extends BaseController
                     throw new \Exception("No existeixen dades per aquesta adreça de correu");
                 }
                 
+                // Només una metapersona
+                $metapersona = $metapersones[0];
+                
+                if ($metapersona->getLlicenciaVigent() == null) throw new \Exception("Només es pot accedir al sistema si les dades associades a l’usuari tenen una llicència vigent per la data actual");
+                
+                if ($user != null) {
+                    // Mirar si és baixa i activar
+                    $user->activarUsuariRole($metapersona, BaseController::ROLE_FEDERAT);
+                } else {
+                    // Crear nou usuari
+                    $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $metapersona);
+                    $em->persist($user);
+                }
+                foreach ($metapersona->getPersonesSortedById as $persona) {
+                    // Revisar si existeix el rol federat pels clubs de les persones actives associades a metapersona
+                    $club = $persona->getClub();
+                    if (!$user->hasRoleClub($club, BaseController::ROLE_FEDERAT)) {
+                        $userClubRole = $club->addUsuariRole($user, BaseController::ROLE_FEDERAT);
+                        $em->persist($userClubRole);
+                    }
+                }
+                
+                $this->sendMailRecuperacioAccess($user, "Creació d'un nou usuari per accedir");
+                
+                $em->flush();
+                
+                $this->logEntry($mail, 'USER REGISTER', 'Petició registre nou usuari '.$mail);
+                
+                $this->get('session')->clear();
+                $this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a finalitzar el registre a l\'adreça de correu ' . $mail);
+                
+                return $this->redirect($this->generateUrl('FecdasBundle_logout'));
             }
         } catch (\Exception $e) {
             // Ko, mostra form amb errors
             $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-        }
-        
-        return $this->render('FecdasBundle:Security:registre.html.twig',
-            array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        if ($request->getMethod() == 'POST') {
-            $form->handleRequest($request);
-            if ($form->isValid()) {
-                
-                $userEmail = $form->get('user')->getData();
-                //$userEmail = $form->getData()->getUser();
-                
-                $em = $this->getDoctrine()->getManager();
-                $repository = $em->getRepository('FecdasBundle:EntityUser');
-                $user = $repository->findOneByUser($userEmail);
-                
-                if (!$user) {
-                    $this->get('session')->getFlashBag()->add('sms-notice', 'Aquest usuari no existeix a la base de dades');
-                } else {
-                    $token = base64_encode(openssl_random_pseudo_bytes(30));
-                    $expiration = $this->getCurrentDate('now');
-                    $expiration->add(new \DateInterval('PT4H'));
-                    
-                    $em = $this->getDoctrine()->getManager();
-                    // Save token information encrypted
-                    $user->setRecoverytoken(sha1($token));
-                    $user->setRecoveryexpiration($expiration);
-                    $em->flush();
-                    
-                    $message = \Swift_Message::newInstance()
-                    ->setSubject('::Recuperació accés aplicació gestió FECDAS::')
-                    ->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-                    ->setTo(array($userEmail));
-                    
-                    $logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
-                    
-                    $body = $this->renderView('FecdasBundle:Security:recuperacioClauEmail.html.twig',
-                        array('user' => $user, 'token' => $token, 'logo' => $logosrc));
-                    
-                    $message->setBody($body, 'text/html');
-                    
-                    $this->get('mailer')->send($message);
-                    
-                    $this->logEntry($userEmail, 'PWD RECOVER');
-                    
-                    $this->get('session')->clear();
-                    $this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
-                    
-                    return $this->render('FecdasBundle:Security:registre.html.twig',
-                        array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
-                }
-            }
         }
         
         return $this->render('FecdasBundle:Security:registre.html.twig',
@@ -1181,7 +1152,6 @@ class SecurityController extends BaseController
 					
 		} else {
 			$userclub = new EntityUser($useruser, sha1($randomPassword), $metaPersona);
-			$userclub->setPwd(sha1($randomPassword));
 			$em->persist($userclub);
 			
 			$info = "Nou usuari ".$userrole." creat correctament amb clau ".$randomPassword.PHP_EOL;

@@ -1,0 +1,20 @@
+<html> 
+<head></head>
+<body>
+<p>Hola!</p>
+
+<p>Heu demanat la {{ action }} a l'Aplicació de tramitació de llistes d'assegurats de la Federació Catalana d'Activitats Subaquàtiques (FECDAS)</p> 
+
+<p>Per finalitzar el procés, cal que accediu a l’enllaç següent i actualitzeu la clau d'accés:</p>
+
+<a href="{{ url('FecdasBundle_user', {'token': token, 'user': user.user}) }}">{{ url('FecdasBundle_user', {'token': token, 'user': user.user}) }}</a>
+
+<p>Si no heu demanat aquesta actuació, podeu ignorar aquest missatge i no es realitzarà cap modificació</p>
+
+<p>Atentament<br/>
+FECDAS, {{ "now" | date("d/m/Y") }}.</p>
+
+<img src="{{ logo }}" alt="FECDAS" /> 
+
+</body>
+</html>

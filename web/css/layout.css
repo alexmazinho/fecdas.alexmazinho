@@ -337,7 +337,8 @@ html>body #left-menu a:hover {
 
 #main-col .page-center { margin: auto; max-width: 350px; }
 #main-col .narrow.page-center  { text-align: justify; max-width: 770px; }
-#main-col .content-center { /*margin-top: 30%;*/ padding: 0 15px; padding-top: 20%; }
+#main-col .content-center { padding: 0 15px; padding-top: 20%; }
+#main-col .home-content.content-center { padding: 0 15px; padding-top: 30px; }
 
 /*.content-center input { max-width: 100%; width: 100%; }
 

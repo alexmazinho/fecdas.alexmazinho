@@ -63,6 +63,15 @@ class EntityUserClub {
     	return $this->databaixa != null;
     }
 	
+    /**
+     * Activar rol
+     *
+     */
+    public function activarRole($role)
+    {
+        if ($this->role == $role) $this->databaixa = null;
+    }
+    
 	/**
      * is Admin?
      *

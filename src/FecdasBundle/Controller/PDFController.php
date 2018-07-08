@@ -534,6 +534,118 @@ class PDFController extends BaseController {
 		$pdf->Ln();
 	}
 	
+	public function llicenciesfederattopdfAction($llicencies = array(), $metapersona = null) {
+	    
+	    try {
+	        if ($metapersona == null) throw new \Exception("No s'han trobat les dades personals per aquest usuari, poseu-vos en contacte amb la Federació");
+	        
+	        // Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+	        $pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	        
+	        $pdf->init(array('author' => 'FECDAS', 'title' => 'Historial llicències'),
+	            true, $metapersona->getNomCognoms());
+	        
+	        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+	        
+	        // set color for background
+	        $pdf->SetFillColor(255, 255, 255); //Blanc
+	        // set color for text
+	        $pdf->SetTextColor(0, 0, 0); // Negre
+	        
+	        $pdf->AddPage();
+	        
+	        $pdf->Ln(10);
+	        
+	        $pdf->SetFont('dejavusans', '', 16, '', true);
+	        $text = '<b>Historial llicències. ' . $metapersona->getNomCognoms() . '</b>';
+	        $pdf->writeHTMLCell(0, 0, $pdf->GetX(), $pdf->GetY(), $text, '', 1, 1, true, 'C', true);
+	     
+	        $pdf->Ln();
+	        
+	        $w = array(8, 41, 23, 23, 25, 60); // Amplades 
+	        
+	        $this->llicenciesHeader($pdf, $w);
+	        	        
+	        $pdf->SetFillColor(255, 255, 255); //Blanc
+	        
+	        $pdf->SetFont('dejavusans', '', 8, '', true);
+	        
+	        $row = 1;
+	        foreach ($llicencies as $llicencia) {
+	            $num_pages = $pdf->getNumPages();
+	            $pdf->startTransaction();
+	            
+	            if ($llicencia->getParte()->getPendent()) $pdf->SetTextColor(0, 255, 255); // Red
+	            else $pdf->SetTextColor(0, 0, 0); // Negre
+	            
+	            $this->llicenciesRow($pdf, $w, $llicencia, $row);
+	            
+	            if($num_pages < $pdf->getNumPages()) {
+	                //Undo adding the row.
+	                $pdf->rollbackTransaction(true);
+	                
+	                $pdf->AddPage();
+	                
+	                $this->llicenciesHeader($pdf, $w);
+	                
+	                $pdf->SetFillColor(255, 255, 255); //Blanc
+	                $pdf->SetFont('dejavusans', '', 8, '', true);
+	                
+	                $this->parteRow($pdf, $w, $llicencia, $row);
+	                
+	            } else {
+	                //Otherwise we are fine with this row, discard undo history.
+	                $pdf->commitTransaction();
+	            }
+	            $row++;
+	        }
+	        
+	        $pdf->Ln();
+
+	    } catch (\Exception $e) {
+	        
+	        // Ko
+	        $this->logEntryAuth('LLICENCIES FEDERAT PDF ERROR', 'count llicencies: '.count($llicencies).', metapersona: '.($metapersona==null?"null":$metapersona->getId()));
+	        
+	        $this->get('session')->getFlashBag()->clear();
+	        $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    }
+	    
+	            
+        // reset pointer to the last page
+        $pdf->lastPage();
+	            
+        // Close and output PDF document
+        $response = new Response($pdf->Output("historial_llicencies_".$metapersona->getDni()."_".date("Ymd"). ".pdf", "D"));
+        $response->headers->set('Content-Type', 'application/pdf');
+        return $response;
+	}
+	
+	private function llicenciesHeader($pdf, $w) {
+	    $pdf->SetFont('dejavusans', 'B', 9, '', true);
+	    $pdf->SetFillColor(221, 221, 221); //Gris
+	    $pdf->Cell($w[0], 7, '#', 1, 0, 'C', 1);
+	    $pdf->Cell($w[1], 7, 'CLUB', 1, 0, 'C', 1);
+	    $pdf->Cell($w[2], 7, 'DES DE', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
+	    $pdf->Cell($w[3], 7, 'FINS', 1, 0, 'C', 1);
+	    $pdf->Cell($w[4], 7, 'CATEGORIA', 1, 0, 'C', 1);
+	    $pdf->Cell($w[5], 7, 'DESCRIPCIO', 1, 0, 'L', 1, '', 1);
+	    $pdf->Ln();
+	}
+	
+	private function llicenciesRow($pdf, $w, $llicencia, $row) {
+	    
+	    $pdf->Cell($w[0], 6, $row, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+	    $pdf->Cell($w[1], 6, $llicencia->getParte()->getClub()->getNom(), 'LRB', 0, 'C', 0, '', 1);
+	    $pdf->Cell($w[2], 6, $llicencia->getParte()->getDataalta()->format('d/m/Y'), 'LRB', 0, 'C', 0, '', 1);
+	    $pdf->Cell($w[3], 6, $llicencia->getDatacaducitat()->format('d/m/Y'), 'LRB', 0, 'C', 0, '', 1);
+	    $pdf->Cell($w[4], 6, $llicencia->getCategoria()->getCategoria() , 'LRB', 0, 'C', 0, '', 1);
+	    $pdf->Cell($w[5], 6, $llicencia->getCategoria()->getDescripcio(), 'LRB', 0, 'L', 0, '', 1);
+	    $pdf->Ln();
+	}
+	
+	
 	public function licensetopdfAction(Request $request) {
 	
 		if ($request->query->has('id')) {
@@ -741,13 +853,18 @@ class PDFController extends BaseController {
 	public function llicenciaDigitalAction(Request $request) {
 		$llicenciaid = $request->query->get("id", 0);
 			
-		try {	
-			if ($this->isCurrentAdmin() != true) throw new \Exception('L\'usuari no pot realitzar aquesta opció, es desarà al registre');
-	
+		try {
 			$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaid);
 		
 			if ($llicencia == null) throw new \Exception('No s\'ha trobat la llicència.');
+
+			$checkRole = $this->get('fecdas.rolechecker');
 			
+			if (!$this->isCurrentAdmin() && 
+			    ($checkRole->isCurrentClub() ||
+			    $llicencia->getPersona()->getMetapersona()->getId() != 
+			    $checkRole->getCurrentUser()->getMetapersona()->getId())) throw new \Exception('L\'usuari no pot realitzar aquesta opció, es desarà al registre');
+			    
 			$parte = $llicencia->getParte();
 			
 			if ($parte == null) throw new \Exception('No s\'ha trobat la llista de la llicència.');
@@ -766,7 +883,7 @@ class PDFController extends BaseController {
 			$nom =  "llicencia_".$curs."_".$llicencia->getId()."_".$llicencia->getPersona()->getDni().".pdf";
 
 			// Close and output PDF document
-			$response = new Response($pdf->Output($nom, "D"));
+			$response = new Response($pdf->Output($nom, "D"));   
 			$response->headers->set('Content-Type', 'application/pdf');
 			return $response;
 			

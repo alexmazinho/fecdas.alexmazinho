@@ -206,6 +206,27 @@ class EntityLlicencia {
 		$this->idpartedetall_access = null;
 	}
 	
+	public static function csvHeader() {
+	    return array( 'num', 'club', 'des de', 'fins', 'categoria', 'descripció' );
+	}
+	
+	/**
+	 * Get persona info. as csv data
+	 *
+	 * @return string
+	 */
+	public function csvRow($i = 0)
+	{
+	    return array( 
+	        $i, 
+	        $this->parte->getClub()->getNom(), 
+	        $this->parte->getDataalta()->format("d/m/Y"),
+	        $this->datacaducitat->format("d/m/Y"),
+	        $this->categoria->getCategoria(),
+	        $this->categoria->getDescripcio(),
+	    );
+	}
+	
 	public function esNova()
 	{
 		return ($this->id == 0);
@@ -918,4 +939,38 @@ class EntityLlicencia {
     	return $activitats;
     }
     
+    public static function getLlicenciesSortedBy($llicencies, $sort = 'id', $direction = 'asc')
+    {
+        usort($llicencies, function($a, $b) use ($sort, $direction) {
+            if ($a === $b) {
+                return 0;
+            }
+            $true = $direction == 'asc'? 1:-1;
+            $false = $true * -1;
+            $result = 0;
+            switch ($sort) {
+                case 'dataalta':
+                    $result = ($a->getParte()->getDataalta() > $b->getParte()->getDataalta())? $true:$false;
+                    break;
+                case 'datacaducitat':
+                    $result = ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? $true:$false;
+                    break;
+                case 'club':
+                    $result = ($a->getParte()->getClub()->getNom() > $b->getParte()->getClub()->getNom())? $true:$false;
+                    break;
+                case 'categoria':
+                    $result = ($a->getCategoria()->getCategoria() > $b->getCategoria()->getCategoria())? $true:$false;
+                    break;
+                case 'categoria.descripcio':
+                    $result = ($a->getCategoria()->getDescripcio() > $b->getCategoria()->getDescripcio())? $true:$false;
+                    break;
+                default:
+                    $result = ($a->getId() > $b->getId())? $true:$false;
+                    break;
+            }
+            
+            return $result;
+        });
+        return $llicencies;
+    }
 }

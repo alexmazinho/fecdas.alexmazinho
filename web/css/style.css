@@ -378,6 +378,12 @@ input#datepicker,
     font-style: italic;
 }
 
+.form-text {
+	margin-top: 10px;
+    margin-bottom: 10px;
+    line-height: 1.5em;
+}
+
 .select2-results .select2-highlighted .title-comment {
 	color: #ccc;
 }
@@ -1186,6 +1192,9 @@ ul.detalls li .alert { margin: 10px 0; }
 	padding: 0 0 10px;
 }
 
+.table thead:after {line-height:0.5em; content:"\200C"; display:block;color: transparent;}
+
+
 .table-header-scroll { padding-right: 15px; }
 
 #list-header,
@@ -1222,10 +1231,13 @@ ul.detalls li .alert { margin: 10px 0; }
 }
 
 #list-header .total-rowcount,
-#summary-header .total-rowcount {
+#summary-header .total-rowcount,
+.data-detall-header .total-rowcount,
+.total-rowcount {
 	font-size: 16px;
     text-align: right;
     color: #1240a0;
+    font-weight: bold;
 }
 
 .col-listheader {
@@ -1305,16 +1317,27 @@ ul.detalls li .alert { margin: 10px 0; }
 	color: #555555;
 	font-size: 13px;
 } 
+.table > tbody > tr > td.data-detall-cell, .table > tbody > tr > th.data-detall-cell, 
+.table > tfoot > tr > td.data-detall-cell, .table > tfoot > tr > th.data-detall-cell, 
+.table > thead > tr > td.data-detall-cell, .table > thead > tr > th.data-detall-cell,
 .data-detall-cell  {
 	display: table-cell;
 	padding: 6px;
+	line-height: 1.5em;
 	float: none;
 	vertical-align: middle;
 	text-align: center;
-	border-color: #EDF1F5;
-    border-style: solid;
-    border-width: 1px 0 0;
+    border-top: 1px solid #EDF1F5;
     word-wrap: break-word;
+}
+
+.table > thead > tr > th { border-bottom: 0; }
+
+.table > tbody > tr:first-child > td.data-detall-cell, .table > tbody > tr:first-child > th.data-detall-cell, 
+.table > tfoot > tr:first-child > td.data-detall-cell, .table > tfoot > tr:first-child > th.data-detall-cell, 
+.table > thead > tr:first-child > td.data-detall-cell, .table > thead > tr:first-child > th.data-detall-cell,
+tr:first-child > .data-detall-cell  {
+	border-top: 0;
 }
 
 .data-detall-cell-extra .extra {
@@ -3412,6 +3435,10 @@ li.parte-pendent-sincro .parterecents-actions {
 .ui-button .ui-button-text {
     font-size: 0.8em;
 }
+
+/********************************************* Llicencies Federat ****************************************************/
+
+#header-llicenciesfederatdescripcio, .llicenciesfederat-descripcio { max-width: 200px; }
 
 /*****************************************************************************************************************/
 /*

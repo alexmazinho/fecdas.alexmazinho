@@ -121,6 +121,15 @@ class EntityMetaPersona {
 		
 		return count($persones)==0?null:$persones[0];
     }
+    
+    public function getClubs()
+    {
+        $clubs = array();
+        foreach ($this->persones as $persona) {
+            if (!$persona->esBaixa()) $clubs[] = $persona->getClub();
+        }
+        return $clubs;
+    }
 
 	/**
      * Totes les llicències de totes les persones del grup
@@ -197,11 +206,25 @@ class EntityMetaPersona {
     	});
     	return $arr;
     }
-
+    
 	public function teTitulacions() {
 		return count($this->getTitulacionsSortedByDate(false));
 	}
 
+	public function getAltresTitulacionsSortedByTitol()
+	{
+	    /* Ordenades per títol alfabèticament */
+	    $arr = $this->altrestitulacions->toArray();
+	    
+	    usort($arr, function($a, $b) {
+	        if ($a === $b) {
+	            return 0;
+	        }
+	        return ($a->getTitol() > $b->getTitol())? -1:1;;
+	    });
+	    return $arr;
+	}
+	
 	public function getDocenciesSortedByDate($baixes = false)
     {
     	/* Ordenades de per curs */

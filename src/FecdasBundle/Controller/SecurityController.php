@@ -159,13 +159,13 @@ class SecurityController extends BaseController
     		$user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($username)));
     		 
     		if ($user == null || $username == '' || $token = '' || $token != $user->getRecoverytoken()) {
-   				$this->get('session')->getFlashBag()->add('sms-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
+   				$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
     			return $this->redirect($this->generateUrl('FecdasBundle_login'));
     		}
     		
     		if ($user->getRecoveryexpiration() == null 
     				||  $this->getCurrentDate('now') > $user->getRecoveryexpiration()) {
-    			$this->get('session')->getFlashBag()->add('sms-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
+    			$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
     			return $this->redirect($this->generateUrl('FecdasBundle_login'));
     		}
     	}
@@ -191,7 +191,10 @@ class SecurityController extends BaseController
 
 	    			$this->logEntryAuth('PWD RESET');
 	    			
-	    			$this->get('session')->getFlashBag()->add('error-notice', "Paraula clau actualitzada correctament!");
+	    			$this->get('session')->clear();
+	    			$this->get('session')->getFlashBag()->add('sms-notice', "Paraula clau actualitzada correctament!");
+	    			
+	    			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	    		} else {
 					
 	    			$this->get('session')->getFlashBag()->add('error-notice', "Error, contacti amb l'administrador");
@@ -238,8 +241,7 @@ class SecurityController extends BaseController
     				$this->get('session')->clear();
     				$this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
     				
-    				return $this->render('FecdasBundle:Security:logout.html.twig',
-    						array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    				return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
     			}
     		} 
     	}
@@ -391,7 +393,7 @@ class SecurityController extends BaseController
                     $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $metapersona);
                     $em->persist($user);
                 }
-                foreach ($metapersona->getPersonesSortedById as $persona) {
+                foreach ($metapersona->getPersonesSortedById() as $persona) {
                     // Revisar si existeix el rol federat pels clubs de les persones actives associades a metapersona
                     $club = $persona->getClub();
                     if (!$user->hasRoleClub($club, BaseController::ROLE_FEDERAT)) {
@@ -409,7 +411,7 @@ class SecurityController extends BaseController
                 $this->get('session')->clear();
                 $this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a finalitzar el registre a l\'adreça de correu ' . $mail);
                 
-                return $this->redirect($this->generateUrl('FecdasBundle_logout'));
+                return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
             }
         } catch (\Exception $e) {
             // Ko, mostra form amb errors

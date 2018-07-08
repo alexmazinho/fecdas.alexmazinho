@@ -91,15 +91,15 @@ class EntitySaldos {
 		$this->club = $club;
 		$this->entrades = 0;
 		$this->sortides = 0;
-		$this->romanent = 0;
-		$this->totalpagaments = 0;
-		$this->totalllicencies = 0;
-		$this->totalduplicats = 0;
-		$this->totalaltres = 0;
-		$this->ajustsubvencions = 0;
+		$this->romanent = $club != null?$club->getRomanent():0;
+		$this->totalpagaments = $club != null?$club->getTotalpagaments():0;
+		$this->totalllicencies = $club != null?$club->getTotalllicencies():0;
+		$this->totalduplicats = $club != null?$club->getTotalduplicats():0;
+		$this->totalaltres = $club != null?$club->getTotalaltres():0;
+		$this->ajustsubvencions = $club != null?$club->getAjustsubvencions():0;
 		$this->comentaris = '';
 		$this->dataregistre = ($dataregistre != null?$dataregistre:new \DateTime('today'));
-		$this->exercici = $this->dataregistre->format('Y');
+		$this->exercici = $club != null?$club->getExercici():($dataregistre != null?$this->dataregistre->format('Y'): (new \DateTime('today'))->format('Y'));
 		$this->dataentrada = new \DateTime('now');
 		
 	}

@@ -52,7 +52,8 @@ class CronController extends BaseController {
 				$import = $factura->getImport();
 				$data = $factura->getDatafactura();
 				
-				$this->registrarMovimentClub($current, $comanda->getClub(), 0, $import, $data);
+				$registre = $this->registrarMovimentClub($current, $comanda->getClub(), 0, $import, $data);
+				if ($registre != null) $em->flush();
 			}
 			// Revisar rebuts dia anterior i actualitzar entrada/sortida segons datapagament
 			$rebuts   = $this->rebutsEntre($desde, $fins);
@@ -62,10 +63,11 @@ class CronController extends BaseController {
 				$import = $rebut->getImport();
 				$data = $rebut->getDatapagament();
 				
-				$this->registrarMovimentClub($current, $rebut->getClub(), $import, 0, $data);
+				$registre = $this->registrarMovimentClub($current, $rebut->getClub(), $import, 0, $data);
+				if ($registre != null) $em->flush();
 			}
 			
-			$em->flush();
+			//$em->flush();
 
 			$this->logEntryAuth('REGISTRE SALDOS OK', $current->format('Y-m-d H:i:s'));		
 			

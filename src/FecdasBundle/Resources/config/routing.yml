@@ -30,12 +30,6 @@ FecdasBundle_llicenciesParte:
     requirements:
         methods:  GET
 
-FecdasBundle_llicenciesfederat: 
-    path:  /llicenciesfederat
-    defaults: { _controller: "FecdasBundle:Page:llicenciesfederat" }
-    requirements:
-        methods:  GET
-
 FecdasBundle_busseig:
     path:  /consultadni
     defaults: { _controller: "FecdasBundle:Page:busseig" }
@@ -132,6 +126,12 @@ FecdasBundle_partetopdf:
     defaults: { _controller: "FecdasBundle:PDF:partetopdf" }
     requirements:
         methods:  GET
+        
+FecdasBundle_llicenciesfederattopdf:
+    path:  /llicenciesfederattopdf
+    defaults: { _controller: "FecdasBundle:PDF:llicenciesfederattopdf" }
+    requirements:
+        methods:  GET
 
 FecdasBundle_dadespersonalstopdf:
     path:  /dadespersonalstopdf
@@ -142,12 +142,6 @@ FecdasBundle_dadespersonalstopdf:
 FecdasBundle_facturatopdf:
     path:  /printfactura
     defaults: { _controller: "FecdasBundle:PDF:facturatopdf" }
-    requirements:
-        methods:  GET
-
-FecdasBundle_albaratopdf:
-    path:  /printalbara
-    defaults: { _controller: "FecdasBundle:PDF:albaratopdf" }
     requirements:
         methods:  GET
 
@@ -379,6 +373,26 @@ FecdasBundle_historialllicencies:
     defaults: { _controller: "FecdasBundle:Titulacions:historialllicencies" }
     requirements:
         methods:  GET
+
+
+FecdasBundle_llicenciesfederat: 
+    path:  /llicenciesfederat
+    defaults: { _controller: "FecdasBundle:Titulacions:llicenciesfederat" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_titulacionsfederat: 
+    path:  /titulacionsfederat
+    defaults: { _controller: "FecdasBundle:Titulacions:titulacionsfederat" }
+    requirements:
+        methods:  GET
+        
+FecdasBundle_dadesfederat: 
+    path:  /dadesfederat
+    defaults: { _controller: "FecdasBundle:Titulacions:dadesfederat" }
+    requirements:
+        methods:  GET/POST        
+
 
 FecdasBundle_jsonpersona:
     path:  /jsonpersona

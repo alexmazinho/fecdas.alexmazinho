@@ -1990,8 +1990,6 @@ class FacturacioController extends BaseController {
 		return $apunts;
 	}
 	
-
-
 	public function graellaproductesAction(Request $request) {
 		// Graella de productes per afegir a la cistella
 

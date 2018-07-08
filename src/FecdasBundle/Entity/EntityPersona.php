@@ -323,13 +323,8 @@ class EntityPersona {
 			}
     	}
 
-    	usort($arr, function($a, $b) {
-    		if ($a === $b) {
-    			return 0;
-    		}
-    		return ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? -1:1;;
-    	});
-    	return $arr;
+    	return EntityLlicencia::getLlicenciesSortedBy($arr, 'datacaducitat', 'desc');
+    	
     }
     
     public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)

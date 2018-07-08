@@ -3008,7 +3008,7 @@ class BaseController extends Controller {
 		$factura->setComandaanulacio($comanda);
 		$factura->setComanda(null);
 		
-		if ($comanda->comandaPagada() && $comanda->getRebut() != null) {
+		/*if ($comanda->comandaPagada() && $comanda->getRebut() != null) {
 		    // Crear rebut import negatiu
 		    $datapagament = $current;
 		    $rebut = $comanda->getRebut();
@@ -3018,7 +3018,7 @@ class BaseController extends Controller {
 
 		    $rebutanulacio->setComandaanulacio($comanda);
 		    $comanda->addrebutsanulacions($rebutanulacio);
-		}
+		}*/
 
 		$comanda->setDatamodificacio(new \DateTime());
 		
@@ -3610,13 +3610,15 @@ class BaseController extends Controller {
 	protected function registrarMovimentClub($current, $club, $entrada, $sortida, $data) {
 		$em = $this->getDoctrine()->getManager();
 		
+		if ($club == null || $club->getCodi() == BaseController::CODI_CLUBTEST) return null;
+		
 		// Comprovar si existeix registre
 		$registre = $this->getDoctrine()->getRepository('FecdasBundle:EntitySaldos')->findOneBy(array('club' => $club->getCodi(), 'dataregistre' => $data ));
 				
 		if ($registre == null) {
 			if ($data->format('Y-m-d') < $current->format('Y-m-d')) {
 				// Moviment a data passada que no està registrada no es crea registre.
-				return;
+				return null;
 			} 		
 
 			$registre = new EntitySaldos($club, $data);
@@ -3625,6 +3627,7 @@ class BaseController extends Controller {
 
 		$registre->setEntrades( $registre->getEntrades() + $entrada);
 		$registre->setSortides( $registre->getSortides() + $sortida);
+		return $registre;
 	}
 
 	protected function exportCSV($request, $header, $data, $filename) {

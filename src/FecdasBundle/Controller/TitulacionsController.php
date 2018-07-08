@@ -14,6 +14,7 @@ use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Entity\EntityTitulacio;
 
 use FecdasBundle\Entity\EntityPersona;
+use FecdasBundle\Entity\EntityLlicencia;
 
 
 class TitulacionsController extends BaseController {
@@ -137,7 +138,281 @@ class TitulacionsController extends BaseController {
 		return $response;
 	}
 	
+	private function exportLlicencies($request, $llicencies) {
+	    /* CSV Llistat de dades personals filtrades */
+	    $filename = "export_historial_llicencies_".date("Ymd").".csv";
+	    
+	    $header = EntityLlicencia::csvHeader();
+	    
+	    $data = array(); // Get only data matrix
+	    $i = 1;
+	    foreach ($llicencies as $llicencia) {
+	        $data[] = $llicencia->csvRow($i);
+	        $i ++;
+	    }
+	    
+	    $response = $this->exportCSV($request, $header, $data, $filename);
+	    return $response;
+	}
+	
+	public function llicenciesfederatAction(Request $request) {
+	    if (!$this->isAuthenticated())
+	        return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    if (!$checkRole->isCurrentFederat() &&
+	        !$checkRole->isCurrentInstructor()) 
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+ 
+	    $page = $request->query->get('page', 1);
+	    $sort = $request->query->get('sort', 'datacaducitat');
+	    $direction = $request->query->get('direction', 'desc');
+	    $format = $request->query->get('format', '');
+	    $currentVigent = false;
+	    if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
+	    $currentClub = $request->query->get('club', '');
+	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($currentClub);
+	    $total = 0;
+	    $llicencies = array();
+	    $llicenciesPaginated = array();
+	    $response = null;
+	    
+	    $user = $checkRole->getCurrentUser();
+	    
+	    if ($user == null) {
+	        $this->get('session')->getFlashBag()->clear();
+	        $this->get('session')->getFlashBag()->add('error-notice', "No s'ha trobat l'usuari, poseu-vos en contacte amb la Federació");
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	        throw new \Exception();
+	    }
+	    
+	    $metapersona = $user->getMetapersona();
+	    
+	    if ($metapersona == null) {
+	        $this->get('session')->getFlashBag()->clear();
+	        $this->get('session')->getFlashBag()->add('error-notice', "No s'han trobat les dades personals de l'usuari, poseu-vos en contacte amb la Federació");
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    }
+	    
+	    $formBuilder = $this->createFormBuilder()->add(
+	        'club', 'entity', array(
+	            'class' 	   => 'FecdasBundle:EntityClub',
+	            'choices'      => $metapersona->getClubs(),
+	            'choice_label' => 'nom',
+	            'placeholder'  => '',	// Important deixar en blanc pel bon comportament del select2
+	            'required'     => false,
+	            'data'         => ($club != null?$club:null)
+	        ));
+	    
+	    $formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
+	    
+	    try {
+	        foreach ($metapersona->getLlicenciesSortedByDate() as $llicencia) {
+	            if ((!$currentVigent || $llicencia->isVigent()) &&
+	                ($currentClub == '' || $currentClub == $llicencia->getParte()->getClub()->getCodi())) $llicencies[] = $llicencia;
+	        }
+	        $total = count($llicencies);
+	         		
+	        $llicencies = EntityLlicencia::getLlicenciesSortedBy($llicencies, $sort, $direction);
+	        
+	        $paginator  = $this->get('knp_paginator');
+	        
+	        $llicenciesPaginated = $paginator->paginate(
+	            $llicencies,
+	            $page,
+	            5/*limit per page*/
+	            );
+	        
+	        if ($format == 'csv') {
+	            // Generar CSV
+	            $this->logEntryAuth('LLICENCIES FEDERAT CSV', $checkRole->getCurrentUserName().': '
+	                .$page.','.$sort.','.$direction.','.$currentVigent.','.$currentClub);
+	            return $this->exportLlicencies($request, $llicencies);
+	        }
+	        
+	        if ($format == 'pdf') {
+	            // Generar PDF
+	            $this->logEntryAuth('LLICENCIES FEDERAT PDF', $checkRole->getCurrentUserName().': '
+	                .$page.','.$sort.','.$direction.','.$currentVigent.','.$currentClub);
+	            	            
+	            return $this->forward('FecdasBundle:PDF:llicenciesfederattopdf', array(
+	                'llicencies'    => $llicencies,
+	                'metapersona' 	=> $metapersona
+	            ));
+	        }
+	        
+	        $this->logEntryAuth('LLICENCIES FEDERAT', $checkRole->getCurrentUserName().': '
+	                           .$page.','.$sort.','.$direction.','.$currentVigent.','.$currentClub);
 
+	        if ($request->isXmlHttpRequest()) {
+    	        return $this->render('FecdasBundle:Titulacions:llicenciesfederatdades.html.twig',
+    	            $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+    	                'metapersona' => $metapersona, 'llicencies' => $llicenciesPaginated, 'total' => $total,
+    	                'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc')) 
+    	                )));
+	        }
+	        return $this->render('FecdasBundle:Titulacions:llicenciesfederat.html.twig',
+	            $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+	                'metapersona' => $metapersona, 'llicencies' => $llicenciesPaginated, 'total' => $total,
+	                'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc'))
+	            )));
+	        
+	    } catch (\Exception $e) {
+
+	        // Ko, mostra form amb errors
+	        $this->logEntryAuth('LLICENCIES FEDERAT ERROR', $checkRole->getCurrentUserName().': '
+	            .$e->getMessage().'('.$page.','.$sort.','.$direction.','.$currentVigent.','.$currentClub.')');
+	        
+	        if ($request->isXmlHttpRequest()) {
+	            $response = new Response($e->getMessage());
+	            $response->setStatusCode(500);
+	            
+	        } else {
+    	        $this->get('session')->getFlashBag()->clear();
+    	        $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+
+    	        $response = $this->render('FecdasBundle:Titulacions:llicenciesfederat.html.twig',
+    	            $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+    	                'metapersona' => $metapersona, 'llicencies' => $llicenciesPaginated, 'total' => $total,
+    	                'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc')))
+    	                ));
+	        }
+	    }
+	    return $response;
+	}
+	
+	public function titulacionsfederatAction(Request $request) {
+	    if (!$this->isAuthenticated())
+	        return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	        
+	    $checkRole = $this->get('fecdas.rolechecker');
+	        
+	    if (!$checkRole->isCurrentFederat() &&
+	        !$checkRole->isCurrentInstructor())
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	            
+	    $page = $request->query->get('page', 1);
+	    $sort = $request->query->get('sort', 'datacaducitat');
+	    $direction = $request->query->get('direction', 'desc');
+	    $format = $request->query->get('format', '');
+	    $currentClub = $request->query->get('club', '');
+	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($currentClub);
+	    $total = 0;
+	    $titulacions = array();
+	    $titulacionsPaginated = array();
+	    $response = null;
+	            
+	    $user = $checkRole->getCurrentUser();
+	            
+	    if ($user == null) {
+	        $this->get('session')->getFlashBag()->clear();
+	        $this->get('session')->getFlashBag()->add('error-notice', "No s'ha trobat l'usuari, poseu-vos en contacte amb la Federació");
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	        throw new \Exception();
+	    }
+	            
+	    $metapersona = $user->getMetapersona();
+	            
+	    if ($metapersona == null) {
+	        $this->get('session')->getFlashBag()->clear();
+	        $this->get('session')->getFlashBag()->add('error-notice', "No s'han trobat les dades personals de l'usuari, poseu-vos en contacte amb la Federació");
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    }
+	            
+	    $formBuilder = $this->createFormBuilder()->add(
+	                'club', 'entity', array(
+	                'class' 	   => 'FecdasBundle:EntityClub',
+	                'choices'      => $metapersona->getClubs(),
+	                'choice_label' => 'nom',
+	                'placeholder'  => '',	// Important deixar en blanc pel bon comportament del select2
+	                'required'     => false,
+	                'data'         => ($club != null?$club:null)
+	    ));
+	            
+	    try {
+	        foreach ($metapersona->getTitulacionsSortedByDate() as $titulacio) {
+	            if ($currentClub == '' || 
+	               ($titulacio->getCurs()->getClub() != null &&
+	                $currentClub == $titulacio->getCurs()->getClub()->getCodi())) $titulacions[] = $titulacio;
+	        }
+	        $total = count($titulacions);
+	                
+	        $titulacions = EntityTitulacio::getTitulacionsSortedBy($titulacions, $sort, $direction);
+	                
+	        $paginator  = $this->get('knp_paginator');
+	                
+	        $titulacionsPaginated = $paginator->paginate(
+	                $titulacions,
+	                $page,
+	                5/*limit per page*/
+	        );
+	                
+	        if ($format == 'csv') {
+	            // Generar CSV
+	            $this->logEntryAuth('TITULACIONS FEDERAT CSV', $checkRole->getCurrentUserName().': '
+	                        .$page.','.$sort.','.$direction.','.$currentClub);
+	            return $this->exportTitulacions($request, $titulacions);
+	        }
+	                
+	        if ($format == 'pdf') {
+	            // Generar PDF
+	            $this->logEntryAuth('TITULACIONS FEDERAT PDF', $checkRole->getCurrentUserName().': '
+	                        .$page.','.$sort.','.$direction.','.$currentClub);
+	                    
+	            return $this->forward('FecdasBundle:PDF:llicenciesfederattopdf', array(
+	                        'llicencies'    => $titulacions,
+	                        'metapersona' 	=> $metapersona
+	            ));
+	        }
+	                
+	        $this->logEntryAuth('TITULACIONS FEDERAT', $checkRole->getCurrentUserName().': '
+	                    .$page.','.$sort.','.$direction.','.$currentClub);
+	                
+	        if ($request->isXmlHttpRequest()) {
+	             return $this->render('FecdasBundle:Titulacions:titulacionsfederatdades.html.twig',
+	                    $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+	                        'metapersona' => $metapersona, 'total' => $total,
+	                        'titulacions' => $titulacionsPaginated,
+	                        'altrestitulacions' => $metapersona->getAltresTitulacionsSortedByTitol(),
+	                        'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc'))
+	                    )));
+	        }
+	        return $this->render('FecdasBundle:Titulacions:titulacionsfederat.html.twig',
+	                    $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+	                        'metapersona' => $metapersona, 'total' => $total,
+	                        'titulacions' => $titulacionsPaginated,
+	                        'altrestitulacions' => $metapersona->getAltresTitulacionsSortedByTitol(),
+	                        'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc'))
+	                    )));
+	                
+	    } catch (\Exception $e) {
+	                
+	         // Ko, mostra form amb errors
+	         $this->logEntryAuth('TITULACIONS FEDERAT ERROR', $checkRole->getCurrentUserName().': '
+	                    .$e->getMessage().'('.$page.','.$sort.','.$direction.','.$currentClub.')');
+	                
+	         if ($request->isXmlHttpRequest()) {
+	              $response = new Response($e->getMessage());
+	              $response->setStatusCode(500);
+	                    
+	         } else {
+	              $this->get('session')->getFlashBag()->clear();
+	              $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+	                   
+	              $response = $this->render('FecdasBundle:Titulacions:titulacionsfederat.html.twig',
+	                        $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+	                            'metapersona' => $metapersona, 'total' => $total,
+	                            'titulacions' => $titulacionsPaginated, 
+	                            'altrestitulacions' => $metapersona->getAltresTitulacionsSortedByTitol(), 
+	                            'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc')))
+	              ));
+	         }
+	     }
+	     return $response;
+	}
+	
+	
 	public function historialllicenciesAction(Request $request) {
 		
 		if ($this->isAuthenticated() != true) return new Response("");
@@ -186,7 +461,7 @@ class TitulacionsController extends BaseController {
 			return ($a->getParte()->getDatacaducitat() > $b->getParte()->getDatacaducitat())? -1:1;;
 		});
 
-		    return $this->render('FecdasBundle:Titulacions:llicencieshistorial.html.twig', array('llicencies' => $llicencies, 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));
+		return $this->render('FecdasBundle:Titulacions:llicencieshistorial.html.twig', array('llicencies' => $llicencies, 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));
 		
 	}
 

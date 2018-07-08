@@ -14,35 +14,43 @@
 		    </header>
 			<h3>Incidències i/o suggeriments</h3>
 			
-		    {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-		    <div class="sms-notice">
-				{{ flashMessage }}
-		  	</div>	
-			{% endfor %}
+		    <div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
 		    
 			{{ form_start(form, {'action': path('FecdasBundle_contact'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-contact'}}) }}
-		    	{{ form_errors(form) }}
-				<div id="formcontact-name">
-					{{ form_label(form.name, 'Nom', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.name, { 'attr': {'class': 'forminput-inside'} }) }}
+			<div class="row">
+	   		 	<div class="col-md-12">
+        			<div class="form-group input-group">
+	   					<span class="input-group-addon input-group-addon-icon"></span>
+	   					{{ form_label(form.name, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.name, { 'attr': {'class': 'form-control','placeholder':'Nom (Obligatori)'} }) }}
+					</div>
 				</div>
-		        <div id="formcontact-email">
-					{{ form_label(form.email, 'Adreça de correu', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.email, { 'attr': {'class': 'forminput-inside'} }) }}
-					{{ form_errors(form.email) }}
+				<div class="col-md-12">				
+					<div class="form-group input-group">
+	   					<span class="input-group-addon input-group-addon-icon"></span>
+	   					{{ form_label(form.email, 'Adreça de correu', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.email, { 'attr': {'class': 'form-control','placeholder':'Adreça de correu (Obligatori)'} }) }}
+					</div>
 				</div>
-				<div id="formcontact-subject">
-					{{ form_label(form.subject, 'Assumpte', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.subject, { 'attr': {'class': 'forminput-inside'} }) }}
+				<div class="col-md-12">				
+					<div class="form-group input-group">
+	   					<span class="input-group-addon input-group-addon-icon"></span>
+	   					{{ form_label(form.subject, 'Assumpte', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.subject, { 'attr': {'class': 'form-control','placeholder':'Assumpte (Obligatori)'} }) }}
+					</div>
 				</div>
-				<div id="formcontact-body">
-					{{ form_label(form.body, 'Text del missatge', { 'label_attr': {'class': 'formlabel-inside'} }) }}
-					{{ form_widget(form.body, { 'attr': {'class': 'forminput-inside'} }) }}
+				<div class="col-md-12">				
+					<div class="form-group input-group">
+	   					<span class="input-group-addon input-group-addon-icon"></span>
+	   					{{ form_label(form.body, 'Text del missatge', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.body, { 'attr': {'class': 'form-control','placeholder':'Text del missatge (Obligatori)'} }) }}
+					</div>
 				</div>
-				<div id="formcontact-rest">	{{ form_rest(form) }}</div>
-		        <div id="formcontact-submit">	
-					<input type="submit" class="forminput-inside" value="Tramet la consulta" />
-				</div>        
+				<div class="col-md-12">				
+       				<div id="formcontact-rest">	{{ form_rest(form) }}</div>
+    				<button class="contact-submit btn btn-default btn-block" type="submit"><i class="fa fa-envelope fa-1x blue"></i> Tramet la consulta</button>
+    			</div>
+    		</div>       
 		    {{ form_end(form) }}
 		</div>
     </div>

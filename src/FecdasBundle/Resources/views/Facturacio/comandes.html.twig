@@ -173,13 +173,15 @@
 								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
 			   			{% endif %}
 		   				{% for rebut in comanda.rebutsanulacions %} 
-							<br/>{% if rebut.comptabilitat == null %}<span class="fa fa-exclamation-triangle fa-1x orange"></span>{% endif %}
-		   				
-		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
-		   						<span class="red">(-){{ rebut.numrebut }}</span></a>
-		   					
-		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
-								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+		   					{% if not rebut.esBaixa %}
+    							<br/>{% if rebut.comptabilitat == null %}<span class="fa fa-exclamation-triangle fa-1x orange"></span>{% endif %}
+    		   				
+    		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_editarrebut', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
+    		   						<span class="red">(-){{ rebut.numrebut }}</span></a>
+    		   					
+    		   					<a class="comanda-action-pdf-rebut link" href="{{ path('FecdasBundle_rebuttopdf', { 'id': rebut.id}) }}" alt="{{ rebut.infoToolTip(admin) }}" title="{{ rebut.infoToolTip(admin) }}">
+    								<i class="fa fa-file-pdf-o fa-1x red"></i></a>
+							{% endif %}
 						{% endfor %}
 					</div>
 		   			<div class="data-detall-cell comanda-comentaris">{{ comanda.infoLlistat|nl2br }}</div>

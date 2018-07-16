@@ -59,20 +59,21 @@
     
     <div id="llista-llicenciesfederat" class="llista-llicenciesfederat">
     	{% if llicencies|length > 0 %}
+    		{% set direction = sortparams['direction']=='asc'?'desc':'asc' %}
 		<table class="table">
 			<thead>	
     		   	<tr class="data-detall-header">
     		   		<th scope="col" id="header-llicenciesfederatid" class="col-listheader hidden">id</th>
     		   		<th scope="col" id="header-llicenciesfederatclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Club', 'club') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'club') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'club') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-llicenciesfederatdataalta" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Alta', 'dataalta') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'dataalta') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'dataalta') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-llicenciesfederatcaducitat" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Caducitat', 'datacaducitat') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'datacaducitat') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'datacaducitat') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-llicenciesfederatcategoria" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Categoria', 'categoria') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'categoria') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'categoria') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-llicenciesfederatdescripcio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Descripció', 'categoria.descripcio') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'categoria.descripcio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'categoria.descripcio') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   	</tr>
 		   	</thead>
    		   	<tbody class="table-noscroll table-noscroll-large">

@@ -323,8 +323,9 @@ class EntityPersona {
 			}
     	}
 
-    	return EntityLlicencia::getLlicenciesSortedBy($arr, 'datacaducitat', 'desc');
+    	EntityLlicencia::getLlicenciesSortedBy($arr, 'datacaducitat', 'desc');
     	
+    	return $arr;
     }
     
     public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)

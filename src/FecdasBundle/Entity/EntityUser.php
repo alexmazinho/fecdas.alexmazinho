@@ -165,11 +165,23 @@ class EntityUser {
         $role = $this->getRoleAdmin();
 		if ($role == null) $role = $this->getRoleClub();
 		if ($role == null) $role = $this->getRoleInstructor();
-		if ($role == null) $role = $this->getRoleFederat();  // => Desactivat de moment
+		if ($role == null) $role = $this->getRoleFederat();  
 		
 		return $role;
     }
 	
+    /**
+     * Roles from this user need active license 
+     *
+     * @return boolean
+     */
+    public function roleNeedLlicencia()
+    {
+        // Necessita llicència si no és Admin ni Club
+        return $this->getRoleAdmin() == null && $this->getRoleClub() == null;
+    }
+    
+    
 	/**
      * Get club
      *

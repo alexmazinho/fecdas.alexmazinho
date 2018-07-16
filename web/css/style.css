@@ -1340,6 +1340,24 @@ tr:first-child > .data-detall-cell  {
 	border-top: 0;
 }
 
+.table > tbody > tr > td.data-detall-cell.data-detall-cell-left, 
+.table > tbody > tr > th.data-detall-cell.data-detall-cell-left, 
+.table > tfoot > tr > td.data-detall-cell.data-detall-cell-left, 
+.table > tfoot > tr > th.data-detall-cell.data-detall-cell-left, 
+.table > thead > tr > td.data-detall-cell.data-detall-cell-left, 
+.table > thead > tr > th.data-detall-cell.data-detall-cell-left, 
+.data-detall-cell.data-detall-cell-left,
+.col-listheader.data-detall-cell-left { text-align: left; }
+
+.table > tbody > tr > td.data-detall-cell.data-detall-cell-right, 
+.table > tbody > tr > th.data-detall-cell.data-detall-cell-right, 
+.table > tfoot > tr > td.data-detall-cell.data-detall-cell-right, 
+.table > tfoot > tr > th.data-detall-cell.data-detall-cell-right, 
+.table > thead > tr > td.data-detall-cell.data-detall-cell-right, 
+.table > thead > tr > th.data-detall-cell.data-detall-cell-right, 
+.data-detall-cell.data-detall-cell-right,
+.col-listheader.data-detall-cell-right { text-align: right; }
+
 .data-detall-cell-extra .extra {
 	display: 	inline-block;
 	max-height: 30px;  
@@ -2616,10 +2634,6 @@ input#formuserclub-randompassword { width: 150px; }
 #list-consultaadmin .th-listheader,
 #list-consultaclubs table tr td.data-detall-cell, 
 #list-consultaclubs .th-listheader { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-
-.data-detall-cell-left { text-align: left; }
-.data-detall-cell-right { text-align: right; }
 
 
 /************************************************* Consulta Admin Fin ******************************************************/

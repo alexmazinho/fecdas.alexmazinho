@@ -46,7 +46,17 @@
 			params.push( {'name':'vigent','value': ($('#form_vigent').is(':checked'))?1:0} );
 			
 			reloadLlistaLlicencies(url, params);
-		});	        
+		});	 
+
+		$( "#dades-federat" ).on( "click", ".col-listheader.col-listheader-sortable a, .pagination a", function( e ) {
+			e.preventDefault();
+			
+			$('.alert').remove();
+			
+			var url = $(this).attr("href");
+			
+			reloadLlistaLlicencies(url, []);
+		});	       
 
 		$( "#dades-federat" ).on( "click", ".button-top .link", function( e ) {
 			e.preventDefault();

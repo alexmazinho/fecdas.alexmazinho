@@ -266,7 +266,7 @@ class EntityTitulacio {
     	return $this->databaixa;
     }
     
-    public static function getTitulacionsSortedBy($titulacions, $sort = 'id', $direction = 'asc')
+    public static function getTitulacionsSortedBy(&$titulacions, $sort = 'id', $direction = 'asc')
     {
         usort($titulacions, function($a, $b) use ($sort, $direction) {
             if ($a === $b) {
@@ -276,20 +276,20 @@ class EntityTitulacio {
             $false = $true * -1;
             $result = 0;
             switch ($sort) {
-                case 'club':
-                    $result = ($a->getCurs()->getClub()->getNom() > $b->getCurs()->getClub()->getNom())? $true:$false;
-                    break;
-                case 'periode':
-                    $result = ($a->getCurs()->getDatadesde() > $b->getCurs()->getDatadesde())? $true:$false;
-                    break;
-                case 'acta':
-                    $result = ($a->getCurs()->getNumActa() > $b->getCurs()->getNumActa())? $true:$false;
-                    break;
-                case 'titol.codi':
+                case 'codi':
                     $result = ($a->getTitol()->getCodi() > $b->getTitol()->getCodi())? $true:$false;
                     break;
                 case 'titol':
                     $result = ($a->getTitol()->getTitol() > $b->getTitol()->getTitol())? $true:$false;
+                    break;
+                case 'club':
+                    if ($a->getCurs()->getClubInfo() != $b->getCurs()->getClubInfo())
+                        $result = ($a->getCurs()->getClubInfo() > $b->getCurs()->getClubInfo())? $true:$false;
+                    else 
+                        $result = ($a->getDatasuperacio() > $b->getDatasuperacio())? 1:-1;
+                    break;
+                case 'curs':
+                    $result = ($a->getCurs()->getDatadesde() > $b->getCurs()->getDatadesde())? $true:$false;
                     break;
                 case 'datasuperacio':
                     $result = ($a->getDatasuperacio() > $b->getDatasuperacio())? $true:$false;
@@ -304,6 +304,5 @@ class EntityTitulacio {
             
             return $result;
         });
-        return $titulacions;
     }
 }

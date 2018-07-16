@@ -25,39 +25,40 @@
     
     <div id="llista-titulacionsfederat" class="llista-titulacionsfederat">
     	{% if titulacions|length > 0 %}
+    		{% set direction = sortparams['direction']=='asc'?'desc':'asc' %}
 		<table class="table">
 			<thead>	
     		   	<tr class="data-detall-header">
     		   		<th scope="col" id="header-titulacionsfederatid" class="col-listheader hidden">id</th>
-    		   		<th scope="col" id="header-titulacionsfederatclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Club', 'club') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'club') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
-    		   		<th scope="col" id="header-titulacionsfederatcurs" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Curs', 'curs') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'curs') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-titulacionsfederatcodi" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Codi', 'titol.codi') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
-    		   		<th scope="col" id="header-titulacionsfederattitol" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Títol', 'titol') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'titol') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'codi') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		<th scope="col" id="header-titulacionsfederattitol" class="col-listheader col-noresponsive col-listheader-sortable data-detall-cell-left">{{ knp_pagination_sortable(titulacions, 'Títol', 'titol') }}
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'titol') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		<th scope="col" id="header-titulacionsfederatclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Club', 'club') }}
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'club') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		<th scope="col" id="header-titulacionsfederatcurs" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Curs', 'curs') }}
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'curs') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-titulacionsfederatdatasuperacio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Superacio', 'datasuperacio') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'datasuperacio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'datasuperacio') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-titulacionsfederatnum" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(titulacions, 'Núm. Carnet', 'num') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'num') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   	</tr>
 		   	</thead>
    		   	<tbody class="table-noscroll table-noscroll-large">
    				{% for titulacio in titulacions %}
    					<tr class="data-detall {% if not titulacio.curs.finalitzat %}red{% endif %}">
    				   		<td class="data-detall-cell titulacionsfederat-id hidden">{{ titulacio.id }}</td>
+   				   		<td class="data-detall-cell titulacionsfederat-codi col-noresponsive">{{ titulacio.titol.codi }}</td>
+   				   		<td class="data-detall-cell titulacionsfederat-titol data-detall-cell-left col-noresponsive">{{ titulacio.titol.titol }}</td>
    				   		<td class="data-detall-cell titulacionsfederat-club col-noresponsive">{{ titulacio.curs.clubInfo }}</td>
    				   		<td class="data-detall-cell titulacionsfederat-curs col-noresponsive">{{ titulacio.curs.numActa }} ({{ titulacio.curs.datadesde|date('d/m/y') }} - {{ titulacio.curs.datafins|date('d/m/y') }})</td>
-   				   		<td class="data-detall-cell titulacionsfederat-codi col-noresponsive">{{ titulacio.titol.codi }}</td>
-   				   		<td class="data-detall-cell titulacionsfederat-titol col-noresponsive">{{ titulacio.titol.titol }}</td>
    				   		<td class="data-detall-cell titulacionsfederat-datasuperacio col-noresponsive">{{ titulacio.datasuperacio|date('d/m/Y') }}</td>
    				   		<td class="data-detall-cell titulacionsfederat-num col-noresponsive">{{ titulacio.num }}</td>
    			   		</tr>
    				{% endfor %}
    			</tbody>
 	   	</table> 
-    	{% if total > 5 %}<div class="navigation">Pàgines: {{ knp_pagination_render(titulacions, null, sortparams) }}</div>{% endif %}		
+    	{% if total > 5 %}<div class="navigation">Pàgines: {{ knp_pagination_render(titulacions, null, sortparams|merge({ 'tab': 'cmas' })) }}</div>{% endif %}		
     	{% else %}
     	    <div class="sms-notice">Sense dades per mostrar</div>
     	{% endif  %}

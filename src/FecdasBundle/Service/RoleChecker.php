@@ -25,8 +25,9 @@ class RoleChecker
     }
 
 	public function authenticateUser( $user, $enquestaactiva = null ) { 	// After Password recovery
-		if ($user == null || $user->getBaseRole() == null || $user->getBaseRole()->getRole() == '' || $user->getBaseClub() == null) return false; 	// No existeix o no té cap role o no té club
-		
+
+	    if ($user == null || $user->getBaseRole() == null || $user->getBaseRole()->getRole() == '' || $user->getBaseClub() == null) return false; 	// No existeix o no té cap role o no té club associat
+
 		$request = $this->requestStack->getCurrentRequest();
 		if (!$request->server->has('REMOTE_ADDR')) return false;
 
@@ -54,12 +55,10 @@ class RoleChecker
 	}
 
 	public function isAuthenticated() {
-		
 		$request = $this->requestStack->getCurrentRequest();
 		if (!$this->session->has('username') 	||
 			!$this->session->has('remote_addr') ||
 			($this->session->get('remote_addr') != $request->server->get('REMOTE_ADDR'))) return false;	
-			
 		return true;
 	}
 	
@@ -149,8 +148,11 @@ class RoleChecker
 		    }
 		    
 		    $key = $this->getUserRoleKey($userClubRole->role, $club);
-		    $text = mb_strtoupper($userClubRole->role)."<br/><span class='title-comment'>".mb_strtoupper($nomclub)."</span>";
-			$rolesArray[ $key ] = $text;
+		    if (!isset($rolesArray[ $key ])) {
+    		    $text = mb_strtoupper($userClubRole->role);
+    		    if ($userClubRole->role != BaseController::ROLE_FEDERAT) $text .= "<br/><span class='title-comment'>".mb_strtoupper($nomclub)."</span>";
+    			$rolesArray[ $key ] = $text;
+		    }
 		}
 		
 		asort($rolesArray);
@@ -160,8 +162,11 @@ class RoleChecker
 	
 	public function getUserRoleKey($role = '', $club = '') {	// Clau per dades del select
 		if (!$this->isAuthenticated()) return '';
-		
+
 		if ($role == '') $role = $this->session->get('currentrole');
+		
+		if ($role == BaseController::ROLE_FEDERAT) return $role;  // Federat no s'associa a un club concret
+		
 		if ($club == '') $club = $this->session->get('currentclub');
 		
 		return $role.';'.$club;
@@ -198,7 +203,7 @@ class RoleChecker
 	}
 	
 	public function setCurrentClubRole( $club, $role ) {
-		if (!$this->isAuthenticated() || $club == '' || $role == '') return;
+		if (!$this->isAuthenticated() || $role == '') return;
 		// json	=> {'admin':true, 'roles': [{'role': 'administrador', 'club': 'CAT999', 'nom': 'FECDAS' }, ...] }
 		$roles = $this->getUserRoles();
 	
@@ -209,12 +214,15 @@ class RoleChecker
 				if ($userClubRole->role == $role) {
 					$this->session->set('currentclub', $club);
 					$this->session->set('currentrole', $role);
+					return;
 				}
 			} else {
-				if ($userClubRole->club == $club && $userClubRole->role == $role) {
+			    if (($userClubRole->club == $club && $userClubRole->role == $role) ||
+			        ($role == BaseController::ROLE_FEDERAT && $userClubRole->role == $role)) {
 					// Valida que sigui un role permès
 					$this->session->set('currentclub', $club);
 					$this->session->set('currentrole', $role);
+					return;
 				}
 			}
 		}

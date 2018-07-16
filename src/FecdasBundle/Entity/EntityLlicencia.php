@@ -939,7 +939,7 @@ class EntityLlicencia {
     	return $activitats;
     }
     
-    public static function getLlicenciesSortedBy($llicencies, $sort = 'id', $direction = 'asc')
+    public static function getLlicenciesSortedBy(&$llicencies, $sort = 'id', $direction = 'asc')
     {
         usort($llicencies, function($a, $b) use ($sort, $direction) {
             if ($a === $b) {
@@ -971,6 +971,5 @@ class EntityLlicencia {
             
             return $result;
         });
-        return $llicencies;
     }
 }

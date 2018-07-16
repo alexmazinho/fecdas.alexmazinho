@@ -348,4 +348,34 @@ class EntityTitol {
 		$this->curs = $curs;
 	}
 
+	public static function getTitolsSortedBy(&$titols, $sort = 'id', $direction = 'asc')
+	{
+	    usort($titols, function($a, $b) use ($sort, $direction) {
+	        if ($a === $b) {
+	            return 0;
+	        }
+	        $true = $direction == 'asc'? 1:-1;
+	        $false = $true * -1;
+	        $result = 0;
+	        switch ($sort) {
+	            case 'codi':
+	                $result = ($a->getCodi() > $b->getCodi())? $true:$false;
+	                break;
+	            case 'titol':
+	                $result = ($a->getTitol() > $b->getTitol())? $true:$false;
+	                break;
+	            case 'organisme':
+	                if ($a->getOrganisme() != $b->getOrganisme())
+	                   $result = ($a->getOrganisme() > $b->getOrganisme())? $true:$false;
+	                else 
+	                   $result = ($a->getTitol() > $b->getTitol())? 1:-1;
+	                break;
+	            default:
+	                $result = ($a->getId() > $b->getId())? $true:$false;
+	                break;
+	        }
+	        
+	        return $result;
+	    });
+	}
 }

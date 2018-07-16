@@ -64,7 +64,7 @@
 		setMenuActive("menu-fedetitulacions");
 
 		$( "#tabs-titulacions" ).tabs();
-		
+
 		$( "#tabs-titulacions" ).on( "change", "#form_club", function( e ) {
 			$('.alert').remove();
 			
@@ -72,10 +72,24 @@
 			
 			var params = []; 
 			params.push( {'name':'club','value': $('#form_club').val()} );
-			
-			reloadLlistaTitulacions(url, params, '#tab-cmas');
+
+			reloadLlistaTitulacions(url, params, '#tab-cmas' );
 		});	        
 
+		$( "#tabs-titulacions" ).on( "click", ".col-listheader.col-listheader-sortable a, .pagination a", function( e ) {
+			e.preventDefault();
+			
+			$('.alert').remove();
+			
+			var url = $(this).attr("href");
+
+			var active = $( "#tabs-titulacions" ).tabs( "option", "active" );
+
+			var tab = active == 0?'#tab-cmas':'#tab-altres';
+
+			reloadLlistaTitulacions(url, [], tab);
+		});	
+		
 		$( "#tabs-titulacions" ).on( "click", ".button-top .link", function( e ) {
 			e.preventDefault();
 			

@@ -31,9 +31,9 @@ class SecurityController extends BaseController
 			$currentclub = $request->query->get('currentclub');
 		} else {
 			$currentroleArray = explode(";", $currentrole);
-			if (count($currentroleArray) != 2)  return "";
+			//if (count($currentroleArray) != 2)  return "";
 			$currentrole = $currentroleArray[0];
-			$currentclub = $currentroleArray[1];
+			$currentclub = isset($currentroleArray[1])?$currentroleArray[1]:"";
 		}
 		$checkRole->setCurrentClubRole( $currentclub, $currentrole );
 	
@@ -168,6 +168,15 @@ class SecurityController extends BaseController
     			$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
     			return $this->redirect($this->generateUrl('FecdasBundle_login'));
     		}
+    		
+    		// Actualització del mail de les persones associades a la metapersona corresponent a l'usuari si escau
+    		if ($user->getMetapersona() != null) {
+    		    if ($user->roleNeedLlicencia() && $user->getMetapersona()->getLlicenciaVigent() == null) throw new \Exception("Per accedir al sistema amb aquestes dades cal una llicència vigent per la data actual");
+    		    
+    		    foreach ($user->getMetapersona()->getPersonesSortedById() as $persona) {
+    		        $persona->setMail($username);
+    		    }
+    		}
     	}
     	
     	$form = $this->createForm(new FormUser(), $user);
@@ -191,7 +200,7 @@ class SecurityController extends BaseController
 
 	    			$this->logEntryAuth('PWD RESET');
 	    			
-	    			$this->get('session')->clear();
+	    			$this->get('session')->getFlashBag()->clear();
 	    			$this->get('session')->getFlashBag()->add('sms-notice', "Paraula clau actualitzada correctament!");
 	    			
 	    			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -238,7 +247,7 @@ class SecurityController extends BaseController
     			    
     				$this->logEntry($userEmail, 'PWD RECOVER');
     				
-    				$this->get('session')->clear();
+    				$this->get('session')->getFlashBag()->clear();
     				$this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
     				
     				return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
@@ -408,7 +417,7 @@ class SecurityController extends BaseController
                 
                 $this->logEntry($mail, 'USER REGISTER', 'Petició registre nou usuari '.$mail);
                 
-                $this->get('session')->clear();
+                $this->get('session')->getFlashBag()->clear();
                 $this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a finalitzar el registre a l\'adreça de correu ' . $mail);
                 
                 return $this->redirect($this->generateUrl('FecdasBundle_homepage'));

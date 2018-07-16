@@ -1,17 +1,30 @@
    	{% include 'FecdasBundle:Includes:messages.html.twig' %}
 
+	<div id="list-forms">	
+   		<section class="form-altrestitulacionsfederat">
+	   		<div class="row">
+				<div class="col-md-12 col-xs-12">
+					<div class="total-rowcount form-text">
+						Total: {{ totalaltres|number_format(0, ',', '.') }}
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+
     <div id="llista-altrestitulacionsfederat" class="llista-titulacionsfederat">
     	{% if altrestitulacions|length > 0 %}
+    		{% set direction = sortparams['direction']=='asc'?'desc':'asc' %}
 		<table class="table">
 			<thead>	
     		   	<tr class="data-detall-header">
     		   		<th scope="col" id="header-altrestitulacionsfederatid" class="col-listheader hidden">id</th>
     		   		<th scope="col" id="header-altrestitulacionsfederatcodi" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(altrestitulacions, 'Codi', 'codi') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
-    		   		<th scope="col" id="header-altrestitulacionsfederattitol" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(altrestitulacions, 'Títol', 'titol') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'titol') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'codi') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		<th scope="col" id="header-altrestitulacionsfederattitol" class="col-listheader col-noresponsive col-listheader-sortable data-detall-cell-left">{{ knp_pagination_sortable(altrestitulacions, 'Títol', 'titol') }}
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'titol') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-altrestitulacionsfederatorganisme" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(altrestitulacions, 'Organisme', 'organisme') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'organisme') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'organisme') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   	</tr>
 		   	</thead>
    		   	<tbody class="table-noscroll table-noscroll-large">
@@ -19,13 +32,13 @@
    					<tr class="data-detall">
    				   		<td class="data-detall-cell altrestitulacionsfederat-id hidden">{{ titulacio.id }}</td>
    				   		<td class="data-detall-cell altrestitulacionsfederat-codi col-noresponsive">{{ titulacio.codi }}</td>
-   				   		<td class="data-detall-cell altrestitulacionsfederat-titol col-noresponsive">{{ titulacio.titol }}</td>
+   				   		<td class="data-detall-cell altrestitulacionsfederat-titol data-detall-cell-left col-noresponsive">{{ titulacio.titol }}</td>
    				   		<td class="data-detall-cell altrestitulacionsfederat-organisme col-noresponsive">{{ titulacio.organisme }}</td>
    			   		</tr>
    				{% endfor %}
    			</tbody>
 	   	</table> 
-    	{% if total > 5 %}<div class="navigation">Pàgines: {{ knp_pagination_render(altrestitulacions, null, sortparams) }}</div>{% endif %}		
+    	{% if totalaltres > 5 %}<div class="navigation">Pàgines: {{ knp_pagination_render(altrestitulacions, null, sortparams|merge({ 'tab': 'altres' })) }}</div>{% endif %}		
     	{% else %}
     	    <div class="sms-notice">Sense dades per mostrar</div>
     	{% endif  %}

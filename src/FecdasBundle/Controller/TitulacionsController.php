@@ -12,7 +12,7 @@ use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Entity\EntityDocencia;
 use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Entity\EntityTitulacio;
-
+use FecdasBundle\Entity\EntityTitol;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityLlicencia;
 
@@ -139,7 +139,7 @@ class TitulacionsController extends BaseController {
 	}
 	
 	private function exportLlicencies($request, $llicencies) {
-	    /* CSV Llistat de dades personals filtrades */
+	    /* CSV Llistat de llicències filtrades */
 	    $filename = "export_historial_llicencies_".date("Ymd").".csv";
 	    
 	    $header = EntityLlicencia::csvHeader();
@@ -154,6 +154,28 @@ class TitulacionsController extends BaseController {
 	    $response = $this->exportCSV($request, $header, $data, $filename);
 	    return $response;
 	}
+	
+	private function exportTitulacions($request, $titulacions, $altrestitulacions) {
+	    /* CSV Llistat de titulacions filtrades */
+	    $filename = "export_historial_titulacions_".date("Ymd").".csv";
+	    
+	    $header = EntityTitulacio::csvHeader();
+	    
+	    $data = array(); // Get only data matrix
+	    $i = 1;
+	    foreach ($titulacions as $titulacio) {
+	        $data[] = $titulacio->csvRow($i);
+	        $i ++;
+	    }
+	    foreach ($altrestitulacions as $titulacio) {
+	        $data[] = $titulacio->csvRow($i);
+	        $i ++;
+	    }
+	    
+	    $response = $this->exportCSV($request, $header, $data, $filename);
+	    return $response;
+	}
+	
 	
 	public function llicenciesfederatAction(Request $request) {
 	    if (!$this->isAuthenticated())
@@ -214,7 +236,7 @@ class TitulacionsController extends BaseController {
 	        }
 	        $total = count($llicencies);
 	         		
-	        $llicencies = EntityLlicencia::getLlicenciesSortedBy($llicencies, $sort, $direction);
+	        EntityLlicencia::getLlicenciesSortedBy($llicencies, $sort, $direction);
 	        
 	        $paginator  = $this->get('knp_paginator');
 	        
@@ -249,13 +271,13 @@ class TitulacionsController extends BaseController {
     	        return $this->render('FecdasBundle:Titulacions:llicenciesfederatdades.html.twig',
     	            $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
     	                'metapersona' => $metapersona, 'llicencies' => $llicenciesPaginated, 'total' => $total,
-    	                'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc')) 
+    	                'sortparams' => array('sort' => $sort,'direction' => $direction) 
     	                )));
 	        }
 	        return $this->render('FecdasBundle:Titulacions:llicenciesfederat.html.twig',
 	            $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
 	                'metapersona' => $metapersona, 'llicencies' => $llicenciesPaginated, 'total' => $total,
-	                'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc'))
+	                'sortparams' => array('sort' => $sort,'direction' => $direction)
 	            )));
 	        
 	    } catch (\Exception $e) {
@@ -275,7 +297,7 @@ class TitulacionsController extends BaseController {
     	        $response = $this->render('FecdasBundle:Titulacions:llicenciesfederat.html.twig',
     	            $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
     	                'metapersona' => $metapersona, 'llicencies' => $llicenciesPaginated, 'total' => $total,
-    	                'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc')))
+    	                'sortparams' => array('sort' => $sort,'direction' => $direction))
     	                ));
 	        }
 	    }
@@ -293,14 +315,18 @@ class TitulacionsController extends BaseController {
 	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	            
 	    $page = $request->query->get('page', 1);
-	    $sort = $request->query->get('sort', 'datacaducitat');
+	    $tab = $request->query->get('tab', 'cmas');    //  cmas o altres
+	    $sort = $request->query->get('sort', 'datasuperacio');
 	    $direction = $request->query->get('direction', 'desc');
 	    $format = $request->query->get('format', '');
 	    $currentClub = $request->query->get('club', '');
 	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($currentClub);
 	    $total = 0;
+	    $totalaltres = 0;
 	    $titulacions = array();
 	    $titulacionsPaginated = array();
+	    $altrestitulacions = array();
+	    $altrestitulacionsPaginated = array();
 	    $response = null;
 	            
 	    $user = $checkRole->getCurrentUser();
@@ -337,22 +363,36 @@ class TitulacionsController extends BaseController {
 	                $currentClub == $titulacio->getCurs()->getClub()->getCodi())) $titulacions[] = $titulacio;
 	        }
 	        $total = count($titulacions);
-	                
-	        $titulacions = EntityTitulacio::getTitulacionsSortedBy($titulacions, $sort, $direction);
-	                
+	        
 	        $paginator  = $this->get('knp_paginator');
-	                
+	        
+	        EntityTitulacio::getTitulacionsSortedBy($titulacions, $sort, $direction);
+
 	        $titulacionsPaginated = $paginator->paginate(
-	                $titulacions,
-	                $page,
-	                5/*limit per page*/
+	            $titulacions,
+	            $page,
+	            5/*limit per page*/
 	        );
-	                
+	        $titulacionsPaginated->setParam('tab', 'cmas');
+	        
+	        $altrestitulacions = $metapersona->getAltresTitulacionsSortedByTitol();
+	        
+	        $totalaltres = count($altrestitulacions);
+
+	        EntityTitol::getTitolsSortedBy($altrestitulacions, $sort, $direction);
+	        
+	        $altrestitulacionsPaginated = $paginator->paginate(
+	            $altrestitulacions,
+	            $page,
+	            5/*limit per page*/
+	        );
+	        $altrestitulacionsPaginated->setParam('tab', 'altres');
+	        
 	        if ($format == 'csv') {
 	            // Generar CSV
 	            $this->logEntryAuth('TITULACIONS FEDERAT CSV', $checkRole->getCurrentUserName().': '
 	                        .$page.','.$sort.','.$direction.','.$currentClub);
-	            return $this->exportTitulacions($request, $titulacions);
+	            return $this->exportTitulacions($request, $titulacions, $altrestitulacions);
 	        }
 	                
 	        if ($format == 'pdf') {
@@ -360,9 +400,10 @@ class TitulacionsController extends BaseController {
 	            $this->logEntryAuth('TITULACIONS FEDERAT PDF', $checkRole->getCurrentUserName().': '
 	                        .$page.','.$sort.','.$direction.','.$currentClub);
 	                    
-	            return $this->forward('FecdasBundle:PDF:llicenciesfederattopdf', array(
-	                        'llicencies'    => $titulacions,
-	                        'metapersona' 	=> $metapersona
+	            return $this->forward('FecdasBundle:PDF:titulacionsfederattopdf', array(
+	                        'titulacions'          => $titulacions,
+	                        'altrestitulacions'    => $altrestitulacions,
+	                        'metapersona' 	       => $metapersona
 	            ));
 	        }
 	                
@@ -370,20 +411,36 @@ class TitulacionsController extends BaseController {
 	                    .$page.','.$sort.','.$direction.','.$currentClub);
 	                
 	        if ($request->isXmlHttpRequest()) {
-	             return $this->render('FecdasBundle:Titulacions:titulacionsfederatdades.html.twig',
+	            if ($tab == 'cmas') {
+	               return $this->render('FecdasBundle:Titulacions:titulacionsfederatdades.html.twig',
 	                    $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-	                        'metapersona' => $metapersona, 'total' => $total,
+	                        'metapersona' => $metapersona, 
+	                        'total' => $total,
+	                        'totalaltres' => $totalaltres,
 	                        'titulacions' => $titulacionsPaginated,
-	                        'altrestitulacions' => $metapersona->getAltresTitulacionsSortedByTitol(),
-	                        'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc'))
+	                        'altrestitulacions' => $altrestitulacionsPaginated,
+	                        'sortparams' => array('tab'=> $tab, 'sort' => $sort,'direction' => $direction)
 	                    )));
+	            } else {
+	                return $this->render('FecdasBundle:Titulacions:titulacionsfederataltres.html.twig',
+	                    $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
+	                        'metapersona' => $metapersona,
+	                        'total' => $total,
+	                        'totalaltres' => $totalaltres,
+	                        'titulacions' => $titulacionsPaginated,
+	                        'altrestitulacions' => $altrestitulacionsPaginated,
+	                        'sortparams' => array('tab'=> $tab, 'sort' => $sort,'direction' => $direction)
+	                    )));
+	            }
 	        }
 	        return $this->render('FecdasBundle:Titulacions:titulacionsfederat.html.twig',
 	                    $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-	                        'metapersona' => $metapersona, 'total' => $total,
+	                        'metapersona' => $metapersona, 
+	                        'total' => $total,
+	                        'totalaltres' => $totalaltres,
 	                        'titulacions' => $titulacionsPaginated,
-	                        'altrestitulacions' => $metapersona->getAltresTitulacionsSortedByTitol(),
-	                        'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc'))
+	                        'altrestitulacions' => $altrestitulacionsPaginated,
+	                        'sortparams' => array('tab'=> $tab, 'sort' => $sort,'direction' => $direction)
 	                    )));
 	                
 	    } catch (\Exception $e) {
@@ -402,10 +459,12 @@ class TitulacionsController extends BaseController {
 	                   
 	              $response = $this->render('FecdasBundle:Titulacions:titulacionsfederat.html.twig',
 	                        $this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-	                            'metapersona' => $metapersona, 'total' => $total,
+	                            'metapersona' => $metapersona, 
+	                            'total' => $total,
+	                            'totalaltres' => $totalaltres,
 	                            'titulacions' => $titulacionsPaginated, 
-	                            'altrestitulacions' => $metapersona->getAltresTitulacionsSortedByTitol(), 
-	                            'sortparams' => array('sort' => $sort,'direction' => ($direction=='asc'?'desc':'asc')))
+	                            'altrestitulacions' => $altrestitulacionsPaginated, 
+	                            'sortparams' => array('tab'=> $tab, 'sort' => $sort,'direction' => $direction))
 	              ));
 	         }
 	     }

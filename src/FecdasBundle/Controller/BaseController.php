@@ -553,7 +553,7 @@ class BaseController extends Controller {
 	protected function getCommonRenderArrayOptions($more = array()) {
 		$options = array( 	'role' => '', 'authenticated' => false, 'admin' => false, 
 							'roleclub' => false, 'roleinstructor' => false, 'rolefederat' => false,
-							'userclub' => '', 'currentclubnom' => '',
+							'userclub' => '', 'currentrolenom' => '',
 							'allowcomandes' => false, 'busseig' => false, 
 							'enquestausuari' => '', 'enquestausuaripendent' => '',
 							'cartItems'		=> 0 );
@@ -578,14 +578,15 @@ class BaseController extends Controller {
 				$this->addClubsActiusForm($formBuilder, $this->getCurrentClub(), 'currentclub');
 				
 				$formBuilder->add('currentrole', 'choice', array(			
-					'choices' => self::getRoles(true),				// Llista de rols sense clubs
-					'data' => $checkRole->getCurrentRole()			// Rol actual de l'usuari
+					'choices'  => self::getRoles(true),				// Llista de rols sense clubs
+					'data'     => $checkRole->getCurrentRole()		// Rol actual de l'usuari
 				));
 				
 			} else {
 				$formBuilder->add('currentrole', 'choice', array(			
-					'choices' => $checkRole->getUserRolesArray(),	// Llista de parelles rol - club
-					'data' => $checkRole->getUserRoleKey()			// Rol actual de l'usuari
+					'choices'  => $checkRole->getUserRolesArray(),	// Llista de parelles rol - club
+					'data'     => $checkRole->getUserRoleKey(),     // Rol actual de l'usuari
+				    'attr'     => array('readonly' => count($checkRole->getUserRolesArray()) <= 1)
 				));
 				
 				$userclub = $this->getCurrentClub();
@@ -593,7 +594,12 @@ class BaseController extends Controller {
 			}
 			
 			$options['roleform'] = $formBuilder->getForm()->createView();
-			$options['currentclubnom'] = $this->getCurrentClub()!=null?$this->getCurrentClub()->getNom():'';
+			if ($checkRole->isCurrentFederat() || $checkRole->isCurrentInstructor()) {
+			    $user = $this->getCurrentUser();
+			    $options['currentrolenom'] = $user!=null&&$user->getMetapersona()!=null?$user->getMetapersona()->getNomCognoms():'';
+			} else {
+			    $options['currentrolenom'] = $this->getCurrentClub()!=null?$this->getCurrentClub()->getNom():'';
+			}
 				
 			$cart = $this->getSessionCart();
 			$options['cartItems'] = count( $cart['productes'] );
@@ -714,6 +720,12 @@ class BaseController extends Controller {
 		return $checkRole->getCurrentClub();
 	}
 
+	protected function getCurrentUser() {
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    return $checkRole->getCurrentUser();
+	}
+	
 	protected function allowComandes() {
 		if ($this->isAuthenticated() != true) return false;
 		

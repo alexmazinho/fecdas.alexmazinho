@@ -128,6 +128,12 @@ class EntityMetaPersona {
         foreach ($this->persones as $persona) {
             if (!$persona->esBaixa()) $clubs[] = $persona->getClub();
         }
+        
+        foreach ($this->titulacions as $titulacio) {
+            $club = $titulacio->getCurs()->getClub();
+            if ($club != null && !in_array($club, $clubs)) $clubs[] = $club; 
+        }
+        
         return $clubs;
     }
 
@@ -197,14 +203,10 @@ class EntityMetaPersona {
 				$arr[] = $titulacio;
 			}
     	}
-
-    	usort($arr, function($a, $b) {
-    		if ($a === $b) {
-    			return 0;
-    		}
-    		return ($a->getDatasuperacio() > $b->getDatasuperacio())? -1:1;;
-    	});
-    	return $arr;
+    	
+    	EntityTitulacio::getTitulacionsSortedBy($arr, 'datasuperacio', 'desc');
+    	
+    	return $arr; 
     }
     
 	public function teTitulacions() {
@@ -216,13 +218,9 @@ class EntityMetaPersona {
 	    /* Ordenades per títol alfabèticament */
 	    $arr = $this->altrestitulacions->toArray();
 	    
-	    usort($arr, function($a, $b) {
-	        if ($a === $b) {
-	            return 0;
-	        }
-	        return ($a->getTitol() > $b->getTitol())? -1:1;;
-	    });
-	    return $arr;
+	    EntityTitol::getTitolsSortedBy($arr, 'titol', 'asc');
+	    
+	    return $arr; 
 	}
 	
 	public function getDocenciesSortedByDate($baixes = false)

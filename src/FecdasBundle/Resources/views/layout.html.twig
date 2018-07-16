@@ -35,8 +35,8 @@
 {% endblock %}
 
 {% block fecdas_notifications %}
-	{% if currentclubnom is defined %}
-		<span class="notifications-title">{{ currentclubnom }}</span>
+	{% if currentrolenom is defined %}
+		<span class="notifications-title">{{ currentrolenom }}</span>
 	{% endif %}
 	{% if app.environment != 'prod' %}
 		<span class="dev-environment">Entorn de proves</span>
@@ -347,8 +347,12 @@
 				});
 					
 			}
-			
+
 			if ($("#menu-user select#form_currentrole").length !== 0) {
+
+				var disableRoleSelect = ($("#menu-user select#form_currentrole").attr("readonly") === true || 
+				  						 $("#menu-user select#form_currentrole").attr("readonly") === "readonly");
+
 				$("#menu-user select#form_currentrole").select2({
 					minimumInputLength: 0,
 					minimumResultsForSearch: -1, 		// Disables search
@@ -364,6 +368,8 @@
 					}
 				});
 
+				if (disableRoleSelect) $("#menu-user select#form_currentrole").attr("disabled", true);
+				
 				$("#menu-user select#form_currentrole").change(function( e ) {
 					var url =  "{{ path('FecdasBundle_changerole') }}";
 					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";

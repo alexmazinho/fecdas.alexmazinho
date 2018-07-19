@@ -2112,7 +2112,8 @@ select#parte_renovar_tipus { width: 240px; }
 /*#tabs-persona .taula-historial img { display:none  }*/
 #tabs-persona .close img { display:none  }
 
-#tabs-persona  .taula-historial { 
+#tabs-persona  .taula-historial,
+#dades-federat .taula-historial { 
 	display:block; 
 	position: relative;
 	z-index: 3000;
@@ -2482,6 +2483,8 @@ input#formuserclub-randompassword { width: 150px; }
 #formpersona .row > div:first-child 
 { padding-left: 15px; }
 
+#formpersona .row > div.col-last-right
+{ padding-right: 15px; }
 	
 
 #formpersona-sexe {  padding-top: 8px; }
@@ -2966,7 +2969,8 @@ p.info-bold {
 	height: 100%;
 }
 
-#edicio-persona .image-upload {
+#edicio-persona .image-upload,
+#dades-federat .image-upload {
 	width: 100px; 
 	height: 124px;
 }

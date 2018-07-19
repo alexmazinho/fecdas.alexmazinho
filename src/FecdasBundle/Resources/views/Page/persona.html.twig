@@ -35,17 +35,17 @@
 				</div>
 			</div>
 			<div class="row">
-				<div id="formpersona-datanaixement" class="col-md-3  col-xs-3">
+				<div id="formpersona-datanaixement" class="col-md-4  col-xs-4">
 				  	<div class="form-group">
 				  		<div  class="input-group">
-					  		
+					  		<span class="input-group-addon"></span>
 							{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'sr-only'}}) }}
 							{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'Data de naixement' } }) }}
 							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 						</div>
 					</div>
 				</div>
-				<div id="formpersona-sexe" class="col-md-4  col-xs-4">
+				<div id="formpersona-sexe" class="col-md-offset-1 col-md-4 col-xs-offset-1 col-xs-4">
 			  		<label class="radio-inline">
 						{{ form_widget(formpersona.sexe[0]) }} Home
 					</label>
@@ -54,7 +54,7 @@
 					</label>
 				</div>
 				{% block formpersona_estranger %}
-				<div id="formpersona-estranger" class="col-md-offset-2 col-md-2 col-xs-offset-2 col-xs-2">
+				<div id="formpersona-estranger" class="col-md-offset-1 col-md-2 col-xs-offset-1 col-xs-2">
 				  	<div class="checkbox">
 				    	<label>
 				     		{{ form_widget(formpersona.estranger) }} Estranger? 

@@ -478,6 +478,7 @@ class TitulacionsController extends BaseController {
 	    
 	    
 	    $fotoPath = '';
+	    $certificatPath = '';
 	    $options = array();
 	    /* Get provincies, comarques, nacions*/
 	    $options['edit'] = false;
@@ -486,24 +487,35 @@ class TitulacionsController extends BaseController {
 	    $options['comarques'] = $this->getComarques();
 	    $options['nacions'] = $this->getNacions();
 	    
-	    $formpersona = $this->createForm(new FormPersona($options), $persona);
-	    
 	    $em = $this->getDoctrine()->getManager();
 	    try {
 	        if ($request->getMethod() == 'POST') {
+	            $formpersona = $this->createForm(new FormPersona($options), $persona);
+	            
+	            $p = $request->request->get('persona', null);
+	            
+	            if ($p['foto'] != '') $fotoPath = $p['foto'];
+	            if ($p['certificat'] != '') $certificatPath = $p['certificat'];
 	            
 	            $formpersona->handleRequest($request);
 	            
 	            if (!$formpersona->isValid())  throw new \Exception("Les dades no són vàlides: ".$formpersona->getErrors(true, true).". Contacta amb la Federació.");
 	                
-	            $this->validarDadesPersona($persona, true, $formpersona);
+	            $this->validarDadesPersona($persona, false, $formpersona);
+
+	            if ($persona->getMail() == null || $persona->getMail() == "") $persona->setMail($user->getUser());
+	            
+	            if (!$this->validateMailsContainsUser($persona->getMails(), $user->getUser())) {
+                    // Al mail mínim ha d'estar l'usuari d'accés
+	                $persona->setMail($user->getUser().';'.$persona->getMail());
+	            }
 
 	            // Fer els canvis a la resta de persones associades a la metapersona
 	            $foto = $formpersona->get('fotoupld')->getData();
 	            $this->gestionarFotoPersona($persona, $fotoPath, $foto);
 	            
-	            /*$certificat = $formpersona->get('certificatupld')->getData();
-	            $this->gestionarCertificatPersona($persona, $certificatPath, $certificat);*/
+	            $certificat = $formpersona->get('certificatupld')->getData();
+	            $this->gestionarCertificatPersona($persona, $certificatPath, $certificat);
 	            
 	            $em->flush();
 	            
@@ -518,6 +530,8 @@ class TitulacionsController extends BaseController {
 	        $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
 	        $this->logEntryAuth('DADES FEDERAT UPD KO', 'error: '.$e->getMessage(). '. Metapersona '. $metapersona->getDni().', persona '. $persona->getId());
 	    }
+	    
+	    $formpersona = $this->createForm(new FormPersona($options), $persona);
 	    
 	    return $this->render('FecdasBundle:Titulacions:dadesfederat.html.twig',
 	        $this->getCommonRenderArrayOptions(array('formpersona' => $formpersona->createView(), 'persona' => $persona) ) 

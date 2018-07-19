@@ -328,7 +328,7 @@ class PageController extends BaseController {
 				if (isset($row['comarca']) and $row['comarca'] != null and $row['comarca'] != "") $persona->setAddrcomarca(mb_convert_case($row['comarca'], MB_CASE_TITLE, "utf-8"));
 
 				$estranger = mb_strtoupper($row['estranger'], "utf-8") == 'S';
-				$this->validarDadesPersona($persona, $estranger);
+				$this->validarDadesPersona($persona, !$estranger);
 			
 				/* Creació i validació de la llicència */
 				$llicencia = new EntityLlicencia($this->getCurrentDate());
@@ -1239,7 +1239,7 @@ class PageController extends BaseController {
 						
 						$estranger = ( isset($p['estranger']) && $p['estranger'] == 1 )?true:false;
 						
-						$this->validarDadesPersona($persona, $estranger, $formpersona);
+						$this->validarDadesPersona($persona, !$estranger, $formpersona);
 
 						$foto = $formpersona->get('fotoupld')->getData();
 						$certificat = $formpersona->get('certificatupld')->getData();
@@ -1342,87 +1342,6 @@ class PageController extends BaseController {
 
 		return $this->render('FecdasBundle:Page:persona.html.twig',
 					array('formpersona' => $formpersona->createView(), 'persona' => $persona, 'admin' => $this->isCurrentAdmin()));
-	}
-	
-	private function validarDadesPersona($persona, $estranger = false, $form = null) {
-		if ($persona == null || $persona->getClub() == null) throw new \Exception("Les dades no són correctes");
-		
-		$club = $persona->getClub();
-		
-		if ($persona->getNom() == null || $persona->getNom() == "") {
-				//if ($form != null) $form->get('nom')->addError(new FormError('Falta el nom')); 
-				throw new \Exception("Cal indicar el nom");
-		}
-
-		if ($persona->getCognoms() == null || $persona->getCognoms() == "") {
-				//if ($form != null) $form->get('cognoms')->addError(new FormError('Falten els cognoms')); 
-				throw new \Exception("Cal indicar els cognoms");
-		}
-		
-		if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
-	
-		if ($persona->getSexe() != BaseController::SEXE_HOME && $persona->getSexe() != BaseController::SEXE_DONA)
-				throw new \Exception('Manca indicar correctament el sexe de la persona ');
-
-		$currentMin = $this->getCurrentDate();
-		$currentMin->sub(new \DateInterval('P'.BaseController::EDAT_MINIMA.'Y')); // -4 anys 
-				
-		if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "") throw new \Exception('Cal indicar la data de naixement'); 
-		
-		if ($persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte'); 
-
-		
-		if ($persona->getTelefon1() > BaseController::MAX_TELEFON) throw new \Exception("El número de telèfon no és correcte"); 
-		if ($persona->getTelefon2() > BaseController::MAX_TELEFON) throw new \Exception("El número de mòbil no és correcte");
-		
-		/*if ($persona->getId() == 0 &&
-			($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
-			($persona->getTelefon2() == null || $persona->getTelefon2() == 0 || $persona->getTelefon2() == "") &&
-			($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar alguna dada de contacte");*/
-			
-		/*if ($persona->getId() == 0 && 
-            ($persona->getMail() == null || $persona->getMail() == "")) throw new \Exception("Cal indicar l'adreça de correu electrònica");*/	
-		
-		if ($persona->getMail() == "") $persona->setMail(null);
-        
-        if ($persona->getMail() != null) {
-            $strMails = $this->validateMails($persona->getMails());
-            $persona->setMail($strMails);
-		}
-		
-		$em = $this->getDoctrine()->getManager();							
-		
-		$nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($persona->getAddrnacionalitat());
-		
-		if ($nacio == null) $persona->setAddrnacionalitat('ESP');
-
-		
-		if ($estranger == false) {
-			/* Només validar DNI nacionalitat espanyola */
-			$dnivalidar = $persona->getDni();
-			/* Tractament fills sense dni, prefix M o P + el dni del progenitor */
-			if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
-						
-			if (BaseController::esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte ');
-		}
-		
-		/* Check persona amb dni no repetida al mateix club */
-		if ($persona->getId() == 0) {
-			
-			$metapersona = $persona->getMetapersona();
-			
-			$personaClub = $metapersona->getPersonaClub($club);
-			
-			if ($personaClub != null && $personaClub->getId() > 0) throw new \Exception("Existeix una altra persona al club amb aquest DNI");
-		}		
-		
-		// Canviar format Nom i COGNOMS
-		// Specials chars ñ, à, etc... 
-		$persona->setCognoms(mb_strtoupper($persona->getCognoms(), "utf-8"));
-		$persona->setNom(mb_convert_case($persona->getNom(), MB_CASE_TITLE, "utf-8"));
-					
-		$persona->setDatamodificacio($this->getCurrentDate());
-		
 	}
 	
 	private function actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent = array()) {

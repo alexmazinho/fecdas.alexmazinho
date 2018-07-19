@@ -321,6 +321,9 @@ html>body #left-menu a:hover {
     { line-height: 1.2em; font-size: 28px; margin-bottom: 20px; margin-top: 10px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }    
 #main-col h3 
     { line-height: 1.1em; font-size: 18px; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
+#main-col h4 
+    { font-size: 1.1em; line-height: 2em; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
+
 #main-col header { line-height: 1.5em; margin-bottom: 20px;  /*width:770px*/ }
 #main-col header .nav-stacked { max-width: 300px; }
 #main-col header h1 a {

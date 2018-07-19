@@ -5,6 +5,8 @@ namespace FecdasBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use FecdasBundle\Classes\TcpdfBridge;
+use FecdasBundle\Entity\EntityTitulacio;
+use FecdasBundle\Entity\EntityLlicencia;
 
 include_once (__DIR__.'/../../../vendor/tecnickcom/tcpdf/include/tcpdf_static.php');
 
@@ -564,41 +566,10 @@ class PDFController extends BaseController {
 	        
 	        $w = array(8, 41, 23, 23, 25, 60); // Amplades 
 	        
-	        $this->llicenciesHeader($pdf, $w);
-	        	        
-	        $pdf->SetFillColor(255, 255, 255); //Blanc
-	        
-	        $pdf->SetFont('dejavusans', '', 8, '', true);
-	        
-	        $row = 1;
-	        foreach ($llicencies as $llicencia) {
-	            $num_pages = $pdf->getNumPages();
-	            $pdf->startTransaction();
+	        $w = array(array(8, 'C'), array(41, 'C'), array(23, 'C'), array(23, 'C'),
+	                   array(25, 'C'), array(60, 'L')); // Amplades i Alineacions
 	            
-	            if ($llicencia->getParte()->getPendent()) $pdf->SetTextColor(0, 255, 255); // Red
-	            else $pdf->SetTextColor(0, 0, 0); // Negre
-	            
-	            $this->llicenciesRow($pdf, $w, $llicencia, $row);
-	            
-	            if($num_pages < $pdf->getNumPages()) {
-	                //Undo adding the row.
-	                $pdf->rollbackTransaction(true);
-	                
-	                $pdf->AddPage();
-	                
-	                $this->llicenciesHeader($pdf, $w);
-	                
-	                $pdf->SetFillColor(255, 255, 255); //Blanc
-	                $pdf->SetFont('dejavusans', '', 8, '', true);
-	                
-	                $this->parteRow($pdf, $w, $llicencia, $row);
-	                
-	            } else {
-	                //Otherwise we are fine with this row, discard undo history.
-	                $pdf->commitTransaction();
-	            }
-	            $row++;
-	        }
+	        $this->printTableFederat($pdf, $w, EntityLlicencia::csvHeader(), $llicencies);
 	        
 	        $pdf->Ln();
 
@@ -622,29 +593,134 @@ class PDFController extends BaseController {
         return $response;
 	}
 	
-	private function llicenciesHeader($pdf, $w) {
+	public function titulacionsfederattopdfAction($titulacions = array(), $altrestitulacions = array(), $metapersona = null) {
+	    
+	    try {
+	        if ($metapersona == null) throw new \Exception("No s'han trobat les dades personals per aquest usuari, poseu-vos en contacte amb la Federació");
+	        
+	        // Configuració 	/vendor/tcpdf/config/tcpdf_config.php
+	        $pdf = new TcpdfBridge('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	        
+	        $pdf->init(array('author' => 'FECDAS', 'title' => 'Llistat de titulacions'),
+	            true, $metapersona->getNomCognoms());
+	        
+	        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+	        
+	        // set color for background
+	        $pdf->SetFillColor(255, 255, 255); //Blanc
+	        // set color for text
+	        $pdf->SetTextColor(0, 0, 0); // Negre
+	        
+	        $pdf->AddPage();
+	        
+	        $pdf->Ln(10);
+	        
+	        $pdf->SetFont('dejavusans', '', 16, '', true);
+	        $text = '<b>Historial de cursos. ' . $metapersona->getNomCognoms() . '</b>';
+	        $pdf->writeHTMLCell(0, 0, $pdf->GetX(), $pdf->GetY(), $text, '', 1, 1, true, 'L', true);
+	        
+	        $pdf->Ln();
+	        
+	        $pdf->SetFont('dejavusans', 'BI', 14, '', true);
+	        $text = 'Titulacions CMAS';
+	        $pdf->writeHTMLCell(0, 0, $pdf->GetX(), $pdf->GetY(), $text, '', 1, 1, true, 'L', true);
+	        
+	        $pdf->Ln();
+	        
+	        $w = array(array(8, 'C'), array(18, 'C'), array(64, 'L'), '',
+	                   array(50, 'L'), array(54, 'L'), array(28, 'C'), array(45, 'L')); // Amplades i Alineacions
+	        
+	        $this->printTableFederat($pdf, $w, EntityTitulacio::csvHeader(), $titulacions);
+
+	        if (count($altrestitulacions) > 0) {
+	        
+    	        $pdf->Ln(20);
+    	        
+    	        $pdf->SetFont('dejavusans', 'BI', 14, '', true);
+    	        $text = 'Altres títols';
+    	        $pdf->writeHTMLCell(0, 0, $pdf->GetX(), $pdf->GetY(), $text, '', 1, 1, true, 'L', true);
+    	        
+    	        $pdf->Ln();
+    	        
+    	        $w = array(array(8, 'C'), array(30, 'C'), array(100, 'L'), array(50, 'L'), '', '', '', ''); // Amplades i Alineacions
+    	            
+    	        $this->printTableFederat($pdf, $w, EntityTitulacio::csvHeader(), $altrestitulacions );
+
+	        }
+	        $pdf->Ln();
+	        
+	    } catch (\Exception $e) {
+	        
+	        // Ko
+	        $this->logEntryAuth('TITULACIONS FEDERAT PDF ERROR', 'count titulacions '.count($titulacions).', '.
+	                                                             'count altres titulacions '.count($altrestitulacions).', '.
+	                                                             'metapersona: '.($metapersona==null?"null":$metapersona->getId()));
+	        
+	        $this->get('session')->getFlashBag()->clear();
+	        $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
+	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    }
+	    
+	    // reset pointer to the last page
+	    $pdf->lastPage();
+	    
+	    // Close and output PDF document
+	    $response = new Response($pdf->Output("historial_cursos_".$metapersona->getDni()."_".date("Ymd"). ".pdf", "D"));
+	    $response->headers->set('Content-Type', 'application/pdf');
+	    return $response;
+	}
+	
+	private function printTableFederat($pdf, $w = array(), $header = array(), $data = array()) {
+	    
 	    $pdf->SetFont('dejavusans', 'B', 9, '', true);
 	    $pdf->SetFillColor(221, 221, 221); //Gris
-	    $pdf->Cell($w[0], 7, '#', 1, 0, 'C', 1);
-	    $pdf->Cell($w[1], 7, 'CLUB', 1, 0, 'C', 1);
-	    $pdf->Cell($w[2], 7, 'DES DE', 1, 0, 'C', 1);  // Ample, alçada, text, border, ln, align, fill,
-	    $pdf->Cell($w[3], 7, 'FINS', 1, 0, 'C', 1);
-	    $pdf->Cell($w[4], 7, 'CATEGORIA', 1, 0, 'C', 1);
-	    $pdf->Cell($w[5], 7, 'DESCRIPCIO', 1, 0, 'L', 1, '', 1);
-	    $pdf->Ln();
-	}
-	
-	private function llicenciesRow($pdf, $w, $llicencia, $row) {
+	    $this->tableFederatRow($header, $pdf, $w, 7, true);  // Header
 	    
-	    $pdf->Cell($w[0], 6, $row, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-	    $pdf->Cell($w[1], 6, $llicencia->getParte()->getClub()->getNom(), 'LRB', 0, 'C', 0, '', 1);
-	    $pdf->Cell($w[2], 6, $llicencia->getParte()->getDataalta()->format('d/m/Y'), 'LRB', 0, 'C', 0, '', 1);
-	    $pdf->Cell($w[3], 6, $llicencia->getDatacaducitat()->format('d/m/Y'), 'LRB', 0, 'C', 0, '', 1);
-	    $pdf->Cell($w[4], 6, $llicencia->getCategoria()->getCategoria() , 'LRB', 0, 'C', 0, '', 1);
-	    $pdf->Cell($w[5], 6, $llicencia->getCategoria()->getDescripcio(), 'LRB', 0, 'L', 0, '', 1);
+	    
+	    $pdf->SetFillColor(255, 255, 255); //Blanc
+	    $pdf->SetFont('dejavusans', '', 8, '', true);
+	    $row = 1;
+	    foreach ($data as $item) {
+	        $num_pages = $pdf->getNumPages();
+	        $pdf->startTransaction();
+	        
+	        $this->tableFederatRow($item->csvRow($row), $pdf, $w, 6);  // Data row
+	        
+	        if($num_pages < $pdf->getNumPages()) {
+	            //Undo adding the row.
+	            $pdf->rollbackTransaction(true);
+	            
+	            $pdf->AddPage();
+	            
+	            $pdf->SetFont('dejavusans', 'B', 9, '', true);
+	            $pdf->SetFillColor(221, 221, 221); //Gris
+	            $this->tableFederatRow($header, $pdf, $w, 7, true);  // Header
+	            
+	            $pdf->SetFillColor(255, 255, 255); //Blanc
+	            $pdf->SetFont('dejavusans', '', 8, '', true);
+	            $this->tableFederatRow($item->csvRow($row), $pdf, $w, 6);  // Data row
+	            
+	        } else {
+	            //Otherwise we are fine with this row, discard undo history.
+	            $pdf->commitTransaction();
+	        }
+	        $row++;
+	    }
+	    
 	    $pdf->Ln();
 	}
 	
+	private function tableFederatRow($row, $pdf, $widths, $h, $ucase = false) {
+	    for ($i = 0; $i < count($row); $i++) {
+	        if (is_array($widths[$i])) {
+    	        $w = isset($widths[$i][0])?$widths[$i][0]:10;
+    	        $a = isset($widths[$i][1])?$widths[$i][1]:'C';
+    	        $pdf->Cell($w, $h, $ucase?mb_strtoupper($row[$i],'UTF-8'):$row[$i], 1, 0, $a, 1, '', 1); // Ample, alçada, text, border, ln, align, fill,
+    	        //$pdf->Cell($w, $h, $ucase?mb_strtoupper($row[$i],'UTF-8'):$row[$i], 1, 0, $a, 1); // sense ajustar contingut
+	        }
+	    }
+	    $pdf->Ln();
+	}
 	
 	public function licensetopdfAction(Request $request) {
 	

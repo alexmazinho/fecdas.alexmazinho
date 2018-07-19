@@ -207,7 +207,7 @@ class EntityLlicencia {
 	}
 	
 	public static function csvHeader() {
-	    return array( 'num', 'club', 'des de', 'fins', 'categoria', 'descripció' );
+	    return array( '#', 'Club', 'Des de', 'Fins', 'Categoria', 'Descripció' );
 	}
 	
 	/**

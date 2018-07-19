@@ -3360,6 +3360,68 @@ class BaseController extends Controller {
         return $cart;
     }
 
+    protected function gestionarFotoPersona($persona, $fotoPath, $foto) {
+        
+        if ($foto == null) {
+            if ($fotoPath == '' && $persona->getFoto() != null) {
+                // Desar la foto a arxius de la persona i esborrar foto
+                $persona->addArxius($persona->getFoto());
+                $persona->setFoto(null);
+            }
+        } else {
+            
+            if (!($foto instanceof UploadedFile) or !is_object($foto))  throw new \Exception('No s\'ha pogut carregar la foto (1)');
+            
+            if (!$foto->isValid()) throw new \Exception('No s\'ha pogut carregar la foto (2-'.$foto->isValid().')'); // Codi d'error
+            
+            $em = $this->getDoctrine()->getManager();
+            
+            $uploaded = $this->uploadAndScale($foto, $persona->getDni(), 300, 200);
+            
+            $foto = new EntityArxiu($uploaded['path'], true);
+            $foto->setPath($uploaded['name']);
+            $foto->setTitol("Foto federat " . $persona->getNomCognoms());
+            $em->persist($foto);
+            
+            if ($persona->getFoto() != null) {
+                // Desar la foto a arxius de la persona
+                $persona->addArxius($persona->getFoto());
+            }
+            $persona->setFoto($foto);
+        }
+    }
+    
+    protected function gestionarCertificatPersona($persona, $certificatPath, $certificat) {
+        if ($certificat == null) {
+            if ($certificatPath == '' && $persona->getCertificat() != null) {
+                // Desar el certificat a arxius de la persona i esborrar certificat
+                $persona->addArxius($persona->getCertificat());
+                $persona->setCertificat(null);
+            }
+        } else {
+            
+            if (!($certificat instanceof UploadedFile) or !is_object($certificat))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
+            
+            if (!$certificat->isValid()) throw new \Exception('No s\'ha pogut carregar l\'arxiu (2-'.$certificat->isValid().')'); // Codi d'error
+            
+            $em = $this->getDoctrine()->getManager();
+            
+            $nameAjustat = $persona->getDni()."_".substr($certificat->getClientOriginalName(), -20);
+            $nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat);
+            
+            $certificat = new EntityArxiu($certificat, true);
+            $certificat->upload($nameAjustat);
+            $certificat->setTitol("Certificat mèdic federat " . $persona->getNomCognoms());
+            $em->persist($certificat);
+            
+            if ($persona->getCertificat() != null) {
+                // Desar el certificat a arxius de la persona
+                $persona->addArxius($persona->getCertificat());
+            }
+            $persona->setCertificat($certificat);
+        }
+    }
+    
 	protected function gestionarArxiusPersona($persona, $fotoPath, $certificatPath, $foto, $certificat) {
 
 		if ($foto == null) {
@@ -3642,6 +3704,26 @@ class BaseController extends Controller {
 		return $registre;
 	}
 
+	protected function checkAccessNoClub() {
+	    if (!$this->isAuthenticated()) throw new \Exception('Cal indicar les credencials per accedir a l\'Aplicació');
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    if (!$checkRole->isCurrentFederat() &&
+	        !$checkRole->isCurrentInstructor())
+	        throw new \Exception('El rol actual de l\'usuari no disposa de permisos per realitzar aquesta acció');
+	        
+	    $user = $checkRole->getCurrentUser();
+	        
+	    if ($user == null) throw new \Exception($user->getUser().": "."No s'ha trobat l'usuari, poseu-vos en contacte amb la Federació");
+	        
+	    if ($user->getMetapersona() == null) throw new \Exception($user->getUser().": "."No s'han trobat les dades personals de l'usuari, poseu-vos en contacte amb la Federació");
+	        
+	    if ($user->getMetapersona()->getUltimesDadesPersonals() == null) throw new \Exception($user->getUser().": "."No s'han trobat les dades personals corresponents a l'usuari, poseu-vos en contacte amb la Federació");
+	    
+	    return $user;
+	}
+	
 	protected function exportCSV($request, $header, $data, $filename) {
 
 	    //$csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//TRANSLIT',implode('";"',$header)).'"'.CRLF;

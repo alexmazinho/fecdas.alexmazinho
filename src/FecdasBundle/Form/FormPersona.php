@@ -55,7 +55,7 @@ class FormPersona extends AbstractType {
 		$builder->add('nom', 'text');
 		$builder->add('cognoms', 'text');
 		$builder->add('dni', 'text', array(
-				//'attr'			=>	array('readonly' => true)
+		    'attr'			=>	array('readonly' => isset($this->options['editdni']) && $this->options['editdni'] == false)
 			));
 		
 		$builder->add('datanaixement', 'date',	array(

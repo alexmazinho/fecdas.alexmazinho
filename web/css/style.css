@@ -2058,7 +2058,7 @@ select#parte_renovar_tipus { width: 240px; }
     width: 35px;
 }
 
-.historial-titol { color: #2281CF; font-size: 1.1em; line-height: 2em; padding: 5px 20px 5px 0; }
+.historial-titol { color: #2281CF; /*color: #2281CF;*/ font-size: 1.1em; line-height: 2em; padding: 5px 20px 5px 0; }
 .historial-titol span { font-weight: bold; }
 
 #historial-overlay .historial-titol { padding: 5px 20px; }
@@ -2134,7 +2134,7 @@ select#parte_renovar_tipus { width: 240px; }
 #tabs-persona  .taula-historial .historial-camp { font-size: 0.9em }
 
 
-#edicio-persona.finestra-overlay { width: 820px; }
+#edicio-persona.finestra-overlay { width: 860px; }
 
 
 /********************************************* Llista persones Fi ****************************************************/
@@ -2470,18 +2470,29 @@ input#formuserclub-randompassword { width: 150px; }
 	padding-left:10px;
 }
 
-#formpersona-nom, #formpersona-cognoms, #formpersona-dni,
+/*#formpersona-nom, #formpersona-cognoms, #formpersona-dni,
 #formpersona-estranger, #formpersona-datanaixement,
 #formpersona-tlf1, #formpersona-tlf2, #formpersona-mail,
 #formpersona-addradreca, #formpersona-addrpob, #formpersona-addrcp, 
-#formpersona-addrprovincia, #formpersona-addrcomarca, #formpersona-addrnacionalitat  { padding-left: 5px; padding-right: 5px; }
+#formpersona-addrprovincia, #formpersona-addrcomarca, #formpersona-addrnacionalitat*/
+
+#formpersona .row > div  
+{ padding-left: 5px; padding-right: 5px; }
+
+#formpersona .row > div:first-child 
+{ padding-left: 15px; }
+
+	
 
 #formpersona-sexe {  padding-top: 8px; }
 
 #adreca-header { display: block; width:100%; position: relative; margin-bottom: 7px; }
 
-#sms-mailpersona { float:right; color: #555555; font-style: italic; font-size: 12px; /*position:absolute; right: 20px; top: 0;*/}
-#sms-mailpersona strong { color: #1240a0; }
+.input-subtext { /*float:right; */ color: #555555; font-style: italic; font-size: 12px; position:absolute; right: 20px; bottom: -20px;}
+
+#sms-mailpersona { float:right; color: #555555; font-style: italic; font-size: 12px; right: 20px;}
+
+.input-subtext strong, #sms-mailpersona strong { color: #1240a0; }
 
 .ui-autocomplete { height: 200px; overflow-y: scroll; overflow-x: hidden;}
 

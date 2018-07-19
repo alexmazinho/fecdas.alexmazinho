@@ -1244,8 +1244,9 @@ class PageController extends BaseController {
 						$foto = $formpersona->get('fotoupld')->getData();
 						$certificat = $formpersona->get('certificatupld')->getData();
 						
-						$this->gestionarArxiusPersona($persona, $fotoPath, $certificatPath, $foto, $certificat);
-
+						$this->gestionarFotoPersona($persona, $fotoPath, $foto);
+						$this->gestionarCertificatPersona($persona, $certificatPath, $certificat);
+						
 						$this->actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent);
 
 						if ($persona->getId() == 0) {

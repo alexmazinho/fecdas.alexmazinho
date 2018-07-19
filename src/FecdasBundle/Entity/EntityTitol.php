@@ -82,7 +82,26 @@ class EntityTitol {
 		return $this->getId() . "-" . $this->getCodi() . " " . $this->getTitol();
 	}
 
-
+	/**
+	 * Get persona info. as csv data
+	 *
+	 * @return string
+	 */
+	public function csvRow($i = 0)
+	{
+	    return array(
+	        $i,
+	        $this->codi,
+	        $this->titol,
+	        $this->organisme,
+	        '',
+	        '',
+	        '',
+	        ''
+	    );
+	}
+	
+	
 	/**
      * Es CMAS
      *

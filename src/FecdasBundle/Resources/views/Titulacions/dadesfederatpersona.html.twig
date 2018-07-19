@@ -1,0 +1,16 @@
+{# src/Fecdas/PartesBundle/Resources/views/Titulacions/dadesfederatpersona.html.twig #}
+{% extends 'FecdasBundle:Page:persona.html.twig' %}
+
+{% block formpersona_start %}
+ {{ form_start(formpersona, {'action': path('FecdasBundle_dadesfederat'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formpersona'}}) }}
+{% endblock %}
+
+{% block formpersona_estranger %} {% endblock %}
+
+{% block formpersona_altres %}
+
+    {% block formpersona_arxius %} {{ parent() }} {% endblock %}
+
+{% endblock %}
+
+{% block formpersona_buttons %} {% endblock %}

@@ -73,6 +73,29 @@ class EntityTitulacio {
 		return $this->getId() . "-" . $this->getNum();
 	}
 	
+	public static function csvHeader() {
+	    return array( '#', 'Codi', 'Títol', 'Organisme', 'Club', 'Curs', 'Superat', 'Núm. carnet' );
+	}
+	
+	/**
+	 * Get persona info. as csv data
+	 *
+	 * @return string
+	 */
+	public function csvRow($i = 0)
+	{
+	    return array(
+	        $i,
+	        $this->getTitol()->getCodi(),
+	        $this->getTitol()->getTitol(),
+	        $this->getTitol()->getOrganisme(),
+	        $this->curs->getClubInfo(),
+	        $this->curs->getNumActa().' ('.$this->curs->getDatadesde()->format('d/m/y').' - '.$this->curs->getDatafins()->format('d/m/y').')',
+	        $this->datasuperacio->format("d/m/Y"),
+	        $this->num
+	    );
+	}
+	
 	/**
 	 * Retorna titol del curs
 	 * @return string

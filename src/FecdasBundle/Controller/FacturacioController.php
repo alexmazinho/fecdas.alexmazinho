@@ -2041,6 +2041,8 @@ class FacturacioController extends BaseController {
 		$cart = $this->getSessionCart();
 		$formtransport = $this->formulariTransport($cart);		
 			
+		$producteTransport = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+		
 		return $this->render('FecdasBundle:Facturacio:graellaproductes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'title' => BaseController::getTipusProducte($tipus),
@@ -2048,7 +2050,8 @@ class FacturacioController extends BaseController {
 						'tipus' => $tipus,
 						'compte' => $compte,
 						'sortparams' => array('sort' => $sort,'direction' => $direction),
-						'formtransport' => $formtransport
+						'formtransport' => $formtransport,
+				        'transport' => $producteTransport!=null?$producteTransport->getCurrentPreu():0
 						)));
 	}
 	
@@ -2103,14 +2106,15 @@ class FacturacioController extends BaseController {
 				
 				if ($transport == true) {
 					$pesComanda = $this->getPesComandaCart($cart);
-					//$tarifa = BaseController::getTarifaTransport($pesComanda);
 					
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
 					
 					if ($producte == null) throw new \Exception("No es pot afegir el transport a la comanda, poseu-vos en contacte amb la Federació"); 
+					$unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
 					
 					$anotacions = $producte->getDescripcio().' '.$pesComanda.'g';	
-					$this->addComandaDetall($comanda, $producte, 1, 0, $anotacions);		
+					$detall = $this->addComandaDetall($comanda, $producte, 1, 0, $anotacions);
+					$detall->setPreuunitat($producte->getCurrentPreu() * $unitats);
 				}
 				
 				if (count($cart['productes']) == 0) $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
@@ -2247,15 +2251,6 @@ class FacturacioController extends BaseController {
 				
 				if ($producte->getTransport() == true && $unitats > 0) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes(); 
 				
-				/*
-				if ($producte->getTransport() == true) {
-					if ($producte->getCanvitarifa() != null && is_numeric($producte->getCanvitarifa()) && $producte->getCanvitarifa() <= $unitats ) {
-						$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT2;
-					} else {
-						$cart['productes'][$idProducte]['tarifa'] = BaseController::TARIFA_TRANSPORT1;
-					}
-				}*/
-							
 				if ($cart['productes'][$idProducte]['unitats'] == 0 ||
 					($cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
 					// Afegir unitats < 0
@@ -2321,8 +2316,11 @@ class FacturacioController extends BaseController {
 		// Revisar si cal transport
 		$pesComanda = $this->getPesComandaCart($cart);
 		$total = $this->getTotalComandaCart($cart);
-		$tarifa = BaseController::getTarifaTransport($pesComanda);
-
+		
+		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+		$unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
+		$tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
+		
 		$cart['tarifatransport'] = $tarifa;
 				
 		$formBuilder = $this->createFormBuilder()

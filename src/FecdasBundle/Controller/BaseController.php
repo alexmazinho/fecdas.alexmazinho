@@ -76,9 +76,6 @@ class BaseController extends Controller {
 	const TARIFA_MINPES2 = 5000; // 5 Kg
 	const PRODUCTE_CORREUS = 7590004;	// Abans juliol 2016 => 6290900 / 6290004
 	const COMPTE_COMPTA_IVA = 4770000;	 
-	const TARIFA_TRANSPORT1 = 6.00; // Tarifa <= 5 Kg (6.00 €)
-	const TARIFA_TRANSPORT2 = 12.00; // Tarifa > 5 Kg i < 10 Kg (12.00€)
-	const TARIFA_TRANSPORT3 = 18.00; // Tarifa > 10 Kg (18.00€)
 	
 	const PREFIX_ASSENTAMENTS = 'APU';  // Prefix del fitxer
 	// Fitxer domiciliacions
@@ -3025,7 +3022,6 @@ class BaseController extends Controller {
 		$detallBaixa = clone $detall;
 		$detallBaixa->setUnitats($unitats * (-1));
 		$detallBaixa->setUnitatsBaixa(0);
-		
 		$detall->setUnitats($restants);
 		$detall->setUnitatsBaixa($detall->getUnitatsbaixa() + $unitats);
 		$detall->setDatamodificacio($this->getCurrentDate());
@@ -3063,7 +3059,7 @@ class BaseController extends Controller {
 			
 			$import += $detall->getTotal(true);
 			$iva += $detall->getIva(true);
-			
+
 			$concepte .= $unitats.'x'.$producte->getDescripcio().' ';
 			
 			//$detallsFactura[$producte->getCodi()] = $detall->getDetallsArray(true);
@@ -3327,7 +3323,9 @@ class BaseController extends Controller {
 					$anotacioModificada = $detall->getUnitats().'x'.($producte != null?$producte->getDescripcio():'');
 					$detall->setAnotacions($anotacioModificada);
 					
-					$detallsPerAnulacio[] = new EntityComandaDetall($comanda, $producte, $unitatsDiferencia*(-1), $detall->getDescomptedetall(), $anotacioModificada);
+					$detallAnulat = new EntityComandaDetall($comanda, $producte, $unitatsDiferencia*(-1), $detall->getDescomptedetall(), $anotacioModificada);
+					$detallAnulat->setPreuunitat($detall->getPreuunitat());
+					$detallsPerAnulacio[] = $detallAnulat;
 				}
 			}
 			
@@ -3409,15 +3407,15 @@ class BaseController extends Controller {
 		return $duplicat;
 	}
 	
-	protected function getTarifaTransport($pes)
+    protected function getUnitatsTarifaTransport($pes)
     {
-		if (!is_numeric($pes)) return 0;
-		if ($pes <= 0) return 0;
-
-    	if ($pes > self::TARIFA_MINPES3) return self::TARIFA_TRANSPORT3;
-		if ($pes > self::TARIFA_MINPES2) return self::TARIFA_TRANSPORT2;
-		
-        return self::TARIFA_TRANSPORT1;
+        if (!is_numeric($pes)) return 1;
+        if ($pes <= 0) return 1;
+        
+        if ($pes > self::TARIFA_MINPES3) return 3;
+        if ($pes > self::TARIFA_MINPES2) return 2;
+        
+        return 1;
     }
 
 	protected function getPesComandaCart($cart)
@@ -3983,8 +3981,6 @@ class BaseController extends Controller {
 		$lletra = BaseController::getLletraDNI ($dnisenselletra); 		
 	
 		if (strtoupper($cadena[strlen($cadena) - 1]) != $lletra) {
-		    error_log($cadena.' '.strtoupper($cadena[strlen($cadena) - 1]). ' '.$lletra  );
-		    
 		    return false;
 		}
 			

@@ -290,6 +290,17 @@ class SecurityController extends BaseController
             array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
     
+    public function politicacookiesAction(Request $request)
+    {
+        return $this->render('FecdasBundle:Security:politicacookies.html.twig',
+            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
+    
+    public function politicaprivacitatAction(Request $request)
+    {
+        return $this->render('FecdasBundle:Security:politicaprivacitat.html.twig',
+            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
     
     public function registreAction(Request $request)
     {

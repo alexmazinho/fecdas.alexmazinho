@@ -22,8 +22,10 @@
     <link href="{{ asset('css/jquery-ui/jquery-ui.css') }}" type="text/css" rel="stylesheet" />
     
     <link href="{{ asset('css/jquery.datetimepicker.css?v=2.5.14') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/cookieBar.css?v=0.0.3') }}" type="text/css" rel="stylesheet" />
     
-    <link href="{{ asset('js/select2-3.4.5/select2.css') }}" type="text/css" rel="stylesheet" />
+    <!-- <link href="{# asset('js/select2-3.4.5/select2.css') #}" type="text/css" rel="stylesheet" /> -->
+    <link href="{{ asset('css/select2.css?v=3.5.1') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/style.css?v=3.05') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css?v=3.01') }}" type="text/css" rel="stylesheet" />
 {% endblock %}
@@ -306,6 +308,8 @@
 	<script src="{{ asset('js/php-date-formatter.js?v=1.3.4') }}" type="text/javascript"></script>
 	<!-- Datetime plugin's. http://xdsoft.net/jqplugins/datetimepicker/ -->
 	<script src="{{ asset('js/jquery.datetimepicker.js?v=2.5.14') }}" type="text/javascript"></script>
+	<!-- Cookie Bar lightweight jQuery plugin. https://github.com/carlwoodhouse/jquery.cookieBar -->
+	<script src="{{ asset('js/jquery.cookieBar.js?v=0.0.3') }}" type="text/javascript"></script>
 
 	<script src="{{ asset('js/my-jquery-script.js?v=3.07') }}" type="text/javascript"></script>	
     <script src="{{ asset('js/my-jquery-script-admin.js?v=3.00') }}" type="text/javascript"></script>
@@ -332,7 +336,14 @@
 			showEnquestaClick();
 	
 			mainMenuClick();
-	
+
+			$('.cookie-message').cookieBar({ closeButton : '.cookie-close-button', hideOnClose: false });
+			$('.cookie-message').on('cookieBar-close', function(e) {
+				e.preventDefault();
+			    $(this).slideUp();
+			});
+
+			
 			if ($("#menu-user select#form_currentclub").length !== 0) {
 				$("#menu-user select#form_currentclub").select2({
 					minimumInputLength: 2,
@@ -379,6 +390,8 @@
 				});
 			}
 
+
+			
 		});
 	
 		$('#menu-user')

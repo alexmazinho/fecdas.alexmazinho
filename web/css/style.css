@@ -474,6 +474,9 @@ a.link-page:hover { text-decoration: underline; }
 
 a.link-italic { font-style: italic; }
 
+a.link.footer-link { padding: 0 10px; }
+
+
 #left-menu { display:none; }
 
 .col-last-right { text-align: right; }
@@ -1394,6 +1397,10 @@ tr:first-child > .data-detall-cell  {
 	color: #fff;
 	border-radius: 5px;*/
 	border-top: 1px dotted #2281cf;
+}
+
+.data-detall-cell .subtitle, .col-listheader .subtitle {
+	display: block; font-style: italic; font-size: 0.85em; line-height: 1.3em; color: #005a8c;
 }
 
 /*.data-detall-cell .extra::after {

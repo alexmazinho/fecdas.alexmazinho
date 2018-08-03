@@ -70,6 +70,16 @@
 	    			<div id="enquesta" class="finestra-overlay"></div>
 	    			<div id="dialeg" title="Confirmation Required" style="display: none"></div>
 	    		</div>
+	    		<div class="cookie-message">
+	    			<div class="container">
+	           			<div class="row">
+	   		 				<div class="col-md-12">
+   								<p>El web utilitza un seguit de cookies pròpies i de tercers que recapten informació durant la navegació de l'usuari de la web per tal de millorar la seva experiència durant la mateixa. Si continua navegant, considerem que accepta el seu ús. <a class="link" href="{{ path('FecdasBundle_politicacookies') }}">més informació</a>.</p>
+							</div>
+						</div>
+					</div>
+					<a class='template-button template-button-size-tiny template-button-style-1 cookie-close-button' href='javascript:void(0)'><i class="fa fa-2x fa-times-circle fa-fw"></i></a>
+				</div>
 	    		<div class="mask"><img class="mask-progress" src="/images/icon_progress.gif"></div>
 	    	</section>
             <section id="footer" class="row">
@@ -79,7 +89,9 @@
                 		<div class="footer-text" style="float: left;">Powered by<br>Symfony2 </div>
                 		<div><img src="{{ asset('images/sf-logo.png') }}" width="25px"/></div>
                 	</div>
-                	<div class="fecdas-footer col-xs-8"><p><a href="http://www.fecdas.cat">FECDAS</a> - copyright {{ "now"|date("Y") }}<br/>Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
+                	<div class="fecdas-footer col-xs-8"><p><a href="http://www.fecdas.cat">FECDAS</a> - Copyright {{ "now"|date("Y") }}.
+                	<a class="link footer-link" href="{{ path('FecdasBundle_termesicondicions') }}">Termes i condicions d'ús</a><br/>
+                	Federació Catalana d'Activitats Subaquàtiques NIF: Q5855006B</p>
                     </div>
                     <div class="created-by col-xs-2">
 					<span class="footer-text"><br/>creat per </span><a href="http://www.ondissenyweb.com" target="_blank">On</a>

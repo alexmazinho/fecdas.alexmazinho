@@ -321,6 +321,18 @@ FecdasBundle_termesicondicions:
     requirements:
         methods:  GET
 
+FecdasBundle_politicacookies:
+    path:  /politicacookies
+    defaults: { _controller: "FecdasBundle:Security:politicacookies" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_politicaprivacitat:
+    path:  /politicaprivacitat
+    defaults: { _controller: "FecdasBundle:Security:politicaprivacitat" }
+    requirements:
+        methods:  GET
+
 # ---------------------------------------------------------------------------
 # -------------------------  TITULACIONS ------------------------------------
 # ---------------------------------------------------------------------------

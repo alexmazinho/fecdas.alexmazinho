@@ -139,167 +139,100 @@ class SecurityController extends BaseController
     	
 		$checkRole = $this->get('fecdas.rolechecker');
 		
+		$user = null;
     	$username = '';
 		$token = '';
-    	if ($this->isAuthenticated()) { 
-    		// Canvi password normal
-    		
-    		$user = $checkRole->getCurrentUser();
-			$username = $user->getUser();
-    	} else {
-			// Recuperació de de password
-    		if ($request->getMethod() == 'GET') {
-    			$username =  $request->query->get('user');
-    			$token = sha1($request->query->get('token'));
-    		} else {
-    			$userdata = $request->request->get('user');
-    			$username =  $userdata['usertoken'];
-    			$token = $userdata['recoverytoken'];
-    		}
-    		$user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($username)));
-    		 
-    		if ($user == null || $username == '' || $token = '' || $token != $user->getRecoverytoken()) {
-   				$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
-    			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-    		}
-    		
-    		if ($user->getRecoveryexpiration() == null 
-    				||  $this->getCurrentDate('now') > $user->getRecoveryexpiration()) {
-    			$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
-    			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-    		}
-    		
-    		// Actualització del mail de les persones associades a la metapersona corresponent a l'usuari si escau
-    		if ($user->getMetapersona() != null) {
-    		    if ($user->roleNeedLlicencia() && $user->getMetapersona()->getLlicenciaVigent() == null) throw new \Exception("Per accedir al sistema amb aquestes dades cal una llicència vigent per la data actual");
-    		    
-    		    foreach ($user->getMetapersona()->getPersonesSortedById() as $persona) {
-    		        $persona->setMail($username);
-    		    }
-    		}
-    	}
-    	
-    	$form = $this->createForm(new FormUser(), $user);
-    	$form->get('usertoken')->setData($username);
-    	
-    	if ($request->getMethod() == 'POST') {
-    		$userdata = $request->request->get('user');
-  			
-    		if ($userdata['pwd']['first'] != $userdata['pwd']['second']) $this->get('session')->getFlashBag()->add('error-notice', "No coincideixen les claus!"); 
-    		else {
-	    		$form->handleRequest($request);
-	    		
-	    		if ($form->isValid()) {
-	    			$em = $this->getDoctrine()->getManager();
-	    			
-	    			$user->setPwd(sha1($user->getPwd())); 
+		$newsletter = true;
+		$terms = true;
+     
+        if ($this->isAuthenticated()) { 
+        	// Canvi password normal
+        	$user = $checkRole->getCurrentUser();
+    		$username = $user->getUser();
+    		$newsletter = $user->getNewsletter();
+        } else {
+    		// Recuperació de de password
+        	if ($request->getMethod() == 'GET') {
+        		$username =  $request->query->get('user');
+        		$newsletter =  $request->query->get('newsletter', 1);
+        		$newsletter = ($newsletter == 1?true:false);
+        		$token = sha1($request->query->get('token'));
+        	} else {
+        		$userdata = $request->request->get('user');
+        		$username =  $userdata['usertoken'];
+        		$token = $userdata['recoverytoken'];
+        	}
+        	$user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($username)));
+        		 
+        	if ($request->getMethod() == 'GET') $user->setNewsletter($newsletter);
+        		
+        	if ($user == null || $username == '' || $token = '' || $token != $user->getRecoverytoken()) {
+       			$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ja no és vigent');
+        		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        	}
+        		
+        	if ($user->getRecoveryexpiration() == null 
+        			||  $this->getCurrentDate('now') > $user->getRecoveryexpiration()) {
+        		$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ha caducat, cal tornar a demanar-la.');
+        		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        	}
+        		
+        	// Actualització del mail de les persones associades a la metapersona corresponent a l'usuari si escau
+        	if ($user->getMetapersona() != null) {
+        	    if ($user->roleNeedLlicencia() && $user->getMetapersona()->getLlicenciaVigent() == null) throw new \Exception("Per accedir al sistema amb aquestes dades cal una llicència vigent per la data actual");
+        	    
+        	    foreach ($user->getMetapersona()->getPersonesSortedById() as $persona) {
+        	        $persona->setMail($username);
+                }
+        	}
+        }
+        	
+        $form = $this->createForm(new FormUser(), $user);
+        
+        try {
+        	
+            if ($request->getMethod() == 'POST') {
+        		$userdata = $request->request->get('user');
+      			
+        		if ($userdata['pwd']['first'] != $userdata['pwd']['second']) throw new \Exception("No coincideixen les claus!"); 
 
-					if (!$this->isAuthenticated()) $checkRole->authenticateUser($user, $this->getActiveEnquesta());  
-	    			
-	    			$em->flush();
+        		$form->handleRequest($request);
+        		
+    	    	if (!$form->isValid()) throw new \Exception("Error amb les dades del formulari, contacti amb l'administrador");
+    	    			
+    	    	$em = $this->getDoctrine()->getManager();
 
-	    			$this->logEntryAuth('PWD RESET');
-	    			
-	    			$this->get('session')->getFlashBag()->clear();
-	    			$this->get('session')->getFlashBag()->add('sms-notice', "Paraula clau actualitzada correctament!");
-	    			
-	    			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	    		} else {
-					
-	    			$this->get('session')->getFlashBag()->add('error-notice', "Error, contacti amb l'administrador");
-	    		}
-    		}
-    	}
-    	
+    	    	$newsletter = $form->get('newsletter')->getData();
+    	    	$newsletter = ($newsletter == 0?false:true);
+    	    	$terms = $form->get('terms')->getData();
+    	    	$terms = ($terms == 0?false:true);
+    	    	
+    	    	if (!$terms) throw new \Exception("Cal acceptar els termes i condicions d'ús per poder registrar l'usuari");
+    	    			
+    	    	$user->setPwd(sha1($user->getPwd())); 
+    
+    			if (!$this->isAuthenticated()) $checkRole->authenticateUser($user, $this->getActiveEnquesta());  
+    	    			
+    			$user->setNewsletter($newsletter);
+    					
+    	    	$em->flush();
+    
+    	    	if ($this->isAuthenticated()) $this->logEntryAuth('USER UPDATE', 'user : ' . $user->getUser());
+    	    	else $this->logEntryAuth('PWD RESET', 'user : ' . $user->getUser());
+    	    			
+    	    	$this->get('session')->getFlashBag()->clear();
+    	    	$this->get('session')->getFlashBag()->add('sms-notice', "Dades actualitzades correctament!");
+    	    			
+    	    	if (!$this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+        	}
+        	
+        } catch (\Exception $e) {
+            // Ko, mostra form amb errors
+            $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+        }
+    
     	return $this->render('FecdasBundle:Security:user.html.twig',
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView())) );
-    }
-    
-    
-    public function pwdrecoveryAction(Request $request)
-    {
-    	if ($this->isAuthenticated()) {
-    		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-    	}
-    	
-    	$userEmail = $request->query->get('email', '');
-    	
-    	$formbuilder = $this->createFormBuilder()->add('user', 'email', array('data' => $userEmail));
-    	$form = $formbuilder->getForm();
-    	
-    	if ($request->getMethod() == 'POST') {
-    		$form->handleRequest($request);
-    		if ($form->isValid()) {
-    			
-    			$userEmail = $form->get('user')->getData();
-    			//$userEmail = $form->getData()->getUser();
-    			
-    			$em = $this->getDoctrine()->getManager();
-    			$repository = $em->getRepository('FecdasBundle:EntityUser');
-    			$user = $repository->findOneByUser($userEmail);
-    			
-    			if (!$user) {
-    				$this->get('session')->getFlashBag()->add('sms-notice', 'Aquest usuari no existeix a la base de dades');
-    			} else {
-    			    $this->sendMailRecuperacioAccess($user, "Recuperació de l'accés");
-    				
-    			    $em->flush();
-    			    
-    				$this->logEntry($userEmail, 'PWD RECOVER');
-    				
-    				$this->get('session')->getFlashBag()->clear();
-    				$this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
-    				
-    				return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-    			}
-    		} 
-    	}
-    			
-    	return $this->render('FecdasBundle:Security:pwdrecovery.html.twig', 
-    			array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
-    }
-    
-    private function sendMailRecuperacioAccess($user, $action)
-    {
-        $token = base64_encode(openssl_random_pseudo_bytes(30));
-        $expiration = $this->getCurrentDate('now');
-        $expiration->add(new \DateInterval('PT4H'));
-        
-        // Save token information encrypted
-        $user->setRecoverytoken(sha1($token));
-        $user->setRecoveryexpiration($expiration);
-        
-        $message = \Swift_Message::newInstance()
-        ->setSubject("::".$action." a l'Aplicació de Gestió de FECDAS::")
-        ->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
-        ->setTo(array($user->getUser()));
-        
-        $logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
-        
-        $body = $this->renderView('FecdasBundle:Security:emailrecuperacioaccess.html.twig',
-            array('user' => $user, 'token' => $token, 'action' => $action, 'logo' => $logosrc));
-        
-        $message->setBody($body, 'text/html');
-        
-        $this->get('mailer')->send($message);
-    }
-    
-    public function termesicondicionsAction(Request $request)
-    {
-        return $this->render('FecdasBundle:Security:termesicondicions.html.twig',
-            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
-    }
-    
-    public function politicacookiesAction(Request $request)
-    {
-        return $this->render('FecdasBundle:Security:politicacookies.html.twig',
-            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
-    }
-    
-    public function politicaprivacitatAction(Request $request)
-    {
-        return $this->render('FecdasBundle:Security:politicaprivacitat.html.twig',
-            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
     }
     
     public function registreAction(Request $request)
@@ -308,30 +241,19 @@ class SecurityController extends BaseController
             return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
         }
         
-        $formbuilder = $this->createFormBuilder()
-            ->add('user', 'email', array(
-                'required'  => false,
-            ))
-            ->add('newsletter', 'checkbox', array(
-                'required'  => false,
-                'data'      => true
-            ))
-            ->add('terms', 'checkbox', array(
-                'required'  => false,
-                'data'      => true
-            ));
+        $form = $this->createForm(new FormUser());
         
-        $form = $formbuilder->getForm();
-            
         try {
             if ($request->getMethod() == 'POST') {
+                
                 $form->handleRequest($request);
                 
-                $formdata = $request->request->get('form');
+                $formdata = $request->request->get('user');
+
+                $dniShown = isset($formdata['dni']);
+                $dni = !isset($formdata['dni'])?"":$formdata['dni'];
                 
                 $mail = $form->get('user')->getData();
-                
-                $dni = !isset($formdata['dni'])?"":$formdata['dni'];
                 
                 $newsletter = $form->get('newsletter')->getData();
                 $newsletter = ($newsletter == 0?false:true);
@@ -345,7 +267,7 @@ class SecurityController extends BaseController
                 $user = $em->getRepository('FecdasBundle:EntityUser')->findOneByUser($mail);
                 
                 if (!$terms) throw new \Exception("Cal acceptar els termes i condicions d'ús per poder registrar l'usuari");
-                    
+                
                 if ($user != null) {
                     if ($user->anulat()) {
                         // Existeix usuari però de baixa
@@ -363,9 +285,9 @@ class SecurityController extends BaseController
                 } else {
                     // No existeix usuari
                 }
-
+                
                 $persones = $em->getRepository('FecdasBundle:EntityPersona')->findByMail($mail);
-
+                
                 $metapersones = array();
                 foreach ($persones as $persona) {
                     $metapersona = $persona->getMetapersona();
@@ -376,24 +298,23 @@ class SecurityController extends BaseController
                             function ($e) use ($metapersona) {
                                 return $e->getId() == $metapersona->getId();
                             }
-                        );
+                            );
                         if (count($existeix) == 0) $metapersones[] = $metapersona;
                     }
                 }
                 
-                if (count($metapersones) > 1 || isset($formdata['dni'])) {
-                    // Existeixen vàries persones amb aquest mail, afegir camp i actualitzar $form 
-                    $formbuilder->add('dni', 'text', array(
-                        'required'  => false,
-                        'data'      => $dni
-                    ));
+                $options = array('newsletter' => $newsletter);
+                if (count($metapersones) > 1 || $dniShown) {
+                    // Existeixen vàries persones amb aquest mail, afegir camp i actualitzar $form
+                    $options['dni'] = $dni;
                 }
                 
-                $form = $formbuilder->getForm(); // Tornar a demanar $form
+                $form = $this->createForm(new FormUser( $options ));
+                
                 $form->get('user')->setData($mail);
-
+                
                 if (count($metapersones) != 1) {
-                    if (isset($formdata['dni']) && !$dni) throw new \Exception("Cal indicar un document d'identitat");
+                    if (!$dniShown || !$dni) throw new \Exception("Cal indicar un document d'identitat");
                     
                     if ($dni != "") throw new \Exception("No existeixen dades per aquesta adreça de correu amb aquest document d'identitat");
                     
@@ -422,7 +343,7 @@ class SecurityController extends BaseController
                     }
                 }
                 
-                $this->sendMailRecuperacioAccess($user, "Creació d'un nou usuari per accedir");
+                $this->sendMailRecuperacioAccess($user, "Creació d'un nou usuari per accedir", $newsletter);
                 
                 $em->flush();
                 
@@ -443,6 +364,100 @@ class SecurityController extends BaseController
     }
     
     
+    
+    public function pwdrecoveryAction(Request $request)
+    {
+    	if ($this->isAuthenticated()) {
+    		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+    	}
+    	
+    	$userEmail = $request->query->get('email', '');
+    	
+    	$formbuilder = $this->createFormBuilder()->add('user', 'email', array('data' => $userEmail));
+    	$form = $formbuilder->getForm();
+    	
+    	if ($request->getMethod() == 'POST') {
+    		$form->handleRequest($request);
+    		if ($form->isValid()) {
+    			
+    			$userEmail = $form->get('user')->getData();
+    			//$userEmail = $form->getData()->getUser();
+    			
+    			$em = $this->getDoctrine()->getManager();
+    			$repository = $em->getRepository('FecdasBundle:EntityUser');
+    			$user = $repository->findOneByUser($userEmail);
+    			
+    			if (!$user) {
+    				$this->get('session')->getFlashBag()->add('sms-notice', 'Aquest usuari no existeix a la base de dades');
+    			} else {
+    			    $newsletter = $user->getNewsletter();
+    			    
+    			    $this->sendMailRecuperacioAccess($user, "Recuperació de l'accés", $newsletter);
+    				
+    			    $em->flush();
+    			    
+    				$this->logEntry($userEmail, 'PWD RECOVER');
+    				
+    				$this->get('session')->getFlashBag()->clear();
+    				$this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a recuperar la clau a l\'adreça de correu ' . $userEmail);
+    				
+    				return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+    			}
+    		} 
+    	}
+    			
+    	return $this->render('FecdasBundle:Security:pwdrecovery.html.twig', 
+    			array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
+    
+    private function sendMailRecuperacioAccess($user, $action, $newsletter = false)
+    {
+        $token = base64_encode(openssl_random_pseudo_bytes(30));
+        $expiration = $this->getCurrentDate('now');
+        $expiration->add(new \DateInterval('PT4H'));
+        
+        // Save token information encrypted
+        $user->setRecoverytoken(sha1($token));
+        $user->setRecoveryexpiration($expiration);
+        
+        if ($this->get('kernel')->getEnvironment() != 'prod') {
+            $tomails = array($this->getParameter('MAIL_ADMINTEST'));  // Entorns de test
+        } else {
+            $tomails = array($user->getUser());
+        }
+        
+        $message = \Swift_Message::newInstance()
+            ->setSubject("::".$action." a l'Aplicació de Gestió de FECDAS::")
+            ->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
+            ->setTo($tomails);
+        
+        $logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));
+        
+        $body = $this->renderView('FecdasBundle:Security:emailrecuperacioaccess.html.twig',
+            array('user' => $user, 'token' => $token, 'action' => $action, 'newsletter' => $newsletter, 'logo' => $logosrc));
+        
+        $message->setBody($body, 'text/html');
+        
+        $this->get('mailer')->send($message);
+    }
+    
+    public function termesicondicionsAction(Request $request)
+    {
+        return $this->render('FecdasBundle:Security:termesicondicions.html.twig',
+            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
+    
+    public function politicacookiesAction(Request $request)
+    {
+        return $this->render('FecdasBundle:Security:politicacookies.html.twig',
+            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
+    
+    public function politicaprivacitatAction(Request $request)
+    {
+        return $this->render('FecdasBundle:Security:politicaprivacitat.html.twig',
+            array('admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
     
 	public function clubaddjuntaAction(Request $request) {
 		

@@ -26,6 +26,11 @@ class EntityMetaPersona {
 	protected $dni;
 
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $newsletter;
+	
+	/**
 	 * @ORM\OneToMany(targetEntity="EntityTitulacio", mappedBy="metapersona")
 	 */
 	protected $titulacions;
@@ -59,9 +64,10 @@ class EntityMetaPersona {
 	 */
 	protected $dataentrada;
 
-	public function __construct($dni = '') {
+	public function __construct($dni = '', $newsletter = true) {
 		$this->id = 0;
 		$this->dni = $dni;
+		$this->newsletter 	= $newsletter;
 		$this->setDataentrada(new \DateTime());
 		$this->persones = new \Doctrine\Common\Collections\ArrayCollection();
 		
@@ -342,6 +348,26 @@ class EntityMetaPersona {
         return $this->dni;
     }
 	
+    /**
+     * Set newsletter
+     *
+     * @param boolean $newsletter
+     */
+    public function setNewsletter($newsletter)
+    {
+        $this->newsletter = $newsletter;
+    }
+    
+    /**
+     * Get newsletter
+     *
+     * @return boolean
+     */
+    public function getNewsletter()
+    {
+        return $this->newsletter;
+    }
+    
 	/**
      * Add titulacions
      *

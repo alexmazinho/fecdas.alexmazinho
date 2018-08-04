@@ -243,6 +243,27 @@ class EntityUser {
     	return null;
     }
 	
+    /**
+     * Si metapersona => $this->metapersona->getNewsletter()
+     * En cas contrari false
+     * 
+     * @return boolean
+     */
+    public function getNewsletter()
+    {
+        return $this->metapersona != null?$this->metapersona->getNewsletter():false;
+    }
+    
+    /**
+     * Set metapersona newsletter si no és null
+     *
+     * @param boolean $newsletter
+     */
+    public function setNewsletter($newsletter)
+    {
+        if ($this->metapersona != null) $this->metapersona->setNewsletter($newsletter);
+    }
+    
 	/**
      * Get id
      *
@@ -353,6 +374,7 @@ class EntityUser {
         $this->metapersona = $metapersona;
     }
 
+    
     /**
      * Set recoverytoken
      *

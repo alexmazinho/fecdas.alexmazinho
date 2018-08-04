@@ -49,6 +49,23 @@
 					</div>
 				</div>
 				<div class="col-md-12">
+					<div class="checkbox">
+  					<label>
+    					{{ form_widget(form.newsletter, { 'attr': {'class': 'form-checkbox'} }) }}Rebre informació de la Federació
+  					</label>
+  					</div>
+				</div>
+				<div class="col-md-9">
+					<div class="checkbox">
+  					<label>
+    					{{ form_widget(form.terms, { 'attr': {'class': 'form-checkbox'} }) }}Acceptar els termes i condicions
+  					</label>
+  					</div>
+				</div>
+				<div class="col-md-3 col-last-right">
+					<a class="link-page link-italic space20" href="{{ path('FecdasBundle_termesicondicions') }}"><i class="fa fa-external-link  fa-1x blue"></i> veure</a>
+				</div>
+				<div class="col-md-12">
 					<!-- <div class="col-md-9">
     					<div class="checkbox">
       					<label>
@@ -68,10 +85,6 @@
 	   		{{ form_end(form) }}
 	   	</div>
    	</div>
-	
-	<div class="formuser-main content-center">
-		
-	</div>
     
 {% endblock %}
 

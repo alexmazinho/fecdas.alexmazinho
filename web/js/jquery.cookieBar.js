@@ -8,8 +8,10 @@
  */
 
 (function ($) {
-	$.cookie = function (key, value, options) {
-		if (arguments.length > 1 && (!/Object/.test(Object.prototype.toString.call(value)) || value === null || value === undefined)) {
+	/*$.cookie = function (key, value, options) {
+		if (arguments.length > 1 && options !== undefined && (!/Object/.test(Object.prototype.toString.call(value)) || value === null || value === undefined)) {
+			
+			
 			options = $.extend({}, options);
 
 			if (value === null || value === undefined) {
@@ -25,27 +27,33 @@
 
 			return (document.cookie = [
 				encodeURIComponent(key), '=', options.raw ? value : encodeURIComponent(value),
-				//options.expires ? '; expires=' + options.expires.toUTCString() : '',  // Alex // max-age is not supported by IE
+				options.expires ? '; expires=' + options.expires.toUTCString() : '',  // Alex // max-age is not supported by IE
 				options.path ? '; path=' + options.path : '',
 				options.domain ? '; domain=' + options.domain : '',
 				options.secure ? '; secure' : ''
 			].join(''));
 		}
+		
 		options = value || {};
 		var decode = options.raw ? function (s) { return s; } : decodeURIComponent;
 
 		var pairs = document.cookie.split('; ');
 		for (var i = 0, pair; pair = pairs[i] && pairs[i].split('='); i++) {
 			// IE
-			if (decode(pair[0]) === key) return decode(pair[1] || '');
+			if (decode(pair[0]) === key) {
+				return decode(pair[1] || '');	// Alex. Cookie trobada
+			}
 		}
 		return null;
 	};
+
+	*/
 
 	$.fn.cookieBar = function (options) {
 		var settings = $.extend({
 			'closeButton': 'none',
 			'hideOnClose': true,
+			'expires': 180,
 			'secure': false,
 			'path': '/',
 			'domain': ''
@@ -55,29 +63,25 @@
 			var cookiebar = $(this);
 
 			// just in case they didnt hide it by default.
-			//cookiebar.hide();
-			cookiebar.show();  // Alex
-			/*setTimeout(function() {	// Alex. Timeout
-				//cookiebar.hide();
-				cookiebar.slideUp(); 
-		    }, 10000);*/
+			cookiebar.hide();
+			//cookiebar.show();  // Alex
 
 			// if close button not defined. define it!
 			if (settings.closeButton == 'none') {
 				cookiebar.append('<a class="cookiebar-close">Continue</a>');
 				$.extend(settings, { 'closeButton': '.cookiebar-close' });
 			}
-
-			if ($.cookie('cookiebar') != 'hide') {
+			
+			
+			if (Cookies.get('cookiebar') === undefined || Cookies.get('cookiebar') != 'hide') {
 				cookiebar.show();
-			}
+			} 
 
 			cookiebar.find(settings.closeButton).click(function () {
 				if (settings.hideOnClose) {
 					cookiebar.hide();
 				}
-				//$.cookie('cookiebar', 'hide', { path: settings.path, secure: settings.secure, domain: settings.domain, expires: 30 });
-				$.cookie('cookiebar', 'hide', { path: settings.path, secure: settings.secure, domain: settings.domain });  // Alex. Session cookie sense expires. Desapareix en tancar navegador
+				Cookies.set('cookiebar', 'hide', { path: settings.path, secure: settings.secure, domain: settings.domain, expires: settings.expires });
 				cookiebar.trigger('cookieBar-close');
 				return false;
 			});

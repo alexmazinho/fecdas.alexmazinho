@@ -10,33 +10,38 @@
   position:fixed;
   /*top:0;left:0;right:0;  Alex */
   bottom:0;left:0;right:0;
-  padding:10px 85px 10px 20px;
+  padding:5px 85px 5px 20px;
   /*background:#fff;  Alex */
-  /*background-color: rgba(54,59,71,0.5);  #363b47 */
-  /*background-color: rgb(54,59,71);  #363b47 Fallback */
-  background-color: rgba(255,255,255,0.8);
+  background-color: rgb(54,59,71); /* #363b47 Fallback */
+  background-color: rgba(54,59,71,0.8);  /* #363b47 */
+  /*background-color: rgba(255,255,255,0.8);*/
   border-bottom:1px solid #ccc;
   box-shadow:0px 0px 3px #ccc;
+  display: none;
   z-index: 99;
 }
-.cookie-message p, .cookie-message a {
-  /*color:#333; Alex */
-  font:bold 13px/18px Arial;
+.cookie-message .container p, .cookie-message .container a {
+  color:#eee;
+  font:normal 13px/18px Arial;
   margin:0.6em 0;
 }
-.cookie-message a {
+.cookie-message .container a {
   /*position:absolute;
   top:0; *top:-2px; right:20px;*/
   cursor:pointer;
-  color: #505ba1;	/* Alex */
   font-style: italic; /* Alex */
   padding-left: 10px; /* Alex */
 }
 
+.cookie-message .container a:hover {
+  color:#fff;
+  text-decoration: underline; 
+}
+
 .cookie-message a.cookie-close-button {  /* Alex */
   position:absolute;
-  top:0; *top:-2px; right:20px;
-  color:#333;
+  top:7px; right:45px;
+  color:#eee;
   font-style: normal; /* Alex */
 }
 

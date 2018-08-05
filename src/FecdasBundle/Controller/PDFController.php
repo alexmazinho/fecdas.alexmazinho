@@ -109,7 +109,7 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function dadespersonalstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '') {
+	public function dadespersonalstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '', $mail = '') {
 		/* PDF Llistat de dades personals filtrades */
 		$club = $this->getCurrentClub();
 		
@@ -155,6 +155,10 @@ class PDFController extends BaseController {
 			if ($cognoms != "") {
 				$y += 7;
 				$pdf->writeHTMLCell(0, 0, $x, $y, 'Cognoms que contenen "'.$cognoms.'"', '', 1, 1, true, '', true);
+			}
+			if ($mail != "") {
+			    $y += 7;
+			    $pdf->writeHTMLCell(0, 0, $x, $y, 'Adreces de correu que contenen "'.$mail.'"', '', 1, 1, true, '', true);
 			}
 			$y += 2;
 			$pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
@@ -287,10 +291,29 @@ class PDFController extends BaseController {
 	private function dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w) {
 		$llicencia = $persona->getLlicenciaVigent();
 		
-		$pdf->Cell($w[0], 6, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
-		$pdf->Cell($w[1], 6, $persona->getCognomsNom(), 'LRB', 0, 'L', 0, '', 1);
-		$pdf->Cell($w[2], 6, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
-		$pdf->Cell($w[3], 6, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
+		$h = $persona->getUsuari() != null?9:6;
+		
+		//Cell     (float w, float h, string txt [, mixed border [, int ln [, string align [, boolean fill [, mixed link]]]]]]])
+		//MultiCell(float w, float h, string txt [, mixed border [, string align [, boolean fill]]])
+		
+		$pdf->Cell($w[0], $h, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+		
+		$pdf->Cell($w[1], $h, $persona->getCognomsNom(), 'LRB', 0, 'L', 0, '', 1);
+		if ($persona->getUsuari() != null) {
+		    
+		    $pdf->setX($pdf->getX()-$w[1]);
+		    
+		    $pdf->SetFont('dejavusans', 'I', 6, '', true);
+		    $pdf->SetTextColor(0, 0, 128);    // Blau
+		    
+		    $pdf->Cell($w[1], $h-1, $persona->getUsuari()->getUser(), '', 0, 'L', 0, '', 1, false, '', 'B');
+		    
+		    $pdf->SetTextColor(0, 0, 0);    // Negre
+		    $pdf->SetFont('dejavusans', '', 7, '', true); // Restore
+		}
+		
+		$pdf->Cell($w[2], $h, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[3], $h, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
 		if ($llicencia != null && $llicencia->getParte() != null) {
 			$text = $llicencia->getCategoria()->getDescripcio().". ";
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
@@ -298,8 +321,8 @@ class PDFController extends BaseController {
 		} else {
 			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
 		}
-		$pdf->Cell($w[4], 6, $text , 'LRB', 0, 'L', 0, '', 1);
-		$pdf->Cell($w[5], 6, $persona->getInfoHistorialTitulacions() , 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[4], $h, $text , 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[5], $h, $persona->getInfoHistorialTitulacions() , 'LRB', 0, 'C', 0, '', 1);
 			
 		$pdf->Ln();
 		

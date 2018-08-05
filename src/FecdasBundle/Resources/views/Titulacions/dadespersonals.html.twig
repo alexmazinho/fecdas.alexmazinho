@@ -70,6 +70,15 @@
 				</div>
 			</div>	
 			<div class="row">	
+				<div class="col-md-5 col-xs-12">
+				  	<div class="form-group">
+				  		{{ form_label(form.desde, 'Adreça de correu') }}
+				  		<div class="input-group">
+							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-envelope fa-1x"></span></span>
+							{{ form_widget(form.mail, { 'attr': {'class': 'form-control', 'placeholder':'Mail' } }) }}
+						</div>
+					</div>
+				</div>
 				<div class="col-md-2 col-xs-5">
 					<div class="form-group">
 						{{ form_label(form.desde, 'Amb llicència des de') }}
@@ -88,7 +97,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-5 col-xs-12">
+				<div class="col-md-3 col-xs-12">
 					<div class="form-group">
 						<label>&nbsp;</label>
 						<div class="checkbox">
@@ -155,9 +164,9 @@
 				   		<div class="data-detall-cell dadespersonals-dni col-noresponsive">{{ persona.dni }}</div>
 				   		<div class="data-detall-cell dadespersonals-cognomsnom col-noresponsive">
 				   		    {{ persona.cognomsnom }}
-				   		    {% if persona.metapersona.usuari is not null %}
-				   		    	<span class="subtitle"><a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.metapersona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
-		   						{{ persona.metapersona.usuari.user }}</a></span>
+				   		    {% if persona.usuari is not null %}
+				   		    	<span class="subtitle"><a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
+		   						{{ persona.usuari.user }}</a></span>
 				   		    {% endif %}
 				   		</div>
 				   		<div class="data-detall-cell dadespersonals-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
@@ -216,8 +225,8 @@
 			   						<i class="fa fa-search fa-1x blue"></i></a>
 			   				{% endif %}
 				   		{% endif %}
-				   		{% if persona.metapersona.usuari is not null %}
-				   			<a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.metapersona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
+				   		{% if persona.usuari is not null %}
+				   			<a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
 		   						<i class="fa fa-user-circle fa-1x darkgreen"></i></a>	
 				   		{% endif %}
 		   					<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
@@ -276,6 +285,9 @@
 		helpBubbles("#form_cognoms", '<p>Indica tot o part dels <b>COGNOMS</b> a cercar</p>\
 		<p>La cerca no distingeix majúscules o minúscules</p>');
 
+		helpBubbles("#form_mail", '<p>Indica tot o part d\'una <b>adreça de correu</b> a cercar</p>\
+		<p>La cerca no distingeix majúscules o minúscules</p>');
+		
 		$('#form_dadespersonals').submit(function ( e ) {
 		
 			// Recarrega consulta afegint la dades del formulari
@@ -287,6 +299,7 @@
 			params.push( {'name':'dni','value': $('#form_dni').val()} );
 			params.push( {'name':'nom','value': $('#form_nom').val()} );
 			params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
+			params.push( {'name':'mail','value': $('#form_mail').val()} );
 			params.push( {'name':'desde','value': $('#form_desde').val()} );
 			params.push( {'name':'fins','value': $('#form_fins').val()} );
 			params.push( {'name':'titols','value': $('#form_titols').val()} );

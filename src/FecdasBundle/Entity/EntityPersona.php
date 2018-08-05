@@ -487,6 +487,18 @@ class EntityPersona {
     }
 
     /**
+     * Get usuari de la metapersona si existeix, en cas contrari null
+     *
+     * @return EntityUser
+     */
+    public function getUsuari()
+    {
+        if ($this->metapersona == null) return null;
+        
+        return $this->metapersona->getUsuari();
+    }
+    
+    /**
      * Get id
      *
      * @return integer 

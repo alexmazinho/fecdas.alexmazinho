@@ -154,6 +154,12 @@ class EntityUser {
         foreach ($this->clubs as $userClubRole) $userClubRole->activarRole($role);
     }
     
+    public function baixaUsuari()
+    {
+        $this->databaixa = new \DateTime();
+        foreach ($this->clubs as $userClubRole) $userClubRole->desactivarRole();
+    }
+    
     /**
      * Get main role
      *

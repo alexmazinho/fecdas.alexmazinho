@@ -63,6 +63,8 @@ class FormUser extends AbstractType {
 	        ));
 	    });
 	    
+	    $builder->add('id', 'hidden');
+	    
 		$builder->add('pwd', 'repeated', array(
     		'type'        => 'password',
     		'required'    => false,

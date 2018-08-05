@@ -134,22 +134,40 @@ class SecurityController extends BaseController
     
     public function userAction(Request $request)
     {
-    
     	$request->getSession()->getFlashBag()->clear();
     	
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		$user = null;
+		$userId = 0;
     	$username = '';
 		$token = '';
 		$newsletter = true;
 		$terms = true;
      
-        if ($this->isAuthenticated()) { 
-        	// Canvi password normal
-        	$user = $checkRole->getCurrentUser();
-    		$username = $user->getUser();
-    		$newsletter = $user->getNewsletter();
+        if ($this->isAuthenticated()) {
+            if ($request->getMethod() == 'GET') {
+                if ($request->query->has('id')) {
+                    if (!$this->isCurrentAdmin() && !$checkRole->isCurrentClub()) {
+                        $this->logEntryAuth('USER UPD FORBIDDEN', 'user : ' . $checkRole->getCurrentUser()->getUser());
+                        $this->get('session')->getFlashBag()->add('error-notice', 'L\'usuari actual no té permisos per fer aquesta operació');
+                        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+                    }
+                    $userId = $request->query->get('id');
+                }
+            } else {
+                $userdata = $request->request->get('user');
+                $userId = $userdata['id'];
+            }
+                
+            if ($userId > 0) $user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($userId);
+            
+            if ($user == null) {
+                // Canvi password normal
+                $user = $checkRole->getCurrentUser();
+            }
+            $username = $user->getUser();
+            $newsletter = $user->getNewsletter();
         } else {
     		// Recuperació de de password
         	if ($request->getMethod() == 'GET') {
@@ -217,8 +235,8 @@ class SecurityController extends BaseController
     					
     	    	$em->flush();
     
-    	    	if ($this->isAuthenticated()) $this->logEntryAuth('USER UPDATE', 'user : ' . $user->getUser());
-    	    	else $this->logEntryAuth('PWD RESET', 'user : ' . $user->getUser());
+    	    	if ($this->isAuthenticated()) $this->logEntryAuth('USER UPDATE', 'user : ' . $username);
+    	    	else $this->logEntryAuth('PWD RESET', 'user : ' . $username);
     	    			
     	    	$this->get('session')->getFlashBag()->clear();
     	    	$this->get('session')->getFlashBag()->add('sms-notice', "Dades actualitzades correctament!");
@@ -228,11 +246,14 @@ class SecurityController extends BaseController
         	
         } catch (\Exception $e) {
             // Ko, mostra form amb errors
+            if ($this->isAuthenticated()) $this->logEntryAuth('PWD RESET KO', 'user : ' . $username);
+            else $this->logEntryAuth('PWD RESET KO', 'user : ' . $username);
+            
             $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
         }
     
     	return $this->render('FecdasBundle:Security:user.html.twig',
-    			$this->getCommonRenderArrayOptions(array('form' => $form->createView())) );
+    	    $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'user' => $user)) );
     }
     
     public function registreAction(Request $request)
@@ -364,6 +385,46 @@ class SecurityController extends BaseController
     }
     
     
+    public function baixausuariAction(Request $request)
+    {
+        if (!$this->isAuthenticated())
+            return $this->redirect($this->generateUrl('FecdasBundle_login'));
+            
+        $checkRole = $this->get('fecdas.rolechecker');
+        
+        $currentuser = $checkRole->getCurrentUser();
+        
+        $userId = $request->query->get('id');
+
+        $user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($userId);
+        
+        try {
+            // Administrador, club o el propi usuari
+            if (!$this->isCurrentAdmin() && !$checkRole->isCurrentClub() && $user->getId() != $currentuser->getId()) {
+                $this->logEntryAuth('USER DEL FORBIDDEN', 'user : ' . $checkRole->getCurrentUser()->getUser());
+                throw new \Exception("L'usuari actual no té permisos per fer aquesta operació");
+            }
+            $em = $this->getDoctrine()->getManager();
+            
+            $user->baixaUsuari();
+            
+            $em->flush();
+            
+            // Logout
+            $this->get('session')->clear();
+            
+            $this->logEntryAuth('USER DEL OK', 'user : ' . $user->getUser());
+            
+        } catch (\Exception $e) {
+            $this->logEntryAuth('USER DEL KO', 'user : ' . $checkRole->getCurrentUser()->getUser().' error '.$e->getMessage());
+            
+            $response = new Response($e->getMessage());
+            $response->setStatusCode(500);
+            return $response;
+        }
+        
+        return new Response();
+    }
     
     public function pwdrecoveryAction(Request $request)
     {

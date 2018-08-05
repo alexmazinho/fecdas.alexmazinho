@@ -315,14 +315,6 @@ html>body #left-menu a:hover {
 	/*color: #1240a0;*/ 
 	color: #005A8C 
 }
-#main-col h1
-    { line-height: 1.2em; font-size: 30px; margin-bottom: 10px; margin-top: 5px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }
-#main-col h2
-    { line-height: 1.2em; font-size: 24px; margin-bottom: 20px; margin-top: 10px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }    
-#main-col h3 
-    { line-height: 1.1em; font-size: 18px; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
-#main-col h4 
-    { font-size: 1.1em; line-height: 2em; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
 
 #main-col header { line-height: 1.5em; margin-bottom: 20px;  /*width:770px*/ }
 #main-col header .nav-stacked { max-width: 300px; }
@@ -341,7 +333,7 @@ html>body #left-menu a:hover {
 #main-col .page-center { margin: auto; max-width: 350px; }
 #main-col .narrow.page-center  { text-align: justify; max-width: 770px; }
 #main-col .static-page.page-center  { text-align: justify; max-width: 770px; }
-#main-col .content-center { padding: 20% 15px 30px 15px; }
+#main-col .content-center { padding: 50px 15px 30px 15px; }
 #main-col .home-content.content-center { padding-top: 30px; }
 #main-col .static-page .content-center { padding-top: 30px; padding-bottom: 50px; }
 

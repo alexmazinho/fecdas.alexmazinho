@@ -265,6 +265,11 @@ FecdasBundle_user:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_baixausuari:
+    path:  /baixausuari
+    defaults: { _controller: "FecdasBundle:Security:baixausuari" }
+    requirements:
+        methods:  GET
 
 FecdasBundle_logout:
     path:  /logout

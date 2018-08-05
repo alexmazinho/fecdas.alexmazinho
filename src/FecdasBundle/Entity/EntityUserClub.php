@@ -72,6 +72,15 @@ class EntityUserClub {
         if ($this->role == $role) $this->databaixa = null;
     }
     
+    /**
+     * Desactivar rol
+     *
+     */
+    public function desactivarRole()
+    {
+        $this->databaixa = new \DateTime();
+    }
+    
 	/**
      * is Admin?
      *

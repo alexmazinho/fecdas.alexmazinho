@@ -21,19 +21,20 @@
 		    </header>
 		
 			<section>
-		        
-		        {% for flashMessage in app.session.flashbag.get('sms-notice') %}
-		        <div class="sms-notice">
-		  			{{ flashMessage }}
-		  		</div>	
-				{% endfor %}
-		        <p>Esteu a la pàgina d'entrada del sistema de tramitació de llicències federatives de la Federació Catalana d'Activitats Subaquàtiques (<a href="http://www.fecdas.cat" target="_blank">FECDAS</a>).</p>
-		        <p>Un cop hi hagueu entrat, aquest servei també us pot ser útil per tenir un accès ràpid a la llista de persones a què el vostre club ha tramitat la llicència,
-		         per esbrinar si una persona té una llicència federativa vigent i per posar-vos en contacte amb la FECDAS a través del correu electrònic.</p>
-		        
-		        {% if enquestausuari is defined and enquestausuari == true %}
-					<br/><div class="sms-notice">Actualment hi ha una enquesta activa, hi podeu accedir <a class="featured enquesta-action-open" href="{{ path('FecdasBundle_enquestausuari') }}">aquí</a></div>
-				{% endif %}
+		        <div class="row">
+		    		<div class="col-md-12 block-errors">
+		    		    {% include 'FecdasBundle:Includes:messages.html.twig' %}
+		    		</div>
+        		    <div class="col-md-12">
+        		        <p>Esteu a la pàgina d'entrada del sistema de tramitació de llicències federatives de la Federació Catalana d'Activitats Subaquàtiques (<a href="http://www.fecdas.cat" target="_blank">FECDAS</a>).</p>
+        		        <p>Un cop hi hagueu entrat, aquest servei també us pot ser útil per tenir un accès ràpid a la llista de persones a què el vostre club ha tramitat la llicència,
+        		         per esbrinar si una persona té una llicència federativa vigent i per posar-vos en contacte amb la FECDAS a través del correu electrònic.</p>
+        		        
+        		        {% if enquestausuari is defined and enquestausuari == true %}
+        					<br/><div class="sms-notice">Actualment hi ha una enquesta activa, hi podeu accedir <a class="featured enquesta-action-open" href="{{ path('FecdasBundle_enquestausuari') }}">aquí</a></div>
+        				{% endif %}
+					</div>
+				</div>
 		    </section>
 		
 			<ul id="slider">

@@ -1,5 +1,22 @@
 @CHARSET "UTF-8";
 
+h1
+    { line-height: 1.2em; font-size: 30px; margin-bottom: 10px; margin-top: 5px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }
+h2
+    { line-height: 1.2em; font-size: 24px; margin-bottom: 20px; margin-top: 10px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }    
+h3 
+    { line-height: 1.1em; font-size: 18px; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
+h4 
+    { font-size: 1.1em; line-height: 2em; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
+
+
+.subtitle { font-style: italic; }
+h1.subtitle { font-size: 24px; }
+h2.subtitle { font-size: 20px; }
+h3.subtitle { font-size: 14px; }
+h4.subtitle { font-size: 1.5em; }
+p.subtitle { font-size: 1em; }
+
 .sms-notice { 
 	text-align: center; padding: 10px;
 	background: #DFF2BF; border: 1px solid; color: #4F8A10; margin-bottom: 10px; 
@@ -19,6 +36,8 @@
 	z-index: 100;
 }
 .form-group .field-error-alert { bottom: 5px; }
+
+.alert .form-group {  margin-bottom: 0; }
 
 /*.form-group { margin-bottom: 25px; }*/
 
@@ -524,6 +543,8 @@ a.link.footer-link { padding: 0 10px; }
 .link i.fa.orange:hover { background-color: #eea236; } 
 .link i.fa.yellow:hover { background-color: #FFFF66; }
 .link i.fa.gray:hover { background-color: #CCCCCC; }
+.link i.fa.teal:hover { background-color: #008080; }
+.link i.fa.darkgreen:hover { background-color: #008000; }
 
 .data-detall .data-detall-cell .nolink i.fa:hover, .nolink i.fa:hover { color: inherit; background-color: inherit } 
 
@@ -656,14 +677,17 @@ a.link.footer-link { padding: 0 10px; }
 
 .label-actions { float:right; }
 
-.blue { color: #1240a0; /*#2281cf;*/ }
-.systemblue { color: #2281cf; /*#2281cf;*/ }
-.lightblue { color: #96c4ea; }
-.red { color: #a94442; }
-.green { color: #5cb85c; }
-.orange { color: #eea236; }
-.gray { color: #cccccc; }
-.yellow { color: #FFD700; }
+.blue { color: #1240a0 !important; /*#2281cf;*/ }
+.systemblue { color: #2281cf !important; /*#2281cf;*/ }
+.lightblue { color: #96c4ea !important; }
+.red { color: #a94442 !important; }
+.green { color: #5cb85c !important; }
+.orange { color: #eea236 !important; }
+.gray { color: #cccccc !important; }
+.yellow { color: #FFD700 !important; }
+.teal { color: #008080 !important; }
+.darkgreen { color: #008000 !important; }
+
 .transparent { color: transparent; cursor: default; }
 
 /*************** FECDAS stock ****************/
@@ -1398,6 +1422,8 @@ tr:first-child > .data-detall-cell  {
 	border-radius: 5px;*/
 	border-top: 1px dotted #2281cf;
 }
+
+
 
 .data-detall-cell .subtitle, .col-listheader .subtitle {
 	display: block; font-style: italic; font-size: 0.85em; line-height: 1.3em; color: #005a8c;
@@ -2274,6 +2300,8 @@ select#parte_renovar_tipus { width: 240px; }
 .link i.fa-stack:hover fa.orange { background-color: #eea236; } 
 .link i.fa-stack:hover fa.yellow { background-color: #FFFF66; }
 .link i.fa-stack:hover fa.gray { background-color: #CCCCCC; }
+.link i.fa-stack:hover fa.teal { background-color: #008080; }
+.link i.fa-stack:hover fa.darkgreen { background-color: #008000; }
 
 
 

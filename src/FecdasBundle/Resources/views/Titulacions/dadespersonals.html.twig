@@ -153,7 +153,13 @@
 			   		<li class="data-detall">
 				   		<div class="data-detall-cell dadespersonals-id">{{ personaId }}</div>
 				   		<div class="data-detall-cell dadespersonals-dni col-noresponsive">{{ persona.dni }}</div>
-				   		<div class="data-detall-cell dadespersonals-cognomsnom col-noresponsive">{{ persona.cognomsnom }}</div>
+				   		<div class="data-detall-cell dadespersonals-cognomsnom col-noresponsive">
+				   		    {{ persona.cognomsnom }}
+				   		    {% if persona.metapersona.usuari is not null %}
+				   		    	<span class="subtitle"><a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.metapersona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
+		   						{{ persona.metapersona.usuari.user }}</a></span>
+				   		    {% endif %}
+				   		</div>
 				   		<div class="data-detall-cell dadespersonals-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell dadespersonals-historialllicencies">
 				   			<a class="link-historial historial-llicencies nolink" href="{{ path('FecdasBundle_historialllicencies', { 'id': personaId }) }}"  alt="Historial de llicències" title="Historial de llicències">
@@ -210,8 +216,12 @@
 			   						<i class="fa fa-search fa-1x blue"></i></a>
 			   				{% endif %}
 				   		{% endif %}
+				   		{% if persona.metapersona.usuari is not null %}
+				   			<a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.metapersona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
+		   						<i class="fa fa-user-circle fa-1x darkgreen"></i></a>	
+				   		{% endif %}
 		   					<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
-		   						<i class="fa fa-user fa-1x red"></i></a>
+		   						<i class="fa fa-address-book fa-1x red"></i></a>	
 				   		</div>
 			   		</li>
 				{% endfor %}

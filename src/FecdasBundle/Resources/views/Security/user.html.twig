@@ -14,6 +14,14 @@
 		<div class="formuser-main content-center"> 
 		    <header>
 		        <h1>Racó de l'usuari</h1>
+		        {% if user != null %}
+    		        {% if user.isAdmin() %}
+    		        	<h2 class="red">Administrador</h2>
+    		        {% endif %}
+    		        {% if user.getRoleFederat() is not null and user.metapersona is not null %}
+    		        	<h2 class="darkgreen subtitle">({{ user.metapersona.nomcognoms }})</h2>
+    		        {% endif %}
+		        {% endif %}
 		    </header>
 		
 		    <div class="row">
@@ -25,7 +33,7 @@
 		    {{ form_start(form, {'action': path('FecdasBundle_user'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form-formuser'}}) }}
 		    <div class="row">
         		<div class="col-md-12">
-        		     <p class="subtitle blue">Actualització de la clau</p>
+        		     <p class="title-info">Darrera connexió: <span>{{ form.vars.value.lastaccess|date("d/m/Y H:i:s") }}</span></p>
         		</div>
         		<div class="col-md-12">
         			<div class="form-group input-group">
@@ -35,6 +43,9 @@
 					</div>
 				</div>
 				<div class="col-md-12">
+        		     <p class="subtitle blue">Actualització de la clau</p>
+        		</div>
+        		<div class="col-md-12">
         	    	<div class="form-group input-group">
 	   					<span class="input-group-addon input-group-addon-icon"><i class="fa fa-key fa-1x blue"></i></span>
 	   					{{ form_label(form.pwd.first, 'Nova paraula clau', { 'label_attr': {'class': 'sr-only'} }) }}
@@ -73,14 +84,22 @@
       					</label>
       					</div>
     				</div>-->
-        			 <div id="formuser-rest"  class="hidden">{{ form_widget(form.recoverytoken) }} {{ form_widget(form.usertoken) }} {{ form_rest(form) }}</div>
+        			 <div id="formuser-rest"  class="hidden">{{ form_widget(form.id) }} {{ form_widget(form.recoverytoken) }} {{ form_widget(form.usertoken) }} {{ form_rest(form) }}</div>
         			 
 			   		 <button class="user-submit btn btn-default btn-block" type="submit"><i class="fa fa-save fa-1x blue"></i> Desar</button>
-					 
         		</div>
-        		<div class="col-md-12 space50">
-        		     <p class="title-info">Darrera connexió: <span>{{ form.vars.value.lastaccess|date("d/m/Y H:i:s") }}</span></p>
-        		</div>
+        		{% if user != null %}
+            		<div class="col-md-12 space50">
+    			   		 <div class="alert alert-danger" role="alert">
+    			   		 	<div class="form-horizontal">
+    			   		 		<div class="form-group form-group-sm">
+        							 <label class="col-md-7 control-label red">Donar de baixa l'usuari?</label>
+        							 <div class="col-md-5"><a href="{{ path('FecdasBundle_baixausuari', {'id': user.id }) }}" class="remove-user btn btn-default btn-sm bg-danger btn-block" type="button"><i class="fa fa-trash fa-1x red"></i> Baixa</a></div>
+        						</div>
+    			   		 	</div>
+    			   		 </div>
+            		</div>
+            	{% endif %}
 			 </div>
 	   		{{ form_end(form) }}
 	   	</div>
@@ -88,3 +107,41 @@
     
 {% endblock %}
 
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		$(".remove-user").click(function(e) {
+			e.preventDefault();
+			$('.alert .alert-dismissable').remove();
+
+			var url = $(this).attr("href");
+
+			dialegConfirmacio( "Segur que vols donar de baixar l'accés d'aquest usuari?", "Abans de continuar...", 0, 500, function() {
+
+				$.get(url, function(data) {
+
+					var base_url = window.location.origin;
+
+					window.location = base_url;
+					
+		        }).fail( function(xhr, status, error) {
+					// xhr.status + " " + xhr.statusText, status, error
+					closeDialegConfirmacio();
+					
+					var sms = smsResultAjax('KO', xhr.responseText);
+							 
+					$('.block-errors').html(sms);
+				});
+	        	
+	        }, function() { closeDialegConfirmacio(); }, function() {});
+		});
+	});
+
+</script>
+
+{% endblock %}			

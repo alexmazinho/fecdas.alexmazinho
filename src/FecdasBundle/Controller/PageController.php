@@ -49,6 +49,19 @@ class PageController extends BaseController {
 			$form->handleRequest($request);
 
 			if ($form->isValid()) {
+			    
+			    $formdata = $request->request->get('contact');
+			    if (isset($formdata['telephone']) && $formdata['telephone'] != '') {
+			        
+			        $this->logEntry($contact->getEmail(), 'CONTACT SPAM', 
+			            $request->server->has('REMOTE_ADDR')?$request->server->get('REMOTE_ADDR'):'NO ADDRESS', 
+			            $request->server->has('HTTP_USER_AGENT')?$request->server->get('HTTP_USER_AGENT'):'NO AGENT',
+			            'subject: '.$contact->getSubject().' tel:'.$formdata['telephone'].' sms: '.$contact->getBody());
+			        return $this->redirect($this->generateUrl('FecdasBundle_contact'));
+			    }
+			    
+			    if ($form->getData()->getTelephone())
+			    
 				$message = \Swift_Message::newInstance()
 				->setSubject('::Contacte de Fecdas::'. $form->getData()->getSubject())
 				->setFrom($form->getData()->getEmail())

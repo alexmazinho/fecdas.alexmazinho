@@ -32,6 +32,13 @@
 						{{ form_widget(form.email, { 'attr': {'class': 'form-control','placeholder':'Adreça de correu (Obligatori)'} }) }}
 					</div>
 				</div>
+				<div class="col-md-12 hidden">				
+					<div class="form-group input-group">
+	   					<span class="input-group-addon input-group-addon-icon"></span>
+	   					{{ form_label(form.telephone, 'Telèfon', { 'label_attr': {'class': 'sr-only'} }) }}
+						{{ form_widget(form.telephone, { 'attr': {'class': 'form-control','placeholder':'Telèfon'} }) }}
+					</div>
+				</div>
 				<div class="col-md-12">				
 					<div class="form-group input-group">
 	   					<span class="input-group-addon input-group-addon-icon"></span>

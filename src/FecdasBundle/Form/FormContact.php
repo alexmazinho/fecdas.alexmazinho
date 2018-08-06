@@ -22,6 +22,10 @@ class FormContact extends AbstractType {
 				'attr' => (array('readonly'=>"readonly")))); 
 		else $builder->add('subject', 'text');
 		$builder->add('body', 'textarea');
+		$builder->add('telephone', 'text',  array(
+		        'mapped'      => false,
+		        'required'    => false  
+		));   // Fake antispam. CSS hidden field
 		
 	}
 	

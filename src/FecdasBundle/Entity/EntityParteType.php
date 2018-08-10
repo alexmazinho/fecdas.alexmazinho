@@ -2,7 +2,6 @@
 namespace FecdasBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -128,7 +127,8 @@ class EntityParteType {
 	 */
 	public function esLlicenciaDia()
 	{
-		return $this->id == BaseController::ID_LLICENCIES_DIA;
+	    return ($this->getEs365() && $this->getFinal() != Null &&
+	        is_numeric($this->getFinal()) && $this->getFinal() == 0);
 	}
 
 	

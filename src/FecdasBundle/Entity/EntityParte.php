@@ -244,6 +244,22 @@ class EntityParte extends EntityComanda {
 	}
 	
 	/**
+	 * Get periode
+	 *
+	 * @return string
+	 */
+	public function getPeriode()
+	{
+	    $strTipus = "";
+	    if ($this->getNumLlicencies() > 1) $strTipus .= $this->isAsseguranca()?" assegurances: ":" llicències: ";
+	    else $strTipus .= $this->isAsseguranca()?" assegurança: ":" llicència: ";
+	    
+	    if ($this->getTipus()->esLlicenciaDia()) return "Data".$strTipus.$this->getDataCaducitat()->format('d/m/Y');
+	    
+	    return "Vigència".$strTipus.$this->getDataalta()->format('d/m/Y')." a ".$this->getDataCaducitat()->format('d/m/Y');
+    }
+	
+	/**
 	 * Get prefix albarà duplicats. Sobreescriptura
 	 *
 	 * @return string

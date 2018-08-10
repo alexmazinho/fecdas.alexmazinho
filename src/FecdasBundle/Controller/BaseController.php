@@ -44,7 +44,6 @@ class BaseController extends Controller {
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 10;
-	const ID_LLICENCIES_DIA = 11;
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
@@ -848,7 +847,7 @@ class BaseController extends Controller {
         /* Validar persones noves (alta > 2016-09-01 si tenen mail informat 
          * Llicències diferents de la diària
          */
-        if ($tipus->getId() != self::ID_LLICENCIES_DIA) {
+		if (!$tipus->esLlicenciaDia()) {
             $persona = $llicencia->getPersona();
             if ($persona->getDataentrada()->format('Y-m-d') > self::INICI_VALIDACIO_MAIL) {
                 if ($persona->getMail() == null || $persona->getMail() == "") 
@@ -928,7 +927,7 @@ class BaseController extends Controller {
 	
 	protected function validaLlicenciaInfantil(EntityParte $parte, EntityLlicencia $llicencia) {
 		// Valida menors, nascuts després del 01-01 any actual - 12
-		if ($parte->getTipus()->getId() == self::ID_LLICENCIES_DIA) return true; // Llicències Dia no aplica
+	    if ($parte->getTipus()->esLlicenciaDia()) return true; // Llicències Dia no aplica
 
 		$nascut = $llicencia->getPersona()->getDatanaixement();
 	
@@ -1602,7 +1601,13 @@ class BaseController extends Controller {
 			if ($factura->esAnulacio()) $strConcepte = ($factura->getConcepte() != ''?$factura->getConcepte():'Anul·lació ').' factura '.$comanda->getFactura()->getNumFactura().' '.$comanda->getFactura()->getDatafactura()->format('d/m/Y');
 			else {
 				if ($factura->getImport() < 0) $strConcepte = 'Factura anul·lació '.$comanda->getComentaris();
-				else $strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
+				else {
+				    //$strConcepte = 'Comanda '.$comanda->getNumComanda().' '.$comanda->getDataentrada()->format('d/m/Y');
+				    $strConcepte = 'Comanda '.$comanda->getNumComanda();
+				    if ($comanda->esParte()) {
+				        $strConcepte .= BR.'<span style="font-style:italic; font-size:10px; color: #646464; ">'.$comanda->getPeriode().'</span>';
+				    }
+				}
 			}
 			
 			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
@@ -2392,13 +2397,17 @@ class BaseController extends Controller {
 		$tipus = $parte->getTipus();
 		$titolPlastic = mb_strtoupper($tipus->getTitol(), 'UTF-8');
 	
+		if (strpos($titolPlastic, "__CLUB__") !== false) {
+		    $titolPlastic = str_replace("__CLUB__", $parte->getClub()->getNom(), $titolPlastic);
+		    
+		    return $titolPlastic;
+		}
+		    
 		if (strpos($titolPlastic, "__DESDE__-__FINS__") === false) {
 			$titolPlastic = str_replace("__DESDE__", $parte->getDataalta()->format('Y'), $titolPlastic);
 		} else {
 			$titolPlastic = str_replace("__DESDE__-__FINS__", $parte->getCurs(), $titolPlastic);
 		}
-		
-		
 		
 		return $titolPlastic;
 	}

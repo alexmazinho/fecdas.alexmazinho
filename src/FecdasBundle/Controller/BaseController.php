@@ -861,7 +861,7 @@ class BaseController extends Controller {
 
             foreach ($metapersona->getLlicencies() as $lic) {
              
-                if ($lic->getParte()->getTipus()->getLimittramit()) 
+                if (!$lic->isBaixa() && $lic->getParte()->getTipus()->getLimittramit()) 
                     throw new \Exception('Aquest tipus de llicència no es pot tramitar novament per a '.
                         $metapersona->getDni().' ('.$llicencia->getPersona()->getNomCognoms().'). '.
                         ' Ja es va tramitar amb anterioritat per al periode  '.$lic->getParte()->getDataalta()->format('d/m/Y').

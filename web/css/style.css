@@ -2526,7 +2526,7 @@ input#formuserclub-randompassword { width: 150px; }
 
 #adreca-header { display: block; width:100%; position: relative; margin-bottom: 7px; }
 
-.input-subtext { /*float:right; */ color: #555555; font-style: italic; font-size: 12px; position:absolute; right: 20px; bottom: -20px;}
+.input-subtext { /*float:right; */ color: #555555; font-style: italic; font-size: 12px; position:absolute; left:0; }
 
 #sms-mailpersona { float:right; color: #555555; font-style: italic; font-size: 12px; right: 20px;}
 

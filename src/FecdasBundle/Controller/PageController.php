@@ -1220,8 +1220,8 @@ class PageController extends BaseController {
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 				}
 
-				if ($p['foto'] != '') $fotoPath = $p['foto'];
-				if ($p['certificat'] != '') $certificatPath = $p['certificat'];
+				if (isset($p['foto']) && $p['foto'] != '') $fotoPath = $p['foto'];
+				if (isset($p['certificat']) && $p['certificat'] != '') $certificatPath = $p['certificat'];
 				
 				if (isset($p['altrestitolscurrent']) && $p['altrestitolscurrent'] != '') {
 					$altrestitolscurrent = 	explode(";", $p['altrestitolscurrent']);

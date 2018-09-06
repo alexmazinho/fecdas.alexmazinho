@@ -253,7 +253,8 @@ class CronController extends BaseController {
 		// Crear índex taula partes per data entrada, tipus 8 i 9 
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t ";
 		$strQuery .= "WHERE p.databaixa IS NULL  ";
-		$strQuery .= " AND t.es365 = 1 AND t.id <> 8 AND t.id <> 9 AND t.id <> 12 and t.id <> 4 ";
+		//$strQuery .= " AND t.es365 = 1 AND t.id <> 8 AND t.id <> 9 AND t.id <> 12 and t.id <> 4 ";
+		$strQuery .= " AND t.es365 = 1 AND t.id = 7 ";
 		$strQuery .= " AND p.dataalta >= :iniNotificacio ";
 		$strQuery .= " AND p.dataalta < :fiNotificacio";
 		/* Valida tipus actiu --> és la única que es pot fer */
@@ -289,7 +290,8 @@ class CronController extends BaseController {
 		
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityParte p JOIN p.tipus t ";
 		$strQuery .= "WHERE p.databaixa IS NULL  ";
-		$strQuery .= " AND t.es365 = 1 AND t.id = 4 AND t.actiu = 1 ";
+		//$strQuery .= " AND t.es365 = 1 AND t.id = 4 AND t.actiu = 1 ";
+		$strQuery .= " AND t.es365 = 1 AND t.id IN (4, 13) AND t.actiu = 1 ";
 		$strQuery .= " AND p.dataalta >= :iniNotificacio ";
 		$strQuery .= " AND t.final = :fiNotificacio ";
 		
@@ -1428,7 +1430,7 @@ class CronController extends BaseController {
                 
                 $body  = "<p>Benvolgut club ".$club->getNom()."</p>";
                 $body .= "<p>Se us acaba d'enviar la factura número ".$factura->getNumFactura()." . Segons les nostres dades aquesta factura consta ";
-                $body .= "com a pendent de pagament per part del club en data del ".$factura->getDatafactura()->format('d-m-Y').".</p>";
+                $body .= "com a pendent de pagament per part del club en data del ".$factura->getDatafactura()->format('d/m/Y').".</p>";
                 $body .= "<p>Us recordem que per consolidar la validesa de la tramitació cal fer efectiu el pagament abans de 10 dies, ";
                 $body .= "en cas contrari ens veurem obligats a donar-la de baixa. Gràcies per la vostra comprensió.</p>";
                 
@@ -1596,7 +1598,7 @@ class CronController extends BaseController {
     							if ($parteoverlap->getNumrelacio() != null)
     								$body .= "<p><strong>Relació </strong> : " . $parteoverlap->getNumrelacio() . "</p>";
     							else 
-    								$body .= "<p><strong>En data </strong> : " . $parteoverlap->getDataalta()->format('Y-m-d') . "</p>";
+    								$body .= "<p><strong>En data </strong> : " . $parteoverlap->getDataalta()->format('d/m/Y') . "</p>";
     							$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
     						}
     					}

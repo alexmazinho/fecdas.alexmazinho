@@ -101,7 +101,7 @@
 				    	<thead id="list-header">
 						   	<tr>
 						   		{% for headcol in saldos.header %}
-						   			 <th class="header-saldos-{{ headcol.class }} col-listheader collistheader-noorder">{{ headcol.text }}</th>
+						   			 <th class="header-saldos-{{ headcol.class }} col-listheader collistheader-noorder">{{ headcol.text|nl2br }}</th>
 						   		{% endfor %}
 						   	</tr>
 					   	</thead>

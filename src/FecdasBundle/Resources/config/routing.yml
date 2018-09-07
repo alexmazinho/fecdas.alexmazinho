@@ -763,6 +763,12 @@ FecdasBundle_dadescompeticio:
 # ---------------------------------------------------------------------------
 
 
+FecdasBundle_checkregistresaldos:
+    path:  /checkregistresaldos
+    defaults: { _controller: "FecdasBundle:Offline:checkregistresaldos" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_historictitols:
     path:  /historictitols
     defaults: { _controller: "FecdasBundle:Offline:historictitols" }

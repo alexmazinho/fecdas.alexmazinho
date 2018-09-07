@@ -760,7 +760,7 @@ class FacturacioController extends BaseController {
 							'club' => array('text' => 'Club', 'class' => 'club'), 
 							'exercici' => array('text' => 'Exercici', 'class' => 'exercici'),
 							'romanent' => array('text' => 'Romanent', 'class' => 'romanent'),
-							'acumulat' => array('text' => 'Acumulat', 'class' => 'acumulat')),
+							'acumulat' => array('text' => 'Acumulat'.PHP_EOL.'anterior', 'class' => 'acumulat')),
 			'data' => array() 
 		);
 		
@@ -856,8 +856,8 @@ class FacturacioController extends BaseController {
 							
 							$key = $saldo['anyregistre'];
 							if (!isset($saldosArray['header'][$key])) {
-								$saldosArray['header'][$key.'_in'] = array('text' => 'Entrades', 'class' => 'entrades');
-								$saldosArray['header'][$key.'_out'] = array('text' => 'Sortides', 'class' => 'sortides');
+							    $saldosArray['header'][$key.'_in'] = array('text' => 'Entrades '.$saldo['anyregistre'], 'class' => 'entrades');
+								$saldosArray['header'][$key.'_out'] = array('text' => 'Sortides '.$saldo['anyregistre'], 'class' => 'sortides');
 								$saldosArray['header'][$key] = array('text' => 'Saldo '.$saldo['anyregistre'], 'class' => 'saldo');	
 							}
 							

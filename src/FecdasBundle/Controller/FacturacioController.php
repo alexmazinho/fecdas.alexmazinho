@@ -1829,7 +1829,7 @@ class FacturacioController extends BaseController {
 		if ($action == 'csv') {
 			$filename = "export_apunts_".Funcions::netejarPath($club->getNom())."_".$datadesde->format('Y-m-d')."_".$datafins->format('Y-m-d')."_".date('His').".csv";
 			
-			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Comanda', 'Concepte', 'Saldo a '.$datafins->format('Y-m-d'), 'Entrada'); 
+			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Saldo comptable', 'Comanda', 'Concepte', 'Saldo operacions', 'Entrada'); 
 			
 			$data = array(); // Get only data matrix
 			foreach ($apunts as $row) {
@@ -1853,7 +1853,9 @@ class FacturacioController extends BaseController {
 				if ($row['anulacio'] == true) $strNum .= '(-)';
 				$strNum .= $row['num']; 
 				
-				$rowdata = array( $strNum, $row['data']->format('Y-m-d'), $deure, $haver, $strComanda, $strConcepte, number_format($row['saldo'], 2, ',', '.'), $row['entrada']->format('Y-m-d H:i:s')); 
+				$strSaldoCompta = is_numeric($row['saldocompta'])?number_format($row['saldocompta'], 2, ',', '.'):$row['saldocompta'];
+				
+				$rowdata = array( $strNum, $row['data']->format('Y-m-d'), $deure, $haver, $strSaldoCompta, $strComanda, $strConcepte, number_format($row['saldo'], 2, ',', '.'), $row['entrada']->format('Y-m-d H:i:s')); 
 				
 				$data[] = $rowdata;
 			}
@@ -1916,7 +1918,20 @@ class FacturacioController extends BaseController {
 		$apunts = array();
 		
 		$saldo = $club->getSaldo();
-
+		
+		$iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici()); 
+		if ($datadesde->format('Y-m-d') < $iniciExercici->format('Y-m-d')) $datadesde = $iniciExercici;
+		$saldosArray = $this->saldosEntreClub($iniciExercici, $datadesde, $club);
+        
+		$saldoCompta = 0;
+		if (isset($saldosArray['data']) && count(array_values($saldosArray['data'])) >= 1) {
+		    $saldosArrayValues = array_values($saldosArray['data']);
+		    $saldosInici = $saldosArrayValues[ count($saldosArrayValues) - 1];
+		    $saldoCompta = $saldosInici['saldocompta'];
+		} else {
+		    $saldoCompta = 'NA';
+		}
+		
 		// rebuts i factures a format comú
 		foreach ($factures as $factura) {
 			if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
@@ -1937,7 +1952,8 @@ class FacturacioController extends BaseController {
 							'concepte'	=> $factura->getConcepte(),
 							'extra'		=> $extra,
 							'compta'	=> ($factura->getComptabilitat()!=null?$factura->getComptabilitat()->getDataenviament():''),
-							'saldo'		=> 0
+							'saldo'		=> 0,
+			                'saldocompta' => 0
 							
 			); 
 		}
@@ -1955,12 +1971,37 @@ class FacturacioController extends BaseController {
 							'concepte'	=> $rebut->getComentari(),
 							'extra'		=> false,
 							'compta'	=> ($rebut->getComptabilitat()!=null?$rebut->getComptabilitat()->getDataenviament():''),
-							'saldo'		=> 0
+            			    'saldo'		=> 0,
+			                'saldocompta' => 0
 							
 			);
 		}
 		
-		// Ordenar per data
+		//$current = $this->getCurrentDate(); // Moviments data futura es tenen en compte també
+		
+		// Ordenar per data entrada
+		usort($apunts, function($a, $b) {
+		    if ($a === $b) {
+		        return 0;
+		    }
+		    
+		    return ($a['entrada'] > $b['entrada'])? -1:1;
+		});
+		
+		    // Calcular saldo i filtre datafins
+		foreach ($apunts as $k => $apunt) {
+		    $apunts[$k]['saldo'] = $saldo;
+		    
+		    if ($apunt['tipus'] == 'R') $saldo -= $apunt['import'];
+		    else $saldo += $apunt['import'];
+		    
+		    /*if ($datafins != null && $datafins->format('Y-m-d') < $current->format('Y-m-d') && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) {
+		    // Només treure si són consultes fins a data anterior a avui
+		      unset($apunts[$k]);
+		    }*/
+		}
+		
+		// Ordenar per data apunt
 		usort($apunts, function($a, $b) {
 			if ($a === $b) {
 				return 0;
@@ -1973,19 +2014,14 @@ class FacturacioController extends BaseController {
 			
 		});
 		
-		$current = $this->getCurrentDate(); // Moviments data futura es tenen en compte també
-	
-		// Calcular saldo i filtre datafins
-		foreach ($apunts as $k => $apunt) {
-			$apunts[$k]['saldo'] = $saldo;
-			
-			if ($apunt['tipus'] == 'R') $saldo -= $apunt['import'];
-			else $saldo += $apunt['import'];
-			
-			if ($datafins != null && $datafins->format('Y-m-d') < $current->format('Y-m-d') && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) {
-				// Només treure si són consultes fins a data anterior a avui	
-				unset($apunts[$k]);
-			} 
+		
+		for ($k = count($apunts) - 1; $k >= 0; $k--) {
+		    $apunt = $apunts[$k];
+			if (is_numeric($saldoCompta) && $apunt['data']->format('Y-m-d') > $datadesde->format('Y-m-d')) {   // No incloure factures amb $datadesde, ja estan incloses al saldo comptable
+			    if ($apunt['tipus'] == 'R') $saldoCompta += $apunt['import'];
+			    else $saldoCompta -= $apunt['import'];
+			}
+			$apunts[$k]['saldocompta'] = $saldoCompta;
 		}
 		return $apunts;
 	}

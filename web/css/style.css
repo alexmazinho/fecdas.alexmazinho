@@ -1092,24 +1092,26 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 #header-apunt-summary-saldo { width: 15%; text-align: right; font-size: 1.3em;  }
 
 #header-apunt-id  { display: none; }
-#header-apunt-num { width: 10%; text-align: left; }
+#header-apunt-num { width: 9%; text-align: left; }
 #header-apunt-data { width: 10%; text-align: center; }
 #header-apunt-deure { width: 7%; text-align: right; }
 #header-apunt-haver { width: 7%; text-align: right; }
-#header-apunt-comanda { width: 15%; text-align: center; }
-#header-apunt-concepte { width: 20%; text-align: left; }
+#header-apunt-saldocompta { width: 10%; text-align: right; }
+#header-apunt-comanda { width: 14%; text-align: center; }
+#header-apunt-concepte { width: 16%; text-align: left; }
 #header-apunt-saldo { width: 10%; text-align: right; }
-#header-apunt-entrada { width: 15%; text-align: right; font-size: 0.9em; }
+#header-apunt-entrada { width: 14%; text-align: right; font-size: 0.9em; }
 
 .data-detall-cell.apunt-id  { display: none; }
-.data-detall-cell.apunt-num { width: 10%; text-align: left; font-size: 0.9em;}
+.data-detall-cell.apunt-num { width: 9%; text-align: left; font-size: 0.9em;}
 .data-detall-cell.apunt-data { width: 10%; text-align: center; font-size: 0.9em;}
 .data-detall-cell.apunt-deure { width: 7%; text-align: right; font-size: 0.9em;}
 .data-detall-cell.apunt-haver { width: 7%; text-align: right; font-size: 0.9em;}
-.data-detall-cell.apunt-comanda { width: 15%; text-align: center; font-size: 0.9em;}
-.data-detall-cell.apunt-concepte { width: 20%; text-align: left; font-size: 0.9em; }
+.data-detall-cell.apunt-saldocompta { width: 10%; text-align: right; }
+.data-detall-cell.apunt-comanda { width: 14%; text-align: center; font-size: 0.9em;}
+.data-detall-cell.apunt-concepte { width: 16%; text-align: left; font-size: 0.9em; }
 .data-detall-cell.apunt-saldo { width: 10%; text-align: right; }
-.data-detall-cell.apunt-entrada { width: 15%; text-align: right; font-size: 0.9em; }
+.data-detall-cell.apunt-entrada { width: 14%; text-align: right; font-size: 0.9em; }
 
  
  /*.data-detall.data-detall-factura { background-color: #F9FEF9; }

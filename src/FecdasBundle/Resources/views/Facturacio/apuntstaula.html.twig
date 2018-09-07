@@ -1,7 +1,7 @@
 {# src/Fecdas/FecdasBundle/Resources/views/Facturacio/apuntstaula.html.twig #}
 <div class="table-header">	
 	<div id="summary-header">
-		<div id="header-apunt-summary-club" class="col-listheader">Saldo actual del club: </div>
+		<div id="header-apunt-summary-club" class="col-listheader">Saldo del club a {{ pagination.datafins }}: </div>
 	   	<div id="header-apunt-summary-saldo" class="col-listheader">{{ club.saldo|number_format(2, ',', '.') }}€</div>
 	</div>
 </div>
@@ -12,9 +12,10 @@
 		<div id="header-apunt-data" class="col-listheader collistheader-noorder">Data</div>
 		<div id="header-apunt-deure" class="col-listheader collistheader-noorder">Deure</div>
 		<div id="header-apunt-haver" class="col-listheader collistheader-noorder">Haver</div>
+		<div id="header-apunt-saldocompta" class="col-listheader collistheader-noorder">Saldo Comptable</div>
 		<div id="header-apunt-comanda" class="col-listheader collistheader-noorder">Comanda</div>
 		<div id="header-apunt-concepte" class="col-listheader collistheader-noorder">Concepte</div>
-		<div id="header-apunt-saldo" class="col-listheader collistheader-noorder">Saldo a {{ pagination.datafins }}</div>
+		<div id="header-apunt-saldo" class="col-listheader collistheader-noorder">Saldo Operacions</div>
 		<div id="header-apunt-entrada" class="col-listheader collistheader-noorder">Entrada</div>
    	</div>
 </div>
@@ -37,6 +38,7 @@
 	   			<div class="data-detall-cell apunt-data">{{ apunt.data|date('d/m/Y') }}</div>
 	   			<div class="data-detall-cell apunt-deure red">{% if apunt.tipus == 'F' %}{{ apunt.import|number_format(2, ',', '.') }}€{% endif %}</div>
 	   			<div class="data-detall-cell apunt-haver green">{% if apunt.tipus == 'R' %}{{ apunt.import|number_format(2, ',', '.') }}€{% endif %}</div>
+	   			<div class="data-detall-cell apunt-saldocompta">{% if apunt.saldocompta matches '/^[-+]?[0-9]*\\.?[0-9]+$/' %}{{ apunt.saldocompta|number_format(2, ',', '.') }}€{% else %}{{ apunt.saldocompta }}{% endif %}</div>
 	   			<div class="data-detall-cell apunt-comanda">
 	   				{% for num, comanda in apunt.comandes %} 
 			   			<a class="editar-comanda link" href="{{ path('FecdasBundle_comandes', { 'numcomanda': comanda.num }) }}" alt="Veure comanda" title="Veure comanda">

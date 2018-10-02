@@ -651,10 +651,6 @@ class FacturacioController extends BaseController {
 		
 		$this->logEntryAuth('REGISTRE SALDOS', ($club != null?$club->getCodi():"TOTS")." ".$desde->format('Y-m-d H:i:s')." - ".$fins->format('Y-m-d H:i:s'));
 		
-		// !!!!!!!!!!! CONSULTAR I MOSTRAR REBUTS ENTRATS AL 2016 AMB DATA PAGAMENT 2015 !!!!!! POSSIBLES FONTS D'ERRADES
-		$rebutsControlar = array();
-		if ($club != null) $rebutsControlar = $this->rebuts2016pagats2015($club->getCodi());
-		
 		
 		$formBuilder = $this->createFormBuilder()
 			->add('desde', 'date', array(
@@ -682,12 +678,12 @@ class FacturacioController extends BaseController {
 		
 		if ($grup == 'D') return $this->render('FecdasBundle:Facturacio:registresaldos.html.twig',
 							$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-									'saldos' => $saldosArray, 'club' => $club, 'rebutscontrol' => $rebutsControlar)
+									'saldos' => $saldosArray, 'club' => $club)
 							));
 		
 		return $this->render('FecdasBundle:Facturacio:registresaldosvertical.html.twig',
 					$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(),
-							'saldos' => $saldosArray, 'club' => $club, 'rebutscontrol' => $rebutsControlar)
+							'saldos' => $saldosArray, 'club' => $club)
 					));
 	}	
 	
@@ -1829,7 +1825,7 @@ class FacturacioController extends BaseController {
 		if ($action == 'csv') {
 			$filename = "export_apunts_".Funcions::netejarPath($club->getNom())."_".$datadesde->format('Y-m-d')."_".$datafins->format('Y-m-d')."_".date('His').".csv";
 			
-			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Saldo comptable', 'Comanda', 'Concepte', 'Saldo operacions', 'Entrada'); 
+			$header = array('Núm', 'Data', 'Deure', 'Haver', 'Saldo comptable', 'Comanda', 'Concepte', 'Entrada'); 
 			
 			$data = array(); // Get only data matrix
 			foreach ($apunts as $row) {
@@ -1855,7 +1851,7 @@ class FacturacioController extends BaseController {
 				
 				$strSaldoCompta = is_numeric($row['saldocompta'])?number_format($row['saldocompta'], 2, ',', '.'):$row['saldocompta'];
 				
-				$rowdata = array( $strNum, $row['data']->format('Y-m-d'), $deure, $haver, $strSaldoCompta, $strComanda, $strConcepte, number_format($row['saldo'], 2, ',', '.'), $row['entrada']->format('Y-m-d H:i:s')); 
+				$rowdata = array( $strNum, $row['data']!=null?$row['data']->format('Y-m-d'):'', $deure, $haver, $strSaldoCompta, $strComanda, $strConcepte, $row['entrada']!=null?$row['entrada']->format('Y-m-d H:i:s'):''); 
 				
 				$data[] = $rowdata;
 			}
@@ -1871,14 +1867,15 @@ class FacturacioController extends BaseController {
 		$total = count($apunts);		
 
 		$pagination = array('page' => $page, 'perpage' => $perpage, 'total' => $total, 'pages' => ceil($total/$perpage), 'club' => $club->getCodi(), 'datadesde' => $datadesde->format('d/m/Y'), 'datafins' => $datafins->format('d/m/Y') );
-		
+
+		$saldoFinal = $total > 0?$apunts[0]['saldocompta']:0;
 		$apunts = array_slice($apunts, $offset, $perpage, true);
-		
+ 
 		if ($request->isXmlHttpRequest()) {
 			// Crida ajax. Recarrega taula
 			return $this->render('FecdasBundle:Facturacio:apuntstaula.html.twig',
 				$this->getCommonRenderArrayOptions(array(
-						'apunts' => $apunts, 'pagination' => $pagination, 'club' => $club)
+				    'apunts' => $apunts, 'pagination' => $pagination, 'club' => $club, 'saldofinal' => $saldoFinal)
 				));
 		} 
 		
@@ -1907,13 +1904,147 @@ class FacturacioController extends BaseController {
 						'form' => $formBuilder->getForm()->createView(),
 						'club' => $club,
 						'apunts' => $apunts,
+				        'saldofinal' => $saldoFinal,
 						'pagination' => $pagination)
 				));
 	}
 
 	private function consultaApunts($club, $datadesde, $datafins) {
+	    // Consulta rebuts factures datacomptable >= $datadesde ordenades datacomptable ASC
+	    $factures = $this->consultaFacturesConsolidades($datadesde, $datafins, $club, false, false);  
+	    $rebuts = $this->consultaRebutsConsolidats($datadesde, $datafins, $club, false);  // No inclou baixes
+	    $apunts = array();
+	    
+	    //$saldo = $club->getSaldo();
+	    
+	    $iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici());
+	    //if ($datadesde->format('Y-m-d') < $iniciExercici->format('Y-m-d')) $datadesde = $iniciExercici;
+	    //$saldosArray = $this->saldosEntreClub($iniciExercici, $datadesde, $club); 
+	    $saldoInicial = $this->saldosEntre($iniciExercici, null, $club, 1); // Consulta primer registre saldos des de inici exercici
+	    
+	    $saldoCompta = 0;
+	    //$saldo = 0;
+	    if (count($saldoInicial) >= 1) {
+	        //$saldo = $saldoInicial[0]->getSaldo();
+	        $saldoCompta = $saldoInicial[0]->getSaldo() - $saldoInicial[0]->getEntrades() + $saldoInicial[0]->getSortides();
+	    //} else {
+	    //    $saldoCompta = 'NA';
+	    }
+	    
+	    // Apunt previ a l'inici de la consulta
+	    $apunts[] = array(
+	        'tipus' 	=> 'I',
+	        'id' 		=> 0,
+	        'num' 		=> 0,
+	        'anulacio'	=> false,
+	        'data' 		=> null,
+	        'entrada' 	=> null,
+	        'import' 	=> 0,
+	        'comandes'	=> array(),
+	        'concepte'	=> 'Saldo comptable inicial',
+	        'extra'		=> '',
+	        'compta'	=> '',
+	        //'saldo'		=> $saldo,
+	        'saldocompta' => $saldoCompta
+	        
+	    );
+	    
+	    $if = 0;
+	    $ir = 0;
+
+	    while ($if < count($factures) || $ir < count($rebuts)) {
+	        
+	        $factura = $if < count($factures)?$factures[$if]:null;
+	        $rebut = $ir < count($rebuts)?$rebuts[$ir]:null;
+	        
+	        if ($factura != null && ($rebut == null || $factura->getDatafactura()->format('Y-m-d H:i:s') < $rebut->getDatapagament()->format('Y-m-d H:i:s') ) ) {
+	            
+	            $saldoCompta -= $factura->getImport(); 
+	            //if ($factura->getDatafactura()->format('Y-m-d') > $iniciExercici->format('Y-m-d')) $saldoCompta -= $factura->getImport(); 
+	            //else $saldoCompta += $factura->getImport();  // Les factures amb data == iniciexercici ja estàn comptades al saldo comptable
+	            //if ($factura->getDataentrada()->format('Y-m-d') >= $iniciExercici->format('Y-m-d')) $saldo -= $factura->getImport();
+	            
+	            if ($factura->getDatafactura()->format('Y-m-d') < $datadesde->format('Y-m-d')) {
+	                // Actualitzar registre previ
+	                //$apunts[0]['saldo'] = $saldo;
+	                $apunts[0]['saldocompta'] = $saldoCompta;
+	            } else {
+	                if ($factura->esAnulacio()) $comanda = $factura->getComandaAnulacio();
+	                else $comanda = $factura->getComanda();
+	                
+	                $extra = array('dades' => $factura->getConcepteExtra(), 'more' => false);
+	                if ($factura->getNumDetallsExtra() > 2) $extra['more'] = true;
+	                
+	                $apunts[] = array(
+	                    'tipus' 	=> 'F',
+	                    'id' 		=> $factura->getId(),
+	                    'num' 		=> $factura->getNumfactura(),
+	                    'anulacio'	=> $factura->esAnulacio(),
+	                    'data' 		=> $factura->getDatafactura(),
+	                    'entrada' 	=> $factura->getDataentrada(),
+	                    'import' 	=> $factura->getImport(),
+	                    'comandes'	=> array( $comanda->getNum() => array( 'num' => $comanda->getNumcomanda(), 'import' => $comanda->getTotalDetalls() ) ),
+	                    'concepte'	=> $factura->getConcepte(),
+	                    'extra'		=> $extra,
+	                    'compta'	=> ($factura->getComptabilitat()!=null?$factura->getComptabilitat()->getDataenviament():''),
+	                    //'saldo'		=> $saldo,
+	                    'saldocompta' => $saldoCompta
+	                    
+	                );
+	            }
+	                
+	            $if++;
+            } else {
+                $saldoCompta += $rebut->getImport();
+                //if ($rebut->getDatapagament()->format('Y-m-d') > $iniciExercici->format('Y-m-d')) $saldoCompta += $rebut->getImport(); 
+                //else $saldoCompta -= $rebut->getImport(); // Els rebuts amb data == iniciexercici ja estàn comptades al saldo comptable
+                //if ($rebut->getDataentrada()->format('Y-m-d') >= $iniciExercici->format('Y-m-d')) $saldo += $rebut->getImport();
+                
+                if ($rebut->getDatapagament()->format('Y-m-d') < $datadesde->format('Y-m-d')) {
+                    // Actualitzar registre previ
+                    //$apunts[0]['saldo'] = $saldo;
+                    $apunts[0]['saldocompta'] = $saldoCompta;
+                } else {
+                    $apunts[] = array(
+                        'tipus' 	=> 'R',
+                        'id' 		=> $rebut->getId(),
+                        'num' 		=> $rebut->getNumrebut(),  // No hi ha rebuts anul·lació
+                        'anulacio'	=> false,
+                        'data' 		=> $rebut->getDatapagament(),
+                        'entrada' 	=> $rebut->getDataentrada(),
+                        'import' 	=> $rebut->getImport(),
+                        'comandes'	=> $rebut->getArrayNumsComandes(),
+                        'concepte'	=> $rebut->getComentari(),
+                        'extra'		=> false,
+                        'compta'	=> ($rebut->getComptabilitat()!=null?$rebut->getComptabilitat()->getDataenviament():''),
+                        //'saldo'		=> 0,
+                        'saldocompta' => $saldoCompta
+                        
+                    );
+                }
+
+                $ir++;
+	        }
+	        
+	    }
+	    
+	    $apuntInici = array_shift($apunts); // Treure el primer apunt 
+        // Ordenar per data apunt descendent
+        usort($apunts, function($a, $b) {
+            if ($a === $b) {
+                return 0;
+            }
+	            
+            if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['id'] > $b['id'])? -1:1;
+            return ($a['data'] > $b['data'])? -1:1;
+            
+        });
+        array_push($apunts, $apuntInici); // Afegir al final
+	            
+        return $apunts;
+		
 		// Consulta per $datafins null => calcular saldos des de saldo actual endarrera 
-		$factures = $this->consultaFacturesConsolidades($datadesde, null, $club, false, false);
+		/*$factures = $this->consultaFacturesConsolidades($datadesde, null, $club, false, false);
 		$rebuts = $this->consultaRebutsConsolidats($datadesde, null, $club, false);
 		$apunts = array();
 		
@@ -1979,7 +2110,7 @@ class FacturacioController extends BaseController {
 		
 		//$current = $this->getCurrentDate(); // Moviments data futura es tenen en compte també
 		
-		// Ordenar per data entrada
+		// Ordenar per data entrada descendent
 		usort($apunts, function($a, $b) {
 		    if ($a === $b) {
 		        return 0;
@@ -1995,21 +2126,21 @@ class FacturacioController extends BaseController {
 		    if ($apunt['tipus'] == 'R') $saldo -= $apunt['import'];
 		    else $saldo += $apunt['import'];
 		    
-		    /*if ($datafins != null && $datafins->format('Y-m-d') < $current->format('Y-m-d') && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) {
+		    //if ($datafins != null && $datafins->format('Y-m-d') < $current->format('Y-m-d') && $apunt['data']->format('Y-m-d') > $datafins->format('Y-m-d')) {
 		    // Només treure si són consultes fins a data anterior a avui
-		      unset($apunts[$k]);
-		    }*/
+		    //  unset($apunts[$k]);
+		    //}
 		}
 		
-		// Ordenar per data apunt
+		// Ordenar per data apunt descendent
 		usort($apunts, function($a, $b) {
 			if ($a === $b) {
 				return 0;
 			}
-			/*if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['tipus'] > $b['tipus'])? -1:1;
-			return ($a['data'] > $b['data'])? -1:1;*/
+			//if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['tipus'] > $b['tipus'])? -1:1;
+			//return ($a['data'] > $b['data'])? -1:1;
 			
-			if ($a['data']->format('Y-m-d') == $b['data']->format('Y-m-d')) return ($a['entrada']->format('Y-m-d H:i:s') > $b['entrada']->format('Y-m-d H:i:s'))? -1:1;
+			if ($a['data']->format('Y-m-d H:i:s') == $b['data']->format('Y-m-d H:i:s')) return ($a['id'] > $b['id'])? -1:1;
 			return ($a['data'] > $b['data'])? -1:1;
 			
 		});
@@ -2017,13 +2148,19 @@ class FacturacioController extends BaseController {
 		
 		for ($k = count($apunts) - 1; $k >= 0; $k--) {
 		    $apunt = $apunts[$k];
-			if (is_numeric($saldoCompta) && $apunt['data']->format('Y-m-d') > $datadesde->format('Y-m-d')) {   // No incloure factures amb $datadesde, ja estan incloses al saldo comptable
+			if (is_numeric($saldoCompta) && $apunt['data']->format('Y-m-d') > $datadesde->format('Y-m-d')) {   
 			    if ($apunt['tipus'] == 'R') $saldoCompta += $apunt['import'];
 			    else $saldoCompta -= $apunt['import'];
+			//} else {
+			    // Factures/rebuts amb data == $datadesde, ja estan incloses al saldo comptable
+			//    if ($apunt['tipus'] == 'R') $saldoCompta -= $apunt['import'];
+			//    else $saldoCompta += $apunt['import'];
+			//
 			}
 			$apunts[$k]['saldocompta'] = $saldoCompta;
 		}
 		return $apunts;
+		*/
 	}
 	
 	public function graellaproductesAction(Request $request) {

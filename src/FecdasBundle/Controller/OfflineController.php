@@ -17,237 +17,401 @@ class OfflineController extends BaseController {
     public function checkregistresaldosAction(Request $request) {
         // http://www.fecdas.test/checkregistresaldos?club=CAT514
         
-        if (!$this->isAuthenticated())
-            return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        if (!$this->isCurrentAdmin())
+            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
         
         $em = $this->getDoctrine()->getManager();
             
         $club = $request->query->get('club', '');
-        $saldos = array();
+        
+        $errors     = array();
+        $files      = array();
+        $zip        = null;        
+        $zipFilename = __DIR__.BaseController::PATH_TO_VARIS_FILES."checkregistresaldos".($club!=''?"_".$club:"").".zip";
+        $clubs      = array();
         
         try {
-            if ($club == '') throw new \Exception("Cal indicar el club!!");
-            
-            // Obtenir registre saldos des de la primera data disponible
-            $strQuery  = "  SELECT *  FROM m_saldos
-                            WHERE club LIKE '".$club."'
-                            ORDER BY dataregistre ASC";
-            
+            // Obtenir tots els clubs amb codi
+            $strQuery  = "SELECT codi, exercici, romanent, totalpagaments, totalllicencies, totalduplicats, totalaltres FROM m_clubs WHERE compte IS NOT NULL AND compte <> 0 ";
+            if ($club != '') $strQuery  .= " AND codi = '".$club."' ";
+            $strQuery  .= "ORDER BY codi";
+                
             $stmt = $em->getConnection()->prepare($strQuery);
             $stmt->execute();
-            $registresaldos = $stmt->fetchAll();
-            
-            if (count($registresaldos) == 0) throw new \Exception("Saldo inicial del club ".$club." no trobat!!");
-            
-            $saldoinicial = $registresaldos[0];
-            
-            $dataregistre       = \DateTime::createFromFormat('Y-m-d', $saldoinicial['dataregistre']);
-            $datafins           = new \DateTime();
-            //$exercici           = $saldo['exercici'];
-            $romanent           = $saldoinicial['romanent'];
-            $totalpagaments     = $saldoinicial['totalpagaments'];
-            $totalllicencies    = $saldoinicial['totalllicencies'];
-            $totalduplicats     = $saldoinicial['totalduplicats'];
-            $totalaltres        = $saldoinicial['totalaltres'];
-            $saldo              = $romanent + $totalpagaments - $totalllicencies - $totalduplicats - $totalaltres;
-            $saldocomptable     = $saldo;
-            $entrades           = 0;
-            $sortides           = 0;
-            
-            $strQuery  = "  SELECT DATE(dataentrada) as dataentrada, DATE(datapagament) as datapagament, import, databaixa FROM m_rebuts WHERE club LIKE '".$club."' AND 
-                            (DATE(dataentrada) >= '".$saldoinicial['dataregistre']."' OR DATE(datapagament) >= '".$saldoinicial['dataregistre']."') 
-                            ORDER BY DATE(dataentrada) ";
-            
-            $stmt = $em->getConnection()->prepare($strQuery);
-            $stmt->execute();
-            $rebuts = $stmt->fetchAll();
-            
-            $strQuery  = "  SELECT DATE(f.dataentrada) as dataentrada, DATE(datafactura) as datafactura, import, tipuscomanda FROM m_comandes c INNER JOIN m_factures f ON c.factura = f.id
-                            WHERE club LIKE '".$club."' AND
-                            (DATE(f.dataentrada) >= '".$saldoinicial['dataregistre']."' OR DATE(datafactura) >= '".$saldoinicial['dataregistre']."')
-                            ORDER BY DATE(f.dataentrada) ";
-            
-            $stmt = $em->getConnection()->prepare($strQuery);
-            $stmt->execute();
-            $factures = $stmt->fetchAll();
+            $clubs = $stmt->fetchAll();
+                
+            foreach ($clubs as $currentClub) {
+                $saldos     = array();
+                $club       = $currentClub['codi'];
+                $exercici   = $currentClub['exercici'];
+                $clubromanent           = $currentClub['romanent'];
+                $clubtotalpagaments     = $currentClub['totalpagaments'];
+                $clubtotalllicencies    = $currentClub['totalllicencies'];
+                $clubtotalduplicats     = $currentClub['totalduplicats'];
+                $clubtotalaltres        = $currentClub['totalaltres'];
+                
+                
+                // Obtenir registre saldos des de la primera data disponible
+                $strQuery  = "SELECT *  FROM m_saldos WHERE club LIKE '".$club."' ";
+                $strQuery .= "AND dataregistre >= '".$exercici."-01-01' ";
+                $strQuery .= "ORDER BY dataregistre ASC";
+                
+                $stmt = $em->getConnection()->prepare($strQuery);
+                $stmt->execute();
+                $registresaldos = $stmt->fetchAll();
+                
+                if (count($registresaldos) == 0) {
+                    $errors[] = array(
+                        'club'  => $club,
+                        'data'  => $exercici."-01-01'",
+                        'error' => "WARN. CLUB sense registre de saldos"
+                    );
+                    
+                } else {
+                
+                    $saldoinicial = $registresaldos[0];
+                    
+                    $dataregistre       = \DateTime::createFromFormat('Y-m-d', $saldoinicial['dataregistre']);
+                    $datafins           = new \DateTime();
+                    //$exercici           = $saldo['exercici'];
+                    $romanent           = $saldoinicial['romanent'];
+                    $totalpagaments     = 0; //$saldoinicial['totalpagaments'];
+                    $totalllicencies    = 0; //$saldoinicial['totalllicencies'];
+                    $totalduplicats     = 0; //$saldoinicial['totalduplicats'];
+                    $totalaltres        = 0; //$saldoinicial['totalaltres'];
+                    $saldo              = $romanent + $totalpagaments - $totalllicencies - $totalduplicats - $totalaltres; 
+                    $saldocomptable     = $saldo;
+                    $entrades           = 0;
+                    $sortides           = 0;
+                    
+                    $strQuery  = "  SELECT DATE(dataentrada) as dataentrada, DATE(datapagament) as datapagament, import, databaixa FROM m_rebuts WHERE club LIKE '".$club."' AND 
+                                    (DATE(dataentrada) >= '".$saldoinicial['dataregistre']."' OR DATE(datapagament) >= '".$saldoinicial['dataregistre']."') AND databaixa IS NULL 
+                                    ORDER BY DATE(dataentrada) ";
+                    
+                    $stmt = $em->getConnection()->prepare($strQuery);
+                    $stmt->execute();
+                    $rebuts = $stmt->fetchAll();
+                    
+                    $strQuery  = "  SELECT DATE(f.dataentrada) as dataentrada, DATE(datafactura) as datafactura, import, tipuscomanda FROM m_comandes c INNER JOIN m_factures f ON c.factura = f.id
+                                    WHERE club LIKE '".$club."' AND
+                                    (DATE(f.dataentrada) >= '".$saldoinicial['dataregistre']."' OR DATE(datafactura) >= '".$saldoinicial['dataregistre']."')
+                                    ORDER BY DATE(f.dataentrada) ";
+                    
+                    $stmt = $em->getConnection()->prepare($strQuery);
+                    $stmt->execute();
+                    $factures = $stmt->fetchAll();
+        
+                    $strQuery  = "  SELECT DATE(f.dataentrada) as dataentrada, DATE(datafactura) as datafactura, import, tipuscomanda FROM m_comandes c INNER JOIN m_factures f ON c.id = f.comandaanulacio
+                                    WHERE club LIKE '".$club."' AND
+                                    (DATE(f.dataentrada) >= '".$saldoinicial['dataregistre']."' OR DATE(datafactura) >= '".$saldoinicial['dataregistre']."')
+                                    ORDER BY DATE(f.dataentrada) ";
+                    
+                    $stmt = $em->getConnection()->prepare($strQuery);
+                    $stmt->execute();
+                    $anulacions = $stmt->fetchAll();
+                    
+                    $ir = count($rebuts)>0?0:-1;
+                    $if = count($factures)>0?0:-1;
+                    $ia = count($anulacions)>0?0:-1;
+                    
+                    $total = 0;
+                    $max = 2000;
+                    
+                    while ($total < $max && $dataregistre->format('Y-m-d') <= $datafins->format('Y-m-d')) {
+                    // Primer crear moviments a temps real    
+                        //error_log("====> ".$total);
 
-            $strQuery  = "  SELECT DATE(f.dataentrada) as dataentrada, DATE(datafactura) as datafactura, import, tipuscomanda FROM m_comandes c INNER JOIN m_factures f ON c.id = f.comandaanulacio
-                            WHERE club LIKE '".$club."' AND
-                            (DATE(f.dataentrada) >= '".$saldoinicial['dataregistre']."' OR DATE(datafactura) >= '".$saldoinicial['dataregistre']."')
-                            ORDER BY DATE(f.dataentrada) ";
-            
-            $stmt = $em->getConnection()->prepare($strQuery);
-            $stmt->execute();
-            $anulacions = $stmt->fetchAll();
-            
-            $ir = count($rebuts)>0?0:-1;
-            $if = count($factures)>0?0:-1;
-            $ia = count($anulacions)>0?0:-1;
-            
-            $total = 0;
-            $max = 2000;
-            
-            while ($total < $max && $dataregistre->format('Y-m-d') <= $datafins->format('Y-m-d')) {
-            // Primer crear moviments a temps real    
-                //error_log("====> ".$total);
-                
-                if ($ir >= 0 && $ir < count($rebuts)) {
-                    //error_log("R".$ir."<br/>");
-                    
-                    while ($ir < count($rebuts) && $rebuts[$ir]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
-                        if ($rebuts[$ir]['databaixa'] == null && $rebuts[$ir]['dataentrada'] == $dataregistre->format('Y-m-d')) {
-                            // Rebut pagat data registre
-                            $totalpagaments += $rebuts[$ir]['import'];
-                            $saldo += $rebuts[$ir]['import'];
+                        if ($ir >= 0 && $ir < count($rebuts)) {
+                            //error_log("R".$ir."<br/>");
+                            
+                            while ($ir < count($rebuts) && $rebuts[$ir]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
+                                if ($rebuts[$ir]['databaixa'] == null && $rebuts[$ir]['dataentrada'] == $dataregistre->format('Y-m-d')) {
+                                    // Rebut pagat data registre
+                                    $totalpagaments += $rebuts[$ir]['import'];
+                                    $saldo += $rebuts[$ir]['import'];
+                                } else {
+                                    if ($dataregistre->format('Y-m-d') == '2016-01-01' &&
+                                        $rebuts[$ir]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
+                                        // LES FACTURES 2016 REGISTRADES ABANS DE 2016 s’ACUMULARAN a 01/01/2016
+                                        // JA ESTAN INCLOSES AL SALDO
+                                        $totalpagaments += $rebuts[$ir]['import'];
+                                    }
+                                }
+                                $ir++;
+                            }
                         }
-                        $ir++;
+                        
+                        if ($if >= 0 && $if < count($factures)) {
+                            //error_log("F".$if."<br/>");
+                            
+                            while ($if < count($factures) && $factures[$if]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
+                                if ($factures[$if]['dataentrada'] == $dataregistre->format('Y-m-d')) {
+                                    // Factura generada data registre
+                                    switch ($factures[$if]['tipuscomanda']) {
+                                        case "P":
+                                            $totalllicencies += $factures[$if]['import'];
+                                            break;
+                                        case "D":
+                                            $totalduplicats += $factures[$if]['import'];
+                                            break;
+                                        case "A":
+                                            $totalaltres += $factures[$if]['import'];
+                                            break;
+                                        default:
+                                            throw new \Exception("Tipus de comanda '".$factures[$if]['tipuscomanda']."' desconegut");
+                                    }
+                                    
+                                    $saldo -= $factures[$if]['import'];
+                                } else {
+                                    if ($dataregistre->format('Y-m-d') == '2016-01-01' &&
+                                        $factures[$if]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
+                                        // ELS REBUTS 2016 REGISTRATS ABANS DE 2016 S’ACUMULARAN a 01/01/2016
+                                        // JA ESTAN INCLOSES AL SALDO
+                                        $totalllicencies += $factures[$if]['import'];
+                                        
+                                    }
+                                }
+                                $if++;
+                            }
+                        }
+                        
+                        if ($ia >= 0 && $ia < count($anulacions)) {
+                            //error_log("A".$ia."<br/>");
+                            
+                            while ($ia < count($anulacions) && $anulacions[$ia]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
+                                if ($anulacions[$ia]['dataentrada'] == $dataregistre->format('Y-m-d')) {
+                                    // Factura generada data registre
+                                    switch ($anulacions[$ia]['tipuscomanda']) {
+                                        case "P":
+                                            $totalllicencies += $anulacions[$ia]['import'];
+                                            break;
+                                        case "D":
+                                            $totalduplicats += $anulacions[$ia]['import'];
+                                            break;
+                                        case "A":
+                                            $totalaltres += $anulacions[$ia]['import'];
+                                            break;
+                                        default:
+                                            throw new \Exception("Tipus de comanda '".$anulacions[$ia]['tipuscomanda']."' desconegut");
+                                    }
+                                    
+                                    $saldo -= $anulacions[$ia]['import'];
+                                }
+                                $ia++;
+                            }
+                        }
+                        
+                        // Registre inicial
+                        $saldos[$dataregistre->format('Y-m-d')] = array(
+                            'dataregistre'      => $dataregistre->format('Y-m-d'),
+                            'romanent'          => $romanent,
+                            'totalpagaments'    => 1*$totalpagaments,     //number_format($row['saldo'], 2, ',', '.')
+                            'totalllicencies'   => 1*$totalllicencies,
+                            'totalduplicats'    => 1*$totalduplicats,
+                            'totalaltres'       => 1*$totalaltres,
+                            'saldo'             => 1*$saldo,
+                            'entrades'          => 1*$entrades,
+                            'sortides'          => 1*$sortides,
+                            'saldocomptable'    => 1*$saldocomptable,
+                            'error'             => ''
+                        );
+                        
+                        $total++;
+                        
+                        $dataregistre->add(new \DateInterval('P1D')); // Add 1 Day
                     }
-                }
-                
-                if ($if >= 0 && $if < count($factures)) {
-                    //error_log("F".$if."<br/>");
                     
-                    while ($if < count($factures) && $factures[$if]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
-                        if ($factures[$if]['dataentrada'] == $dataregistre->format('Y-m-d')) {
-                            // Factura generada data registre
-                            switch ($factures[$if]['tipuscomanda']) {
-                                case "P":
-                                    $totalllicencies += $factures[$if]['import'];
-                                    break;
-                                case "D":
-                                    $totalduplicats += $factures[$if]['import'];
-                                    break;
-                                case "A":
-                                    $totalaltres += $factures[$if]['import'];
-                                    break;
-                                default:
-                                    throw new \Exception("Tipus de comanda '".$factures[$if]['tipuscomanda']."' desconegut");
+                    // després afegir moviments comptables
+                    for ($ir = 0; $ir < count($rebuts); $ir++) {
+                        $rebut = $rebuts[$ir];
+                        
+                        if (isset($saldos[$rebut['datapagament']])) {
+                            $saldos[$rebut['datapagament']]['entrades'] += $rebut['import'];
+                        } else {
+                            error_log("REBUT NO REGISTRAT: ".$rebut['datapagament']." ".$rebut['import']."<br/>");
+                        }
+                    }
+                    
+                    for ($if = 0; $if < count($factures); $if++) {
+                        $factura = $factures[$if];
+                        
+                        if (isset($saldos[$factura['datafactura']])) {
+                            $saldos[$factura['datafactura']]['sortides'] += $factura['import'];
+                        } else {
+                            error_log("FACTURA NO REGISTRAT: ".$factura['datafactura']." ".$factura['import']."<br/>");
+                        }
+                    }
+                    
+                    for ($ia = 0; $ia < count($anulacions); $ia++) {
+                        $anulacio = $anulacions[$ia];
+                        
+                        if (isset($saldos[$anulacio['datafactura']])) {
+                            $saldos[$anulacio['datafactura']]['sortides'] += $anulacio['import'];
+                        } else {
+                            error_log("ANULACIO NO REGISTRAT: ".$anulacio['datafactura']." ".$anulacio['import']."<br/>");
+                        }
+                    }
+                    
+                    // Recalcular saldo comptable
+                    foreach ($saldos as $k => $registresaldo) {
+                        $saldocomptable += $registresaldo['entrades'];
+                        $saldocomptable -= $registresaldo['sortides'];
+                        
+                        $saldos[$k]['saldocomptable'] = $saldocomptable;
+                    }
+                    
+                    // Comprovació contra registre de saldos de la BBDD
+                    for ($i = 0; $i < count($registresaldos); $i++) {
+                        $registresaldo = $registresaldos[$i];
+                        if (isset($saldos[$registresaldo['dataregistre']])) {
+                            $saldocalculat = $saldos[$registresaldo['dataregistre']];
+                            
+                            $error = '';
+                            if (abs($registresaldo['totalpagaments'] - $saldocalculat['totalpagaments']) > 0.01) {
+                                $error .= "pagaments no coincideixen. Registrat: ".$registresaldo['totalpagaments'].". Calculat: ".$saldocalculat['totalpagaments'].BR;
+                                $error .= "  Check: \"SELECT * FROM m_saldos WHERE club = '".$club."' AND dataregistre >= '".$registresaldo['dataregistre']."' ORDER BY dataregistre;\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_rebuts WHERE club = '".$club."' AND dataentrada >= '".$registresaldo['dataregistre']." 00:00:00' ORDER BY dataentrada;\"".BR;
+                                $error .= "  Query: \"UPDATE m_saldos SET totalpagaments = ".$saldocalculat['totalpagaments']." WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= BR.BR;
+                            }
+                            if (abs($registresaldo['totalllicencies'] - $saldocalculat['totalllicencies']) > 0.01) {
+                                $error .= "llicencies no coincideixen. Registrat: ".$registresaldo['totalllicencies'].". Calculat: ".$saldocalculat['totalllicencies'].BR;
+                                $error .= "  Check: \"SELECT * FROM m_saldos WHERE club = '".$club."' AND dataregistre >= '".$registresaldo['dataregistre']."' ORDER BY dataregistre;\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.id = c.factura WHERE c.club = '".$club."' AND DATE(f.dataentrada) >= '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.comandaanulacio = c.id WHERE c.club = '".$club."' AND DATE(f.dataentrada) >= '".$registresaldo['dataregistre']."';\"".BR;
+                                
+                                $error .= "  Query: \"UPDATE m_saldos SET totalllicencies = ".$saldocalculat['totalllicencies']." WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= BR.BR;
+                            }
+                            if (abs($registresaldo['totalduplicats'] - $saldocalculat['totalduplicats']) > 0.01) {
+                                $error .= "duplicats no coincideixen. Registrat: ".$registresaldo['totalduplicats'].". Calculat: ".$saldocalculat['totalduplicats'].BR;
+                                $error .= "  Check: \"SELECT * FROM m_saldos WHERE club = '".$club."' AND dataregistre >= '".$registresaldo['dataregistre']."' ORDER BY dataregistre;\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.id = c.factura WHERE c.club = '".$club."' AND DATE(f.dataentrada) >= '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.comandaanulacio = c.id WHERE c.club = '".$club."' AND DATE(f.dataentrada) >= '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Query: \"UPDATE m_saldos SET totalduplicats = ".$saldocalculat['totalduplicats']." WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= BR.BR;
+                            }
+                            if (abs($registresaldo['totalaltres'] - $saldocalculat['totalaltres']) > 0.01) {
+                                $error .= "altres no coincideixen. Registrat: ".$registresaldo['totalaltres'].". Calculat: ".$saldocalculat['totalaltres'].BR;
+                                $error .= "  Check: \"SELECT * FROM m_saldos WHERE club = '".$club."' AND dataregistre >= '".$registresaldo['dataregistre']."' ORDER BY dataregistre;\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.id = c.factura WHERE c.club = '".$club."' AND DATE(f.dataentrada) >= '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.comandaanulacio = c.id WHERE c.club = '".$club."' AND DATE(f.dataentrada) >= '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Query: \"UPDATE m_saldos SET totalaltres = ".$saldocalculat['totalaltres']." WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= BR.BR;
                             }
                             
-                            $saldo -= $factures[$if]['import'];
-                        }
-                        $if++;
-                    }
-                }
-                
-                if ($ia >= 0 && $ia < count($anulacions)) {
-                    //error_log("A".$ia."<br/>");
-                    
-                    while ($ia < count($anulacions) && $anulacions[$ia]['dataentrada'] <= $dataregistre->format('Y-m-d')) {
-                        if ($anulacions[$ia]['dataentrada'] == $dataregistre->format('Y-m-d')) {
-                            // Factura generada data registre
-                            switch ($anulacions[$ia]['tipuscomanda']) {
-                                case "P":
-                                    $totalllicencies += $anulacions[$ia]['import'];
-                                    break;
-                                case "D":
-                                    $totalduplicats += $anulacions[$ia]['import'];
-                                    break;
-                                case "A":
-                                    $totalaltres += $anulacions[$ia]['import'];
-                                    break;
-                                default:
-                                    throw new \Exception("Tipus de comanda '".$anulacions[$ia]['tipuscomanda']."' desconegut");
+                            if (abs($registresaldo['entrades'] - $saldocalculat['entrades']) > 0.01) {
+                                $error .= "entrades no coincideixen. Registrat: ".$registresaldo['entrades'].". Calculat: ".$saldocalculat['entrades'].BR;
+                                $error .= "  Check: \"SELECT * FROM m_saldos WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_rebuts WHERE club = '".$club."' AND DATE(datapagament) = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Query: \"UPDATE m_saldos SET entrades = ".$saldocalculat['entrades']." WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= BR.BR;
+                            }
+                            if (abs($registresaldo['sortides'] - $saldocalculat['sortides']) > 0.01) {
+                                $error .= "sortides no coincideixen. Registrat: ".$registresaldo['sortides'].". Calculat: ".$saldocalculat['sortides'].BR;
+                                $error .= "  Check: \"SELECT * FROM m_saldos WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.id = c.factura WHERE c.club = '".$club."' AND DATE(f.datafactura) = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Check: \"SELECT * FROM m_comandes c INNER JOIN m_factures f ON f.comandaanulacio = c.id WHERE c.club = '".$club."' AND DATE(f.datafactura) = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= "  Query: \"UPDATE m_saldos SET sortides = ".$saldocalculat['sortides']." WHERE club = '".$club."' AND dataregistre = '".$registresaldo['dataregistre']."';\"".BR;
+                                $error .= BR.BR;
                             }
                             
-                            $saldo -= $anulacions[$ia]['import'];
+                            if ($error != '') {
+                                $saldos[$registresaldo['dataregistre']]['error'] = $error;
+                                
+                                $errors[] = array(
+                                    'club'  => $club,
+                                    'data'  => $registresaldo['dataregistre'],
+                                    'error' => $error
+                                );
+                            }
+                        } else {
+                            error_log("DATA NO REGISTRADA: ".$registresaldo['dataregistre']."<br/>");
                         }
-                        $ia++;
                     }
-                }
-                
-                // Registre inicial
-                $saldos[$dataregistre->format('Y-m-d')] = array(
-                    'dataregistre'      => $dataregistre->format('Y-m-d'),
-                    'romanent'          => $romanent,
-                    'totalpagaments'    => 1*$totalpagaments,     //number_format($row['saldo'], 2, ',', '.')
-                    'totalllicencies'   => 1*$totalllicencies,
-                    'totalduplicats'    => 1*$totalduplicats,
-                    'totalaltres'       => 1*$totalaltres,
-                    'saldo'             => 1*$saldo,
-                    'entrades'          => 1*$entrades,
-                    'sortides'          => 1*$sortides,
-                    'saldocomptable'    => 1*$saldocomptable,
-                    'error'             => ''
-                );
-                
-                $total++;
-                
-                $dataregistre->add(new \DateInterval('P1D')); // Add 1 Day
-            }
-            
-            // després afegir moviments comptables
-            for ($ir = 0; $ir < count($rebuts); $ir++) {
-                $rebut = $rebuts[$ir];
-                
-                if (isset($saldos[$rebut['datapagament']])) {
-                    $saldos[$rebut['datapagament']]['entrades'] += $rebut['import'];
-                } else {
-                    error_log("REBUT NO REGISTRAT: ".$rebut['datapagament']." ".$rebut['import']."<br/>");
-                }
-            }
-            
-            for ($if = 0; $if < count($factures); $if++) {
-                $factura = $factures[$if];
-                
-                if (isset($saldos[$factura['datafactura']])) {
-                    $saldos[$factura['datafactura']]['sortides'] += $factura['import'];
-                } else {
-                    error_log("FACTURA NO REGISTRAT: ".$factura['datafactura']." ".$factura['import']."<br/>");
-                }
-            }
-            
-            for ($ia = 0; $ia < count($anulacions); $ia++) {
-                $anulacio = $anulacions[$ia];
-                
-                if (isset($saldos[$anulacio['datafactura']])) {
-                    $saldos[$anulacio['datafactura']]['sortides'] += $anulacio['import'];
-                } else {
-                    error_log("ANULACIO NO REGISTRAT: ".$anulacio['datafactura']." ".$anulacio['import']."<br/>");
-                }
-            }
-            
-            // Recalcular saldo comptable
-            foreach ($saldos as $k => $registresaldo) {
-                $saldocomptable += $registresaldo['entrades'];
-                $saldocomptable -= $registresaldo['sortides'];
-                
-                $saldos[$k]['saldocomptable'] = $saldocomptable;
-            }
-            
-            // Comprovació contra registre de saldos de la BBDD
-            for ($i = 0; $i < count($registresaldos); $i++) {
-                $registresaldo = $registresaldos[$i];
-                if (isset($saldos[$registresaldo['dataregistre']])) {
-                    $saldocalculat = $saldos[$registresaldo['dataregistre']];
+                    
+                    
+                    // Comprovació saldo registre final
+                    $saldofinal = $registresaldos[count($registresaldos) -1];
                     
                     $error = '';
-                    if (abs($registresaldo['totalpagaments'] - $saldocalculat['totalpagaments']) > 0.01) $error .= 'pagaments no coincideixen!';
-                    if (abs($registresaldo['totalllicencies'] - $saldocalculat['totalllicencies']) > 0.01) $error .= 'llicencies no coincideixen!';
-                    if (abs($registresaldo['totalduplicats'] - $saldocalculat['totalduplicats']) > 0.01) $error .= 'duplicats no coincideixen!';
-                    if (abs($registresaldo['totalaltres'] - $saldocalculat['totalaltres']) > 0.01) $error .= 'altres no coincideixen!';
-                    
-                    if (abs($registresaldo['entrades'] - $saldocalculat['entrades']) > 0.01) $error .= 'entrades no coincideixen!';
-                    if (abs($registresaldo['sortides'] - $saldocalculat['sortides']) > 0.01) $error .= 'sortides no coincideixen!';
-                    
-                    if ($error != '') $saldos[$registresaldo['dataregistre']]['error'] = $error;
-                    
-                } else {
-                    error_log("DATA NO REGISTRADA: ".$registresaldo['dataregistre']."<br/>");
+                    if (abs($clubromanent - $saldofinal['romanent']) > 0.01 ||
+                        abs($clubtotalpagaments - $saldofinal['totalpagaments']) > 0.01 ||
+                        abs($clubtotalllicencies - $saldofinal['totalllicencies']) > 0.01 ||
+                        abs($clubtotalduplicats - $saldofinal['totalduplicats']) > 0.01 ||
+                        abs($clubtotalaltres - $saldofinal['totalaltres']) > 0.01) {
+                        $error .= "SALDO FINAL DIFERENT SALDO CLUB ".$club.BR;
+                        
+                        if (abs($clubromanent - $saldofinal['romanent']) > 0.01) $error .= "  ROMANENT. Darrer saldo: ".$saldofinal['romanent'].". club: ".$clubromanent.BR;
+                        if (abs($clubtotalpagaments - $saldofinal['totalpagaments']) > 0.01) $error .= "  PAGAMENTS. Darrer saldo: ".$saldofinal['totalpagaments'].". club: ".$clubtotalpagaments.BR;
+                        if (abs($clubtotalllicencies - $saldofinal['totalllicencies']) > 0.01) $error .= "  LLICENCIES. Darrer saldo: ".$saldofinal['totalllicencies'].". club: ".$clubtotalllicencies.BR;
+                        if (abs($clubtotalduplicats - $saldofinal['totalduplicats']) > 0.01) $error .= "  DUPLICATS. Darrer saldo: ".$saldofinal['totalduplicats'].". club: ".$clubtotalduplicats.BR;
+                        if (abs($clubtotalaltres - $saldofinal['totalaltres']) > 0.01) $error .= "  ALTRES. Darrer saldo: ".$saldofinal['totalaltres'].". club: ".$clubtotalaltres.BR;
+                        
+                        $error .= "  Check: \"SELECT romanent, totalpagaments, totalllicencies, totalduplicats, totalaltres, dataregistre FROM m_saldos WHERE club = '".$club."' ORDER BY dataregistre DESC LIMIT 1;\"".BR;
+                        $error .= "  Check: \"SELECT romanent, totalpagaments, totalllicencies, totalduplicats, totalaltres  FROM m_clubs  WHERE codi = '".$club."';\"".BR;
+                        
+                        if (abs($clubromanent - $saldofinal['romanent']) > 0.01) $error .= "  Query: \"UPDATE m_clubs SET romanent = ".$saldofinal['romanent']." WHERE codi = '".$club."';\"".BR;
+                        if (abs($clubtotalpagaments - $saldofinal['totalpagaments']) > 0.01) $error .= "  Query: \"UPDATE m_clubs SET totalpagaments = ".$saldofinal['totalpagaments']." WHERE codi = '".$club."';\"".BR;
+                        if (abs($clubtotalllicencies - $saldofinal['totalllicencies']) > 0.01) $error .= "  Query: \"UPDATE m_clubs SET totalllicencies = ".$saldofinal['totalllicencies']." WHERE codi = '".$club."';\"".BR;
+                        if (abs($clubtotalduplicats - $saldofinal['totalduplicats']) > 0.01) $error .= "  Query: \"UPDATE m_clubs SET totalduplicats = ".$saldofinal['totalduplicats']." WHERE codi = '".$club."';\"".BR;
+                        if (abs($clubtotalaltres - $saldofinal['totalaltres']) > 0.01) $error .= "  Query: \"UPDATE m_clubs SET totalaltres = ".$saldofinal['totalaltres']." WHERE codi = '".$club."';\"".BR;
+                        
+                        $error .= BR.BR;
+                    }
+                    if ($error != '') {
+                        $saldos[$datafins->format('Y-m-d')]['error'] .= $error;
+                        
+                        $errors[] = array(
+                            'club'  => $club,
+                            'data'  => $datafins->format('Y-m-d'),
+                            'error' => $error
+                        );
+                    }
+                
+                    $filename = "registre_saldos_generat_club_".$club.".csv";
+                    $header = array('Data', 'Romanent', 'Pagaments', 'Llicències', 'Duplicats', 'Altres', 'Saldo', 'Entrades', 'Sortides', 'Saldo Comptable', 'Error');
+                
+                    $files[] = array(
+                        'filename'      => $filename,
+                        'fullfilename'  => $this->writeCSV($header, $saldos, $filename)
+                    );
                 }
             }
         
+            $zip = new \ZipArchive();
+            if ($zip->open($zipFilename, \ZipArchive::CREATE)!==TRUE) throw new \Exception("No es pot crear l'arxiu ".$zipFilename);
+            
+            foreach ($files as $fil) {
+                $zip->addFile($fil['fullfilename'], $fil['filename']);
+            }
+            
+            //$response = $this->exportCSV($request, $header, $saldos, $filename);
+            //return $response;
         } catch (\Exception $e) {
+            $this->logEntryAuth('CHECK SALDOS KO',	'CLUB ' . $club. ' error '.$e->getMessage());
+            
             return new Response( "KO : ".$e->getMessage() );
         }
         
-        $filename = "registre_saldos_generat_club_".$club.".csv";
+        $result  = "ARXIUS ESCRITS".BR;
+        foreach ($files as $fil) {
+            $result .= $fil['filename'].BR;
+        }
+        $result .= BR;
         
-        $header = array('Data', 'Romanent', 'Pagaments', 'Llicències', 'Duplicats', 'Altres', 'Saldo', 'Entrades', 'Sortides', 'Saldo Comptable', 'Error');
+        if ($zip != null) {
+            $result .= "ARXIUS ZIP: ".$zip->numFiles.BR;
+            $result .= "ESTAT ZIP:".$zip->status.BR.BR;
+            $zip->close();
+        }
         
-        $response = $this->exportCSV($request, $header, $saldos, $filename);
+        $result .= "ERRORS DETECTATS".BR;
+        foreach ($errors as $err) {
+            $result .= implode(" ",$err).BR;
+        }
         
-        return $response;
+        return new Response( $result );
     }
     
     

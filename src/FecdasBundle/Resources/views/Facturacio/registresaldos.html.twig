@@ -75,25 +75,6 @@
 								</div>
 							   </div>							  
 						</div>
-						{% if rebutscontrol|length > 0 %}
-						<div class="row">
-							<div class="col-md-12 col-xs-12">
-								<h4 class="blue">Rebuts entrats al 2016 amb data de pagament de 2015 !!!!!! POSSIBLES FONTS D'ERRADES</h4>  		
-							</div>
-							<div class="col-md-12 col-xs-12">
-								<div class="alert alert-danger">
-									<div class="row">
-									{% for rebut in rebutscontrol %} 
-										<div class="col-md-offset-1 col-md-11 col-xs-offset-2 col-xs-10"> 
-											- Rebut {{ rebut.numrebut  }}&nbsp;&nbsp;&nbsp;{{ rebut.datapagament|date('d/m/Y') }}&nbsp;&nbsp;&nbsp;
-												{{ rebut.import|number_format(2, ',', '.') }}€&nbsp;&nbsp;&nbsp;{{ rebut.concepteRebutCurt }}
-										</div>
-									{% endfor %}
-									</div>
-								</div>
-							</div>
-						</div>	
-						{% endif %}
 				   	{{ form_end(form) }}
 			    </div>
 			    <div class="table-header">	
@@ -154,9 +135,9 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-md-12">
+		{#}<div class="col-md-12">
 			<p class="title-comment">Només es mostren les dates del registre on el club ha realitzat algun moviment</p>
-		</div>
+		</div>#}
 		
 		{# if saldos.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(saldos, null) }}</div>{% endif #}
 	   	

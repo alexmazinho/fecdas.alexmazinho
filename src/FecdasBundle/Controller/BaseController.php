@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Filesystem\Filesystem;
 
 use Symfony\Component\Form\FormError;
 use FecdasBundle\Classes\Funcions;
@@ -81,6 +82,8 @@ class BaseController extends Controller {
 	const PATH_TO_COMPTA_FILES = '/../../../fitxers/assentaments/';
 	// Pedent de canviar fora document root
 	const PATH_TO_WEB_FILES = '/../../../web/';
+	// Varis
+	const PATH_TO_VARIS_FILES = '/../../../fitxers/varis/';
 	
 	const TIPUS_PRODUCTE_LLICENCIES = 1;
 	const TIPUS_PRODUCTE_DUPLICATS 	= 2;
@@ -149,8 +152,8 @@ class BaseController extends Controller {
 	
 	// Docs assegurança
 	const POLISSA_BUSSEIG = 'polissa_busseig_2018.pdf';
-	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2017-18.pdf';
-	const POLISSA_ESCOLAR = 'polissa_escolar_2017-18.pdf';
+	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2018-19.pdf';
+	const POLISSA_ESCOLAR = 'polissa_escolar_2018-19.pdf';
 	
 	const COMUNICAT_INCIDENT_POLISSA_BUSSEIG = 'comunicat_incident_polissa_busseig.pdf';
 	const COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS = 'comunicat_incident_polissa_tecnocampus.pdf';
@@ -3657,7 +3660,7 @@ class BaseController extends Controller {
 	}
 	
 
-	protected function saldosEntre($desde, $fins = null, $club = null) {
+	protected function saldosEntre($desde, $fins = null, $club = null, $max = 0) {
 		$em = $this->getDoctrine()->getManager();
 		
 		// Consultar saldos entre dates per un club
@@ -3668,6 +3671,8 @@ class BaseController extends Controller {
 		$strQuery .= " ORDER BY s.dataregistre ASC ";
 			
 		$query = $em->createQuery($strQuery);
+		if ($max > 0) $query->setMaxResults($max);
+		
 		$query->setParameter('desde', $desde->format('Y-m-d') );
 		if ($fins != null) $query->setParameter('fins',  $fins->format('Y-m-d') );
 		if ($club != null) $query->setParameter('club', $club->getCodi() );
@@ -3708,28 +3713,6 @@ class BaseController extends Controller {
 		$query = $em->createQuery($strQuery);
 		$query->setParameter('desde', $desde->format('Y-m-d H:i:s') );
 		$query->setParameter('fins',  $fins->format('Y-m-d H:i:s') );
-		if ($codiclub != '') $query->setParameter('club', $codiclub  );
-		
-		$rebuts = $query->getResult();
-		
-		return $rebuts;
-	}
-
-	protected function rebuts2016pagats2015($codiclub = '') {
-		$em = $this->getDoctrine()->getManager();
-		
-		$iniciSaldos = '2016-01-01 00:00:00';
-		
-		// Consultar factures entrades entrats dia current
-		$strQuery  = " SELECT r FROM FecdasBundle\Entity\EntityRebut r ";
-		$strQuery .= " WHERE r.databaixa IS NULL ";
-		$strQuery .= " AND   r.dataentrada >= :canviany ";
-		$strQuery .= " AND   r.datapagament < :canviany ";
-		if ($codiclub != '') $strQuery .= " AND r.club = :club ";
-		$strQuery .= " ORDER BY r.num ";
-			
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('canviany', $iniciSaldos );
 		if ($codiclub != '') $query->setParameter('club', $codiclub  );
 		
 		$rebuts = $query->getResult();
@@ -3846,7 +3829,29 @@ class BaseController extends Controller {
     	
     	return $response;
     }
+    
+    protected function writeCSV($header, $data, $filename) {
+        
+        $fs = new Filesystem();
+        
+        if (!$fs->exists(__DIR__.BaseController::PATH_TO_VARIS_FILES)) throw new \Exception("No existeix el directori " .__DIR__.BaseController::PATH_TO_VARIS_FILES);
 
+        $csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//IGNORE',implode('";"',$header)).'"'.CRLF;
+                
+        foreach ($data as $row) {
+            $row = '"'.implode('";"', $row).'"';
+            $csvTxt .= iconv('UTF-8', 'ISO-8859-1//IGNORE', $row.CRLF);
+        }
+                
+        $file = __DIR__.BaseController::PATH_TO_VARIS_FILES.$filename;
+                
+        if ($fs->exists($file)) throw new \Exception("El fitxer ja existeix ".$file);
+                
+        $fs->dumpFile($file, $csvTxt);
+        return $file;
+    }
+    
+    
 	protected function getProvincies() {
 		$em = $this->getDoctrine()->getManager();
 		$query = $em->createQuery("SELECT distinct m.provincia FROM FecdasBundle\Entity\EntityMunicipi m

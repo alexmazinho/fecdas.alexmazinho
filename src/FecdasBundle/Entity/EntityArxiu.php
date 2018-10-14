@@ -82,7 +82,7 @@ class EntityArxiu {
 	
 	public function esImatge()
 	{
-		return $this->imatge == true;
+		return $this->imatge;
 	}
 	
 	public function esPdf()
@@ -158,11 +158,18 @@ class EntityArxiu {
 		} else {
 			$nameAjustat = $name;
 		}
-		$nameAjustat = substr($nameAjustat, 0, 33);
+		$nameAjustat = substr($nameAjustat, -33);  // Des del final
 		$this->path = time() . "_". Funcions::netejarPath($nameAjustat) . "." . $extension;
 		
 		$this->getFile()->move($this->getUploadRootDir(), $this->path);
 
+   		try {
+   		    if (getimagesize($this->getAbsolutePath()) !== false) $this->setImatge(true);
+   		    else $this->setImatge(false);
+   		} catch (\Exception $e) {
+   		    $this->setImatge(false);
+   		}
+		
 		// clean up the file property as you won't need it anymore
 		$this->file = null;
 			
@@ -314,7 +321,7 @@ class EntityArxiu {
 	/**
 	 * @param EntityPersona $persona
 	 */
-	public function setPersona(EntityPersona $persona) {
+	public function setPersona(EntityPersona $persona = null) {
 		$this->persona = $persona;
 	}
 	

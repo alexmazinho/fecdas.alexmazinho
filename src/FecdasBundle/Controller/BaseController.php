@@ -3490,6 +3490,58 @@ class BaseController extends Controller {
         }
     }
     
+    protected function gestionarArxiuPersona($persona, $esborrar = true, $arxiu, $foto = false, $certificat = false) {
+        error_log(" 0 ".$esborrar);        
+        if ($esborrar) {
+            if ($foto && $persona->getFoto() != null) {
+                // Esborrar foto
+                $persona->addArxius($persona->getFoto());
+                $persona->setFoto(null);
+            }
+            if ($certificat && $persona->getCertificat() != null) {
+                // Esborrar foto
+                $persona->addArxius($persona->getCertificat());
+                $persona->setCertificat(null);
+            }
+            if (!$foto && !$certificat && $arxiu != null) {
+                // Esborrar altres arxius
+                $persona->removeArxius($arxiu);
+            }
+            return;
+        }
+error_log(" 1 ");   
+        if ($arxiu == null) return;
+            
+        if (!($arxiu instanceof UploadedFile) or !is_object($arxiu))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
+            
+        if (!$arxiu->isValid()) throw new \Exception('No s\'ha pogut carregar l\'arxiu (2-'.$arxiu->isValid().')'); // Codi d'error
+            
+        $em = $this->getDoctrine()->getManager();
+        
+        $nouArxiu = null;
+error_log(" 2 "); 
+        if ($foto) {
+            $titol = "Foto federat " . $persona->getNomCognoms();
+            
+            $uploaded = $this->uploadAndScale($arxiu, $persona->getDni(), 300, 200);
+            
+            $nouArxiu = new EntityArxiu($uploaded['path'], true);
+            $nouArxiu->setPath($uploaded['name']);
+        } else {
+            $titol = $arxiu->getClientOriginalName()." ".date('d/m/Y');
+            
+            $nouArxiu = new EntityArxiu($arxiu, false, $persona);
+            $nouArxiu->upload($persona->getDni()."_".$arxiu->getClientOriginalName());
+        }
+error_log(" 3  NOU ?".($nouArxiu==null?"NULL":"OK")); 
+        $nouArxiu->setTitol($titol);
+        $em->persist($nouArxiu);
+        
+        if ($foto) $persona->setFoto($nouArxiu);
+        if ($certificat) $persona->setCertificat($nouArxiu);
+        if (!$foto && !$certificat) $persona->addArxius($nouArxiu);
+    }
+    
     protected function gestionarCertificatPersona($persona, $certificatPath, $certificat) {
         if ($certificat == null) {
             if ($certificatPath == '' && $persona->getCertificat() != null) {
@@ -3521,66 +3573,6 @@ class BaseController extends Controller {
         }
     }
     
-	protected function gestionarArxiusPersona($persona, $fotoPath, $certificatPath, $foto, $certificat) {
-
-		if ($foto == null) {
-			if ($fotoPath == '' && $persona->getFoto() != null) {
-				// Desar la foto a arxius de la persona i esborrar foto
-				$persona->addArxius($persona->getFoto());
-				$persona->setFoto(null);
-			}
-		} else {
-	
-			if (!($foto instanceof UploadedFile) or !is_object($foto))  throw new \Exception('No s\'ha pogut carregar la foto (1)');
-								
-			if (!$foto->isValid()) throw new \Exception('No s\'ha pogut carregar la foto (2-'.$foto->isValid().')'); // Codi d'error
-			
-			$em = $this->getDoctrine()->getManager();
-							
-			$uploaded = $this->uploadAndScale($foto, $persona->getDni(), 300, 200);
-						
-			$foto = new EntityArxiu($uploaded['path'], true);
-			$foto->setPath($uploaded['name']);
-			$foto->setTitol("Foto federat " . $persona->getNomCognoms());
-			$em->persist($foto);
-	
-			if ($persona->getFoto() != null) {
-				// Desar la foto a arxius de la persona
-				$persona->addArxius($persona->getFoto());
-			}		
-			$persona->setFoto($foto);
-		}
-		
-		if ($certificat == null) {
-			if ($certificatPath == '' && $persona->getCertificat() != null) {
-				// Desar el certificat a arxius de la persona i esborrar certificat
-				$persona->addArxius($persona->getCertificat());
-				$persona->setCertificat(null);
-			}
-		} else {
-	
-			if (!($certificat instanceof UploadedFile) or !is_object($certificat))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
-								
-			if (!$certificat->isValid()) throw new \Exception('No s\'ha pogut carregar l\'arxiu (2-'.$certificat->isValid().')'); // Codi d'error
-			
-			$em = $this->getDoctrine()->getManager();
-			
-			$nameAjustat = $persona->getDni()."_".substr($certificat->getClientOriginalName(), -20);
-			$nameAjustat = time() . "_". Funcions::netejarPath($nameAjustat);
-						
-			$certificat = new EntityArxiu($certificat, true);
-			$certificat->upload($nameAjustat);
-			$certificat->setTitol("Certificat mèdic federat " . $persona->getNomCognoms());
-			$em->persist($certificat);
-	
-			if ($persona->getCertificat() != null) {
-				// Desar el certificat a arxius de la persona
-				$persona->addArxius($persona->getCertificat());
-			}		
-			$persona->setCertificat($certificat);
-		}
-	}
-	
 	/*
 	 * El saldo comptable per a dates posteriors a l'inici de l'exercici (Saldo al dia abans de la data indicada)
 	 * 

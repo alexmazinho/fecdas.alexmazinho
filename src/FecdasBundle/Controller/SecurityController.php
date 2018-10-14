@@ -290,6 +290,10 @@ class SecurityController extends BaseController
                 if (!$terms) throw new \Exception("Cal acceptar els termes i condicions d'ús per poder registrar l'usuari");
                 
                 if ($user != null) {
+error_log("user ".$user->getUser());                    
+                    $metapersona = $user->getMetapersona();
+                        
+if ($user->getMetapersona() != null) error_log(" user persona ".$user->getMetapersona()->getDni(). " mails ".print_r($user->getMetapersona()->getMails(), false));
                     if ($user->anulat()) {
                         // Existeix usuari però de baixa
                     } else {
@@ -307,45 +311,75 @@ class SecurityController extends BaseController
                     // No existeix usuari
                 }
                 
-                $persones = $em->getRepository('FecdasBundle:EntityPersona')->findByMail($mail);
-                
-                $metapersones = array();
-                foreach ($persones as $persona) {
-                    $metapersona = $persona->getMetapersona();
+                if ($metapersona == null) {
+error_log("no metapersona");                    
+                    // Cercar persones amb aquest mail
                     
-                    if ($dni == "" || $dni == $metapersona->getDni()) {
-                        $existeix = array_filter(
-                            $metapersones,
-                            function ($e) use ($metapersona) {
-                                return $e->getId() == $metapersona->getId();
-                            }
+                    $persones = $this->getPersonesByMail($mail);
+                    // $persones = $em->getRepository('FecdasBundle:EntityPersona')->findByMail($mail);
+                    
+                    $metapersones = array();
+                    foreach ($persones as $persona) {
+                        $metapersona = $persona->getMetapersona();
+                        
+                        if ($dni == "" || $dni == $metapersona->getDni()) {
+                            $existeix = array_filter(
+                                $metapersones,
+                                function ($e) use ($metapersona) {
+                                    return $e->getId() == $metapersona->getId();
+                                }
                             );
-                        if (count($existeix) == 0) $metapersones[] = $metapersona;
+                            if (count($existeix) == 0) $metapersones[] = $metapersona;
+                        }
                     }
-                }
-                
-                $options = array('newsletter' => $newsletter);
-                if (count($metapersones) > 1 || $dniShown) {
-                    // Existeixen vàries persones amb aquest mail, afegir camp i actualitzar $form
-                    $options['dni'] = $dni;
-                }
-                
-                $form = $this->createForm(new FormUser( $options ));
-                
-                $form->get('user')->setData($mail);
-                
-                if (count($metapersones) != 1) {
-                    if (!$dniShown || !$dni) throw new \Exception("Cal indicar un document d'identitat");
                     
-                    if ($dni != "") throw new \Exception("No existeixen dades per aquesta adreça de correu amb aquest document d'identitat");
+                    $options = array('newsletter' => $newsletter);
+                    if (count($metapersones) > 1 || $dniShown) {
+                        // Existeixen vàries persones amb aquest mail, afegir camp i actualitzar $form
+                        $options['dni'] = $dni;
+                    }
                     
-                    throw new \Exception("No existeixen dades per aquesta adreça de correu");
+                    $form = $this->createForm(new FormUser( $options ));
+                    
+                    $form->get('user')->setData($mail);
+                    
+                    if (count($metapersones) != 1) {
+                        if (count($metapersones) == 0) {
+                            // No trobat    
+                            if (!$dniShown) throw new \Exception("No existeixen dades per aquesta adreça de correu");
+                            
+                            throw new \Exception("No existeixen dades per aquesta adreça de correu i document d'identitat");
+                        } 
+                        // Trobats varis
+                        if ($dni == "") throw new \Exception("Cal indicar un document d'identitat");
+                            
+                        // No s'hauria de produïr, vàries persones amb el mail i mateix dni
+                        throw new \Exception("Per poder registrar un nou usuari amb les dades indicades cal que et posis en contacte amb la Federació, gràcies");
+                    }
+                    
+                    // Només una metapersona
+                    $metapersona = $metapersones[0];
+                } else {
+                    // metapersona ja associada a l'usuari
                 }
-                
-                // Només una metapersona
-                $metapersona = $metapersones[0];
                 
                 if ($metapersona->getLlicenciaVigent() == null) throw new \Exception("Només es pot accedir al sistema si les dades associades a l’usuari tenen una llicència vigent per la data actual");
+                $oldUser = null;
+                $subjectMail = $user == null && $metapersona->getUsuari() == null?"Creació d'un nou usuari per accedir":"Activació d'un usuari existent per accedir"; // " a l'Aplicació ..."
+                if ($metapersona->getUsuari() != null) {
+                    if ($user != null && $metapersona->getUsuari() != $user) {
+                        // $user passa a gestionar $metapersona. oldUser perd el rol FEDERAT, i si no li queda cap rol actiu es dona de baixa
+                        $oldUser = $metapersona->getUsuari();
+                        $oldUser->setMetapersona(null);
+                        $oldUser->desactivarUsuariRole(BaseController::ROLE_FEDERAT);
+                        $metapersona->setUsuari($user);
+                        $user->setMetapersona($metapersona);
+                    }
+
+                    // Ja existia usuari però no l'ha trobat abans perquè té altre mail. Aprofitar usuari amb el mateix mail
+                    $user = $metapersona->getUsuari();
+                    $user->setUser($mail);
+                }
                 
                 if ($user != null) {
                     // Mirar si és baixa i activar
@@ -355,6 +389,7 @@ class SecurityController extends BaseController
                     $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $metapersona);
                     $em->persist($user);
                 }
+                
                 foreach ($metapersona->getPersonesSortedById() as $persona) {
                     // Revisar si existeix el rol federat pels clubs de les persones actives associades a metapersona
                     $club = $persona->getClub();
@@ -363,10 +398,10 @@ class SecurityController extends BaseController
                         $em->persist($userClubRole);
                     }
                 }
-                
-                $this->sendMailRecuperacioAccess($user, "Creació d'un nou usuari per accedir", $newsletter);
-                
-                $em->flush();
+                if ($oldUser != null) $em->flush($oldUser); // Si es fa tot en un únic flush error clau única a m_users (metapersona duplicada)
+                $em->flush(); 
+
+                $this->sendMailRecuperacioAccess($user, $subjectMail, $newsletter);
                 
                 $this->logEntry($mail, 'USER REGISTER', 'Petició registre nou usuari '.$mail);
                 
@@ -382,6 +417,27 @@ class SecurityController extends BaseController
         
         return $this->render('FecdasBundle:Security:registre.html.twig',
             array('form' => $form->createView(), 'admin' => $this->isCurrentAdmin(), 'authenticated' => false));
+    }
+    
+    private function getPersonesByMail($mail) {
+        // cerca LIKE %$mail%
+        $persones = array();
+        
+        $em = $this->getDoctrine()->getManager();
+        
+        $strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p WHERE p.mail LIKE :mailcerca ORDER BY p.cognoms, p.nom ";
+        $query = $em->createQuery($strQuery)->setParameter('mailcerca', '%'.$mail.'%');
+        
+        // La query retorna cerca parcial, cal comprovar que $mail coincideixi exactament amb algun dels mails de la persona
+        $candidats = $query->getResult();
+        
+        foreach ($candidats as $candidat) {
+            foreach ($candidat->getMails() as $mailCandidat) {
+                if ($mail == $mailCandidat) $persones[] = $candidat;
+            }
+        }
+        
+        return $persones;
     }
     
     

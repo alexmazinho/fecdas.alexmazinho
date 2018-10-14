@@ -839,8 +839,6 @@ class EntityPersona {
 	public function setFoto(EntityArxiu $foto = null)
 	{
 		$this->foto = $foto;
-		if ($foto != null) $foto->setPersona($this);
-		
 	}
 	
 	/**
@@ -862,7 +860,6 @@ class EntityPersona {
 	public function setCertificat(EntityArxiu $certificat = null)
 	{
 		$this->certificat = $certificat;
-		if ($certificat != null) $certificat->setPersona($this);
 	}
 	
 	/**
@@ -889,6 +886,18 @@ class EntityPersona {
 		}
     }
 
+    /**
+     * Remove arxiu
+     *
+     * @param EntityArxiu $arxiu
+     */
+    public function removeArxius(EntityArxiu $arxiu)
+    {
+        $this->arxius->removeElement($arxiu);
+        $arxiu->setPersona(null);
+    }
+    
+    
     /**
      * Get arxius
      *

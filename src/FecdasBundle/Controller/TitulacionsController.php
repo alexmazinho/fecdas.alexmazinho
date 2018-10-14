@@ -482,9 +482,6 @@ class TitulacionsController extends BaseController {
 	    $metapersona = $user->getMetapersona();
 	    $persona = $metapersona->getUltimesDadesPersonals();
 	    
-	    
-	    $fotoPath = '';
-	    $certificatPath = '';
 	    $options = array();
 	    /* Get provincies, comarques, nacions*/
 	    $options['edit'] = false;
@@ -497,11 +494,6 @@ class TitulacionsController extends BaseController {
 	    try {
 	        if ($request->getMethod() == 'POST') {
 	            $formpersona = $this->createForm(new FormPersona($options), $persona);
-	            
-	            $p = $request->request->get('persona', null);
-	            
-	            if ($p['foto'] != '') $fotoPath = $p['foto'];
-	            if ($p['certificat'] != '') $certificatPath = $p['certificat'];
 	            
 	            $formpersona->handleRequest($request);
 	            
@@ -518,10 +510,10 @@ class TitulacionsController extends BaseController {
 
 	            // Fer els canvis a la resta de persones associades a la metapersona
 	            $foto = $formpersona->get('fotoupld')->getData();
-	            $this->gestionarFotoPersona($persona, $fotoPath, $foto);
+	            $this->gestionarArxiuPersona($persona, false, $foto, true); 
 	            
-	            $certificat = $formpersona->get('certificatupld')->getData();
-	            $this->gestionarCertificatPersona($persona, $certificatPath, $certificat);
+	            $arxiu = $formpersona->get('arxiuupld')->getData();
+	            $this->gestionarArxiuPersona($persona, false, $arxiu);
 	            
 	            $em->flush();
 	            
@@ -542,6 +534,71 @@ class TitulacionsController extends BaseController {
 	    return $this->render('FecdasBundle:Titulacions:dadesfederat.html.twig',
 	        $this->getCommonRenderArrayOptions(array('formpersona' => $formpersona->createView(), 'persona' => $persona) ) 
 	    );
+	}
+	
+	public function esborrararxiufederatAction(Request $request) {
+	    
+	    $personaId = $request->query->get('persona', 0);
+	    try {
+	        if (!$this->isAuthenticated()) throw new \Exception('Cal indicar les credencials per accedir a l\'Aplicació');
+	        
+	        $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($personaId);
+	        
+	        if ($persona == null) throw new \Exception('Dades personals no trobades, poseu-vos en contacte amb la Federació');
+	        
+	        if ($this->isCurrentAdmin()) {
+	            // Ok
+	            
+	        } else {
+	            $checkRole = $this->get('fecdas.rolechecker');
+	            
+	            if ($checkRole->isCurrentClub()) {
+	               // Accés Club
+	               if ($persona->getClub() != $this->getCurrentClub()) throw new \Exception('El club no disposa de permisos per realitzar aquesta acció');
+	               
+	            } else {
+	                // Accés federat o instructor
+	                $user = $this->checkAccessNoClub();
+	                
+	                // Persona diferent
+	                if ($persona->getMetapersona() != $user->getMetapersona()) throw new \Exception('L\'usuari no disposa de permisos per realitzar aquesta acció');
+	            }
+	        }
+	        
+	        $em = $this->getDoctrine()->getManager();
+	        
+	        $foto = $request->query->get('foto', 0);
+	        $foto = $foto==1?true:false;
+	        $certificat = $request->query->get('foto', 0);
+	        $certificat = $certificat==1?true:false;
+	        $arxiu = null;
+	        if (!$foto && !$certificat) {
+	           $arxiuId = $request->query->get('arxiu', 0);
+
+	           $arxiu = $this->getDoctrine()->getRepository('FecdasBundle:EntityArxiu')->find($arxiuId);
+	           
+	           if ($arxiu == null) throw new \Exception('Arxiu no trobat, poseu-vos en contacte amb la Federació');
+	           
+	           // Fitxer no és de la persona
+	           if ($arxiu->getPersona() != $persona) throw new \Exception('L\'arxiu no es correspon amb aquestes dades personals');
+	        }
+	        
+	        $this->gestionarArxiuPersona($persona, true, $arxiu, $foto, $certificat);
+	        
+	        $em->flush();
+	        
+	        $this->logEntryAuth('DEL FILE OK', 'persona '. $persona->getId().($foto?", delete foto":"").($certificat?", delete certificat":"").($arxiu!=null?", arxiu ".$arxiu->getId():""));
+	        
+	    } catch (\Exception $e) {
+	        $this->logEntryAuth('DEL FILE NO ACCESS', $e->getMessage());
+	        
+	        $response = new Response($e->getMessage());
+	        $response->setStatusCode(500);
+	        return $response;
+	    }
+	    
+	    // Ok
+	    return new Response();
 	}
 	
 	

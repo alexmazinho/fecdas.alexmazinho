@@ -154,6 +154,18 @@ class EntityUser {
         foreach ($this->clubs as $userClubRole) $userClubRole->activarRole($role);
     }
     
+    /**
+     * Desactivar rol usuari. Si no queda cap rol actiu, baixa d'usuari
+     *
+     */
+    public function desactivarUsuariRole($role)
+    {
+        foreach ($this->clubs as $userClubRole) $userClubRole->desactivarRole($role);
+        
+        if ($this->getBaseRole() == null) $this->databaixa = new \DateTime();
+        
+    }
+    
     public function baixaUsuari()
     {
         $this->databaixa = new \DateTime();
@@ -375,7 +387,7 @@ class EntityUser {
      *
      * @param EntityMetaPersona $metapersona
      */
-    public function setMetapersona(EntityMetaPersona $metapersona)
+    public function setMetapersona(EntityMetaPersona $metapersona = null)
     {
         $this->metapersona = $metapersona;
     }

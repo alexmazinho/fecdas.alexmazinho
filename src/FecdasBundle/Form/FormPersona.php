@@ -41,9 +41,9 @@ class FormPersona extends AbstractType {
 				
 				$form->add('foto', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona->getFoto()==null?'':$persona->getFoto()->getPath())));
 				
-				$form->add('certificatupld', 'file', array('mapped' => false, 'required'  => false, 'attr' => array('accept' => 'application/pdf,application/msword,text/*')));
+				$form->add('arxiuupld', 'file', array('mapped' => false, 'required'  => false, 'attr' => array('accept' => 'application/pdf,application/msword,text/*')));
 				
-				$form->add('certificat', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona->getCertificat()==null?'':$persona->getCertificat()->getPath())));
+				$form->add('arxiu', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ''));
 			}
 		});	
 			

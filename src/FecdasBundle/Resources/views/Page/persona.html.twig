@@ -111,7 +111,7 @@
 			</div>
 			{% if persona.foto is not null and persona.foto.width > 0 and persona.foto.height > 0 %}
 				<div class="galeria-remove-foto">
-					<a class="remove-foto link" href="javascript:void(0);"><span class="fa fa-trash fa-1x gray"></span></a>
+					<a class="remove-foto link" href="{{ path('FecdasBundle_esborrararxiufederat', { 'persona': persona.id, 'arxiu':0, 'foto': 1, 'certificat': 0  } ) }}"><span class="fa fa-trash fa-1x gray"></span></a>
 				</div>
 			{% endif %}
 		</div>
@@ -240,37 +240,36 @@
 				{% set arxius = persona.arxius %}
 			    <div class="row">
 			    	<div class="col-md-5">
-			    		<div class="certificat-medic">
-			    			<h4>Certificat mèdic</h4>
-			    			<div class="form-group">
-			    			    {{ form_widget(formpersona.certificat) }} 
-								{{ form_widget(formpersona.certificatupld, { 'attr': {'class': 'form-control hidden'} }) }}
-								<div class="file-upload">
-    								<div class="input-group">
-    									<span class="input-group-addon"></span>
-    									<input id="upload-file-info" class="upload-file-info form-control" type="text">
-    							        <span class="input-group-addon input-group-addon-action">
-    							        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
-    							        </span>
-    							        {% if persona.certificat == null %}<span class="input-subtext blue">Certificat mèdic no disponible</span>{% endif %}
-    						        </div>
-    						        <div class="file-info historial-certificat space10">
-    								{% if persona.certificat != null %}
-    									<span class="blue">descarregar certificat</span> 
-    									<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
-    										  <span class="fa fa-download fa-1x orange"></span> 
-    									</a>
-    									<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
-    								{% endif %}
-    								</div>
-								</div>
+		    			<h4>Carregar arxiu</h4>
+		    			<div class="form-group">
+		    			    {{ form_widget(formpersona.arxiu) }} 
+							{{ form_widget(formpersona.arxiuupld, { 'attr': {'class': 'form-control hidden'} }) }}
+							<div class="file-upload">
+   								<div class="input-group">
+   									<span class="input-group-addon"></span>
+   									<input id="upload-file-info" class="upload-file-info form-control" type="text">
+   							        <span class="input-group-addon input-group-addon-action">
+   							        	<a class="input-append" href="javascript:void(0);"><i class="fa fa-folder-open fa-1x orange"></i></a>
+   							        </span>
+   							        {# if persona.certificat == null %}<span class="input-subtext blue">Certificat mèdic no disponible</span>{% endif #}
+   						        </div>
+   						        {#
+   						        <div class="file-info historial-certificat space10">
+   								{% if persona.certificat != null %}
+   									<span class="blue">descarregar certificat</span> 
+   									<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
+   										  <span class="fa fa-download fa-1x orange"></span> 
+   									</a>
+   									<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
+   								{% endif %}
+   								</div>
+   								#}
 							</div>
-							
-			    		</div>
+						</div>
 			    	</div>
 			    	<div class="col-md-offset-1 col-md-6">
 			    		<div class="arxius-historial">
-							<h4>Històric d'arxius</h4>
+							<h4>Arxius personals</h4>
 							<div class="taula-historial historial-items historial-arxius">
 								{% for arxiu in arxius %}
 									<div class="item-historial">
@@ -287,6 +286,7 @@
 											{% endif %}
 											</a>
 										</div>
+										<a class="remove-file link" href="{{ path('FecdasBundle_esborrararxiufederat', { 'persona': persona.id, 'arxiu':arxiu.id, 'foto': 0, 'certificat': 0  } ) }}"><span class="fa fa-trash fa-1x red"></span></a>
 									</div>
 								{% else %}
 									<div class="item-historial">No hi ha arxius</div>

@@ -10,7 +10,7 @@
 			<div class="col-md-3 col-last-right">
 				<div class="buttons-top-bootstrap">
 					<div class="button-top">
-						<a class="link save-data" href="{{ path('FecdasBundle_dadesfederat', { 'format': 'csv' }) }}" alt="Desar els canvis" 
+						<a class="link save-data" href="{{ path('FecdasBundle_dadesfederat') }}" alt="Desar els canvis" 
 						title="Desar els canvis"><i class="fa fa-save fa-1x green"></i></a>
 					</div>	
 				</div> 
@@ -58,14 +58,89 @@
 		
 		imageUploadForm("#persona_fotoupld", 104);
 		
-		prepareRemoveFotoGaleria( "#dades-federat", function() {
+		/*prepareRemoveFotoGaleria( "#dades-federat", function() {
 			// Accions addicionals
 			$('#persona_foto').val( '' );
-		});
+		});*/
 
-		prepareRemoveFile( "#dades-federat", '' );
+		$( "#dades-federat" ).on( "click", ".remove-foto", function( e ) {
+			//Cancel the link behavior
+	        e.preventDefault();
+
+	        var url = $(this).attr('href');
+			var galeria = $(this).parent('.galeria-remove-foto'); 
+
+			if ($('#persona_foto').val() == '') {
+				// Not saved
+		        galeria.prev('input[type="file"]').val('');
+	        
+		        galeria.prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
+	        
+		        galeria.remove();
+
+		        return false;
+			}
+			
+			var strHtml = '<p>Segur que vols treure la foto?</p>';
+			dialegConfirmacio(strHtml, 'Esborrar arxiu', 'auto', 400, function() {
+
+				$('.alert').remove();
+				 
+				$.get(url, function(data) {
+					// Remove
+			        galeria.prev('input[type="file"]').val('');
+		        
+			        galeria.prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
+		        
+			        galeria.remove();
+
+					$('#persona_foto').val( '' );
+					
+				}).fail( function(xhr, status, error) {
+	        		// xhr.status + " " + xhr.statusText, status, error
+		        	var sms = smsResultAjax('KO', xhr.responseText);
+		    			 
+		   			$('.block-errors').append(sms);
+	        	});
+				closeDialegConfirmacio();
+
+				
+			}, function() { closeDialegConfirmacio(); }, function() { });
+
+			
+		});
 		
-		prepareFileInput( $("#persona_certificatupld") );
+		//prepareRemoveFile( , '' );
+
+		$( "#dades-federat" ).on( "click", ".remove-file", function( e ) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+
+	        var url = $(this).attr('href');
+			var parentRow = $(this).parents('div.item-historial'); 
+
+			var strHtml = '<p>Segur que vols esborrar aquest arxiu?</p>';
+			dialegConfirmacio(strHtml, 'Esborrar arxiu', 'auto', 400, function() {
+
+				$('.alert').remove();
+				 
+				$.get(url, function(data) {
+					// Remove
+					parentRow.remove();
+					
+				}).fail( function(xhr, status, error) {
+	        		// xhr.status + " " + xhr.statusText, status, error
+		        	var sms = smsResultAjax('KO', xhr.responseText);
+		    			 
+		   			$('.block-errors').append(sms);
+	        	});
+				closeDialegConfirmacio();
+				 
+			}, function() { closeDialegConfirmacio(); }, function() { });
+		});
+		
+		
+		prepareFileInput( $("#persona_arxiuupld") );
 		
 		$("select#persona_addrprovincia").select2({
 			minimumInputLength: 2,

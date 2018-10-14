@@ -1027,7 +1027,7 @@
 			prepareRemoveFile( "#edicio-persona", '' );
 			
 			
-			prepareFileInput( $("#persona_certificatupld") );
+			prepareFileInput( $("#persona_arxiuupld") );
 			
 			$( "#tabs-persona" ).tabs();
 			

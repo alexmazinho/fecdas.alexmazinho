@@ -336,7 +336,7 @@ input.disabled label
 .input-group-addon.group-addon-md { min-width: 60px; }
 .input-group-addon.group-addon-lg { min-width: 100px; }
 
-.ui-dialog { z-index: 1000; }
+.ui-dialog { z-index: 9999; }
 
 #dialeg p {
 	padding-bottom: 10px;

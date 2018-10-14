@@ -67,18 +67,18 @@ class EntityUserClub {
      * Activar rol
      *
      */
-    public function activarRole($role)
+    public function activarRole($role = null)
     {
-        if ($this->role == $role) $this->databaixa = null;
+        if ($role == null || $this->role == $role) $this->databaixa = null;
     }
     
     /**
      * Desactivar rol
      *
      */
-    public function desactivarRole()
+    public function desactivarRole($role = null)
     {
-        $this->databaixa = new \DateTime();
+        if ($role == null || $this->role == $role) $this->databaixa = new \DateTime();
     }
     
 	/**

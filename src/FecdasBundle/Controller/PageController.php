@@ -1207,7 +1207,7 @@ class PageController extends BaseController {
 		$persona = null;
 		$metapersona = null; 
 		$fotoPath = '';
-		$certificatPath = '';
+		$arxiuPath = '';
 		$altrestitolscurrent = array();	
 		$em = $this->getDoctrine()->getManager();
 		try {
@@ -1221,7 +1221,7 @@ class PageController extends BaseController {
 				}
 
 				if (isset($p['foto']) && $p['foto'] != '') $fotoPath = $p['foto'];
-				if (isset($p['certificat']) && $p['certificat'] != '') $certificatPath = $p['certificat'];
+				if (isset($p['arxiu']) && $p['arxiu'] != '') $arxiuPath = $p['arxiu'];
 				
 				if (isset($p['altrestitolscurrent']) && $p['altrestitolscurrent'] != '') {
 					$altrestitolscurrent = 	explode(";", $p['altrestitolscurrent']);
@@ -1255,10 +1255,10 @@ class PageController extends BaseController {
 						$this->validarDadesPersona($persona, !$estranger, $formpersona);
 
 						$foto = $formpersona->get('fotoupld')->getData();
-						$certificat = $formpersona->get('certificatupld')->getData();
+						$arxiu = $formpersona->get('arxiuupld')->getData();
 						
 						$this->gestionarFotoPersona($persona, $fotoPath, $foto);
-						$this->gestionarCertificatPersona($persona, $certificatPath, $certificat);
+						$this->gestionarArxiuPersona($persona, $arxiuPath, $arxiu);
 						
 						$this->actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent);
 

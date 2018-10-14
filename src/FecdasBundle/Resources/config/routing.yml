@@ -410,6 +410,12 @@ FecdasBundle_dadesfederat:
     requirements:
         methods:  GET/POST        
 
+FecdasBundle_esborrararxiufederat: 
+    path:  /esborrararxiufederat
+    defaults: { _controller: "FecdasBundle:Titulacions:esborrararxiufederat" }
+    requirements:
+        methods:  GET
+
 
 FecdasBundle_jsonpersona:
     path:  /jsonpersona

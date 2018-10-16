@@ -5,21 +5,23 @@
 {% endblock %}
 
 	{% block formpersona_principal %}
+	<div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
 	<div class="row">
-		<div class="col-md-10">
+		<div class="col-md-10 col-sm-9 col-xs-9">
 		{{ form_widget(formpersona.id) }}
 			<div class="row">
-				<div id="formpersona-nom" class="col-md-3  col-xs-3">
+				<div id="formpersona-nom" class="col-md-3 col-sm-5 col-xs-5">
 				  	<div class="form-group">
 						{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
 						{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom'} }) }}
 					</div>{{ form_errors(formpersona.nom) }}
 				</div>
-				<div id="formpersona-cognoms"  class="col-md-5  col-xs-5">
+				<div id="formpersona-cognoms"  class="col-md-5 col-sm-7 col-xs-7">
 					{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
 					{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'form-control', 'placeholder': 'Cognoms'} }) }}
 				</div> 
-				<div id="formpersona-dni" class="col-md-4  col-xs-4">
+				<div class="clearfix visible-sm-block visible-xs-block"></div>
+				<div id="formpersona-dni" class="col-md-4 col-sm-8 col-xs-12">
 			  		<div class="form-group">
 				  		<div class="input-group">
 				  			<span class="input-group-addon"></span>				
@@ -33,9 +35,7 @@
 						</div>
 					</div>			
 				</div>
-			</div>
-			<div class="row">
-				<div id="formpersona-datanaixement" class="col-md-4  col-xs-4">
+				<div id="formpersona-datanaixement" class="col-md-3 col-sm-5 col-xs-6">
 				  	<div class="form-group">
 				  		<div  class="input-group">
 					  		<span class="input-group-addon"></span>
@@ -45,7 +45,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="formpersona-sexe" class="col-md-offset-1 col-md-4 col-xs-offset-1 col-xs-4">
+				<div id="formpersona-sexe" class="col-md-offset-1 col-md-4 col-sm-offset-1 col-sm-6 col-xs-6">
 			  		<label class="radio-inline">
 						{{ form_widget(formpersona.sexe[0]) }} Home
 					</label>
@@ -54,7 +54,7 @@
 					</label>
 				</div>
 				{% block formpersona_estranger %}
-				<div id="formpersona-estranger" class="col-md-offset-1 col-md-2 col-xs-offset-1 col-xs-2">
+				<div id="formpersona-estranger" class="col-md-2 col-sm-4 col-xs-4">
 				  	<div class="checkbox">
 				    	<label>
 				     		{{ form_widget(formpersona.estranger) }} Estranger? 
@@ -64,7 +64,7 @@
                 {% endblock %}
 			</div>
 			<div class="row">
-				<div id="formpersona-tlf1" class="col-md-3  col-xs-3">
+				<div id="formpersona-tlf1" class="col-md-3 col-sm-6 col-xs-6">
 				  	<div class="form-group">
 				  		<div class="input-group">
 					  		<span class="input-group-addon"><span class="fa fa-phone fa-1x"></span></span>
@@ -74,7 +74,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="formpersona-tlf2" class="col-md-3  col-xs-3">
+				<div id="formpersona-tlf2" class="col-md-3 col-sm-6 col-xs-6">
 				  	<div class="form-group">
 				  		<div class="input-group">
 					  		<span class="input-group-addon"><span class="fa fa-mobile fa-1x"></span></span>
@@ -84,7 +84,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="formpersona-mail"  class="col-md-6  col-xs-6">
+				<div id="formpersona-mail"  class="col-md-6 col-sm-12 col-xs-12">
 				  	<div class="form-group">
 				  		<div class="input-group">
 					  		<span class="input-group-addon"><span class="fa fa-mail fa-1x"></span></span>
@@ -97,8 +97,8 @@
 				</div>
 			</div> 
 		</div>
-		<div class="col-md-2 col-last-right">
-			{{ form_widget(formpersona.foto) }} 
+		<div class="col-md-2 col-sm-3 col-xs-3 col-last-right foto-dadespersonals">
+			{{ form_widget(formpersona.foto, { 'attr': {'class': 'foto-persona'} }) }} 
 			{{ form_widget(formpersona.fotoupld) }} 
 			<div class="galeria-upload">
 				{% if persona.foto is not null and persona.foto.width > 0 and persona.foto.height > 0 %}
@@ -119,12 +119,12 @@
 	{% endblock %}
 	{% block formpersona_adreca %}
 	<div class="row">
-		<div id="adreca-header" class="col-md-12  col-xs-12">
+		<div id="adreca-header" class="col-md-12 col-sm-12 col-xs-12">
 			<h3>Adreça</h3>
 		</div>
 	</div>
 	<div class="row">
-		<div id="formpersona-addradreca" class="col-md-6  col-xs-6">
+		<div id="formpersona-addradreca" class="col-md-6 col-sm-6 col-xs-5">
 		  	<div class="form-group">
 		  		<div class="input-group">
 					 <span class="input-group-addon">&nbsp</span>
@@ -133,7 +133,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="formpersona-addrpob" class="col-md-4  col-xs-4">
+		<div id="formpersona-addrpob" class="col-md-4 col-sm-6 col-xs-7">
 		  	<div class="form-group">
 		  		<div class="input-group">
 					 <span class="input-group-addon">Població</span>
@@ -142,7 +142,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="formpersona-addrcp" class="col-md-2  col-xs-2">
+		<div id="formpersona-addrcp" class="col-md-2 col-sm-6 col-xs-5">
 		  	<div class="form-group">
 		  		<div class="input-group">
 					 <span class="input-group-addon">CP</span>
@@ -151,9 +151,8 @@
 				</div>
 			</div>
 		</div>
-	</div> 
-	<div class="row">
-		<div id="formpersona-addrprovincia" class="col-md-4  col-xs-4">
+		<div class="clearfix visible-md-block"></div>
+		<div id="formpersona-addrprovincia" class="col-md-4 col-sm-6 col-xs-7">
 		  	<div class="form-group">
 		  		<div class="input-group">
 					 <span class="input-group-addon">Província</span>
@@ -162,7 +161,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="formpersona-addrcomarca" class="col-md-5  col-xs-5">
+		<div id="formpersona-addrcomarca" class="col-md-5 col-sm-8 col-xs-8">
 		  	<div class="form-group">
 		  		<div class="input-group">
 					 <span class="input-group-addon">Comarca</span>
@@ -171,7 +170,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="formpersona-addrnacionalitat" class="col-md-3 col-xs-3">
+		<div id="formpersona-addrnacionalitat" class="col-md-3 col-sm-4 col-xs-4">
 		  	<div class="form-group">
 				{{ form_label(formpersona.addrnacionalitat, 'Nacionalitat', { 'label_attr': {'class': 'sr-only required'} }) }}
 				{{ form_widget(formpersona.addrnacionalitat, { 'attr': {'class': 'form-control', 'placeholder': 'Nacionalitat'} }) }}
@@ -181,7 +180,8 @@
 	{% endblock %}
 	{% block formpersona_altres %}
 	<div class="row">
-		<div id="tabs-persona" class="col-md-12">
+		<div class="col-md-12">
+			<div id="tabs-persona">
 	  		<ul>
 	    		<li><a href="#tabs-llicencies">Llicències</a></li>
 	    		<li><a href="#tabs-titulacions">Titulacions CMAS</a></li>
@@ -267,15 +267,17 @@
 							</div>
 						</div>
 			    	</div>
-			    	<div class="col-md-offset-1 col-md-6">
+			    	<div class="col-md-7">
 			    		<div class="arxius-historial">
 							<h4>Arxius personals</h4>
-							<div class="taula-historial historial-items historial-arxius">
+							<div class="table-responsive taula-historial">
+							<table class="table">
+								<tbody>
 								{% for arxiu in arxius %}
-									<div class="item-historial">
-										<div class="historial-camp historial-title"><span>{{ arxiu.titol }}</span></div>
-										<div class="historial-camp historial-path"><a href="{{ arxiu.webPath }}" target="_blank" title="{{ arxiu.titol }}" class="link">{{ arxiu.path }}</a></div>
-										<div class="historial-camp historial-icona">
+									<tr>
+										<td class="historial-title"><span>{{ arxiu.titol }}</span></td>
+										<td class="historial-path"><a href="{{ arxiu.webPath }}" target="_blank" title="{{ arxiu.titol }}" class="link">{{ arxiu.path }}</a></td>
+										<td class="historial-icona">
 											<a href="{{ arxiu.webPath }}" target="_blank" title="{{ arxiu.titol }}" class="link">
 											{% if arxiu.esImatge == true and arxiu.width > 0 and arxiu.height > 0 %}
 								   				<img src="{{ arxiu.webPath }}" alt="{{ arxiu.titol }}" width="20px"/>
@@ -285,17 +287,22 @@
 										   		{% if arxiu.esExcel == true %} <span class="fa fa-file-excel-o fa-1x green"></span> {% endif %}
 											{% endif %}
 											</a>
-										</div>
-										<a class="remove-file link" href="{{ path('FecdasBundle_esborrararxiufederat', { 'persona': persona.id, 'arxiu':arxiu.id, 'foto': 0, 'certificat': 0  } ) }}"><span class="fa fa-trash fa-1x red"></span></a>
-									</div>
+										</td>
+										<td class="historial-remove">
+											<a class="remove-file link" href="{{ path('FecdasBundle_esborrararxiufederat', { 'persona': persona.id, 'arxiu':arxiu.id, 'foto': 0, 'certificat': 0  } ) }}"><span class="fa fa-trash fa-1x red"></span></a>
+										</td>
+									</tr>
 								{% else %}
-									<div class="item-historial">No hi ha arxius</div>
+									<tr><td>No hi ha arxius</td></tr>
 								{% endfor %}
+								</tbody>
+							</table>
 							</div>
 						</div>
 					</div>			
 				</div>
 			{% endblock %}
+			</div>
 			</div>
 		</div>
 	</div>
@@ -310,7 +317,7 @@
 				<input type="submit" id="formpersona-button-remove" class="forminput-inside btn btn-default" value="Esborrar" name="formpersona-button-remove"/>
 			</div>
 			<div id="formpersona-submit" class="persona-submit form-right">	
-				<input type="submit" id="formpersona-button-save" class="forminput-inside btn btn-default" value="Desar" name="formpersona-button-save"/>
+				<input type="submit" id="formpersona-button-save" class="forminput-inside btn btn-default" value="Desar i tancar" name="formpersona-button-save"/>
 			</div>
 		</div>
 	</div>	

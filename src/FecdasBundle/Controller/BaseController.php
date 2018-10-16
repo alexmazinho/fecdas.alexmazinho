@@ -3585,11 +3585,16 @@ error_log(" 3  NOU ?".($nouArxiu==null?"NULL":"OK"));
 	protected function saldosComptablesData($data, $club) {
 		$em = $this->getDoctrine()->getManager();
 		
-		$saldosComptables = array();
+		$saldosComptables = array($club->getCodi() => 0);
 		
 		if ($data == null || $club == null) return $saldosComptables;
 		
-		if ($data->format('Y') < $club->getExercici()) return $saldosComptables; // No es pot consultar per dates anteriors a l'inici de l'exercici
+		$iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici());
+		
+		if ($data->format('Y-m-d') <= $iniciExercici->format('Y-m-d')) {
+		    $saldosComptables[$club->getCodi()] = $club->getRomanent();
+		    return $saldosComptables; // Saldo és el romanent
+		}
 		
 		/*$iniciExercici = \DateTime::createFromFormat('d/m/Y', "01/01/".$club->getExercici()); 
 		

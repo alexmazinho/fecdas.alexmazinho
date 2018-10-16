@@ -6,8 +6,8 @@
 {% block body %}
    	<header>
 		<div class="row">
-			<div class="col-md-8"><h1>Dades personals</h1></div>
-			<div class="col-md-3 col-last-right">
+			<div class="col-md-8 col-sm-8 col-xs-8"><h1>Dades personals</h1></div>
+			<div class="col-md-3 col-sm-4 col-xs-4 col-last-right">
 				<div class="buttons-top-bootstrap">
 					<div class="button-top">
 						<a class="link save-data" href="{{ path('FecdasBundle_dadesfederat') }}" alt="Desar els canvis" 
@@ -18,14 +18,14 @@
 		</div>
 	</header>
    	
-  	<div id="dades-federat" class="row">
-  		<div class="col-md-11 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div>
-  		<div class="col-md-11">
-   	    {% include 'FecdasBundle:Titulacions:dadesfederatpersona.html.twig' %}
-   	    </div>
+  	<div id="edicio-persona">
+  		<div  class="row">
+  			<div class="col-md-11 col-sm-12 col-xs-12">
+   	        {% include 'FecdasBundle:Titulacions:dadesfederatpersona.html.twig' %}
+   	    	</div>
+		</div> 
 	</div>
 	<div class="row space50"></div>
-    
 {% endblock %}
 
 {% block javascripts %}
@@ -57,88 +57,10 @@
 		autocompleters( $('#formpersona-autocompleters').attr('href'), $('#persona_addrpob'), $('#persona_addrcp'), $('#persona_addrprovincia'), $('#persona_addrcomarca'), "#edicio-persona" );
 		
 		imageUploadForm("#persona_fotoupld", 104);
+
+		prepareRemoveFotoGaleria();
 		
-		/*prepareRemoveFotoGaleria( "#dades-federat", function() {
-			// Accions addicionals
-			$('#persona_foto').val( '' );
-		});*/
-
-		$( "#dades-federat" ).on( "click", ".remove-foto", function( e ) {
-			//Cancel the link behavior
-	        e.preventDefault();
-
-	        var url = $(this).attr('href');
-			var galeria = $(this).parent('.galeria-remove-foto'); 
-
-			if ($('#persona_foto').val() == '') {
-				// Not saved
-		        galeria.prev('input[type="file"]').val('');
-	        
-		        galeria.prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
-	        
-		        galeria.remove();
-
-		        return false;
-			}
-			
-			var strHtml = '<p>Segur que vols treure la foto?</p>';
-			dialegConfirmacio(strHtml, 'Esborrar arxiu', 'auto', 400, function() {
-
-				$('.alert').remove();
-				 
-				$.get(url, function(data) {
-					// Remove
-			        galeria.prev('input[type="file"]').val('');
-		        
-			        galeria.prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
-		        
-			        galeria.remove();
-
-					$('#persona_foto').val( '' );
-					
-				}).fail( function(xhr, status, error) {
-	        		// xhr.status + " " + xhr.statusText, status, error
-		        	var sms = smsResultAjax('KO', xhr.responseText);
-		    			 
-		   			$('.block-errors').append(sms);
-	        	});
-				closeDialegConfirmacio();
-
-				
-			}, function() { closeDialegConfirmacio(); }, function() { });
-
-			
-		});
-		
-		//prepareRemoveFile( , '' );
-
-		$( "#dades-federat" ).on( "click", ".remove-file", function( e ) {
-	        //Cancel the link behavior
-	        e.preventDefault();
-
-	        var url = $(this).attr('href');
-			var parentRow = $(this).parents('div.item-historial'); 
-
-			var strHtml = '<p>Segur que vols esborrar aquest arxiu?</p>';
-			dialegConfirmacio(strHtml, 'Esborrar arxiu', 'auto', 400, function() {
-
-				$('.alert').remove();
-				 
-				$.get(url, function(data) {
-					// Remove
-					parentRow.remove();
-					
-				}).fail( function(xhr, status, error) {
-	        		// xhr.status + " " + xhr.statusText, status, error
-		        	var sms = smsResultAjax('KO', xhr.responseText);
-		    			 
-		   			$('.block-errors').append(sms);
-	        	});
-				closeDialegConfirmacio();
-				 
-			}, function() { closeDialegConfirmacio(); }, function() { });
-		});
-		
+		prepareRemoveFile();
 		
 		prepareFileInput( $("#persona_arxiuupld") );
 		

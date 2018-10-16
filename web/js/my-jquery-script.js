@@ -1019,10 +1019,12 @@
 			
 			imageUploadForm("#persona_fotoupld", 104);
 			
-			prepareRemoveFotoGaleria( "#edicio-persona", function() {
+			/*prepareRemoveFotoGaleria( "#edicio-persona", function() {
 				// Accions addicionals
 				$('#persona_foto').val( '' );
-			});
+			});*/
+			
+			prepareRemoveFotoGaleria();
 			
 			prepareRemoveFile( "#edicio-persona", '' );
 			
@@ -2638,10 +2640,12 @@
 			
 					imageUploadForm("#duplicat_fotoupld", 104);
 					
-					prepareRemoveFotoGaleria( "#formduplicats", function() {
+					prepareRemoveFotoGaleria();
+					
+					/*prepareRemoveFotoGaleria( "#formduplicats", function() {
 						// Accions addicionals
 						$('#duplicat_fotoupld').val( '' );
-					});
+					});*/
 					
 					$('#duplicat_submit').click(function(e) {
 						e.preventDefault();
@@ -2684,46 +2688,82 @@
 		if ($.browser.msie) $('#formduplicats-dades').hide(); 
 	    else $('#formduplicats-dades').stop().slideUp('slow');
 	};
-
 	
-	prepareRemoveFotoGaleria = function(selectorContenidor, additionalActions) {
+	prepareRemoveFotoGaleria = function() {
 		
-		// Delegate
-		$( selectorContenidor ).on( "click", ".remove-foto", function( e ) {
-	        //Cancel the link behavior
+		$( "#edicio-persona, #formduplicats" ).on( "click", ".remove-foto", function( e ) {
+			//Cancel the link behavior
 	        e.preventDefault();
-	
-	        $(this).parent('.galeria-remove-foto').prev('input[type="file"]').val('');
+
+	        $('.alert').remove();
 	        
-	        $(this).parent('.galeria-remove-foto').prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
+	        var url = $(this).attr('href');
+			var galeria = $(this).parent('.galeria-remove-foto'); 
+
+			if ($('#persona_foto').val() == '') {
+				// Not saved
+		        galeria.prev('input[type="file"]').val('');
 	        
-	        $(this).parent('.galeria-remove-foto').remove();
+		        galeria.prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
 	        
-	        if (typeof additionalActions !== "undefined") {
-	        	additionalActions($(this));
+		        galeria.remove();
+
+		        return false;
 			}
+			
+			var strHtml = '<p>Segur que vols treure la foto?</p>';
+			dialegConfirmacio(strHtml, 'Esborrar arxiu', 'auto', 400, function() {
+
+				$.get(url, function(data) {
+					// Remove
+			        galeria.prev('input[type="file"]').val('');
+		        
+			        galeria.prev('.galeria-upload').html('<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>');
+		        
+			        galeria.remove();
+
+					$('.foto-persona').val( '' );
+					
+				}).fail( function(xhr, status, error) {
+	        		// xhr.status + " " + xhr.statusText, status, error
+		        	var sms = smsResultAjax('KO', xhr.responseText);
+		    			 
+		   			$('.block-errors').append(sms);
+	        	});
+				closeDialegConfirmacio();
+
+				
+			}, function() { closeDialegConfirmacio(); }, function() { });
 		});
 	};
 	
-	prepareRemoveFile = function(selectorContenidor, textNoFile) {
-		// Delegate
-		$( selectorContenidor ).on( "click", ".remove-file", function( e ) {
+	prepareRemoveFile = function() {
+		
+		$( "#edicio-persona" ).on( "click", ".remove-file", function( e ) {
 	        //Cancel the link behavior
 	        e.preventDefault();
 
-	        $(this).parents('.file-upload').prev('input[type="hidden"]').val('');
-	        
-	        $(this).parents('.file-upload').prev('input[type="file"]').val('');
-	        
-	        $(this).parents('.file-upload').find('.upload-file-info').val('');
-	        
-	        if (textNoFile !== '') {
-	        	$(this).parents('.file-info').html('<span class="blue">'+textNoFile+'</span>');
-	        } else {
-	        	$(this).parents('.file-info').html('');
-	        }
-	        
-	        $(this).remove();
+	        var url = $(this).attr('href');
+			var parentRow = $(this).parents('div.item-historial'); 
+
+			var strHtml = '<p>Segur que vols esborrar aquest arxiu definitivament?</p>';
+			dialegConfirmacio(strHtml, 'Esborrar arxiu', 'auto', 400, function() {
+
+				$('.alert').remove();
+				 
+				$.get(url, function(data) {
+					// Remove
+					parentRow.remove();
+					
+				}).fail( function(xhr, status, error) {
+	        		// xhr.status + " " + xhr.statusText, status, error
+		        	var sms = smsResultAjax('KO', xhr.responseText);
+		    			 
+		   			$('.block-errors').append(sms);
+	        	});
+				closeDialegConfirmacio();
+				 
+			}, function() { closeDialegConfirmacio(); }, function() { });
 		});
 	};
 	
@@ -2841,7 +2881,8 @@
 	};
 	
 	addFotoActionsBottom = function( galeria ) {
-		if ( galeria.next('.galeria-remove-foto').length === 0) {
+		//if ( galeria.next('.galeria-remove-foto').length === 0) {
+		if ( galeria.siblings('.galeria-remove-foto').length === 0) {
 			var htmlRemove = Array();
 			htmlRemove.push('<div class="galeria-remove-foto">');
 			htmlRemove.push(' 	<a class="remove-foto link" href="javascript:void(0);"><span class="fa fa-trash fa-1x gray"></span></a>');

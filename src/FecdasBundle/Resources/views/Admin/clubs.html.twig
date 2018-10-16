@@ -48,74 +48,79 @@
     {{ form_end(form) }}
     <div id="list-clubs" class="row">	
     	<div class="col-md-12">
-	    	<div class="table-header">	
-		   		<div id="list-header">
-			   		<div id="header-clubscodi" class="col-listheader">codi</div>
-			   		<div id="header-clubsnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(clubs, 'Club', 'c.nom') }}
-			   			<span class="listheader-icon {% if clubs.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-			   		<div id="header-clubspartes" class="col-listheader listheader-noorder">Comandes {{"now"|date('Y')}}<span class="listheader-order"></span></div>
-			   		<div id="header-clubspagats" class="col-listheader listheader-noorder">Pagades per web<span class="listheader-order"></span></div>
-			   		<div id="header-clubsllicencies" class="col-listheader listheader-noorder">Llic. {{"now"|date('Y')}}<span class="listheader-order"></span></div>
-			   		<div id="header-clubsimport" class="col-listheader listheader-noorder">Total<span class="listheader-order"></span></div>
-			   		<div id="header-clubspagatweb" class="col-listheader listheader-noorder">Total llic.<span class="listheader-order"></span></div>
-			   		<div id="header-clubsestat" class="col-listheader listheader-noorder">Estat<span class="listheader-order"></span></div>
-			   		<div id="header-clubslimit" class="col-listheader listheader-noorder">Límit de crèdit<span class="listheader-order"></span></div>
-			   		<div id="header-clubsgessaldos" class="col-listheader listheader-noorder">Saldo<span class="listheader-order"></span></div>
-				   	<div id="header-clubsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ clubs.getTotalItemCount|number_format(0, ',', '.') }}</div>
-			   	</div>
-			</div>
-			{% if clubs|length > 0 %}
-			<div class="table-scroll col-md-12">
-			   	<ol id="list-data">
-				{% for club in clubs %}
-					{% set dades = club.DadesCurrent %}
-			   		<li class="data-detall">
-				   		<div class="data-detall-cell club-codi">{{ club.codi }}</div>
-				   		<div class="data-detall-cell club-nom">{{ club.nom }}</div>
-			   			<div class="data-detall-cell club-partes">{{ dades['comandes'] }}</div>
-			   			<div class="data-detall-cell club-pagats">{{ dades['pagats'] }}</div>
-			   			<div class="data-detall-cell club-llicencies">{{ dades['llicencies'] }}</div>
-			   			<div class="data-detall-cell club-import">{{ dades['import'] |number_format(2, ',', '.') }} €</div>
-			   			<div class="data-detall-cell club-pagatweb">{{ dades['importpartes'] |number_format(2, ',', '.') }} €</div>
-			   			<div class="data-detall-cell club-estat">
-			   			{{ club.estat.descripcio }}
-			   			{% if club.impressio == 1 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
-			   			</div>
-			   			<div class="data-detall-cell club-limit" data-limit="{{ club.limitcredit }}">{{ club.limitcredit|number_format(2, ',', '.') }} €</div>
-			   			<div class="data-detall-cell club-gessaldos">
-			   				{{ club.saldo|number_format(2, ',', '.') }} €
-				   			<div class="detall-saldos">
-								<h3>Detall saldos</h3>
-								<h4>Total: <span>{{ club.saldo|number_format(2, ',', '.') }} €</span></h4>
-					   			<p>Romanent: <span>{{ club.romanent|number_format(2, ',', '.') }} €</span></p>
-					   			<p>Factures Llicències:&nbsp;&nbsp;<span>{{ club.totalllicencies|number_format(2, ',', '.') }} €</span></p>
-					   			<p>Factures Duplicats: <span>{{ club.totalduplicats|number_format(2, ',', '.') }} €</span></p>
-					   			<p>Altres factures: <span>{{ club.totalaltres|number_format(2, ',', '.') }} €</span></p>
-					   			<p>Pagaments rebuts: <span>{{ club.totalpagaments|number_format(2, ',', '.') }} €</span></p>
-					   			<p>Ajust subvencions: <span>{{ club.ajustsubvencions|number_format(2, ',', '.') }} €</span></p>
-				   			</div>
-			   			</div>
-			   			<div class="data-detall-cell club-actions">
-			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_DIFERIT') }) }}">
-			   				<i class="fa fa-thumbs-up green fa-1x"></i></a>
-			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
-			   				<i class="fa fa-credit-card orange fa-1x"></i></a>
-			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Sense tramitació'" title="Canviar estat a 'Sense tramitació'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
-			   				<i class="fa fa-thumbs-down red fa-1x"></i></a>
-			   			<a class="clubs-action-view link" alt="Veure dades del club" title="Veure dades del club" href="{{ path('FecdasBundle_club', { 'codiclub': club.codi }) }}">
-			   				<i class="fa fa-search blue fa-1x"></i></a>
-						</div>
-			   		</li>
-			   	{% endfor %}
-				</ol>
+    		<div class="table-responsive">
+    			<table class="table">
+        			<thead>
+        		   		<tr class="data-detall-header">
+        			   		<th class="hidden">codi</th>
+        			   		<th id="header-clubsnom" class="col-listheader data-detall-cell-left col-noresponsive col-listheader-sortable club-nom">{{ knp_pagination_sortable(clubs, 'Club', 'c.nom') }}
+        			   			<span class="listheader-icon {% if clubs.isSorted('c.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+        			   		<th id="header-clubspartes" class="col-listheader listheader-noorder club-partes">Comandes {{"now"|date('Y')}}<span class="listheader-order"></span></th>
+        			   		<th id="header-clubspagats" class="col-listheader listheader-noorder club-pagats">Pagades per web<span class="listheader-order"></span></th>
+        			   		<th id="header-clubsllicencies" class="col-listheader listheader-noorder club-llicencies">Llic. {{"now"|date('Y')}}<span class="listheader-order"></span></th>
+        			   		<th id="header-clubsimport" class="col-listheader data-detall-cell-right listheader-noorder club-import">Total<span class="listheader-order"></span></th>
+        			   		<th id="header-clubspagatweb" class="col-listheader data-detall-cell-right listheader-noorder club-pagatweb">Total llic.<span class="listheader-order"></span></th>
+        			   		<th id="header-clubslimit" class="col-listheader data-detall-cell-right listheader-noorder club-limit">Límit de crèdit<span class="listheader-order"></span></th>
+        			   		<th id="header-clubsestat" class="col-listheader data-detall-cell-left listheader-noorder club-estat">Estat<span class="listheader-order"></span></th>
+        			   		<th id="header-clubssaldo" class="col-listheader data-detall-cell-right listheader-noorder club-saldo">Saldo comptable<span class="listheader-order"></span></th>
+        			   		<th id="header-clubsgessaldos" class="col-listheader data-detall-cell-right listheader-noorder club-saldooper">Saldo operatiu<span class="listheader-order"></span></th>
+        				   	<th id="header-clubsactions" class="col-listheader data-detall-cell-right listheader-noorder club-actions total-rowcount">Total: {{ clubs.getTotalItemCount|number_format(0, ',', '.') }}</th>
+        			   	</tr>
+        			</thead>
+        			<tbody class="table-noscroll table-noscroll-large">
+        			    {% if clubs|length > 0 %}
+            				{% for club in clubs %}
+            					{% set dades = club.DadesCurrent %}
+            			   		<tr class="data-detall">
+            				   		<td class="hidden">{{ club.codi }}</td>
+            				   		<td class="data-detall-cell data-detall-cell-left club-nom">{{ club.nom }}</td>
+            			   			<td class="data-detall-cell club-partes">{{ dades['comandes'] }}</td>
+            			   			<td class="data-detall-cell club-pagats">{{ dades['pagats'] }}</td>
+            			   			<td class="data-detall-cell club-llicencies">{{ dades['llicencies'] }}</td>
+            			   			<td class="data-detall-cell data-detall-cell-right club-import">{{ dades['import'] |number_format(2, ',', '.') }} €</td>
+            			   			<td class="data-detall-cell data-detall-cell-right club-pagatweb">{{ dades['importpartes'] |number_format(2, ',', '.') }} €</td>
+            			   			<td class="data-detall-cell data-detall-cell-right club-limit" data-limit="{{ club.limitcredit }}">{{ club.limitcredit|number_format(2, ',', '.') }} €</td>
+            			   			<td class="data-detall-cell data-detall-cell-left club-estat">
+            			   			    {{ club.estat.descripcio }}
+            			   			    {% if club.impressio == 1 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
+            			   			</td>
+            			   			<td class="data-detall-cell data-detall-cell-right club-saldo {% if saldos[club.codi] >= 0 %} green {% else %} red {% endif %}">
+            			   			    {{ saldos[club.codi]|number_format(2, ',', '.') }} €
+            			   			</td>
+                			   		<td class="data-detall-cell data-detall-cell-right club-saldooper">
+            			   				{{ club.saldo|number_format(2, ',', '.') }} €
+            				   			<div class="detall-saldos">
+            								<h3>Detall saldos</h3>
+            								<h4>Total: <span>{{ club.saldo|number_format(2, ',', '.') }} €</span></h4>
+            					   			<p>Romanent: <span>{{ club.romanent|number_format(2, ',', '.') }} €</span></p>
+            					   			<p>Factures Llicències:&nbsp;&nbsp;<span>{{ club.totalllicencies|number_format(2, ',', '.') }} €</span></p>
+            					   			<p>Factures Duplicats: <span>{{ club.totalduplicats|number_format(2, ',', '.') }} €</span></p>
+            					   			<p>Altres factures: <span>{{ club.totalaltres|number_format(2, ',', '.') }} €</span></p>
+            					   			<p>Pagaments rebuts: <span>{{ club.totalpagaments|number_format(2, ',', '.') }} €</span></p>
+            					   			<p>Ajust subvencions: <span>{{ club.ajustsubvencions|number_format(2, ',', '.') }} €</span></p>
+            				   			</div>
+            			   			</td>
+            			   			<td class="data-detall-cell data-detall-cell-right club-actions">
+                			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament diferit'" title="Canviar estat a 'Pagament diferit'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_DIFERIT') }) }}">
+                			   				<i class="fa fa-thumbs-up green fa-1x"></i></a>
+                			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Pagament immediat'" title="Canviar estat a 'Pagament immediat'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_PAGAMENT_IMMEDIAT') }) }}">
+                			   				<i class="fa fa-credit-card orange fa-1x"></i></a>
+                			   			<a class="clubs-action-upd link" alt="Canviar estat a 'Sense tramitació'" title="Canviar estat a 'Sense tramitació'" href="{{ path('FecdasBundle_canviestatclub', { 'codiclub': club.codi, 'action': constant('FecdasBundle\\Controller\\BaseController::CLUB_SENSE_TRAMITACIO') }) }}">
+                			   				<i class="fa fa-thumbs-down red fa-1x"></i></a>
+                			   			<a class="clubs-action-view link" alt="Veure dades del club" title="Veure dades del club" href="{{ path('FecdasBundle_club', { 'codiclub': club.codi }) }}">
+                			   				<i class="fa fa-search blue fa-1x"></i></a>
+            						</td>
+            			   		</tr>
+            			   	{% endfor %}
+        			    {% else %}
+   							<tr class="data-detall"><td class="data-detall-cell" colspan="12"><div class="sms-notice">No hi cap club en aquest estat</div></td></tr>
+                        {% endif %}
+        			</tbody>
+				</table>
 			</div>
 			{% if clubs.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(clubs, null, sortparams) }}</div>{% endif %}
 		</div>
-   	{% else %}
-   		<div class="table-header col-md-12"><div class="sms-notice">No hi cap club en aquest estat</div></div>
-    {% endif %}
     </div>
-    
 {% endblock %}
 
 {% block javascripts %}

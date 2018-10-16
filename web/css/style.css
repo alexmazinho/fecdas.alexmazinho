@@ -9,6 +9,7 @@ h3
 h4 
     { font-size: 1.1em; line-height: 2em; margin-bottom: 5px; margin-top: 3px; /*margin-left: 30px;*/ font-weight: normal; color: #1240a0; }   
 
+.h1 span, h2 span, h3 span, h4 span { font-weight: bold; }
 
 .subtitle { font-style: italic; }
 h1.subtitle { font-size: 24px; }
@@ -247,7 +248,7 @@ input[type="search"]  {
     padding: 1px 24px 1px 2px;
 }
 	  
-input[type="email"] { max-width: 500px; }
+input[type="email"] { max-width: 600px; }
 	  
 input[type="submit"]  { line-height: 30px; min-height: 30px; }
 
@@ -1374,9 +1375,11 @@ tr:first-child > .data-detall-cell  {
 .table > tfoot > tr > td.data-detall-cell.data-detall-cell-left, 
 .table > tfoot > tr > th.data-detall-cell.data-detall-cell-left, 
 .table > thead > tr > td.data-detall-cell.data-detall-cell-left, 
-.table > thead > tr > th.data-detall-cell.data-detall-cell-left, 
+.table > thead > tr > th.data-detall-cell.data-detall-cell-left,
+.table > thead > tr > th.th-listheader.data-detall-cell-left, 
 .data-detall-cell.data-detall-cell-left,
 .col-listheader.data-detall-cell-left { text-align: left; }
+
 
 .table > tbody > tr > td.data-detall-cell.data-detall-cell-right, 
 .table > tbody > tr > th.data-detall-cell.data-detall-cell-right, 
@@ -1384,8 +1387,11 @@ tr:first-child > .data-detall-cell  {
 .table > tfoot > tr > th.data-detall-cell.data-detall-cell-right, 
 .table > thead > tr > td.data-detall-cell.data-detall-cell-right, 
 .table > thead > tr > th.data-detall-cell.data-detall-cell-right, 
+.table > thead > tr > th.th-listheader.data-detall-cell-right,
 .data-detall-cell.data-detall-cell-right,
 .col-listheader.data-detall-cell-right { text-align: right; }
+
+.th-listheader.data-detall-cell-right  { text-align: right; }
 
 .data-detall-cell-extra .extra {
 	display: 	inline-block;
@@ -2093,10 +2099,6 @@ select#parte_renovar_tipus { width: 240px; }
     width: 35px;
 }
 
-.historial-titol { color: #2281CF; /*color: #2281CF;*/ font-size: 1.1em; line-height: 2em; padding: 5px 20px 5px 0; }
-.historial-titol span { font-weight: bold; }
-
-#historial-overlay .historial-titol { padding: 5px 20px; }
 #historial-overlay .taula-historial.historial-cmas { margin-bottom: 40px; }
 
 .item-historial { 
@@ -2117,25 +2119,51 @@ select#parte_renovar_tipus { width: 240px; }
 }
 
 
+.arxius-historial .table-responsive {
+	max-height: 180px;
+    /*overflow-y: auto;*/
+    /*overflow-x: hidden;*/
+}
+
+.arxius-historial .table {
+	margin-bottom: 0;
+}
+
+.arxius-historial .table tr {
+	border-top: 1px solid #EDF1F5;
+	font-size: 0.9em;
+}
+
+.arxius-historial .table tr td { font-size: 0.9em; padding: 3px; }
+.arxius-historial .table tr td span, 
+.arxius-historial .table tr td a { display:block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .historial-camp { display:inline;  }
 .historial-vigencia {   }
 .historial-categoria {  }
 .historial-club {  }
 .historial-desc {  }
-.historial-action { /*float:right;*/ position: absolute; right: -10px; top: 0; }
+.historial-action { float:right; position: absolute; right: -10px; top: 0; }
 
 .historial-titulacio { font-weight: bold; }
 
 
 .taula-historial.historial-arxius { display: table; table-layout: fixed; }
 .taula-historial.historial-arxius .item-historial { display: table-row; }
-.historial-arxius .historial-camp { display:table-cell; padding: 3px; } 
+.historial-arxius .historial-camp { /*display:table-cell; padding: 3px;*/ } 
 .historial-title { text-align: left; }
-.historial-title span { width: 215px; }
-.historial-path { width: 140px; text-align: center; }
-.historial-path a { width: 140px; }
-.historial-icona { width: auto; text-align: right; }
+.historial-title span { max-width: 280px; }
+#tabs-persona .historial-title span { max-width: 200px; }
+.historial-path { text-align: left; }
+.historial-path a { max-width: 220px; }
+#tabs-persona .historial-path a { max-width: 140px; }
+.historial-icona { text-align: center; }
+.historial-icona a { max-width: 50px; }
 .historial-icona a .fa { font-size: 1.8em; }
+.historial-remove { text-align: right; }
+.historial-remove a { /*width: auto;*/ }
+
+
 
 .historial-arxius .historial-camp span, .historial-arxius .historial-camp a { display:block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -2147,9 +2175,8 @@ select#parte_renovar_tipus { width: 240px; }
 /*#tabs-persona .taula-historial img { display:none  }*/
 #tabs-persona .close img { display:none  }
 
-#tabs-persona  .taula-historial,
-#dades-federat .taula-historial { 
-	display:block; 
+.arxius-historial .taula-historial { 
+	/*display:block; 
 	position: relative;
 	z-index: 3000;
 	width: auto; 
@@ -2159,13 +2186,12 @@ select#parte_renovar_tipus { width: 240px; }
 	max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
-	border: 1px solid #81C6FF;
-    box-shadow: none; 
-    line-height: 24px;
     padding: 5px 10px;
     margin: 0;
+    line-height: 24px;*/
+	border: 1px solid #81C6FF;
+    box-shadow: none; 
     background-color: #fff;
-    position: relative;
 }
 #tabs-persona  .taula-historial .historial-camp { font-size: 0.9em }
 
@@ -2514,14 +2540,22 @@ input#formuserclub-randompassword { width: 150px; }
 #formpersona-addradreca, #formpersona-addrpob, #formpersona-addrcp, 
 #formpersona-addrprovincia, #formpersona-addrcomarca, #formpersona-addrnacionalitat*/
 
+#formpersona .row {
+    margin-right: -5px;
+    margin-left: -5px;
+}
+
 #formpersona .row > div  
 { padding-left: 5px; padding-right: 5px; }
 
+
 #formpersona .row > div:first-child 
-{ padding-left: 15px; }
+{ /*padding-left: 15px;*/ }
 
 #formpersona .row > div.col-last-right
-{ padding-right: 15px; }
+{ /*padding-right: 15px;*/  }
+
+.foto-dadespersonals { max-width: 120px; float: right;}
 	
 
 #formpersona-sexe {  padding-top: 8px; }
@@ -2681,10 +2715,8 @@ input#formuserclub-randompassword { width: 150px; }
 
 #list-consultaadmin table tr td.data-detall-cell { font-size: 0.9em; }
 
-#list-consultaadmin table tr td.data-detall-cell, 
-#list-consultaadmin .th-listheader,
-#list-consultaclubs table tr td.data-detall-cell, 
-#list-consultaclubs .th-listheader { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#list-consultaadmin table tr td.data-detall-cell,
+#list-consultaclubs table tr td.data-detall-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 
 /************************************************* Consulta Admin Fin ******************************************************/
@@ -2983,12 +3015,13 @@ p.info-bold {
 .galeria-upload, .galeria-row {
 	position: relative;
 	cursor: pointer;
-	display: inline-block;	
+	display: inline;	
 }
 
 .galeria-remove-foto {
-	display: block;
-	text-align: center;	
+	display: inline;
+	text-align: center;
+	padding-right: 45px;
 }
 
 .image-upload, .image-noupload {
@@ -3006,10 +3039,14 @@ p.info-bold {
 	height: 100%;
 }
 
-#edicio-persona .image-upload,
-#dades-federat .image-upload {
+#edicio-persona .image-upload {
 	width: 100px; 
 	height: 124px;
+}
+
+#edicio-persona .image-upload img {
+	width: 100%; 
+	height: auto;
 }
 
 .image-uploaded {
@@ -3449,35 +3486,19 @@ li.parte-pendent-sincro .parterecents-actions {
 	font-size: 0.9em;
 }
 
-
-
-#header-clubscodi { display:none; }
-#header-clubsnom { width: 15%; text-align:left;}
-#header-clubspartes {	width: 6%; }
-#header-clubspagats {	width: 6%; }
-#header-clubsllicencies {	width: 6%; }
-#header-clubsimport {	width: 10%;text-align:right;}
-#header-clubspagatweb {	width: 10%; text-align:right;}
-#header-clubsestat {	width: 15%; }
-#header-clubslimit {	width: 7%; }
-#header-clubsgessaldos {	width: 9%;text-align:right; }
-#header-clubsactions { width: 14%;}
-
-
-.club-codi { display:none; }
-.club-nom { width: 15%; text-align:left;}
-.club-partes { width: 6%;  }
-.club-pagats { width: 6%;  }
+.club-nom { width: 16%; }
+.club-partes,
+.club-pagats,
 .club-llicencies { width: 6%; }
-.club-import { width: 10%; text-align:right;}
-.club-pagatweb { width: 10%; text-align:right;}
-.club-estat { width: 15%; }
-.club-estat span {
-	font-style: italic;
-}
-.club-limit { width: 7%; }
-.club-gessaldos { width: 9%; text-align:right;  cursor: pointer; color:#2281CF}
-.club-actions { width: 13%; text-align:right; margin-top: -14px}
+.club-limit { width: 8%; }
+.club-import,
+.club-pagatweb { width: 10%;}
+.club-saldo,
+.club-saldooper { width: 8%;}
+.club-estat { width: 11%; }
+.club-actions { width: auto; margin-top: -14px}
+.club-saldooper { cursor: pointer; color:#2281CF}
+.club-estat span { font-style: italic; }
 
 /* Dialog */
 #club-limitcredit {

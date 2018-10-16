@@ -260,14 +260,14 @@
            								<ul><li>
            									{% if stock == 0 %}
            										<span class='fa fa-exclamation-circle fa-1x'></span> 
-           										Actualment el club no disposa de cap "{{ kit.descripcio }}". Cal demanar-ne un per alumne abans de poder validar el curs.
+           										Actualment el club no disposa de kits "{{ kit.descripcio }}". Cal un per alumne per tramitar el curs
            									{% else %}
                									{% if stock >= totalalumnes %}
                										<span class='fa fa-check-circle fa-1x'></span> 
-               										El club disposa de {{ stock }} "{{ kit.descripcio }}".
+               										El club disposa de {{ stock }} kits "{{ kit.descripcio }}".
                									{% else %}
                										<span class='fa fa-exclamation-circle fa-1x'></span> 
-               										El club només disposa de {{ stock }} "{{ kit.descripcio }}". No es podrà validar el curs mentre no en tingui prou per a tots els alumnes ({{ totalalumnes }}) 
+               										El club només disposa de {{ stock }} kits "{{ kit.descripcio }}". Calen {{ totalalumnes - stock }} per tramitar el curs 
                									{% endif %}
            									{% endif %}
            								</li></ul>

@@ -289,11 +289,10 @@ class SecurityController extends BaseController
                 
                 if (!$terms) throw new \Exception("Cal acceptar els termes i condicions d'ús per poder registrar l'usuari");
                 
+                $metapersona = null;
                 if ($user != null) {
-error_log("user ".$user->getUser());                    
                     $metapersona = $user->getMetapersona();
                         
-if ($user->getMetapersona() != null) error_log(" user persona ".$user->getMetapersona()->getDni(). " mails ".print_r($user->getMetapersona()->getMails(), false));
                     if ($user->anulat()) {
                         // Existeix usuari però de baixa
                     } else {
@@ -312,7 +311,6 @@ if ($user->getMetapersona() != null) error_log(" user persona ".$user->getMetape
                 }
                 
                 if ($metapersona == null) {
-error_log("no metapersona");                    
                     // Cercar persones amb aquest mail
                     
                     $persones = $this->getPersonesByMail($mail);
@@ -389,7 +387,7 @@ error_log("no metapersona");
                     $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $metapersona);
                     $em->persist($user);
                 }
-                
+
                 foreach ($metapersona->getPersonesSortedById() as $persona) {
                     // Revisar si existeix el rol federat pels clubs de les persones actives associades a metapersona
                     $club = $persona->getClub();
@@ -425,7 +423,7 @@ error_log("no metapersona");
         
         $em = $this->getDoctrine()->getManager();
         
-        $strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p WHERE p.mail LIKE :mailcerca ORDER BY p.cognoms, p.nom ";
+        $strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p WHERE p.databaixa IS NULL AND p.mail LIKE :mailcerca ORDER BY p.cognoms, p.nom ";
         $query = $em->createQuery($strQuery)->setParameter('mailcerca', '%'.$mail.'%');
         
         // La query retorna cerca parcial, cal comprovar que $mail coincideixi exactament amb algun dels mails de la persona

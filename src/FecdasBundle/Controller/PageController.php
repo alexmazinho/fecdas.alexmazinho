@@ -1206,8 +1206,6 @@ class PageController extends BaseController {
 		$formpersona = null; 
 		$persona = null;
 		$metapersona = null; 
-		$fotoPath = '';
-		$arxiuPath = '';
 		$altrestitolscurrent = array();	
 		$em = $this->getDoctrine()->getManager();
 		try {
@@ -1220,9 +1218,6 @@ class PageController extends BaseController {
 					if ($this->isCurrentAdmin()) $options['edit'] = true;  // Admins poden modificar nom i cognoms
 				}
 
-				if (isset($p['foto']) && $p['foto'] != '') $fotoPath = $p['foto'];
-				if (isset($p['arxiu']) && $p['arxiu'] != '') $arxiuPath = $p['arxiu'];
-				
 				if (isset($p['altrestitolscurrent']) && $p['altrestitolscurrent'] != '') {
 					$altrestitolscurrent = 	explode(";", $p['altrestitolscurrent']);
 				}
@@ -1255,10 +1250,10 @@ class PageController extends BaseController {
 						$this->validarDadesPersona($persona, !$estranger, $formpersona);
 
 						$foto = $formpersona->get('fotoupld')->getData();
-						$arxiu = $formpersona->get('arxiuupld')->getData();
+						$this->gestionarArxiuPersona($persona, false, $foto, true);
 						
-						$this->gestionarFotoPersona($persona, $fotoPath, $foto);
-						$this->gestionarArxiuPersona($persona, $arxiuPath, $arxiu);
+						$arxiu = $formpersona->get('arxiuupld')->getData();
+						$this->gestionarArxiuPersona($persona, false, $arxiu);
 						
 						$this->actualitzarAltresTitulacionsPersona($persona, $altrestitolscurrent);
 

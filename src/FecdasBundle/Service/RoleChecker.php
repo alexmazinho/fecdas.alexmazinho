@@ -206,19 +206,19 @@ class RoleChecker
 		if (!$this->isAuthenticated() || $role == '') return;
 		// json	=> {'admin':true, 'roles': [{'role': 'administrador', 'club': 'CAT999', 'nom': 'FECDAS' }, ...] }
 		$roles = $this->getUserRoles();
-	
+
 		foreach ($roles->roles as $userClubRole) {
-	
 			if ($roles->admin) {
-				// Només valida role. Pot canviar a qualsevol club 	
+			    // Només valida role. Pot canviar a qualsevol club 	
 				if ($userClubRole->role == $role) {
-					$this->session->set('currentclub', $club);
+				    $this->session->set('currentclub', $club);
 					$this->session->set('currentrole', $role);
 					return;
 				}
 			} else {
 			    if (($userClubRole->club == $club && $userClubRole->role == $role) ||
-			        ($role == BaseController::ROLE_FEDERAT && $userClubRole->role == $role)) {
+			        ($role == BaseController::ROLE_FEDERAT && $userClubRole->role == $role) ||
+			        ($role == BaseController::ROLE_INSTRUCTOR && $userClubRole->role == $role)) {
 					// Valida que sigui un role permès
 					$this->session->set('currentclub', $club);
 					$this->session->set('currentrole', $role);

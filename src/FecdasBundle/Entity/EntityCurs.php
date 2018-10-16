@@ -37,7 +37,7 @@ class EntityCurs {
 	protected $clubhistoric;  // Clubs que ja no existeixen
 	
 	/**
-	 * @ORM\Column(type="string", length=20)
+	 * @ORM\Column(type="string", length=20, nullable=true)
 	 */
 	protected $num;	  // El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
 	
@@ -105,7 +105,7 @@ class EntityCurs {
 	
 		$this->id = 0;
 		$this->editor = $editor;
-		$this->num = '';  // pendent
+		$this->num = null;
 		$this->titol = $titol;
 		$this->club = $club;
 		if ($club == null) $this->clubhistoric = $clubhistoric;
@@ -134,7 +134,8 @@ class EntityCurs {
 	 * @return string
 	 */
 	public function getNumActa() {
-		return trim($this->num) != ''?$this->num:$this->id.' (Provisional, acta pendent)';
+	    if ($this->num == null) return '(Acta pendent)';
+		return $this->num;
 	}
 	
 	/**

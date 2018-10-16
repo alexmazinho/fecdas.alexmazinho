@@ -2,7 +2,7 @@
 	<a class="close" href="#"><img style="cursor: pointer;" src="/images/close.png"></a>
 
 	{% if titulacions != '' %}
-		<div class="historial-titol">Titulacions CMAS de <span>{{ persona.getNomCognoms() }}</div>
+		<h4>Titulacions CMAS de <span>{{ persona.getNomCognoms() }}</h4>
 	
 		<div class="taula-historial historial-items historial-cmas">
 			{% for titulacio in titulacions %}
@@ -34,7 +34,7 @@
 	{% endif %}
 
 	{% if altrestitulacions != '' %}
-		<div class="historial-titol">Altres titulacions</div>
+		<h4>Altres titulacions</h4>
 	
 		<div class="taula-historial historial-items historial-altrestitols">
 			<div class="item-historial item-blank hidden">

@@ -1105,48 +1105,49 @@ GROUP BY c.nom
 		
 		$agrupats = array();
 		$campsHeaderAgrupats = array();
-		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '40px', 'sort' => ''),
-									'codi' 			=> array('hidden' => false, 'nom' => 'Codi', 'width' => '80px', 'sort' => 'c.codi'),
-									'tipusclub' 	=> array('hidden' => false, 'nom' => 'Tipus', 'width' => '120px', 'sort' => 't.tipus'),
-									'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '170px', 'sort' => 'c.nom'),
-									'actiu'			=> array('hidden' => false, 'nom' => 'Actiu', 'width' => '60px', 'sort' => 'c.activat'),
-									'telefon' 		=> array('hidden' => false, 'nom' => 'Telèfon', 'width' => '80px', 'sort' => 'c.telefon'),
-									'fax' 			=> array('hidden' => false, 'nom' => 'Fax', 'width' => '80px', 'sort' => 'c.fax'),
-									'mobil' 		=> array('hidden' => false, 'nom' => 'Mòbil', 'width' => '80px', 'sort' => 'c.mobil'),         
-									'mail'			=> array('hidden' => false, 'nom' => 'eMail', 'width' => '170px', 'sort' => 'c.mail'),
-									'web'			=> array('hidden' => false, 'nom' => 'Web', 'width' => '170px', 'sort' => 'c.web'),
-									'cif'			=> array('hidden' => false, 'nom' => 'CIF', 'width' => '100px', 'sort' => 'c.cif'),
-									'compte'		=> array('hidden' => false, 'nom' => 'Compte', 'width' => '100px', 'sort' => 'c.compte'),
-					 				'adreca'		=> array('hidden' => false, 'nom' => 'Adreça', 'width' => '200px', 'sort' => 'c.addradreca'), 
-					 				'poblacio'		=> array('hidden' => false, 'nom' => 'Problació', 'width' => '150px', 'sort' => 'c.addrpob'), 
-					 				'cp'			=> array('hidden' => false, 'nom' => 'CP', 'width' => '60px', 'sort' => 'c.addrcp'), 
-					 				'comarca'		=> array('hidden' => false, 'nom' => 'Comarca', 'width' => '150px', 'sort' => 'c.addrcomarca'),
-					 				'provincia'		=> array('hidden' => false, 'nom' => 'Província', 'width' => '110px', 'sort' => 'c.addrprovincia'), 
-					 				'adrecacorreu'	=> array('hidden' => false, 'nom' => 'Adreça correu', 'width' => '200px', 'sort' => 'c.addradrecacorreu'), 
-					 				'poblaciocorreu'=> array('hidden' => false, 'nom' => 'Pob. correu', 'width' => '150px', 'sort' => 'c.addrpobcorreu'), 
-					 				'cpcorreu'		=> array('hidden' => false, 'nom' => 'CP correu', 'width' => '60px', 'sort' => 'c.addrcpcorreu'), 
-					 				'comarcacorreu'	=> array('hidden' => false, 'nom' => 'Comarca correu', 'width' => '150px', 'sort' => 'c.addrcomarcacorreu'),
-					 				'provinciacorreu'	=> array('hidden' => false, 'nom' => 'Prov. correu', 'width' => '110px', 'sort' => 'c.addrprovinciacorreu'),
-									'tipuspagament'	=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '130px', 'sort' => 'e.descripcio'),
-					 				'limitcredit'	=> array('hidden' => false, 'nom' => 'Crèdit', 'width' => '100px', 'sort' => 'c.limitcredit'), 
-									'saldo'			=> array('hidden' => false, 'nom' => 'Saldo', 'width' => '100px', 'sort' => ''),
-									'romanent'		=> array('hidden' => false, 'nom' => 'Romanent '.(date('Y')-1), 'width' => '100px', 'sort' => 'c.romanent'), 
-									'totalpagaments'=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '100px', 'sort' => 'c.totalpagaments'),
-									'totalllicencies'=> array('hidden' => false, 'nom' => 'T. llicències', 'width' => '100px', 'sort' => 'c.totalllicencies'),
-									'totalduplicats'=> array('hidden' => false, 'nom' => 'T. duplicats', 'width' => '100px', 'sort' => 'c.totalduplicats'),
-									'totalaltres'	=> array('hidden' => false, 'nom' => 'T. altres', 'width' => '100px', 'sort' => 'c.totalaltres'),
-									'ajustsubvencions'	=> array('hidden' => false, 'nom' => 'Ajust subv.', 'width' => '100px', 'sort' => 'c.ajustsubvencions'),
-									'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'c.dataalta'),
-									'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'c.databaixa'), 
-									'datacreacio' 	=> array('hidden' => false, 'nom' => 'Creació', 'width' => '80px', 'sort' => 'c.datacreacio'),
-									'datajunta'		=> array('hidden' => false, 'nom' => 'Últ. Junta', 'width' => '80px', 'sort' => 'c.datajunta'), 
-									'estatus'		=> array('hidden' => false, 'nom' => 'Estatuts', 'width' => '80px', 'sort' => 'c.estatuts'),
-									'registre'		=> array('hidden' => false, 'nom' => 'Núm. Registre', 'width' => '80px', 'sort' => 'c.registre'),
-									'president'		=> array('hidden' => false, 'nom' => 'President', 'width' => '180px', 'sort' => ''),
-									'vicepresident'	=> array('hidden' => false, 'nom' => 'Vicepresident', 'width' => '180px', 'sort' => ''),
-									'secretari'		=> array('hidden' => false, 'nom' => 'Secretari', 'width' => '180px', 'sort' => ''),
-									'tresorer'		=> array('hidden' => false, 'nom' => 'Tresorer', 'width' => '180px', 'sort' => ''),
-									'vocals'		=> array('hidden' => false, 'nom' => 'Vocals', 'width' => '260px', 'sort' => ''),
+		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => '#', 'width' => '40px', 'sort' => '', 'align' => 'center'),
+		                            'codi' 			=> array('hidden' => false, 'nom' => 'Codi', 'width' => '80px', 'sort' => 'c.codi', 'align' => 'left'),
+		                            'tipusclub' 	=> array('hidden' => false, 'nom' => 'Tipus', 'width' => '120px', 'sort' => 't.tipus', 'align' => 'center'),
+                        		    'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '170px', 'sort' => 'c.nom', 'align' => 'left'),
+                        		    'actiu'			=> array('hidden' => false, 'nom' => 'Actiu', 'width' => '60px', 'sort' => 'c.activat', 'align' => 'center'),
+                        		    'telefon' 		=> array('hidden' => false, 'nom' => 'Telèfon', 'width' => '80px', 'sort' => 'c.telefon', 'align' => 'center'),
+                        		    'fax' 			=> array('hidden' => false, 'nom' => 'Fax', 'width' => '80px', 'sort' => 'c.fax', 'align' => 'center'),
+                        		    'mobil' 		=> array('hidden' => false, 'nom' => 'Mòbil', 'width' => '80px', 'sort' => 'c.mobil', 'align' => 'center'),         
+                        		    'mail'			=> array('hidden' => false, 'nom' => 'eMail', 'width' => '170px', 'sort' => 'c.mail', 'align' => 'left'),
+                        		    'web'			=> array('hidden' => false, 'nom' => 'Web', 'width' => '170px', 'sort' => 'c.web', 'align' => 'left'),
+                        		    'cif'			=> array('hidden' => false, 'nom' => 'CIF', 'width' => '100px', 'sort' => 'c.cif', 'align' => 'center'),
+                        		    'compte'		=> array('hidden' => false, 'nom' => 'Compte', 'width' => '100px', 'sort' => 'c.compte', 'align' => 'center'),
+                        		    'adreca'		=> array('hidden' => false, 'nom' => 'Adreça', 'width' => '200px', 'sort' => 'c.addradreca', 'align' => 'left'), 
+                        		    'poblacio'		=> array('hidden' => false, 'nom' => 'Problació', 'width' => '150px', 'sort' => 'c.addrpob', 'align' => 'left'), 
+                        		    'cp'			=> array('hidden' => false, 'nom' => 'CP', 'width' => '60px', 'sort' => 'c.addrcp', 'align' => 'center'), 
+                        		    'comarca'		=> array('hidden' => false, 'nom' => 'Comarca', 'width' => '150px', 'sort' => 'c.addrcomarca', 'align' => 'left'),
+                        		    'provincia'		=> array('hidden' => false, 'nom' => 'Província', 'width' => '110px', 'sort' => 'c.addrprovincia', 'align' => 'center'), 
+                        		    'adrecacorreu'	=> array('hidden' => false, 'nom' => 'Adreça correu', 'width' => '200px', 'sort' => 'c.addradrecacorreu', 'align' => 'left'), 
+                        		    'poblaciocorreu'=> array('hidden' => false, 'nom' => 'Pob. correu', 'width' => '150px', 'sort' => 'c.addrpobcorreu', 'align' => 'left'), 
+                        		    'cpcorreu'		=> array('hidden' => false, 'nom' => 'CP correu', 'width' => '60px', 'sort' => 'c.addrcpcorreu', 'align' => 'center'), 
+                        		    'comarcacorreu'	=> array('hidden' => false, 'nom' => 'Comarca correu', 'width' => '150px', 'sort' => 'c.addrcomarcacorreu', 'align' => 'left'),
+                        		    'provinciacorreu'	=> array('hidden' => false, 'nom' => 'Prov. correu', 'width' => '110px', 'sort' => 'c.addrprovinciacorreu', 'align' => 'center'),
+                        		    'tipuspagament'	=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '130px', 'sort' => 'e.descripcio', 'align' => 'center'),
+                        		    'limitcredit'	=> array('hidden' => false, 'nom' => 'Crèdit', 'width' => '100px', 'sort' => 'c.limitcredit', 'align' => 'right'),
+                        		    'saldo'			=> array('hidden' => false, 'nom' => 'Saldo Comptable', 'width' => '100px', 'sort' => '', 'align' => 'right'),
+                        		    'saldooper'		=> array('hidden' => false, 'nom' => 'Saldo Operatiu', 'width' => '100px', 'sort' => '', 'align' => 'right'),
+                        		    'romanent'		=> array('hidden' => false, 'nom' => 'Romanent '.(date('Y')-1), 'width' => '100px', 'sort' => 'c.romanent', 'align' => 'right'), 
+                        		    'totalpagaments'=> array('hidden' => false, 'nom' => 'Pagament', 'width' => '100px', 'sort' => 'c.totalpagaments', 'align' => 'right'),
+                        		    'totalllicencies'=> array('hidden' => false, 'nom' => 'T. llicències', 'width' => '100px', 'sort' => 'c.totalllicencies', 'align' => 'right'),
+                        		    'totalduplicats'=> array('hidden' => false, 'nom' => 'T. duplicats', 'width' => '100px', 'sort' => 'c.totalduplicats', 'align' => 'right'),
+                        		    'totalaltres'	=> array('hidden' => false, 'nom' => 'T. altres', 'width' => '100px', 'sort' => 'c.totalaltres', 'align' => 'right'),
+                        		    'ajustsubvencions'	=> array('hidden' => false, 'nom' => 'Ajust subv.', 'width' => '100px', 'sort' => 'c.ajustsubvencions', 'align' => 'right'),
+                        		    'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'c.dataalta', 'align' => 'center'),
+                        		    'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'c.databaixa', 'align' => 'center'), 
+                        		    'datacreacio' 	=> array('hidden' => false, 'nom' => 'Creació', 'width' => '80px', 'sort' => 'c.datacreacio', 'align' => 'center'),
+                        		    'datajunta'		=> array('hidden' => false, 'nom' => 'Últ. Junta', 'width' => '80px', 'sort' => 'c.datajunta', 'align' => 'center'), 
+                        		    'estatus'		=> array('hidden' => false, 'nom' => 'Estatuts', 'width' => '80px', 'sort' => 'c.estatuts', 'align' => 'center'),
+                        		    'registre'		=> array('hidden' => false, 'nom' => 'Núm. Registre', 'width' => '80px', 'sort' => 'c.registre', 'align' => 'center'),
+                        		    'president'		=> array('hidden' => false, 'nom' => 'President', 'width' => '180px', 'sort' => '', 'align' => 'left'),
+                        		    'vicepresident'	=> array('hidden' => false, 'nom' => 'Vicepresident', 'width' => '180px', 'sort' => '', 'align' => 'left'),
+                        		    'secretari'		=> array('hidden' => false, 'nom' => 'Secretari', 'width' => '180px', 'sort' => '', 'align' => 'left'),
+                        		    'tresorer'		=> array('hidden' => false, 'nom' => 'Tresorer', 'width' => '180px', 'sort' => '', 'align' => 'left'),
+                        		    'vocals'		=> array('hidden' => false, 'nom' => 'Vocals', 'width' => '260px', 'sort' => '', 'align' => 'left'),
 									);
 		$total = 0;
 		if ($action == 'query' || $action == 'csv') {
@@ -1302,8 +1303,15 @@ GROUP BY c.nom
 
 				$modeda = ($action == 'csv'?'':'€');
 				
+				$dataanterior = $this->getCurrentDate('today');
+				$dataanterior->sub(new \DateInterval('P1D')); // Add 1
+				$saldoComptableClub = 0;// Afegir Saldo comptable
+			    // Obtenir saldo comptable des de l'inici de l'exercici fins al dia anterior a la data desde
+			    $saldosComptables = $this->saldosComptablesData($dataanterior, $club); // $desde no inclosa
+				if (isset($saldosComptables[$club->getCodi()])) $saldoComptableClub = $saldosComptables[$club->getCodi()];
+				
 				$campsDades[$codi] = array (	
-										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
+										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'center'),
 										'codi' 			=> array('hidden' => false, 'val' => $codi, 'align' => 'left'),
 										'tipusclub' 	=> array('hidden' => false, 'val' => $tipus->getTipus(), 'align' => 'center'),
 										'club' 			=> array('hidden' => false, 'val' => $club->getNom(), 'align' => 'left'),
@@ -1327,7 +1335,8 @@ GROUP BY c.nom
 						 				'provinciacorreu'	=> array('hidden' => false, 'val' => $club->getAddrprovinciacorreu(), 'align' => 'center'),
 						 				'tipuspagament'		=> array('hidden' => false, 'val' => $estat->getDescripcio(), 'align' => 'center'),
 						 				'limitcredit'		=> array('hidden' => false, 'val' => number_format($club->getLimitcredit(), 2, ',', '.').$modeda, 'align' => 'right'),
-						 				'saldo'				=> array('hidden' => false, 'val' => number_format($club->getSaldo(), 2, ',', '.').$modeda, 'align' => 'right'),
+				                        'saldo'				=> array('hidden' => false, 'val' => number_format($saldoComptableClub, 2, ',', '.').$modeda, 'align' => 'right'),
+						 				'saldooper'			=> array('hidden' => false, 'val' => number_format($club->getSaldo(), 2, ',', '.').$modeda, 'align' => 'right'),
 						 				'romanent'			=> array('hidden' => false, 'val' => number_format($club->getRomanent(), 2, ',', '.').$modeda, 'align' => 'right'),	
 						 				'totalpagaments'	=> array('hidden' => false, 'val' => number_format($club->getTotalpagaments(), 2, ',', '.').$modeda, 'align' => 'right'),
 										'totalllicencies'	=> array('hidden' => false, 'val' => number_format($club->getTotalllicencies(), 2, ',', '.').$modeda, 'align' => 'right'),	
@@ -1858,10 +1867,23 @@ GROUP BY c.nom
 		);
 		$clubs->setParam('estat', $currentEstat);
 		
+		$dataanterior = $this->getCurrentDate('today');
+		$dataanterior->sub(new \DateInterval('P1D')); // Add 1
+		
+		$saldos = array(); // Afegir Saldo comptable
+		foreach ($clubs as $club) {
+		    $saldoComptableClub = 0;
+		    // Obtenir saldo comptable des de l'inici de l'exercici fins al dia anterior a la data desde
+		    $saldosComptables = $this->saldosComptablesData($dataanterior, $club); // $desde no inclosa
+		    if (isset($saldosComptables[$club->getCodi()])) $saldoComptableClub = $saldosComptables[$club->getCodi()];
+		    
+		    $saldos[$club->getCodi()] = $saldoComptableClub;
+		}
+		
 		//$form->get('estat')->setData($currentEstat);  // Mantenir estat darrera consulta
 
 		return $this->render('FecdasBundle:Admin:clubs.html.twig',  
-			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs,
+		    $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'clubs' => $clubs, 'saldos' => $saldos,
 					'sortparams' => array('sort' => $sort,'direction' => $direction)
 			))); 
 	}

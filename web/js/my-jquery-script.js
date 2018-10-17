@@ -1294,10 +1294,11 @@
 		var formData = new FormData( form );
 		
 		if (origen === 'llicencia') {
-			var part = { id : $("#parte_id").val(), dataalta: $("#parte_dataalta").val(), tipus: $('#parte_tipus').val() };
+			var part = { id : $("#parte_id").val(), dataalta: $("#parte_dataalta").val(), tipus: $('#parte_tipus').val(), club: $('#parte_club').val() };
 	        var llic = { id : $('#parte_llicencies_id').val() };
 	        formData.append( "parte",  JSON.stringify(part));
 	        formData.append( "llicencia", JSON.stringify(llic));
+	        formData.append( "club", $('#parte_club').val());
 		}
 
 		formData.append('action', action);
@@ -1439,7 +1440,7 @@
 		};
 		
     	$('#formparte-llicencia').html(data);
-    	
+   	
     	$('#progressbar').hide();  // Rellotge
     	if ($.browser.msie) $('#formparte-llicencia').show(); 
     	else $('#formparte-llicencia').stop().slideDown('fast');
@@ -1450,7 +1451,7 @@
 			allowClear: true,
 			placeholder: "Cercar federat",
 		});
-    	
+
     	$("select#parte_llicencies_persona_select").change(function(e) {
 			if (e.val == "") $('.formpersona-openmodal').html('nou assegurat <i class="fa fa-users"></i>');
 			else $('.formpersona-openmodal').html('modifica assegurat <i class="fa fa-user"></i>');
@@ -1465,7 +1466,8 @@
 	        var url = $(this).attr("href");
 	        var id = $("#parte_llicencies_persona_select").val();
 	        if (id == "") id = 0;
-	        url += '?id='+id;
+	        url += '?id='+id+'&club='+$("select#parte_club").val();
+	        
 	        showPersonModal(url, 'llicencia', function () {
 		        // Reload 
 	        	$('#form_assegurats').submit();

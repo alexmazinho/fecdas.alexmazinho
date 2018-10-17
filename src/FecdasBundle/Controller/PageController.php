@@ -764,7 +764,6 @@ class PageController extends BaseController {
 		// source: FormPersona
 		if (!isset($requestParams['action']) || $requestParams['action'] != 'persona') 			
 					$this->get('session')->getFlashBag()->clear();
-		
 		try {
 			$p = is_array($requestParams['parte'])?$requestParams['parte']:json_decode($requestParams['parte'], true);
 			$l = is_array($requestParams['llicencia'])?$requestParams['llicencia']:json_decode($requestParams['llicencia'], true);
@@ -778,7 +777,6 @@ class PageController extends BaseController {
 			if ($lid == 0) {
 				// Insert
 				if ($id == 0) {
-
 					// Nou parte
 					if (!isset($p['dataalta'])) throw new \Exception('Error data alta. Contacti amb la Federació');
 					if (!isset($p['tipus'])) throw new \Exception('Error tipus. Contacti amb la Federació</div>');
@@ -833,7 +831,6 @@ class PageController extends BaseController {
 				
 			$tipusid = $parte->getTipus()->getId();
 			$partedataalta = $parte->getDataalta();
-
 			// Person submitted
 			if ($currentPerson > 0) {
 				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($currentPerson);
@@ -843,7 +840,6 @@ class PageController extends BaseController {
 			if ($request->getMethod() == 'POST' &&
 				isset($requestParams['action']) && 
 				$requestParams['action'] != 'persona') {
-				
 				if ($requestParams['action'] == 'remove') {
 				
 					if (!$parte->allowRemoveLlicencia($this->isCurrentAdmin())) throw new \Exception('Esteu fora de termini per poder esborrar llicències d\'aquesta llista. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació');
@@ -864,16 +860,12 @@ class PageController extends BaseController {
 					$formLlicencia = $this->createForm(new FormLlicencia($this->isCurrentAdmin()),$llicencia);
 					$form->handleRequest($request);
 					$formLlicencia->handleRequest($request);
-	
 					if (!$formLlicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formLlicencia->getErrors(true, false));
-						
 					if (!$form->isValid()) throw new \Exception('Error validant les dades de la llista: '.$form->getErrors(true, false));
-
 					// Errors generen excepció
 					$this->validaParteLlicencia($parte, $llicencia);
-
 					$llicencia->setDatamodificacio($this->getCurrentDate());
-					
+
 					if ($lid == 0) {
 						$this->addParteDetall($parte, $llicencia);
 					} else {
@@ -884,7 +876,6 @@ class PageController extends BaseController {
 							$llicencia->setDatacaducitat($parte->getDataCaducitat());
 					}
 					$this->get('session')->getFlashBag()->add('sms-notice', 'Llicència enviada correctament. Encara es poden afegir més llicències a la llista');
-					
 				}
 
 				$parte->setComentaris('Comanda llicències:'.' '.$parte->getComentariDefault());
@@ -901,8 +892,8 @@ class PageController extends BaseController {
 			    $formllicencia = $this->createForm(new FormLlicencia($this->isCurrentAdmin()), $llicencia);
 				if ($formllicencia->has('datacaducitatshow') == true)
 					$formllicencia->get('datacaducitatshow')->setData($formllicencia->get('datacaducitat')->getData());
-	
-					$response = $this->render('FecdasBundle:Page:partellicencia.html.twig',
+				
+				$response = $this->render('FecdasBundle:Page:partellicencia.html.twig',
 							array('admin' => $this->isCurrentAdmin(),
 									'llicencia' => $formllicencia->createView(),
 									'asseguranca' => $parte->isAsseguranca(),
@@ -1230,7 +1221,13 @@ class PageController extends BaseController {
 					$em->persist($metapersona);
 				}
 				if ($persona == null) {
-					$persona = new EntityPersona($metapersona, $this->getCurrentClub());
+				    $club = $this->getCurrentClub();
+				    $codi = $request->request->get('club', $club->getCodi());
+				    if ($this->isCurrentAdmin() && $codi != $club->getCodi()) {
+				        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+				    }
+				    
+				    $persona = new EntityPersona($metapersona, $club);
 					$options['edit'] = true;
 					$em->persist($persona);
 				}
@@ -1293,7 +1290,6 @@ class PageController extends BaseController {
 				}
 					
 				if ($request->request->get('origen') == 'llicencia') {
-			
 					if (!$baixaPersona) $request->request->set('currentperson', $persona->getId()); 
 					$response = $this->forward('FecdasBundle:Page:llicencia', array(
 				        'request'  => $request
@@ -1338,9 +1334,19 @@ class PageController extends BaseController {
 		}
 
 		if ($persona == null) {
+		    
+		    $club = $this->getCurrentClub();
+		    
+		    if ($request->getMethod() == 'POST') $codi = $request->request->get('club', $club->getCodi());
+		    else $codi = $request->query->get('club', $club->getCodi());
+  
+		    if ($this->isCurrentAdmin() && $codi != $club->getCodi()) {
+		        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		    }
+		    
 			$metapersona = new EntityMetaPersona();
 			$em->persist($metapersona);
-			$persona = new EntityPersona($metapersona, $this->getCurrentClub());
+			$persona = new EntityPersona($metapersona, $club);
 			$em->persist($persona);
 			$options['edit'] = true;
 			$persona->setSexe("H");

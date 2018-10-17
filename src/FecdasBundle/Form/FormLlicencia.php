@@ -34,7 +34,6 @@ class FormLlicencia extends AbstractType {
 		
 				$parte = $llicencia->getParte(); 
 				$club = $parte->getClubparte();
-				
 				$form->add('persona', 'entity', array(
 							'class' => 'FecdasBundle:EntityPersona',
 							'query_builder' => function($repository) use ($club) {
@@ -48,6 +47,7 @@ class FormLlicencia extends AbstractType {
 							'placeholder' => '',
 							'required'  => false,
 							'property_path' => 'persona',
+							'data'          => ($llicencia->getPersona()!=null?$llicencia->getPersona():null),
 							'attr'			=>	array('readonly' => !$parte->isAllowEdit())
 				));
 				

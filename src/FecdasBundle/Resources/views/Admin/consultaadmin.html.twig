@@ -238,27 +238,30 @@
 			</div>{% endif %}
 		</div>
 		<div class="col-md-12">
-	    	<div id="list-consultaadmin">
-	    		<table class="table" style="{% if header|length < 8 %} width:auto; {% endif %}>
-	    			<tr class="header"> 	
-			   		    {% for key, camp in header %}
-				   		<th id="header-consulta-{{ key }}" class="th-listheader col-noresponsive col-listheader-sortable {% if camp.hidden == true %} hidden {% endif %}" style="width: {{ camp.width }}">
-				   			{% if camp.sort != '' %}
-				   				<a href="{{ path('FecdasBundle_consultaadmin', queryparams|merge({ 'sort': camp.sort, 'direction': sortparams.inverse, 'page': page  })) }}">{{ camp.nom }}</a>
-				   				<span class="listheader-icon {% if sortparams.sort == camp.sort %} listheader-icon-{{ sortparams.direction }} {% endif %}"></span>
-				   			{% else %}
-				   				{{ camp.nom }}
-				   			{% endif %}
-				   		</th>
-				   		{% endfor %}
-				   	</tr> 
+	    	<div id="list-consultaadmin" class="table-responsive">
+	    		<table class="table" style="{% if header|length < 8 %} width:auto; {% endif %}">
+	    			<thead>
+    	    			<tr> 
+    			   		    {% for key, camp in header %}
+    				   		<th id="header-consulta-{{ key }}" class="th-listheader col-noresponsive col-listheader-sortable data-detall-cell-{{ camp.align }} {% if camp.hidden == true %} hidden{% endif %}" style="width: {{ camp.width }}">
+    				   			{% if camp.sort != '' %}
+    				   				<a href="{{ path('FecdasBundle_consultaadmin', queryparams|merge({ 'sort': camp.sort, 'direction': sortparams.inverse, 'page': page  })) }}">{{ camp.nom }}</a>
+    				   				<span class="listheader-icon {% if sortparams.sort == camp.sort %} listheader-icon-{{ sortparams.direction }} {% endif %}"></span>
+    				   			{% else %}
+    				   				{{ camp.nom }}
+    				   			{% endif %}
+    				   		</th>
+    				   		{% endfor %}
+				   		</tr> 
+				   	</thead>
+				   	<tbody> 
 					{% for llicencia in dades %}
 						<tr class="data-detall"> 
 						{% for key, camp in llicencia %}
 							<td class="data-detall-cell consulta-{{ key }} data-detall-cell-{{ camp.align }} {% if camp.hidden == true %} hidden {% endif %}">
 								{% if key == 'total' or key == 'import' %}
 									{% if key == 'total' %} {{ camp.val|number_format(0, '', '.') }}{% endif %}
-									{% if key == 'import' %} {{ camp.val|number_format(2, ',', '.') }}{% endif %}
+									{% if key == 'import' %} {{ camp.val|number_format(2, ',', '.') }} €{% endif %}
 								{% else %}
 									{{ camp.val|raw }}
 								{% endif %}
@@ -266,7 +269,7 @@
 						{% endfor %}
 						</tr> 
 					{% endfor %}
-					
+					</tbody>
 				</table>
 		 	</div>
 		 </div>

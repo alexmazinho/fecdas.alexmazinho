@@ -226,6 +226,23 @@ class EntityFactura {
 		return $total;
 	}
 	
+	
+	public function getPreuProducte($producte) {
+	    if ($producte == null) return 0;
+	    try {
+	        $detallsArray = json_decode($this->detalls, true);
+	        
+	        foreach ($detallsArray as $k => $lineafactura) {
+	            if ($k == $producte->getId() && isset($lineafactura['preuunitat'])) return $lineafactura['preuunitat'];
+	        }
+	    } catch (\Exception $e) {
+	        error_log('FECDAS GESTIO error factura '.$this->id.' preu producte '.$producte->getId().'('.$e->getMessage().')');
+	    }
+	    
+	    return 0;
+	    
+	}
+	
 	/**
 	 * @return integer
 	 */

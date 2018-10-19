@@ -486,33 +486,33 @@ class AdminController extends BaseController {
 		$agrupats = array();
 		$colsHeaderIntervals = array();
 		$campsHeaderAgrupats = array();
-		$campsHeader = array (		'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '60px', 'sort' => ''),
-									'comandaid' 	=> array('hidden' => true, 	'nom' => 'Id Comanda', 'width' => '0', 'sort' => 'p.id'), 
-									'comandanum' 	=> array('hidden' => false, 'nom' => 'Comanda', 'width' => '110px', 'sort' => 'p.num'),
-									'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '150px', 'sort' => 'c.nom'),
-									'tipus'			=> array('hidden' => false, 'nom' => 'Llicència', 'width' => '100px', 'sort' => 't.codi'),
-									'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'p.dataalta'),      
-									'datacaducitat' => array('hidden' => false, 'nom' => 'Caduca', 'width' => '80px', 'sort' => 'p.dataalta'),
-									'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'p.databaixa'), 
-									'categoria'		=> array('hidden' => false, 'nom' => 'Categoria', 'width' => '80px', 'sort' => 'l.categoria'), 
-									'preu'			=> array('hidden' => false, 'nom' => 'Preu', 'width' => '60px', 'sort' => ''),
-									'llicenciaid'	=> array('hidden' => true, 	'nom' => 'Id Llicència', 'width' => '0', 'sort' => 'l.id'),  					  	
-					 				'dni'			=> array('hidden' => false, 'nom' => 'DNI', 'width' => '90px', 'sort' => 'e.dni'), 
-					 				'estranger'		=> array('hidden' => false, 'nom' => 'Estra.?', 'width' => '60px', 'sort' => ''), 
-					 				'nom'			=> array('hidden' => false, 'nom' => 'Nom', 'width' => '90px', 'sort' => 'e.nom'), 
-					 				'cognoms'		=> array('hidden' => false, 'nom' => 'Cognoms', 'width' => '150px', 'sort' => 'e.cognoms'), 
-					 				'naixement'		=> array('hidden' => false, 'nom' => 'D. Naix.', 'width' => '80px', 'sort' => 'e.datanaixement'), 
-					 				'edat'			=> array('hidden' => false, 'nom' => 'Edat', 'width' => '50px', 'sort' => 'e.datanaixement'),	
-					 				'sexe'			=> array('hidden' => false, 'nom' => 'Sexe', 'width' => '50px', 'sort' => 'e.sexe'), 
-					 				'telefon1'		=> array('hidden' => false, 'nom' => 'Telf1', 'width' => '80px', 'sort' => 'e.telefon1'), 
-					 				'telefon2'		=> array('hidden' => false, 'nom' => 'Telf2', 'width' => '80px', 'sort' => 'e.telefon2'), 
-					 				'mail'			=> array('hidden' => false, 'nom' => 'eMail', 'width' => '170px', 'sort' => 'e.mail'),	
-					 				'adreca'		=> array('hidden' => false, 'nom' => 'Adreça', 'width' => '200px', 'sort' => 'e.addradreca'), 
-					 				'poblacio'		=> array('hidden' => false, 'nom' => 'Problació', 'width' => '150px', 'sort' => 'e.addrpob'), 
-					 				'cp'			=> array('hidden' => false, 'nom' => 'CP', 'width' => '60px', 'sort' => 'e.addrcp'), 
-					 				'comarca'		=> array('hidden' => false, 'nom' => 'Comarca', 'width' => '150px', 'sort' => 'e.addrcomarca'),
-					 				'provincia'		=> array('hidden' => false, 'nom' => 'Província', 'width' => '100px', 'sort' => 'e.addrprovincia'), 
-					 				'nacionalitat'	=> array('hidden' => false, 'nom' => 'Nacionalitat', 'width' => '50px', 'sort' => ''),
+		$campsHeader = array (	'num' 			=> array('hidden' => false, 'nom' => 'Num.', 'width' => '60px', 'sort' => '', 'align' => 'center'),
+                    		    'comandaid' 	=> array('hidden' => true, 	'nom' => 'Id Comanda', 'width' => '0', 'sort' => 'p.id', 'align' => 'center'), 
+                    		    'comandanum' 	=> array('hidden' => false, 'nom' => 'Comanda', 'width' => '110px', 'sort' => 'p.num', 'align' => 'center'),
+                    		    'club' 			=> array('hidden' => false, 'nom' => 'Club', 'width' => '150px', 'sort' => 'c.nom', 'align' => 'left'),
+                    		    'tipus'			=> array('hidden' => false, 'nom' => 'Llicència', 'width' => '100px', 'sort' => 't.codi', 'align' => 'left'),
+                    		    'dataalta' 		=> array('hidden' => false, 'nom' => 'Alta', 'width' => '80px', 'sort' => 'p.dataalta', 'align' => 'center'),      
+                    		    'datacaducitat' => array('hidden' => false, 'nom' => 'Caduca', 'width' => '80px', 'sort' => 'p.dataalta', 'align' => 'center'),
+                    		    'databaixa'		=> array('hidden' => false, 'nom' => 'Baixa', 'width' => '80px', 'sort' => 'p.databaixa', 'align' => 'center'), 
+                    		    'categoria'		=> array('hidden' => false, 'nom' => 'Categoria', 'width' => '80px', 'sort' => 'l.categoria', 'align' => 'center'), 
+                    		    'preu'			=> array('hidden' => false, 'nom' => 'Preu', 'width' => '60px', 'sort' => '', 'align' => 'right'),
+                    		    'llicenciaid'	=> array('hidden' => true, 	'nom' => 'Id Llicència', 'width' => '0', 'sort' => 'l.id', 'align' => 'center'),  					  	
+                    		    'dni'			=> array('hidden' => false, 'nom' => 'DNI', 'width' => '90px', 'sort' => 'e.dni', 'align' => 'center'), 
+                    		    'estranger'		=> array('hidden' => false, 'nom' => 'Estra.?', 'width' => '60px', 'sort' => '', 'align' => 'center'), 
+                    		    'nom'			=> array('hidden' => false, 'nom' => 'Nom', 'width' => '90px', 'sort' => 'e.nom', 'align' => 'left'), 
+                    		    'cognoms'		=> array('hidden' => false, 'nom' => 'Cognoms', 'width' => '150px', 'sort' => 'e.cognoms', 'align' => 'left'), 
+                    		    'naixement'		=> array('hidden' => false, 'nom' => 'D. Naix.', 'width' => '80px', 'sort' => 'e.datanaixement', 'align' => 'center'), 
+                    		    'edat'			=> array('hidden' => false, 'nom' => 'Edat', 'width' => '50px', 'sort' => 'e.datanaixement', 'align' => 'center'),	
+                    		    'sexe'			=> array('hidden' => false, 'nom' => 'Sexe', 'width' => '50px', 'sort' => 'e.sexe', 'align' => 'center'), 
+                    		    'telefon1'		=> array('hidden' => false, 'nom' => 'Telf1', 'width' => '80px', 'sort' => 'e.telefon1', 'align' => 'center'), 
+                    		    'telefon2'		=> array('hidden' => false, 'nom' => 'Telf2', 'width' => '80px', 'sort' => 'e.telefon2', 'align' => 'center'), 
+                    		    'mail'			=> array('hidden' => false, 'nom' => 'eMail', 'width' => '170px', 'sort' => 'e.mail', 'align' => 'left'),	
+                    		    'adreca'		=> array('hidden' => false, 'nom' => 'Adreça', 'width' => '200px', 'sort' => 'e.addradreca', 'align' => 'left'), 
+                    		    'poblacio'		=> array('hidden' => false, 'nom' => 'Problació', 'width' => '150px', 'sort' => 'e.addrpob', 'align' => 'left'), 
+                    		    'cp'			=> array('hidden' => false, 'nom' => 'CP', 'width' => '60px', 'sort' => 'e.addrcp', 'align' => 'center'), 
+                    		    'comarca'		=> array('hidden' => false, 'nom' => 'Comarca', 'width' => '150px', 'sort' => 'e.addrcomarca', 'align' => 'left'),
+                    		    'provincia'		=> array('hidden' => false, 'nom' => 'Província', 'width' => '100px', 'sort' => 'e.addrprovincia', 'align' => 'center'), 
+                    		    'nacionalitat'	=> array('hidden' => false, 'nom' => 'Nacionalitat', 'width' => '50px', 'sort' => '', 'align' => 'center'),
 									);
 		$total = 0;
 		if ( $action == 'query' || $action == 'csv' ) {
@@ -582,7 +582,7 @@ class AdminController extends BaseController {
 						}
 					}
 					foreach ($colsHeaderIntervals as $col) {
-						$campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '100px; font-style: italic; font-size: 0.8em; font-weight: normal;', 'sort' => '');
+					    $campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '60px; font-style: italic; font-size: 0.8em; font-weight: normal;', 'sort' => '', 'align' => 'center');
 					}					
 				}
 				
@@ -592,13 +592,13 @@ class AdminController extends BaseController {
 					for ($i = 1; $i <= 95; $i+=$edatsdata) $colsHeaderIntervals[] = $i.' a '.($i+$edatsdata-1);
 					
 					foreach ($colsHeaderIntervals as $col) {
-						$campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '100px; font-style: italic; font-size: 0.8em; font-weight: normal;', 'sort' => '');
+					    $campsHeaderAgrupats[$col] = array('hidden' => false, 'nom' => $col, 'width' => '60px; font-style: italic; font-size: 0.8em; font-weight: normal;', 'sort' => '', 'align' => 'center');
 					}					
 				}
 				
 				// Totals de l'agrupació
-				$campsHeaderAgrupats['total'] = array('hidden' => false, 'nom' => 'Total', 'width' => '100px', 'sort' => 'total');
-				$campsHeaderAgrupats['import'] = array('hidden' => false, 'nom' => 'Import', 'width' => '100px', 'sort' => 'import');
+				$campsHeaderAgrupats['total'] = array('hidden' => false, 'nom' => 'Total', 'width' => '80px', 'sort' => 'total', 'align' => 'right');
+				$campsHeaderAgrupats['import'] = array('hidden' => false, 'nom' => 'Import', 'width' => '100px', 'sort' => 'import', 'align' => 'right');
 				
 				$campsHeader = $campsHeaderAgrupats;
 				
@@ -715,9 +715,13 @@ GROUP BY c.nom
 					if ($llicencia->getDatabaixa() != null) $databaixa = $llicencia->getDatabaixa()->format('d/m/y');
 				}
 				$persona = $llicencia->getPersona();
-				 
+
+                // Consultar preu factura, si no troba indica preu any any				
+				$preu = $parte->getFactura()->getPreuProducte($llicencia->getCategoria()->getProducte());
+				if ($preu == 0) $preu = $llicencia->getCategoria()->getPreuAny($parte->getAny());
+				
 				$campsDades[$llicencia->getId()] = array (	
-										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'left'),
+										'num' 			=> array('hidden' => false, 'val' => $offset + $index, 'align' => 'center'),
 										'comandaid' 	=> array('hidden' => true, 	'val' => $parte->getId(), 'align' => 'center'), 
 										'comandanum' 	=> array('hidden' => false, 'val' => $numcomanda, 'align' => 'center'),
 				                        'club' 			=> array('hidden' => false, 'val' => $parte->getClubparte()->getNom(), 'align' => 'left'),
@@ -726,7 +730,7 @@ GROUP BY c.nom
 										'datacaducitat' => array('hidden' => false, 'val' => $parte->getDatacaducitat()->format('d/m/y'), 'align' => 'center'),
 										'databaixa'		=> array('hidden' => false, 'val' => $databaixa, 'align' => 'center'), 
 										'categoria'		=> array('hidden' => false, 'val' => $llicencia->getCategoria()->getCategoria(), 'align' => 'center'), 
-										'preu'			=> array('hidden' => false, 'val' => number_format($llicencia->getCategoria()->getPreuAny($parte->getAny()), 2, ',', '.').'€', 'align' => 'right'),
+				                        'preu'			=> array('hidden' => false, 'val' => number_format($preu, 2, ',', '.').'€', 'align' => 'right'),
 										'llicenciaid'	=> array('hidden' => true, 	'val' => $llicencia->getId(), 'align' => 'center'),  					  	
 						 				'dni'			=> array('hidden' => false, 'val' => $persona->getDni(), 'align' => 'center'), 
 						 				'estranger'		=> array('hidden' => false, 'val' => ($persona->esEstranger()?'Si':''), 'align' => 'center'), 
@@ -755,7 +759,7 @@ GROUP BY c.nom
 				$num = ($offset + $index);
 				if ($intervals == true || $edats == true) $num = $index;	
 					
-				$arrayGrup = array ( 'num' => array('hidden' => false, 'val' => $num, 'align' => 'left') );
+				$arrayGrup = array ( 'num' => array('hidden' => false, 'val' => $num, 'align' => 'center') );
 			
 				$groupKey = '';
 				$keyInterval = '';

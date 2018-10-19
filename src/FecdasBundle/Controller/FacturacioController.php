@@ -1966,7 +1966,7 @@ class FacturacioController extends BaseController {
 	                    'extra'		=> $extra,
 	                    'compta'	=> ($factura->getComptabilitat()!=null?$factura->getComptabilitat()->getDataenviament():''),
 	                    //'saldo'		=> $saldo,
-	                    'saldocompta' => $saldoComptableClub
+	                    'saldocompta' => (abs($saldoComptableClub)<0.01?0:$saldoComptableClub)
 	                    
 	            );
 	                
@@ -1987,7 +1987,7 @@ class FacturacioController extends BaseController {
                         'extra'		=> false,
                         'compta'	=> ($rebut->getComptabilitat()!=null?$rebut->getComptabilitat()->getDataenviament():''),
                         //'saldo'		=> 0,
-                        'saldocompta' => $saldoComptableClub
+                        'saldocompta' => (abs($saldoComptableClub)<0.01?0:$saldoComptableClub)
                         
                 );
 

@@ -2684,7 +2684,7 @@ input#formuserclub-randompassword { width: 150px; }
     background-color: #efefef; 
 }
 
-#list-consultaadmin table, #list-consultaclubs table { table-layout: fixed; /*width: auto;*/ background-color: #ffffff;  }
+#list-consultaadmin table, #list-consultaclubs table { table-layout: fixed; /*width: auto;*/ background-color: #ffffff; margin-bottom: 5px;  }
 
 #list-consultaadmin table tr.header, #list-consultaclubs table tr.header { padding: 0 0 10px; }
 

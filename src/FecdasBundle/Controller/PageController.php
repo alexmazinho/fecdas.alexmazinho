@@ -60,8 +60,6 @@ class PageController extends BaseController {
 			        return $this->redirect($this->generateUrl('FecdasBundle_contact'));
 			    }
 			    
-			    if ($form->getData()->getTelephone())
-			    
 				$message = \Swift_Message::newInstance()
 				->setSubject('::Contacte de Fecdas::'. $form->getData()->getSubject())
 				->setFrom($form->getData()->getEmail())

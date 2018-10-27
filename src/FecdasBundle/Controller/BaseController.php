@@ -97,6 +97,9 @@ class BaseController extends Controller {
 	
 	const CODI_FECDAS 					= 'CAT999';		
 	const CODI_CLUBTEST					= 'CAT000';
+	const CODI_CLUBINDEF				= 'CAT292';
+	const CODI_CLUBINDEPEDNENT			= 'CAT998';
+	
 	const CODI_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
 	const CODI_PAGAMENT_ESCOLA			= 5720002;		// 5720002  La Caixa Escola
@@ -731,6 +734,9 @@ class BaseController extends Controller {
 		$club = $this->getCurrentClub();
 		
 		if ($club == null) return false;
+		
+		if ($club->getCodi() == self::CODI_CLUBINDEF ||
+		    $club->getCodi() == self::CODI_CLUBINDEPEDNENT) return true;
 		
 		if (in_array( $club->getTipus()->getId(), self::getTipusClubsNoComandes() )) return false;
 		
@@ -3491,7 +3497,7 @@ class BaseController extends Controller {
     }
     
     protected function gestionarArxiuPersona($persona, $esborrar = true, $arxiu, $foto = false, $certificat = false) {
-        error_log(" 0 ".$esborrar);        
+       
         if ($esborrar) {
             if ($foto && $persona->getFoto() != null) {
                 // Esborrar foto
@@ -3509,7 +3515,7 @@ class BaseController extends Controller {
             }
             return;
         }
-error_log(" 1 ");   
+   
         if ($arxiu == null) return;
             
         if (!($arxiu instanceof UploadedFile) or !is_object($arxiu))  throw new \Exception('No s\'ha pogut carregar l\'arxiu (1)');
@@ -3519,7 +3525,7 @@ error_log(" 1 ");
         $em = $this->getDoctrine()->getManager();
         
         $nouArxiu = null;
-error_log(" 2 "); 
+ 
         if ($foto) {
             $titol = "Foto federat " . $persona->getNomCognoms();
             

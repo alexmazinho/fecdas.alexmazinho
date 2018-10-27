@@ -182,7 +182,7 @@ class SecurityController extends BaseController
         	}
         	$user = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($username)));
         		 
-        	if ($request->getMethod() == 'GET') $user->setNewsletter($newsletter);
+        	if ($request->getMethod() == 'GET' && $user != null) $user->setNewsletter($newsletter);
         		
         	if ($user == null || $username == '' || $token = '' || $token != $user->getRecoverytoken()) {
        			$this->get('session')->getFlashBag()->add('error-notice', 'L\'enllaç per recuperar la clau ja no és vigent');

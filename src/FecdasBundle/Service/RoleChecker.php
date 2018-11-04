@@ -131,6 +131,12 @@ class RoleChecker
 		return $roles;*/		
 	}
 	
+	public function updateUserRoles($user) {
+	    if ($user == null || $user->getBaseRole() == null || $user->getBaseRole()->getRole() == '' || $user->getBaseClub() == null) return; 	// No existeix o no té cap role o no té club associat
+	    
+	    $this->session->set('userroles', $user->getRolesJSON());
+	}
+	
 	public function getUserRolesArray() {	// Clau + valor per dades del select
 		if (!$this->isAuthenticated()) return array();
 

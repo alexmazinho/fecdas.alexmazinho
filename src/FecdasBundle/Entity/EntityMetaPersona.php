@@ -474,7 +474,7 @@ class EntityMetaPersona {
      *
      * @param EntityUser $usuari
      */
-    public function setUsuari(EntityUser $usuari)
+    public function setUsuari(EntityUser $usuari = null)
     {
         $this->usuari = $usuari;
     }

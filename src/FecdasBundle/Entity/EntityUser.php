@@ -85,7 +85,7 @@ class EntityUser {
     	return $this->databaixa != null;
     }
 	
-		/**
+	/**
      * has Admin?
      *
      * @return boolean
@@ -95,6 +95,36 @@ class EntityUser {
     	return $this->getRoleAdmin() != null; 	
     }
 	
+    /**
+     * has club?
+     *
+     * @return boolean
+     */
+    public function isClub()
+    {
+        return $this->getRoleClub() != null;
+    }
+    
+    /**
+     * has instructor?
+     *
+     * @return boolean
+     */
+    public function isInstructor()
+    {
+        return $this->getRoleInstructor() != null;
+    }
+    
+    /**
+     * has federat?
+     *
+     * @return boolean
+     */
+    public function isFederat()
+    {
+        return $this->getRoleFederat() != null;
+    }
+    
 	/**
      * Get JSON  roles 
      *
@@ -170,6 +200,8 @@ class EntityUser {
     {
         $this->databaixa = new \DateTime();
         foreach ($this->clubs as $userClubRole) $userClubRole->desactivarRole();
+        
+        $this->setMetapersona(null);
     }
     
     /**
@@ -196,9 +228,8 @@ class EntityUser {
     public function roleNeedLlicencia()
     {
         // Necessita llicència si no és Admin ni Club
-        return $this->getRoleAdmin() == null && $this->getRoleClub() == null;
+        return $this->getRoleAdmin() == null && !$this->isClub();
     }
-    
     
 	/**
      * Get club
@@ -389,6 +420,8 @@ class EntityUser {
      */
     public function setMetapersona(EntityMetaPersona $metapersona = null)
     {
+        if ($metapersona == null) $this->metapersona->setUsuari(null);
+        
         $this->metapersona = $metapersona;
     }
 

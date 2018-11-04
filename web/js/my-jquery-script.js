@@ -2301,6 +2301,9 @@
 	        				$("#formuserclub").prepend(smsResultAjax('KO', "No coincideixen les adreces de correu"));
 							return false;
 		        		}*/
+	        			$("#user_pwd_first").val("");
+	        			$("#user_pwd_second").val("");
+	        			
 	        		} else {
 	        			// Afegir usuari
 		        			
@@ -2372,6 +2375,9 @@
 		    			$('#user_user').val( userMail );
 		    			$("select#user_role").val( role );
 		    			$("select#user_role").attr('readonly', 'readonly');  
+		    			
+	        			$("#user_pwd_first").val("");
+	        			$("#user_pwd_second").val("");
 		    			
 		    			if (keysCercaPersona.includes( role )) {
 		    				$("#user_user").attr('readonly', 'readonly');	// Cerca no es pot canviar

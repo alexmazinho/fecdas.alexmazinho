@@ -467,6 +467,8 @@ class SecurityController extends BaseController
             // Logout
             $this->get('session')->clear();
             
+            $this->get('session')->getFlashBag()->add('sms-notice', 'Baixa de l\'usuari tramitada correctament ');
+            
             $this->logEntryAuth('USER DEL OK', 'user : ' . $user->getUser());
             
         } catch (\Exception $e) {
@@ -1082,7 +1084,7 @@ class SecurityController extends BaseController
 				$useruser = $requestParams['user']['user'];
 	    		$randomPassword = $requestParams['user']['pwd']['first'];
 	    		$userrole = $requestParams['user']['role'];
-				$idInstructor = $requestParams['user']['auxinstructordni'];
+				$idFederat = $requestParams['user']['auxinstructordni'];
 				$id = isset($requestParams['user']['id'])?$requestParams['user']['id']:0;
 				$codiclub = isset($requestParams['user']['club'])?$requestParams['user']['club']:"";
 			}
@@ -1105,8 +1107,7 @@ class SecurityController extends BaseController
 			if ($request->getMethod() == 'POST') {
 				// Validar i recuperar usuari existent si escau 
 	    		//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
-  			
-	    		$userclub = $this->checkUsuariClub($id == 0, $club, $info, $userrole, $useruser, $randomPassword, $idInstructor);
+			    $userclub = $this->checkUsuariClub($id == 0, $club, $info, $userrole, $useruser, $randomPassword, $idFederat);
 				
 			} else {
 				if ($id > 0) $userclub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
@@ -1154,6 +1155,12 @@ class SecurityController extends BaseController
 						
 						$userClubRole->setDatabaixa(new \DateTime('now'));
 						
+						if (!$userclub->isFederat() && !$userclub->isInstructor() && $userclub->getMetapersona() != null) {
+						    $userclub->setMetapersona(null);
+						}
+						
+						$checkRole->updateUserRoles($userclub);
+						
 			 			$this->get('session')->getFlashBag()->add("sms-notice", "Accés " . $userrole. " anul·lat per l'usuari ".$userclub->getUser());
 						
 						break;
@@ -1162,12 +1169,8 @@ class SecurityController extends BaseController
 						$userClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->find($id);
 						if ($userClub == null) throw new \Exception("Error. Contacti amb l'administrador (302)");
 						
-						$userClub->setDatabaixa(new \DateTime('now'));
-						// Baixa tots els rols
-						foreach ($userClub->getRolesClubs($club) as $userClubRole) {
-							if (!$userClubRole->anulat()) $userClubRole->setDatabaixa(new \DateTime('now'));
-						}
-			
+						$userClub->baixaUsuari();
+						
 						break;
 						
 					case 'resetpwd':
@@ -1191,10 +1194,16 @@ class SecurityController extends BaseController
 			} else {
 				$form = $this->createForm(new FormClubUser( $optionsForm ), $userclub);
 				
-	    		// Alta nou usuari de club
+	    		// Alta nou usuari de club o afegir rol
 	    		$form->handleRequest($request);
 
-	   			if (!$form->isValid()) throw new \Exception("error validant les dades -".$randomPassword."-". $form->getErrors(true, true));
+	    		if (!$form->isValid()) {
+	    		    $string = (string) $form->getErrors(true, false);
+	    		    
+	    		    throw new \Exception("error validant les dades ". $string);
+	    		}
+	    		
+	    		$checkRole->updateUserRoles($userclub);
 								
    				$em->flush();
 	   				
@@ -1230,7 +1239,7 @@ class SecurityController extends BaseController
 		return $response;	// No hauria d'arribar mai
     }
 
-	private function checkUsuariClub($nou, $club, &$info, $userrole, $useruser, $randomPassword, $idInstructor = 0) {
+    private function checkUsuariClub($nou, $club, &$info, $userrole, $useruser, $randomPassword, $idFederat = 0) {
 		$em = $this->getDoctrine()->getManager();
 		
 		$checkuser = $this->getDoctrine()->getRepository('FecdasBundle:EntityUser')->findOneBy(array('user' => trim($useruser)));
@@ -1242,24 +1251,28 @@ class SecurityController extends BaseController
 		if ($checkuser != null && count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu "); 
 		
 		// Check NEW Role				
-		if ($userrole == BaseController::ROLE_FEDERAT) throw new \Exception("No es poden afegir federats"); // Encara no
-				
-		if ($userrole == BaseController::ROLE_INSTRUCTOR) {
+		if ($userrole == BaseController::ROLE_INSTRUCTOR ||
+		    $userrole == BaseController::ROLE_FEDERAT) {
 			// Cal haver indicat un instructor
-			$instructor = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($idInstructor);
+		    $federat = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($idFederat);
 			
-			if ($instructor == null) throw new \Exception("Instructor no trobat ".$idInstructor);
+		    if ($federat == null) throw new \Exception("Federat no trobat ".$idFederat);
 									
-			// Validar llicència instructor
-			if ($metaPersona != null && $metaPersona !== $instructor->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
-			$metaPersona = $instructor->getMetapersona();
-			
+		    if ($metaPersona != null && $metaPersona !== $federat->getMetapersona())  throw new \Exception("Aquest usuari pertany a una altra persona");
+		    
+		    $metaPersona = $federat->getMetapersona();
+		    
+		    if ($metaPersona->getUsuari() != null && $metaPersona->getUsuari() !== $checkuser)  throw new \Exception("Aquest federat està associat a un altre usuari \"".$metaPersona->getUsuari()->getUser()."\"");
+		    
+		    // Validar llicència instructor / federat
 			$llicenciaVigent = $metaPersona->getLlicenciaVigent();
 			if ($llicenciaVigent == null) throw new \Exception("Aquesta persona no té cap llicència vigent ");
-			if (!$llicenciaVigent->esTecnic()) throw new \Exception("La llicència actual d'aquesta persona no permet afegir-la com instructor ");
+			if ($userrole == BaseController::ROLE_INSTRUCTOR && !$llicenciaVigent->esTecnic()) throw new \Exception("La llicència actual d'aquesta persona no permet afegir-la com instructor ");
 			
 			$mailsPersona = $metaPersona->getMails();
 			if (!in_array($useruser, $mailsPersona)) throw new \Exception("El mail no és d'aquesta persona ");
+			
+			if ($checkuser->getMetapersona() == null)  $checkuser->setMetapersona($metaPersona);
 			
 		} else {
 			// Només poden fer altes Administradors els propis Administradors
@@ -1299,21 +1312,18 @@ class SecurityController extends BaseController
 				}
 			}
 			
-			$userclub = $checkuser;
-			
-					
 		} else {
-			$userclub = new EntityUser($useruser, sha1($randomPassword), $metaPersona);
-			$em->persist($userclub);
+		    $checkuser = new EntityUser($useruser, sha1($randomPassword), $metaPersona);
+		    $em->persist($checkuser);
 			
 			$info = "Nou usuari ".$userrole." creat correctament amb clau ".$randomPassword.PHP_EOL;
 		}
 				
 		// Tot OK afegir role usuari al club
-		$userClubRole = $club->addUsuariRole($userclub, $userrole);
+		$userClubRole = $club->addUsuariRole($checkuser, $userrole);
 		$info .= "Nou accés ".$userrole." per a  ".$useruser;
 		$em->persist($userClubRole);
-		return $userclub;
+		return $checkuser;
 	}
 	
 }

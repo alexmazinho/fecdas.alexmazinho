@@ -189,6 +189,11 @@ class TitulacionsController extends BaseController {
 	    try {
 	        $user = $this->checkAccessNoClub();
 	    } catch (\Exception $e) {
+	        if ($this->isCurrentAdmin()) {
+	            if ($request->isXmlHttpRequest()) return new Response();
+	            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	        }
+	        
 	        $this->logEntryAuth('ACCESS NO CLUB KO', $e->getMessage());
 	        
 	        if ($request->isXmlHttpRequest()) {
@@ -310,6 +315,11 @@ class TitulacionsController extends BaseController {
 	    try {
 	        $user = $this->checkAccessNoClub();
 	    } catch (\Exception $e) {
+	        if ($this->isCurrentAdmin()) {
+	            if ($request->isXmlHttpRequest()) return new Response();
+	            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	        }
+	        
 	        $this->logEntryAuth('ACCESS NO CLUB KO', $e->getMessage());
 	        
 	        if ($request->isXmlHttpRequest()) {
@@ -471,6 +481,11 @@ class TitulacionsController extends BaseController {
 	    try {
 	        $user = $this->checkAccessNoClub();
 	    } catch (\Exception $e) {
+	        if ($this->isCurrentAdmin()) {
+	            if ($request->isXmlHttpRequest()) return new Response();
+	            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	        }
+	        
 	        $this->logEntryAuth('ACCESS NO CLUB KO', $e->getMessage());
 	        
 	        $this->get('session')->getFlashBag()->clear();
@@ -519,6 +534,8 @@ class TitulacionsController extends BaseController {
 	            
 	            $this->get('session')->getFlashBag()->add('sms-notice',	"Dades personals actualitzades correctament");
 	            $this->logEntryAuth('DADES FEDERAT UPD OK', 'metapersona '. $metapersona->getDni().', persona '. $persona->getId());
+	            
+	            return $this->redirect($this->generateUrl('FecdasBundle_dadesfederat'));
 	        }
 
 	    } catch (\Exception $e) {

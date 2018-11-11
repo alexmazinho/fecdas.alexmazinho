@@ -56,9 +56,10 @@ class RoleChecker
 
 	public function isAuthenticated() {
 		$request = $this->requestStack->getCurrentRequest();
+		
 		if (!$this->session->has('username') 	||
 			!$this->session->has('remote_addr') ||
-			($this->session->get('remote_addr') != $request->server->get('REMOTE_ADDR'))) return false;	
+		    ($this->session->get('remote_addr') != $request->server->get('REMOTE_ADDR'))) return false;	
 		return true;
 	}
 	
@@ -133,7 +134,6 @@ class RoleChecker
 	
 	public function updateUserRoles($user) {
 	    if ($user == null || $user->getBaseRole() == null || $user->getBaseRole()->getRole() == '' || $user->getBaseClub() == null) return; 	// No existeix o no té cap role o no té club associat
-	    
 	    $this->session->set('userroles', $user->getRolesJSON());
 	}
 	

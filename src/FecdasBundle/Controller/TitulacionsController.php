@@ -34,6 +34,7 @@ class TitulacionsController extends BaseController {
 		$currentNom = $request->query->get('nom', '');
 		$currentCognoms = $request->query->get('cognoms', '');
 		$currentMail = $request->query->get('mail', '');
+		$currentProfessio = $request->query->get('professio', '');
 		$currentClub = $request->query->get('clubs', '');
 		$currentTitol = $request->query->get('titols', '');
 		$currentTitolExtern = $request->query->get('titolsexterns', '');
@@ -49,6 +50,7 @@ class TitulacionsController extends BaseController {
 		$currentNom = trim($currentNom);
 		$currentCognoms = trim($currentCognoms);
 		$currentMail = trim($currentMail);
+		$currentProfessio = trim($currentProfessio);
 		
 		$currentVigent = false;
 		if ($request->query->has('vigent') && $request->query->get('vigent') == 1) $currentVigent = true;
@@ -60,11 +62,11 @@ class TitulacionsController extends BaseController {
 		}
 				
 		$this->logEntryAuth('VIEW PERSONES CLUB', ($format != ''?$format:'')."club: " . $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".
-		                                            " mail: ".$currentMail." ".
+		                                            " mail: ".$currentMail." professio: ".$currentProfessio." ".
 													"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--').
 													" titol ".$currentTitol." altres ". $currentTitolExtern);
 			
-		$query = $this->consultaDadespersonals($currentDNI, $currentNom, $currentCognoms, $currentMail, $club, $desde, $fins, $currentVigent, $titol, $titolExtern, $sort.' '.$direction);
+		$query = $this->consultaDadespersonals($currentDNI, $currentNom, $currentCognoms, $currentMail, $currentProfessio, $club, $desde, $fins, $currentVigent, $titol, $titolExtern, $sort.' '.$direction);
 		
 		if ($format == 'csv') {
 			// Generar CSV
@@ -84,7 +86,8 @@ class TitulacionsController extends BaseController {
 							        'dni'			=> $currentDNI,
 							        'nom'			=> $currentNom,
 							        'cognoms'		=> $currentCognoms,
-			                        'mail'          => $currentMail
+			                        'mail'          => $currentMail,
+			                        'professio'     => $currentProfessio
 		    ));
 		}
 		
@@ -101,6 +104,7 @@ class TitulacionsController extends BaseController {
 		if ($currentNom != '') $persones->setParam('nom',$currentNom);
 		if ($currentCognoms != '') $persones->setParam('cognoms',$currentCognoms);
 		if ($currentMail != '') $persones->setParam('mail',$currentMail);
+		if ($currentProfessio != '') $persones->setParam('professio',$currentProfessio);
 		if ($currentVigent == true) $persones->setParam('vigent',true);
 		if ($currentClub != '') $persones->setParam('club',$club);
 		
@@ -108,6 +112,7 @@ class TitulacionsController extends BaseController {
 		$formBuilder->add('nom', 'search', array('required'  => false, 'data' => $currentNom));
 		$formBuilder->add('cognoms', 'search', array('required'  => false, 'data' => $currentCognoms));
 		$formBuilder->add('mail', 'search', array('required'  => false, 'data' => $currentMail));
+		$formBuilder->add('professio', 'text', array('required'  => false, 'data' => $currentProfessio));
 		$formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
 		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
@@ -1798,7 +1803,7 @@ class TitulacionsController extends BaseController {
 		return $dades;
 	}
 
-	private function consultaDadespersonals($dni, $nom, $cognoms, $mail = "", $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 
+	private function consultaDadespersonals($dni, $nom, $cognoms, $mail = "", $professio = "", $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 
 		$em = $this->getDoctrine()->getManager();
 	
 		$current = $this->getCurrentDate();
@@ -1839,6 +1844,7 @@ class TitulacionsController extends BaseController {
 		if ($nom != "") $strQuery .= " AND e.nom LIKE :nom ";
 		if ($cognoms != "") $strQuery .= " AND e.cognoms LIKE :cognoms ";
 		if ($mail != "") $strQuery .= " AND e.mail LIKE :mail ";
+		if ($professio != "") $strQuery .= " AND e.professio LIKE :professio ";
 		
 		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  // Només per PDF el paginator ho fa sol mentre el mètode de crida sigui POST
 		
@@ -1853,6 +1859,7 @@ class TitulacionsController extends BaseController {
 		if ($nom != "") $query->setParameter('nom', "%" . $nom . "%");
 		if ($cognoms != "") $query->setParameter('cognoms', "%" . $cognoms . "%");
 		if ($mail != "") $query->setParameter('mail', "%" . $mail . "%");
+		if ($professio != "") $query->setParameter('professio', "%" . $professio . "%");
 		if ($vigent == true) {
 			$query->setParameter('currenttime', $current->format('Y-m-d').' 00:00:00');
 			$query->setParameter('currentdate', $current->format('Y-m-d'));

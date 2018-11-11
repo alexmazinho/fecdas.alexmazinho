@@ -44,7 +44,7 @@ class BaseController extends Controller {
 	const CLUB_PAGAMENT_IMMEDIAT = 'IMME';
 	const DIES_PENDENT_NOTIFICA = 1;
 	const DIES_PENDENT_AVIS = 8;
-	const DIES_PENDENT_MAX = 10;
+	const DIES_PENDENT_MAX = 20;
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs

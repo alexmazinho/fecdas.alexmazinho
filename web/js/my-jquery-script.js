@@ -109,20 +109,6 @@
 	};
 	
 	
-	showModalDiv = function(id) {
-        //Get the window height and width
-        //var winH = $(window).height();
-        var winW = $(window).width();
-               
-        //Set the popup window to center
-        //$(id).css('top',  winH/2-$(id).height()/2);
-        $(id).css('top',  5);
-        $(id).css('left', winW/2-$(id).width()/2);
-     
-        //transition effect
-        $(id).stop().fadeIn(1500);
-	};
-	
 	helpBubbles = function(t, ht) {
 		//create a bubble popup for each DOM element
 		//with class attribute as "button"
@@ -167,6 +153,7 @@
 	        e.preventDefault();
 	        $('.mask, .finestra-overlay').hide();
 	        $('.finestra-overlay').html('');
+	        $( window ).off('resize');
 	    });    
 	     
 	    //if mask is clicked
@@ -174,6 +161,7 @@
 	        $(this).hide();
 	        $('.finestra-overlay').hide();
 	        $('.finestra-overlay').html('');
+	        $( window ).off('resize');
 	    });       
 		
 		$('.form-button-cancel').click(function (e) {
@@ -181,6 +169,7 @@
 	        e.preventDefault();
 	        $('.mask, .finestra-overlay').hide();
 	        $('.finestra-overlay').html('');
+	        $( window ).off('resize');
 	    });   
 		
 		$('.modalform').submit( function(){
@@ -1119,6 +1108,12 @@
 		        
 			});
 			
+			$( window ).resize(function() {
+				if ( $('#edicio-persona') !== undefined && $('#edicio-persona').is(':visible') ) {
+					showModalDiv('#edicio-persona');
+				}
+			});
+			
 			// Show Div
 			showModalDiv('#edicio-persona');
 			helpBubbles("#help-dni", '<p align="left">El format del DNI ha de ser <b>12345678X</b></p>\
@@ -1127,6 +1122,42 @@
 					<p align="left">pare o la mare respectivament. P.e. <b>P12345678X.</b></p>\
 					<p align="left">Per estrangers indicar el número d\'identificació equivalet</p>');
 		});
+	};
+	
+	showModalDiv = function(id) {
+        //Get the window height and width
+        var winH = $(window).height();
+        var winW = $(window).width();
+        
+        $(id).css('width',  '');
+        if ($(id).width() > winW - 10) {
+        	// Per defecte modal de persona 950px
+        	$(id).css('width',  winW - 30);
+	        $(id).css('left', 10);
+        } else {
+	        //Set the popup window to center
+	        //$(id).css('top',  winH/2-$(id).height()/2);
+	        $(id).css('left', winW/2-$(id).width()/2);
+        }
+     
+        $(id).css('top',  5);
+        
+        //transition effect
+        $(id).stop().fadeIn(1500);
+        
+        // Vertical scroll
+        var formHeight = $('.errors-persona').height()+$('.dades-persona').height()+$('.adreca-persona').height();
+    	        
+        $(id).css({'max-height': '', 'overflow-y': '', 'overflow-x': ''} );
+        $('#tabs-persona .taula-historial').css({'max-height': '200px', 'overflow-y': 'auto'} );
+   	
+        if (winH < formHeight + 450) {	// 350 mida mínima tabs forma persona. Scroll 200 llistes tabs
+        	$(id).css({'max-height': (winH - 30)+'px', 'overflow-y': 'auto', 'overflow-x': 'hidden'} );
+        	
+            $('#tabs-persona .taula-historial').css({'max-height': 'none', 'overflow': 'unset'} );
+        }
+        
+        
 	};
 	
 	autocompletersConfig = function(url, camp, pob, cp, prov, comarca, open, appendSel) {
@@ -1318,6 +1349,8 @@
 	        	$('#edicio-persona').hide();
 	        	
 				$("#edicio-persona").html("");
+				
+				$( window ).off('resize');
 				
 				if (origen === 'llicencia') loadLlicenciaData(data);
 				else location.reload();  

@@ -1230,7 +1230,7 @@ class CronController extends BaseController {
 	
 	public function checkduplipendentsAction(Request $request) {
         /* Revisar duplicats pendents clubs sense pagament a crèdit
-         * Donar de baixa si pendents i fa més de 10 dies que van entrar al sistema  
+         * Donar de baixa si pendents i fa més de 20 dies que van entrar al sistema  
          * Avisar per mail si falten 2 dies per donar de baixa (fa 8 dies de l'entrada)
          * */
         /* Planificar cron diari
@@ -1267,7 +1267,7 @@ class CronController extends BaseController {
     
 	public function checkpendentsAction(Request $request) {
 		/* Revisar partes pendents
-		 * Donar de baixa si pendents i fa més de 10 dies que van entrar al sistema  
+		 * Donar de baixa si pendents i fa més de 20 dies que van entrar al sistema  
 		 * Avisar per mail si falten 2 dies per donar de baixa (fa 8 dies de l'entrada)
 		 * */
 		/* Planificar cron diari
@@ -1324,7 +1324,7 @@ class CronController extends BaseController {
                 $body  = "<p>Benvolgut club ".$club->getNom()."</p>";
                 $body .= "<p>Se us acaba d'enviar la factura número ".$factura->getNumFactura()." . Segons les nostres dades aquesta factura consta ";
                 $body .= "com a pendent de pagament per part del club en data del ".$factura->getDatafactura()->format('d/m/Y').".</p>";
-                $body .= "<p>Us recordem que per consolidar la validesa de la tramitació cal fer efectiu el pagament abans de 10 dies, ";
+                $body .= "<p>Us recordem que per consolidar la validesa de la tramitació cal fer efectiu el pagament abans de ".self::DIES_PENDENT_MAX." dies, ";
                 $body .= "en cas contrari ens veurem obligats a donar-la de baixa. Gràcies per la vostra comprensió.</p>";
                 
                 $this->buildAndSendMail($subject, $tomails, $body);
@@ -1337,7 +1337,7 @@ class CronController extends BaseController {
             if ($diesPendent == self::DIES_PENDENT_AVIS) {
                 // Enviar mail falten 2 dies
                 $databaixa = clone $comanda->getDataentrada();
-                $databaixa->add(new \DateInterval('P'.self::DIES_PENDENT_MAX.'D')); // Add 10 dies
+                $databaixa->add(new \DateInterval('P'.self::DIES_PENDENT_MAX.'D')); // Add 20 dies
                             
                 $subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
                 if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
@@ -1359,7 +1359,7 @@ class CronController extends BaseController {
                          (factura número ".$factura->getNumFactura().") 
                          si no se’n fa el pagament abans de la data " . $databaixa->format('d-m-Y') . " 
                          perquè el marge que se’ns permet per a validar-les abans de procedir 
-                         és de 10 dies a partir del moment de la tramitació. Gràcies per la vostra comprensió</p>";
+                         és de ".self::DIES_PENDENT_MAX." dies a partir del moment de la tramitació. Gràcies per la vostra comprensió</p>";
                               
                 $this->buildAndSendMail($subject, $tomails, $body, $bccmails);
                 $sortida .= " ".$tipus." pendent >> Notificació per mail falten 2 dies ". $club->getNom();
@@ -1374,7 +1374,7 @@ class CronController extends BaseController {
                     $this->baixaComanda($comanda);
                     $em->flush();
                                     
-                    $sortida .= " ".$tipus." pendent >> Baixa més de 10 dies ". $club->getNom();
+                    $sortida .= " ".$tipus." pendent >> Baixa més de ".self::DIES_PENDENT_MAX." dies ". $club->getNom();
                     $sortida .= " (".$tipus." ".  $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
                                 
                 } catch (\Exception $e) {

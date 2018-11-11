@@ -83,6 +83,11 @@ class FormPersona extends AbstractType {
     	    'required'  => false,
 			));
 		
+		$builder->add('professio', 'textarea', array(
+		    'required'  => false,
+		    'attr' 		=> array('rows' => '3')
+		));
+		
 		$builder->add('addradreca', 'text', array(
     	    'required'  => false,
 			));

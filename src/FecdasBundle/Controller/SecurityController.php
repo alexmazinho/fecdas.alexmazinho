@@ -1074,6 +1074,7 @@ class SecurityController extends BaseController
 		$info = "";
 		$action = "";
 		$codiclub = "";
+	
     	try {
 			if ($request->getMethod() != 'POST') {
 			    $id = $request->query->get('id');
@@ -1088,7 +1089,6 @@ class SecurityController extends BaseController
 				$id = isset($requestParams['user']['id'])?$requestParams['user']['id']:0;
 				$codiclub = isset($requestParams['user']['club'])?$requestParams['user']['club']:"";
 			}
-
 			$checkRole = $this->get('fecdas.rolechecker');
 			//$codiclub = $checkRole->getCurrentClubRole();
 
@@ -1103,7 +1103,6 @@ class SecurityController extends BaseController
 	    
 			if (!$request->isXmlHttpRequest()) throw new \Exception("Error. Contacti amb l'administrador (100)");
 			
-			
 			if ($request->getMethod() == 'POST') {
 				// Validar i recuperar usuari existent si escau 
 	    		//$forceupdate = (isset($requestParams['club']['forceupdate']))? true: false;
@@ -1116,7 +1115,6 @@ class SecurityController extends BaseController
 					$em->persist($userclub);
 				}
 			}
-			
 			if ($request->getMethod() != 'POST') {
 								
 				if (!$request->query->has('action')) return new Response("Error. Contacti amb l'administrador (101)"); 
@@ -1139,7 +1137,7 @@ class SecurityController extends BaseController
 						if ($userClub == null) throw new \Exception("Error. Contacti amb l'administrador (301)");
 						
 						$form = $this->createForm(new FormClubUser( $optionsForm ), $userclub);	
-						
+
 						return $this->render('FecdasBundle:Security:clubformuser.html.twig',
    								array('form' => $form->createView(), 'admin' =>$this->isCurrentAdmin()));
 						
@@ -1192,6 +1190,7 @@ class SecurityController extends BaseController
    				return $this->render('FecdasBundle:Security:clubllistausers.html.twig',
    						array('club' => $club, 'admin' =>$this->isCurrentAdmin()));
 			} else {
+                $pwd = $userclub->getPwd(); // Guardem per evitar actualització pwd null
 				$form = $this->createForm(new FormClubUser( $optionsForm ), $userclub);
 				
 	    		// Alta nou usuari de club o afegir rol
@@ -1202,11 +1201,12 @@ class SecurityController extends BaseController
 	    		    
 	    		    throw new \Exception("error validant les dades ". $string);
 	    		}
-	    		
+
+                $userclub->setPwd($pwd);
 	    		$checkRole->updateUserRoles($userclub);
 								
    				$em->flush();
-	   				
+
    				$this->get('session')->getFlashBag()->add('sms-notice', $info);
 	    		
 				$this->logEntryAuth('USER CLUB NEW OK', 'club : ' . $club->getCodi() . ' user: ' . $userclub->getUser().' info: '.$info);	
@@ -1216,7 +1216,6 @@ class SecurityController extends BaseController
 					
 	   		}
 		} catch (\Exception $e) {
-				
 			$this->get('session')->getFlashBag()->clear();
 			
 			$response = new Response($e->getMessage());
@@ -1225,8 +1224,9 @@ class SecurityController extends BaseController
 			$extra = '. Club : ' . ($club != null?$club->getCodi():'No club') . 
 					 ' user: ' . ($userclub != null?$userclub->getUser():'No user') .
 					 ' rol: ' . ($userrole != ''?$userrole:'No roles');
-						
-			$em->clear();
+
+			if ($em->isOpen()) $em->clear();
+			
 			if ($request->getMethod() != 'POST') $this->logEntryAuth('USER '.$action.' KO', $e->getMessage().$extra);	
 			else $this->logEntryAuth('USER SUBMIT KO', $e->getMessage());
 			

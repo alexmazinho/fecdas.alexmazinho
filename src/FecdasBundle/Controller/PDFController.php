@@ -109,7 +109,7 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function dadespersonalstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '', $mail = '') {
+	public function dadespersonalstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '', $mail = '', $professio = '') {
 		/* PDF Llistat de dades personals filtrades */
 		$club = $this->getCurrentClub();
 		
@@ -159,6 +159,10 @@ class PDFController extends BaseController {
 			if ($mail != "") {
 			    $y += 7;
 			    $pdf->writeHTMLCell(0, 0, $x, $y, 'Adreces de correu que contenen "'.$mail.'"', '', 1, 1, true, '', true);
+			}
+			if ($professio != "") {
+			    $y += 7;
+			    $pdf->writeHTMLCell(0, 0, $x, $y, 'Professions que contenen "'.$mail.'"', '', 1, 1, true, '', true);
 			}
 			$y += 2;
 			$pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
@@ -291,29 +295,70 @@ class PDFController extends BaseController {
 	private function dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w) {
 		$llicencia = $persona->getLlicenciaVigent();
 		
-		$h = $persona->getUsuari() != null?9:6;
+		$h = 6;
+		$yinc = 3; 
+		$voffset = 0;
+		$mails = $persona->getMails();
+		if ($persona->getUsuari() != null && !in_array($persona->getUsuari()->getUser(), $mails)) {
+		    array_unshift($mails, $persona->getUsuari()->getUser());
+		}
+		$mails = array_slice($mails, 0, 2);   // Màxim 2 mails
 		
+		$professio = $persona->getProfessio() != null && trim($persona->getProfessio()) != ""?str_replace(array("\r\n", "\n", "\r"), ", ", $persona->getProfessio()):"";
+		// Màxim 60 caràcters, 30 per línia
+		$professions = array(); 
+		if ($professio != "") {
+            $professions = split(PHP_EOL, wordwrap($professio, 30, PHP_EOL, false));  // línies màxim 30 caràcters, sense tallar-los al final, i línies a un array
+		}
+		if (count($professions) > 2) $professions[1] = $professions[1]."..."; // Elipsis
+		$professions = array_slice($professions, 0, 2);   // Màxim 2 línies professió
+		
+		$voffset += count($mails) + count($professions);
+		
+		$ln = $h+$yinc*$voffset;
 		//Cell     (float w, float h, string txt [, mixed border [, int ln [, string align [, boolean fill [, mixed link]]]]]]])
 		//MultiCell(float w, float h, string txt [, mixed border [, string align [, boolean fill]]])
 		
-		$pdf->Cell($w[0], $h, $total, 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+		// Textes
+		$pdf->Cell($w[0], $h, $total, '', 0, 'C', 1, '', 1);
+		$pdf->Cell($w[1], $h, $persona->getCognomsNom(), '', 0, 'L', 1, '', 1);
 		
-		$pdf->Cell($w[1], $h, $persona->getCognomsNom(), 'LRB', 0, 'L', 0, '', 1);
-		if ($persona->getUsuari() != null) {
-		    
-		    $pdf->setX($pdf->getX()-$w[1]);
-		    
+		if ($voffset > 0) {
 		    $pdf->SetFont('dejavusans', 'I', 6, '', true);
-		    $pdf->SetTextColor(0, 0, 128);    // Blau
+		    if (count($professions) > 0) {
+		        $pdf->SetTextColor(0, 128, 0);    // Verd
+		        
+		        $professions[0] = "(".$professions[0];
+		        $professions[count($professions) - 1] = $professions[count($professions) - 1].")";
+		        
+		        $professions = array_reverse($professions);  // Invertir array, s'escriuen començant pel final
+		        
+		        foreach ($professions as $professio) {
+    		        $pdf->setX($pdf->getX()-$w[1]);
+	   	        
+    		        $pdf->Cell($w[1], $h+$yinc*$voffset - 2, $professio, '', 0, 'L', 0, '', 1, true, '', 'B');
+		            $voffset--;
+		        }
+		    }
 		    
-		    $pdf->Cell($w[1], $h-1, $persona->getUsuari()->getUser(), '', 0, 'L', 0, '', 1, false, '', 'B');
-		    
-		    $pdf->SetTextColor(0, 0, 0);    // Negre
-		    $pdf->SetFont('dejavusans', '', 7, '', true); // Restore
+		    if (count($mails) > 0) {
+		        $pdf->SetTextColor(0, 0, 128);    // Blau
+		        
+		        foreach ($mails as $mail) {
+		            $pdf->setX($pdf->getX()-$w[1]);
+		            
+		            $pdf->Cell($w[1], $h+$yinc*$voffset - 2, $mail, '', 0, 'L', 0, '', 1, true, '', 'B');
+		            $voffset--;
+		        }
+		    } 
+    		
+    		$pdf->SetTextColor(0, 0, 0);    // Negre 
+    		$pdf->SetFont('dejavusans', '', 7, '', true); // Restore
 		}
 		
-		$pdf->Cell($w[2], $h, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), 'LRB', 0, 'C', 0, '', 1);
-		$pdf->Cell($w[3], $h, $persona->getDni(), 'LRB', 0, 'C', 0, '', 1);
+		
+		$pdf->Cell($w[2], $h, ($persona->getDatanaixement()!=null?$persona->getDatanaixement()->format('d/m/Y'):''), '', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[3], $h, $persona->getDni(), '', 0, 'C', 0, '', 1);
 		if ($llicencia != null && $llicencia->getParte() != null) {
 			$text = $llicencia->getCategoria()->getDescripcio().". ";
 			$text .= $llicencia->getParte()->getDataalta()->format('d/m/Y'). ' - ';
@@ -321,10 +366,24 @@ class PDFController extends BaseController {
 		} else {
 			$text =  $persona->getInfoHistorialLlicencies($this->isCurrentAdmin(), $desde != null?$desde->format("Y-m-d"):'', $fins != null?$fins->format("Y-m-d"):'');
 		}
-		$pdf->Cell($w[4], $h, $text , 'LRB', 0, 'L', 0, '', 1);
-		$pdf->Cell($w[5], $h, $persona->getInfoHistorialTitulacions() , 'LRB', 0, 'C', 0, '', 1);
-			
-		$pdf->Ln();
+		$pdf->Cell($w[4], $h, $text , '', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[5], $h, $persona->getInfoHistorialTitulacions() , '', 0, 'C', 0, '', 1);
+		
+		// Reset X Y
+		$pdf->setX($pdf->getX()-$w[0]-$w[1]-$w[2]-$w[3]-$w[4]-$w[5]);
+		
+		// Cel·les buides
+		$pdf->Cell($w[0], $ln, '', 'LRB', 0, 'C', 0, '', 1);  // Ample, alçada, text, border, ln, align, fill, link, strech, ignore_min_heigh, calign, valign
+		$pdf->Cell($w[1], $ln, '', 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[2], $ln, '', 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[3], $ln, '', 'LRB', 0, 'C', 0, '', 1);
+		$pdf->Cell($w[4], $ln, '', 'LRB', 0, 'L', 0, '', 1);
+		$pdf->Cell($w[5], $ln, '', 'LRB', 0, 'C', 0, '', 1);
+		
+		
+		
+		$pdf->Ln($ln);
+		
 		
 	}
 	
@@ -338,6 +397,10 @@ class PDFController extends BaseController {
 		$pdf->Cell($w[3], 7, 'DNI', 1, 0, 'C', 1);
 		$pdf->Cell($w[4], 7, 'Informació llicència / assegurança', 1, 0, 'C', 1, '', 1);
 		$pdf->Cell($w[5], 7, 'Titulacions', 1, 0, 'C', 1, '', 1);
+		
+		$pdf->SetFont('dejavusans', 'I', 7, '', true);
+		$pdf->writeHTMLCell($w[1], 5, 30, $pdf->getY()+2, 'mail, professió', '', 0, 1, true, 'C', false);
+		
 		$pdf->Ln();
 	}
 	

@@ -59,6 +59,11 @@ class EntityPersona {
 	protected $mail;
 	
 	/**
+	 * @ORM\Column(type="text", nullable=true)
+	 */
+	protected $professio;
+	
+	/**
 	 * @ORM\Column(type="string", length=75, nullable=true)
 	 */
 	protected $addradreca;
@@ -178,8 +183,9 @@ class EntityPersona {
 				 		'sexe', 
 				 		'telefon1', 
 				 		'telefon2', 
-				 		'mail',	
-				 		'adreca', 
+				 		'mail',
+            		    'professio',
+            		    'adreca', 
 				 		'poblacio', 
 				 		'cp', 
 				 		'comarca',
@@ -210,6 +216,7 @@ class EntityPersona {
 				 		$this->getTelefon1(), 
 				 		$this->getTelefon2(), 
 				 		$this->getMail(),	
+    	                $this->getProfessio(),
 				 		$this->getAddradreca(), 
 				 		$this->getAddrpob(), 
 				 		$this->getAddrcp(), 
@@ -677,6 +684,26 @@ class EntityPersona {
     public function getMail()
     {
         return $this->mail;
+    }
+    
+    /**
+     * Set professio
+     *
+     * @param string $professio
+     */
+    public function setProfessio($professio)
+    {
+        $this->professio = $professio;
+    }
+    
+    /**
+     * Get professio
+     *
+     * @return string
+     */
+    public function getProfessio()
+    {
+        return $this->professio;
     }
 
     /**

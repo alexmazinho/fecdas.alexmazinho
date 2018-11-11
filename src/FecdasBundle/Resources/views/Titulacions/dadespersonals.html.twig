@@ -34,14 +34,14 @@
    		<section class="form-dadespersonals">
 	   		<div class="row">
 				{% if admin == true %}
-					<div class="col-md-3 col-xs-12">
+					<div class="col-md-3 col-xs-6">
 						<div class="form-group">
 						   	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
 				{% endif %}
-				<div class="col-md-3 col-xs-3">
+				<div class="{% if admin %}col-md-3 col-xs-6{% else %}col-md-4 col-xs-6 col-xs-offset-6{% endif %}">
 				  	<div class="form-group">
 						{{ form_label(form.dni, 'Dades personals', { 'label_attr': {'class': ''} }) }}
 				  		<div class="input-group">
@@ -50,7 +50,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-xs-3">
+				<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-xs-5">
 				  	<div class="form-group">
 				  		<label class="" for="form_nom">&nbsp;</label>
 				  		<div class="input-group">
@@ -59,7 +59,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="{% if admin == true %}col-md-3{% else %}col-md-6{% endif %}  col-xs-6">
+				<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-xs-7">
 				  	<div class="form-group">
 				  		<label class="" for="form_cognoms">&nbsp;</label>
 				  		<div class="input-group">
@@ -79,7 +79,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-2 col-xs-5">
+				<div class="col-md-2 col-xs-4">
 					<div class="form-group">
 						{{ form_label(form.desde, 'Amb llicència des de') }}
 						<div class="input-group" >
@@ -88,7 +88,7 @@
 						</div>
 					</div>
 				</div>
-		    	<div class="col-md-2 col-xs-5">
+		    	<div class="col-md-2 col-xs-4">
 					<div class="form-group">
 						{{ form_label(form.fins, 'fins') }}
 						<div class="input-group" >
@@ -97,19 +97,28 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-3 col-xs-12">
+				<div class="col-md-3 col-xs-4">
 					<div class="form-group">
 						<label>&nbsp;</label>
 						<div class="checkbox">
 					    	<label>
-					      		{{ form_widget(form.vigent) }} Només amb llicència vigent
+					      		{{ form_widget(form.vigent) }} Amb llicència vigent
 					    	</label>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-4 col-xs-6">
+				<div class="col-md-2 col-xs-6">
+				  	<div class="form-group">
+				  		{{ form_label(form.professio, 'Professió') }}
+				  		<div class="input-group">
+							{{ form_widget(form.professio, { 'attr': {'class': 'form-control', 'placeholder':'Professió' } }) }}
+							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4 col-xs-6 bottom10">
 					<div class="form-group">
 					   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
 						{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
@@ -121,7 +130,7 @@
 						{{ form_widget(form.titolsexterns, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				</div>
-				<div class="col-md-2 col-md-offset-2 col-xs-10 col-xs-offset-2 col-last-right">
+				<div class="col-md-2 col-xs-6 col-last-right">
 					<div class="form-group">
 						<label class="" for="form_submit">&nbsp;</label>
 						<button id="formdadespersonals-submit"  type="submit" class="btn btn-default"><i class="fa fa-search blue"></i> cerca</button>
@@ -167,7 +176,14 @@
 				   		    {% if persona.usuari is not null %}
 				   		    	<span class="subtitle"><a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
 		   						{{ persona.usuari.user }}</a></span>
+		   					{% else %}
+		   					    {% if persona.mail is not null and persona.mail != "" %}
+		   					   		<span class="subtitle">{{ persona.mail }}</span>
+		   					    {% endif %}
 				   		    {% endif %}
+				   		    {% if persona.professio is not null and persona.professio != "" %}
+		   					    <span class="subtitle darkgreen"><i class="fa fa-industry fa-1x"></i> {{ persona.professio }}</span>
+		   					{% endif %}
 				   		</div>
 				   		<div class="data-detall-cell dadespersonals-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell dadespersonals-historialllicencies">
@@ -233,6 +249,7 @@
 		   						<i class="fa fa-address-book fa-1x red"></i></a>	
 				   		</div>
 			   		</li>
+			   		
 				{% endfor %}
 			</ol>
 		</div>
@@ -300,6 +317,7 @@
 			params.push( {'name':'nom','value': $('#form_nom').val()} );
 			params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
 			params.push( {'name':'mail','value': $('#form_mail').val()} );
+			params.push( {'name':'professio','value': $('#form_professio').val()} );
 			params.push( {'name':'desde','value': $('#form_desde').val()} );
 			params.push( {'name':'fins','value': $('#form_fins').val()} );
 			params.push( {'name':'titols','value': $('#form_titols').val()} );

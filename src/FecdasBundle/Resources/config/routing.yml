@@ -781,6 +781,12 @@ FecdasBundle_historictitols:
     requirements:
         methods:  GET
 
+FecdasBundle_historicfederats:
+    path:  /historicfederats
+    defaults: { _controller: "FecdasBundle:Offline:historicfederats" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_historictitolserrors:
     path:  /historictitolserrors
     defaults: { _controller: "FecdasBundle:Offline:historictitolserrors" }

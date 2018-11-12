@@ -671,6 +671,243 @@ class OfflineController extends BaseController {
         return new Response("OK pesones noves ".$personesNoves." cursos nous ".$cursosNous." i titulacions ".$titulacions."<br/><hr><br/>".$html );
     }
     
+    public function historicfederatsAction(Request $request) {
+        // http://www.fecdas.dev/historicfederats?max=10&pag=1
+        // http://www.fecdas.dev/historicfederats?id=1234
+        /*
+         * http://www.fecdas.dev/historicfederats?max=1000&pag=1
+         * http://www.fecdas.dev/historicfederats?max=1000&pag=2
+         */
+        // Script de migració. Executar per migrar persones i desactivar
+        
+        if (!$this->isAuthenticated())
+            return $this->redirect($this->generateUrl('FecdasBundle_login'));
+            
+        if (!$this->isCurrentAdmin())
+            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+                
+        $em = $this->getDoctrine()->getManager();
+                
+        $id = $request->query->get('id', 0);
+        $max = $request->query->get('max', 2000);
+        $pag = $request->query->get('pag', 1);
+        $offset = $max * ($pag -1);
+                
+        $strQuery  = " SELECT i.* ";
+        $strQuery .= " FROM importtitulacions i LEFT OUTER JOIN m_metapersones m ON i.dni = m.dni ";
+        if ($id > 0) $strQuery .= " AND id = ".$id;
+        $strQuery .= " ORDER BY dni, id ";
+        if ($id == 0) $strQuery .= " LIMIT ".$max. " OFFSET ".$offset;
+        $stmt = $em->getConnection()->prepare($strQuery);
+        $stmt->execute();
+        $titolsfederats = $stmt->fetchAll();
+        
+        $personesNoves = 0;
+                
+        $federacio = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+        
+        $html = '';
+        $currentdni = '';
+        
+        try {
+            for ($i = 0; $i < count($titolsfederats); $i++) {
+                $currentTitolFederat = $titolsfederats[$i];
+                $dni = $currentTitolFederat['dni'];
+                
+                if ($currentdni == $dni) continue;
+                
+                $currentdni = $dni;
+                $id = $currentTitolFederat['id'];
+                
+                // Cercar títol (NO pot ser null i només pot trobar un)
+                $titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->findOneBy(array('codi' => $currentTitolFederat['abreviatura']));
+                
+                if ($titol == null || count($titol) != 1) continue; //ERROR
+                
+                if ($currentTitolFederat['club'] != '') {
+                    $club = $this->cercarClubNOM($currentTitolFederat['club']);
+                } else {
+                    // Mirar si llicència tipus tècnic => club sense informar FECDAS
+                    if ($titol->esInstructor()) $club = $federacio;
+                }
+                
+                if ($club == null) continue;    // ERROR
+                
+                // Cercar meta persona
+                $persona = $this->cercarPersonaDNI($currentTitolFederat['dni']);
+                
+                if ($persona != null) continue;
+    
+                $metapersona = new EntityMetaPersona( $dni );
+                $em->persist($metapersona);
+                                
+                $persona = new EntityPersona($metapersona, $club);
+                $persona->setVAlidat(true);
+                $nomCognoms = $currentTitolFederat['federado'];
+                $nomArray = explode(",", $nomCognoms); // Cognoms + Nom
+                                
+                if (!isset($nomArray[0])) throw new \Exception($id.'#ERROR. Persona sense cognoms: '.$nomCognoms);
+                if (!isset($nomArray[1])) throw new \Exception($id.'#ERROR. Persona sense nom: '.$nomCognoms);
+                if (count($nomArray) != 2) throw new \Exception($id.'#ERROR. Persona nom incorrecte: '.$nomCognoms);
+                $persona->setCognoms(mb_strtoupper($nomArray[0]));
+                $persona->setNom($nomArray[1]);
+                                
+                $persona->setSexe($currentTitolFederat['sexo']);  // H o M
+                                
+                if ($currentTitolFederat['nacimiento'] == '' ||
+                    $currentTitolFederat['nacimiento'] == null) throw new \Exception($id.'#ERROR. Persona sense data naixement: '.$currentTitolFederat['nacimiento']);
+                                    
+                $naixement = \DateTime::createFromFormat('Y-m-d', $currentTitolFederat['nacimiento']); // YYYY-MM-DD
+                $persona->setDatanaixement($naixement);
+                                    
+                $persona->setDatamodificacio($this->getCurrentDate('now'));
+                                    
+                if ($currentTitolFederat['email'] != '' &&
+                    $currentTitolFederat['email'] != null) $persona->setMail($currentTitolFederat['email']);
+                                        
+                if ($currentTitolFederat['movil'] != '' &&
+                    $currentTitolFederat['movil'] != null &&
+                    is_numeric($currentTitolFederat['movil'])) $persona->setTelefon1($currentTitolFederat['movil']);
+                                            
+                if ($currentTitolFederat['direccion'] != '' &&
+                    $currentTitolFederat['direccion'] != null) $persona->setAddradreca($currentTitolFederat['direccion']);
+                
+                if ($currentTitolFederat['cp'] != '' &&
+                    $currentTitolFederat['cp'] != null) {
+                                                        
+                    $persona->setAddrcp($currentTitolFederat['cp']);
+                    
+                    if (is_numeric($currentTitolFederat['cp'])) {
+                        $persona->setAddrnacionalitat('ESP');
+                                                            
+                        // Provincia catalana => cercar comarca
+                        if (substr($currentTitolFederat['cp']."", 0, 2) == '17' ||
+                            substr($currentTitolFederat['cp']."", 0, 2) == '08' ||
+                            substr($currentTitolFederat['cp']."", 0, 2) == '25' ||
+                            substr($currentTitolFederat['cp']."", 0, 2) == '43') {
+                                 
+                            $municipis = $this->consultaAjaxPoblacions($currentTitolFederat['cp'], 'cp');
+                                                                    
+                            if ($municipis == null) throw new \Exception($id.'#ERROR. Municipi / Comarca persona  no trobat: '.$currentTitolFederat['cp']);
+                            $municipi = $municipis[0];
+                                                                    
+                            $persona->setAddrcomarca($municipi['comarca']);
+                        }
+                    } else {
+                        switch ($currentTitolFederat['cp']) {
+                            case 'AD300':
+                                $persona->setAddrnacionalitat('AND');
+                                break;
+                            case 'BH228':
+                                $persona->setAddrnacionalitat('GBR');
+                                break;
+                            case '3114T':
+                                $persona->setAddrnacionalitat('GER');
+                                break;
+                            case 'L5531':
+                                $persona->setAddrnacionalitat('FRA');
+                                break;
+                            case 'l5531':
+                                $persona->setAddrnacionalitat('FRA');
+                                break;
+                            default:
+                                throw new \Exception($id.'#ERROR. Persona estrangera ?: '.$currentTitolFederat['cp']);
+                        }
+                    }
+                }
+                
+                if (substr($dni."", 0, 1) == 'X' ||
+                    substr($dni."", 0, 1) == 'Y' ||
+                    substr($dni."", 0, 1) == 'Z') {
+                    // NIE empieza por X, Y o Z
+                    $nie = str_replace("-", "", $dni);
+                    $metapersona->setDni($nie);
+                    $persona->setAddrnacionalitat('XXX'); // Sense especificar
+                } else {
+                    $persona->setAddrnacionalitat('ESP');
+                }
+                                                    
+                if ($currentTitolFederat['poblacion'] != '' &&
+                    $currentTitolFederat['poblacion'] != null) $persona->setAddrpob($currentTitolFederat['poblacion']);
+                                                        
+                if ($currentTitolFederat['provincia'] != '' &&
+                    $currentTitolFederat['provincia'] != null) $persona->setAddrprovincia($currentTitolFederat['provincia']);
+
+                if ($persona->getAddrnacionalitat() == 'ESP') {
+                    // Només DNI vàlid
+                    $dniLletra = $dni;
+                    if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
+                    
+                    if (strlen($dniLletra) != 9) {
+                        $html .= "DNI incorrecte ".$dni."<br/>";
+                        continue;
+                    }
+                    
+                    $metapersona->setDni($dniLletra);
+                }
+                    
+                $em->persist($persona);
+                $personesNoves++;
+            }
+            
+            $em->flush();
+            
+            $html .= "OK pesones noves ".$personesNoves."<br/><hr><br/>";
+            
+        } catch (\Exception $e) {
+            $html =  $e->getMessage();
+        }
+                    
+        return new Response( $html );
+    }
+    
+    private function cercarPersonaDNI($dni) {
+        // Cercar meta persona
+        $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dni.""));	// Consulta directament com text
+        
+        if ($persona == null) {
+            
+            $dniLletra = $dni;
+            if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
+            
+            if ($dni != $dniLletra) {
+                // Consulta amb lletra
+                $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dniLletra));
+            }
+        }
+        return $persona;
+    }
+    
+    private function cercarClubNOM($nom) {
+        $nomClub = str_replace(".", "", $nom);
+        
+        $em = $this->getDoctrine()->getManager();
+        
+        $strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+        $strQuery .= " WHERE  c.nom LIKE :club ";
+        $query = $em->createQuery($strQuery);
+        $query->setParameter('club', '%'.$nomClub.'%' );
+        $clubs = $query->getResult();
+        
+        if ($clubs != null && count($clubs) == 1) {
+            $clubs = array_values($clubs);
+            return $clubs[0];
+        }
+        
+        $strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
+        $strQuery .= " WHERE  c.nom = :club ";
+        $query = $em->createQuery($strQuery);
+        $query->setParameter('club', $nomClub );
+        $clubs = $query->getResult();
+            
+        if ($clubs != null && count($clubs) == 1) {
+            $clubs = array_values($clubs);
+            return $clubs[0];
+        }
+        
+        return null;
+    }
+    
 	public function historictitolsAction(Request $request) {
 		// http://www.fecdas.dev/historictitols?max=10&pag=1
 		// http://www.fecdas.dev/historictitols?id=1234
@@ -718,22 +955,20 @@ class OfflineController extends BaseController {
 			try {
 	
 				// Cercar meta persona
-				$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $currentTitol['dni'].""));	// Consulta directament com text
+			    $persona = $this->cercarPersonaDNI($dni);
 				
 				if ($persona == null) {
-					
-					$dniLletra = $dni;
-					if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
-					  
-							
-					if ($dni != $dniLletra) {
-						// Consulta amb lletra
-						$persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dniLletra));	
-					}
-				}
+				    
+				    if (substr($dni."", 0, 1) == 'X' ||
+				        substr($dni."", 0, 1) == 'Y' ||
+				        substr($dni."", 0, 1) == 'Z') {
+				        // NIE empieza por X, Y o Z
+				        $dni = str_replace("-", "", $dni);
 				
-				if ($persona == null) {
-					throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
+				        $persona = $this->cercarPersonaDNI($dni);
+				    }
+				        
+				    if ($persona == null) throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
 				}
 				
 				// Cercar títol (NO pot ser null i només pot trobar un) 
@@ -747,20 +982,11 @@ class OfflineController extends BaseController {
 				$clubhistoric = '';
 				if ($currentTitol['club'] != '') {
 					
-					$nomClub = str_replace(".", "", $currentTitol['club']);
-					
-					$strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityClub c ";
-					$strQuery .= " WHERE  c.nom LIKE :club ";
-					$query = $em->createQuery($strQuery);
-					$query->setParameter('club', '%'.$nomClub.'%' );
-					$clubs = $query->getResult();
-					
-					if ($clubs != null && count($clubs) == 1) {
-						$clubs = array_values($clubs);
-						$club = $clubs[0];
-					} else {
-						 $errors[ $id ] = $id.'#WARN. Club no trobat: '.$currentTitol['club'];// WARN CONTINUA
-						 $clubhistoric = $currentTitol['club'];
+				    $club = $this->cercarClubNOM($currentTitol['club']);
+				    
+				    if ($club == null) {
+  						$errors[ $id ] = $id.'#WARN. Club no trobat: '.$currentTitol['club'];// WARN CONTINUA
+       					$clubhistoric = $currentTitol['club'];
 					}
 				} else {
 				    // Mirar si llicència tipus tècnic => club sense informar FECDAS

@@ -448,7 +448,7 @@ class FacturacioController extends BaseController {
 							$sms .= '. '.$id.' canvi stock '.$stockclub[$id]['stock'].' => '.$stock;
 							$tipus = $unitats > 0?BaseController::REGISTRE_STOCK_ENTRADA:BaseController::REGISTRE_STOCK_SORTIDA;
 							
-							$comentaris = 'Ajust stock manual administradors '.$unitats.'x'.$producte->getDescripcio();
+							$comentaris = 'Regulació stock '.$unitats.'x'.$producte->getDescripcio();
 							
 							$registreStock = new EntityStock($club, $producte, $unitats, $comentaris, $current, $tipus); // Manual, sense factura
 							$registreStock->setStock($stock);
@@ -2146,9 +2146,6 @@ class FacturacioController extends BaseController {
 
 				$this->crearFactura($comanda, $datafacturacio, '', $comptefactura);
 			
-				// Gestionar stock
-				$this->registreComanda($comanda);
-			
 				$em ->flush();
 			
 				// Enviar notificació mail Albert si és una comanda de Kits
@@ -2439,9 +2436,6 @@ class FacturacioController extends BaseController {
 
 					if ($comanda->esNova()) $comanda->setNum($maxNumComanda); // Per si canvia
 					
-					// Gestionar stock
-					$this->registreComanda($comanda, $originalDetalls);
-		
 				} else {
 				    throw new \Exception('Dades incorrectes, cal revisar les dades de la comanda '.$form->getErrors(true, true) ); 
 				}
@@ -2731,8 +2725,18 @@ class FacturacioController extends BaseController {
     				$form->get('minim')->addError(new FormError('Valor incorrecte'));
     				throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
     			}
-    				
-    			if ($producte->getStockable() == true) {
+    			
+    			if ($producte->esStockable() && !$producte->getStockable()) {
+    			    $form->get('stockable')->addError(new FormError('Valor incorrecte'));
+    			    throw new \Exception('El tipus de producte gestiona stock' );
+    			}
+    			
+    			if (!$producte->esStockable() && $producte->getStockable()) {
+    			    $form->get('stockable')->addError(new FormError('Valor incorrecte'));
+    			    throw new \Exception('El tipus de producte no gestiona stock' );
+    			}
+    			
+    			if ($producte->getStockable()) {
     				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) { 
     					$producte->setLimitnotifica(0);
     					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));

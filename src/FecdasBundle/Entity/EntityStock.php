@@ -42,7 +42,7 @@ class EntityStock {
 	protected $unitats;
 	
 	/**
-	 * @ORM\Column(type="decimal", precision=9, scale=2)
+	 * @ORM\Column(type="decimal", precision=9, scale=2, nullable=true)
 	 */
 	protected $preuunitat;
 
@@ -55,7 +55,13 @@ class EntityStock {
 	 * @ORM\ManyToOne(targetEntity="EntityFactura")
 	 * @ORM\JoinColumn(name="factura", referencedColumnName="id", nullable=true)
 	 */
-	protected $factura;	// FK taula m_comandes
+	protected $factura;	// FK taula m_factures
+	
+	/**
+	 * @ORM\ManyToOne(targetEntity="EntityCurs")
+	 * @ORM\JoinColumn(name="curs", referencedColumnName="id", nullable=true)
+	 */
+	protected $curs;	// FK taula m_curs
 	
 	/**
 	 * @ORM\Column(type="text", nullable=true)
@@ -79,7 +85,7 @@ class EntityStock {
     protected $databaixa;
 	
 
-	public function __construct($club = null, $producte = null, $unitats = 0, $comentaris = '', $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $factura = null ) {
+	public function __construct($club = null, $producte = null, $unitats = 0, $comentaris = '', $dataregistre = null, $tipus = BaseController::REGISTRE_STOCK_ENTRADA, $factura = null, $curs = null) {
 		$this->id = 0;
 		$this->stock = 0;
 		$this->club = $club;
@@ -89,6 +95,7 @@ class EntityStock {
 		$this->unitats = $unitats;
 		$this->preuunitat = ($producte!=null?$producte->getPreuAny($this->dataregistre->format('Y')):0);
 		$this->factura = $factura;
+		$this->curs = $curs;
 		$this->comentaris = $comentaris;
 		$this->dataentrada = new \DateTime('now');
 		
@@ -299,6 +306,26 @@ class EntityStock {
         return $this->factura;
     }
 	
+    /**
+     * Set curs
+     *
+     * @param EntityCurs $curs
+     */
+    public function setCurs(EntityCurs $curs = null)
+    {
+        $this->curs = $curs;
+    }
+    
+    /**
+     * Get curs
+     *
+     * @return EntityCurs
+     */
+    public function getCurs()
+    {
+        return $this->curs;
+    }
+    
 	/**
      * Set comentaris
      *

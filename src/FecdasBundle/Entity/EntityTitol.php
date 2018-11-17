@@ -122,6 +122,16 @@ class EntityTitol {
         return $this->tipus == BaseController::TIPUS_TITOL_TECNIC;
     }
 
+    /**
+     * Es comissari, jutge, tècnic ...
+     *
+     * @return boolean
+     */
+    public function esCompeticio()
+    {
+        return $this->tipus == BaseController::TIPUS_COMPETICIO;
+    }
+    
 	/**
 	 * Get informació títol en llistes desplegables
 	 *

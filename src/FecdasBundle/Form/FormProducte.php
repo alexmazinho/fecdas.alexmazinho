@@ -79,30 +79,28 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					
 			));
 			
+			$form->add('stockable', 'checkbox', array(
+    			    'required' 		=> false,
+    			    'data' 			=> $producte->getStockable(),
+			        'disabled' 	    => !$producte->esNou()    // No deixar modificar aquest valor
+			));
 			
 			$form->add ('limitnotifica', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					//'disabled' 		=> $producte->getStockable() != true
-					'attr'			=>	array('readonly' => $producte->getStockable() != true)
+					'disabled' 		=> !$producte->getStockable()
 			));
 			
 			$form->add ('stock', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
-					//'disabled' 	=> $producte->getStockable() != true
-					'disabled'		=> true
+					'disabled' 	    => !$producte->getStockable()
 			));
 			
 			$form->add ('pes', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
 					'attr'			=>	array('readonly' => $producte->getTransport() != true)
-			));
-			
-			$form->add('stockable', 'checkbox', array(
-					'required' 		=> false,
-					'data' 			=> $producte->getStockable() == true
 			));
 			
 			$form->add('transport', 'checkbox', array(
@@ -179,9 +177,10 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 	public function submitData(FormEvent $event) {
 		// It's important here to fetch $event->getForm()->getData(), as
 		// $event->getData() will get you the client data (that is, the ID)
-		$producte = $event->getForm()->getData();
+		/*$producte = $event->getForm()->getData();
 		$form = $event->getForm ();
 		$origen = $form->get('anypreus')->getData(); // Detectar origen, si és selector anys refrescar els valors del preu, iva...
+		*/
 	
 	}
 	

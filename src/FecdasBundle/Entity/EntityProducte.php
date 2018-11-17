@@ -112,8 +112,8 @@ class EntityProducte {
 	
 	public function __construct() {
 	    $this->tipus = BaseController::TIPUS_PRODUCTE_KITS;
-		$this->stockable = false;
-		$this->transport = false;
+		$this->stockable = true;
+		$this->transport = true;
 		$this->dataentrada = new \DateTime();
         $this->departament = BaseController::INDEX_DPT_INGRESOS_KITS;
         $this->subdepartament = BaseController::INDEX_SUBDPT_INGRESOS_KITS_MERCHANDISING;
@@ -133,7 +133,19 @@ class EntityProducte {
     {
         return $this->id == 0;
     }
-	
+    
+    /**
+     * Es el tipus stockable
+     *
+     * @return boolean
+     */
+    public function esStockable()
+    {
+        return  $this->tipus == BaseController::TIPUS_PRODUCTE_KITS || 
+                $this->tipus == BaseController::TIPUS_PRODUCTE_MERCHA ||
+                $this->tipus == BaseController::TIPUS_PRODUCTE_MATERIAL;
+    }
+    
 	public function getEstat()
 	{
 		return $this->databaixa != null?'baixa':'';
@@ -164,6 +176,157 @@ class EntityProducte {
         return $this->tipus == BaseController::TIPUS_PRODUCTE_KITS;
     }
 	
+    /**
+     * Get
+     *
+     * @return \Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getPreus()
+    {
+        return $this->preus;
+    }
+    
+    /**
+     * Get preu (objecte) any
+     *
+     * @return string
+     */
+    public function getPreu($any)
+    {
+        foreach($this->preus as $preu) {
+            if ($preu->getAnypreu() == $any) return $preu;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get preu (objecte) aplicable a any
+     * preu any actual si existeix o
+     * darrer preu anys anteriors
+     *
+     * @return string
+     */
+    public function getPreuAplicable($any)
+    {
+        // Ordenar per any
+        if (count($this->preus) == 0) return null;
+        
+        $preus = $this->preus->toArray();
+        
+        usort($preus, function($a, $b) {
+            if ($a === $b) {
+                return 0;
+            }
+            // Descendent primer darrer any
+            return ($a->getAnypreu() > $b->getAnypreu())? -1:1;
+        });
+            
+            foreach($preus as $preu) {
+                if ($preu->getAnypreu() <= $any) return $preu;
+            }
+            
+            return null; // No trobat cap aplicable
+    }
+    
+    /**
+     * Get preu any actual
+     *
+     * @return string
+     */
+    public function getCurrentPreu()
+    {
+        return $this->getPreuAny(Date('Y'));
+    }
+    
+    /**
+     * Get any preu any actual
+     *
+     * @return string
+     */
+    public function getCurrentAny()
+    {
+        $preu = $this->getPreuAplicable(Date('Y'));
+        //$preu = $this->getPreu($any);
+        if ($preu == null) return '--';
+        return $preu->getAnypreu();
+    }
+    
+    /**
+     * Get preu any
+     *
+     * @return string
+     */
+    public function getPreuAny($any)
+    {
+        $preu = $this->getPreuAplicable($any);
+        //$preu = $this->getPreu($any);
+        if ($preu == null) return 0;
+        return $preu->getPreu();
+    }
+    
+    
+    /**
+     * Get iva any actual
+     *
+     * @return string
+     */
+    public function getCurrentIva()
+    {
+        return $this->getIvaAny(Date('Y'));
+    }
+    
+    /**
+     * Get iva any
+     *
+     * @return string
+     */
+    public function getIvaAny($any)
+    {
+        $preu = $this->getPreuAplicable($any);
+        //$preu = $this->getPreu($any);
+        if ($preu == null || $preu->getIva() == null) return 0;
+        return $preu->getIva();
+    }
+    
+    /**
+     * Is disponible
+     *
+     * @return boolean
+     */
+    public function disponible()
+    {
+        if (!$this->stockable) return true;
+        
+        return $this->stock > 0;
+    }
+    
+    /**
+     * Add preu
+     *
+     * @param \FecdasBundle\Entity\EntityPreu $preu
+     * @return EntityProducte
+     */
+    public function addPreus(\FecdasBundle\Entity\EntityPreu $preu)
+    {
+        $preu->setProducte($this);
+        $this->preus->add($preu);
+        //$this->preus[] = $preu;
+        
+        return $this;
+    }
+    
+    /**
+     * Remove preu
+     *
+     * @param \FecdasBundle\Entity\EntityPreu $preu
+     */
+    public function removePreus(\FecdasBundle\Entity\EntityPreu $preu)
+    {
+        $this->preus->removeElement($preu);
+        $preu->setProducte(null);
+    }
+    
 	/**
      * Get id
      *
@@ -184,7 +347,6 @@ class EntityProducte {
     {
     	$this->id = $id;
     }
-    
     
     /**
      * Set codi
@@ -404,7 +566,6 @@ class EntityProducte {
         return $this->transport;
     }
 
-
     /**
      * Set pes
      *
@@ -427,8 +588,6 @@ class EntityProducte {
     {
         return $this->pes;
     }
-
-
 
 	/**
      * Set visible
@@ -587,157 +746,5 @@ class EntityProducte {
     public function getDatabaixa()
     {
         return $this->databaixa;
-    }
-
-    
-    /**
-     * Get
-     *
-     * @return \Doctrine\Common\Collections\ArrayCollection
-     */
-    public function getPreus()
-    {
-    	return $this->preus;
-    }
-    
-    /**
-     * Get preu (objecte) any
-     *
-     * @return string
-     */
-    public function getPreu($any)
-    {
-    	foreach($this->preus as $preu) {
-    		if ($preu->getAnypreu() == $any) return $preu;
-    	}
-    	
-    	return null;
-    }
-    
-	/**
-     * Get preu (objecte) aplicable a any 
-	 * preu any actual si existeix o 
-	 * darrer preu anys anteriors
-     *
-     * @return string
-     */
-    public function getPreuAplicable($any)
-    {
-    	// Ordenar per any	
-        if (count($this->preus) == 0) return null;
-        
-    	$preus = $this->preus->toArray(); 
-		
-    	usort($preus, function($a, $b) {
-    		if ($a === $b) {
-    			return 0;
-    		}
-			// Descendent primer darrer any 
-    		return ($a->getAnypreu() > $b->getAnypreu())? -1:1;
-    	});	
-
-    	foreach($preus as $preu) {
-    		if ($preu->getAnypreu() <= $any) return $preu;
-    	}
-
-    	return null; // No trobat cap aplicable
-    }
-	
-    /**
-     * Get preu any actual 
-     *
-     * @return string
-     */
-    public function getCurrentPreu()
-    {
-    	return $this->getPreuAny(Date('Y'));
-    }
-    
-	/**
-     * Get any preu any actual 
-     *
-     * @return string
-     */
-    public function getCurrentAny()
-    {
-    	$preu = $this->getPreuAplicable(Date('Y'));
-		//$preu = $this->getPreu($any);
-    	if ($preu == null) return '--';
-    	return $preu->getAnypreu();
-    }
-	
-    /**
-     * Get preu any
-     *
-     * @return string
-     */
-    public function getPreuAny($any)
-    {
-    	$preu = $this->getPreuAplicable($any);
-		//$preu = $this->getPreu($any);
-    	if ($preu == null) return 0;
-    	return $preu->getPreu();
-    }
-
-    
-    /**
-     * Get iva any actual 
-     *
-     * @return string
-     */
-    public function getCurrentIva()
-    {
-    	return $this->getIvaAny(Date('Y'));
-    }
-    
-    /**
-     * Get iva any
-     *
-     * @return string
-     */
-    public function getIvaAny($any)
-    {
-    	$preu = $this->getPreuAplicable($any);
-		//$preu = $this->getPreu($any);
-    	if ($preu == null || $preu->getIva() == null) return 0;
-    	return $preu->getIva();
-    }
-
-	/**
-     * Is disponible
-     *
-     * @return boolean 
-     */
-    public function disponible()
-    {
-    	if ($this->stockable == false) return true; 
-        
-        return $this->stock > 0;
-    }
-
-    /**
-     * Add preu
-     *
-     * @param \FecdasBundle\Entity\EntityPreu $preu
-     * @return EntityProducte
-     */
-    public function addPreus(\FecdasBundle\Entity\EntityPreu $preu)
-    {
-    	$preu->setProducte($this);
-    	$this->preus->add($preu);
-        //$this->preus[] = $preu;
-
-        return $this;
-    }
-
-    /**
-     * Remove preu
-     *
-     * @param \FecdasBundle\Entity\EntityPreu $preu
-     */
-    public function removePreus(\FecdasBundle\Entity\EntityPreu $preu)
-    {
-        $this->preus->removeElement($preu);
-        $preu->setProducte(null);
     }
 }

@@ -91,6 +91,7 @@ class BaseController extends Controller {
 	const TIPUS_PRODUCTE_MERCHA 	= 4;
 	const TIPUS_PRODUCTE_CURSOS 	= 5;
 	const TIPUS_PRODUCTE_ALTRES 	= 6;
+	const TIPUS_PRODUCTE_MATERIAL   = 7;
 	
 	const DEBE 		= 'D';
 	const HABER 	= 'H';
@@ -309,6 +310,7 @@ class BaseController extends Controller {
 					self::TIPUS_PRODUCTE_KITS 		=> 'Kits',
 					self::TIPUS_PRODUCTE_MERCHA 	=> 'Merchandising',
 					self::TIPUS_PRODUCTE_CURSOS 	=> 'Cursos',
+			        self::TIPUS_PRODUCTE_MATERIAL 	=> 'Material',
 					self::TIPUS_PRODUCTE_ALTRES 	=> 'Altres'
 			);
 		}
@@ -3139,6 +3141,48 @@ class BaseController extends Controller {
 		
 		//if ($persist == true) $em->flush();	// Si d'ha canviat el num factura	
 	}
+	
+	protected function consultaStockProducteDataClub($producte, $club, $fins = null, $baixes = false) {
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    if ($producte == null || $club == null) return 0;
+	    
+	    if ($fins == null) $fins = $this->getCurrentDate();
+	    
+	    $strQuery  = " SELECT SUM(s.unitats) FROM FecdasBundle\Entity\EntityStock s ";
+	    $strQuery .= " WHERE s.tipus = 'E'";
+	    $strQuery .= " AND s.club = :club";
+	    $strQuery .= " AND s.producte = :producte";
+	    $strQuery .= " AND s.dataregistre <= :fins";
+	    if (!$baixes) $strQuery .= " AND s.databaixa IS NULL";
+	    
+	    $query = $em->createQuery($strQuery);
+	    
+	    $query->setParameter('club', $club->getCodi());
+	    $query->setParameter('producte', $producte->getId());
+	    $query->setParameter('fins', $fins->format('Y-m-d'));
+	    
+	    $result = $query->getSingleScalarResult();
+	    $total = $result == null?0:$result;
+	    
+	    $strQuery  = " SELECT SUM(s.unitats) FROM FecdasBundle\Entity\EntityStock s ";
+	    $strQuery .= " WHERE s.tipus = 'S'";
+	    $strQuery .= " AND s.club = :club";
+	    $strQuery .= " AND s.producte = :producte";
+	    $strQuery .= " AND s.dataregistre <= :fins";
+	    if (!$baixes) $strQuery .= " AND s.databaixa IS NULL";
+	    
+	    $query = $em->createQuery($strQuery);
+	    
+	    $query->setParameter('club', $club->getCodi());
+	    $query->setParameter('producte', $producte->getId());
+	    $query->setParameter('fins', $fins->format('Y-m-d'));
+	    
+	    $result = $query->getSingleScalarResult();
+	    $total -= $result == null?0:$result;
+	    
+	    return $total;
+	}
 
 	protected function consultaStock($idproducte, $club, $baixes = true, $desde = null, $order = 'ASC') {
 		$em = $this->getDoctrine()->getManager();
@@ -3190,7 +3234,7 @@ class BaseController extends Controller {
 			$producte = $detall->getProducte();	
 			$unitats = $detall->getUnitats();
 
-			if ($producte->getStockable() == true) {
+			if ($producte->getStockable()) {
 
 				$factura = $comanda->getFactura();
 				if (!$comanda->esNova()) {
@@ -3220,9 +3264,11 @@ class BaseController extends Controller {
 					
 					$club = $comanda->getClub();
 					
-					if ($club != $fede) {
+					if ($producte->esKit() && $club != $fede) {
+					    //consultaStockProducteDataClub
+					    
 						$stockProducte = $this->consultaStockProducte($producte->getId(), $club);
-						$comentaris = 'Entrada stock '.$unitats.'x'.$producte->getDescripcio();
+						$comentaris = 'Comanda KITS '.$unitats.'x'.$producte->getDescripcio();
 						$registreStockClub = new EntityStock($club, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_ENTRADA, $factura);
 						if ($stockProducte == null) $registreStockClub->setStock($unitats);
 						else $registreStockClub->setStock($stockProducte->getStock() + $unitats);
@@ -3350,7 +3396,10 @@ class BaseController extends Controller {
 			$detall->setDatamodificacio(new \DateTime());
 			
 		}
-
+		
+		// Gestionar stock
+		$this->registreComanda($comanda, $originalDetalls);
+		
 		if (count($detallsPerAnulacio) > 0) {
 		    $this->crearFacturaRebutAnulacio($comanda, $detallsPerAnulacio);
 		}

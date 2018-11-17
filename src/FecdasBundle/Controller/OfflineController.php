@@ -706,6 +706,7 @@ class OfflineController extends BaseController {
                 
         $federacio = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
         
+        $club = null;
         $html = '';
         $currentdni = '';
         
@@ -794,8 +795,10 @@ class OfflineController extends BaseController {
                             $persona->setAddrcomarca($municipi['comarca']);
                         }
                     } else {
-                        switch ($currentTitolFederat['cp']) {
+                        switch (strtoupper($currentTitolFederat['cp'])) {
+                            case 'AD200':
                             case 'AD300':
+                            case 'AD500':
                                 $persona->setAddrnacionalitat('AND');
                                 break;
                             case 'BH228':
@@ -807,9 +810,17 @@ class OfflineController extends BaseController {
                             case 'L5531':
                                 $persona->setAddrnacionalitat('FRA');
                                 break;
-                            case 'l5531':
-                                $persona->setAddrnacionalitat('FRA');
+                            case 'SE50S':
+                            case 'GH15':
+                                $persona->setAddrnacionalitat('GBR');
                                 break;
+                            case 'L8031':
+                                $persona->setAddrnacionalitat('LUX');
+                                break;
+                            case '2332P':
+                                $persona->setAddrnacionalitat('NLD');
+                                break;
+                                
                             default:
                                 throw new \Exception($id.'#ERROR. Persona estrangera ?: '.$currentTitolFederat['cp']);
                         }
@@ -863,19 +874,19 @@ class OfflineController extends BaseController {
     
     private function cercarPersonaDNI($dni) {
         // Cercar meta persona
-        $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dni.""));	// Consulta directament com text
+        $metapersona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dni.""));	// Consulta directament com text
         
-        if ($persona == null) {
+        if ($metapersona == null) {
             
             $dniLletra = $dni;
             if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
             
             if ($dni != $dniLletra) {
                 // Consulta amb lletra
-                $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dniLletra));
+                $metapersona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->findOneBy(array('dni' => $dniLletra));
             }
         }
-        return $persona;
+        return $metapersona;
     }
     
     private function cercarClubNOM($nom) {
@@ -955,9 +966,9 @@ class OfflineController extends BaseController {
 			try {
 	
 				// Cercar meta persona
-			    $persona = $this->cercarPersonaDNI($dni);
+			    $metapersona = $this->cercarPersonaDNI($dni);
 				
-				if ($persona == null) {
+			    if ($metapersona == null) {
 				    
 				    if (substr($dni."", 0, 1) == 'X' ||
 				        substr($dni."", 0, 1) == 'Y' ||
@@ -965,10 +976,10 @@ class OfflineController extends BaseController {
 				        // NIE empieza por X, Y o Z
 				        $dni = str_replace("-", "", $dni);
 				
-				        $persona = $this->cercarPersonaDNI($dni);
+				        $metapersona = $this->cercarPersonaDNI($dni);
 				    }
 				        
-				    if ($persona == null) throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
+				    if ($metapersona == null) throw new \Exception($id.'#ERROR. Persona no trobada '.$currentTitol['abreviatura'].': #'.$currentTitol['dni'].'#'.$currentTitol['federado']); //ERROR
 				}
 				
 				// Cercar títol (NO pot ser null i només pot trobar un) 
@@ -991,7 +1002,7 @@ class OfflineController extends BaseController {
 				} else {
 				    // Mirar si llicència tipus tècnic => club sense informar FECDAS
 				    // Validar Federació per a cursos Instructors  => Titols tipus 'TE'
-				    if (!$titol->esInstructor()) $clubhistoric = 'Sense informació del club';
+				    if (!$titol->esInstructor() && !$titol->esCompeticio()) $clubhistoric = 'Sense informació del club';
 				    else $club = $federacio;
 				}
 				
@@ -1025,8 +1036,11 @@ class OfflineController extends BaseController {
 					$curs = $cursos[ $num ];
 				}
 
+				if ($curs->getParticipantByMetaId($metapersona->getId()) != null) 
+				    throw new \Exception($id.'#WARN. Persona ja està dins aquest curs: '.$currentTitol['numcurso'].'-'.$currentTitol['federado']); //ERROR
+				
 				// Crear titulacions 
-				$titulacio = new EntityTitulacio($persona, $curs);
+				$titulacio = new EntityTitulacio($metapersona, $curs);
 				$titulacio->setNum($currentTitol['numtitulo']);
 				$titulacio->setDatasuperacio($datafins);
 				

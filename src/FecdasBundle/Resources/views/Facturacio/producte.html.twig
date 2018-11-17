@@ -90,17 +90,18 @@
 			</div>
 			<div class="col-md-2">
 			 	<div class="form-group">
+			 	    {% set strClass = '' %}
+					{% if producte.stockable == false %} {% set strClass = 'disabled' %} {% endif %}
 				 	<label>
 				 		<div class="checkbox-inline"><h4>{{ form_widget(form.stockable) }} stock</h4></div>
-					 </label>
+				 		{{ form_errors(form.stockable)  }}
+ 					</label>
 				 	<div id="formproducte-stock"  class="">
 				 		<div class="row">
 							 <div class="col-md-12">
 								<div class="form-group">
 									<div id="formproducte-minim"  class="input-group ">
 						  				<span class="input-group-addon">Límit</span>
-						  				{% set strClass = '' %}
-						  				{% if producte.limitnotifica == null %} {% set strClass = 'disabled' %} {% endif %}
 										{{ form_widget(form.limitnotifica, { 'attr': {'class': 'form-control form-control-center '~strClass } }) }}
 									</div>
 									{{ form_errors(form.limitnotifica)  }}
@@ -110,8 +111,6 @@
 								<div class="form-group">
 									<div id="formproducte-stock"  class="input-group ">
 						  				<span class="input-group-addon">Stock</span>
-						  				{% set strClass = '' %}
-						  				{% if producte.stock == null %} {% set strClass = 'disabled' %} {% endif %}
 										{{ form_widget(form.stock, { 'attr': {'class': 'form-control form-control-center '~strClass } }) }}
 									</div>{{ form_errors(form.stock)  }}
 								</div>
@@ -330,11 +329,12 @@
 			});
 
 
-			if ($("#producte_stockable").is(':checked')) {
+			/*if ($("#producte_stockable").is(':checked')) {
 				// En cas d'error
 				$('#producte_limitnotifica').removeClass('disabled');
 				$('#producte_limitnotifica').removeAttr('readonly');
 			}	
+
 			$("#producte_stockable").click(function(){
 
 				var checked = $(this).is(':checked');
@@ -353,7 +353,7 @@
 					$('#producte_limitnotifica').val("");
 					//$('#producte_stock').val("");				
 				};
-			});
+			});*/
 
 			$("#producte_transport").click(function(){
 				var checked = $(this).is(':checked');

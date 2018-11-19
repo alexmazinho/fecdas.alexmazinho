@@ -54,6 +54,13 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'mapped' 	=> false,
 					'data' 		=> ($preu == null?0:$preu->getId())
 			));
+			
+			$form->add('abreviatura', 'text', array(
+			        'required'  => true,
+			        'attr'      => array('maxlength' => '3'),
+			        'data' 		=> $producte->getAbreviatura(),
+			        'disabled' 	=> !$producte->esNou()
+			));
 				
 			// Selector anys
 			$form->add('anypreus', 'choice', array(
@@ -90,12 +97,14 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 			$form->add ('limitnotifica', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
+			        'data' 			=> $producte->getLimitnotifica(),
 					'disabled' 		=> !$producte->getStockable()
 			));
 			
 			$form->add ('pes', 'integer', array (
 					'required' 		=> false,
 					'scale' 		=> 0,
+			        'data' 			=> $producte->getPes(),
 					'attr'			=>	array('readonly' => $producte->getTransport() != true)
 			));
 			
@@ -206,11 +215,6 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 		
 		$builder->add('codi', 'text', array(
 				'required' => true,
-		));
-		
-		$builder->add('abreviatura', 'text', array(
-				'required' => true,
-				'attr' => array('maxlength' => '3'),
 		));
 		
 		$builder->add('descripcio', 'textarea', array(

@@ -2831,7 +2831,7 @@ class FacturacioController extends BaseController {
     			
     			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del producte ' .$form->getErrors(true, true));
     				
-    			if ($producte->getId() > 0)  $producte->setDatamodificacio(new \DateTime());
+    			if (!$producte->esNou())  $producte->setDatamodificacio(new \DateTime());
     				
     			/* NO ES VALIDA CODIS DIFERENTS, ara varis productes poden tenir mateix codi Agost 2016
                 $codiExistent = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneBy(array('codi' => $producte->getCodi()));
@@ -2870,10 +2870,10 @@ class FacturacioController extends BaseController {
     			}
     			
     			if ($producte->getStockable()) {
-    				if ($producte->getLimitnotifica() == null || $producte->getLimitnotifica() < 0) { 
-    					$producte->setLimitnotifica(0);
+                    if ($producte->getLimitnotifica() == "" || $producte->getLimitnotifica() == null) $producte->setLimitnotifica(0);
+    				if ($producte->getLimitnotifica() < 0) { 
     					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
-    					throw new \Exception('Cal indicar el límit de notificació ' );
+    					throw new \Exception('Cal indicar el límit de notificació' );
     				}
     				// Activat stockable
     				$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
@@ -2901,8 +2901,17 @@ class FacturacioController extends BaseController {
 				} else {
 					$producte->setPes(0);
 				}
+    			
+				if ($producte->esNou()) {
+    				$producteAbreviatura = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findBy(array('abreviatura' => $producte->getAbreviatura(), 'databaixa' => null));
     				
-    			$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
+    				if ($producteAbreviatura != null) {
+    				    $form->get('abreviatura')->addError(new FormError('Valor existent'));
+    				    throw new \Exception('Aquesta abreviatura ja s\'està fent servir' );
+    				}
+    				
+    				$producte->setAbreviatura(strtoupper($producte->getAbreviatura()));
+				}
     				
     			if ($iva == 0) $iva = null;
     				

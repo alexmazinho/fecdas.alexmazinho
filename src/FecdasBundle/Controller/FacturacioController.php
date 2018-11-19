@@ -35,7 +35,11 @@ class FacturacioController extends BaseController {
 		if (!$this->isCurrentAdmin()) 
 			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 		
-		$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+		$club = null;
+		$codi = $request->query->get('clubs', BaseController::CODI_FECDAS); // filtra club
+		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+			
+		//$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 		$idproducte = $request->query->get('cerca', 0);
 		$format = $request->query->get('format', 'html');
 		$vista = $request->query->get('view', 'M'); // Mensual
@@ -46,24 +50,26 @@ class FacturacioController extends BaseController {
 		
 		$page = $request->query->get('page', 1);
 		
+		//if ($vista != 'M' && $idproducte == 0) $this->get('session')->getFlashBag()->add('error-notice', 'Per veure el detall cal escollir un producte'); // EScollir detall sense producte
+		if ($idproducte > 0) $vista = "D";
+		
 		if ($vista == 'M' || $idproducte == 0) {
-			if ($vista != 'M') $this->get('session')->getFlashBag()->add('error-notice', 'Per veure el detall cal escollir un producte'); // EScollir detall sense producte
 			
 			$vista = 'M';
-			$stockAcumulat = $this->consultaStockAcumulat($idproducte, $desde, $fede);
+			$stockAcumulat = $this->consultaStockAcumulat($desde, $club);
 			
 			if ($format == 'csv') {
 				$this->logEntryAuth('CSV STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
 							
-				$header = array($stockAcumulat['header']['abreviatura']['text'], $stockAcumulat['header']['producte']['text'], $stockAcumulat['header']['inicial']['text'], $stockAcumulat['header']['import']['text']  );
+				$header = array($stockAcumulat['header']['abreviatura']['text'], $stockAcumulat['header']['producte']['text'], $stockAcumulat['header']['inicial']['text'] );
 				foreach ($stockAcumulat['header']['acumulats'] as $head) {
 					$current = $head['current']['text'];
 					$header[] = $head['entrades']['text'].' '.$current; 
-					$header[] = $head['importentrades']['text'].' '.$current;
+					//$header[] = $head['importentrades']['text'].' '.$current;
 					$header[] = $head['sortides']['text'].' '.$current;
-					$header[] = $head['importsortides']['text'].' '.$current;
+					//$header[] = $head['importsortides']['text'].' '.$current;
 					$header[] = $head['total']['text'].' '.$current;
-					$header[] = $head['importtotal']['text'].' '.$current;
+					//$header[] = $head['importtotal']['text'].' '.$current;
 				}
 				$header[] = $stockAcumulat['header']['stock']['text'];
 				
@@ -73,15 +79,15 @@ class FacturacioController extends BaseController {
 					$row['abreviatura'] = $acumulat['abreviatura'];
 					$row['producte'] = $acumulat['producte'];
 					$row['inicial'] = $acumulat['inicial'];
-					$row['import'] = number_format($acumulat['import'], 2, ',', '');
+					//$row['import'] = number_format($acumulat['import'], 2, ',', '');
 
 					foreach ($acumulat['acumulats'] as $acumulatPeriode) {
 						$row[] = $acumulatPeriode['entrades'];
-						$row[] = number_format($acumulatPeriode['importentrades'], 2, ',', '');
+						//$row[] = number_format($acumulatPeriode['importentrades'], 2, ',', '');
 						$row[] = $acumulatPeriode['sortides'];
-						$row[] = number_format($acumulatPeriode['importsortides'], 2, ',', '');
+						//$row[] = number_format($acumulatPeriode['importsortides'], 2, ',', '');
 						$row[] = $acumulatPeriode['total'];
-						$row[] = number_format($acumulatPeriode['importtotal'], 2, ',', '');
+						//$row[] = number_format($acumulatPeriode['importtotal'], 2, ',', '');
 					}
 					
 					if (count($stockAcumulat['header']['acumulats']) > count($acumulat['acumulats'])) {
@@ -98,35 +104,55 @@ class FacturacioController extends BaseController {
 				return $response;
 			}
 			
-			$this->logEntryAuth('CONSULTA STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
+			$paginator  = $this->get('knp_paginator');
+
+			$stockAcumulatPag = $paginator->paginate(
+			    $stockAcumulat['data'],
+			    $page,
+			    20/*limit per page*/
+			);
+			$stockAcumulat['data'] = $stockAcumulatPag;
 			
+			$this->logEntryAuth('CONSULTA STOCK ACUMULAT', ' producte: '.$idproducte.' desde '.$strDesde);
+			$idproducte = 0;
 			if ($request->isXmlHttpRequest()) {
 				return $this->render('FecdasBundle:Facturacio:stockacumulattaula.html.twig',
-					$this->getCommonRenderArrayOptions(array('stockacumulat' => $stockAcumulat)));
+				    $this->getCommonRenderArrayOptions(array('stockacumulat' => $stockAcumulat)));
 			}
 		} else {
-			$query = $this->consultaStock($idproducte, $fede, false, $desde);
+		    $query = $this->consultaStock($idproducte, $club, false, $desde);
+			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte);
+			$stockActual = $this->consultaStockClubPerProducteData($producte, $club);
 			
 			if ($format == 'csv') {
 			
 				$stock = $query->getResult();
 				
-				$header = array('id', 'dataregistre', 'comentaris', 'factura', 'producte', 'entrades', 'sortides', 'preu unitat', 'total', 'stock');
+				$header = array('id', 'dataregistre', 'comentaris', 'factura', 'curs', 'producte', 'preu unitat', 'entrades', 'sortides' );
 				
 				$data = array();
 				foreach ($stock as $registre) {
 					$row = array('id' => $registre->getId(), 'data' => $registre->getDataregistre()->format('d/m/Y'));
 					$row['comentaris'] = $registre->getComentaris(); 
 					$row['factura'] = $registre->getFactura() != null?$registre->getFactura()->getNumfactura():"";
+					$row['curs'] = $registre->getCurs() != null?$registre->getCurs()->getNumActa():"";
 					$row['producte'] = $registre->getProducte() != null?$registre->getProducte()->getDescripcio():"";
+					$row['preuunitat'] = number_format($registre->getPreuunitat(), 2, ',', '');
 					$row['entrades'] = ($registre->getTipus() == BaseController::REGISTRE_STOCK_ENTRADA?$registre->getUnitats():"");
 					$row['sortides'] = ($registre->getTipus() == BaseController::REGISTRE_STOCK_SORTIDA?$registre->getUnitats():"");
-					$row['preuunitat'] = number_format($registre->getPreuunitat(), 2, ',', '');
-					$row['total'] = number_format($registre->getUnitats()*$registre->getPreuunitat(), 2, ',', '');
-					$row['stock'] = $registre->getStock();
 
 					$data[] = $row;
 				}
+				
+				$row = array('id' => 0, 'data' => $this->getCurrentDate()->format('d/m/Y'));
+				$row['comentaris'] = 'Stock actual del producte';
+				$row['factura'] = "";
+				$row['curs'] = "";
+				$row['producte'] = $producte != null?$producte->getDescripcio():"";
+				$row['preuunitat'] = "";
+				$row['entrades'] = "";
+				$row['sortides'] = $stockActual;
+				$data[] = $row;
 				
 				$filename = "export_stock_detall_".$idproducte."_".$desde->format('Y-m-d')."_".date('Hms').".csv";
 				$response = $this->exportCSV($request, $header, $data, $filename);
@@ -141,12 +167,11 @@ class FacturacioController extends BaseController {
 				10/*limit per page*/
 			);
 			
-			
 			$this->logEntryAuth('CONSULTA STOCK DETALL', ' producte: '.$idproducte.' desde '.$strDesde);
 			
 			if ($request->isXmlHttpRequest()) {
 				return $this->render('FecdasBundle:Facturacio:stocktaula.html.twig',
-					$this->getCommonRenderArrayOptions(array('stock' => $stock)));
+				    $this->getCommonRenderArrayOptions(array('stock' => $stock, 'stockactual' => $stockActual)));
 			}
 		}
 		
@@ -160,7 +185,7 @@ class FacturacioController extends BaseController {
 										->andWhere('p.databaixa IS NULL')
 										->orderBy('p.descripcio', 'ASC');
 									},
-							'choice_label' => 'descripcio',
+							'choice_label' => 'AbreviaturaDescripcio',
 							'placeholder' => '',
 							'required'  => true,
 							'data' => ($idproducte>0?$this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte):"")))
@@ -178,17 +203,159 @@ class FacturacioController extends BaseController {
 				'data'			=> $vista
 		));
 		
+		/* Selecció club */
+		if ($this->isCurrentAdmin()) {
+		    $this->addClubsActiusForm($formBuilder, $club);  // clubs
+		}
+			
 		if ($vista == 'M' || $idproducte == 0) {
 			return $this->render('FecdasBundle:Facturacio:stockacumulat.html.twig',
 					$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
-							'stockacumulat' => $stockAcumulat)
+					       'stockacumulat' => $stockAcumulat)
 							));
 		
 		}
 		return $this->render('FecdasBundle:Facturacio:stock.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
-						'stock' => $stock)
+				    'stock' => $stock, 'stockactual' => $stockActual)
 						));
+	}
+	
+	private function consultaStockAcumulat($desde, $club) {
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $codi = $club != null?$club->getCodi():'';
+	    
+	    // Consultar saldos entre dates acumulats per mes per a l'exercici en curs
+	    $strQuery  = " SELECT s.tipus, s.producte, p.abreviatura, p.descripcio, YEAR(s.dataregistre) as anyregistre, MONTH(s.dataregistre) as mesregistre, ";
+	    $strQuery .= " SUM(s.unitats) as total, SUM(s.unitats * s.preuunitat) as importtotal ";
+	    $strQuery .= " FROM m_stock s RIGHT OUTER JOIN m_productes p ON s.producte = p.id ";
+	    $strQuery .= " WHERE s.databaixa IS NULL ";
+	    $strQuery .= " AND s.club = '".$codi."'";
+	    $strQuery .= " AND s.dataregistre >= '".$desde->format('Y-m-d')."'";
+	    $strQuery .= " GROUP BY s.tipus, s.producte, p.abreviatura, p.descripcio, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
+	    $strQuery .= " ORDER BY p.abreviatura, p.descripcio, s.tipus, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
+	    
+	    $stmt = $em->getConnection()->prepare($strQuery);
+	    $stmt->execute();
+	    $acumulats = $stmt->fetchAll();
+	    
+	    // $acumulats => 'codi','romanent', 'exercici', 'nom', 'anyregistre', 'mesregistre', 'variacio'
+	    //					Inicial 	Gener						Febrer		 				Març ... 	 Stock
+	    //								IN  €  OUT 	€	TOTAL  €	IN  €  OUT 	€	TOTAL  €
+	    // Producte 1		10
+	    // Producte 2
+	    
+	    $formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
+	    $formatter->setPattern('MMMM yyyy');
+	    
+	    $acumulatsHeader = array();
+	    // Init grid
+	    $current = clone $desde; 
+	    
+	    $acumulatsCols = array();
+	    while ($current->format('Ym') <= $this->getCurrentDate()->format('Ym')) {
+	        $currentAnyMesKey = $current->format('Y').'-'.$current->format('n');
+	        $acumulatsCols[] = $currentAnyMesKey;
+	        $dataux = \DateTime::createFromFormat('Y-n-j', $currentAnyMesKey . "-1");
+	        
+	        $acumulatsHeader[$currentAnyMesKey] = array(
+	            'current' => array('text' => ucfirst($formatter->format($dataux)), 'class' => 'current'),
+	            'entrades' => array('text' => 'Entra', 'class' => 'entrades'),
+	            'sortides' => array('text' => 'Surt', 'class' => 'sortides'),
+	            'total' => array('text' => 'Total', 'class' => 'total'),
+	        );
+	        
+	        $current->add(new \DateInterval('P1M')); // Add 1 Month
+	    }
+	    
+	    $stockArray = array(
+	        'header' => array(	'abreviatura' 	=> array('text' => 'Abr.', 'class' => 'abreviatura'),
+	            'producte' 		=> array('text' => 'Producte', 'class' => 'producte'),
+	            'inicial' 		=> array('text' => 'Anterior', 'class' => 'inicial'),
+	            //'import' 		=> array('text' => 'Import inicial', 'class' => 'import'),
+	            'acumulats'		=> $acumulatsHeader,
+	            'stock' 		=> array('text' => 'Stock', 'class' => 'stock')),
+	        'data' => array()
+	    );
+	    
+	    $producteAnterior = '';
+	    foreach ($acumulats as $acumulatMensual) {
+	        $producteCurrent = $acumulatMensual['producte'];
+	        
+	        if ($producteAnterior != $producteCurrent) {
+	            if ($producteAnterior != '') {
+	                $stock = $stockArray['data'][$producteAnterior]['inicial'];
+	                foreach ($stockArray['data'][$producteAnterior]['acumulats'] as &$acumulat) {
+	                    $stock += $acumulat['total'];
+	                    $acumulat['total'] = $stock;
+	                }
+	                $stockArray['data'][$producteAnterior]['stock'] = $stock;
+	            }
+	            
+	            $producteAnterior = $producteCurrent;
+	            
+	            $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($producteCurrent);
+	            
+	            $fins = clone $desde; 
+	            $fins->sub(new \DateInterval('P1D')); // Sub 1
+	            
+	            $stockInicial = $this->consultaStockClubPerProducteData($producte, $club, $fins);
+	            
+	            // Init grid
+	            $current = clone $desde; 
+	            $acumulats = array();
+	            
+	            foreach ($acumulatsCols as $col) $acumulats[$col] = array('entrades' => 0, 'sortides' => 0, 'total' => 0);
+	            
+	            // Primer resgistre saldo inici exercici
+	            $stockArray['data'][$producteCurrent] = array(
+	                'abreviatura'	=> $acumulatMensual['abreviatura'],
+	                'producte'		=> $acumulatMensual['descripcio'],
+	                'inicial'		=> $stockInicial,
+	                'acumulats'		=> $acumulats,
+	                'stock'			=> $stockInicial,
+	            );
+	        }
+	        
+	        // Mensual
+	        
+	        if ($acumulatMensual['anyregistre'] > $desde->format('Y') ||
+	            ($acumulatMensual['anyregistre'] == $desde->format('Y') && $acumulatMensual['mesregistre'] >= $desde->format('n'))) {
+
+	            $currentAnyMesKey = $acumulatMensual['anyregistre'].'-'.$acumulatMensual['mesregistre'];
+	            $dataux = \DateTime::createFromFormat('Y-n-j', $currentAnyMesKey . "-1");
+	                
+	            $this->acumularStock($currentAnyMesKey, ucfirst($formatter->format($dataux)), $stockArray, $producteCurrent, $acumulatMensual);
+	        }
+	    }
+	    if ($producteAnterior != '') {
+	        $stock = $stockArray['data'][$producteAnterior]['inicial'];
+	        foreach ($stockArray['data'][$producteAnterior]['acumulats'] as &$acumulat) {
+	            $stock += $acumulat['total'];
+	            $acumulat['total'] = $stock;
+	        }
+	        $stockArray['data'][$producteAnterior]['stock'] = $stock;
+	    }
+	    
+	    $stockArray['header']['stock'] = array('text' => 'Stock', 'class' => 'stock');
+	    
+	    return $stockArray;
+	    
+	}
+	
+	private function acumularStock($currentAnyMesKey, $currentText, &$stockArray, $producteCurrent, $acumulatMensual){
+	    /*if (!isset($stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey])) {
+	        $stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey] = array('entrades' => 0, 'importentrades' => 0, 'sortides' => 0, 'importsortides' => 0, 'total' => 0, 'importtotal' => 0);
+	    }*/
+	    
+	    if ($acumulatMensual['tipus'] == BaseController::REGISTRE_STOCK_ENTRADA) {
+	        $stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['entrades'] += $acumulatMensual['total'];
+	        $stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] += $acumulatMensual['total'];
+	    } else {
+	        $stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['sortides'] += $acumulatMensual['total'];
+	        $stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] -= $acumulatMensual['total'];
+	    }
 	}
 	
 	public function registrestockAction(Request $request) {
@@ -206,11 +373,15 @@ class FacturacioController extends BaseController {
 		
     	$registreStock = null;
 		$producteId = 0;
+		$club = null;
+		$codi = BaseController::CODI_FECDAS;
 		try {
 	    	if ($request->getMethod() != 'POST') {
 	    		$id = $request->query->get('id', 0);
 				$producteId = $request->query->get('producte', 0);
 				$action = $request->query->get('action', '');
+				$codi = $request->query->get('club', BaseController::CODI_FECDAS); // filtra club
+				
 				if ($action == 'remove') { 
 				 
 					$registreStock = $this->getDoctrine()->getRepository('FecdasBundle:EntityStock')->find($id);
@@ -222,13 +393,11 @@ class FacturacioController extends BaseController {
 					
 					$registreStock->setDatabaixa(new \DateTime('now'));
 
-					$this->recalcularStockProducte($registreStock);
-				
 					$em->flush(); 
 										
 					$this->logEntryAuth('BAIXA STOCK OK', ' Registre '.$id);
 					
-					return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId(), 'view' => 'D')));
+					return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId(), 'clubs' => $codi, 'view' => 'D')));
 				}
 				
 				$this->logEntryAuth('PRODUCTE '+$action+' FORM', 'registre : ' . $id);
@@ -240,32 +409,35 @@ class FacturacioController extends BaseController {
 	    		$data = $request->request->get('registrestock');
 				
 	    		$id = (isset($data['id'])?$data['id']:0);
+	    		$codi = (isset($data['club'])?$data['club']:BaseController::CODI_FECDAS);
 	    	}
-   	
-	    	if ($id > 0) $registreStock = $this->getDoctrine()->getRepository('FecdasBundle:EntityStock')->find($id);
-	    		
+
+	    	if ($id > 0) {
+	    	    $registreStock = $this->getDoctrine()->getRepository('FecdasBundle:EntityStock')->find($id);
+	    	    $club = $registreStock->getClub();
+	    	} else {
+	    	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+	    	}
 	    	if ($registreStock == null) {
 	    		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($producteId);
-				$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
-				$registreStock = new EntityStock($fede, $producte);
+				$registreStock = new EntityStock($club, $producte);
 
 	    		$em->persist($registreStock);
-	    	}
-		
+	    	} 
 			$unitatsOriginal =  $registreStock->getUnitats();
 	    	$form = $this->createForm(new FormStock(), $registreStock);
     	
     		if ($request->getMethod() == 'POST') {
     			$form->handleRequest($request);
-    			
+
     			if (!$form->isValid()) throw new \Exception('Dades incorrectes, cal revisar les dades del registre ' .$form->getErrors(true, true)); 
 
 				if ($registreStock->getProducte() == null || $registreStock->getProducte() == '') {
     				throw new \Exception('Cal indicar algun producte' );
     			}
 					
-    			if ($registreStock->getPreuunitat() <= 0) {
-    				throw new \Exception('Cal indicar el preu per unitat > 0' );
+    			if ($registreStock->getPreuunitat() < 0) {
+    				throw new \Exception('Cal indicar el preu per unitat >= 0' );
     			}
     				
     			if ($registreStock->getDataregistre() == null || $registreStock->getDataregistre() == '') {
@@ -278,14 +450,12 @@ class FacturacioController extends BaseController {
 
 				if ($registreStock->getId() == 0) $registreStock->setComentaris('Entrada stock '.$registreStock->getUnitats().'x'.$registreStock->getProducte()->getDescripcio().". ".$registreStock->getComentaris());
 				else if ($unitatsOriginal != $registreStock->getUnitats()) $registreStock->setComentaris(str_replace($unitatsOriginal.'x', $registreStock->getUnitats().'x', $registreStock->getComentaris())); // Canvi unitats, modificar comentaris
-				
-				$this->recalcularStockProducte($registreStock);
-					
-    			$em->flush();
+
+				$em->flush();
     			
-    			$this->logEntryAuth('PRODUCTE SUBMIT',	'registre : ' . $registreStock->getId().' '.$registreStock->getProducte()->getDescripcio().' '.$registreStock->getTipus().' '.$registreStock->getUnitats()); 
+    			$this->logEntryAuth('PRODUCTE SUBMIT',	'registre : ' . $registreStock->getId().' '.$registreStock->getClub().' '.$registreStock->getProducte()->getDescripcio().' '.$registreStock->getTipus().' '.$registreStock->getUnitats()); 
     			 
-				return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId(), 'view' => 'D')));
+    			return $this->redirect($this->generateUrl('FecdasBundle_stock', array('cerca' => $registreStock->getProducte()->getId(), 'clubs' => $codi, 'view' => 'D')));
    			} 
 
 		} catch (\Exception $e) {
@@ -299,115 +469,11 @@ class FacturacioController extends BaseController {
     			$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'registre' => $registreStock))); 
 	}		
 		
-		
-	public function calcularStockProducteFins($producte, $club = null, $fins = null, $id = 0) {
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		$codiclub = ($club!=null?$club->getCodi():BaseController::CODI_FECDAS);
-		
-		// Consultar últim stock abans de $desde
-		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
-		$strQuery .= " WHERE 1 = 1 ";
-		$strQuery .= " AND s.producte = :idproducte ";
-		$strQuery .= " AND s.club = :codiclub ";
-		$strQuery .= " AND s.databaixa IS NULL ";
-		
-		if ($fins != null) {
-			$strQuery .= " AND (s.dataregistre < :fins ";
-			if ($id != 0) $strQuery .= " OR (s.dataregistre = :fins AND s.id < :id) "; // Anteriors a registre existent
-			else $strQuery .= " OR (s.dataregistre = :fins) ";	// Nou registre sempre id major
-			$strQuery .= " ) ";
-		}
-		
-		$strQuery .= " ORDER BY s.dataregistre DESC, s.id DESC ";
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('idproducte', $producte->getId());
-		$query->setParameter('codiclub', $codiclub);
-		if ($fins != null) {
-			$query->setParameter('fins', $fins->format('Y-m-d'));
-			if ($id != 0) $query->setParameter('id', $id);
-		}
-		$query->setMaxResults( 1 );
-		
-		$ultimRegistre = $query->getResult();
-
-		$stock = 0; // Primer registre, assumir stock 0
-		if ($ultimRegistre == null || count($ultimRegistre) == 0) {
-			/*	
-			// No es pot esborrar el primer registre d'un producte (stock inicial)
-			if ($registreStock->anulat()) throw new \Exception('No es pot esborrar el primer registre del producte' );
-			else throw new \Exception('No es poden afegir registres abans del primer registre que conté l\'stock inicial' );
-			 */ 
-		} else {
-			$ultimRegistre = $ultimRegistre[0];
-			$stock = $ultimRegistre->getStock();
-		}
-		
-		return $stock;
-	}	
-		
-	public function recalcularStockProducte($registreStock) {
-		
-		if ($registreStock == null) throw new \Exception('Registre incorrecte' );
-
-		$producte = $registreStock->getProducte();
-		$club = $registreStock->getClub();
-		$desde = $registreStock->getDataregistre(); 
-		
-		$em = $this->getDoctrine()->getManager();
-
-		$stock = $this->calcularStockProducteFins($producte, $club, $desde, $registreStock->getId());
-
-		// Actualitzar següents stock registres posteriors o iguals a $desde 
-		$strQuery  = " SELECT s FROM FecdasBundle\Entity\EntityStock s ";
-		$strQuery .= " WHERE 1 = 1 ";
-		$strQuery .= " AND s.producte = :idproducte ";
-		$strQuery .= " AND s.club = :codiclub ";
-		$strQuery .= " AND s.databaixa IS NULL ";
-		$strQuery .= " AND (s.dataregistre > :desde ";
-		if ($registreStock->getId() != 0) $strQuery .= " OR (s.dataregistre = :desde AND s.id >= :id) ";
-		$strQuery .= " ) ";
-		$strQuery .= " ORDER BY s.dataregistre, s.id ";
-		$query = $em->createQuery($strQuery);
-		$query->setParameter('desde', $desde->format('Y-m-d'));
-		$query->setParameter('idproducte', $producte->getId());
-		$query->setParameter('codiclub', $club->getCodi());
-		if ($registreStock->getId() != 0) $query->setParameter('id', $registreStock->getId());
-		
-		$registres = $query->getResult();
-		
-		if ($registreStock->getId() == 0) {
-			// Altes
-			if ($registreStock->esEntrada()) $stock += $registreStock->getUnitats();
-			else $stock -= $registreStock->getUnitats();
-			$registreStock->setStock($stock);
-		}
-
-		foreach ($registres as $registre) {
-			
-			if ($registreStock->getId() == $registre->getId() && $registreStock->anulat()) {
-				// $registre segur que no està anulat
-				// Baixes => no tenir en compte
-				
-			} else {	
-				if ($registre->esEntrada()) $stock += $registre->getUnitats();
-				else $stock -= $registre->getUnitats();
-				
-				$registre->setStock($stock);
-			}			
-		}
-		
-		if ($club->esFederacio()) $producte->setStock($stock);  // Si és la federació actualitza stock de productes	
-	}
-	
 	public function stockclubAction(Request $request) {
 		// Llista de productes i edició massiva
 
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-
-		$idproducte = $request->query->get('cerca', 0);
 
 		$sms = '';
 		$club = null;
@@ -418,7 +484,11 @@ class FacturacioController extends BaseController {
 			$club = $this->getCurrentClub();
 		}
 		
-		$stockclub = $this->consultaStockPerProducte($club, $idproducte);
+		$idproducte = $request->query->get('cerca', 0);
+		
+		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte);
+		
+		$stockclub = $this->consultaStockClub($club, $producte);
 			
 		$this->logEntryAuth('KITS CLUB', $request->getMethod().' producte: '.$idproducte.' club '.$club->getCodi().' '.$club->getNom());
 		
@@ -436,26 +506,26 @@ class FacturacioController extends BaseController {
 					
 					$current = new \DateTime('today');
 					$sms = ' club '.$club->getCodi().' '.$club->getNom();
-					foreach ($form['stocks'] as $id => $stock) {
+					foreach ($form['stocks'] as $id => $stockform) {
 						
 						if (!isset($stockclub[$id]) ) throw new \Exception("Kit no trobat ".$id);
 						
-						$producte = $stockclub[$id]['kit'];
-						$unitats = $stock - $stockclub[$id]['stock'];
+						$kit = $stockclub[$id]['kit'];
+						$unitats = $stockform - $stockclub[$id]['stock'];
 						
 						if ($unitats != 0) {
 							// Actualització stock
-							$sms .= '. '.$id.' canvi stock '.$stockclub[$id]['stock'].' => '.$stock;
+						    $sms .= '. '.$id.' canvi stock '.$stockclub[$id]['stock'].' => '.$stockform;
 							$tipus = $unitats > 0?BaseController::REGISTRE_STOCK_ENTRADA:BaseController::REGISTRE_STOCK_SORTIDA;
 							
-							$comentaris = 'Regulació stock '.$unitats.'x'.$producte->getDescripcio();
+							$comentaris = 'Regulació stock '.$unitats.'x'.$kit->getDescripcio();
 							
-							$registreStock = new EntityStock($club, $producte, $unitats, $comentaris, $current, $tipus); // Manual, sense factura
-							$registreStock->setStock($stock);
+							$registreStock = new EntityStock($club, $kit, $unitats, $comentaris, $current, $tipus); // Manual, sense factura
+							//$registreStock->setStock($stockform);
 							$em->persist($registreStock);
 							// No cal recalcular saldo perquè sempre s'afegeixen al final 	
 							
-							$stockclub[$id]['stock'] = $stock;
+							$stockclub[$id]['stock'] = $stockform;
 						}	
 					}
 				}	
@@ -494,7 +564,7 @@ class FacturacioController extends BaseController {
 		foreach ($stockclub as $stock) {
 			$producte = $stock['kit'];
 			if ($this->isCurrentAdmin()) $dades[$producte->getId()] = $stock['stock'];	// Administradors gestió stock
-			else  $dades[$producte->getId()] = 0;								// Clubs, indicar unitats per fer nova comanda
+			else  $dades[$producte->getId()] = 0;								        // Clubs, indicar unitats per fer nova comanda
 		}
 			
 		$formBuilder->add('stocks', 'collection', array(
@@ -518,6 +588,45 @@ class FacturacioController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'stockclub' => $stockclub)
 						));
+	}
+	
+	private function consultaStockClub($club, $producte = 0) {
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $productes = array();
+	    if ($producte != null) $productes[] = $producte;
+	    else $productes = $em->getRepository('FecdasBundle:EntityProducte')->findBy(array('tipus' => BaseController::TIPUS_PRODUCTE_KITS, 'stockable' => true,
+	        'databaixa' => null), array('descripcio' => 'ASC'));
+	    
+	    $stockClub = array();
+	    foreach ($productes as $prod) {
+	        $stockClub[$prod->getId()] = array(
+	            'kit' => $prod,
+	            'stock'	=> $this->consultaStockClubPerProducteData($prod, $club),
+	            'titols' => array());
+	    }
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    $strQuery  = " SELECT t FROM FecdasBundle\Entity\EntityTitol t ";
+	    $strQuery .= " WHERE t.kit IS NOT NULL ";
+	    $strQuery .= " ORDER BY t.titol ";
+	    $query = $em->createQuery($strQuery);
+	    
+	    $titols = $query->getResult();
+	    
+	    foreach ($titols as $titol) {     // Obtenir titols pels productes
+	        if  ($titol->esCMAS() && $titol->getKit() != null &&
+	            ($club->esFederacio() || (!$club->esFederacio() && !$titol->esInstructor()))) {
+	                
+	                $kit = $titol->getKit();
+	                
+	                if (isset($stockClub[$kit->getId()])) {
+	                    $stockClub[$kit->getId()]['titols'][] = $titol;
+	                }
+	            }
+	    }
+	    
+	    return $stockClub;
 	}
 	
 		
@@ -1915,7 +2024,7 @@ class FacturacioController extends BaseController {
 	    if (isset($saldosComptables[$club->getCodi()])) $saldoComptableClub = $saldosComptables[$club->getCodi()];
 	    
 	    $dataanterior = clone $datadesde;
-	    $dataanterior->sub(new \DateInterval('P1D')); // Add 1
+	    $dataanterior->sub(new \DateInterval('P1D')); // Sub 1
 	    
 	    // Apunt previ a l'inici de la consulta
 	    $apunts[] = array(
@@ -2048,9 +2157,15 @@ class FacturacioController extends BaseController {
 			$productes = $query->getResult();
 		}
 		
+		$stock = array();
+		$fede = null;
+		if ($this->isCurrentAdmin()) $fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 		foreach ($productes as $k => $producte) {
 			// No mostrar preus a 0
-			if ($producte->getCurrentPreu() <= 0) unset($productes[$k]);  	
+			if ($producte->getCurrentPreu() <= 0) unset($productes[$k]);
+			else {
+			    if ($this->isCurrentAdmin()) $stock[$producte->getId()] = $this->consultaStockClubPerProducteData($producte, $fede);
+			}
 		}
 			
 		$formBuilder = $this->createFormBuilder()
@@ -2069,6 +2184,7 @@ class FacturacioController extends BaseController {
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
 						'title' => BaseController::getTipusProducte($tipus),
 						'productes' => $productes,  
+				        'stock' => $stock,
 						'tipus' => $tipus,
 						'compte' => $compte,
 						'sortparams' => array('sort' => $sort,'direction' => $direction),
@@ -2602,6 +2718,12 @@ class FacturacioController extends BaseController {
 			10/*limit per page*/
 		);
 			
+		$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+		$stock = array();
+		foreach ($productes as $producte) {
+		    $stock[$producte->getId()] = $this->consultaStockClubPerProducteData($producte, $fede);
+		}
+		
 		$formBuilder = $this->createFormBuilder()
 			->add('cerca', 'hidden', array(
 				'data' => ($idproducte>0?$idproducte:"")
@@ -2629,7 +2751,7 @@ class FacturacioController extends BaseController {
 			
 		return $this->render('FecdasBundle:Facturacio:productes.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $formBuilder->getForm()->createView(), 
-						'productes' => $productes,  'sortparams' => array('sort' => $sort,'direction' => $direction))
+				    'productes' => $productes,  'stock' => $stock, 'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
 	
@@ -2648,7 +2770,7 @@ class FacturacioController extends BaseController {
     	
     	$producte = null;
     	$anypreu = date('y');
-		//$stockOriginal = 0;
+    	$tipusOriginal = BaseController::TIPUS_PRODUCTE_KITS;
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
     		$anypreu = $request->query->get('anypreu', date('y'));
@@ -2682,10 +2804,13 @@ class FacturacioController extends BaseController {
     			$producte = new EntityProducte();
     			$em->persist($producte);
     		}
-			
-			//$stockOriginal = $producte->getStock();
     	}	
-    	$form = $this->createForm(new FormProducte($anypreu), $producte);
+    	
+    	if ($producte != null && !$producte->esNou()) $tipusOriginal = $producte->getTipus();
+    	$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+    	$stock = $this->consultaStockClubPerProducteData($producte, $fede);
+
+    	$form = $this->createForm(new FormProducte($anypreu, $stock), $producte);
     	
     	if ($request->getMethod() == 'POST') {
     		try {
@@ -2726,6 +2851,14 @@ class FacturacioController extends BaseController {
     				throw new \Exception('El mínim d\'unitats d\'una comanda és incorrecte ' );
     			}
     			
+    			// No es permeten canvis producte stockable <--> no stockable
+    			if ((EntityProducte::esTipusStockable($tipusOriginal) && !$producte->esStockable()) ||
+    			    (!EntityProducte::esTipusStockable($tipusOriginal) && $producte->esStockable())) {
+    			    $form->get('tipus')->addError(new FormError('Canvi no permés'));
+    			    if ($producte->esStockable()) throw new \Exception('No es pot canviar a un tipus de producte que gestiona stock' );
+    			    throw new \Exception('No es pot canviar a un tipus de producte que NO gestiona stock' );
+    			}
+    			    
     			if ($producte->esStockable() && !$producte->getStockable()) {
     			    $form->get('stockable')->addError(new FormError('Valor incorrecte'));
     			    throw new \Exception('El tipus de producte gestiona stock' );
@@ -2742,28 +2875,22 @@ class FacturacioController extends BaseController {
     					$form->get('limitnotifica')->addError(new FormError('Valor incorrecte'));
     					throw new \Exception('Cal indicar el límit de notificació ' );
     				}
-    					
-    				if ($producte->getStock() == null || $producte->getStock() < 0) {
-    					// Activat stockable
-						$stock = $this->calcularStockProducteFins($producte);  // Federació
-						$producte->setStock($stock);
-
-						$registres = null;		
-						$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
-						if ($producte->getId() != 0) {
-							// Si no existeix stock pel producte es crea.   
-							$query = $this->consultaStock($producte->getId(), $fede, false);
-							$registres = $query->getResult();
-						}
-						if ($producte->getId() == 0 || $registres == null || count($registres) == 0) {
-							// => Crear producte stockable afegir registre stock
-							$registreStock = new EntityStock($fede, $producte, $producte->getStock(), 'Registre inicial stock');
-							$em->persist($registreStock);
-    					}
-					}					
+    				// Activat stockable
+    				$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+					$registres = null;		
+					if ($producte->getId() != 0) {
+						// Si no existeix stock pel producte es crea.   
+						$query = $this->consultaStock($producte->getId(), $fede, false);
+						$registres = $query->getResult();
+					}
+					if ($producte->getId() == 0 || $registres == null || count($registres) == 0) {
+						// => Crear producte stockable afegir registre stock
+					    $registreStock = new EntityStock($fede, $producte, 0, 'Registre inicial stock');
+						$em->persist($registreStock);
+    				}
+										
     			} else {
     				$producte->setLimitnotifica(null);
-					$producte->setStock(null);
     			}
     				
 				if ($producte->getTransport() == true) {
@@ -2794,10 +2921,10 @@ class FacturacioController extends BaseController {
 					$activat = $form->get('activat')->getData();
 					if ($producte->getCategoria() != null && 
 						$producte->getCategoria()->getTipusparte() != null) {
-							$producte->getCategoria()->getTipusparte()->setActiu($activat);
-						}
+							
+						$producte->getCategoria()->getTipusparte()->setActiu($activat);
+					}
 				}
-
 
     			$em->flush();
     			 
@@ -3057,197 +3184,6 @@ class FacturacioController extends BaseController {
 		
 		return $response;
 	}
-	
-	
-	
-	private function consultaStockPerProducte($club, $idproducte = 0) {
-		$em = $this->getDoctrine()->getManager();
-			
-		$codi = $club != null?$club->getCodi():'';
-		
-		if ($idproducte > 0) $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'producte' => $idproducte, 'databaixa' => null, 
-																								array('dataregistre' => 'DESC', 'id' => 'DESC')));
-		else $stockclub = $em->getRepository('FecdasBundle:EntityStock')->findBy(array('club' => $codi, 'databaixa' => null), 
-																				array('dataregistre' => 'DESC', 'id' => 'DESC'));
-		
-		$stockProductesClub = array(); // Obtenir productes amb stock
-		$anterior = null;
-		foreach ($stockclub as $registrestock) {
-			if ($anterior == null || $anterior !== $registrestock->getProducte()) {
-				$producte = $registrestock->getProducte();
-				$stockProductesClub[$producte->getId()] = $registrestock->getStock(); 
-				$anterior = $producte;
-			}
-		}
-		
-		if ($idproducte > 0) $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('kit' => $idproducte, 'curs' => true));
-		else $titols = $em->getRepository('FecdasBundle:EntityTitol')->findBy(array('curs' => true));
-		
-		$titolsProductes = array(); // Obtenir titols pels productes
-		foreach ($titols as $titol) {
-			if ($titol->esCMAS() && $titol->getKit() != null &&
-				($club->esFederacio() || (!$club->esFederacio() && !$titol->esInstructor()))) {
-				$producte = $titol->getKit();
-				$titolsProductes[$producte->getId()] = $titol; 
-			}
-		}
-		
-		
-		if ($idproducte > 0) {
-			
-			$producte = $em->getRepository('FecdasBundle:EntityProducte')->find($idproducte);
-			
-			$stock = array( $producte->getId() =>
-							 array('kit' 	=> $producte,
-						 			'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
-									'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0));
-			return $stock;
-		}
-		
-		$productes = $em->getRepository('FecdasBundle:EntityProducte')->findBy(array('tipus' => BaseController::TIPUS_PRODUCTE_KITS, 'stockable' => true, 'databaixa' => null),
-																				array('descripcio' => 'ASC'));
-		$stock = array();		
-		foreach ($productes as $producte) {
-			$stock[$producte->getId()] = array('kit' => $producte,
-											 'stock'	=> isset($stockProductesClub[$producte->getId()])?$stockProductesClub[$producte->getId()]:0,
-											 'titol' 	=> isset($titolsProductes[$producte->getId()])?$titolsProductes[$producte->getId()]:0);
-		}
-		
-		return $stock;
-	}
-	
-	
-	protected function consultaStockAcumulat($idproducte, $desde, $club) {
-		$em = $this->getDoctrine()->getManager();
-	
-		$codi = $club != null?$club->getCodi():'';
-	
-		// Consultar saldos entre dates acumulats per mes per a l'exercici en curs
-		$strQuery  = " SELECT s.tipus, s.producte, p.abreviatura, p.descripcio, p.stock, YEAR(s.dataregistre) as anyregistre, MONTH(s.dataregistre) as mesregistre, ";
-		$strQuery .= " SUM(s.unitats) as total, SUM(s.unitats * s.preuunitat) as importtotal ";
-		$strQuery .= " FROM m_stock s INNER JOIN m_productes p ON s.producte = p.id ";
-		$strQuery .= " WHERE s.databaixa IS NULL ";
-		$strQuery .= " AND s.club = '".$codi."'";
-		$strQuery .= " GROUP BY s.tipus, s.producte, p.abreviatura, p.descripcio, p.stock, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
-		$strQuery .= " ORDER BY p.descripcio, s.tipus, YEAR(s.dataregistre), MONTH(s.dataregistre) ";
-	    
-	    $stmt = $em->getConnection()->prepare($strQuery);
-	    $stmt->execute();
-    	$acumulats = $stmt->fetchAll();
-		
-		// $acumulats => 'codi','romanent', 'exercici', 'nom', 'anyregistre', 'mesregistre', 'variacio'
-		//					Inicial 	Gener						Febrer		 				Març ... 	 Stock
-		//								IN  €  OUT 	€	TOTAL  €	IN  €  OUT 	€	TOTAL  €
-		// Producte 1		10			
-		// Producte 2
-
-		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
-		$formatter->setPattern('MMMM yyyy');
-		
-		$stockArray = array(
-			'header' => array(	'abreviatura' 	=> array('text' => 'Abr.', 'class' => 'abreviatura'),
-								'producte' 		=> array('text' => 'Producte', 'class' => 'producte'),
-								'inicial' 		=> array('text' => 'Inicial', 'class' => 'inicial'),
-								'import' 		=> array('text' => 'Import inicial', 'class' => 'import'),
-								'acumulats'		=> array(),
-								'stock' 		=> array('text' => 'Stock', 'class' => 'stock')),
-			'data' => array() 
-		);
-		
-		$producteAnterior = '';
-		foreach ($acumulats as $acumulatMensual) {
-			$producteCurrent = $acumulatMensual['producte'];
-				
-			if ($producteAnterior != $producteCurrent) {
-				$registreInicial = $this->consultaStockInicialProducte($producteCurrent, $club);
-				$stockInicial = ($registreInicial!=null?$registreInicial->getStock():0);
-				
-				$inicialDescomptat = false; // L'stock inicial cal descomptar-lo del acumulat del mes corresponent
-				
-				// Primer resgistre saldo inici exercici
-				$stockArray['data'][$producteCurrent] = array(
-					'abreviatura'	=> $acumulatMensual['abreviatura'],
-					'producte'		=> $acumulatMensual['descripcio'],
-					'inicial'		=> $stockInicial,
-					'import'		=> $stockInicial*$registreInicial->getPreuunitat(),
-					'acumulats'		=> array(),
-					'stock'			=> $acumulatMensual['stock'],
-				);
-			}
-				
-		   	// Mensual
-		   	
-			if ($acumulatMensual['anyregistre'] < $desde->format('Y') ||
-				($acumulatMensual['anyregistre'] == $desde->format('Y') && $acumulatMensual['mesregistre'] < $desde->format('n'))) {
-					
-				// Registre anterior inici consulta. Acumula i Continua
-				$currentAnyMesKey = 'previ';	
-				
-				$inicialDescomptat = $this->acumularStock($currentAnyMesKey, $currentAnyMesKey, $stockArray, $producteCurrent, $acumulatMensual, $inicialDescomptat, $registreInicial);	
-			} else {
-				// Registre mes+any acumulat
-
-				$currentAnyMesKey = $acumulatMensual['anyregistre'].'-'.$acumulatMensual['mesregistre'];
-				
-				$dataux = \DateTime::createFromFormat('Y-n-j', $currentAnyMesKey . "-1");
-				
-				$inicialDescomptat = $this->acumularStock($currentAnyMesKey, ucfirst($formatter->format($dataux)), $stockArray, $producteCurrent, $acumulatMensual, $inicialDescomptat, $registreInicial);
-			}
-
-			$producteAnterior = $producteCurrent;
-		}
-		
-		$stockArray['header']['stock'] = array('text' => 'Stock', 'class' => 'stock');
-		
-		return $stockArray;
-		
-	}
-	
-	private function acumularStock($currentAnyMesKey, $currentText, &$stockArray, $producteCurrent, $acumulatMensual, $inicialDescomptat, $registreInicial){
-		if (!isset($stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey])) {
-				$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey] = array('entrades' => 0, 'importentrades' => 0, 'sortides' => 0, 'importsortides' => 0, 'total' => 0, 'importtotal' => 0);
-		}
-				
-		if ($acumulatMensual['tipus'] == BaseController::REGISTRE_STOCK_ENTRADA) {
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['entrades'] += $acumulatMensual['total'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importentrades'] += $acumulatMensual['importtotal'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] += $acumulatMensual['total'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importtotal'] += $acumulatMensual['importtotal'];
-		} else {
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['sortides'] += $acumulatMensual['total'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importsortides'] += $acumulatMensual['importtotal'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] -= $acumulatMensual['total'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importtotal'] -= $acumulatMensual['importtotal'];
-		}
-				
-		if (!$inicialDescomptat && $registreInicial!=null && 
-			$registreInicial->getDataregistre()->format('Y') == $acumulatMensual['anyregistre'] &&
-			$registreInicial->getDataregistre()->format('n') == $acumulatMensual['mesregistre']) {
-				
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['entrades'] -= $stockArray['data'][$producteCurrent]['inicial'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importentrades'] -= $stockArray['data'][$producteCurrent]['import'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['total'] -= $stockArray['data'][$producteCurrent]['inicial'];
-			$stockArray['data'][$producteCurrent]['acumulats'][$currentAnyMesKey]['importtotal'] -= $stockArray['data'][$producteCurrent]['import'];
-					
-			$inicialDescomptat = true;
-		}
-				
-		// Add header first time
-		if (!isset($stockArray['header']['acumulats'][$currentAnyMesKey])) {
-			$stockArray['header']['acumulats'][$currentAnyMesKey] = array(
-				'current' => array('text' => $currentText, 'class' => 'current'),
-				'entrades' => array('text' => 'Entrades', 'class' => 'entrades'), 
-				'importentrades' => array('text' => 'Import entrades', 'class' => 'importentrades'), 
-				'sortides' => array('text' => 'Sortides', 'class' => 'sortides'), 
-				'importsortides' => array('text' => 'Import sortides', 'class' => 'importsortides'), 
-				'total' => array('text' => 'total', 'class' => 'total'), 
-				'importtotal' => array('text' => 'Import total', 'class' => 'importtotal')
-			);
-		}
-	
-		return $inicialDescomptat;
-	}					
-	
 	
 	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
 		$em = $this->getDoctrine()->getManager();

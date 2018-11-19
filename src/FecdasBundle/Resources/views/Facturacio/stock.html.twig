@@ -15,56 +15,64 @@
 {% block title %}Aplicació gestió FECDAS. Registre d'inventari {% endblock %}
 
 {% block body %}
-	<header>
+	<div id="stock-main">
+    	<header>
+            <div class="row">
+    			<div class="col-md-8"><h1>{% block stockpagetitle %}Registre d'inventari detall producte{% endblock %}</h1></div>
+    		    <div class="col-md-4 col-last-right">
+    				<div class="buttons-top-bootstrap">
+    					<div class="button-top"><a class="link export-csv" href="" alt="Exportar dades" 
+    						title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
+    				</div> 
+    			</div>
+    		</div>
+        </header>
         <div class="row">
-			<div class="col-md-8"><h1>{% block stockpagetitle %}Registre d'inventari detall producte{% endblock %}</h1></div>
-		    <div class="col-md-4 col-last-right">
-				<div class="buttons-top-bootstrap">
-					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_stock') }}" alt="Exportar dades" 
-						title="Exportar dades"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
-				</div> 
-			</div>
-		</div>
-    </header>
-	{% include 'FecdasBundle:Includes:messages.html.twig' %}
-    <div class="row">
-	<div class="col-md-12">    
-    <div id="stock-main">
-	    <div id="list-forms">
-	    	<div class="row">
-				<div class="col-md-4">
-					<div class="form-group">
-				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
-						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				</div>
-				<div class="col-md-3">
-					<div class="form-group">
-						<div class="input-group">
-							<span class="input-group-addon">Des de</span>
-							{{ form_widget(form.desde, { 'attr': {'class': 'form-control form-control-center'} }) }}
-							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-3">
-				  	<label class="radio-inline">
-						{{ form_widget(form.view[0], { 'attr': {'class': 'agrupar-dates'} }) }} Detall
-					</label>
-					<label class="radio-inline">
-						{{ form_widget(form.view[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
-					</label>
-				</div>	
-				<div class="col-md-2 col-last-right">
-					<a type="submit" class="btn btn-default registrestock-action-new" href="{{ path('FecdasBundle_registrestock', { 'action': 'new', 'id': 0 }) }}" alt="Nou registre" title="Nou registre"><i class="fa fa-plus-circle"></i> afegir</a>
-				</div>
-			</div>
-	    </div>
-	    {% block stocktaula %}{% include 'FecdasBundle:Facturacio:stocktaula.html.twig' %}{% endblock %}
-	</div>
-	</div>
-	</div>
-    <div id="dialeg-edicio-producte" class="finestra-overlay"></div>
+        	<div class="col-md-12">
+        	    {% include 'FecdasBundle:Includes:messages.html.twig' %}	
+        	</div>	
+        	{% if admin %}
+            	<div class="col-md-4 col-xs-6">
+            		<div class="form-group">
+            		   	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': 'sr-only'} }) }}
+            			{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+            		</div>
+            	</div>
+            {% endif %}
+            <div class="col-md-3 col-xs-6">
+            	<div class="form-group">
+            		<div class="input-group">
+            			<span class="input-group-addon">Des de</span>
+            			{{ form_widget(form.desde, { 'attr': {'class': 'form-control form-control-center'} }) }}
+            			<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+            		</div>
+            	</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 col-xs-6">
+            	<div class="form-group">
+                	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+            		{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
+            	</div>
+            </div>
+            <div class="col-md-4 col-xs-6">
+              	<label class="radio-inline">
+            		{{ form_widget(form.view[0], { 'attr': {'class': 'agrupar-dates'} }) }} Detall
+            	</label>
+            	<label class="radio-inline">
+            		{{ form_widget(form.view[1], { 'attr': {'class': 'agrupar-dates'} }) }} Mensual
+            	</label>
+            </div>	
+            <div class="col-md-4 col-xs-12 col-last-right">
+            	<a type="submit" class="btn btn-default registrestock-action-new" href="{{ path('FecdasBundle_registrestock', { 'action': 'new', 'id': 0 }) }}" alt="Nou registre" title="Nou registre"><i class="fa fa-plus-circle"></i> afegir</a>
+            </div>
+            <div class="col-md-12">		
+                {% block stocktaula %}{% include 'FecdasBundle:Facturacio:stocktaula.html.twig' %}{% endblock %}
+            </div>
+    	</div>
+        <div id="dialeg-edicio-producte" class="finestra-overlay"></div>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
@@ -79,6 +87,8 @@
 		var view = $(".agrupar-dates:checked").val();
 
 		url += "?view="+view;
+
+		if ($('#form_clubs').val() != '') url += "&clubs="+$('#form_clubs').val();
 		
 		if ($('#form_cerca').val() != '') url += "&cerca="+$('#form_cerca').val();
 
@@ -99,6 +109,11 @@
 			window.location = url;
 	    });
 
+		$("select#form_clubs").change(function() {
+			url = getUrlStock();
+			window.location = url;
+	    });
+		
 		$(".agrupar-dates").click(function( e ) {
 			e.preventDefault();
 			url = getUrlStock();
@@ -110,9 +125,10 @@
 			e.preventDefault();
 			
 			var url = $(this).attr("href");
-
-			if ($(this).hasClass('registrestock-action-new') && $('#form_cerca').val() != '') {
-				url += '&producte='+$('#form_cerca').val();
+			
+			if ($(this).hasClass('registrestock-action-new')) {
+				if ($('#form_cerca').val() != '') url += '&producte='+$('#form_cerca').val();
+				if ($('#form_clubs').val() != '') url += "&club="+$('#form_clubs').val();
 			}
 			
 			$('.alert').remove();
@@ -232,6 +248,8 @@
 			var row = $(this).parents('.data-detall');
 			
 			var url = $(this).attr('href');
+
+			if ($('#form_clubs').val() != '') url += "&club="+$('#form_clubs').val();
 			
 			var strHtml = '<p>Segur que vols anul·lar el registre?</p>';
 
@@ -274,6 +292,14 @@
 			window.location = url;
 		});
 
+		{% if admin == true  %}
+    		$("select#form_clubs").select2({
+    			minimumInputLength: 2,
+    			allowClear: true,
+    			placeholder: 'Escollir club'
+    		});
+	    {% endif %}
+		
 		// Descripcio producte
 		$("#form_cerca").select2({
 			minimumInputLength: 2,

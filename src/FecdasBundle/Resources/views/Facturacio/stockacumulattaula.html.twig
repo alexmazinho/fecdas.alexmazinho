@@ -1,61 +1,69 @@
 {# src/Fecdas/comandesBundle/Resources/views/Facturacio/stockacumulattaula.html.twig #}
-<div class="table-stock">
-    <div class="table-scroll table-scroll-vertical">
-    	<table>	
-	    	<thead id="list-header">
-			   	<tr>
-			   		<th class="header-stockacumulat-abreviatura col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.abreviatura.text }}</th>
-			   		<th class="header-stockacumulat-producte col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.producte.text }}</th>
-			   		<th class="header-stockacumulat-inicial col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.inicial.text }}</th>
-			   		<th class="header-stockacumulat-import col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.import.text }}</th>
-			   		{% for headcol in stockacumulat.header.acumulats %}
-			   			<th class="header-stockacumulat-{{ headcol.current.class }} col-listheader collistheader-noorder" colspan="6">{{ headcol.current.text }}</th>
-			   		{% endfor %}
-			   		<th class="header-stockacumulat-stock col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.stock.text }}</th>
-			   	</tr>
-			   	<tr>
-			   		{% for headcol in stockacumulat.header.acumulats %}
-			   			<th class="header-stockacumulat-{{ headcol.entrades.class }} col-listheader collistheader-noorder">{{ headcol.entrades.text }}</th>		
-			   			<th class="header-stockacumulat-{{ headcol.importentrades.class }} col-listheader collistheader-noorder">{{ headcol.importentrades.text }}</th>
-			   			<th class="header-stockacumulat-{{ headcol.sortides.class }} col-listheader collistheader-noorder">{{ headcol.sortides.text }}</th>		
-			   			<th class="header-stockacumulat-{{ headcol.importsortides.class }} col-listheader collistheader-noorder">{{ headcol.importsortides.text }}</th>
-			   			<th class="header-stockacumulat-{{ headcol.total.class }} col-listheader collistheader-noorder">{{ headcol.total.text }}</th>		
-			   			<th class="header-stockacumulat-{{ headcol.importtotal.class }} col-listheader collistheader-noorder">{{ headcol.importtotal.text }}</th>
-			   		{% endfor %}
-			   	</tr>
-		   	</thead>
-		   	<tbody id="list-data">
-		   	{% set registres = 0 %}
-			{% for acumulat in stockacumulat.data %} 
-				{% set registres = registres + 1 %}  
-					<tr class="data-detall">
-						<td class="data-detall-cell stockacumulat-abreviatura">{{ acumulat.abreviatura }}</td>
-						<td class="data-detall-cell stockacumulat-producte">{{ acumulat.producte }}</td>
-						<td class="data-detall-cell stockacumulat-inicial systemblue">{{ acumulat.inicial }}</td>
-						<td class="data-detall-cell stockacumulat-import systemblue">{{ acumulat.import|number_format(2, ',', '.') }}€</td>
-						{% for acumulatPeriode in acumulat.acumulats %}
-							<td class="data-detall-cell stockacumulat-entrades {% if acumulatPeriode.entrades != 0 %} green {% endif %}">{{ acumulatPeriode.entrades }}</td>
-							<td class="data-detall-cell stockacumulat-importentrades {% if acumulatPeriode.importentrades != 0 %} green {% endif %}">{{ acumulatPeriode.importentrades|number_format(2, ',', '.') }}€</td>
-				   			<td class="data-detall-cell stockacumulat-sortides {% if acumulatPeriode.sortides != 0 %} red {% endif %}">{{ acumulatPeriode.sortides }}</td>
-				   			<td class="data-detall-cell stockacumulat-importsortides {% if acumulatPeriode.importsortides != 0 %} red {% endif %}">{{ acumulatPeriode.importsortides|number_format(2, ',', '.') }}€</td>
-							<td class="data-detall-cell stockacumulat-total">{{ acumulatPeriode.total }}</td>
-							<td class="data-detall-cell stockacumulat-importtotal">{{ acumulatPeriode.importtotal|number_format(2, ',', '.') }}€</td>
-						{% endfor %}
-						{% if stockacumulat.header.acumulats|length > acumulat.acumulats|length %}
-							{% set totalVoid = stockacumulat.header.acumulats|length - acumulat.acumulats|length %}
-							<td class="data-detall-cell stockacumulat-void" colspan="{{ 6*totalVoid }}">&nbsp;</td>
-						{% endif %}
-						<td class="data-detall-cell stockacumulat-stock systemblue">{{ acumulat.stock }}</td>
-					</tr>
-		   	{% endfor %} 
-		   	{% if registres == 0 %}
-		   		<tr class="data-detall">
-			    	<td colspan="{{ stockacumulat.header|length }}"><div class="sms-notice">No hi ha stock per mostrar</div></td>
-			    </tr>
-		    {% endif %}
-			</tbody>
-		</table>
-	</div>
+<div class="row table-stock">
+	<div class="col-md-12">
+        <div id="list-stockacumulat" class="table-responsive">
+        	<table class="table">	
+    	    	<thead>
+    			   	<tr>
+    			   		<th class="header-stockacumulat-abreviatura th-listheader col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.abreviatura.text }}</th>
+    			   		<th class="header-stockacumulat-producte th-listheader data-detall-cell-left col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.producte.text }}</th>
+    			   		<th class="header-stockacumulat-inicial th-listheader col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.inicial.text }}</th>
+    			   		{% for headcol in stockacumulat.header.acumulats %}
+    			   			<th class="header-stockacumulat-{{ headcol.current.class }} th-listheader col-listheader collistheader-noorder" colspan="3">{{ headcol.current.text }}</th>
+    			   		{% endfor %}
+    			   		<th class="header-stockacumulat-stock th-listheader col-listheader collistheader-noorder" rowspan="2">{{ stockacumulat.header.stock.text }}</th>
+    			   	</tr>
+    			   	<tr class="header">
+    			   		{% for headcol in stockacumulat.header.acumulats %}
+    			   			<th class="header-stockacumulat-{{ headcol.entrades.class }} th-listheader col-listheader collistheader-noorder">{{ headcol.entrades.text }}</th>		
+    			   			<th class="header-stockacumulat-{{ headcol.sortides.class }} th-listheader col-listheader collistheader-noorder">{{ headcol.sortides.text }}</th>		
+    			   			<th class="header-stockacumulat-{{ headcol.total.class }} th-listheader col-listheader collistheader-noorder">{{ headcol.total.text }}</th>		
+    			   		{% endfor %}
+    			   	</tr>
+    		   	</thead>
+    		   	<tbody>
+    		   	{% set registres = 0 %}
+    			{% for acumulat in stockacumulat.data %} 
+    				{% set registres = registres + 1 %}  
+    					<tr class="data-detall">
+    						<td class="data-detall-cell stockacumulat-abreviatura">{{ acumulat.abreviatura }}</td>
+    						<td class="data-detall-cell data-detall-cell-left stockacumulat-producte">{{ acumulat.producte }}</td>
+    						<td class="data-detall-cell stockacumulat-inicial systemblue">
+    						    {{ acumulat.inicial }}
+    						</td>
+    						{% for acumulatPeriode in acumulat.acumulats %}
+    							<td class="data-detall-cell stockacumulat-entrades {% if acumulatPeriode.entrades != 0 %} green {%else %} gray {% endif %}">
+    							    {{ acumulatPeriode.entrades }}
+    							    {#<span class="subtitle">{{ acumulatPeriode.importentrades|number_format(2, ',', '.') }}€</span>#}
+    							</td>
+    				   			<td class="data-detall-cell stockacumulat-sortides {% if acumulatPeriode.sortides != 0 %} red {%else %} gray {% endif %}">
+    				   			    {{ acumulatPeriode.sortides }}
+    				   			    {#<span class="subtitle">{{ acumulatPeriode.importsortides|number_format(2, ',', '.') }}€</span>#}
+    				   			</td>
+    							<td class="data-detall-cell stockacumulat-total">
+    							    {{ acumulatPeriode.total }}
+    							    {#<span class="subtitle">{{ acumulatPeriode.importtotal|number_format(2, ',', '.') }}€</span>#}
+    							</td>
+    						{% endfor %}
+    						{% if stockacumulat.header.acumulats|length > acumulat.acumulats|length %}
+    							{% set totalVoid = stockacumulat.header.acumulats|length - acumulat.acumulats|length %}
+    							<td class="data-detall-cell stockacumulat-void" colspan="{{ 6*totalVoid }}">&nbsp;</td>
+    						{% endif %}
+    						<td class="data-detall-cell stockacumulat-stock systemblue">{{ acumulat.stock }}</td>
+    					</tr>
+    		   	{% endfor %} 
+    		   	{% if registres == 0 %}
+    		   		<tr class="data-detall">
+    			    	<td class="data-detall-cell colspan="{{ stockacumulat.header|length }}"><div class="sms-notice">No hi ha stock per mostrar</div></td>
+    			    </tr>
+    		    {% endif %}
+    			</tbody>
+    		</table>
+    	</div>
+    </div>
+    <div class="col-md-12">
+    	{% if stockacumulat.data.getTotalItemCount > 20 %}<div class="navigation">Pàgines: {{ knp_pagination_render(stockacumulat.data, null, [] ) }}</div>{% endif %}
+    </div>
 </div>
 
 

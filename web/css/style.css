@@ -722,48 +722,37 @@ a.link.footer-link { padding: 0 10px; }
 .data-detall-cell.registrestock-actions a:hover { cursor: default;  } 
 
 
-.table-scroll-vertical .header-stockacumulat-abreviatura,
-.table-scroll-vertical .stockacumulat-abreviatura { width: 50px; text-align: center; }
-.table-scroll-vertical .header-stockacumulat-producte,
-.table-scroll-vertical .stockacumulat-producte { width: 200px; font-size: 0.9em; text-align: left; }
-.table-scroll-vertical .header-stockacumulat-inicial,
-.table-scroll-vertical .stockacumulat-inicial { width: 70px; text-align: center; font-weight: bold; }
-.table-scroll-vertical .header-stockacumulat-import,
-.table-scroll-vertical .stockacumulat-import { width: 70px; font-size: 0.9em; text-align: right; font-style: italic; font-weight: bold; }
+.table-responsive .header-stockacumulat-abreviatura { width: 60px; } 
+.table-responsive .stockacumulat-abreviatura { position: absolute; background-color: #fff; width: 60px; border-right: 1px solid #cccccc; }
+.table-responsive .header-stockacumulat-producte { width: 200px; }
+.table-responsive .stockacumulat-producte { font-size: 0.8em; }
+.table-responsive .header-stockacumulat-inicial { width: 60px; }
+.table-responsive .stockacumulat-inicial { font-weight: bold; }
 
-.table-scroll-vertical .header-stockacumulat-entrades,
-.table-scroll-vertical .stockacumulat-entrades,
-.table-scroll-vertical .header-stockacumulat-sortides,
-.table-scroll-vertical .stockacumulat-sortides,
-.table-scroll-vertical .header-stockacumulat-total,
-.table-scroll-vertical .stockacumulat-total { width: 70px; text-align: center; }
+.table-responsive .header-stockacumulat-entrades,
+.table-responsive .header-stockacumulat-sortides,
+.table-responsive .header-stockacumulat-total { } 
+.table-responsive .stockacumulat-sortides,
+.table-responsive .stockacumulat-entrades,
+.table-responsive .stockacumulat-total {  }
 
-.table-scroll-vertical .header-stockacumulat-importentrades,
-.table-scroll-vertical .stockacumulat-importentrades,
-.table-scroll-vertical .header-stockacumulat-importsortides,
-.table-scroll-vertical .stockacumulat-importsortides  { width: 70px; font-size: 0.9em; text-align: right; font-style: italic; }
-.table-scroll-vertical .header-stockacumulat-importtotal,
-.table-scroll-vertical .stockacumulat-importtotal { font-weight: bold; width: 70px; font-size: 0.9em; text-align: right; font-style: italic; }
+.table-responsive .header-stockacumulat-current { width: 150px; font-size: 1.6em; border-bottom: none; border-left: 1px solid #96c4ea; /*border-right: 1px solid #96c4ea;*/  }
+.table-responsive .header-stockacumulat-entrades { border-left: 1px solid #96c4ea; }
+.table-responsive .header-stockacumulat-sortides,
+.table-responsive .header-stockacumulat-total,
+.table-responsive .header-stockacumulat-entrades { border-left: 1px solid #96c4ea; }
 
-.table-scroll-vertical .header-stockacumulat-stock,
-.table-scroll-vertical .stockacumulat-stock { width: 70px; text-align: center; font-weight: bold; }
+.table-responsive .stockacumulat-entrades { border-left: 2px solid #cccccc; }
+.table-responsive .stockacumulat-sortides,
+.table-responsive .stockacumulat-total  { border-left: 1px solid #cccccc; }
+.table-responsive .stockacumulat-void  { border-right: 1px solid #cccccc; }
+
+.table-responsive .header-stockacumulat-stock { width: 60px; border-left: 1px solid #96c4ea; }
+.table-responsive .stockacumulat-stock { font-weight: bold; border-left: 1px solid #cccccc; }
 
 
-.table-scroll-vertical .col-listheader { vertical-align: bottom; }
+.table-responsive .col-listheader { vertical-align: bottom; }
 
-.table-scroll-vertical .header-stockacumulat-current { font-size: 1.6em; border-bottom: none; border-left: 1px solid #96c4ea; border-right: 1px solid #96c4ea;  }
-.table-scroll-vertical .header-stockacumulat-entrades,
-.table-scroll-vertical .header-stockacumulat-sortides,
-.table-scroll-vertical .header-stockacumulat-total,
-.table-scroll-vertical .header-stockacumulat-importentrades,
-.table-scroll-vertical .header-stockacumulat-importsortides,
-.table-scroll-vertical .header-stockacumulat-importtotal { border-top: none;   }
-
-.table-scroll-vertical .header-stockacumulat-entrades { border-left: 1px solid #96c4ea; }
-.table-scroll-vertical .stockacumulat-entrades  { border-left: 1px solid #cccccc; }
-.table-scroll-vertical .header-stockacumulat-importtotal { border-right: 1px solid #96c4ea; }
-.table-scroll-vertical .stockacumulat-importtotal,
-.table-scroll-vertical .stockacumulat-void  { border-right: 1px solid #cccccc; }
 
 
 
@@ -2681,24 +2670,24 @@ input#formuserclub-randompassword { width: 150px; }
 /************************************************ Històric saldos Fi ******************************************************/
 
 
-/************************************************* Consulta Admin / Clubs ******************************************************/
+/************************************************* Table bootstrap ******************************************************/
 
-#list-consultaadmin, #list-consultaclubs { 
+.table-responsive {
 	overflow-x: scroll;
-	border-color: #82CFFA #E7F2FB #96C4EA;
-    border-style: solid;
-    border-width: 1px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
-    background-color: #efefef; 
+    border: 1px solid #81C6FF;
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 #000000 inset;
+	margin-bottom: 10px;
+	margin-left: 0;
+	margin-top: 0;
 }
 
-#list-consultaadmin table, #list-consultaclubs table { table-layout: fixed; /*width: auto;*/ background-color: #ffffff; margin-bottom: 5px;  }
+.table-responsive table { table-layout: fixed; /*width: auto;*/ /*background-color: #ffffff;*/ margin-bottom: 5px;  }
 
-#list-consultaadmin table tr.header, #list-consultaclubs table tr.header { padding: 0 0 10px; }
+.table-responsive table tr.header { padding: 0 0 10px; }
 
-.th-listheader {
-    border-bottom: 1px solid #96c4ea;
-    border-top: 1px solid #82cffa;
+.table-responsive table thead::after { content: ""; }
+
+.table > thead > tr > th.th-listheader {
     color: #2281cf;
     font-size: 13px;
     font-weight: 600;
@@ -2710,22 +2699,20 @@ input#formuserclub-randompassword { width: 150px; }
 	line-height: 21px;
 	height: 50px;
     background:  repeat-x scroll 0 0 #F0F9FF;
-    border-color: #82CFFA #E7F2FB #96C4EA;
-    border-style: solid;
-    border-width: 1px;
+    border-bottom: 1px solid #96c4ea;
+    border-top: 1px solid #82cffa;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 0 0 #000000 inset;
-    
 }
 
-#list-consultaadmin .th-listheader a, #list-consultaclubs .th-listheader a {
-    color: #2281cf;
-}
 
-#list-consultaadmin table tr td.data-detall-cell { font-size: 0.9em; }
 
-#list-consultaadmin table tr td.data-detall-cell,
-#list-consultaclubs table tr td.data-detall-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#main-col .table-responsive .th-listheader a { color: #2281cf; }
 
+.table-responsive table tr td.data-detall-cell { font-size: 0.9em; }
+
+.table-responsive table tr td.data-detall-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.table-responsive .data-detall-cell .subtitle, .table-responsive .col-listheader .subtitle { color: inherit; }
 
 /************************************************* Consulta Admin Fin ******************************************************/
 

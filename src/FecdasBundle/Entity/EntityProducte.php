@@ -61,11 +61,6 @@ class EntityProducte {
 	protected $limitnotifica;
 	
 	/**
-	 * @ORM\Column(type="integer", nullable=true)
-	 */
-	protected $stock;
-	
-	/**
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $transport;
@@ -135,16 +130,32 @@ class EntityProducte {
     }
     
     /**
+     * Get descripcio
+     *
+     * @return string
+     */
+    public function getAbreviaturaDescripcio()
+    {
+        return $this->abreviatura." ".$this->descripcio;
+    }
+    
+    /**
      * Es el tipus stockable
      *
      * @return boolean
      */
     public function esStockable()
     {
-        return  $this->tipus == BaseController::TIPUS_PRODUCTE_KITS || 
-                $this->tipus == BaseController::TIPUS_PRODUCTE_MERCHA ||
-                $this->tipus == BaseController::TIPUS_PRODUCTE_MATERIAL;
+        return  self::esTipusStockable($this->tipus);
     }
+    
+    public static function esTipusStockable($tipus)
+    {
+        return  $tipus == BaseController::TIPUS_PRODUCTE_KITS ||
+                $tipus == BaseController::TIPUS_PRODUCTE_MERCHA ||
+                $tipus == BaseController::TIPUS_PRODUCTE_MATERIAL;
+    }
+    
     
 	public function getEstat()
 	{
@@ -296,9 +307,7 @@ class EntityProducte {
      */
     public function disponible()
     {
-        if (!$this->stockable) return true;
-        
-        return $this->stock > 0;
+        return true;
     }
     
     /**
@@ -518,30 +527,6 @@ class EntityProducte {
     {
         return $this->limitnotifica;
     }
-
-    /**
-     * Set stock
-     *
-     * @param integer $stock
-     * @return EntityProducte
-     */
-    public function setStock($stock)
-    {
-        $this->stock = $stock;
-
-        return $this;
-    }
-
-    /**
-     * Get stock
-     *
-     * @return integer 
-     */
-    public function getStock()
-    {
-        return $this->stock;
-    }
-
 
     /**
      * Set transport

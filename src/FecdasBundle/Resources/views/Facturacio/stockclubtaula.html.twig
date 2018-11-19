@@ -16,7 +16,11 @@
 			<div class="data-detall-cell stockclub-id hidden">{{ stock.kit.id }}</div>
 			<div class="data-detall-cell stockclub-abreviatura">{{ stock.kit.abreviatura }}</div>
 			<div class="data-detall-cell stockclub-producte">{{ stock.kit.descripcio }}</div>
-			<div class="data-detall-cell stockclub-titol">{% if stock.titol != null %} {{ stock.titol.llistaText }} {% endif %}</div>
+			<div class="data-detall-cell stockclub-titol">
+				{% for titol in stock.titols %}
+				    {{ titol.llistaText }}
+			    {% endfor %} 
+			</div>
 			<div class="data-detall-cell stockclub-stock systemblue">{{ stock.stock }}</div>
 			<div class="data-detall-cell stockclub-actions systemblue">
 				<div class="form-inline">
@@ -31,7 +35,7 @@
     						{% set classes = classes~' form-control-outoffstock' %}
     					{% endif %}
     					{{ form_widget(form.stocks[stock.kit.id], { 'attr': {'class': classes, 
-    									'data-id':stock.kit.id, 'data-min': 0, 'data-max': stock.kit.stock }}) }} 
+    									'data-id':stock.kit.id, 'data-min': 0, 'data-max': 999 }}) }} 
     					
     					<span class="input-group-addon input-group-addon-icon">
                             {% if not admin %}

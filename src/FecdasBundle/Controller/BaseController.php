@@ -2932,7 +2932,7 @@ class BaseController extends Controller {
             if (count($detallsBaixa) > 0) {
                 $this->crearFacturaRebutAnulacio($comanda, $detallsBaixa, $dataFacturacio, $extra); 
 				// Gestionar stock
-				$this->registreComanda($comanda, $originalDetalls);
+                $this->registreStockComanda($comanda, $originalDetalls);
             }
         }
 
@@ -3051,9 +3051,6 @@ class BaseController extends Controller {
 
 		if ($comanda->getNumDetalls() == 0) $comanda->setDatabaixa($this->getCurrentDate());
 
-		// Restaurar stock
-		if ($producte->getStockable() == true) $producte->setStock($producte->getStock() + $unitats);
-				
 		return $detallBaixa;
 	}
 	
@@ -3142,25 +3139,23 @@ class BaseController extends Controller {
 		//if ($persist == true) $em->flush();	// Si d'ha canviat el num factura	
 	}
 	
-	protected function consultaStockProducteDataClub($producte, $club, $fins = null, $baixes = false) {
+	protected function consultaStockClubPerProducteData($producte, $club, $fins = null, $baixes = false) {
 	    $em = $this->getDoctrine()->getManager();
 	    
 	    if ($producte == null || $club == null) return 0;
-	    
-	    if ($fins == null) $fins = $this->getCurrentDate();
 	    
 	    $strQuery  = " SELECT SUM(s.unitats) FROM FecdasBundle\Entity\EntityStock s ";
 	    $strQuery .= " WHERE s.tipus = 'E'";
 	    $strQuery .= " AND s.club = :club";
 	    $strQuery .= " AND s.producte = :producte";
-	    $strQuery .= " AND s.dataregistre <= :fins";
+	    if ($fins != null) $strQuery .= " AND s.dataregistre <= :fins";
 	    if (!$baixes) $strQuery .= " AND s.databaixa IS NULL";
 	    
 	    $query = $em->createQuery($strQuery);
 	    
 	    $query->setParameter('club', $club->getCodi());
 	    $query->setParameter('producte', $producte->getId());
-	    $query->setParameter('fins', $fins->format('Y-m-d'));
+	    if ($fins != null) $query->setParameter('fins', $fins->format('Y-m-d'));
 	    
 	    $result = $query->getSingleScalarResult();
 	    $total = $result == null?0:$result;
@@ -3169,14 +3164,14 @@ class BaseController extends Controller {
 	    $strQuery .= " WHERE s.tipus = 'S'";
 	    $strQuery .= " AND s.club = :club";
 	    $strQuery .= " AND s.producte = :producte";
-	    $strQuery .= " AND s.dataregistre <= :fins";
+	    if ($fins != null) $strQuery .= " AND s.dataregistre <= :fins";
 	    if (!$baixes) $strQuery .= " AND s.databaixa IS NULL";
 	    
 	    $query = $em->createQuery($strQuery);
 	    
 	    $query->setParameter('club', $club->getCodi());
 	    $query->setParameter('producte', $producte->getId());
-	    $query->setParameter('fins', $fins->format('Y-m-d'));
+	    if ($fins != null) $query->setParameter('fins', $fins->format('Y-m-d'));
 	    
 	    $result = $query->getSingleScalarResult();
 	    $total -= $result == null?0:$result;
@@ -3203,27 +3198,7 @@ class BaseController extends Controller {
 		return $query;
 	}
 	
-	protected function consultaStockInicialProducte($idproducte, $club) {
-		if ($idproducte == null || $idproducte == 0) return null;
-	
-		$query = $this->consultaStock($idproducte, $club, false);
-		
-		$stock = $query->getResult();
-		
-		return ($stock != null  && count($stock) > 0?$stock[0]:null);
-	}
-	
-	protected function consultaStockProducte($idproducte, $club) {
-		if ($idproducte == null || $idproducte == 0) return null;
-	
-		$query = $this->consultaStock($idproducte, $club, false, null, "DESC");
-		
-		$stock = $query->getResult();
-		
-		return ($stock != null  && count($stock) > 0?$stock[0]:null);
-	}
-
-	protected function registreComanda($comanda, $originalDetalls = null) {
+	protected function registreStockComanda($comanda, $originalDetalls = null) {
 		$em = $this->getDoctrine()->getManager();
 		
 		if ($originalDetalls == null) $originalDetalls = new \Doctrine\Common\Collections\ArrayCollection();
@@ -3248,47 +3223,38 @@ class BaseController extends Controller {
 				}
 				
 				if ($unitats != 0) {
-					// Afegir registre i actualitzar stock
-					if ($unitats > $producte->getStock()) {
-						throw new \Exception('El producte \''.$producte->getDescripcio().'\' no disposa de l\'stock suficient' );
-					}
-					
+				    $fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+				    
 					$comentaris = 'Sortida stock '.$unitats.'x'.$producte->getDescripcio();
-					
-					$fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 						
 					$registreStock = new EntityStock($fede, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_SORTIDA, $factura);
 					$em->persist($registreStock);
 						
-					$this->recalcularStockProducte($registreStock);
-					
 					$club = $comanda->getClub();
 					
 					if ($producte->esKit() && $club != $fede) {
-					    //consultaStockProducteDataClub
-					    
-						$stockProducte = $this->consultaStockProducte($producte->getId(), $club);
 						$comentaris = 'Comanda KITS '.$unitats.'x'.$producte->getDescripcio();
 						$registreStockClub = new EntityStock($club, $producte, $unitats, $comentaris, $comanda->getDataentrada(), BaseController::REGISTRE_STOCK_ENTRADA, $factura);
-						if ($stockProducte == null) $registreStockClub->setStock($unitats);
-						else $registreStockClub->setStock($stockProducte->getStock() + $unitats);
 						$em->persist($registreStockClub);
 					}
-						
+					
+					$stock = $this->consultaStockClubPerProducteData($producte, $fede);
+					
 					// Control notificació stock
-					if ($producte->getStock() < $producte->getLimitnotifica()) {
+					if ($stock < $producte->getLimitnotifica()) {
 						$productesNotificacio[] = $producte; // Afegir a la llista de productes per notificar manca stock
-					} 
+					}
 				}
 			}
 		}
 
 		if (count($productesNotificacio) > 0) {
+
 			// Enviar notificacions
 			$body = '';
 			foreach ($productesNotificacio as $producte) {
-				$body .= '<li>El producte \''.$producte->getDescripcio().'\' té '.$producte->getStock().
-							' en stock (valor de notificació '.$producte->getLimitNotifica().'). </li>'; 
+				$body .= '<li>El producte \''.$producte->getDescripcio().'\' té '.$stock.
+							' en stock (notificació inferior a '.$producte->getLimitNotifica().'). </li>'; 
 			}
 			$body = '<p>Cal revisar l\'stock dels següents productes</p>'. 
 					 '<ul>'.$body.'</ul>';
@@ -3360,7 +3326,7 @@ class BaseController extends Controller {
 				
 			} else {
 				// Cercar original corresponent per veure canvis
-				// Només es pot treure productes (anul·lacions) de la comanda. No cal controlar stock
+				// Només es pot treure productes (anul·lacions) de la comanda. 
 				$detallOriginal = null;
 				
 				foreach ($originalDetalls as $d) {
@@ -3398,7 +3364,7 @@ class BaseController extends Controller {
 		}
 		
 		// Gestionar stock
-		$this->registreComanda($comanda, $originalDetalls);
+		$this->registreStockComanda($comanda, $originalDetalls);
 		
 		if (count($detallsPerAnulacio) > 0) {
 		    $this->crearFacturaRebutAnulacio($comanda, $detallsPerAnulacio);

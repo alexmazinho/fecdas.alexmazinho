@@ -28,12 +28,14 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 	}
 	
 	private $anypreu;
+	private $stock;
 	
-	public function __construct($anypreu = 0)
+	public function __construct($anypreu = 0, $stock = 0)
 	{
 		if ($anypreu == 0) $anypreu = date('Y');
 		
 		$this->anypreu = $anypreu;
+		$this->stock = $stock;
 	}
 	
 	
@@ -89,12 +91,6 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 					'required' 		=> false,
 					'scale' 		=> 0,
 					'disabled' 		=> !$producte->getStockable()
-			));
-			
-			$form->add ('stock', 'integer', array (
-					'required' 		=> false,
-					'scale' 		=> 0,
-					'disabled' 	    => !$producte->getStockable()
 			));
 			
 			$form->add ('pes', 'integer', array (
@@ -233,6 +229,14 @@ class FormProducte extends AbstractType  implements EventSubscriberInterface {
 				'scale' => 0
 		));
 		
+		$builder->add ('stock', 'integer', array (
+		    'required' 		=> false,
+		    'scale' 		=> 0,
+		    'disabled' 	    => true,
+		    'mapped' 	    => false,
+		    'data' 			=> $this->stock
+		));
+
 		$builder->add('databaixa', 'datetime', array(
 				'required' => false,
 				'attr'			=>	array('readonly' => false),

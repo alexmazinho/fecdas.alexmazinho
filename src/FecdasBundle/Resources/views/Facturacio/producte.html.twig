@@ -7,7 +7,19 @@
 
 {% block body %}
     <header>
-        <h1><a href="{{ path('FecdasBundle_productes') }}">Llistat de productes</a> > Edició</h1>
+    	<div class="row">
+			<div class="col-md-8">
+        		<h1><a href="{{ path('FecdasBundle_productes') }}">Llistat de productes</a> > Edició</h1></div>
+		    <div class="col-md-4 col-last-right">
+				<div class="buttons-top-bootstrap">
+					<div id="producte-save" class="button-top">
+						<a class="link" href="" alt="Desar producte" title="Desar producte">
+							<i class="fa fa-save fa-2x fa-fw green"></i></a>
+						<span class="subtext">desar</span>
+					</div>
+				</div>
+			</div>
+		</div>
     </header>
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
@@ -179,14 +191,6 @@
 							</div>{{ form_errors(form.iva)  }}
 						</div>
 					 </div>
-					  <div class="col-md-8">
-					 	<div class="form-group">
-					 		<label>&nbsp;</label>
-					 		<div class="input-group">
-								<button type="submit" id="formproducte-desar" class="btn btn-default"><i class="fa fa-save"></i> Desar</button>
-							</div>
-						</div>
-					  </div>	
 				 </div>
 			 </div>
 			 <div id="historic-preus" class="col-md-6">
@@ -367,7 +371,14 @@
 					$('#producte_pes').val("");
 				};
 			});
-			
+
+
+			// Form submit.
+		    $( "#producte-save" ).click(function( e ) {
+		    	  e.preventDefault();
+
+		    	  $("#formproducte").submit();
+		    });
 		});
 
 

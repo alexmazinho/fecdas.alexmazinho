@@ -27,10 +27,11 @@ class FormStock extends AbstractType {
 						'format' => 'dd/MM/yyyy',
 				));
 				
-				$form->add(	'factura', 'hidden', array (
-							'data' 		=> $registreStock->getFactura()!=null?$registreStock->getFactura()->getId():'',
+				$form->add('club', 'entity', array (
+				            'class' => 'FecdasBundle:EntityClub',
+				            'data' 		=> $registreStock->getClub(),
 				));
-			
+				
 				$form->add(	'producte', 'entity', array(
 							'class' => 'FecdasBundle:EntityProducte',
 							'query_builder' => function($repository) {
@@ -39,7 +40,7 @@ class FormStock extends AbstractType {
 										->andWhere('p.databaixa IS NULL')
 										->orderBy('p.descripcio', 'ASC');
 									},
-							'choice_label' => 'descripcio',
+							'choice_label' => 'getAbreviaturaDescripcio',
 							'placeholder' => '',
 							'required'  => true,
 				));
@@ -71,11 +72,6 @@ class FormStock extends AbstractType {
 				'scale' => 0
 		));
 
-		$builder->add ('stock', 'integer', array (
-				'required' => true,
-				'scale' => 0
-		));
-		
 		$builder->add('comentaris', 'textarea', array(
 				'required' => false,
 				'attr' => array('rows' => '2'),

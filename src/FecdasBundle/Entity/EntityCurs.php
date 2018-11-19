@@ -521,7 +521,7 @@ class EntityCurs {
 	 *
 	 * @param EntityTitol $titol
 	 */
-	public function setTitol(Entitytitol $titol = null)
+	public function setTitol(EntityTitol $titol = null)
 	{
 		$this->titol = $titol;
 	}

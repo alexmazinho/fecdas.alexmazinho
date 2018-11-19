@@ -70,23 +70,18 @@
 						{% if producte.minim != null %}<div class="graella-item-with-min">Quantitat mínima: {{ producte.minim }}</div> {% endif %}
 						{% if producte.transport == true %}<div class="graella-item-transport">Transport a partir de {{ transport|number_format(2, ',', '.') }} €</div> {% endif %}
 						<p class="graella-item-add">
-							{% if producte.disponible == true %} 
-								{% set min = 1 %}
-								{% if producte.minim != null %}{% set min = producte.minim %}{% endif %}
-								{% set max = 0 %}
-								{% if producte.stockable == 1 and producte.stock != null %}{% set max = producte.stock %}{% endif %}
-								<input class="producte-action-add-uds form-control form-control-center" type="number"  
-									value="{{ min }}" data-min="{{ min }}" data-max="{{ max }}">
-								<a class="producte-action-add-cart link" href="{{ path('FecdasBundle_afegircistella', { 'id': producte.id, 'tipus' : tipus }) }}" alt="Afegir a la cistella" title="Afegir a la cistella"><i class="fa fa-cart-plus green"></i></a>
-							{% else %}
-								<i class="fa fa-remove red"></i> esgotat
-							{% endif %}
+							{% set min = 1 %}
+							{% if producte.minim != null %}{% set min = producte.minim %}{% endif %}
+							{% set max = 999 %}
+							<input class="producte-action-add-uds form-control form-control-center" type="number"  
+								value="{{ min }}" data-min="{{ min }}" data-max="{{ max }}">
+							<a class="producte-action-add-cart link" href="{{ path('FecdasBundle_afegircistella', { 'id': producte.id, 'tipus' : tipus }) }}" alt="Afegir a la cistella" title="Afegir a la cistella"><i class="fa fa-cart-plus green"></i></a>
 						</p>
 						{% if admin == true %}
 							<div class="graella-item-admin-actions">
 								<p>Admin:<a title="Editar" alt="Editar" href="{{ path('FecdasBundle_editarproducte', { 'id': producte.id }) }}" class="producte-action-edit link"><i class="fa fa-pencil blue"></i></a></p>
-								{% if producte.stockable == 1 and producte.stock != null %}
-									<span class="graella-item-admin-comment">stock {{ producte.stock }}.</span>
+								{% if producte.stockable == 1 and stock[producte.id] is defined %}
+									<span class="graella-item-admin-comment">stock {{ stock[producte.id] }}.</span>
 								{% endif %}
 								{% if producte.transport == true %}
 									<span class="graella-item-admin-comment">{{ producte.pes }} gr./u</span>

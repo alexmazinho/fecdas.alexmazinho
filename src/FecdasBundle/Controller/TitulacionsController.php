@@ -817,9 +817,7 @@ class TitulacionsController extends BaseController {
 				if ($titol != null && $titol->getKit() != null) $kit = $titol->getKit();
 				
 				if ($kit != null) {
-					$registrestock = $this->consultaStockProducte($kit->getId(), $club);
-					if ($registrestock == null) $stock = 0;  // sense stock
-					else $stock = $registrestock->getStock();	// stock disponible 
+				    $stock = $this->consultaStockClubPerProducteData($kit, $club); // stock disponible
 				}
 			}
     	}
@@ -1214,20 +1212,18 @@ class TitulacionsController extends BaseController {
 				// Registrar sortida de kits
 				if ($titol->esKitNecessari()) {
 					$kit = $titol->getKit();
-					$stockProducte = $this->consultaStockProducte($kit->getId(), $club);
+					
+					$stock = $this->consultaStockClubPerProducteData($kit, $club); // stock disponible
+
+					$unitats = count($curs->getParticipantsSortedByCognomsNom());
+					
+					if ($stock < $unitats)  throw new \Exception('No hi ha prou kits "'.$kit->getDescripcio().'" disponibles per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
 					
 					$em = $this->getDoctrine()->getManager();
 					
-					$unitats = count($curs->getParticipantsSortedByCognomsNom());
-					$comentaris = 'Sortida stock '.$unitats.'x'.$kit->getDescripcio().', utilitzats en un curs';
+					$comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$kit->getDescripcio();
 					
 					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA);
-					
-					if ($stockProducte == null) throw new \Exception('Nombre de kits "'.$kit->getDescripcio().'" disponibles insuficient per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
-					
-					$registreStockClub->setStock($stockProducte->getStock() - $unitats);
-					
-					if ($stockProducte->getStock() < 0)  throw new \Exception('No hi ha prou kits "'.$kit->getDescripcio().'" disponibles per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
 					
 					$em->persist($registreStockClub);
 				}

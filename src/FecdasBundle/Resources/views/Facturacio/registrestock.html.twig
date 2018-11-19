@@ -3,6 +3,17 @@
     
 	{{ form_start(form, {'action': path('FecdasBundle_registrestock'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formregistrestock'}}) }}
 		<div class="row">
+			<div class="col-md-12">
+				<h2>
+		        {% if (registre.club.esFederacio == true) %}
+		        	<b>Stock general</b> de la Federació
+		        {% else %}
+		        	Stock club <b>{{ registre.club.nom }}</b>
+		        {% endif %}
+		        </h2>
+			</div>
+		</div>		
+		<div class="row">
 			<div class="col-md-8">
 				{{ form_label(form.producte, 'Producte') }}
 				<div id="formregistrestock-producte"  class="">
@@ -46,14 +57,6 @@
 				</div>
 			</div>
 			<div class="col-md-7">
-				{{ form_label(form.factura, 'Factura') }}
-				<div id="formregistrestock-factura"  class="">
-					{{ form_widget(form.factura, { 'attr': {'class': 'form-control form-control-left'} }) }}
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-12">
 				<div class="form-group">
 					{{ form_label(form.comentaris, 'Comentaris') }}
 					<div id="formregistrestock-comentaris"  class="input-group ">

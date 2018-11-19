@@ -47,11 +47,6 @@ class EntityStock {
 	protected $preuunitat;
 
 	/**
-	 * @ORM\Column(type="integer", nullable=false)
-	 */
-	protected $stock;
-
-	/**
 	 * @ORM\ManyToOne(targetEntity="EntityFactura")
 	 * @ORM\JoinColumn(name="factura", referencedColumnName="id", nullable=true)
 	 */
@@ -264,27 +259,6 @@ class EntityStock {
     {
     	return $this->preuunitat;
     }
-	
-	/**
-     * Set stock
-     *
-     * @param integer $stock
-     */
-    public function setStock($stock)
-    {
-        $this->stock = $stock;
-    }
-
-    /**
-     * Get stock
-     *
-     * @return integer 
-     */
-    public function getStock()
-    {
-        return $this->stock;
-    }
-	
 	
 	/**
      * Set factura

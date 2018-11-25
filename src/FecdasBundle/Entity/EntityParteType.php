@@ -146,6 +146,20 @@ class EntityParteType {
 	    return true;
 	}
 	
+	/**
+	 * cerca una categoria amb el símbol indicat
+	 *
+	 * @return EntityCategoria
+	 */
+	public function cercaCategoria($simbol)
+	{
+	    foreach ($this->categories as $categoria) {
+	        if ($categoria->getSimbol() == $simbol) return $categoria;
+	    }
+	    return null;
+	}
+	
+	
 	
     /**
      * Set id

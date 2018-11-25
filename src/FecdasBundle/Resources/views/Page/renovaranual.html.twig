@@ -1,0 +1,219 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/renovaranual.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Renovació llicències anuals {% endblock %}
+
+{% block body %}
+    <header>
+        <h1>Renovació llicències anuals</h1>
+    </header>
+   
+{{ form_start(form, {'action': path('FecdasBundle_renovaranual'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formrenovaranual'}}) }}
+   
+    <div class="row">
+    
+<div class="col-md-12 error-block">
+    {% include 'FecdasBundle:Includes:messages.html.twig' %}
+</div>
+{% if admin == true %}
+	<div class="col-md-3  col-xs-12">
+	  	<div class="form-group">
+	    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+		    {{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
+		</div>
+	</div>
+{% endif %}
+		
+<div class="col-md-2 col-xs-5">
+	<div id="formrenovaranual-anyrenova">
+		<label class="required">Renovar llicències</label>
+		{{ form_widget(form.anyrenova, { 'attr': {'class': 'form-control form-control-center'} }) }}
+	</div>
+</div>
+			
+<div class="col-md-3 col-xs-5">
+	<div class="form-group">
+		{{ form_label(form.dataalta, 'Validesa') }}
+		<div id="formrenovaranual-dataalta" class="input-group">
+			<span class="input-group-addon">Des de</span>
+			{{ form_widget(form.dataalta, { 'attr': {'class': 'form-control form-control-center'} }) }}
+			<span class="input-group-addon input-group-addon-icon"><span class="fa fa-calendar fa-1x"></span></span>
+		</div>
+	</div>
+</div>
+			
+<div class="col-md-4 col-xs-2">
+	<div class="form-right">
+		<div class="required">&nbsp;</div>	
+		<a id="submit-renovar" class="btn btn-default" alt="Renovar llista" title="Renovar llicències" ><i class="fa fa-retweet green"></i> Renovar</a>
+				
+		<!-- <button type="submit" alt="Renovar llista" title="Renovar llicències" 
+			 id="formrenovar-button-renovar" class="btn btn-default">
+			 <i class="fa fa-retweet green"></i> Renovar
+		</button> -->
+	</div>	
+</div>  
+    
+    
+    </div>
+
+<div id="llicencies-anuals-renovar" class="row">    
+        {% include 'FecdasBundle:Page:renovaranualtaula.html.twig' %}
+</div>
+     
+<div id="formrenovar-rest" class="hidden">{{ form_rest(form) }}</div>
+{{ form_end(form) }}     
+     
+     
+{% endblock %}
+
+{% block javascripts %}
+
+{{ parent() }}
+
+<script type="text/javascript">
+
+reloadLlistaLlicencies = function(anyRenova, club) {
+	var url = $('#formrenovaranual').attr('action');
+	var params = { 'clubs': club, 'anyrenova': anyRenova };
+
+	$('.alert-dismissible').remove();
+	
+	obrirMascaraBlock("#llicencies-anuals-renovar");
+
+	$.get(url,	params, function(data) {
+		var resposta = JSON.parse(data);
+		if (resposta.error != '') {
+			var sms = smsResultAjax('KO', resposta.error);
+			 
+			$(".error-block").html(sms);
+		}
+		
+		$('#llicencies-anuals-renovar').html(resposta.data); 
+
+		if ($(".renovar-checkbox:checked").length == 0) {
+			$("#submit-renovar").addClass('disabled');
+		} else {
+			$("#submit-renovar").removeClass('disabled');
+		}
+		
+	}).fail( function(xhr, status, error) {
+		 // xhr.status + " " + xhr.statusText, status, error
+		 tancarMascaraBlock("#table-llicencies-renovar");
+		 
+		 var sms = smsResultAjax('KO', xhr.responseText);
+		 
+		 $(".error-block").html(sms);
+	});
+}
+
+$(document).ready(function(){
+	setMenuActive("menu-anual");
+	
+	//validarRenovarNoBuida();
+	// Desactivar submit
+	if ($(".renovar-checkbox:checked").length == 0) {
+		$("#submit-renovar").addClass('disabled');
+	} else {
+		$("#submit-renovar").removeClass('disabled');
+	}
+	
+	// Comanda filtre clubs disponible per admin's
+	{% if admin == true  %}
+		$("select#parte_renovar_clubs").select2({
+			minimumInputLength: 2,
+			allowClear: false,
+			placeholder: 'Escollir club'
+		});
+
+		// Delegate
+		//$( "#llicencies-anuals-renovar" ).on( "change", "select#parte_clubs, select#parte_anyrenova", function( e ) {
+		$("select#parte_renovar_clubs, select#parte_renovar_anyrenova").change(function() {
+			var cerca = $('select#parte_renovar_clubs').val();
+			var selectedAnyRenova = $('select#parte_renovar_anyrenova').val();
+			
+			reloadLlistaLlicencies(selectedAnyRenova, cerca);
+	    });
+	{% endif %}
+
+	$("#submit-renovar").click(function(e) {
+		e.preventDefault();
+
+		if ($(".renovar-checkbox:checked").length == 0) {
+			dialegError("Error", "Cal seleccionar alguna llicència per renovar", 400, 0);
+			return false;
+		}
+		
+		var params = $('#formrenovaranual').serializeArray();
+		
+		var urlSubmit = $('#formrenovaranual').attr('action'); 
+		
+		$.post(urlSubmit, params,
+		function(data) {
+			
+			var resposta = JSON.parse(data);
+
+			if (resposta.url != '') {
+				// OK. Redirecció
+				window.location = resposta.url; 
+			}
+			
+			if (resposta.error != '') {
+				var sms = smsResultAjax('KO', resposta.error);
+				 
+				$(".error-block").html(sms);
+			}
+			
+			$('#llicencies-anuals-renovar').html(resposta.data); 
+
+			if ($(".renovar-checkbox:checked").length == 0) {
+				$("#submit-renovar").addClass('disabled');
+			} else {
+				$("#submit-renovar").removeClass('disabled');
+			}
+	    	
+		}).fail( function(xhr, status, error) {
+			// xhr.status + " " + xhr.statusText, status, error
+	    	var sms = smsResultAjax('KO', xhr.responseText);
+				 
+	    	$(".error-block").html(sms);
+	    	return;
+		});
+	});
+
+	//calcularPreuRenovar();
+	// Delegate
+	$( "#llicencies-anuals-renovar" ).on( "click", ".renovar-checkbox", function( e ) {
+	//$(".renovar-checkbox").click(function(){
+		var checked = $(this).is(':checked');
+		var parentRow = $(this).parents('tr.data-detall');
+
+		var cat = parentRow.children('.llicenciacategoria').html();
+		var num = $('#parte-detalls .parte-detalls-'+cat+' .parte-detalls-total').html();
+		
+		if (checked) {
+			parentRow.addClass('darkgreen');
+			parentRow.removeClass('data-detall-fosc');
+			$('#parte-detalls .parte-detalls-'+cat+' .parte-detalls-total').html( parseInt(num) + 1);
+		} else {
+			parentRow.addClass('data-detall-fosc');
+			parentRow.removeClass('darkgreen');
+			$('#parte-detalls .parte-detalls-'+cat+' .parte-detalls-total').html( parseInt(num) - 1);
+		}
+
+		var total = 0;
+
+		$(".renovar-checkbox:checked").each(function() {
+			var preu = $(this).attr("preu");
+			if (!isNaN(preu)) total += parseFloat(preu);
+		});
+		$(".parte-preu-valor").html(total.toLocaleString('ca-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})); //.toLocaleString() .toFixed(2)
+
+		return total;
+	});
+});
+
+</script>
+
+{% endblock %}
+

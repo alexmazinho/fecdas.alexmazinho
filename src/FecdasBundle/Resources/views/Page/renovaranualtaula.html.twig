@@ -1,0 +1,82 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/renovaranualtaula.html.twig #}
+<div class="col-md-12">
+	<div class="table-header" class="clearfix">
+		<div id="summary-header" class="row">
+        	<div class="header-totals th-listheader col-listheader data-detall-cell-left collistheader-noorder col-md-6"> 
+        	Llicències vàlides des de <time datetime="{{ parte.dataalta|date('c') }}">{{ parte.dataalta|date('d/m/Y') }}</time>
+        	fins a <time datetime="{{ parte.datacaducitat|date('c') }}">{{ parte.datacaducitat|date('d/m/Y') }}</time></div>
+        	<div class="header-parte-preu th-listheader col-listheader data-detall-cell-right collistheader-noorder col-md-6">
+        	{% set detall = '' %}
+        	{% for categoria,total in totals.detalls %}
+        		{% if total > 0 %}
+        		    {% set detall = detall~' <div class="parte-detalls-'~categoria~'"><span class="parte-detalls-total">'~total~'</span> <span class="parte-detalls-categoria">'~categoria~'</span>s</div>' %}
+        		{% endif %}
+        	{% endfor %}
+        	<div id="parte-detalls">{{ detall|raw }}</div>
+        	<div id="parte-preu">Total: <span class="parte-preu-valor">{{ totals.total|number_format(2, ',', '.') }}</span> €</div>
+        	</div>
+		</div>
+	</div>
+</div>
+
+<div class="col-md-12">
+	<div id="list-llicenciesrenovaranual" class="table-scroll table-responsive">
+    	<table class="table">	
+       		<thead>
+   			   	<tr class="header">
+					<th class="header-llicenciapersonaid th-listheader col-listheader collistheader-noorder hidden">&nbsp;</th>
+					<th class="header-llicencianum th-listheader col-listheader collistheader-noorder">#</th>
+				   	<th class="header-llicenciapersona th-listheader col-listheader data-detall-cell-left collistheader-noorder">Persona</th>
+				   	<th class="header-llicenciadni th-listheader col-listheader collistheader-noorder">DNI</th>
+				   	<th class="header-llicenciamail th-listheader col-listheader data-detall-cell-left collistheader-noorder">Correu</th>
+				   	<th class="header-llicenciacategoria th-listheader col-listheader collistheader-noorder">Categoria</th>
+				   	<th class="header-llicenciapreu th-listheader col-listheader data-detall-cell-right collistheader-noorder">Preu</th>
+		   			{% if parte.perImprimir == true and parte.perEnviarFederat != true %}<div class="header-llicenciaenviarllicencia th-listheader col-listheader collistheader-noorder"><i class="fa fa-envelope fa-1x"></i></th>{% endif %}
+				   	<th class="header-llicenciaactions th-listheader col-listheader collistheader-noorder">Renovar?</th>
+				</tr>
+	   		</thead>
+   		   	<tbody>
+                {% for llicencia in form.llicencies %}
+                	{% set persona = llicencia.vars.value.persona %}
+                	{% set categoria = llicencia.vars.value.categoria %}
+    				<tr class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %} {% if llicencia.renovar is defined %}darkgreen{% endif %}">
+    					<td class="data-detall-cell llicenciapersonaid hidden">{{  persona.id }}</td>
+    					<td class="data-detall-cell llicencianum">{{ loop.index }}</td>
+						<td class="data-detall-cell data-detall-cell-left llicenciapersona">{{ persona.cognomsNom }}</td>
+						<td class="data-detall-cell llicenciadni">{{  persona.dni }}{% if persona.dni == null %}NULL{% endif %}</td>
+						<td class="data-detall-cell data-detall-cell-left llicenciamail">{{ persona.mail }}</td>
+						<td class="data-detall-cell llicenciacategoria">{{ categoria.categoria }}</td>
+						<td class="data-detall-cell data-detall-cell-right llicenciapreu">{{ categoria.preuany(parte.any)|number_format(2, ',', '.') }}€</td>
+						{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
+    						<td class="data-detall-cell llicenciaenviarllicencia">		
+    						    {# if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif #}
+    							<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[0]) }}{{ form_label(llicencia.enviarllicencia[0]) }}</div>
+    		    				<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
+    						</td>
+						{% endif %}
+						{% if llicencia.renovar is defined %}
+							<td class="data-detall-cell llicenciaactions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : categoria.preuany(parte.any)} }) }}</td>
+						{% else %}
+							<td class="data-detall-cell llicenciaactions llicenciano">
+							{% if llicencia.existent is defined %}
+								Tramitada <a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': llicencia.existent.vars.value, 'action':'view' }) }}" alt="Veure llista de la llicència" title="Veure llista de la llicència"><i class="fa fa-search blue"></i></a>
+							{% else %}
+								--
+							{% endif %}
+							</td>
+						{% endif %}
+						<div class="hidden">{{ form_rest(llicencia) }}</div>
+   					</tr>
+    			{% else %}
+					<tr class="data-detall">
+						<td class="data-detall-cell hidden">&nbsp;</td>
+						<td class="data-detall-cell" 
+							colspan="{% if parte.perImprimir == true and parte.perEnviarFederat != true %}8{% else %}7{% endif %}"><div class="sms-notice">No hi ha cap llicència per renovar</div>
+						</td>
+					</tr>
+    		   	{% endfor %} 
+    		</tbody>
+    	</table>
+    </div>
+</div>
+

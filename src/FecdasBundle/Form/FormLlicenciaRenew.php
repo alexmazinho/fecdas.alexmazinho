@@ -6,8 +6,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 
-
-
 class FormLlicenciaRenew extends FormLlicencia {
 
 	public function buildForm(FormBuilderInterface $builder, array $options)

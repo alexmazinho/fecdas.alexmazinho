@@ -48,6 +48,12 @@ FecdasBundle_renovar:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_renovaranual:
+    path:  /renovaranual
+    defaults: { _controller: "FecdasBundle:Page:renovaranual" }
+    requirements:
+        methods:  GET|POST
+
 FecdasBundle_importcsv:
     path:  /importcsv
     defaults: { _controller: "FecdasBundle:Page:importcsv" }

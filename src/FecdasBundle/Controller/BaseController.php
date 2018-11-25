@@ -48,7 +48,9 @@ class BaseController extends Controller {
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_ANUAL_MES = 12; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_MES = 11; //12; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = 01; // a partir de 01/10 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_MES = 10; // a partir de 01/10 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -67,6 +69,7 @@ class BaseController extends Controller {
     const MAX_TELEFON = 999999999;
     const LANG_CA = 'CA';
     const LANG_ES = 'ES';
+    const ID_TIPUS_PARTE_LLICENCIES_A = 1;
     
 	//const TIPUS_CLUBS_NO_COMANDES = array(6, 7);
 	const REGISTRE_STOCK_ENTRADA = 'E';
@@ -468,8 +471,8 @@ class BaseController extends Controller {
 	/**
 	 * Obté array anys preus
 	 */
-	public static function getArrayAnysPreus($inici = self::ANY_INICI_WEB) {
-		$final = date('Y') + 1;
+	public static function getArrayAnysPreus($inici = self::ANY_INICI_WEB, $final = 0) {
+		if ($final == 0) $final = date('Y') + 1;
 		
 		$anyspreus = array();
 		for ($a = $inici; $a <= $final; $a++) $anyspreus[$a] = $a;
@@ -839,21 +842,13 @@ class BaseController extends Controller {
 
 		$dataalta = $parte->getDataalta();
 		$tipus = $parte->getTipus();
-		$current = $this->getCurrentDate();
 		$errData = $this->validaDataLlicencia($dataalta, $tipus);
 			
 		if ($errData != "") throw new \Exception($errData);
 		// NO llicències amb data passada. Excepte administradors
 		// Data alta molt aprop de la caducitat.
 
-		if ($dataalta->format('y') > $current->format('y')) {
-			// Només a partir 10/12 poden fer llicències any següent
-			if ($current->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
-				($current->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
-				 $current->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) {
-				throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
-			}
-		}
+		if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
 		
         /* Validar persones noves (alta > 2016-09-01 si tenen mail informat 
          * Llicències diferents de la diària
@@ -918,6 +913,20 @@ class BaseController extends Controller {
 
 	}
  
+	protected function validaTramitacioAnySeguent(\DateTime $dataalta) {
+	    $current = $this->getCurrentDate();
+	    
+	    if ($dataalta->format('Y') > $current->format('Y')) {
+	        // Només a partir 10/12 poden fer llicències any següent
+	        if ($current->format('m') < self::INICI_TRAMITACIO_ANUAL_MES ||
+	           ($current->format('m') == self::INICI_TRAMITACIO_ANUAL_MES &&
+	            $current->format('d') < self::INICI_TRAMITACIO_ANUAL_DIA)) {
+	             return false;
+	        }
+	    }
+	    return true;
+	}
+	
 	protected function validaDataLlicencia(\DateTime $dataalta, $tipus) {
 		$avui = $this->getCurrentDate('now');
 		if (!$this->isCurrentAdmin() && $dataalta < $avui) return 'No es poden donar d\'alta ni actualitzar llicències amb data passada';
@@ -3554,7 +3563,7 @@ class BaseController extends Controller {
             $nouArxiu = new EntityArxiu($arxiu, false, $persona);
             $nouArxiu->upload($persona->getDni()."_".$arxiu->getClientOriginalName());
         }
-error_log(" 3  NOU ?".($nouArxiu==null?"NULL":"OK")); 
+
         $nouArxiu->setTitol($titol);
         $em->persist($nouArxiu);
         

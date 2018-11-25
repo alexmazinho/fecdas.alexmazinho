@@ -2940,6 +2940,34 @@ p.info-bold {
 
 /************************************************* Import CSV  Fin ******************************************************/
 
+/*************************************************  Renovar anual  ******************************************************/
+
+#list-llicenciesrenovaranual .header-llicencianum,
+#list-llicenciesrenovaranual .llicencianum { width: 50px; }
+#list-llicenciesrenovaranual .header-llicenciapersona,
+#list-llicenciesrenovaranual .llicenciapersona { width: 350px; }
+#list-llicenciesrenovaranual .header-llicenciamail,
+#list-llicenciesrenovaranual .llicenciamail {  /*width: 200px; width: auto; max-width: 400px;*/ white-space: nowrap; overflow: hidden; text-overflow: ellipsis;  }
+#list-llicenciesrenovaranual .header-llicenciadni,
+#list-llicenciesrenovaranual .llicenciadni { width: 120px; }
+#list-llicenciesrenovaranual .header-llicenciacategoria,
+#list-llicenciesrenovaranual .llicenciacategoria { width: 100px; }
+#list-llicenciesrenovaranual .header-llicenciapreu,
+#list-llicenciesrenovaranual .llicenciapreu { width: 100px; }
+#list-llicenciesrenovaranual .header-llicenciaenviarllicencia,
+#list-llicenciesrenovaranual .llicenciaenviarllicencia { width: 60px; }
+#list-llicenciesrenovaranual .header-llicenciaactions,
+#list-llicenciesrenovaranual .llicenciaactions { width: 150px; }
+
+
+#parte-detalls #parte-preu {
+	color: #2281CF;
+	font-size: 16px;
+}
+
+
+/************************************************* Import CSV  Fin ******************************************************/
+
 /************************************************* Login  ******************************************************/
 
 #loginbox{

@@ -96,25 +96,41 @@ class EntityParte extends EntityComanda {
 		// Get current collection
 		$llicencies = $parteoriginal->getLlicenciesSortedByName();
 	
-		$this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
-		
-		foreach ($llicencies as $llicencia_iter) {
-			if (!$llicencia_iter->esBaixa()) {
-
-				$cloneLlicencia = clone $llicencia_iter;
-				/* Init camps */
-				$cloneLlicencia->setDatamodificacio($currentDate);
-				$cloneLlicencia->setDatacaducitat($this->getDataCaducitat());
-				
-				$cloneLlicencia->setImpresa(false);
-				$cloneLlicencia->setDataimpressio(null);
-				$cloneLlicencia->setMailenviat(false);
-				$cloneLlicencia->setDatamail(null);				
-				
-				$this->llicencies->add($cloneLlicencia);
-				$cloneLlicencia->setParte($this);
-			}
-		}
+		$this->llicencies = self::cloneLlicenciesParte($this, $llicencies, $currentDate);
+	}
+	
+	public static function cloneLlicenciesParte($parte, $llicencies, $date) {
+	    
+	    $llicenciesCloned = new \Doctrine\Common\Collections\ArrayCollection();
+	    
+	    foreach ($llicencies as $llicencia_iter) {
+	        if (!$llicencia_iter->esBaixa()) {
+	            /* Si canvia el tipus => mantenir categoria*/
+	            if ($llicencia_iter->getCategoria()->getTipusparte() != $parte->getTipus()) {
+	                $categoria = $parte->getTipus()->cercaCategoria($llicencia_iter->getCategoria()->getSimbol());
+	            } else {
+	                $categoria = $llicencia_iter->getCategoria();
+	            }
+	            
+	            if ($categoria != null) {
+    	            $cloneLlicencia = clone $llicencia_iter;
+    	            
+    	            $cloneLlicencia->setCategoria($categoria);
+    	            
+    	            /* Init camps */
+    	            $cloneLlicencia->setDatamodificacio($date);
+    	            $cloneLlicencia->setDatacaducitat($parte->getDataCaducitat());
+    	            
+    	            $cloneLlicencia->setImpresa(false);
+    	            $cloneLlicencia->setDataimpressio(null);
+    	            $cloneLlicencia->setMailenviat(false);
+    	            $cloneLlicencia->setDatamail(null);
+    	            
+    	            $llicenciesCloned->add($cloneLlicencia);
+	            }
+	        }
+	    }
+	    return $llicenciesCloned;
 	}
 	
 	public function esParte()
@@ -349,7 +365,7 @@ class EntityParte extends EntityComanda {
 					isset($acumulades[$producte->getId()]['extra'])) {
     				$acumulades[$producte->getId()]['extra'][] = $llicencia->getPersona()->getNomCognoms();  
 				} else {
-					error_log('revisar llicencies parte i detall comandes id '.$this->id);
+				    error_log('revisar llicencies parte i detall comandes id '.$this->id.' '.$producte->getDescripcio().' '.$llicencia->getPersona()->getNomCognoms());
 					$acumulades[$producte->getId()] = array(
 							'total' => 1,	
 							'totalbaixa' => 0, 

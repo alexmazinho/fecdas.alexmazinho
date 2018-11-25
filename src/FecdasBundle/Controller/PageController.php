@@ -9,7 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 use FecdasBundle\Form\FormContact;
 use FecdasBundle\Form\FormLlicenciaMail;
+use FecdasBundle\Form\FormLlicenciaRenew;
 use FecdasBundle\Form\FormParte;
+use FecdasBundle\Form\FormParteRenovar;
 use FecdasBundle\Form\FormPersona;
 use FecdasBundle\Form\FormLlicencia;
 use FecdasBundle\Form\FormDuplicat;
@@ -671,7 +673,195 @@ class PageController extends BaseController {
 		return $this->render('FecdasBundle:Page:renovar.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte)));
 	}
+	
+	public function renovaranualAction(Request $request) {
+	    $this->get('session')->getFlashBag()->clear();
+	    
+	    if ($this->isAuthenticated() != true) {
+	        // keep url. Redirect after login
+	        $url_request = $request->server->get('REQUEST_URI');
+	        $this->get('session')->set('url_request', $url_request);
+	        return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    }
+	    
+	    if (!$this->getCurrentClub()->potTramitar()) {
+	        $this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
+	        $response = $this->redirect($this->generateUrl('FecdasBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
+	        return $response;
+	    }
 
+	    $club = null;
+	    $codi = '';
+	    $anyrenova = $this->getCurrentDate()->format('Y');
+	    $p = array();
+	    $error = '';
+	    if ($request->getMethod() == 'POST') {
+	        $p = $request->request->get('parte_renovar');
+	        
+	        $anyrenova = isset($p['anyrenova'])?$p['anyrenova']:$this->getCurrentDate()->format('Y');
+	        
+	        $codi = isset($p['clubs'])?$p['clubs']:'';
+	    } else {
+	        $anyrenova = $request->query->get('anyrenova', $this->getCurrentDate()->format('Y'));
+	        
+	        $codi = $request->query->get('clubs', ''); // filtra club
+	    }
+    
+	    if ($this->isCurrentAdmin() && $codi != '') { // Cada club lo seu, els administradors tot
+	        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+	    }
+	    
+	    if ($club == null) $club = $this->getCurrentClub();
+	    $dataalta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyrenova+1). "-01-01 00:00:00");
+	    if ($dataalta->format('Y-m-d') < $this->getCurrentDate()->format('Y-m-d')) $dataalta = $this->getCurrentDate();
+	    
+	    $llicenciesRenovar = $this->consultaLlicenciesAnualsClub($club, $anyrenova);
+
+	    // Les llicències es renoven tipus A 
+	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_A);
+	    
+	    $parte = $this->crearComandaParte($dataalta, $tipus, $club, 'Renovació anual llicències');
+	    
+	    // Crear factura
+	    $this->crearFactura($parte);
+	    
+	    // Clone llicències
+	    $llicenciesCloned = EntityParte::cloneLlicenciesParte($parte, $llicenciesRenovar, $this->getCurrentDate());
+	    
+	    $totals = array('total' => 0, 'detalls' => array());
+	    foreach ($tipus->getCategories() as $categoria) {
+	        $totals['detalls'][$categoria->getCategoria()] = 0;
+	    }
+	    
+	    foreach ($llicenciesCloned as $llicencia) {
+	        $persona = $llicencia->getPersona();
+	        $llicenciaExistent = $persona->getLastLlicencia($dataalta, $parte->getDatacaducitat());
+	        if ($llicenciaExistent == null) {
+                $parte->addLlicencia($llicencia);
+                $totals['total'] += $llicencia->getCategoria()->getPreuAny($dataalta->format('Y'));
+	            $totals['detalls'][$llicencia->getCategoria()->getCategoria()]++;
+	        } else {
+                $parte->addLlicencia($llicencia);
+	        }
+	    }
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    // Form
+	    $form = $this->createForm(new FormParteRenovar($this->isCurrentAdmin()), $parte);
+	    try {
+	        if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
+	        $avisos = "";
+	        if ($request->getMethod() == 'POST') {
+	            $form->handleRequest($request);
+                if (!$form->isValid()) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador '.$form->getErrors(true, false) );
+	            
+	            /*
+                 * Validacions  de les llicències
+                 */
+	            $avisos = array();
+                $llicenciesPerEsborrar = array();
+                $i = 0;
+                foreach ($parte->getLlicencies() as $llicencia) {
+                    try {
+                        if (!isset($p['llicencies'][$i]['renovar'])) {
+    	                   // Treure llicències que no es volen renovar
+                            $llicenciesPerEsborrar[] = $llicencia;
+                        } else {
+                            $this->validaParteLlicencia($parte, $llicencia);
+                            
+                            $em->persist($llicencia);
+                            $this->addParteDetall($parte, $llicencia);
+                        }
+                    } catch (\Exception $e) {
+                        $avisos[] = $e->getMessage();
+                    }
+                    $i++;
+                }
+                
+                if (count($avisos) > 0) throw new \Exception(implode(BR, $avisos));
+                
+                foreach ($llicenciesPerEsborrar as $llicenciaEsborrar) {
+                    $parte->removeLlicencia($llicenciaEsborrar);
+                }
+                
+                
+                $parte->setComentaris('Renovació anual llicències'.' '.$parte->getComentariDefault());
+	            $em->flush();
+	            $this->logEntryAuth('RENOVAR ANUAL OK', $parte->getId());
+	                
+                $this->get('session')->getFlashBag()->add('sms-notice',	'Llicències renovades correctament');
+	            
+                $resposta = array(
+                    'url'   => $this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')),
+                    'error' => '',
+                    'data'  => ''
+                );
+                $response = new Response(json_encode($resposta));
+                
+                return $response;
+	        }
+	    } catch (\Exception $e) {
+	        $em->clear();
+	            
+	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$e->getMessage());
+	    
+	        if ($request->isXmlHttpRequest()) {
+	            $error = $e->getMessage();
+	        } else {
+	            $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+	        }
+	    }
+	    
+	    if ($request->isXmlHttpRequest()) {
+	        $resposta = array(
+	            'url'  => '',
+	            'error'=> $error, 
+	            'data' => $this->renderView('FecdasBundle:Page:renovaranualtaula.html.twig',
+	                        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)))
+	        );
+	        $response = new Response(json_encode($resposta));
+	        
+	        return $response;
+	    }
+	    
+	    return $this->render('FecdasBundle:Page:renovaranual.html.twig',
+	        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)));
+	}
+
+	
+	protected function consultaLlicenciesAnualsClub($club, $anyrenova) {
+	    
+	    if ($club == null) return array();
+	    
+	    $em = $this->getDoctrine()->getManager();
+	        
+	    $inicianual = $anyrenova.'-01-01 00:00:00';
+	    $finalanual = $anyrenova.'-12-31 23:59:59';
+	        
+	    // Crear índex taula partes per data entrada
+	    /*
+	     * SELECT * FROM m_llicencies l JOIN m_partes p ON p.id = l.parte JOIN m_comandes c ON c.id = p.id 
+	     * JOIN m_tipusparte t ON p.tipus = t.id JOIN m_persones e ON e.id = l.persona 
+	     * WHERE l.databaixa IS NULL AND c.databaixa IS NULL AND t.actiu = 1 AND t.es365 = 0 AND t.admin = 0 
+	     * AND c.club = 'CAT162' AND p.dataalta >= '2018-01-01 00:00:00' AND p.dataalta <= '2018-12-31 23:59:59' 
+	     * ORDER BY e.cognoms, e.nom 
+	     */
+	    $strQuery = "SELECT l FROM FecdasBundle\Entity\EntityLlicencia l JOIN l.parte p JOIN p.tipus t ";
+	    $strQuery .= " JOIN l.persona e ";
+	    $strQuery .= " WHERE l.databaixa IS NULL AND p.databaixa IS NULL ";
+	    $strQuery .= " AND t.actiu = 1 AND t.es365 = 0 AND t.admin = 0 ";
+	    $strQuery .= " AND p.club = :club AND p.dataalta >= :inicianual AND p.dataalta <= :finalanual ";
+	    $strQuery .= " ORDER BY e.cognoms, e.nom ";
+	        
+	    $query = $em->createQuery($strQuery)
+	                ->setParameter('club', $club->getCodi())
+        	        ->setParameter('inicianual', $inicianual)
+        	        ->setParameter('finalanual', $finalanual);
+	            
+        return $query->getResult();
+	}
+	
+	
 	public function parteAction(Request $request) {
 
 		if ($request->query->has('source') == false) $this->get('session')->getFlashBag()->clear(); // No ve de renovació
@@ -1010,123 +1200,122 @@ class PageController extends BaseController {
 	        return $response;
 	    }
 	        
+        $em = $this->getDoctrine()->getManager();
 	        
-	        $em = $this->getDoctrine()->getManager();
+        $filtre = '';
+        $parteid = 0;
+        $llicenciaid = 0;
+        if ($request->getMethod() == 'POST') {
+            $formdata = $request->request->get('form');
+            $parteid = isset($formdata['id'])?$formdata['id']:0;
+        } else {
+            $parteid = $request->query->get('id', 0);
+            $llicenciaid = $request->query->get('llicencia', 0);
+            $filtre = $request->query->get('filtre', '');
+        }
 	        
-	        $filtre = '';
-	        $parteid = 0;
-	        $llicenciaid = 0;
-	        if ($request->getMethod() == 'POST') {
-	            $formdata = $request->request->get('form');
-	            $parteid = isset($formdata['id'])?$formdata['id']:0;
-	        } else {
-	            $parteid = $request->query->get('id', 0);
-	            $llicenciaid = $request->query->get('llicencia', 0);
-	            $filtre = $request->query->get('filtre', '');
-	        }
-	        
-	        $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+        $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 	        
 	        
-	        try {
-	            if ($parte == null) throw new \Exception ('Llista no trobada');
+        try {
+            if ($parte == null) throw new \Exception ('Llista no trobada');
 	            
-	            $club = $parte->getClub();
+            $club = $parte->getClub();
 	            
-	            if (!$this->isCurrentAdmin() && !$parte->comandaPagada() && $club->getSaldo() < 0) throw new \Exception ('Llista pendent de pagament. Poseu-vos en contacte amb la Federació');
+            if (!$this->isCurrentAdmin() && !$parte->comandaPagada() && $club->getSaldo() < 0) throw new \Exception ('Llista pendent de pagament. Poseu-vos en contacte amb la Federació');
 	            
-	            if ($request->getMethod() == 'POST') {
-	                $llicencies = $formdata['llicencies'];      // PHP límit max_input_vars = 1000. El formulari té 6 camps per llicència => 166 llicències max.
-	                // Valor canviat a 3000 => 500 llicències
-	                $enviades = 0;
-	                $res = '';
-	                $log = '';
-	                if ($parte->getTipus()->getEs365()) $cursAny = $parte->getCurs();
-	                else $cursAny = $parte->getAny();
-	                $template = $parte->getTipus()->getTemplate();
-	                foreach ($llicencies as $llicenciaArray) {
-	                    $llicenciaId = $llicenciaArray['id'];
-	                    
-	                    if (isset($llicenciaArray['enviar']) && $llicenciaArray['enviar'] == 1) {
+            if ($request->getMethod() == 'POST') {
+                $llicencies = $formdata['llicencies'];      // PHP límit max_input_vars = 1000. El formulari té 6 camps per llicència => 166 llicències max.
+                // Valor canviat a 3000 => 500 llicències
+                $enviades = 0;
+                $res = '';
+                $log = '';
+                if ($parte->getTipus()->getEs365()) $cursAny = $parte->getCurs();
+                else $cursAny = $parte->getAny();
+                $template = $parte->getTipus()->getTemplate();
+                foreach ($llicencies as $llicenciaArray) {
+                    $llicenciaId = $llicenciaArray['id'];
+                    
+                    if (isset($llicenciaArray['enviar']) && $llicenciaArray['enviar'] == 1) {
 	                        
-	                        $llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);
+                        $llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);
 	                        
-	                        if ($llicencia != null) {
-	                            $this->enviarMailLlicencia($club, $llicencia, $cursAny, $template);
+                        if ($llicencia != null) {
+                            $this->enviarMailLlicencia($club, $llicencia, $cursAny, $template);
 	                            
-	                            $enviades++;
-	                            $res .= $llicenciaArray['nom']. ' '.($llicenciaArray['mail'] != ''?$llicenciaArray['mail']:'(Correu del club) '.$club->getMail()).'</br>';
-	                            $log .= $llicenciaArray['id'].' - '.$llicenciaArray['nom']. ' '.$llicenciaArray['mail'].' ; ';
-	                        }
-	                        
-	                    }
-	                }
+                            $enviades++;
+                            $res .= $llicenciaArray['nom']. ' '.($llicenciaArray['mail'] != ''?$llicenciaArray['mail']:'(Correu del club) '.$club->getMail()).'</br>';
+                            $log .= $llicenciaArray['id'].' - '.$llicenciaArray['nom']. ' '.$llicenciaArray['mail'].' ; ';
+                        }
+                        
+                    }
+                }
+                
+                if ($enviades == 0)  throw new \Exception ('No s\'ha enviat cap llicència digital');
+                // Marcar el parte com enviat (imprès)
+                $parte->setDatamodificacio($this->getCurrentDate());
+                $em->flush();
 	                
-	                if ($enviades == 0)  throw new \Exception ('No s\'ha enviat cap llicència digital');
-	                // Marcar el parte com enviat (imprès)
-	                $parte->setDatamodificacio($this->getCurrentDate());
-	                $em->flush();
+                $this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . ' enviades  '.$enviades.' : '.$log );
 	                
-	                $this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . ' enviades  '.$enviades.' : '.$log );
+                if ($enviades > 1)  $res = 'Total de llicències enviades '.$enviades.'<br/>'.$res;
+                else $res = 'Llicència enviada a '.$res;
+                
+                return new Response($res);
+            } else {
+                // CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
+                $llicencies = array();
+                if ($llicenciaid == 0) $llicencies = $parte->getLlicenciesSortedByName( $filtre );
+                else $llicencies[] = $parte->getLlicenciaById($llicenciaid);
+                
+                $formBuilder = $this->createFormBuilder();
 	                
-	                if ($enviades > 1)  $res = 'Total de llicències enviades '.$enviades.'<br/>'.$res;
-	                else $res = 'Llicència enviada a '.$res;
+                $formBuilder->add('id', 'hidden', array(
+                    'data'	=> $parteid
+                ));
 	                
-	                return new Response($res);
-	            } else {
-	                // CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
-	                $llicencies = array();
-	                if ($llicenciaid == 0) $llicencies = $parte->getLlicenciesSortedByName( $filtre );
-	                else $llicencies[] = $parte->getLlicenciaById($llicenciaid);
+                $formBuilder->add('filtre', 'text', array(
+                    'data'	=> $filtre
+                ));
 	                
-	                $formBuilder = $this->createFormBuilder();
+                $formBuilder->add('checkall', 'checkbox', array(
+                    'data'	=> true
+                ));
 	                
-	                $formBuilder->add('id', 'hidden', array(
-	                    'data'	=> $parteid
-	                ));
+                $formBuilder->add('llicencies', 'collection', array(
+                    'type' 	=> new FormLlicenciaMail(),
+                    'data'	=> $llicencies
+                ));
 	                
-	                $formBuilder->add('filtre', 'text', array(
-	                    'data'	=> $filtre
-	                ));
+                $this->get('session')->getFlashBag()->add('sms-notice', 'Les llicències de les persones sense correu s\'enviaran a l\'adreça de correu del club ');
 	                
-	                $formBuilder->add('checkall', 'checkbox', array(
-	                    'data'	=> true
-	                ));
-	                
-	                $formBuilder->add('llicencies', 'collection', array(
-	                    'type' 	=> new FormLlicenciaMail(),
-	                    'data'	=> $llicencies
-	                ));
-	                
-	                $this->get('session')->getFlashBag()->add('sms-notice', 'Les llicències de les persones sense correu s\'enviaran a l\'adreça de correu del club ');
-	                
-	            }
+            }
 	            
-	        } catch (\Exception $e) {
+        } catch (\Exception $e) {
 	            
-	            $this->logEntryAuth('MAIL LLICENCIES KO', 'parte ' . $parteid . ' error: '.$e->getMessage() );
+            $this->logEntryAuth('MAIL LLICENCIES KO', 'parte ' . $parteid . ' error: '.$e->getMessage() );
 	            
-	            $response = new Response($e->getMessage());
-	            $response->setStatusCode(500);
-	            return $response;
-	        }
-	        $this->logEntryAuth('MAIL LLICENCIES FORM', ' accio '.$request->getMethod());
+            $response = new Response($e->getMessage());
+            $response->setStatusCode(500);
+            return $response;
+        }
+        $this->logEntryAuth('MAIL LLICENCIES FORM', ' accio '.$request->getMethod());
+        
+        // Temps des de la darrera llicència
+        $form = $formBuilder->getForm();
 	        
-	        // Temps des de la darrera llicència
-	        $form = $formBuilder->getForm();
-	        
-	        if ($request->query->has('filtre')) {  // Recàrrega de la taula
-	            return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
+        if ($request->query->has('filtre')) {  // Recàrrega de la taula
+            return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
 	                $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'showFiltre' => true, 'filtre' => $filtre ) )
-	                );
-	        }
+                );
+        }
 	        
-	        return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig',
-	            $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(),
+        return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig',
+            $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(),
 	                'action' => $this->generateUrl('FecdasBundle_llicenciespermail'),
 	                'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
 	                'parte' => $parte, 'showFiltre' => ($llicenciaid == 0), 'filtre' => $filtre ) )
-	            );
+            );
 	}
 	
 	private function enviarMailLlicencia($club, $llicencia, $cursAny, $template) {

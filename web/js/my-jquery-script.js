@@ -2494,10 +2494,11 @@
 			{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 			*/
 			$(".alert.alert-dismissible").remove();
-			if (added.mail == null) {  // Aquest instructor no té mail. => Avís
+			if (added.mail == "") {  // Aquest instructor no té mail. => Avís
 				var sms = smsResultAjax('KO', 'Cal indicar una adreça electrònica per aquesta persona');
 					 
 				 $("#formuserclub").prepend(sms);
+				 
 				 if (userNou) {
 					 $("#user_auxinstructordni").val("");
 				 }
@@ -2505,14 +2506,15 @@
 			} else {
 				if (userNou) {
 					$("#user_user").removeAttr('readonly'); // Permetre editar mail, poden existir múltiples
+					$("#user_user").val(added.mail);
 				}
 			}
 		}, function( item ) {
 	    	//Selection format Function
-	        return item.text+"-"+item.nom+(item.mail != ""?" ("+item.mail+")":"");
+	        return item.text+"-"+item.nomcognoms+(item.mail != ""?" ("+item.mail+")":"");
 	    }, function( item ) {
 	    	//Result format Function
-	        return item.text+"-"+item.nom+(item.mail != ""?" ("+item.mail+")":"");
+	        return item.text+"-"+item.nomcognoms+(item.mail != ""?" ("+item.mail+")":"");
 	    }, function( e ) {
 			//  select2-clearing
 	    	$("#user_user").attr('readonly', 'readonly');
@@ -2930,6 +2932,59 @@
 			htmlRemove.push('</div>');
 			galeria.parent().append( htmlRemove.join( '' ) );
 		}
+	};
+	
+	nouCursSelectClub = function( urlForm ) {
+		$( ".nou-curs" ).click( function(e) {
+			e.preventDefault();	
+			var url = $(this).attr("href");
+			
+			$.get(urlForm, function(data) {
+	        	
+				$( '#dialeg' ).html(data);
+				
+				$( '#dialeg' ).dialog({
+					 resizable: false,
+					 title: "Nou curs",
+					 height: "auto",
+					 width: 300,
+					 modal: true,
+					 buttons: {
+						 "Crear curs": {
+							 click: function(e) {
+								 e.preventDefault();	
+								 
+								 var club = $('#forminstructor_clubs').val();
+								 
+								 url += '?club='+club;
+
+								 window.location = url;
+							 },
+							 text: "Crear curs",
+			                 class: "btn btn-default"
+						 },
+						 "Cancel·lar": {
+							 click: function() {
+								 closeDialegConfirmacio();
+							 },
+							 text: "Cancel·lar",
+			                 class: "btn btn-default"
+						 }
+					 },
+					 //open: callbackopen
+				});
+				
+        	}).fail( function(xhr, status, error) {
+        		// xhr.status + " " + xhr.statusText, status, error
+	        	//var sms = smsResultAjax('KO', xhr.responseText);
+	    		
+	        	dialegError("Error", "No es pot crear el nou curs, poseu-vos en contacte amb la Federació ", 350, 100);
+	        	
+	        	return false;	
+        	});
+
+		});
+		
 	};
 	
 	/*****************************************************************************************************************/

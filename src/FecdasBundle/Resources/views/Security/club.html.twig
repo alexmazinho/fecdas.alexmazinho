@@ -544,7 +544,7 @@
 				</div>
 			</div>
 			<div class="col-md-12">
-				<div id="llista-usuarisclub">
+				<div id="llista-usuarisclub" class="table-scroll table-responsive">
 				{% include "FecdasBundle:Security:clubllistausers.html.twig" %}
 				</div>
 			</div>
@@ -589,10 +589,11 @@
 		actionsUserRolePwdClick(); 
 
 
-		//select all the a tag with name equal to modal
-		$('.formpersona-openmodal')
-	    .off('click')
-	   	.click(function(e) {
+		// Delegate. Select all the a tag with name equal to modal
+		$( "#llista-usuarisclub" ).on( "click", ".formpersona-openmodal", function( e ) {
+		//$('.formpersona-openmodal')
+	    //.off('click')
+	   	//.click(function(e) {
 			//Cancel the link behavior
 	        e.preventDefault();
 	         

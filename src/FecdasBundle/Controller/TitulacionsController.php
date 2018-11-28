@@ -709,6 +709,14 @@ class TitulacionsController extends BaseController {
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
+		$checkRole = $this->get('fecdas.rolechecker');
+		$rol = $checkRole->getCurrentRole();
+		
+		if (!$checkRole->isCurrentAllowedCursos()) {
+		    $this->logEntryAuth('VIEW CURSOS NOT ALLOWED', "rol ".$rol);
+		    return $this->redirect($this->generateUrl('FecdasBundle_homepage')); 
+		}
+		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'c.datadesde');
 		$direction = $request->query->get('direction', 'desc');
@@ -717,7 +725,7 @@ class TitulacionsController extends BaseController {
 		
 		$club = $this->getCurrentClub(); // Admins poden cerca tots els clubs
 
-		if ($this->isCurrentAdmin()) {
+		if ($this->isCurrentAdmin() || $checkRole->isCurrentInstructor()) {
 			if ($currentClub != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($currentClub);
 			else $club = null;
 		}
@@ -732,10 +740,10 @@ class TitulacionsController extends BaseController {
 		$currentPerValidar = false;
 		if ($request->query->has('pervalidar') && $request->query->get('pervalidar') == 1) $currentPerValidar = true;
 		
-		$this->logEntryAuth('VIEW CURSOS', "club: " . $currentClub." "." titol ".$currentTitol.
+		$this->logEntryAuth('VIEW CURSOS', "rol ".$rol. " club: " . $currentClub." "." titol ".$currentTitol.
 											"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--'));
 		
-		$query = $this->consultaCursos($club, $titol, $desde, $fins, $currentPerValidar, $sort.' '.$direction);
+		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $desde, $fins, $currentPerValidar, $sort.' '.$direction);
 		
 		$paginator  = $this->get('knp_paginator');
 		$cursos = $paginator->paginate(
@@ -748,6 +756,18 @@ class TitulacionsController extends BaseController {
 		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		if ($this->isCurrentAdmin()) $this->addClubsActiusForm($formBuilder, $club);
+		else {
+		    if ($checkRole->isCurrentInstructor()) {
+		        $formBuilder->add('clubs', 'entity', array(
+		            'class' 		=> 'FecdasBundle:EntityClub',
+		            'choices'       => $checkRole->getCurrentUser()->getClubsRole(BaseController::ROLE_INSTRUCTOR),
+		            'choice_label' 	=> 'nom',
+		            'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
+		            'required'  	=> false,
+		            'data' 			=> $club,
+		        ));
+		    }
+		}
 		
 		$this->addTitolsFilterForm($formBuilder, $titol, true, 'titols');
 		
@@ -763,6 +783,14 @@ class TitulacionsController extends BaseController {
 		if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
+		$checkRole = $this->get('fecdas.rolechecker');
+		$rol = $checkRole->getCurrentRole();
+			
+		if (!$checkRole->isCurrentAllowedCursos()) {
+		    $this->logEntryAuth('VIEW CURS NOT ALLOWED', "rol ".$rol);
+		    return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		}
+			
     	$em = $this->getDoctrine()->getManager();
     	
     	$curs = null;
@@ -781,13 +809,13 @@ class TitulacionsController extends BaseController {
 		
 		//$participantscurrent = null;
 
-		$checkRole = $this->get('fecdas.rolechecker');
-    	
-		$club = $this->getCurrentClub();
-		
+		$club = null;
+		$codi = '';
     	if ($request->getMethod() != 'POST') {
     		$id = $request->query->get('id', 0);
 			$action = $request->query->get('action', '');
+			$codi = $request->query->get('club', '');
+			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 			
 			if ($id == 0 && !$checkRole->isCurrentInstructor()) {
 				$this->get('session')->getFlashBag()->add('error-notice', 'Només els instructors poden crear un nou curs');
@@ -800,16 +828,23 @@ class TitulacionsController extends BaseController {
 			$action = (isset($data['action'])?$data['action']:'');
     	}
 		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
-    		 
+    	
     	if ($curs == null) {
     		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST').' action: '.$action);
-    	
+
+    		if ($club == null) {
+    		    $this->get('session')->getFlashBag()->add('error-notice', 'Cal escollir un club');
+    		    return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
+    		}
+    		
     		$curs = new EntityCurs($checkRole->getCurrentUser(), null, new \DateTime(), new \DateTime(), $club);
 			$em->persist($curs);
 			
 			$this->novaDocenciaCurs($checkRole->getCurrentUser()->getMetapersona(), array(), $curs, BaseController::DOCENT_DIRECTOR);
 			
     	} else {
+    	    $club = $curs->getClub();
+    	    
 	    	$this->logEntryAuth($request->getMethod() != 'POST'?'CURS VIEW':'CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
 
 			if (!$curs->finalitzat()) {			
@@ -1868,8 +1903,8 @@ class TitulacionsController extends BaseController {
 	}
 
 
-	private function consultaCursos($club = null, $titol = null, $desde = null, $fins = null, $pervalidar = false, $strOrderBY = '') {
-		
+	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $desde = null, $fins = null, $pervalidar = false, $strOrderBY = '') {
+
 		$em = $this->getDoctrine()->getManager();
 	
 		//$current = $this->getCurrentDate();
@@ -1890,6 +1925,8 @@ class TitulacionsController extends BaseController {
 		if ($titol != null) $strQuery .= " AND t.id = :titol ";
 		
 		if ($club != null) $strQuery .= " AND c.club = :club ";
+		
+		if ($rol == BaseController::ROLE_INSTRUCTOR)  $strQuery .= " AND c.editor = :editor ";
 
 		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  
 		
@@ -1898,6 +1935,7 @@ class TitulacionsController extends BaseController {
 		// Algun filtre
 		$query = $em->createQuery($strQuery);
 		if ($club != null) $query->setParameter('club', $club->getCodi());
+		if ($rol == BaseController::ROLE_INSTRUCTOR) $query->setParameter('editor', $editor!=null?$editor->getId():0);
 		if ($titol != null) $query->setParameter('titol', $titol->getId());
 		if ($desde != null) $query->setParameter('desde', $desde->format('Y-m-d'));
 		if ($fins != null) $query->setParameter('fins', $fins->format('Y-m-d'));
@@ -1995,8 +2033,11 @@ class TitulacionsController extends BaseController {
 			$result = $query->getResult();
 			foreach ($result as $metapersona) {
 				$persona = $metapersona->getPersona($club);
+				
 				if ($persona != null) {
-						
+				    $mail = ($persona->getMail()==null?"":$persona->getMail());
+				    if ($tecnic) $mail = implode(";", $metapersona->getMails()); 
+				    
 					$telf  = $persona->getTelefon1()!=null?$persona->getTelefon1():'';
 					$telf .= $persona->getTelefon2()!=null&&$telf=''?$persona->getTelefon2():'';
 					
@@ -2006,7 +2047,7 @@ class TitulacionsController extends BaseController {
 									"nom" => $persona->getNom(),
 									"cognoms" => $persona->getCognoms(),
 									"nomcognoms" => $persona->getNomcognoms(),  
-					                "mail" => ($persona->getMail()==null?"":$persona->getMail()),
+					                "mail" => $mail,
 									"telf" => $telf,
 									"nascut" => $persona->getDatanaixement()->format('d/m/Y'),
 									"poblacio" => $persona->getAddrpob(),

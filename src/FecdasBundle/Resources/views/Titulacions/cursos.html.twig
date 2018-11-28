@@ -19,12 +19,17 @@
    	</header>
    	
    	<section id="form-filtre-cursos">
+    	<div class="row">
+			<div class="col-md-12 col-xs-12">
+		   		{% include 'FecdasBundle:Includes:messages.html.twig' %}
+		   	</div>
+		</div>
 		{{ form_start(form, {'action': path('FecdasBundle_cursos'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_cursos'}}) }}
-    	{% if admin == true %}
+    	{% if admin or roleinstructor %}
     		<div class="row">
-				<div class="col-md-3  col-xs-12">
+				<div class="col-md-4 col-xs-12">
 				  	<div class="form-group">
-				    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
+				    	{{ form_label(form.clubs, 'Clubs', { 'label_attr': {'class': ''} }) }}
 						{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 					</div>
 				</div>
@@ -37,7 +42,7 @@
 					{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
 				</div>
 			</div>
-			<div class="col-md-2 col-xs-4">
+			<div class="col-md-2 col-xs-3">
 				<div class="form-group">
 					{{ form_label(form.desde, 'des de') }}
 					<div class="input-group" >
@@ -46,7 +51,7 @@
 					</div>
 				</div>
 			</div>
-		   	<div class="col-md-2 col-xs-4">
+		   	<div class="col-md-2 col-xs-3">
 				<div class="form-group">
 					{{ form_label(form.fins, 'fins') }}
 					<div class="input-group" >
@@ -65,10 +70,14 @@
 					</div>
 				</div>
 			</div>
-	    	<div class="col-md-2 col-xs-4 col-last-right hidden">
-				<label>&nbsp;</label>
-				<a id="form_crearcurs" href="{{ path('FecdasBundle_curs') }}" alt="Pendent. Encara no es poden afegir nous cursos" title="Pendent. Encara no es poden afegir nous cursos" class="btn btn-default disabled"><i class="fa fa-plus-circle"></i> nou curs</a>
-		    </div>
+			{% if roleinstructor %}
+			<div class="col-md-2 col-xs-6 col-last-right">
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<a class="btn btn-default nou-curs" href="{{ path('FecdasBundle_curs') }}">Nou curs <i class="fa fa-plus green"></i></a>
+				</div>
+			</div>
+			{% endif %}
 		</div> 
 		{{ form_end(form) }}
 	</section>
@@ -163,15 +172,6 @@
 
 		setMenuActive("menu-cursos");
 		
-		$( ".pagar-curs" ).click( function(e) {
-			e.preventDefault();	
-			var url = $(this).attr("href");
-			
-			dialegConfirmacio( pagamentcursSMS( false, "{{ iban }}", "{{ ibanescola }}" ), "Abans de continuar...", 0, 550, function() {
-	        	window.location = url+'&comentaris='+$('#curs_comentaris').val();
-	        }, function() { closeDialegConfirmacio(); }, function() {});
-		});
-
 		
 		$("#form_clubs, #form_titols, #form_desde, #form_fins, #form_pervalidar ").change(function() {
 			filtreLlistacursos();

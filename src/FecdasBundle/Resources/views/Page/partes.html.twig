@@ -9,15 +9,11 @@
 			<header>
 		        <h1>Llistes de comunicacions</h1>
 		    </header>
-		    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    		<div class="row">
-			    <div class="sms-notice">
-					{{ flashMessage }}
-			  	</div>
-			</div>	
-			{% endfor %}
 
     		<div class="row">
+    			<div class="col-md-12">
+                    {% include 'FecdasBundle:Includes:messages.html.twig' %}
+				</div>
 	    		<div class="col-md-2 col-xs-4">
 					<div class="form-group">
 						{{ form_label(form.desde, 'Dades des de') }}

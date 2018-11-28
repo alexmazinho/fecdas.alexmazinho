@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 use FecdasBundle\Form\FormContact;
 use FecdasBundle\Form\FormLlicenciaMail;
-use FecdasBundle\Form\FormLlicenciaRenew;
 use FecdasBundle\Form\FormParte;
 use FecdasBundle\Form\FormParteRenovar;
 use FecdasBundle\Form\FormPersona;
@@ -430,7 +429,7 @@ class PageController extends BaseController {
 		
 		if (date("m") == self::INICI_TRAMITACIO_ANUAL_MES and date("d") >= self::INICI_TRAMITACIO_ANUAL_DIA) {
 			// A partir 10/12 poden fer llicències any següent
-			$request->getSession()->getFlashBag()->add('error-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
+			$request->getSession()->getFlashBag()->add('sms-notice', 'Ja es poden començar a tramitar les llicències del ' . (date("Y")+1));
 		}
 
 		$formBuilder = $this->createFormBuilder()->add('desde', 'text', array(
@@ -715,8 +714,6 @@ class PageController extends BaseController {
 	    $dataalta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyrenova+1). "-01-01 00:00:00");
 	    if ($dataalta->format('Y-m-d') < $this->getCurrentDate()->format('Y-m-d')) $dataalta = $this->getCurrentDate();
 	    
-	    $llicenciesRenovar = $this->consultaLlicenciesAnualsClub($club, $anyrenova);
-
 	    // Les llicències es renoven tipus A 
 	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_A);
 	    
@@ -724,11 +721,34 @@ class PageController extends BaseController {
 	    
 	    // Crear factura
 	    $this->crearFactura($parte);
+
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $totals = array('total' => 0, 'detalls' => array());
+	    
+	    if (!$request->isXmlHttpRequest()) {
+	        // Accés inicial
+	        try {
+	            if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
+    	        $form = $this->createForm(new FormParteRenovar($this->isCurrentAdmin()), $parte);
+    	        
+    	        return $this->render('FecdasBundle:Page:renovaranual.html.twig',
+    	                           $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)));
+    	    } catch (\Exception $e) {
+    	        $em->clear();
+    	            
+    	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$e->getMessage());
+    	            
+    	        $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+	        }
+	    }
+	    
+	    $llicenciesRenovar = $this->consultaLlicenciesAnualsClub($club, $anyrenova);
 	    
 	    // Clone llicències
 	    $llicenciesCloned = EntityParte::cloneLlicenciesParte($parte, $llicenciesRenovar, $this->getCurrentDate());
 	    
-	    $totals = array('total' => 0, 'detalls' => array());
+	    
 	    foreach ($tipus->getCategories() as $categoria) {
 	        $totals['detalls'][$categoria->getCategoria()] = 0;
 	    }
@@ -745,7 +765,6 @@ class PageController extends BaseController {
 	        }
 	    }
 	    
-	    $em = $this->getDoctrine()->getManager();
 	    // Form
 	    $form = $this->createForm(new FormParteRenovar($this->isCurrentAdmin()), $parte);
 	    try {
@@ -805,27 +824,21 @@ class PageController extends BaseController {
 	            
 	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$e->getMessage());
 	    
-	        if ($request->isXmlHttpRequest()) {
-	            $error = $e->getMessage();
-	        } else {
-	            $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-	        }
+	        $error = $e->getMessage();
 	    }
 	    
-	    if ($request->isXmlHttpRequest()) {
-	        $resposta = array(
-	            'url'  => '',
-	            'error'=> $error, 
-	            'data' => $this->renderView('FecdasBundle:Page:renovaranualtaula.html.twig',
-	                        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)))
-	        );
-	        $response = new Response(json_encode($resposta));
+        $resposta = array(
+            'url'  => '',
+            'error'=> $error, 
+            'data' => $this->renderView('FecdasBundle:Page:renovaranualtaula.html.twig',
+                        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)))
+        );
+        $response = new Response(json_encode($resposta));
 	        
-	        return $response;
-	    }
+        return $response;
 	    
-	    return $this->render('FecdasBundle:Page:renovaranual.html.twig',
-	        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)));
+	    /*return $this->render('FecdasBundle:Page:renovaranual.html.twig',
+	        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)));*/
 	}
 
 	

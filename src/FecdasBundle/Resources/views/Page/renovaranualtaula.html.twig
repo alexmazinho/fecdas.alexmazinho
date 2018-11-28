@@ -13,7 +13,7 @@
         		{% endif %}
         	{% endfor %}
         	<div id="parte-detalls">{{ detall|raw }}</div>
-        	<div id="parte-preu">Total: <span class="parte-preu-valor">{{ totals.total|number_format(2, ',', '.') }}</span> €</div>
+        	<div id="parte-preu">Total: <span class="parte-preu-valor" data-preu="{{ totals.total }}">{{ totals.total|number_format(2, ',', '.') }}</span> €</div>
         	</div>
 		</div>
 	</div>
@@ -46,7 +46,7 @@
 						<td class="data-detall-cell llicenciadni">{{  persona.dni }}{% if persona.dni == null %}NULL{% endif %}</td>
 						<td class="data-detall-cell data-detall-cell-left llicenciamail">{{ persona.mail }}</td>
 						<td class="data-detall-cell llicenciacategoria">{{ categoria.categoria }}</td>
-						<td class="data-detall-cell data-detall-cell-right llicenciapreu">{{ categoria.preuany(parte.any)|number_format(2, ',', '.') }}€</td>
+						<td class="data-detall-cell data-detall-cell-right llicenciapreu"><span>{{ categoria.preuany(parte.any)|number_format(2, ',', '.') }}</span>€</td>
 						{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
     						<td class="data-detall-cell llicenciaenviarllicencia">		
     						    {# if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif #}

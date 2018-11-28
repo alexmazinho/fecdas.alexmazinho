@@ -37,10 +37,15 @@ class EntityCurs {
 	protected $clubhistoric;  // Clubs que ja no existeixen
 	
 	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $num;	  
+
+	/**
 	 * @ORM\Column(type="string", length=20, nullable=true)
 	 */
-	protected $num;	  // El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
-	
+	protected $numfedas;	// El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
+		
 	/**
 	 * @ORM\Column(type="date")
 	 */
@@ -105,7 +110,8 @@ class EntityCurs {
 	
 		$this->id = 0;
 		$this->editor = $editor;
-		$this->num = null;
+		$this->num = 0;
+		$this->numfedas = null;  // pendent
 		$this->titol = $titol;
 		$this->club = $club;
 		if ($club == null) $this->clubhistoric = $clubhistoric;
@@ -129,13 +135,12 @@ class EntityCurs {
 	}
 	
 	/**
-	 * Retorna número acta format ANY_INICI/NUM
+	 * Retorna número acta format XXXXX/20XX
 	 * 
 	 * @return string
 	 */
 	public function getNumActa() {
-	    if ($this->num == null) return '(Acta pendent)';
-		return $this->num;
+	    return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
 	}
 	
 	/**
@@ -488,6 +493,20 @@ class EntityCurs {
 		$this->num = $num;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getNumfedas() {
+	    return $this->numfedas;
+	}
+	
+	/**
+	 * @param string $numfedas
+	 */
+	public function setNumfedas($numfedas) {
+	    $this->num = $numfedas;
+	}
+	
 	/**
 	 * @param \DateTime $datadesde
 	 */

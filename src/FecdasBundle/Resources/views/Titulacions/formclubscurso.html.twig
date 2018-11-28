@@ -1,0 +1,14 @@
+{# src/Fecdas/PartesBundle/Resources/views/Titulacions/formclubscurso.html.twig #}
+
+{{ form_start(form, {'action': path('FecdasBundle_curs'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'forminstructor'}}) }}
+	<div class="row">
+		<div class="col-md-12">
+		  	<div class="form-group">
+		    	{{ form_label(form.clubs, 'Clubs', { 'label_attr': {'class': ''} }) }}
+				{{ form_widget(form.clubs, { 'id':'forminstructor_clubs', 'attr': {'class': 'form-control'} }) }}
+			</div>
+		</div>
+	</div>
+{{ form_end(form) }}
+	
+

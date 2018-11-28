@@ -429,6 +429,12 @@ FecdasBundle_jsonpersona:
     requirements:
         methods:  GET
 
+FecdasBundle_jsonformseleccioclubcurs:
+    path:  /jsonformseleccioclubcurs
+    defaults: { _controller: "FecdasBundle:Titulacions:jsonformseleccioclubcurs" }
+    requirements:
+        methods:  GET
+
 
 # ---------------------------------------------------------------------------
 # -----------------------  ADMINISTRACIÓ ------------------------------------

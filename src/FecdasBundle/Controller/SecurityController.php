@@ -1272,7 +1272,7 @@ class SecurityController extends BaseController
 			$mailsPersona = $metaPersona->getMails();
 			if (!in_array($useruser, $mailsPersona)) throw new \Exception("El mail no és d'aquesta persona ");
 			
-			if ($checkuser->getMetapersona() == null)  $checkuser->setMetapersona($metaPersona);
+			if ($checkuser != null && $checkuser->getMetapersona() == null)  $checkuser->setMetapersona($metaPersona);
 			
 		} else {
 			// Només poden fer altes Administradors els propis Administradors

@@ -90,6 +90,11 @@ class RoleChecker
 
 		return $this->session->get('currentrole') == BaseController::ROLE_FEDERAT;		
 	}
+
+	public function isCurrentAllowedCursos() {
+	    
+	    return $this->isCurrentAdmin() || $this->isCurrentClub() || $this->isCurrentInstructor();
+	}
 	
 	public function getCurrentUserName() {
 		if (!$this->isAuthenticated()) return '';

@@ -92,7 +92,7 @@ class EntityUser {
      */
     public function isAdmin()
     {
-    	return $this->getRoleAdmin() != null; 	
+    	return count($this->getRolesAdmin()) > 0; 	
     }
 	
     /**
@@ -112,7 +112,7 @@ class EntityUser {
      */
     public function isInstructor()
     {
-        return $this->getRoleInstructor() != null;
+        return count($this->getRolesInstructor()) > 0;
     }
     
     /**
@@ -147,7 +147,7 @@ class EntityUser {
 	/**
      * Get roles club
      *
-     * @return \Doctrine\Common\Collections\ArrayCollection
+     * @return array
      */
     public function getRolesClubs($club)
     {
@@ -160,6 +160,22 @@ class EntityUser {
     	return $roles;
     }
 	
+    /**
+     * Get clubs with role
+     *
+     * @return array
+     */
+    public function getClubsRole($role)
+    {
+        $clubs = array();
+        if ($role == null || $role == "") return $clubs;
+        
+        foreach ($this->clubs as $userClubRole) {
+            if (!$userClubRole->anulat() && $userClubRole->getRole() == $role) $clubs[] = $userClubRole->getClub();
+        }
+        return $clubs;
+    }
+    
     /**
      * Has role club
      *
@@ -212,12 +228,12 @@ class EntityUser {
     public function getBaseRole()
     {
     	// Revisa rols per ordre preferència: Admin, Club, Instructor, Federat (Pendent)
-        $role = $this->getRoleAdmin();
-		if ($role == null) $role = $this->getRoleClub();
-		if ($role == null) $role = $this->getRoleInstructor();
-		if ($role == null) $role = $this->getRoleFederat();  
+        $roles = $this->getRolesAdmin();
+        if (count($roles) == 0) $roles = $this->getRoleClub()==null?array():array($this->getRoleClub());
+		if (count($roles) == 0) $roles = $this->getRolesInstructor();
+		if (count($roles) == 0) $roles = $this->getRoleFederat()==null?array():array($this->getRoleFederat());
 		
-		return $role;
+		return count($roles) == 0?null:$roles[0];
     }
 	
     /**
@@ -228,7 +244,7 @@ class EntityUser {
     public function roleNeedLlicencia()
     {
         // Necessita llicència si no és Admin ni Club
-        return $this->getRoleAdmin() == null && !$this->isClub();
+        return !$this->isAdmin() && !$this->isClub();
     }
     
 	/**
@@ -249,21 +265,24 @@ class EntityUser {
      *
      * @return EntityUSerClub 
      */
-    public function getRoleAdmin()
+    public function getRolesAdmin()
     {
-        foreach ($this->clubs as $userClubRole) if ($userClubRole->isAdmin()) return $userClubRole;
+        $admins = array();
+        foreach ($this->clubs as $userClubRole) {
+            if (!$userClubRole->anulat() && $userClubRole->isAdmin()) $admins[] = $userClubRole;
+        }
     	
-    	return null;
+        return $admins;
     }
 	
 	/**
-     * Get club
+     * Get club, usuari només pot tenir un role club
      *
      * @return EntityUSerClub 
      */
     public function getRoleClub()
     {
-        foreach ($this->clubs as $userClubRole) if ($userClubRole->isRoleClub()) return $userClubRole;
+        foreach ($this->clubs as $userClubRole) if (!$userClubRole->anulat() && $userClubRole->isRoleClub()) return $userClubRole;
     	
     	return null;
     }
@@ -273,11 +292,14 @@ class EntityUser {
      *
      * @return EntityUSerClub 
      */
-    public function getRoleInstructor()
+    public function getRolesInstructor()
     {
-        foreach ($this->clubs as $userClubRole) if ($userClubRole->isRoleInstructor()) return $userClubRole;
+        $instructors = array();
+        foreach ($this->clubs as $userClubRole) {
+            if (!$userClubRole->anulat() && $userClubRole->isRoleInstructor()) $instructors[] =$userClubRole;
+        }
     	
-    	return null;
+        return $instructors;
     }
 	
 	/**
@@ -292,6 +314,8 @@ class EntityUser {
     	return null;
     }
 	
+    
+    
     /**
      * Si metapersona => $this->metapersona->getNewsletter()
      * En cas contrari false

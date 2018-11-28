@@ -558,7 +558,7 @@ class BaseController extends Controller {
     }
 	
 	protected function getCommonRenderArrayOptions($more = array()) {
-		$options = array( 	'role' => '', 'authenticated' => false, 'admin' => false, 
+		$options = array( 	'currentuser' => null, 'role' => '', 'authenticated' => false, 'admin' => false, 
 							'roleclub' => false, 'roleinstructor' => false, 'rolefederat' => false,
 							'userclub' => '', 'currentrolenom' => '',
 							'allowcomandes' => false, 'busseig' => false, 
@@ -568,6 +568,7 @@ class BaseController extends Controller {
 		if ($this->isAuthenticated()) {
 			$checkRole = $this->get('fecdas.rolechecker');
 			
+			$options['currentuser'] = $checkRole->getCurrentUser();
 			$options['role'] = $checkRole->getCurrentRole();
 			$options['admin'] = $checkRole->isCurrentAdmin();
 			$options['roleclub'] = $checkRole->isCurrentClub();
@@ -4340,6 +4341,26 @@ class BaseController extends Controller {
 		$response->setContent(json_encode($tipus));
 	
 		return $response;
+	}
+	
+	public function jsonformseleccioclubcursAction(Request $request) {
+	    //foment.dev/jsonformseleccioclubcurs
+	    
+	    $formBuilder = $this->createFormBuilder();
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    $clubs = array();
+	    if ($checkRole->isCurrentInstructor()) $clubs = $checkRole->getCurrentUser()->getClubsRole(BaseController::ROLE_INSTRUCTOR);
+	    
+        $formBuilder->add('clubs', 'entity', array(
+            'class' 		=> 'FecdasBundle:EntityClub',
+            'choices'       => $clubs,
+            'choice_label' 	=> 'nom',
+            'placeholder' 	=> false,	// Important deixar en blanc pel bon comportament del select2
+            'required'  	=> false,
+            //'data' 			=> $club,
+        ));
+	    
+        return $this->render('FecdasBundle:Titulacions:formclubscurso.html.twig', array( 'form' => $formBuilder->getForm()->createView() ));
 	}
 	
 	

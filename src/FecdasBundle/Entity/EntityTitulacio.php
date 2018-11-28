@@ -31,9 +31,14 @@ class EntityTitulacio {
 	protected $curs;	// FK taula m_cursos
 	
 	/**
-	 * @ORM\Column(type="string", length=30, nullable=true)
+	 * @ORM\Column(type="integer")
 	 */
-	protected $num;	 // El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
+	protected $num;	 
+	
+	/**
+	 * @ORM\Column(type="string", length=20, nullable=true)
+	 */
+	protected $numfedas;  // El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
 	
 	/**
 	 * @ORM\Column(type="date", nullable=true)
@@ -63,7 +68,8 @@ class EntityTitulacio {
 		$this->id = 0;
 		$this->metapersona = $metapersona;
 		$this->curs = $curs;
-		$this->num = "Pendent";  // pendent
+		$this->num = 0;  
+		$this->numfedas = null; // pendent
 		$this->dataentrada = new \DateTime();
 		$this->datamodificacio = new \DateTime();
 
@@ -94,6 +100,15 @@ class EntityTitulacio {
 	        $this->datasuperacio->format("d/m/Y"),
 	        $this->num
 	    );
+	}
+	
+	/**
+	 * Retorna número titulacio format XXXXX/20XX
+	 *
+	 * @return string
+	 */
+	public function getNumTitulacio() {
+	    return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
 	}
 	
 	/**
@@ -213,6 +228,20 @@ class EntityTitulacio {
 	 */
 	public function getNum() {
 		return $this->num;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getNumfedas() {
+	    return $this->numfedas;
+	}
+	
+	/**
+	 * @param string $numfedas
+	 */
+	public function setNumfedas($numfedas) {
+	    $this->num = $numfedas;
 	}
 	
 	/**

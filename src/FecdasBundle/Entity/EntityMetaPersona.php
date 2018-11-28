@@ -302,7 +302,11 @@ class EntityMetaPersona {
     {
     	$mails = array();
 		foreach ($this->getPersonesSortedById() as $persona) {
-		    $mails = array_merge($mails, explode(";", $persona->getMail()));
+		    if (count($persona->getMails()) > 0) {
+		        foreach ($persona->getMails() as $mail) {
+		            if (!in_array($mail, $mails)) $mails[] = $mail;
+		        }
+		    }
 		}
         return $mails;
     }

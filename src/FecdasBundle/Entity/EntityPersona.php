@@ -293,10 +293,13 @@ class EntityPersona {
 	 */
 	public function getMails()
 	{
-	    $mails = explode(";", trim($this->mail));
-	    for ($i = 0; $i < count($mails); $i++) {
-	        $mails[$i] = trim($mails[$i]);
-	    }
+	    $mails = array();
+	    if ($this->mail == null || trim($this->mail) == "") return $mails;
+	
+        foreach (explode(";", $this->mail) as $mail) {
+            $mails[] = trim($mail);
+        }
+
 	    return $mails;
 	}
 	

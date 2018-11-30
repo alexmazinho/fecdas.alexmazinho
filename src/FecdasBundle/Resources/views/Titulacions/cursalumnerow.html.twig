@@ -1,6 +1,10 @@
 {% set persona = null %}
 {% if participantdata is not null and participantdata.metapersona is not null %}
-    {% set persona = participantdata.metapersona.persona(curs.club) %}	
+	{% if curs is defined %}
+		{% set persona = participantdata.metapersona.persona(curs.club) %}
+	{% else %}
+	    {% set persona = participantdata.metapersona.persona() %}
+	{% endif %}
 {% endif %}
 
 <li class="{% if proto %}curs-form-prototype{% else %}alumne-form-row data-detall{% endif %}">

@@ -45,7 +45,7 @@ class FormTitulacio extends AbstractType {
 
 			$form->add('auxnom', 'text', array(
 				'mapped'	=> false,
-				'data'		=> $metapersona!=null?$metapersona->getNomcognoms():'',
+			    'data'		=> $persona!=null?$persona->getNomcognoms():'',
 				'disabled'	=> true
 			));	
 			$form->add('auxdni', 'text', array(
@@ -56,7 +56,15 @@ class FormTitulacio extends AbstractType {
 			
 			$form->add('num', 'text', array(
 				'required'  => false, 
-				'attr' =>	array('readonly' => !$this->editable)
+				'attr'      => array('readonly' => true),
+			    'mapped'	=> false,
+			    'data'  	=> $titulacio!=null?$titulacio->getNumTitulacio():'Pendent'
+			));	
+			
+			$form->add('numfedas', 'text', array(
+			    'required'  => false,
+			    'attr'      =>	array('readonly' => true),
+			    'data'  	=> $titulacio!=null?$titulacio->getNumfedas():'Pendent'
 			));	
 			
 			$form->add('fotoupld', 'file', array(

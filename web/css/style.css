@@ -1263,12 +1263,13 @@ ul.detalls li .alert { margin: 10px 0; }
     font-weight: bold;
 }
 
-.col-listheader {
+.table > thead > tr > th.col-listheader, .col-listheader {
 	display: table-cell;
 	padding: 10px 6px;
 	float: none;
-	border-bottom:1px solid #96C4EA;
-	border-top:1px solid #82CFFA;
+	border-bottom: 1px solid #96C4EA;
+	border-top: 1px solid #82CFFA;
+	border-left: 1px solid #96c4ea;
 	vertical-align: middle;
 	text-align: center;
 	font-size: 13px;
@@ -1340,6 +1341,8 @@ ul.detalls li .alert { margin: 10px 0; }
 	color: #555555;
 	font-size: 13px;
 } 
+
+
 .table > tbody > tr > td.data-detall-cell, .table > tbody > tr > th.data-detall-cell, 
 .table > tfoot > tr > td.data-detall-cell, .table > tfoot > tr > th.data-detall-cell, 
 .table > thead > tr > td.data-detall-cell, .table > thead > tr > th.data-detall-cell,
@@ -1354,7 +1357,7 @@ ul.detalls li .alert { margin: 10px 0; }
     word-wrap: break-word;
 }
 
-.table > thead > tr > th { border-bottom: 0; }
+/*.table > thead > tr > th { border-bottom: 0; }*/
 
 .table > tbody > tr:first-child > td.data-detall-cell, .table > tbody > tr:first-child > th.data-detall-cell, 
 .table > tfoot > tr:first-child > td.data-detall-cell, .table > tfoot > tr:first-child > th.data-detall-cell, 
@@ -1486,6 +1489,26 @@ tr:first-child > .data-detall-cell  {
 
 * html .table-scroll { /*max-height: 400px;  max-height IE hack */
    height: expression( this.scrollHeight > 409 ? "410px" : "auto" ); /* sets max-height for IE */
+}
+
+
+.table-fixheader    { overflow-y: auto; height: 450px; }
+.table-fixheader > .table { border-collapse: separate; }
+.table-fixheader > .table > thead > tr { display: table-row; position: sticky; top: 0; }
+.table-fixheader .data-detall-header { background: none; }
+.table-fixheader > .table > thead > tr > th { height: 40px; background:  repeat-x scroll 0 0 #F0F9FF; position: sticky; top: 0; border-collapse: collapse; } 
+
+.table-fixheader > .table > thead > tr.extrarow-fixheader { top: 40px; }
+.table-fixheader > .table > thead > tr.extrarow-fixheader > th { top: 40px; }
+
+.table-fixheader > .table > tbody > tr:first-child > td.data-detall-cell, 
+.table-fixheader > .table > tbody > tr:first-child > th.data-detall-cell, 
+.table-fixheader > .table > tfoot > tr:first-child > td.data-detall-cell, 
+.table-fixheader > .table > tfoot > tr:first-child > th.data-detall-cell, 
+.table-fixheader > .table > thead > tr:first-child > td.data-detall-cell, 
+.table-fixheader > .table > thead > tr:first-child > th.data-detall-cell, 
+.table-fixheader tr:first-child > .data-detall-cell {
+	border-top: 1px solid #96C4EA;
 }
 
 
@@ -2346,15 +2369,6 @@ select#parte_renovar_tipus { width: 240px; }
 
 .col-md-comment { /*position: absolute; bottom: -10px;*/ color: #1240a0; font-size: 0.9em; line-height: 2.8; }
 
-/*
-#llista-usuarisclub #list-data {
-	max-height: 120px;
-}
-
-* html #llista-usuarisclub #list-data { 
-   height: expression( this.scrollHeight > 119 ? "120px" : "auto" ); 
-}
-*/
 
 #formclub-nouclub, #formclub-copiar {
 	margin: 28px 0 0 0;
@@ -2391,8 +2405,6 @@ select#parte_renovar_tipus { width: 240px; }
 #formclub-addrprovincia, #formclub-addrprovinciacorreu { width: 14%; }
 #formclub-addradreca, #formclub-addradrecacorreu { width: 28%; }
 
-
-#llista-usuarisclub .table-scroll { /*max-height: 150px;*/ }
 
 /*
 input#club_nom { width: 350px; }
@@ -2431,22 +2443,6 @@ select#club_tipusparte {
 .data-detall-cell.userclub-junta-action { text-align: right; padding: 2px 4px;  width: 10%; } 
 .data-detall-cell.userclub-junta-action a { padding: 0; }
 
-
-#llista-usuarisclub table { table-layout: fixed; }
-
-#llista-usuarisclub #list-header, #llista-usuarisclub #summary-header { display: table-row; height: auto; }
-
-#llista-usuarisclub #list-header {  box-shadow: none;  }
-#llista-usuarisclub #summary-header {  box-shadow: none;  }
-
-#llista-usuarisclub .table > thead > tr > th {
-    border-color: transparent;
-    border-style: solid;
-    border-width: 0;
-    vertical-align: middle;
-}
-
-#llista-usuarisclub #list-data .data-detall-cell { vertical-align: middle; }
 
 input#user_club_user { width: 298px; }
 select#user_club_role { width: auto; }

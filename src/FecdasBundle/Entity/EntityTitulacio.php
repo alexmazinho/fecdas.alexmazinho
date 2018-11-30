@@ -36,7 +36,7 @@ class EntityTitulacio {
 	protected $num;	 
 	
 	/**
-	 * @ORM\Column(type="string", length=20, nullable=true)
+	 * @ORM\Column(type="string", length=30, nullable=true)
 	 */
 	protected $numfedas;  // El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
 	
@@ -108,7 +108,11 @@ class EntityTitulacio {
 	 * @return string
 	 */
 	public function getNumTitulacio() {
-	    return str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
+	    if ($this->num == null || $this->num == 0) return 'Pendent';
+	    $prefix = $this->getTitol()->getPrefix();
+	    $prefix = str_replace("<YY>", $this->datasuperacio->format('y'), $prefix);
+	    
+	    return $prefix.str_pad($this->num, 7,"0", STR_PAD_LEFT);
 	}
 	
 	/**

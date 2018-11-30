@@ -49,7 +49,14 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		
 			$form->add('num', 'text', array(
 				'required' 	=> true,
-				'attr'		=>	array('readonly' => !$curs->finalitzat())
+				'attr'		=>	array('readonly' => !$curs->finalitzat()),
+			    'data'  	=> $curs->getNumActa()
+			));
+			
+			$form->add('numfedas', 'text', array(
+			    'required' 	=> true,
+			    'attr'		=>	array('readonly' => !$curs->finalitzat()),
+			    'data'  	=> $curs->getNumActa()
 			));
 			
 			if ($curs->historic() && !$curs->esNou()) {
@@ -59,7 +66,15 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 					'attr'		=>	array('readonly' => true)	// clubs històric
 				));
 			} else {
-				$form->add('club', 'entity', array(
+			    
+			    $form->add('club', 'entity', array(
+			        'class' 		=> 'FecdasBundle:EntityClub',
+			        'data'  	    => $curs->getClub(),
+			        'choices'       => array($curs->getClub()),
+			        'choice_label' 	=> 'nom',
+			        'attr'		    =>	array('readonly' => true)	// clubs històric
+			    ));
+				/*$form->add('club', 'entity', array(
 							'class' 		=> 'FecdasBundle:EntityClub',
 							'query_builder' => function($repository) {
 									return $repository->createQueryBuilder('c')
@@ -69,8 +84,8 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 							'choice_label' 	=> 'nom',
 							//'placeholder' 	=> '',
 							'required'  	=> true,
-							'disabled'		=> true  // Current club. No es pot editar	
-				));	
+							'attr'		=>	array('readonly' => true)  // Current club. No es pot editar	
+				));	*/
 			}	
 			
 			$tipusTitols = '\''.BaseController::TIPUS_TITOL_BUSSEIG.'\', \''.BaseController::TIPUS_ESPECIALITAT.'\'';
@@ -120,7 +135,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('auxdirector', 'text', array(
 				'mapped'	=> false,
 				'data'  	=> $persona != null?$persona->getId():'',
-				'attr'		=>	array('readonly' => !$editable)
+				'attr'		=>	array('readonly' => true)
 			));	
 
 			$form->add('auxcarnet', 'text', array(
@@ -202,6 +217,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 		$builder->add('action', 'hidden', array('mapped' => false) );
 		
 		$builder->add('stock', 'hidden', array('mapped' => false, 'data' => $this->stock) );
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

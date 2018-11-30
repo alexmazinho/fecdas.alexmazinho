@@ -721,6 +721,7 @@ class TitulacionsController extends BaseController {
 		$sort = $request->query->get('sort', 'c.datadesde');
 		$direction = $request->query->get('direction', 'desc');
 		
+		$cerca = $request->query->get('participant', '');
 		$currentClub = $request->query->get('clubs', ''); // Admin filtra club
 		
 		$club = $this->getCurrentClub(); // Admins poden cerca tots els clubs
@@ -743,7 +744,7 @@ class TitulacionsController extends BaseController {
 		$this->logEntryAuth('VIEW CURSOS', "rol ".$rol. " club: " . $currentClub." "." titol ".$currentTitol.
 											"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--'));
 		
-		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $desde, $fins, $currentPerValidar, $sort.' '.$direction);
+		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $cerca, $desde, $fins, $currentPerValidar, $sort.' '.$direction);
 		
 		$paginator  = $this->get('knp_paginator');
 		$cursos = $paginator->paginate(
@@ -755,6 +756,7 @@ class TitulacionsController extends BaseController {
 		$formBuilder = $this->createFormBuilder()->add('pervalidar', 'checkbox', array('required'  => false, 'data' => $currentPerValidar));
 		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
+		$formBuilder->add('participant', 'text', array('required'  => false, 'data' => $cerca, 'attr' => array( 'placeholder' => 'Alumne: dni, nom o mail', 'readonly' => false)));
 		if ($this->isCurrentAdmin()) $this->addClubsActiusForm($formBuilder, $club);
 		else {
 		    if ($checkRole->isCurrentInstructor()) {
@@ -815,7 +817,6 @@ class TitulacionsController extends BaseController {
     		$id = $request->query->get('id', 0);
 			$action = $request->query->get('action', '');
 			$codi = $request->query->get('club', '');
-			$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 			
 			if ($id == 0 && !$checkRole->isCurrentInstructor()) {
 				$this->get('session')->getFlashBag()->add('error-notice', 'Només els instructors poden crear un nou curs');
@@ -826,9 +827,13 @@ class TitulacionsController extends BaseController {
     		$data = $request->request->get('curs');
     		$id = (isset($data['id'])?$data['id']:0);
 			$action = (isset($data['action'])?$data['action']:'');
+			$codi = (isset($data['club'])?$data['club']:'');
     	}
-		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
     	
+		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
+		
+		if ($codi != '' && $curs == null) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		
     	if ($curs == null) {
     		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST').' action: '.$action);
 
@@ -837,7 +842,9 @@ class TitulacionsController extends BaseController {
     		    return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
     		}
     		
-    		$curs = new EntityCurs($checkRole->getCurrentUser(), null, new \DateTime(), new \DateTime(), $club);
+    		$maxNumCurs = $this->getMaxNumEntity($this->getCurrentDate()->format('Y'), BaseController::CURSOS) + 1;
+    		
+    		$curs = new EntityCurs($checkRole->getCurrentUser(), $maxNumCurs, $this->getCurrentDate(), $this->getCurrentDate(), $club);
 			$em->persist($curs);
 			
 			$this->novaDocenciaCurs($checkRole->getCurrentUser()->getMetapersona(), array(), $curs, BaseController::DOCENT_DIRECTOR);
@@ -864,7 +871,7 @@ class TitulacionsController extends BaseController {
     	$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser() || $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
-    		    throw new \Exception('Operació pendent. No es poden desar les dades del curs');
+    		    //throw new \Exception('Operació pendent. No es poden desar les dades del curs');
     		    
 			 	$form->handleRequest($request);
 			 	if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrors(true, true) );
@@ -907,13 +914,11 @@ class TitulacionsController extends BaseController {
     		} else {
 	   			
 				if ($action == 'remove') {
-				 	if (!$this->isCurrentAdmin())	throw new \Exception('Només els administradors poden esborrar el curs' );
-						
-				 	if ($curs->esNou())  throw new \Exception('No s\'ha pogut esborrar el curs' );
-					
-					
-					/// !!!!!! PENDENT !!!! 
-				
+				    // Comprovacions genèriques
+				    $this->validacionsCurs($curs, $stock, $form, $action);
+				    
+				    // Baixa curs, alumnes i docents. Restaura kits si escau 
+				    $this->accionsPostValidacions($curs, $action);
 				}
 	   		}
 		} catch (\Exception $e) {
@@ -940,12 +945,6 @@ class TitulacionsController extends BaseController {
 			
 		if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
 		$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
-			
-			//$participantscurrent = isset($data['participantscurrent'])?explode(";",$data['participantscurrent']):array();
-			
-			
-			//curs_formalumne_fotoupld_0
-			//curs_formalumne_certificat_0
 			
 		$instructors = isset($data['instructors'])?$data['instructors']:array();
 		$collaboradors = isset($data['collaboradors'])?$data['collaboradors']:array();;
@@ -1062,14 +1061,11 @@ class TitulacionsController extends BaseController {
 		$id = isset($participant['metapersona'])?$participant['metapersona']:0;
 		
 		$titulacio = $curs->getParticipantByMetaId($id);
-		if ($titulacio != null) {
-			$titulacio->setNum( isset($participant['num'])?$participant['num']:'' );
-		} else {
+		if ($titulacio == null) {
 			$metapersona = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->find($id);	
 			if ($metapersona == null) throw new \Exception('Alumne no trobat '.$id );
-						
+
 			$titulacio = new EntityTitulacio($metapersona, $curs);	
-			$titulacio->setNum( isset($participant['num'])?$participant['num']:'' );
 	
 			$em->persist($titulacio);
 			$curs->addParticipant($titulacio);
@@ -1080,13 +1076,21 @@ class TitulacionsController extends BaseController {
 		
 		$checkRole = $this->get('fecdas.rolechecker');
 		
-		if ($action == 'save' 	&& !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden desar les dades del curs');
-		if ($action == 'close' 	&& !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden tancar el curs');
+		if ($action == 'save' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden desar les dades del curs');
+		if ($action == 'close' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden tancar el curs');
 		
-		if ($action == 'unclose' 	&& !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden tornar a obrir el curs per editar-lo');
-		if ($action == 'validate' 	&& !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden confirmar la validesa de les dades del curs');
+		if ($action == 'unclose' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden tornar a obrir el curs per editar-lo');
+		if ($action == 'validate' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden confirmar la validesa de les dades del curs');
 		
-		if ($action == 'finalize' 	&& !$checkRole->isCurrentAdmin()) throw new \Exception('Només des de la Federació es pot finalitzar el curs');
+		if ($action == 'finalize' 	&& !$this->isCurrentAdmin()) throw new \Exception('Només des de la Federació es pot finalitzar el curs');
+		
+		if ($action == 'remove' 	&& !$this->isCurrentAdmin()) throw new \Exception('Només els administradors poden esborrar el curs' );
+		
+		if ($action == 'remove') {
+		    if ($curs->esNou())  throw new \Exception('No s\'ha pogut esborrar el curs' );
+		    
+		    return;
+		}
 		
 		// Generals 
 		$titol = $curs->getTitol();
@@ -1162,8 +1166,6 @@ class TitulacionsController extends BaseController {
 			$meta = $participant->getMetapersona();
 			if (in_array($meta->getId(), $alumnesIds)) throw new \Exception('L\'alumne '.$meta->getNomCognoms().' està repetit');
 			$alumnesIds[] = $meta->getId();
-			
-			if ($action == 'finalize') $this->validaDadesFinalitzacioCurs($participant);
 		}
 		
 		// Valida stock
@@ -1186,12 +1188,6 @@ class TitulacionsController extends BaseController {
 		if ($docencia->getHaula() < 0) throw new \Exception('Les hores de pràctiques fora de l\'aigua dels '.$rol.' no poden ser negatives');
 		if ($docencia->getHpiscina() < 0) throw new \Exception('Les hores de pràctiques a aigües confinades dels '.$rol.' no poden ser negatives');
 		if ($docencia->getHmar() < 0) throw new \Exception('Les hores de pràctiques a la mar dels '.$rol.' no poden ser negatives');
-	}
-
-	private function validaDadesFinalitzacioCurs($participant) {
-		if ($participant == null) return;
-		
-		if ($participant->getNum() == null || trim($participant->getNum()) == '')  throw new \Exception('Falta indicar el número per l\'alumne '.$participant->getMetapersona()->getDni());
 	}
 
 	private function accionsPostValidacions($curs, $action) {
@@ -1258,9 +1254,11 @@ class TitulacionsController extends BaseController {
 					
 					$comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$kit->getDescripcio();
 					
-					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA);
+					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
 					
 					$em->persist($registreStockClub);
+					
+					$curs->setStock($registreStockClub);
 				}
 				
 				// Enviar mail a Federació
@@ -1282,8 +1280,34 @@ class TitulacionsController extends BaseController {
 				$curs->setValidat(true);	
 				$curs->setFinalitzat(true);
 				
+				$maxNumTitulacio = $this->getMaxNumEntity($curs->getDatafins()->format('Y'), BaseController::TITULACIONS) + 1;
+				
+				foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {	
+				    // Finalitzar. Calcular núm alumne i data superació
+				    $participant->setDatasuperacio($curs->getDatafins());
+				    $participant->setNum($maxNumTitulacio);
+				    $maxNumTitulacio++;
+				}
+				
 				break;
-					
+			
+			case 'remove':	// Federació
+			    
+				// Esborrar alumnes
+			    foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+			        $participant->setDatabaixa($this->getCurrentDate());
+			    }
+
+				// Esborrar docents: director, co-director, instructors i col·laboradors
+			    foreach ($curs->getDocentsByRoleSortedByCognomsNom() as $docent) {
+			        $docent->setDatabaixa($this->getCurrentDate());
+			    }
+				
+			    $stock = $curs->getStock();
+			    if ($stock != null) $stock->setDatabaixa($this->getCurrentDate());
+
+			    break;
+				
 			default:
 				throw new \Exception('Acció incorrecte '.$action );
 						
@@ -1481,13 +1505,27 @@ class TitulacionsController extends BaseController {
 
 	private function comprovaRequerimentsFormacio($requeriment, $curs) {
 		$tipus = $requeriment->getRequeriment();	
-			
+		$valors = explode(";",$requeriment->getValor());
+		
 		$res = array('result' => 'OK', 'errors' => array());
 		
 		switch ($tipus->getId()) {
 			case 201:  // Títols alumne suficients
+			    foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+			        $metapersona = $participant->getMetapersona();
+			        
+			        $trobats = true;
+			        foreach ($valors as $idTitolRequeriment) {
+			            if (!$metapersona->getTitulacionsByTitolId($idTitolRequeriment)) $trobats = false;
+			        }
+			        
+			        
+			    }
+			    
+			    break; 
+			    
 			case 202:  // Títols alumne necessaris
-			
+			     
 				
 				break;
 				
@@ -1703,7 +1741,7 @@ class TitulacionsController extends BaseController {
 		$reqTitols = $titol->getRequerimentByTipus($reqAlumnes['titols']['num'][0]);  // Titols suficients
 		$separador = " o ";
 		if ($reqTitols == null) {
-			$reqTitols = $this->getRequerimentByTipus($reqAlumnes['titols']['num'][1]);  // Titols necessaris
+		    $reqTitols = $titol->getRequerimentByTipus($reqAlumnes['titols']['num'][1]);  // Titols necessaris
 			$separador = " + ";	
 		}		
 		
@@ -1903,14 +1941,17 @@ class TitulacionsController extends BaseController {
 	}
 
 
-	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $desde = null, $fins = null, $pervalidar = false, $strOrderBY = '') {
+	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $participant = '', $desde = null, $fins = null, $pervalidar = false, $strOrderBY = '') {
 
 		$em = $this->getDoctrine()->getManager();
 	
 		//$current = $this->getCurrentDate();
 		
-		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityCurs c JOIN c.titol t WHERE 1 = 1 ";
+		$strQuery = "SELECT c FROM FecdasBundle\Entity\EntityCurs c JOIN c.titol t  ";
 		
+		if ($participant != '') $strQuery .= " JOIN c.participants p JOIN p.metapersona m JOIN m.persones e ";
+		
+		$strQuery .= " WHERE 1 = 1 ";
 		if ($this->isCurrentAdmin()) {
 			$strQuery .= " AND c.databaixa IS NULL ";
 		}
@@ -1926,6 +1967,8 @@ class TitulacionsController extends BaseController {
 		
 		if ($club != null) $strQuery .= " AND c.club = :club ";
 		
+		if ($participant != '') $strQuery .= " AND (m.dni LIKE :participant OR CONCAT(e.nom, ' ', e.cognoms) LIKE :participant OR e.mail LIKE :participant) ";
+		    
 		if ($rol == BaseController::ROLE_INSTRUCTOR)  $strQuery .= " AND c.editor = :editor ";
 
 		if ($strOrderBY != "") $strQuery .= " ORDER BY " .$strOrderBY;  
@@ -1939,6 +1982,7 @@ class TitulacionsController extends BaseController {
 		if ($titol != null) $query->setParameter('titol', $titol->getId());
 		if ($desde != null) $query->setParameter('desde', $desde->format('Y-m-d'));
 		if ($fins != null) $query->setParameter('fins', $fins->format('Y-m-d'));
+		if ($participant != '') $query->setParameter('participant', "%".$participant."%");
 	
 		return $query;
 	}

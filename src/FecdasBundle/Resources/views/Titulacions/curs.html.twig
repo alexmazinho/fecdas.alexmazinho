@@ -109,7 +109,7 @@
 	{% include 'FecdasBundle:Includes:messages.html.twig' %}
     
 	{{ form_start(form, {'action': path('FecdasBundle_curs'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formcurs'}}) }}
-		
+		{{ form_widget(form.id) }}
 		{{ form_widget(form.action) }}
 		{{ form_widget(form.stock) }}
 		<div class="row">
@@ -117,13 +117,21 @@
 			    <div class="form-group">
 			    	{{ form_label(form.num, 'Num. Acta') }}
 					<div class="input-group"><div class="input-group-addon"></div>{{ form_widget(form.num, { 'attr': {'class': 'form-control'} }) }}</div>
-				</div>{{ form_errors(form.num)  }}
-			 </div>
-			<div class="col-md-3  col-xs-12">
+				</div>
+			</div>
+			{% if admin and not curs.esNou %}
+				<div class="col-md-2 hidden">
+			    	<div class="form-group">
+			    	    {{ form_label(form.numfedas, 'Acta FEDAS') }}
+						<div class="input-group"><div class="input-group-addon"></div>{{ form_widget(form.num, { 'attr': {'class': 'form-control'} }) }}</div>
+					</div>{{ form_errors(form.num)  }}
+				</div>
+			{% endif %}
+			<div class="col-md-3 col-xs-12">
 				<div class="form-group">
 				   	{{ form_label(form.club, 'Realitzat pel club', { 'label_attr': {'class': ''} }) }}
 					{{ form_widget(form.club, { 'attr': {'class': 'form-control'} }) }}
-				</div>{{ form_errors(form.club)  }}
+				</div>
 			</div>
 			<div class="col-md-3 col-xs-6">
 				<div class="form-group">
@@ -247,14 +255,14 @@
 		</div>
 		<div class="row">
 			<div class="col-md-12">
-				{% if not curs.finalitzat %}
+				{% if not curs.validat %}
     				{% set kit = curs.kit %}
     				{% set stock = form.stock.vars.data %}
     				{% set totalalumnes = curs.getParticipantsSortedByCognomsNom|length %}
     				
     				{% if kit is not null and stock != '' %}
         				<div id="comprovacio-kits" class="row">
-                        	<div class="col-md-12 space20">
+                        	<div class="{% if roleclub and stock < totalalumnes%}col-md-9{% else %}col-md-12{% endif %} space20">
                         		<h4 class="blue">
                                		<div class='alert {% if stock >= totalalumnes %}alert-success{% else %}alert-danger{% endif %}'>
            								<ul><li>
@@ -285,6 +293,15 @@
                                     {% endif %}
                         		</h4>
                         	</div>
+                        	{% if roleclub and stock < totalalumnes%} 
+                        		<div class="col-md-3 space20">
+                        			<div class="alert">
+           	      						<a class="stockclub-addtocart btn btn-default" href="{{ path('FecdasBundle_afegircistella', { 'tipus': constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_KITS'), 'id': kit.id, 'unitats': (totalalumnes - stock) }) }}" alt="Realitzar comanda" title="Realitzar comanda">
+               	   							<i class="fa fa-shopping-cart blue"></i> Realitzar comanda
+               	   						</a>
+               	   					</div>
+    							</div>
+                			 {% endif %}
         				</div>				
     				{% endif %}
 				{% endif %}
@@ -451,11 +468,11 @@
 		    });
 
 			
-			$("select#curs_club").select2({
+			/*$("select#curs_club").select2({
 				minimumInputLength: 2,
 				allowClear: true,
 				placeholder: 'Escollir club'
-			});
+			});*/
 			
 			$("select#curs_titol").select2({
 				minimumInputLength: 2,
@@ -596,15 +613,27 @@
 		        	return false;
 		        }
 
-				var roleinstructor = '{{ roleinstructor }}';
-				var roleclub = '{{ roleclub }}';
-				var admin = '{{ admin }}';
+				{% if roleinstructor %} 
+					var roleinstructor = true;
+				{% else %} 
+					var roleinstructor = false; 
+				{% endif %}
+				{% if roleclub %} 
+					var roleclub = true; 
+				{% else %} 
+					var roleclub = false; 
+				{% endif %}
+				{% if admin %} 
+					var admin = true;
+				{% else %} 
+					var admin = false; 
+				{% endif %}
 
 				$('#curs_action').val( action ); 
 
 				if (action == 'save') {
 
-					if (!roleinstructor) {
+					if (!admin && !roleinstructor) {
 						dialegError('Error', 'Només els instructors poden editar les dades del curs', 400, 0);
 			        	return false;
 					}
@@ -614,7 +643,7 @@
 
 				if (action == 'close') {
 
-					if (!roleinstructor) {
+					if (!admin && !roleinstructor) {
 						dialegError('Error', 'Només els instructors poden tancar el curs', 400, 0);
 			        	return false;
 					}
@@ -632,7 +661,7 @@
 				}
 
 				if (action == 'unclose') {
-					if (!roleclub) {
+					if (!admin && !roleclub) {
 						dialegError('Error', 'Només el Club pot reobrir el curs per editar-lo', 400, 0);
 			        	return false;
 					}
@@ -650,7 +679,7 @@
 				}
 
 				if (action == 'validate') {
-					if (!roleclub) {
+					if (!admin && !roleclub) {
 						dialegError('Error', 'Només el Club pot confirmar la validesa de les dades del curs', 400, 0);
 			        	return false;
 					}
@@ -696,6 +725,28 @@
 					});
 				}
 			});
+
+			$( ".stockclub-addtocart" ).click( function(e) {
+
+				e.preventDefault();			
+				
+				var url = $(this).attr('href');
+
+				$('.alert-dismissible').remove();
+		
+				$.get(url, function(data) {
+
+					// Redirecció a la cistella de la compra	
+					window.location = '{{ path('FecdasBundle_graellaproductes', { 'tipus': constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_KITS') }) }}';	
+						
+				}).fail( function(xhr, status, error) {
+					 // xhr.status + " " + xhr.statusText, status, error
+					 var sms = smsResultAjax('KO', xhr.responseText);
+
+					 $('.comprovacio-kits').prepend(sms);
+				}); 
+			});
+			
 		});
 
 	</script>

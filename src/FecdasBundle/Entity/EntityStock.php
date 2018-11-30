@@ -53,8 +53,7 @@ class EntityStock {
 	protected $factura;	// FK taula m_factures
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityCurs")
-	 * @ORM\JoinColumn(name="curs", referencedColumnName="id", nullable=true)
+	 * @ORM\OneToOne(targetEntity="EntityCurs", mappedBy="stock")
 	 */
 	protected $curs;	// FK taula m_curs
 	
@@ -64,7 +63,7 @@ class EntityStock {
 	protected $comentaris;
 	
 	/**
-	 * @ORM\ManyToOne(targetEntity="EntityClub", inversedBy="usuaris")
+	 * @ORM\ManyToOne(targetEntity="EntityClub")
 	 * @ORM\JoinColumn(name="club", referencedColumnName="codi")
 	 */
 	protected $club;  // FK m_clubs

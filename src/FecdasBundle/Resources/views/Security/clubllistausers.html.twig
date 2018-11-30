@@ -2,15 +2,24 @@
 
 {% if club.getUsuarisDistinct|length > 0 %}
 	{% set rolsDistinct = club.getRolsDistinct %}
-	<table class="table">
+	<!-- <table class="table">
 		<thead class="table-header">	
 			<tr id="list-header">
 			   	<th id="header-userclubuser" class="col-listheader" rowspan="2">Usuari</th>
 			   	<th id="header-userclublastaccess" class="col-listheader" rowspan="2">Darrer accés</th>
-			   	<th id="header-userclubrolspan" class="col-listheader" colspan="{{ rolsDistinct|length }}">Rols</th>
+			   	<th id="header-userclubrolspan" class="col-listheader" colspan="{# rolsDistinct|length #}">Rols</th>
 			   	<th id="header-userclubactions" class="col-listheader" rowspan="2">&nbsp;</th>
-			</tr>
-			<tr id="summary-header">
+			</tr> 
+			<tr id="summary-header">-->
+		<table class="table">
+   			<thead>
+   				<tr class="data-detall-header">
+    			   	<th id="header-userclubuser" class="col-listheader" rowspan="2">Usuari</th>
+    			   	<th id="header-userclublastaccess" class="col-listheader" rowspan="2">Darrer accés</th>
+    			   	<th id="header-userclubrolspan" class="col-listheader" colspan="{{ rolsDistinct|length }}">Rols</th>
+    			   	<th id="header-userclubactions" class="col-listheader" rowspan="2">&nbsp;</th>
+				</tr> 
+   		   		<tr class="data-detall-header extrarow-fixheader">
 				{% for role in rolsDistinct %}
 			   		<th id="header-userclubrol" class="col-listheader userclub-rol-{{ rolsDistinct|length }}">
 			   			{{ role|capitalize }}
@@ -20,10 +29,10 @@
 			   			{% endif %}
 			   		</th>
 			   	{% endfor %}
-			</tr>
-		</thead>
+    			</tr>
+    		</thead>
 	
-		<tbody id="list-data">
+			<tbody>
 			{% for userdistinct in club.getUsuarisDistinct %}
 				{% set userclub = userdistinct.userclub %}
 				{% set metapersona = userclub.metapersona %}
@@ -99,8 +108,8 @@
 					</td>
 				</tr>
 		   	{% endfor %}
-		</tbody>
-	</table>
+			</tbody>
+		</table>
 {% else %}
 	<div class="alert alert-success" role="alert">Cap usuari</div>
 {% endif %}

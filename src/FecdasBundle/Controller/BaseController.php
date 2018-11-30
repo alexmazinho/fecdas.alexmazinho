@@ -128,9 +128,11 @@ class BaseController extends Controller {
 	const TIPUS_COMANDA_DUPLICATS 		= 2;
 	const TIPUS_COMANDA_ALTRES			= 3;
 	
-	const REBUTS	= 1;
-	const FACTURES	= 2;
-	const COMANDES	= 3;
+	const REBUTS	   = 1;
+	const FACTURES	   = 2;
+	const COMANDES	   = 3;
+	const CURSOS       = 4;
+	const TITULACIONS  = 5;
 	
 	const ANY_INICI_WEB	= 2012;
 	
@@ -1203,6 +1205,14 @@ class BaseController extends Controller {
 				$strQuery = " SELECT MAX(c.num) FROM FecdasBundle\Entity\EntityComanda c ";
 				$strQuery .= " WHERE c.dataentrada >= '".$inici."' AND c.dataentrada <= '".$final."'";
 				break;
+			case BaseController::CURSOS:
+			    $strQuery = " SELECT MAX(c.num) FROM FecdasBundle\Entity\EntityCurs c ";
+			    $strQuery .= " WHERE c.dataentrada >= '".$inici."' AND c.dataentrada <= '".$final."'";
+			    break;
+			case BaseController::TITULACIONS:
+			    $strQuery = " SELECT MAX(t.num) FROM FecdasBundle\Entity\EntityTitulacio t ";
+			    $strQuery .= " WHERE t.dataentrada >= '".$inici."' AND t.dataentrada <= '".$final."'";
+			    break;
 			default:
 				return -1;
 		}

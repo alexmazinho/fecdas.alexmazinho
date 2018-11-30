@@ -215,6 +215,15 @@ class EntityMetaPersona {
     	return $arr; 
     }
     
+    public function getTitulacionsByTitolId($idTitol)
+    {
+        foreach ($this->getTitulacionsSortedByDate() as $titulacio) {
+            if ($titulacio->getTitol()->getId() == $idTitol) return true;
+        }
+        return false;
+    }
+    
+    
 	public function teTitulacions() {
 		return count($this->getTitulacionsSortedByDate(false));
 	}

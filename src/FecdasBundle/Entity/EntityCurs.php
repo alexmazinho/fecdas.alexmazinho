@@ -42,7 +42,7 @@ class EntityCurs {
 	protected $num;	  
 
 	/**
-	 * @ORM\Column(type="string", length=20, nullable=true)
+	 * @ORM\Column(type="string", length=30, nullable=true)
 	 */
 	protected $numfedas;	// El crea la FEDAS, el número es pot crear en un any diferent de l'inici o la finalització
 		
@@ -62,6 +62,12 @@ class EntityCurs {
 	 */
 	protected $titol;	// FK taula m_titols 
 
+	/**
+	 * @ORM\OneToOne(targetEntity="EntityStock", inversedBy="curs")
+	 * @ORM\JoinColumn(name="stock", referencedColumnName="id")
+	 */
+	protected $stock;	// FK taula m_stock
+	
 	/**
 	 * @ORM\OneToMany(targetEntity="EntityTitulacio", mappedBy="curs" )
 	 */
@@ -105,14 +111,15 @@ class EntityCurs {
 	/**
 	 * Constructor
 	 */
-	public function __construct($editor, $titol = null, $datadesde = null, $datafins = null, $club = null, $clubhistoric = '')
+	public function __construct($editor, $num, $datadesde = null, $datafins = null, $club = null, $clubhistoric = '', $titol = null)
 	{
 	
 		$this->id = 0;
 		$this->editor = $editor;
-		$this->num = 0;
+		$this->num = $num;
 		$this->numfedas = null;  // pendent
 		$this->titol = $titol;
+		$this->stock = null;
 		$this->club = $club;
 		if ($club == null) $this->clubhistoric = $clubhistoric;
 		$this->dataentrada = new \DateTime();
@@ -154,7 +161,6 @@ class EntityCurs {
 		
         return $this->titol->esKitNecessari()?$this->titol->getKit():null;
     }
-	
 	
 	/**
 	 * Retorna curs anul·lat?
@@ -251,7 +257,7 @@ class EntityCurs {
 		
 		foreach ($participacions as $titulacio) {
 			$metapersona = $titulacio->getMetapersona();
-			$persona = $metapersona->getPersonaClub($this->club);
+			$persona = $metapersona->getPersona($this->club);
 			
 			if ($admin || $persona != null) $arr[] = $metapersona->getDni()." - ".$metapersona->getNomCognoms();
 			else $arr[] = $metapersona->getDni();
@@ -554,6 +560,27 @@ class EntityCurs {
 	{
 		return $this->titol;
 	}
+	
+	/**
+	 * Set stock
+	 *
+	 * @param EntityStock $stock
+	 */
+	public function setStock(EntityStock $stock = null)
+	{
+	    $this->stock = $stock;
+	}
+	
+	/**
+	 * Get stock
+	 *
+	 * @return EntityStock
+	 */
+	public function getStock()
+	{
+	    return $this->stock;
+	}
+	
 	
 	/**
      * Add docencia

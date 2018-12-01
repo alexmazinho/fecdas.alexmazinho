@@ -939,10 +939,9 @@ class TitulacionsController extends BaseController {
 	}
 
 	private function initDadesPostCurs($data, $curs) {
-				
 		if (isset($data['auxdirector']) && isset($data['auxdirector']) > 0) $auxdirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxdirector']);
-		$auxcarnet = isset($data['auxcarnet'])?$data['auxcocarnet']:'';
-			
+		$auxcarnet = isset($data['auxcarnet'])?$data['auxcarnet']:'';
+
 		if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
 		$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
 			
@@ -952,13 +951,16 @@ class TitulacionsController extends BaseController {
 		
 		$currentDocencia = $curs->getDirector();
 		if ($auxdirector != null && $auxdirector->getMetapersona() != null) {
-			$meta = $auxdirector->getMetapersona();
+		    $meta = $auxdirector->getMetapersona();
 			$currentMeta = ($currentDocencia == null?null:$currentDocencia->getMetadocent());
+			$docent = array('carnet' => $auxcarnet);
 			
 			if ($meta !== $currentMeta) {
 				if ($currentDocencia != null) $currentDocencia->baixa();
-				$this->novaDocenciaCurs($meta, array('carnet' => $auxcarnet), $curs, BaseController::DOCENT_DIRECTOR);
-			} 
+                $this->novaDocenciaCurs($meta, $docent, $curs, BaseController::DOCENT_DIRECTOR);
+			} else {
+                $this->updateDocenciaCurs($docent, $currentDocencia);
+			}
 		} else {
 			// Esborrar?
 			if ($currentDocencia != null) $currentDocencia->baixa();
@@ -968,11 +970,13 @@ class TitulacionsController extends BaseController {
 		if ($auxcodirector != null && $auxcodirector->getMetapersona() != null) {
 			$meta = $auxcodirector->getMetapersona();
 			$currentMeta = ($currentDocencia == null?null:$currentDocencia->getMetadocent());
+			$docent = array('carnet' => $auxcocarnet);
 			
 			if ($meta !== $currentMeta) {
 				if ($currentDocencia != null) $currentDocencia->baixa();
-				
-				$this->novaDocenciaCurs($meta, array('carnet' => $auxcocarnet), $curs, BaseController::DOCENT_CODIRECTOR);
+				$this->novaDocenciaCurs($meta, $docent, $curs, BaseController::DOCENT_CODIRECTOR);
+			} else {
+			    $this->updateDocenciaCurs($docent, $currentDocencia);
 			} 
 		} else {
 			// Esborrar?
@@ -1032,7 +1036,6 @@ class TitulacionsController extends BaseController {
 		} else {
 			$metadocent = $this->getDoctrine()->getRepository('FecdasBundle:EntityMetaPersona')->find($meta);	
 			if ($metadocent == null) throw new \Exception('Instructor no trobat '.$meta );
-			
 			$this->novaDocenciaCurs($metadocent, $docent, $curs, $rol);
 		}	
 	}
@@ -1112,16 +1115,24 @@ class TitulacionsController extends BaseController {
 			throw new \Exception('Cal indicar un director per al curs');
 		} 
 		
+		$this->validaCarnetDocent($director, $form->get('auxcarnet'));
 		
-		if ($codirector != null && $codirector->getMetadocent() === $director->getMetadocent()) {
-			$form->get('auxcodirector')->addError(new FormError('Duplicat'));
-			throw new \Exception('El director i el co-director no poden ser el mateix');
+		if ($codirector != null) {
+		    if ($codirector->getMetadocent() === $director->getMetadocent()) {
+        		$form->get('auxcodirector')->addError(new FormError('Duplicat'));
+			    throw new \Exception('El director i el co-director no poden ser el mateix');
+		    }
+		    
+		    $this->validaCarnetDocent($codirector, $form->get('auxcocarnet'));
 		}
+		
 		// Director / Co-director poden ser instructors també?
 
 		$docentIds = array();
 		$docenciesInstructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
-		foreach ($docenciesInstructors as $docencia) {
+		foreach ($docenciesInstructors as $k => $docencia) {
+		    $this->validaCarnetDocent($docencia, $form->get('instructors')->get($k)->get('carnet'));
+		    
 			$meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('L\'instructor '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
@@ -1152,6 +1163,8 @@ class TitulacionsController extends BaseController {
 		}
 		$docenciesCollaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 		foreach ($docenciesCollaboradors as $docencia) {
+		    $this->validaCarnetDocent($docencia, $form->get('collaboradors')->get($k)->get('carnet'));
+		    
 			$meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('El col·laborador '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
@@ -1176,6 +1189,15 @@ class TitulacionsController extends BaseController {
 		}
 	}
 
+	private function validaCarnetDocent($docencia, $field) {
+	    if ($docencia == null) return;
+
+	    if ($docencia->getCarnet() == null || trim($docencia->getCarnet()) == "") {
+	        $field->addError(new FormError('Obligatori'));
+	        throw new \Exception('Cal indicar el número d\'instructor ('.$docencia->getRol().')');
+	    }
+	}
+	
 	private function validaDocenciaHores($docencia) {
 		if ($docencia == null) return;
 		
@@ -1375,6 +1397,9 @@ class TitulacionsController extends BaseController {
 			
 		$res = array('result' => 'OK', 'errors' => array());   
 	
+		$text = $requeriment->getText();
+		$text = substr($text, 0, strpos($text, ":"));
+		
 		switch ($tipus->getId()) {
 			case 100:  // teoria.
 			case 101:  // aula.
@@ -1393,17 +1418,18 @@ class TitulacionsController extends BaseController {
 				}
 				
 				if ($totals[$tipus->getId()] <  $horesMin) {
-					$res['errors'][] = $requeriment->getText().': El total d\'hores <span>'.$totals[$tipus->getId()].'</span> és inferior al mínim ('.$horesMin.')';
+				    $res['errors'][] = $text.'. El total d\'hores <span>'.$totals[$tipus->getId()].'</span> és inferior al mínim ('.$horesMin.')';
 				}
 				break;
 				
 			case 104:	// funcio docent
-					
+				
+			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
 					
 				break;	
 			case 105:	// Experiència docent (Escola Nacional de Busseig Autònom Esportiu)
 
-					
+			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
 					
 				break;	
 				
@@ -1507,6 +1533,9 @@ class TitulacionsController extends BaseController {
 		$tipus = $requeriment->getRequeriment();	
 		$valors = explode(";",$requeriment->getValor());
 		
+		$text = $requeriment->getText();
+		$text = substr($text, 0, strpos($text, ":"));
+		
 		$res = array('result' => 'OK', 'errors' => array());
 		
 		switch ($tipus->getId()) {
@@ -1514,19 +1543,20 @@ class TitulacionsController extends BaseController {
 			    foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
 			        $metapersona = $participant->getMetapersona();
 			        
-			        $trobats = true;
-			        foreach ($valors as $idTitolRequeriment) {
-			            if (!$metapersona->getTitulacionsByTitolId($idTitolRequeriment)) $trobats = false;
-			        }
-			        
-			        
+			        $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+			        if ($resultat != '') $res['errors'][] = $text.'. Alumne amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients per fer el curs. ';
 			    }
 			    
 			    break; 
 			    
 			case 202:  // Títols alumne necessaris
-			     
-				
+			    foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+			        $metapersona = $participant->getMetapersona();
+			        
+			        $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+			        if ($resultat != '') $res['errors'][] = $text.'. Alumne amb DNI '.$metapersona->getDni().', '.$resultat.'; necessàries per fer el curs. ';
+			    }
+			    
 				break;
 				
 			case 203:  // Experiència immersions
@@ -1536,7 +1566,7 @@ class TitulacionsController extends BaseController {
 			case 207:			
 			case 208:
 
-				// No es pot comprovar
+			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
 					
 				break;	
 				
@@ -1553,30 +1583,113 @@ class TitulacionsController extends BaseController {
 	private function comprovaRequerimentsTitulacions($requeriment, $curs) {
 		$tipus = $requeriment->getRequeriment();	
 			
+		$valors = explode(";",$requeriment->getValor());
+		
+		$text = $requeriment->getText();
+		$text = substr($text, 0, strpos($text, ":"));
+		
 		$res = array('result' => 'OK', 'errors' => array());
 		
 		switch ($tipus->getId()) {
 			case 300:  // Director títols suficients
+			    $metapersona = $curs->getDirector()->getMetadocent();
+			        
+			    $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+			    if ($resultat != '') $res['errors'][] = $text.'. Director del curs, '.$resultat.'; suficients per la direcció del curs. ';
+			    
+			    if ($curs->getCodirector() != null) {
+    			    $metapersona = $curs->getCodirector()->getMetadocent();
+    			    $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+    			    if ($resultat != '') $res['errors'][] = $text.'. Co-director del curs, '.$resultat.'; suficients per la direcció del curs. ';
+			    }
+			    
+			    break;
+			    
 			case 301:  // Director títols necessaris
-			
-				
+			    $metapersona = $curs->getDirector()->getMetadocent();
+			    
+			    $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+			    if ($resultat != '') $res['errors'][] = $text.'. Director del curs, '.$resultat.'; necessàries per la direcció del curs. ';
+			    
+			    if ($curs->getCodirector() != null) {
+			        $metapersona = $curs->getCodirector()->getMetadocent();
+			        $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+			        if ($resultat != '') $res['errors'][] = $text.'. Co-director del curs, '.$resultat.'; suficients per la direcció del curs. ';
+			    }
+			    
 				break;
 				
 			case 302:  // Prof. teoria títols suficients
+			    
+			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+			    foreach ($docents as $docent) {
+			        if ($docent->esDocentTeoriques()) {
+    			        $metapersona = $docent->getMetapersona();
+                        $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+                        if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
+			        }
+			    }
+			    
+			    break;
+			    
 			case 303:  // Prof. teoria títols necessaris
 			
+			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+			    foreach ($docents as $docent) {
+			        if ($docent->esDocentTeoriques()) {
+			            $metapersona = $docent->getMetapersona();
+			            $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+			            if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
+			        }
+			    }
 				
 				break;
 
 			case 304:  // Prof. pràctica títols suficients
+			    
+			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+			    foreach ($docents as $docent) {
+			        if ($docent->esDocentPractiques()) {
+			            $metapersona = $docent->getMetapersona();
+			            $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+			            if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
+			        }
+			    }
+			    
+			    break;
+			    
 			case 305:  // Prof. pràctica títols necessaris
 			
+			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
+			    foreach ($docents as $docent) {
+			        if ($docent->esDocentPractiques()) {
+			            $metapersona = $docent->getMetapersona();
+			            $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+			            if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
+			        }
+			    }
 				
 				break;
 
 			case 304:  // Buss. seguretat títols suficients
+			    
+			    $colaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
+			    foreach ($colaboradors as $colaborador) {
+		            $metapersona = $colaborador->getMetapersona();
+		            $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+		            if ($resultat != '') $res['errors'][] = $text.'. Col·laborador amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
+			    }
+			    
+			    break;
+			    
 			case 305:  // Buss. seguretat títols necessaris
 			
+			    $colaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
+			    foreach ($colaboradors as $colaborador) {
+			        $metapersona = $colaborador->getMetapersona();
+			        $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+			        if ($resultat != '') $res['errors'][] = $text.'. Col·laborador amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
+			    }
 				
 				break;
 				
@@ -1590,9 +1703,38 @@ class TitulacionsController extends BaseController {
 		return $res;
 	}
 
+	private function comprovarTitulacionsSuficients($metapersona, $idsTitols) {
+	    $trobat = false;
+	    $titolsSuficients = array();
+	    foreach ($idsTitols as $idTitolRequeriment) {
+	        $currentTitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolRequeriment);
+	        $titolsSuficients[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
+	        
+	        if (!$trobat && $metapersona->getTitulacionsByTitolId($idTitolRequeriment)) $trobat = true;
+	    }
+	    if (!$trobat) return ' no hi ha cap registre de cap de les següents titulacions: '.implode(",",$titolsSuficients);
+	    return '';
+	}
+	
+	private function comprovarTitulacionsNecessaries($metapersona, $idsTitols) {
+	    $titolsNecessaris = array();
+	    foreach ($idsTitols as $idTitolRequeriment) {
+	        if (!$metapersona->getTitulacionsByTitolId($idTitolRequeriment)) {
+	            $currentTitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolRequeriment);
+	            
+	            $titolsNecessaris[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
+	        }
+	    }
+	    if (count($titolsNecessaris) > 0) return ' no hi ha cap registre de cap de les següents titulacions: '.implode(",",$titolsNecessaris);
+	    return '';
+	}
+	
 	private function comprovaRequerimentsAltres($requeriment, $curs) {
 		
 		$tipus = $requeriment->getRequeriment();
+		
+		$text = $requeriment->getText();
+		$text = substr($text, 0, strpos($text, ":"));
 		
 		$res = array('result' => 'OK', 'errors' => array());
 		
@@ -1647,7 +1789,8 @@ class TitulacionsController extends BaseController {
 				break;
 				
 			case 308:	// Director. # se exige haber dirigido como mínimo dos cursos de buceador de esa misma especialidad
-					
+				
+			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
 					
 				break;	
 				

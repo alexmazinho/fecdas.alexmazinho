@@ -192,7 +192,7 @@
 											<div class="input-group">
 												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
 												{{ form_widget(form.auxdirector, { 'attr': {'class': 'form-control'} }) }}
-											</div>
+											</div>{{ form_errors(form.auxdirector)  }}
 										</div>
 									</div>
 								</div>
@@ -202,7 +202,7 @@
 									<div class="input-group">
 										<span class="input-group-addon input-group-addon-icon">Num. <span class="fa fa-address-card-o fa-1x"></span></span>
 										{{ form_widget(form.auxcarnet, { 'attr': {'class': 'form-control'} }) }}
-									</div>
+									</div>{{ form_errors(form.auxcarnet) }}
 								</div>
 							</div>
 						</div>
@@ -217,7 +217,7 @@
 											<div class="input-group">
 												<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
 												{{ form_widget(form.auxcodirector, { 'attr': {'class': 'form-control'} }) }}
-											</div>
+											</div>{{ form_errors(form.auxcodirector) }}
 										</div>
 									</div>
 								</div>
@@ -227,7 +227,7 @@
 									<div class="input-group">
 										<span class="input-group-addon input-group-addon-icon">Num. <span class="fa fa-address-card-o fa-1x"></span></span>
 										{{ form_widget(form.auxcocarnet, { 'attr': {'class': 'form-control'} }) }}
-									</div>
+									</div>{{ form_errors(form.auxcocarnet)  }}
 								</div>
 							</div>					
 						</div>

@@ -558,6 +558,8 @@ a.link.footer-link { padding: 0 10px; }
  
 .data-detall .icon-inline { display:table-cell; vertical-align: middle; padding: 0 5px; }
  
+.data-detall-cell.data-detall-cell-formfield { position: relative; }
+ 
 .form-control-left { text-align: left; }
 .form-control-right { text-align: right; }
 .form-control-center { text-align: center; }

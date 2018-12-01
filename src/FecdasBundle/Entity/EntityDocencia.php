@@ -128,6 +128,31 @@ class EntityDocencia {
 		return $this->rol === BaseController::DOCENT_CODIRECTOR;
 	}
 	
+	/**
+	 * es instructor?
+	 * @return boolean
+	 */
+	public function esInstructor() {
+	    return $this->rol === BaseController::DOCENT_INSTRUCTOR;
+	}
+	
+	/**
+	 * es docent classes teòriques?
+	 * @return boolean
+	 */
+	public function esDocentTeoriques() {
+	    return $this->hteoria > 0;
+	}
+	
+	/**
+	 * es docent classes pràctiques?
+	 * @return boolean
+	 */
+	public function esDocentPractiques() {
+	    return $this->haula + $this->hpiscina + $this->hmar > 0;
+	}
+	
+
 	public function __toString() {
 		return $this->getId() . "-" . $this->getNum();
 	}

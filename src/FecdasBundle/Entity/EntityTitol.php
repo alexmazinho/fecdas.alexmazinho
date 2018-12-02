@@ -183,7 +183,7 @@ class EntityTitol {
     	return $arr;
     }
 	
-	public function getRequerimentByTipus($num)
+	public function getRequerimentByNum($num)
     {
     	foreach ($this->requeriments as $requeriment) {
     		$tipus = $requeriment->getRequeriment();

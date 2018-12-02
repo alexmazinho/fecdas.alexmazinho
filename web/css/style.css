@@ -2550,7 +2550,7 @@ input#formuserclub-randompassword { width: 150px; }
 #formpersona .row > div.col-last-right
 { /*padding-right: 15px;*/  }
 
-.foto-dadespersonals { max-width: 120px; float: right;}
+.foto-dadespersonals { max-width: 120px; text-align: center; float: right;}
 	
 
 #formpersona-sexe {  padding-top: 8px; }
@@ -3040,17 +3040,19 @@ p.info-bold {
 }
 
 .galeria-remove-foto {
-	display: inline;
+	/*display: inline;*/
 	text-align: center;
-	padding-right: 45px;
+	/*padding-right: 45px;*/
 }
 
 .image-upload, .image-noupload {
 	width: 81px;  /* 26mm */
 	height: 100px;  /* 32mm */
+	max-width: 80px;
+	overflow: hidden;
 	vertical-align: middle;
 	text-align: center; 
-	display: table-cell; 
+	display: table-cell;
 	border: 1px solid #dddddd;
 	padding: 2px;
 }

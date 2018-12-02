@@ -62,6 +62,16 @@ class EntityDocencia {
 	protected $hmar; // Hores mar
 	
 	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $ipiscina;  // Immersions piscina
+	
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	protected $imar; // Immersions mar
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -89,6 +99,8 @@ class EntityDocencia {
 		$this->haula = 0;
 		$this->hpiscina = 0;
 		$this->hmar = 0;
+		$this->ipiscina = 0;
+		$this->imar = 0;
 		
 		$this->dataentrada = new \DateTime();
 		$this->datamodificacio = new \DateTime();
@@ -134,6 +146,14 @@ class EntityDocencia {
 	 */
 	public function esInstructor() {
 	    return $this->rol === BaseController::DOCENT_INSTRUCTOR;
+	}
+
+	/**
+	 * es col·laborador?
+	 * @return boolean
+	 */
+	public function esCollaborador() {
+	    return $this->rol === BaseController::DOCENT_COLLABORADOR;
 	}
 	
 	/**
@@ -294,6 +314,34 @@ class EntityDocencia {
 	 */
 	public function getHmar() {
 		return $this->hmar;
+	}
+	
+	/**
+	 * @param integer $ipiscina
+	 */
+	public function setIpiscina($ipiscina) {
+	    $this->ipiscina = $ipiscina;
+	}
+	
+	/**
+	 * @return integer
+	 */
+	public function getIpiscina() {
+	    return $this->ipiscina;
+	}
+	
+	/**
+	 * @param integer $imar
+	 */
+	public function setImar($imar) {
+	    $this->imar = $imar;
+	}
+	
+	/**
+	 * @return integer
+	 */
+	public function getImar() {
+	    return $this->imar;
 	}
 
 	/**

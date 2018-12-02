@@ -140,6 +140,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 
 			$form->add('auxcarnet', 'text', array(
 				'mapped'	=> false,
+			    'data'  	=> $director->getCarnet(),
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
@@ -154,6 +155,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			
 			$form->add('auxcocarnet', 'text', array(
 				'mapped'	=> false,
+			    'data'  	=> $codirector!=null?$codirector->getCarnet():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));
 			

@@ -20,21 +20,13 @@
 	<div class="col-md-12">
 		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_GENERAL') %}
 		{% set dadesGenerals = requeriments[key] %}
-		{% set minteoriques = 0 %}
-		{% set minaula = 0 %}
-		{% set minpiscina = 0 %}
-		{% set minmar = 0 %}
-		{% if dadesGenerals.hores[100] is defined %} 
-		    {% set minteoriques = dadesGenerals.hores[100].valor1 %}
+		{% set immersionspiscina = 0 %}
+		{% set immersionsmar = 0 %}
+		{% if dadesGenerals.immersions[120] is defined %}
+		    {% set immersionspiscina = dadesGenerals.immersions[120].valor1 %}
 		{% endif %}
-		{% if dadesGenerals.hores[101] is defined %}
-		    {% set minaula = dadesGenerals.hores[101].valor1 %}
-		{% endif %}
-		{% if dadesGenerals.hores[102] is defined %}
-		    {% set minpiscina = dadesGenerals.hores[102].valor1 %}
-		{% endif %}
-		{% if dadesGenerals.hores[103] is defined %}
-		    {% set minmar = dadesGenerals.hores[103].valor1 %}
+		{% if dadesGenerals.immersions[121] is defined %}
+		    {% set immersionsmar = dadesGenerals.immersions[121].valor1 %}
 		{% endif %}
 		<div class="table-header">
 			<div id="list-header" class="list-docent-curs-header">
@@ -43,10 +35,8 @@
 				<div class="col-listheader col-docent-dni">DNI</div>
 				<div class="col-listheader col-docent-nom">Nom i cognoms</div>
 				<div class="col-listheader col-docent-carnet">Núm. carnet</div>
-				<div class="col-listheader col-docent-hteoria">Teòriques{% if minteoriques > 0 %}<br/>(min. {{ minteoriques }}h.){% endif %}</div>
-				<div class="col-listheader col-docent-haula">Aula{% if minaula > 0 %}<br/>(min. {{ minaula }}h.){% endif %}</div>
-				<div class="col-listheader col-docent-hpiscina">Piscina{% if minpiscina > 0 %}<br/>(min. {{ minpiscina }}h.){% endif %}</div>
-				<div class="col-listheader col-docent-hmar">Mar{% if minmar > 0 %}<br/>(min. {{ minmar }}h.){% endif %}</div>
+				<div class="col-listheader col-docent-hpiscina">Immesions Piscina{% if immersionspiscina > 0 %}<br/>(min. {{ immersionspiscina }}){% endif %}</div>
+				<div class="col-listheader col-docent-hmar">Immesions Mar{% if immersionsmar > 0 %}<br/>(min. {{ immersionsmar }}){% endif %}</div>
 				{% if curs.editable == true and (admin or roleinstructor) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
 			</div>
 		</div>
@@ -55,7 +45,7 @@
 				{% set proto = false %}
 					
 				{% for docent in docents %}
-					{% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
+					{% include 'FecdasBundle:Titulacions:curscolabora.html.twig' %}
 				{% endfor %}
 				<li class="empty-alert {% if docents|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></li>
 			 </ul> 

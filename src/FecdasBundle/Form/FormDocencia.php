@@ -86,7 +86,23 @@ class FormDocencia extends AbstractType {
 				'empty_data' => '',
 				'attr'		=>	array('readonly' => !$this->editable)
 			));
-				
+
+			$form->add ('ipiscina', 'integer', array (
+			    'required' 	=> true,
+			    'scale' 	=> 0,
+			    'data'		=> $docencia!=null?$docencia->getIpiscina():0,
+			    'empty_data' => '',
+			    'attr'		=>	array('readonly' => !$this->editable)
+			));
+			
+			$form->add ('imar', 'integer', array (
+			    'required' 	=> true,
+			    'scale' 	=> 0,
+			    'data'		=> $docencia!=null?$docencia->getImar():0,
+			    'empty_data' => '',
+			    'attr'		=>	array('readonly' => !$this->editable)
+			));
+			
 			$form->add('carnet', 'text', array(
 				'required' 	=> false,
 				'attr'		=>	array('readonly' => !$this->editable)

@@ -3,8 +3,7 @@
 		<h2 class="blue">Relació d'alumnes aptes</h2>
 	</div>
 	
-	{% if curs.editable == true %}
-	
+	{% if curs.editable == true and (admin or roleinstructor) %}
 	<div class="col-md-6 col-last-right">
 		<div class="form-inline space20">	
 			<div class="form-group">
@@ -30,7 +29,7 @@
 				<div class="col-listheader col-alumne-certificat">Certificat</div>
 				<div class="col-listheader col-alumne-foto">Foto</div>
 				<div class="col-listheader col-alumne-num">Num.</div>
-				<div class="col-listheader col-alumne-actions">&nbsp;</div>
+				{% if curs.editable == true and (admin or roleinstructor) %}<div class="col-listheader col-alumne-actions">&nbsp;</div>{% endif %}
 			</div>
 		</div>
 		<div class="table-noscroll">

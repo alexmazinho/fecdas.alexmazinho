@@ -248,7 +248,7 @@
 						{% set prototype = form_row(form.collaboradors.vars.prototype) %}
 						{% set titol = "Han col·laborat com a equip de seguretat" %}
 						{% set auxdocent = form.auxcollaborador %}
-						{% include 'FecdasBundle:Titulacions:cursdocentstaula.html.twig' %}
+						{% include 'FecdasBundle:Titulacions:curscolaborataula.html.twig' %}
 					</div>
 				</div>
 			</div>
@@ -268,7 +268,7 @@
            								<ul><li>
            									{% if stock == 0 %}
            										<span class='fa fa-exclamation-circle fa-1x'></span> 
-           										Actualment el club no disposa de kits "{{ kit.descripcio }}". Cal un per alumne per tramitar el curs
+           										Actualment el club no disposa de kits "{{ kit.descripcio }}". Cal un kit per alumne per poder tramitar el curs
            									{% else %}
                									{% if stock >= totalalumnes %}
                										<span class='fa fa-check-circle fa-1x'></span> 

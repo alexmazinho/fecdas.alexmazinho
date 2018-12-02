@@ -517,7 +517,7 @@ class TitulacionsController extends BaseController {
 	            
 	            $formpersona->handleRequest($request);
 	            
-	            if (!$formpersona->isValid())  throw new \Exception("Les dades no són vàlides: ".$formpersona->getErrors(true, true).". Contacta amb la Federació.");
+	            if (!$formpersona->isValid())  throw new \Exception("Les dades no són vàlides: ".$formpersona->getErrors(true, true).", poseu-vos en contacte amb la Federació.");
 	                
 	            $this->validarDadesPersona($persona, false, $formpersona);
 
@@ -929,7 +929,6 @@ class TitulacionsController extends BaseController {
 		if (!$curs->finalitzat()) {	
 			// Resultat check Requeriments titulació
 			$resultat = $this->comprovaRequerimentsCurs($curs);
-	
 			// Dades estructurades requeriments
 			$requeriments = $this->getRequerimentsEstructuraInforme($curs->getTitol(), $resultat);
 		}
@@ -1042,10 +1041,17 @@ class TitulacionsController extends BaseController {
 	
 	private function updateDocenciaCurs($docent, $docencia) {
 		$docencia->setCarnet( isset($docent['carnet'])?$docent['carnet']:'' );
-		$docencia->setHteoria( isset($docent['hteoria'])&&is_numeric($docent['hteoria'])?$docent['hteoria']:0 );
-		$docencia->setHaula( isset($docent['haula'])&&is_numeric($docent['haula'])?$docent['haula']:0 );
-		$docencia->setHpiscina( isset($docent['hpiscina'])&&is_numeric($docent['hpiscina'])?$docent['hpiscina']:0 );
-		$docencia->setHmar( isset($docent['hmar'])&&is_numeric($docent['hmar'])?$docent['hmar']:0 );
+		
+		if ($docencia->esInstructor()) {
+    		$docencia->setHteoria( isset($docent['hteoria'])&&is_numeric($docent['hteoria'])?$docent['hteoria']:0 );
+    		$docencia->setHaula( isset($docent['haula'])&&is_numeric($docent['haula'])?$docent['haula']:0 );
+    		$docencia->setHpiscina( isset($docent['hpiscina'])&&is_numeric($docent['hpiscina'])?$docent['hpiscina']:0 );
+    		$docencia->setHmar( isset($docent['hmar'])&&is_numeric($docent['hmar'])?$docent['hmar']:0 );
+		}
+		if ($docencia->esCollaborador()) {
+		    $docencia->setIpiscina( isset($docent['ipiscina'])&&is_numeric($docent['ipiscina'])?$docent['ipiscina']:0 );
+		    $docencia->setImar( isset($docent['imar'])&&is_numeric($docent['imar'])?$docent['imar']:0 );
+		}
 	}
 	
 	private function novaDocenciaCurs($metadocent, $docent = array(), $curs, $rol) {
@@ -1137,7 +1143,7 @@ class TitulacionsController extends BaseController {
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('L\'instructor '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
 
-			$this->validaDocenciaHores($docencia);
+			$this->validaDocenciaHoresImmersions($docencia);
 			
 			// Validació llicència federativa tècnic vigent 
 			$finsVariable = clone $fins;
@@ -1159,8 +1165,8 @@ class TitulacionsController extends BaseController {
 
 			// Si $fins <= $desde està tot el periode cobert
 			if ($finsVariable->format('Y-m-d') > $desde->format('Y-m-d')) throw new \Exception('L\'instructor '.$meta->getDni().' no té llicència tècnic durant tot el periode del curs');
-			
 		}
+		
 		$docenciesCollaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 		foreach ($docenciesCollaboradors as $docencia) {
 		    $this->validaCarnetDocent($docencia, $form->get('collaboradors')->get($k)->get('carnet'));
@@ -1169,7 +1175,7 @@ class TitulacionsController extends BaseController {
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('El col·laborador '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
 			
-			$this->validaDocenciaHores($docencia);
+			$this->validaDocenciaHoresImmersions($docencia);
 		}
 
 		// Validar alumne repetit
@@ -1198,18 +1204,22 @@ class TitulacionsController extends BaseController {
 	    }
 	}
 	
-	private function validaDocenciaHores($docencia) {
+	private function validaDocenciaHoresImmersions($docencia) {
 		if ($docencia == null) return;
 		
 		$rol = '';
-		if ($docencia->getRol() == BaseController::DOCENT_INSTRUCTOR) $rol = 'instructors';
-		if ($docencia->getRol() == BaseController::DOCENT_COLLABORADOR) $rol = 'col·laboradors';
-		 
-		
-		if ($docencia->getHteoria() < 0) throw new \Exception('Les hores de teoria dels '.$rol.' no poden ser negatives');
-		if ($docencia->getHaula() < 0) throw new \Exception('Les hores de pràctiques fora de l\'aigua dels '.$rol.' no poden ser negatives');
-		if ($docencia->getHpiscina() < 0) throw new \Exception('Les hores de pràctiques a aigües confinades dels '.$rol.' no poden ser negatives');
-		if ($docencia->getHmar() < 0) throw new \Exception('Les hores de pràctiques a la mar dels '.$rol.' no poden ser negatives');
+		if ($docencia->esInstructor()) {
+		    $rol = 'instructors';
+		    if ($docencia->getHteoria() < 0) throw new \Exception('Les hores de teoria dels '.$rol.' no poden ser negatives');
+		    if ($docencia->getHaula() < 0) throw new \Exception('Les hores de pràctiques fora de l\'aigua dels '.$rol.' no poden ser negatives');
+		    if ($docencia->getHpiscina() < 0) throw new \Exception('Les hores de pràctiques a aigües confinades dels '.$rol.' no poden ser negatives');
+		    if ($docencia->getHmar() < 0) throw new \Exception('Les hores de pràctiques a la mar dels '.$rol.' no poden ser negatives');
+		}
+		if ($docencia->esCollaborador()) {
+		    $rol = 'col·laboradors';
+		    if ($docencia->getIpiscina() < 0) throw new \Exception('Les immersions a aigües confinades dels '.$rol.' no poden ser negatives');
+		    if ($docencia->getImar() < 0) throw new \Exception('Les immersions a la mar dels '.$rol.' no poden ser negatives');
+		}
 	}
 
 	private function accionsPostValidacions($curs, $action) {
@@ -1232,6 +1242,8 @@ class TitulacionsController extends BaseController {
 				$curs->setValidat(false);
 				$curs->setFinalitzat(false);
 				
+				if (count($curs->getParticipantsSortedByCognomsNom()) == 0) throw new \Exception('No es pot tancar el curs sense cap alumne');
+				
 				// Enviar mail al club
 				$subject = "Federació Catalana d'Activitats Subaquàtiques. Curs pendent de validació ";
 				$tomails = $club->getMail();
@@ -1247,7 +1259,8 @@ class TitulacionsController extends BaseController {
 				break;
 	
 			case 'unclose':		// club -> instructor 
-						
+				
+			    if (!$curs->tancat()) throw new \Exception('Aquest curs no es pot tornar a editar, poseu-vos en contacte amb la Federació');
 				$curs->setEditable(true);
 				$curs->setValidat(false);
 				$curs->setFinalitzat(false);
@@ -1355,13 +1368,12 @@ class TitulacionsController extends BaseController {
 			$res = array('result' => 'OK', 'errors' => array());
 			switch ($tipus->getCategoria()) {
 				case BaseController::CATEGORIA_REQUERIMENT_MIN_HORES:
-					
 					$res = $this->comprovaRequerimentsMinimHores($requeriment, $curs);
 					
 					break;
 
 				case BaseController::CATEGORIA_REQUERIMENT_IMMERSIONS:
-					// No es pot comprovar
+				    $res = $this->comprovaRequerimentsImmersions($requeriment, $curs);  // No es poden comprovar
 					
 					break;
 				
@@ -1398,7 +1410,7 @@ class TitulacionsController extends BaseController {
 		$res = array('result' => 'OK', 'errors' => array());   
 	
 		$text = $requeriment->getText();
-		$text = substr($text, 0, strpos($text, ":"));
+		//$text = substr($text, 0, strpos($text, ":"));
 		
 		switch ($tipus->getId()) {
 			case 100:  // teoria.
@@ -1424,12 +1436,12 @@ class TitulacionsController extends BaseController {
 				
 			case 104:	// funcio docent
 				
-			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
+			    $res['errors'][] = $text.'. 104 - No es pot comprovar per manca de dades ';
 					
 				break;	
 			case 105:	// Experiència docent (Escola Nacional de Busseig Autònom Esportiu)
 
-			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
+			    $res['errors'][] = $text.'. 105 - No es pot comprovar per manca de dades ';
 					
 				break;	
 				
@@ -1443,6 +1455,47 @@ class TitulacionsController extends BaseController {
 		return $res; 
 	}
 
+	private function comprovaRequerimentsImmersions($requeriment, $curs) {
+	    $tipus = $requeriment->getRequeriment();
+	    
+	    $res = array('result' => 'OK', 'errors' => array());
+	    
+	    $text = $requeriment->getText();
+	    
+	    switch ($tipus->getId()) {
+	        case 120:	// Immersiona Piscina
+	        case 121:	// Immersions Mar
+	            
+	            $immersionsMin = $requeriment->getValor();
+	            
+	            // Recompte total hores instructors
+	            $totals = array(120 => 0, 121 => 0);
+	            foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR) as $colaborador) {
+	                $totals[120] += $colaborador->getIpiscina();
+	                $totals[121] += $colaborador->getImar();
+	            }
+	            
+	            if ($totals[$tipus->getId()] <  $immersionsMin) {
+	                $res['errors'][] = $text.'. El total d\'immersions <span>'.$totals[$tipus->getId()].'</span> és inferior al mínim ('.$immersionsMin.')';
+	            }
+	            
+	            break;
+
+	        case 122:	// Fent funció
+	            
+	            // No es pot comprovar
+	            
+	            break;
+	        default:
+	            
+	            break;
+	    }
+	    
+	    if (count($res['errors']) > 0) $res['result'] = 'KO';
+	    
+	    return $res;
+	}
+	
 	private function comprovaRequerimentsRatios($requeriment, $curs) {
 		$tipus = $requeriment->getRequeriment();	
 			
@@ -1452,6 +1505,9 @@ class TitulacionsController extends BaseController {
 		$valor0 = isset($valors[0])?$valors[0]:''; // Alumnes 
 		$valor1 = isset($valors[1])?$valors[1]:''; // Professors
 		$valor2 = isset($valors[2])?$valors[2]:''; // Bussejador seguretat
+
+		// Obtenir valors relacionats
+		$titol =  $curs->getTitol();
 		
 		$alumnes = count($curs->getParticipantsSortedByCognomsNom());
 		
@@ -1468,59 +1524,69 @@ class TitulacionsController extends BaseController {
 				if ($instructor->getHmar() > 0) $profeMar++;
 			}
 			
-			$seguretatTeoria = 0;
 			$seguretatPiscina = 0;
 			$seguretatMar = 0;
-			$seguretatAula = 0;
+			$immersionsPiscina = $titol->getRequerimentByNum(120);   // 120 immersions piscina
+			$immersionsPiscina = $immersionsPiscina != null?$immersionsPiscina->getValor():0;  
+			$immersionsMar = $titol->getRequerimentByNum(121);   // 121 immersions mar
+			$immersionsMar = $immersionsMar != null?$immersionsMar->getValor():0;
 			if ($valor2 != '' && $valor2 > 0) {
 				foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR) as $instructor) {
-					if ($instructor->getHteoria() > 0) $seguretatTeoria++;
-					if ($instructor->getHaula() > 0) $seguretatAula++;
-					if ($instructor->getHpiscina() > 0) $seguretatPiscina++;
-					if ($instructor->getHmar() > 0) $seguretatMar++;
+				    if ($instructor->getIpiscina() >= $immersionsPiscina) $seguretatPiscina++;  // Col·laborador fa tantes o més immersions que les necessàries
+				    if ($instructor->getImar() >= $immersionsMar) $seguretatMar++;               // Si fa menos de les necessàries no compta per a ratio
 				}
 			}
 			
 			$profes = 0;
 			$seguretat = 0;		
+			$idReqHores = 0;
 			switch ($tipus->getId()) {
 				case 150:  // Ratio teoria
 					$profes = $profeTeoria;
-					$seguretat = $seguretatTeoria;	
+					$seguretat = 0;
+					$idReqHores = 100; //100 min hores teoria
 					
 					break;
 				case 151:  // Ratio piscina
 					$profes = $profePiscina;
-					$seguretat = $seguretatPiscina;	
-								
+					$seguretat = $seguretatPiscina;
+					$idReqHores = 102; //102 min hores piscina
+					
 					break;
 				case 152:  // Ratio mar
 				case 153:  // Ratio mar recomanat
 					$profes = $profeMar;
 					$seguretat = $seguretatMar;	
-								
+					$idReqHores = 103; //103 min hores mar
+					
 					break;
 				
 				case 154:  // Ratio aula
 					$profes = $profeAula;
-					$seguretat = $seguretatAula;	
-									
+					$seguretat = 0;
+					$idReqHores = 101; //101 min hores fora d'aigua
+					
 					break;
 				default:
 						
 					break;
 			}
-	
+		
 			$text = $requeriment->getText();
-			$text = substr($text, 0, strpos($text, ":"));
-	
-			if (($profes/$alumnes) < ($valor1 / $valor0)) $res['errors'][] = $text.'. Ratio professor/alumnes <span>'.$profes.'/'.$alumnes.'</span> inferior al valor requerit '.$valor1.'/'.$valor0; 
+			//$text = substr($text, 0, strpos($text, ":"));
 			
-			if (is_numeric($valor2) && $valor2 > 0) {
-				$aux = 'requerit';
-				if ($tipus->getId() == 153) $aux = 'recomanat';
-				
-				if (($seguretat/$alumnes) < ($valor2 / $valor0)) $res['errors'][] = $text.'. Ratio bussejador seguretat/alumnes <span>'.$seguretat.'/'.$alumnes.'</span> inferior al valor '.$aux.' '.$valor2.'/'.$valor0;
+			
+			$reqHores = $titol->getRequerimentByNum($idReqHores);
+			$reqHores = $reqHores != null?$reqHores->getValor():0;   
+			if ($reqHores > 0 || $profes > 0) {
+    			if (($profes/$alumnes) < ($valor1 / $valor0)) $res['errors'][] = $text.'. Ratio professor/alumnes <span>'.$profes.'/'.$alumnes.'</span> inferior al valor requerit '.$valor1.'/'.$valor0; 
+    			
+    			if (is_numeric($valor2) && $valor2 > 0) {
+    				$aux = 'requerit';
+    				if ($tipus->getId() == 153) $aux = 'recomanat';
+    				
+    				if (($seguretat/$alumnes) < ($valor2 / $valor0)) $res['errors'][] = $text.'. Ratio bussejador seguretat/alumnes <span>'.$seguretat.'/'.$alumnes.'</span> inferior al valor '.$aux.' '.$valor2.'/'.$valor0;
+    			}
 			}
 			
 			if (count($res['errors']) > 0) $res['result'] = 'KO';
@@ -1534,7 +1600,7 @@ class TitulacionsController extends BaseController {
 		$valors = explode(";",$requeriment->getValor());
 		
 		$text = $requeriment->getText();
-		$text = substr($text, 0, strpos($text, ":"));
+		//$text = substr($text, 0, strpos($text, ":"));
 		
 		$res = array('result' => 'OK', 'errors' => array());
 		
@@ -1566,7 +1632,7 @@ class TitulacionsController extends BaseController {
 			case 207:			
 			case 208:
 
-			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
+			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ('.$tipus->getId().') ';
 					
 				break;	
 				
@@ -1586,7 +1652,7 @@ class TitulacionsController extends BaseController {
 		$valors = explode(";",$requeriment->getValor());
 		
 		$text = $requeriment->getText();
-		$text = substr($text, 0, strpos($text, ":"));
+		//$text = substr($text, 0, strpos($text, ":"));
 		
 		$res = array('result' => 'OK', 'errors' => array());
 		
@@ -1624,7 +1690,7 @@ class TitulacionsController extends BaseController {
 			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
 			    foreach ($docents as $docent) {
 			        if ($docent->esDocentTeoriques()) {
-    			        $metapersona = $docent->getMetapersona();
+			            $metapersona = $docent->getMetadocent();
                         $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
                         if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
 			        }
@@ -1637,7 +1703,7 @@ class TitulacionsController extends BaseController {
 			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
 			    foreach ($docents as $docent) {
 			        if ($docent->esDocentTeoriques()) {
-			            $metapersona = $docent->getMetapersona();
+			            $metapersona = $docent->getMetadocent();
 			            $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
 			            if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
 			        }
@@ -1650,7 +1716,7 @@ class TitulacionsController extends BaseController {
 			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
 			    foreach ($docents as $docent) {
 			        if ($docent->esDocentPractiques()) {
-			            $metapersona = $docent->getMetapersona();
+			            $metapersona = $docent->getMetadocent();
 			            $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
 			            if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
 			        }
@@ -1663,7 +1729,7 @@ class TitulacionsController extends BaseController {
 			    $docents = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
 			    foreach ($docents as $docent) {
 			        if ($docent->esDocentPractiques()) {
-			            $metapersona = $docent->getMetapersona();
+			            $metapersona = $docent->getMetadocent();
 			            $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
 			            if ($resultat != '') $res['errors'][] = $text.'. Instructor amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
 			        }
@@ -1675,7 +1741,7 @@ class TitulacionsController extends BaseController {
 			    
 			    $colaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 			    foreach ($colaboradors as $colaborador) {
-		            $metapersona = $colaborador->getMetapersona();
+			        $metapersona = $colaborador->getMetadocent();
 		            $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
 		            if ($resultat != '') $res['errors'][] = $text.'. Col·laborador amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
 			    }
@@ -1686,7 +1752,7 @@ class TitulacionsController extends BaseController {
 			
 			    $colaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
 			    foreach ($colaboradors as $colaborador) {
-			        $metapersona = $colaborador->getMetapersona();
+			        $metapersona = $colaborador->getMetadocent();
 			        $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
 			        if ($resultat != '') $res['errors'][] = $text.'. Col·laborador amb DNI '.$metapersona->getDni().', '.$resultat.'; suficients fer el curs. ';
 			    }
@@ -1788,9 +1854,15 @@ class TitulacionsController extends BaseController {
 				}	
 				break;
 				
-			case 308:	// Director. # se exige haber dirigido como mínimo dos cursos de buceador de esa misma especialidad
+			case 308:	// Instructor: Llicència federativa tècnic vigent 
+			    
+			    // La validació es fa anteriorment i és necessària per desar el curs
+			    
+			    break;
+			    
+			case 309:	// Director. # se exige haber dirigido como mínimo dos cursos de buceador de esa misma especialidad
 				
-			    $res['errors'][] = $text.'. No es pot comprovar per manca de dades ';
+			    $res['errors'][] = $text.'. 309 - No es pot comprovar per manca de dades ';
 					
 				break;	
 				
@@ -1816,6 +1888,7 @@ class TitulacionsController extends BaseController {
 				'total' 	=> count($resultat),
 				'alumnes' 	=> array(),
 				'hores'		=> array(),
+			    'immersions'=> array(),
 				'docents'	=> array(),
 				'ratios'	=> array() 
 			),
@@ -1827,25 +1900,31 @@ class TitulacionsController extends BaseController {
 			),
 			BaseController::CONTEXT_REQUERIMENT_GENERAL => array(
 				'hores' 		=> array(),
+			    'immersions'    => array(), 
 				'ratios' 		=> array()
 			),
 			
 			BaseController::CONTEXT_REQUERIMENT_DOCENTS => array(
 				'docents'		=> array(),
-				'director'		=> array('num' => 308, 'text' => '', 'valor' => '', 'resultat' => ''),
+				'director'		=> array('num' => 309, 'text' => '', 'valor' => '', 'resultat' => ''),
 			)
 		);
 		
 		/********** LLISTA ERRORS ************/
 		foreach ($resultat as $num => $error) {
-			if ($num >= 300) $dades['errors']['docents'][] = implode(PHP_EOL,$error['errors']);
+		    if ($num >= 300) $key = 'docents';
+		    	
+            if ($num >= 200 && $num < 300) $key = 'alumnes';
+            			
+            if ($num >= 150 && $num < 200) $key = 'ratios'; 
 			
-			if ($num >= 200 && $num < 300) $dades['errors']['alumnes'][] = implode(PHP_EOL,$error['errors']); 
+            if ($num >= 120 && $num < 150) $key = 'immersions';  
+            
+            if ($num < 120) $key = 'hores';
 			
-			if ($num >= 150 && $num < 200) $dades['errors']['ratios'][] = implode(PHP_EOL,$error['errors']);
-			
-			if ($num < 150) $dades['errors']['hores'][] = implode(PHP_EOL,$error['errors']);
-			
+			foreach ($error['errors'] as $err) {
+			    $dades['errors'][$key][] = $err;
+			}
 		}
 		
 		/********** ALUMNE *************/
@@ -1853,14 +1932,14 @@ class TitulacionsController extends BaseController {
 		
 		if (isset($resultat[$reqAlumnes['edat']['num']])) $reqAlumnes['edat']['resultat'] = 'KO'; // error edat
 		
-		$reqEdat = $titol->getRequerimentByTipus($reqAlumnes['edat']['num']);  // Edat
+		$reqEdat = $titol->getRequerimentByNum($reqAlumnes['edat']['num']);  // Edat
 		if ($reqEdat != null) {
 			$reqAlumnes['edat']['text'] = $reqEdat->getText();
 			$reqAlumnes['edat']['valor'] = $reqEdat->getValor();
 		}
 
 		if (isset($resultat[$reqAlumnes['llicencia']['num']])) $reqAlumnes['llicencia']['resultat'] = 'KO'; // error llicencia
-		$reqLlicencia = $titol->getRequerimentByTipus($reqAlumnes['llicencia']['num']);  // Llicencia
+		$reqLlicencia = $titol->getRequerimentByNum($reqAlumnes['llicencia']['num']);  // Llicencia
 		if ($reqLlicencia != null) {
 			$reqAlumnes['llicencia']['text'] = $reqLlicencia->getText();
 			$reqAlumnes['llicencia']['valor'] = $reqLlicencia->getValor();
@@ -1869,7 +1948,7 @@ class TitulacionsController extends BaseController {
 		$reqImmersions = array();
 		$error = false;
 		foreach ($reqAlumnes['immersions']['num'] as $num) {
-			$reqImmersio = $titol->getRequerimentByTipus($num);  // Immersions
+		    $reqImmersio = $titol->getRequerimentByNum($num);  // Immersions
 			
 			if ($reqImmersio != null) $reqImmersions[] = $reqImmersio->getValor().' ('.$reqImmersio->getText().')';
 			
@@ -1881,10 +1960,10 @@ class TitulacionsController extends BaseController {
 		
 		if ($error) $reqAlumnes['immersions']['resultat'] = 'KO'; // error immersions
 		
-		$reqTitols = $titol->getRequerimentByTipus($reqAlumnes['titols']['num'][0]);  // Titols suficients
+		$reqTitols = $titol->getRequerimentByNum($reqAlumnes['titols']['num'][0]);  // Titols suficients
 		$separador = " o ";
 		if ($reqTitols == null) {
-		    $reqTitols = $titol->getRequerimentByTipus($reqAlumnes['titols']['num'][1]);  // Titols necessaris
+		    $reqTitols = $titol->getRequerimentByNum($reqAlumnes['titols']['num'][1]);  // Titols necessaris
 			$separador = " + ";	
 		}		
 		
@@ -1921,12 +2000,18 @@ class TitulacionsController extends BaseController {
 					
 				case BaseController::CATEGORIA_REQUERIMENT_IMMERSIONS:
 
+				    $reqGeneral['immersions'][$num] = array(
+				            'text' => $req->getText(), 'valor1' => $req->getValor(), 'valor2' => '', 'resultat' => ''
+				    );
+				    
 					if ($num == 120 && isset($reqGeneral['hores'][102])) $num = 102; // piscina
 						
 					if ($num == 121 && isset($reqGeneral['hores'][103])) $num = 103; // mar
 						
 					if ($num == 122 && isset($reqGeneral['hores'][104])) $num = 104; // fent una funcio
-						
+
+					if (isset($resultat[$num])) $reqGeneral['hores'][$num]['resultat'] = 'KO'; // error hores
+					
 					//if (!isset($reqGeneral['hores'][102]) && !isset($reqGeneral['hores'][103]) && !isset($reqGeneral['hores'][104])) {
 					if (!isset($reqGeneral['hores'][$num])) {	
 						// Nova fila
@@ -1999,7 +2084,7 @@ class TitulacionsController extends BaseController {
 			
 				default:
 				
-					// req.  308 
+					// req.  309 
 					if ($num == $reqDocents['director']['num']) {  //  Director: Cursos de la especialitat dirigits prèviament
 					
 						$reqDocents['director']['text'] = $req->getText();
@@ -2010,7 +2095,6 @@ class TitulacionsController extends BaseController {
 				break;
 			}
 		}
-		
 		
 		return $dades;
 	}

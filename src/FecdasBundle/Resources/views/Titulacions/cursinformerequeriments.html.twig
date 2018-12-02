@@ -57,7 +57,7 @@
 					<td class="data-detall-cell informe-detall-2col">Immersions</td>
 					<td class="data-detall-cell informe-detall-error"></td>
 				</tr>
-				{% for hora in dadesGenerals.hores %}
+				{% for k, hora in dadesGenerals.hores %}
 				<tr class="data-detall">
 					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
 					<td class="data-detall-cell">{{ hora.valor1 }}</td>
@@ -71,6 +71,9 @@
 	<div class="col-md-12">
 		<ul>
 		{% for error in requeriments.errors.hores %}
+		    <li>{{ error|raw }}</li>
+		{% endfor %}
+		{% for error in requeriments.errors.immersions %}
 		    <li>{{ error|raw }}</li>
 		{% endfor %}
 		</ul>

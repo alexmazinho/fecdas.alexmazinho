@@ -62,8 +62,8 @@
    		</span>	
    	</div>
 	<div class="data-detall-cell col-alumne-num">{{ form_widget(participant.num, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-	<div class="data-detall-cell col-actions">
-		{% if proto or (curs.editable and roleinstructor) %}<a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-remove fa-1x red"></i></a>{% endif %}
-	</div>
+	{% if proto or (curs.editable and (admin or roleinstructor)) %}
+		<div class="data-detall-cell col-actions"><a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-trash fa-1x red"></i></a></div>
+	{% endif %}
 </li>
 

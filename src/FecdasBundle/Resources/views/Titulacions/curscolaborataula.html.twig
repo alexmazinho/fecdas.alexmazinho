@@ -19,15 +19,17 @@
 	{% endif %}
 	<div class="col-md-12">
 		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_GENERAL') %}
-		{% set dadesGenerals = requeriments[key] %}
 		{% set immersionspiscina = 0 %}
 		{% set immersionsmar = 0 %}
-		{% if dadesGenerals.immersions[120] is defined %}
-		    {% set immersionspiscina = dadesGenerals.immersions[120].valor1 %}
-		{% endif %}
-		{% if dadesGenerals.immersions[121] is defined %}
-		    {% set immersionsmar = dadesGenerals.immersions[121].valor1 %}
-		{% endif %}
+		{% if requeriments[key] is defined %}
+			{% set dadesGenerals = requeriments[key] %}
+    		{% if dadesGenerals.immersions[120] is defined %}
+    		    {% set immersionspiscina = dadesGenerals.immersions[120].valor1 %}
+    		{% endif %}
+    		{% if dadesGenerals.immersions[121] is defined %}
+    		    {% set immersionsmar = dadesGenerals.immersions[121].valor1 %}
+    		{% endif %}
+   		{% endif %}
 		<div class="table-header">
 			<div id="list-header" class="list-docent-curs-header">
 				<div class="col-id hidden">&nbsp;</div>

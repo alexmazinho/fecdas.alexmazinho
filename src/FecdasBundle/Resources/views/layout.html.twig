@@ -116,6 +116,10 @@
 						<li id="menu-anual"><a href="{{ path('FecdasBundle_renovaranual') }}">Llicències anuals</a></li>
 						<li class="divider"></li>
 						<li id="menu-duplicats"><a href="{{ path('FecdasBundle_duplicats', {'sort': 'd.datapeticio', 'direction':'desc'}) }}">Llicències i carnets en plàstic</a></li>
+						{% if admin %}
+							<li class="divider"></li>
+							<li id="menu-curs"><a class="nou-curs" href="{{ path('FecdasBundle_curs') }}">Nou curs</a></li>
+						{% endif %}
 			          </ul>
 			        </li>
 			        {% if allowcomandes == true %}

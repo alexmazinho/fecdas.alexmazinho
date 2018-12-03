@@ -818,7 +818,7 @@ class TitulacionsController extends BaseController {
 			$action = $request->query->get('action', '');
 			$codi = $request->query->get('club', '');
 			
-			if ($id == 0 && !$checkRole->isCurrentInstructor()) {
+			if ($id == 0 && !$checkRole->isCurrentInstructor() && !$this->isCurrentAdmin()) {
 				$this->get('session')->getFlashBag()->add('error-notice', 'Només els instructors poden crear un nou curs');
 				return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
 			}
@@ -831,7 +831,7 @@ class TitulacionsController extends BaseController {
     	}
     	
 		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
-		
+
 		if ($codi != '' && $curs == null) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
     	if ($curs == null) {
@@ -848,7 +848,6 @@ class TitulacionsController extends BaseController {
 			$em->persist($curs);
 			
 			$this->novaDocenciaCurs($checkRole->getCurrentUser()->getMetapersona(), array(), $curs, BaseController::DOCENT_DIRECTOR);
-			
     	} else {
     	    $club = $curs->getClub();
     	    
@@ -868,7 +867,7 @@ class TitulacionsController extends BaseController {
 			$this->initDadesPostCurs($request->request->get('curs'), $curs);
 		}
 			
-    	$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser() || $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
+		$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
     		    //throw new \Exception('Operació pendent. No es poden desar les dades del curs');
@@ -926,7 +925,7 @@ class TitulacionsController extends BaseController {
     		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     	}
 		
-		if (!$curs->finalitzat()) {	
+		if (!$curs->finalitzat()) {
 			// Resultat check Requeriments titulació
 			$resultat = $this->comprovaRequerimentsCurs($curs);
 			// Dades estructurades requeriments
@@ -1041,7 +1040,7 @@ class TitulacionsController extends BaseController {
 	
 	private function updateDocenciaCurs($docent, $docencia) {
 		$docencia->setCarnet( isset($docent['carnet'])?$docent['carnet']:'' );
-		
+
 		if ($docencia->esInstructor()) {
     		$docencia->setHteoria( isset($docent['hteoria'])&&is_numeric($docent['hteoria'])?$docent['hteoria']:0 );
     		$docencia->setHaula( isset($docent['haula'])&&is_numeric($docent['haula'])?$docent['haula']:0 );
@@ -1776,7 +1775,7 @@ class TitulacionsController extends BaseController {
 	        $currentTitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolRequeriment);
 	        $titolsSuficients[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
 	        
-	        if (!$trobat && $metapersona->getTitulacionsByTitolId($idTitolRequeriment)) $trobat = true;
+	        if (!$trobat && count($metapersona->getTitulacionsByTitolId($idTitolRequeriment)) > 0) $trobat = true;
 	    }
 	    if (!$trobat) return ' no hi ha cap registre de cap de les següents titulacions: '.implode(",",$titolsSuficients);
 	    return '';
@@ -1785,7 +1784,7 @@ class TitulacionsController extends BaseController {
 	private function comprovarTitulacionsNecessaries($metapersona, $idsTitols) {
 	    $titolsNecessaris = array();
 	    foreach ($idsTitols as $idTitolRequeriment) {
-	        if (!$metapersona->getTitulacionsByTitolId($idTitolRequeriment)) {
+	        if (count($metapersona->getTitulacionsByTitolId($idTitolRequeriment)) > 0) {
 	            $currentTitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolRequeriment);
 	            
 	            $titolsNecessaris[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
@@ -1799,6 +1798,8 @@ class TitulacionsController extends BaseController {
 		
 		$tipus = $requeriment->getRequeriment();
 		
+		$valors = explode(";",$requeriment->getValor());
+
 		$text = $requeriment->getText();
 		$text = substr($text, 0, strpos($text, ":"));
 		
@@ -1862,7 +1863,24 @@ class TitulacionsController extends BaseController {
 			    
 			case 309:	// Director. # se exige haber dirigido como mínimo dos cursos de buceador de esa misma especialidad
 				
-			    $res['errors'][] = $text.'. 309 - No es pot comprovar per manca de dades ';
+			    $minimCursos = isset($valors[0])?$valors[0]:''; // Nombre de cursos dirigits prèviament
+			    $idTitolCurs = isset($valors[1])?$valors[1]:''; // Titol del curs
+			    
+			    if (is_numeric($minimCursos) && $minimCursos > 0) {
+			        $titolEspecialitat = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolCurs);
+			        $titol = $titolEspecialitat!=null?$titolEspecialitat->getTitol():'';
+			        $metapersona = $curs->getDirector()->getMetadocent();
+			        if (count($metapersona->getDocenciesByTitolId($idTitolCurs)) < $minimCursos) {
+			            $res['errors'][] = $text.'. Respecte al Director, no hi ha registre del mínim de '.$minimCursos.' cursos dirigits de la especialitat '.$titol;
+			        }
+			        
+			        if ($curs->getCodirector() != null) {
+			            $metapersona = $curs->getCodirector()->getMetadocent();
+			            if (count($metapersona->getDocenciesByTitolId($idTitolCurs)) < $minimCursos) {
+			                $res['errors'][] = $text.'. Respecte al Director, no hi ha registre del mínim de '.$minimCursos.' cursos dirigits de la especialitat '.$titol;
+			            }
+			        }
+			    }
 					
 				break;	
 				
@@ -1879,7 +1897,11 @@ class TitulacionsController extends BaseController {
 
 	public function getRequerimentsEstructuraInforme($titol, $resultat)
     {
-    	if ($titol == null) return array('titol' => '', 'errors' => array( 'total' => 0 ));
+    	if ($titol == null) return array('titol' => '', 'errors' => array( 'total' => 0 ),
+    	                                BaseController::CONTEXT_REQUERIMENT_ALUMNES => array(),
+                                	    BaseController::CONTEXT_REQUERIMENT_GENERAL => array(),
+                                	    BaseController::CONTEXT_REQUERIMENT_DOCENTS => array()
+                                	);
 		
     	// Format tipus fitxa per poder fer el render en alguna vista funcionalment
 		$dades = array(
@@ -2087,8 +2109,16 @@ class TitulacionsController extends BaseController {
 					// req.  309 
 					if ($num == $reqDocents['director']['num']) {  //  Director: Cursos de la especialitat dirigits prèviament
 					
+					    $valors = explode(";",$req->getValor()); // llista ids XX;YY;ZZ
+					    $minCursos = isset($valors[0])?$valors[0]:'--';
+					    $idTitol = isset($valors[1])?$valors[1]:0;
+					    
+					    $titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitol);
+					    $codi = $titol!=null?$titol->getCodi():'';
+					    
 						$reqDocents['director']['text'] = $req->getText();
-						$reqDocents['director']['valor'] = $req->getValor();
+						$reqDocents['director']['valor1'] = $minCursos;
+						$reqDocents['director']['valor2'] = $codi;
 						if (isset($resultat[$reqDocents['director']['num']])) $reqDocents['director']['resultat'] = 'KO'; // error director
 					}
 					

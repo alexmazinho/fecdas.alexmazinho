@@ -4360,6 +4360,13 @@ class BaseController extends Controller {
 	    $checkRole = $this->get('fecdas.rolechecker');
 	    $clubs = array();
 	    if ($checkRole->isCurrentInstructor()) $clubs = $checkRole->getCurrentUser()->getClubsRole(BaseController::ROLE_INSTRUCTOR);
+	    if ($this->isCurrentAdmin()) {
+	        $clubs[] = $this->getCurrentClub();
+	        if (!$this->getCurrentClub()->esFederacio()) {
+	            $fede = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
+	            $clubs[] = $fede;
+	        }
+	    }
 	    
         $formBuilder->add('clubs', 'entity', array(
             'class' 		=> 'FecdasBundle:EntityClub',

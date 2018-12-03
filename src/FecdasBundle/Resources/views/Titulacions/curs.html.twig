@@ -12,7 +12,7 @@
 {% block _curs_collaboradors_entry_row %}
     {% set docent = form  %}
 	{% set proto = true  %}
-    {% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
+    {% include 'FecdasBundle:Titulacions:curscolabora.html.twig' %}
 {% endblock %}
 
 {% block _curs_participants_entry_row %}
@@ -47,14 +47,14 @@
     						<span class="step-description"><span class="step-step green">Pas 1.</span> Instructor: Introduïr les dades i desar</span>
     					{% endif %}
     
-    					<div class="button-step {% if (curs.esNou or curs.editable) and roleinstructor %}button-step-active {% endif %}">
+    					<div class="button-step {% if (curs.esNou or curs.editable) and (roleinstructor or admin) %}button-step-active {% endif %}">
     						<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" data-action="save" alt="Desar dades curs" 
     							title="Desar dades curs">
     							<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x green"></i><i class="fa fa-floppy-o fa-stack-1x fa-inverse"></i></i>
     						</a>
     					</div>
                         
-    					{% if roleinstructor %}
+    					{% if roleinstructor or admin %}
     						{% if curs.editable and not curs.esNou %}
 							<span class="step-description"><span class="step-step orange">Pas 2.</span> Instructor: Confirmar les dades i validació per part del club</span>
     						{% endif %}
@@ -64,18 +64,22 @@
     								title="Tancar per validació del club">
     									<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-lock fa-stack-1x fa-inverse"></i></i>
     							</a>
-    						</div>	
-						{% else %}
+    						</div>
+    					{% endif %}		
+                        {% if roleclub or admin %}
 						    {% if curs.tancat %}
     							<span class="step-description"><span class="step-step orange">Pas 2.</span> Club: Reobrir el curs per editar-lo</span>
-    						{% endif %}
-    
-    						<div class="button-step {% if curs.tancat %}button-step-active {% endif %}">
-    							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'unclose' }) }}" data-action="unclose" alt="Reobrir curs" 
-    								title="Reobrir curs">
-    								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-unlock fa-stack-1x fa-inverse"></i></i>
-    							</a>
-    						</div>
+                            {% endif %}
+                            
+                            {% if curs.tancat or (curs.editable and roleclub) %}
+        						<div class="button-step {% if curs.tancat %}button-step-active {% endif %}">
+        							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'unclose' }) }}" data-action="unclose" alt="Reobrir curs" 
+        								title="Reobrir curs">
+        								<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x orange"></i><i class="fa fa-unlock fa-stack-1x fa-inverse"></i></i>
+        							</a>
+        						</div>
+        					{% endif %}
+    						
 						{% endif %}
 						
 						{% if curs.tancat %}
@@ -243,7 +247,7 @@
 					</div>
 					<div id="tabs-collaboradors">
 						{% set proto = false %}
-						{% set tipus = "collaborador" %}
+						{% set tipus = "col·laborador" %}
 						{% set docents = form.collaboradors %}
 						{% set prototype = form_row(form.collaboradors.vars.prototype) %}
 						{% set titol = "Han col·laborat com a equip de seguretat" %}

@@ -57,7 +57,7 @@
 					<td class="data-detall-cell informe-detall-2col">Immersions</td>
 					<td class="data-detall-cell informe-detall-error"></td>
 				</tr>
-				{% for k, hora in dadesGenerals.hores %}
+				{% for hora in dadesGenerals.hores %}
 				<tr class="data-detall">
 					<td class="data-detall-cell informe-detall-text">{{ hora.text }}</td>
 					<td class="data-detall-cell">{{ hora.valor1 }}</td>
@@ -97,9 +97,8 @@
 				{% endfor %}
 				{% if dadesDocents.director.text != '' %}
     				<tr class="data-detall">
-    					<td class="data-detall-cell data-detall-cell-left" colspan="2">
-    					    <b>{{ dadesDocents.director.text }}</b>: {{ dadesDocents.director.valor }}
-    					</td>
+    					<td class="data-detall-cell informe-detall-text">{{ dadesDocents.director.text }}</td>
+    					<td class="data-detall-cell informe-detall-1col">{{ dadesDocents.director.valor1 }} x {{ dadesDocents.director.valor2 }}</td>
     					<td class="data-detall-cell informe-detall-error">
     						{% if dadesDocents.director.resultat == 'KO' %}<i class="fa fa-close fa-1x red"></i>{% endif %}
     					</td>

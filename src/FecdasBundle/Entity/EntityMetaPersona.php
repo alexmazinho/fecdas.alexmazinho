@@ -217,10 +217,11 @@ class EntityMetaPersona {
     
     public function getTitulacionsByTitolId($idTitol)
     {
+        $arr = array();
         foreach ($this->getTitulacionsSortedByDate() as $titulacio) {
-            if ($titulacio->getTitol()->getId() == $idTitol) return true;
+            if ($titulacio->getTitol()->getId() == $idTitol) return $arr[] = $titulacio;
         }
-        return false;
+        return $arr;
     }
     
     
@@ -257,6 +258,16 @@ class EntityMetaPersona {
     	return $arr;
     }
 
+    public function getDocenciesByTitolId($idTitol)
+    {
+        $arr = array();
+        foreach ($this->getDocenciesSortedByDate() as $docencia) {
+            if ($docencia->getCurs()->getTitol()->getId() == $idTitol) $arr[] = $docencia;
+        }
+        return $arr;
+    }
+    
+    
 	public function teDocencies() {
 		return count($this->getDocenciesSortedByDate(false));
 	}

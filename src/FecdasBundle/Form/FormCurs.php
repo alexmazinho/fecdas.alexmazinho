@@ -15,10 +15,12 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 
 	private $editor;
 	private $stock;
+	private $admin;
 	
 	public function __construct( $options )
 	{
 		$this->editor = isset($options['editor'])?$options['editor']:false;
+		$this->admin = isset($options['admin'])?$options['admin']:false;
 		$this->stock = isset($options['stock'])?$options['stock']:'';
 	}
 
@@ -45,7 +47,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			
 			$club = $curs->getClub();
 			
-			$editable = $curs->editable() && $this->editor;
+			$editable = $curs->editable() && ($this->editor || $this->admin);
 		
 			$form->add('num', 'text', array(
 				'required' 	=> true,
@@ -135,12 +137,12 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('auxdirector', 'text', array(
 				'mapped'	=> false,
 				'data'  	=> $persona != null?$persona->getId():'',
-				'attr'		=>	array('readonly' => true)
+			    'attr'		=>	array('readonly' => !$editable || !$this->admin)  // Admin pot tramitar cursos instructor escollint el director
 			));	
 
 			$form->add('auxcarnet', 'text', array(
 				'mapped'	=> false,
-			    'data'  	=> $director->getCarnet(),
+			    'data'  	=> $director != null?$director->getCarnet():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));	
 			
@@ -212,7 +214,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-		$builder->addEventSubscriber ( new FormCurs ( array('editor' => $this->editor, 'stock' => $this->stock ) ));
+	    $builder->addEventSubscriber ( new FormCurs ( array('editor' => $this->editor, 'admin' => $this->admin, 'stock' => $this->stock ) ));
 	
 		$builder->add('id', 'hidden');
 		

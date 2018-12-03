@@ -42,32 +42,32 @@ class EntityDocencia {
 	protected $carnet;	// Num titulació instructor corresponent (EntityTitulacio -> num)	
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $hteoria;	// Hores teoria
 
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $haula;  // Hores aula
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $hpiscina;  // Hores piscina
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $hmar; // Hores mar
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $ipiscina;  // Immersions piscina
 	
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", nullable=true)
 	 */
 	protected $imar; // Immersions mar
 	
@@ -95,12 +95,12 @@ class EntityDocencia {
 		$this->metadocent = $metadocent;
 		$this->curs = $curs;
 		$this->rol = ($rol == '' || $rol == null)?BaseController::DOCENT_INSTRUCTOR:$rol;  // pendent
-		$this->hteoria = 0;
+		/*$this->hteoria = 0;
 		$this->haula = 0;
 		$this->hpiscina = 0;
 		$this->hmar = 0;
 		$this->ipiscina = 0;
-		$this->imar = 0;
+		$this->imar = 0;*/
 		
 		$this->dataentrada = new \DateTime();
 		$this->datamodificacio = new \DateTime();

@@ -19,23 +19,25 @@
 	{% endif %}
 	<div class="col-md-12">
 		{% set key = constant('FecdasBundle\\Controller\\BaseController::CONTEXT_REQUERIMENT_GENERAL') %}
-		{% set dadesGenerals = requeriments[key] %}
 		{% set minteoriques = 0 %}
 		{% set minaula = 0 %}
 		{% set minpiscina = 0 %}
 		{% set minmar = 0 %}
-		{% if dadesGenerals.hores[100] is defined %} 
-		    {% set minteoriques = dadesGenerals.hores[100].valor1 %}
-		{% endif %}
-		{% if dadesGenerals.hores[101] is defined %}
-		    {% set minaula = dadesGenerals.hores[101].valor1 %}
-		{% endif %}
-		{% if dadesGenerals.hores[102] is defined %}
-		    {% set minpiscina = dadesGenerals.hores[102].valor1 %}
-		{% endif %}
-		{% if dadesGenerals.hores[103] is defined %}
-		    {% set minmar = dadesGenerals.hores[103].valor1 %}
-		{% endif %}
+		{% if requeriments[key] is defined %}
+			{% set dadesGenerals = requeriments[key] %}
+    		{% if dadesGenerals.hores[100] is defined %} 
+    		    {% set minteoriques = dadesGenerals.hores[100].valor1 %}
+    		{% endif %}
+    		{% if dadesGenerals.hores[101] is defined %}
+    		    {% set minaula = dadesGenerals.hores[101].valor1 %}
+    		{% endif %}
+    		{% if dadesGenerals.hores[102] is defined %}
+    		    {% set minpiscina = dadesGenerals.hores[102].valor1 %}
+    		{% endif %}
+    		{% if dadesGenerals.hores[103] is defined %}
+    		    {% set minmar = dadesGenerals.hores[103].valor1 %}
+    		{% endif %}
+        {% endif %}
 		<div class="table-header">
 			<div id="list-header" class="list-docent-curs-header">
 				<div class="col-id hidden">&nbsp;</div>

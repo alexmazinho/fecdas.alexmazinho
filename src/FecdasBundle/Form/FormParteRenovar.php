@@ -13,10 +13,12 @@ use Symfony\Component\Form\FormEvent;
 class FormParteRenovar extends AbstractType {
 
     private $anyrenova;
+    private $uncheckpersones;
 	
-    public function __construct($anyrenova = 0)
+    public function __construct($anyrenova = 0, $uncheckuncheckpersones = array())
 	{
 	    $this->anyrenova = $anyrenova==0?date('Y'):$anyrenova;
+	    $this->uncheckuncheckpersones = $uncheckuncheckpersones;
 	}
 
 	public function buildForm(FormBuilderInterface $builder, array $options)
@@ -73,10 +75,21 @@ class FormParteRenovar extends AbstractType {
 			        'data' 			=> $parte->getClub(),
 			        'attr'          => array('autocomplete' => 'off')
 			    ));
+			    
+			    $form->add('uncheckpersones', 'hidden', array(
+			        'mapped' 	 => false,
+			        'data' 		 => implode(";", $this->uncheckuncheckpersones),
+			        'attr'       => array('autocomplete' => 'off')
+			    ));
 			}
 		});
 		
-		$builder->add('llicencies', 'collection', array('type' => new FormLlicenciaRenew(), /*'allow_add' => true*/));	
+		$builder->add('llicencies', 'collection', array('type' => new FormLlicenciaRenew($this->uncheckuncheckpersones), /*'allow_add' => true*/));	
+		
+		$builder->add('page', 'hidden', array(
+		    'mapped' 	 => false,
+		));
+		
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

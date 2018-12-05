@@ -694,17 +694,28 @@ class PageController extends BaseController {
 	    $anyrenova = $this->getCurrentDate()->format('Y');
 	    $p = array();
 	    $error = '';
+	    $page = 1;
+	    $llicenciesAnteriors = 0;
+	    $llicenciesPosteriors = 0;
+	    $pageSize = 10;
+	    $uncheckpersones = '';
 	    if ($request->getMethod() == 'POST') {
 	        $p = $request->request->get('parte_renovar');
 	        
 	        $anyrenova = isset($p['anyrenova'])?$p['anyrenova']:$this->getCurrentDate()->format('Y');
 	        
 	        $codi = isset($p['clubs'])?$p['clubs']:'';
+	        
+	        $page = isset($p['page'])?$p['page']:1;
+	        $uncheckpersones = isset($p['uncheckpersones'])?$p['uncheckpersones']:'';
 	    } else {
 	        $anyrenova = $request->query->get('anyrenova', $this->getCurrentDate()->format('Y'));
 	        
 	        $codi = $request->query->get('clubs', ''); // filtra club
+	        $page = $request->query->get('page', 1);
+	        $uncheckpersones = $request->query->get('uncheckpersones', '');
 	    }
+	    $uncheckpersones = explode(";", $uncheckpersones);
     
 	    if ($this->isCurrentAdmin() && $codi != '') { // Cada club lo seu, els administradors tot
 	        $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
@@ -724,16 +735,19 @@ class PageController extends BaseController {
 
 	    $em = $this->getDoctrine()->getManager();
 	    
-	    $totals = array('total' => 0, 'detalls' => array());
+	    $totals = array('total' => 0, 'preu' => 0, 'detalls' => array());
 	    
 	    if (!$request->isXmlHttpRequest()) {
 	        // Accés inicial
 	        try {
 	            if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
-    	        $form = $this->createForm(new FormParteRenovar($this->isCurrentAdmin()), $parte);
+	            $form = $this->createForm(new FormParteRenovar($anyrenova, $uncheckpersones), $parte);
     	        
     	        return $this->render('FecdasBundle:Page:renovaranual.html.twig',
-    	                           $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)));
+    	                           $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 
+    	                                                                    'parte' => $parte, 'totals' => $totals, 'pagesize' => $pageSize, 'pagination' => null,
+    	                                                                    'anteriors' => $llicenciesAnteriors, 'posteriors' => $llicenciesPosteriors
+    	                           )));
     	    } catch (\Exception $e) {
     	        $em->clear();
     	            
@@ -748,12 +762,41 @@ class PageController extends BaseController {
 	    // Clone llicències
 	    $llicenciesCloned = EntityParte::cloneLlicenciesParte($parte, $llicenciesRenovar, $this->getCurrentDate());
 	    
-	    
 	    foreach ($tipus->getCategories() as $categoria) {
 	        $totals['detalls'][$categoria->getCategoria()] = 0;
 	    }
-	    
-	    foreach ($llicenciesCloned as $llicencia) {
+    
+	    // Default page size 50
+	    $from = ($page - 1) * $pageSize;   // pàgina 1 comença 0, pàgina 2 comença índex 50
+	    $to = $from + $pageSize - 1;
+        
+	    for ($i = 0; $i < count($llicenciesCloned); $i++) {
+	        if ($i < $from) $llicenciesAnteriors++;
+	        if ($i > $to) $llicenciesPosteriors++;
+	        $totals['total']++;
+	        $persona = $llicenciesCloned[$i]->getPersona();
+	        $llicenciaExistent = $persona->getLastLlicencia($dataalta, $parte->getDatacaducitat());
+	        if ($llicenciaExistent == null) {
+	            if ($i >= $from && $i <= $to) $parte->addLlicencia($llicenciesCloned[$i]);
+	            $totals['preu'] += $llicenciesCloned[$i]->getCategoria()->getPreuAny($dataalta->format('Y'));
+	            $totals['detalls'][$llicenciesCloned[$i]->getCategoria()->getCategoria()]++;
+	        } else {
+	            if ($i >= $from && $i <= $to) $parte->addLlicencia($llicenciesCloned[$i]);
+	        }
+	        
+        }	    
+        //$pagination = array_fill(0, $totals['total'], '');
+        $pagination = null;
+        if ($totals['total'] > 0) {
+            $paginator  = $this->get('knp_paginator');
+            
+            $pagination = $paginator->paginate(
+                array_fill(0, $totals['total'], ''),
+                $page,
+                $pageSize   /*limit per page*/
+            );
+        }
+	    /*foreach ($llicenciesCloned as $llicencia) {
 	        $persona = $llicencia->getPersona();
 	        $llicenciaExistent = $persona->getLastLlicencia($dataalta, $parte->getDatacaducitat());
 	        if ($llicenciaExistent == null) {
@@ -763,10 +806,10 @@ class PageController extends BaseController {
 	        } else {
                 $parte->addLlicencia($llicencia);
 	        }
-	    }
+	    }*/
 	    
 	    // Form
-	    $form = $this->createForm(new FormParteRenovar($this->isCurrentAdmin()), $parte);
+        $form = $this->createForm(new FormParteRenovar($anyrenova, $uncheckpersones), $parte);
 	    try {
 	        if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
 	        $avisos = "";
@@ -778,8 +821,28 @@ class PageController extends BaseController {
                  * Validacions  de les llicències
                  */
 	            $avisos = array();
-                $llicenciesPerEsborrar = array();
-                $i = 0;
+                //$llicenciesPerEsborrar = array();
+                //$i = 0;
+	            $parte->resetLlicencies(); // remove all
+	            
+                for ($i = 0; $i < count($llicenciesCloned); $i++) {
+                    $llicencia = $llicenciesCloned[$i];
+                    $persona = $llicencia->getPersona();
+                    $unchecked = in_array($persona->getId(), $uncheckpersones);
+                    
+                    try {
+                        if (!$unchecked) {
+                            $parte->addLlicencia($llicenciesCloned[$i]);
+                            $this->validaParteLlicencia($parte, $llicencia);
+                            $em->persist($llicencia);
+                            $this->addParteDetall($parte, $llicencia);
+                        }
+                    } catch (\Exception $e) {
+                        $avisos[] = $e->getMessage();
+                    }
+                }
+                
+                /*                
                 foreach ($parte->getLlicencies() as $llicencia) {
                     try {
                         if (!isset($p['llicencies'][$i]['renovar'])) {
@@ -796,12 +859,12 @@ class PageController extends BaseController {
                     }
                     $i++;
                 }
-                
+                */
                 if (count($avisos) > 0) throw new \Exception(implode(BR, $avisos));
-                
+                /*
                 foreach ($llicenciesPerEsborrar as $llicenciaEsborrar) {
                     $parte->removeLlicencia($llicenciaEsborrar);
-                }
+                }*/
                 
                 
                 $parte->setComentaris('Renovació anual llicències'.' '.$parte->getComentariDefault());
@@ -831,7 +894,10 @@ class PageController extends BaseController {
             'url'  => '',
             'error'=> $error, 
             'data' => $this->renderView('FecdasBundle:Page:renovaranualtaula.html.twig',
-                        $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals)))
+                $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals, 
+                                                                     'pagesize' => $pageSize, 'pagination' => $pagination,
+                                                                     'anteriors' => $llicenciesAnteriors, 'posteriors' => $llicenciesPosteriors
+                        )))
         );
         $response = new Response(json_encode($resposta));
 	        
@@ -843,8 +909,6 @@ class PageController extends BaseController {
 
 	
 	protected function consultaLlicenciesAnualsClub($club, $anyrenova) {
-	    
-	    if ($club == null) return array();
 	    
 	    $em = $this->getDoctrine()->getManager();
 	        
@@ -867,7 +931,7 @@ class PageController extends BaseController {
 	    $strQuery .= " ORDER BY e.cognoms, e.nom ";
 	        
 	    $query = $em->createQuery($strQuery)
-	                ->setParameter('club', $club->getCodi())
+	                ->setParameter('club', $club != null?$club->getCodi():'')
         	        ->setParameter('inicianual', $inicianual)
         	        ->setParameter('finalanual', $finalanual);
 	            

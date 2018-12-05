@@ -73,15 +73,13 @@
 
 <script type="text/javascript">
 
-reloadLlistaLlicencies = function(anyRenova, club) {
-	var url = $('#formrenovaranual').attr('action');
-	var params = { 'clubs': club, 'anyrenova': anyRenova };
-
+reloadLlistaLlicencies = function(url) {
+	
 	$('.alert-dismissible').remove();
 	
 	obrirMascaraBlock("#llicencies-anuals-renovar");
 
-	$.get(url, params, function(data) {
+	$.get(url, function(data) {
 		var resposta = JSON.parse(data);
 		if (resposta.error != '') {
 			var sms = smsResultAjax('KO', resposta.error);
@@ -157,8 +155,10 @@ $(document).ready(function(){
 	} else {
 		$("#submit-renovar").removeClass('disabled');
 	}
+	var url = $('#formrenovaranual').attr('action');
+	var urlReload = url+'?page=1&clubs=&anyrenova='+$('select#parte_renovar_anyrenova').val()+'&uncheckpersones='+$('#parte_renovar_uncheckpersones').val();	
 
-	reloadLlistaLlicencies($('select#parte_renovar_anyrenova').val(), '');
+	reloadLlistaLlicencies(urlReload);
 	
 	// Comanda filtre clubs disponible per admin's
 	{% if admin == true  %}
@@ -173,10 +173,13 @@ $(document).ready(function(){
 		$("select#parte_renovar_clubs, select#parte_renovar_anyrenova").change(function() {
 			var cerca = $('select#parte_renovar_clubs').val();
 			var selectedAnyRenova = $('select#parte_renovar_anyrenova').val();
-			
-			reloadLlistaLlicencies(selectedAnyRenova, cerca);
+			var uncheckPersones = $('#parte_renovar_uncheckpersones').val();
+
+			urlReload = url+'?page=1&clubs='+cerca+'&anyrenova='+selectedAnyRenova+'&uncheckpersones='+uncheckPersones;	
+			reloadLlistaLlicencies(urlReload);
 	    });
 	{% endif %}
+
 
 	$("#submit-renovar").click(function(e) {
 		e.preventDefault();
@@ -195,29 +198,52 @@ $(document).ready(function(){
 		
 	});
 
+	// Delegate
+	$( "#llicencies-anuals-renovar" ).on( "click", ".pagination a", function( e ) {
+		e.preventDefault();
+
+		var urlReload = $(this).attr('href')+'&uncheckpersones='+$('#parte_renovar_uncheckpersones').val();
+		
+		reloadLlistaLlicencies(urlReload);
+	});
+
+	
 	//calcularPreuRenovar();
 	// Delegate
 	$( "#llicencies-anuals-renovar" ).on( "click", ".renovar-checkbox", function( e ) {
 		var checked = $(this).is(':checked');
 		var parentRow = $(this).parents('tr.data-detall');
 
+		var personaId = parentRow.find('.llicenciapersonaid input').val();
 		var cat = parentRow.children('.llicenciacategoria').html();
 		var preu = parseFloat($(this).attr("preu"));
 		var num = $('#parte-detalls .parte-detalls-'+cat+' .parte-detalls-total').html();
 		var preuTotal = parseFloat($('#parte-preu .parte-preu-valor').attr('data-preu'));
-		
+
+		var unchecked = [];
+		if ($('#parte_renovar_uncheckpersones').val().trim() != '') {
+			var unchecked = $('#parte_renovar_uncheckpersones').val().trim().split(";");	// Ids persones unchecked
+		}
+
 		if (checked) {
 			parentRow.addClass('darkgreen');
 			parentRow.removeClass('data-detall-fosc');
+
+			unchecked.splice( unchecked.indexOf( personaId ), 1);	// Esborrar llista unchecked
+			
 			num = parseInt(num) + 1;
 			
 			preuTotal += preu;
 		} else {
 			parentRow.addClass('data-detall-fosc');
 			parentRow.removeClass('darkgreen');
+
+			unchecked.push( personaId );	// Afegir llista unchecked
+			
 			num = parseInt(num) - 1;
 			preuTotal -= preu;
 		}
+		$('#parte_renovar_uncheckpersones').val( unchecked.join(";") );
 		$('#parte-detalls .parte-detalls-'+cat+' .parte-detalls-total').html( num );
 		$('#parte-preu .parte-preu-valor').attr('data-preu', preuTotal);
 		$('#parte-preu .parte-preu-valor').html( preuTotal.toLocaleString('ca-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})  );

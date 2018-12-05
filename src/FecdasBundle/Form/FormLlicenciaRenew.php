@@ -8,6 +8,13 @@ use Symfony\Component\Form\FormEvent;
 
 class FormLlicenciaRenew extends FormLlicencia {
 
+    private $uncheckpersones;
+    
+    public function __construct($uncheckuncheckpersones = array())
+    {
+        $this->uncheckuncheckpersones = $uncheckuncheckpersones;
+    }
+    
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		parent::buildForm($builder, $options);
@@ -27,12 +34,19 @@ class FormLlicenciaRenew extends FormLlicencia {
 				
 				$llicenciaExistent = $persona->getLastLlicencia($parte->getDataalta(), $parte->getDatacaducitat());
 
+				$form->add('persona', 'hidden', array( 
+				        'mapped' 	=> false,
+				        'data'      => $persona->getId() 
+				));
+				
 				if ($llicenciaExistent == null) { // No en té
+				    $unchecked = in_array($persona->getId(), $this->uncheckuncheckpersones);
+				    
 					$form->add('renovar', 'checkbox', array(
 						'required'  => false,
 						'label' 	=> '',
 						'mapped' 	=> false,
-						'data'		=> true
+					    'data'		=> !$unchecked
 					));
 				} else {
 					$form->add('existent', 'hidden', array(

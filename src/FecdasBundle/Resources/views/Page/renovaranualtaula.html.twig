@@ -13,7 +13,7 @@
         		{% endif %}
         	{% endfor %}
         	<div id="parte-detalls">{{ detall|raw }}</div>
-        	<div id="parte-preu">Total: <span class="parte-preu-valor" data-preu="{{ totals.total }}">{{ totals.total|number_format(2, ',', '.') }}</span> €</div>
+        	<div id="parte-preu">Total: <span class="parte-preu-valor" data-preu="{{ totals.preu }}">{{ totals.preu|number_format(2, ',', '.') }}</span> €</div>
         	</div>
 		</div>
 	</div>
@@ -40,8 +40,8 @@
                 	{% set persona = llicencia.vars.value.persona %}
                 	{% set categoria = llicencia.vars.value.categoria %}
     				<tr class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %} {% if llicencia.renovar is defined %}darkgreen{% endif %}">
-    					<td class="data-detall-cell llicenciapersonaid hidden">{{  persona.id }}</td>
-    					<td class="data-detall-cell llicencianum">{{ loop.index }}</td>
+    					<td class="data-detall-cell llicenciapersonaid hidden">{{ form_widget(llicencia.persona) }}</td>
+    					<td class="data-detall-cell llicencianum">{{ anteriors + loop.index }}</td>
 						<td class="data-detall-cell data-detall-cell-left llicenciapersona">{{ persona.cognomsNom }}</td>
 						<td class="data-detall-cell llicenciadni">{{  persona.dni }}{% if persona.dni == null %}NULL{% endif %}</td>
 						<td class="data-detall-cell data-detall-cell-left llicenciamail">{{ persona.mail }}</td>
@@ -78,5 +78,8 @@
     		</tbody>
     	</table>
     </div>
+</div>
+<div class="col-md-12">
+{% if pagination != null and totals.total > pagesize %}<div class="navigation">Pàgines: {{ knp_pagination_render(pagination, null, {}) }}</div>{% endif %}
 </div>
 

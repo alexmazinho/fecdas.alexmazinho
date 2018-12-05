@@ -1101,6 +1101,16 @@ class EntityParte extends EntityComanda {
     	return $this->llicencies;
     }
 
+    
+    /**
+     * Remove llicencies
+     *
+     */
+    public function resetLlicencies()
+    {
+        $this->llicencies = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
     /*
     
     /**

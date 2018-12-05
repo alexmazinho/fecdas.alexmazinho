@@ -1867,7 +1867,7 @@ class TitulacionsController extends BaseController {
 			    $idTitolCurs = isset($valors[1])?$valors[1]:''; // Titol del curs
 			    
 			    if (is_numeric($minimCursos) && $minimCursos > 0) {
-			        $titolEspecialitat = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolCurs);
+			        $titolEspecialitat = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolCurs); 
 			        $titol = $titolEspecialitat!=null?$titolEspecialitat->getTitol():'';
 			        $metapersona = $curs->getDirector()->getMetadocent();
 			        if (count($metapersona->getDocenciesByTitolId($idTitolCurs)) < $minimCursos) {

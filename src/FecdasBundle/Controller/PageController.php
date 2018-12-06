@@ -697,7 +697,7 @@ class PageController extends BaseController {
 	    $page = 1;
 	    $llicenciesAnteriors = 0;
 	    $llicenciesPosteriors = 0;
-	    $pageSize = 10;
+	    $pageSize = 50;
 	    $uncheckpersones = '';
 	    if ($request->getMethod() == 'POST') {
 	        $p = $request->request->get('parte_renovar');
@@ -775,13 +775,18 @@ class PageController extends BaseController {
 	        if ($i > $to) $llicenciesPosteriors++;
 	        $totals['total']++;
 	        $persona = $llicenciesCloned[$i]->getPersona();
+	        $unchecked = in_array($persona->getId(), $uncheckpersones);
 	        $llicenciaExistent = $persona->getLastLlicencia($dataalta, $parte->getDatacaducitat());
 	        if ($llicenciaExistent == null) {
 	            if ($i >= $from && $i <= $to) $parte->addLlicencia($llicenciesCloned[$i]);
-	            $totals['preu'] += $llicenciesCloned[$i]->getCategoria()->getPreuAny($dataalta->format('Y'));
-	            $totals['detalls'][$llicenciesCloned[$i]->getCategoria()->getCategoria()]++;
+	            
+	            if (!$unchecked) {
+    	            $totals['preu'] += $llicenciesCloned[$i]->getCategoria()->getPreuAny($dataalta->format('Y'));
+    	            $totals['detalls'][$llicenciesCloned[$i]->getCategoria()->getCategoria()]++;
+	            }
 	        } else {
 	            if ($i >= $from && $i <= $to) $parte->addLlicencia($llicenciesCloned[$i]);
+	            if (!$unchecked) $uncheckpersones[] = $persona->getId();
 	        }
 	        
         }	    
@@ -814,8 +819,8 @@ class PageController extends BaseController {
 	        if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
 	        $avisos = "";
 	        if ($request->getMethod() == 'POST') {
-	            $form->handleRequest($request);
-                if (!$form->isValid()) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador '.$form->getErrors(true, false) );
+	            //$form->handleRequest($request);
+                //if (!$form->isValid()) throw new \Exception('Error validant les dades. Contacta amb l\'adminitrador '.$form->getErrors(true, false) );
 	            
 	            /*
                  * Validacions  de les llicències

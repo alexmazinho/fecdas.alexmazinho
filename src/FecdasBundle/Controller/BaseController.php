@@ -48,7 +48,7 @@ class BaseController extends Controller {
 	const PREFIX_MAIL_BCC = '{bcc}';
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_ANUAL_MES = 11; //12; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_MES = 12; //12; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = 01; // a partir de 01/10 any en curs
 	const INICI_TRAMITACIO_QUATRIMESTRE_MES = 10; // a partir de 01/10 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
@@ -2796,6 +2796,8 @@ class BaseController extends Controller {
 			
 			//$detall->setUnitats($detall->getUnitats() + 1);
 			$detall->setUnitats($detall->getUnitats() + $unitats);
+			
+			if ($anotacions != '') $detall->setAnotacions($anotacions);
 		}
 
 		$comanda->setDatamodificacio($this->getCurrentDate());

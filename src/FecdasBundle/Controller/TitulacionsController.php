@@ -886,18 +886,16 @@ class TitulacionsController extends BaseController {
 					$foto = $formparticipant->get('fotoupld')->getData();
 					$certificat = $formparticipant->get('certificatupld')->getData();
 					
-					$persona = null;
-					foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
-						$metapersona = $participant->getMetapersona();
-						if ($metapersona->getId() == $idMeta) {
-							$persona = $metapersona->getPersona($curs->getClub());
-							break;
-						} 
-					}
-					if ($persona == null) throw new \Exception('Alumne no trobat '.$idMeta);
+					
+					$participant = $curs->getParticipantByMetaId($idMeta);
+					if ($participant == null || $participant->getMetapersona() == null) throw new \Exception('Alumne no trobat '.$idMeta);
+					$persona = $participant->getMetapersona()->getPersona($curs->getClub());
 
-					$this->gestionarFotoPersona($persona, $fotoPath, $foto);
-					$this->gestionarCertificatPersona($persona, $certificatPath, $certificat);
+					$fotoTitulacio = $this->gestionarFotoPersona($persona, $fotoPath, $foto);
+					$certificatTitulacio = $this->gestionarCertificatPersona($persona, $certificatPath, $certificat);
+					
+					if ($fotoTitulacio != null) $participant->setFoto($fotoTitulacio);
+					if ($certificatTitulacio != null) $participant->setCertificat($certificatTitulacio);
 				}
 
 				$this->accionsPostValidacions($curs, $action);

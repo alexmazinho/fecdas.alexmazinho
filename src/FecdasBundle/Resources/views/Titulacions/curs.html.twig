@@ -750,7 +750,19 @@
 					 $('.comprovacio-kits').prepend(sms);
 				}); 
 			});
-			
+
+
+			$( ".imprimir-carnet" ).click(function (e) {
+				e.preventDefault();
+
+				var url = $(this).attr('href');
+
+				var parentRow = $(this).parents('.alumne-form-row');
+
+				url += '?participant='+parentRow.find('.col-id input').val();
+
+				window.location = url; 
+			});
 		});
 
 	</script>

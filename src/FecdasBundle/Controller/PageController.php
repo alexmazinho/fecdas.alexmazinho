@@ -699,6 +699,7 @@ class PageController extends BaseController {
 	    $llicenciesPosteriors = 0;
 	    $pageSize = 50;
 	    $uncheckpersones = '';
+	    $anual = true;
 	    if ($request->getMethod() == 'POST') {
 	        $p = $request->request->get('parte_renovar');
 	        
@@ -725,6 +726,13 @@ class PageController extends BaseController {
 	    $dataalta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyrenova+1). "-01-01 00:00:00");
 	    if ($dataalta->format('Y-m-d') < $this->getCurrentDate()->format('Y-m-d')) $dataalta = $this->getCurrentDate();
 	    
+	    if (!$this->validaTramitacioAnySeguent($dataalta)) {
+	        $anual = false;
+	        $error = 'Encara no es poden tramitar llicències per a l\'any vinent';
+	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$error);
+	        $this->get('session')->getFlashBag()->add('error-notice',	$error);
+	    }
+	    
 	    // Les llicències es renoven tipus A 
 	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_A);
 	    
@@ -739,22 +747,13 @@ class PageController extends BaseController {
 	    
 	    if (!$request->isXmlHttpRequest()) {
 	        // Accés inicial
-	        try {
-	            if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
-	            $form = $this->createForm(new FormParteRenovar($anyrenova, $uncheckpersones), $parte);
-    	        
-    	        return $this->render('FecdasBundle:Page:renovaranual.html.twig',
-    	                           $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 
-    	                                                                    'parte' => $parte, 'totals' => $totals, 'pagesize' => $pageSize, 'pagination' => null,
-    	                                                                    'anteriors' => $llicenciesAnteriors, 'posteriors' => $llicenciesPosteriors
-    	                           )));
-    	    } catch (\Exception $e) {
-    	        $em->clear();
-    	            
-    	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$e->getMessage());
-    	            
-    	        $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-	        }
+	        $form = $this->createForm(new FormParteRenovar($anyrenova, $uncheckpersones), $parte);
+	        
+	        return $this->render('FecdasBundle:Page:renovaranual.html.twig',
+	            $this->getCommonRenderArrayOptions(array('form' => $form->createView(),
+	                'parte' => $parte, 'totals' => $totals, 'pagesize' => $pageSize, 'pagination' => null,
+	                'anteriors' => $llicenciesAnteriors, 'posteriors' => $llicenciesPosteriors, 'anual' => $anual
+	            )));
 	    }
 	    
 	    $llicenciesRenovar = $this->consultaLlicenciesAnualsClub($club, $anyrenova);
@@ -888,7 +887,7 @@ class PageController extends BaseController {
                 return $response;
 	        }
 	    } catch (\Exception $e) {
-	        $em->clear();
+	        //$em->clear();
 	            
 	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$e->getMessage());
 	    
@@ -900,8 +899,8 @@ class PageController extends BaseController {
             'error'=> $error, 
             'data' => $this->renderView('FecdasBundle:Page:renovaranualtaula.html.twig',
                 $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals, 
-                                                                     'pagesize' => $pageSize, 'pagination' => $pagination,
-                                                                     'anteriors' => $llicenciesAnteriors, 'posteriors' => $llicenciesPosteriors
+                                                                    'pagesize' => $pageSize, 'pagination' => $pagination, 'anual' => $anual,
+                                                                    'anteriors' => $llicenciesAnteriors, 'posteriors' => $llicenciesPosteriors
                         )))
         );
         $response = new Response(json_encode($resposta));

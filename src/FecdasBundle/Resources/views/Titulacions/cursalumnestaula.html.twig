@@ -26,9 +26,11 @@
 				<div class="col-meta hidden">&nbsp;</div>
 				<div class="col-listheader col-alumne-dni">DNI</div>
 				<div class="col-listheader col-alumne-nom">Nom i cognoms</div>
+				<div class="col-listheader col-alumne-superacio">Superació</div>
 				<div class="col-listheader col-alumne-certificat">Certificat</div>
 				<div class="col-listheader col-alumne-foto">Foto</div>
 				<div class="col-listheader col-alumne-num">Num.</div>
+				{% if admin and curs.finalitzat  %}<div class="col-listheader col-alumne-num"><span class="fa fa-print fa-1x"></span></div>{% endif %}
 				{% if curs.editable == true and (admin or roleinstructor) %}<div class="col-listheader col-alumne-actions">&nbsp;</div>{% endif %}
 			</div>
 		</div>

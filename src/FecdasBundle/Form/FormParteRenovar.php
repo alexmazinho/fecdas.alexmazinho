@@ -60,6 +60,8 @@ class FormParteRenovar extends AbstractType {
 			        'data'	            => $parte->getLlicenciesSortedByName()
 			    ));*/
 			    
+			    //if (false) {
+			    
 			    $form->add('clubs', 'entity', array(
 			        'class' 		=> 'FecdasBundle:EntityClub',
 			        'query_builder' => function($repository) {
@@ -75,6 +77,7 @@ class FormParteRenovar extends AbstractType {
 			        'data' 			=> $parte->getClub(),
 			        'attr'          => array('autocomplete' => 'off')
 			    ));
+			    //}
 			    
 			    $form->add('uncheckpersones', 'hidden', array(
 			        'mapped' 	 => false,

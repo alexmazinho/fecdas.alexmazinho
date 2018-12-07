@@ -13,14 +13,14 @@
         		{% endif %}
         	{% endfor %}
         	<div id="parte-detalls">{{ detall|raw }}</div>
-        	<div id="parte-preu">Total: <span class="parte-preu-valor" data-preu="{{ totals.preu }}">{{ totals.preu|number_format(2, ',', '.') }}</span> €</div>
+        	{% if anual %}<div id="parte-preu">Total: <span class="parte-preu-valor" data-preu="{{ totals.preu }}">{{ totals.preu|number_format(2, ',', '.') }}</span> €</div>{% endif %}
         	</div>
 		</div>
 	</div>
 </div>
 
 <div class="col-md-12">
-	<div id="list-llicenciesrenovaranual" class="table-scroll table-responsive">
+	<div id="list-llicenciesrenovaranual" class="table-scroll table-fixheader">
     	<table class="table">	
        		<thead>
    			   	<tr class="header">
@@ -46,7 +46,13 @@
 						<td class="data-detall-cell llicenciadni">{{  persona.dni }}{% if persona.dni == null %}NULL{% endif %}</td>
 						<td class="data-detall-cell data-detall-cell-left llicenciamail">{{ persona.mail }}</td>
 						<td class="data-detall-cell llicenciacategoria">{{ categoria.categoria }}</td>
-						<td class="data-detall-cell data-detall-cell-right llicenciapreu"><span>{{ categoria.preuany(parte.any)|number_format(2, ',', '.') }}</span>€</td>
+						<td class="data-detall-cell data-detall-cell-right llicenciapreu">
+							{% if anual %}
+							<span>{{ categoria.preuany(parte.any)|number_format(2, ',', '.') }}</span>€
+							{% else %}
+							--
+							{% endif %}
+						</td>
 						{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
     						<td class="data-detall-cell llicenciaenviarllicencia">		
     						    {# if parte.llicencies[loop.index0].enviarllicencia == 1 %} Si 	{% else %} No {% endif #}
@@ -54,7 +60,7 @@
     		    				<div class="checkbox-inline">{{ form_widget(llicencia.enviarllicencia[1]) }}{{ form_label(llicencia.enviarllicencia[1]) }}</div>
     						</td>
 						{% endif %}
-						{% if llicencia.renovar is defined %}
+						{% if anual and llicencia.renovar is defined %}
 							<td class="data-detall-cell llicenciaactions">{{ form_widget(llicencia.renovar, {'attr': {'class': 'renovar-checkbox', 'preu' : categoria.preuany(parte.any)} }) }}</td>
 						{% else %}
 							<td class="data-detall-cell llicenciaactions llicenciano">

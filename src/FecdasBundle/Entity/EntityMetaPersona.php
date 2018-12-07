@@ -301,6 +301,28 @@ class EntityMetaPersona {
     	return $personaMesNova==null?'':$personaMesNova->getNomCognoms();
     }
 
+    /**
+     * Get nom
+     *
+     * @return string
+     */
+    public function getNom()
+    {
+        $personaMesNova = $this->getUltimesDadesPersonals();
+        return $personaMesNova==null?'':$personaMesNova->getNom();
+    }
+    
+    /**
+     * Get cognoms 
+     *
+     * @return string
+     */
+    public function getCognoms()
+    {
+        $personaMesNova = $this->getUltimesDadesPersonals();
+        return $personaMesNova==null?'':$personaMesNova->getCognoms();
+    }
+    
 	/**
      * Get datanaixement
      *

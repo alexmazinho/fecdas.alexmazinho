@@ -163,7 +163,7 @@
 			   			<div class="data-detall-cell carnets-nom">&nbsp;</div>
 			   			<div class="data-detall-cell carnets-cognoms">&nbsp;</div>
 			   			<div class="data-detall-cell carnets-dni">&nbsp;</div>
-			   			<div class="data-detall-cell carnets-expedicio">&nbsp;</div>
+			   			<div class="data-detall-cell carnets-numexpe">&nbsp;</div>
 			   			<div class="data-detall-cell carnets-emissio">&nbsp;</div>
 			   			<div class="data-detall-cell carnets-caducitat">&nbsp;</div>
 			   			<div class="data-detall-cell carnets-actions"><a class="esborrar-carnet link" alt="Treure dades de la taula" title="Treure dades de la taula" href="javascript:void(0);">
@@ -175,7 +175,7 @@
 			   			<div class="data-detall-cell carnets-nom">{{ carnet.nom }}</div>
 			   			<div class="data-detall-cell carnets-cognoms">{{ carnet.cognoms }}</div>
 			   			<div class="data-detall-cell carnets-dni">{{ carnet.dni }}</div>
-			   			<div class="data-detall-cell carnets-expedicio">{{ carnet.expedicio }}</div>
+			   			<div class="data-detall-cell carnets-numexpe">{{ carnet.expedicio }}</div>
 			   			<div class="data-detall-cell carnets-emissio">{{ carnet.emissio }}</div>
 			   			<div class="data-detall-cell carnets-caducitat">{{ carnet.caducitat }}</div>
 			   			<div class="data-detall-cell carnets-actions"><a class="esborrar-carnet link" alt="Treure dades de la taula" title="Treure dades de la taula" href="javascript:void(0);">
@@ -259,7 +259,7 @@
 					carnets.push( { nom: $(this).find('.carnets-nom').html(),
 									cognoms: $(this).find('.carnets-cognoms').html(),
 									dni: $(this).find('.carnets-dni').html(),
-									expedicio: $(this).find('.carnets-expedicio').html(),
+									num: $(this).find('.carnets-numexpe').html(),
 									emissio: $(this).find('.carnets-emissio').html(),
 									caducitat: $(this).find('.carnets-caducitat').html(),	 } );
 						
@@ -324,7 +324,7 @@
 					dialegError("Error", "Cal indicar el número d'expedició", 350, 100);
 					return;
 				}
-				$(newElement).find('.carnets-expedicio').html( $('#form_num').val()  );
+				$(newElement).find('.carnets-numexpe').html( $('#form_num').val()  );
 				if ($('#form_dataemissio').val().trim() == '') {
 					dialegError("Error", "Cal indicar la data d'emissió", 350, 100);
 					return;

@@ -54,6 +54,12 @@ class FormTitulacio extends AbstractType {
 				'disabled'	=> true
 			));	
 			
+			$form->add('auxdatasuperacio', 'text', array(
+			    'mapped'	=> false,
+			    'data'		=> $titulacio!=null&&$titulacio->getDatasuperacio()!=null?$titulacio->getDatasuperacio()->format('d/m/Y'):'',
+			    'disabled'	=> true
+			));	
+			
 			$form->add('num', 'text', array(
 				'required'  => false, 
 				'attr'      => array('readonly' => true),

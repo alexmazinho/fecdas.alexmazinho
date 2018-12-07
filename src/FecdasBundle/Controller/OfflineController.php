@@ -610,7 +610,7 @@ class OfflineController extends BaseController {
                             
                     if ($curs == null) {
                         $curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club, $clubhistoric);
-                        $curs->setNum($num);
+                        $curs->setNumfedas($num);
                         $curs->setValidat(true);
                         $curs->setFinalitzat(true);
                                 
@@ -626,7 +626,7 @@ class OfflineController extends BaseController {
                         
                 // Crear titulacions
                 $titulacio = new EntityTitulacio($persona->getMetapersona(), $curs);
-                $titulacio->setNum($currentTitolError['numtitulo']);
+                $titulacio->setNumfedas($currentTitolError['numtitulo']);
                 $titulacio->setDatasuperacio($datafins);
                         
                 $em->persist($titulacio);
@@ -1021,8 +1021,8 @@ class OfflineController extends BaseController {
 					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
 					
 					if ($curs == null) {
-						$curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club, $clubhistoric);			
-						$curs->setNum($num);
+					    $curs = new EntityCurs(null, 0, $datadesde, $datafins, $club, $clubhistoric, $titol);			
+						$curs->setNumfedas($num);
 						$curs->setValidat(true);
 						$curs->setFinalitzat(true);
 						
@@ -1041,7 +1041,7 @@ class OfflineController extends BaseController {
 				
 				// Crear titulacions 
 				$titulacio = new EntityTitulacio($metapersona, $curs);
-				$titulacio->setNum($currentTitol['numtitulo']);
+				$titulacio->setNumfedas($currentTitol['numtitulo']);
 				$titulacio->setDatasuperacio($datafins);
 				
 				$em->persist($titulacio); 

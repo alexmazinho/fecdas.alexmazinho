@@ -510,7 +510,7 @@ class EntityCurs {
 	 * @param string $numfedas
 	 */
 	public function setNumfedas($numfedas) {
-	    $this->num = $numfedas;
+	    $this->numfedas = $numfedas;
 	}
 	
 	/**

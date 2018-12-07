@@ -12,6 +12,7 @@
 	<div class="data-detall-cell col-alumne-meta hidden">{{ form_widget(participant.metapersona) }}</div>
 	<div class="data-detall-cell col-alumne-dni">{{ form_widget(participant.auxdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell col-alumne-nom">{{ form_widget(participant.auxnom, { 'attr': {'class': 'form-control form-control-left'} }) }}</div>
+	<div class="data-detall-cell col-alumne-superacio">{{ form_widget(participant.auxdatasuperacio, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
    	<div class="data-detall-cell col-alumne-certificat">
    	    {{ form_widget(participant.certificat) }}
    		{{ form_widget(participant.certificatupld) }}
@@ -25,20 +26,22 @@
         			</span>
         		</div>
     		{% endif %}
-    		<div class="file-info">
    			{% if persona is not null and persona.certificat is not null %}
-   				<span class="blue">descarregar certificat</span> 
-				<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
-					  <span class="fa fa-download fa-1x orange"></span> 
-				</a>
-				<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
+       			<div class="file-info">
+       				<span class="blue">descarregar certificat</span> 
+    				<a href="{{ persona.certificat.webPath }}" target="_blank" title="{{ persona.certificat.titol }}" class="link">
+    					  <span class="fa fa-download fa-1x orange"></span> 
+    				</a>
+    				<a class="remove-file link" href="javascript:void(0);"><span class="fa fa-trash fa-1x red"></span></a>
+    			</div>
    			{% else %}
+   				<div class="file-not-found">
    				{% if proto or (curs.editable and roleinstructor) %}
    				{% else %}
    						<span class="blue">Certificat mèdic no disponible </span>
    				{% endif %}
+   				</div>
    			{% endif %}
-   			</div>
    		</div>
    	</div>	
 	<div class="data-detall-cell col-alumne-foto">
@@ -62,6 +65,11 @@
    		</span>	
    	</div>
 	<div class="data-detall-cell col-alumne-num">{{ form_widget(participant.num, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
+	{% if not proto and admin and curs.finalitzat  %}
+    	<div class="data-detall-cell col-alumne-carnet">
+       		<a class="imprimir-carnet" alt="Imprimir carnet" title="Imprimir carnet" href="{{ path('FecdasBundle_carnettopdf') }}"><i class="fa fa-address-card-o red fa-1x"></i></a>
+    	</div>
+	{% endif %}
 	{% if proto or (curs.editable and (admin or roleinstructor)) %}
 		<div class="data-detall-cell col-actions"><a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-trash fa-1x red"></i></a></div>
 	{% endif %}

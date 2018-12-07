@@ -1064,9 +1064,35 @@ class PDFController extends BaseController {
 		if ($this->isCurrentAdmin() != true)
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	
-		$carnets = $request->query->get('carnets', json_encode(array()));
-		
-		$carnetsArray = json_decode($carnets, true);
+		if ($request->query->has('participant')) {
+		    $participant = $request->query->get('participant', 0);
+		    
+		    $titulacio = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitulacio')->find($participant);
+		    
+		    if ($titulacio == null) {
+		        $this->logEntryAuth('CARNET ERROR', 'participant '.$participant);
+		        $this->get('session')->getFlashBag()->add('error-notice', 'No s\'ha trobat les dades d\'aquest participant del curs');
+		        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+		    }
+		    
+		    $metapersona = $titulacio->getMetapersona();
+		    
+		    $carnetsArray = array();
+		    $carnetsArray[] = array(
+		        'nom'         =>  $metapersona->getNom(),
+		        'cognoms'     =>  $metapersona->getCognoms(),
+		        'dni'         =>  $metapersona->getDni(),
+		        'num'         =>  $titulacio->getNumTitulacio(),
+		        'emissio'     =>  $titulacio->getDatasuperacio()->format('d/m/Y'),
+		        //'caducitat'   =>  ??,
+		        //'foto'        =>  $titulacio->getFoto()
+		    );
+		    
+		} else {
+    		$carnets = $request->query->get('carnets', json_encode(array()));
+    		
+    		$carnetsArray = json_decode($carnets, true);
+		}
 		
 		$current = $this->getCurrentDate();
 		
@@ -1107,7 +1133,7 @@ class PDFController extends BaseController {
 		$pdf->lastPage();
 	
 		// Generació del PDF 
-		$this->logEntryAuth('CARNET OK', json_encode($carnets));
+		$this->logEntryAuth('CARNET OK', json_encode($carnetsArray));
 		
 		// Close and output PDF document
 		$response = new Response($pdf->Output("carnets_".$current->format('Y-m-d').".pdf", "D"));
@@ -1160,12 +1186,14 @@ class PDFController extends BaseController {
 
 		$pdf->SetXY($xEmi, $yEmi+$gap);
 		$pdf->Cell(0, 0, isset($dades['emissio'])?$dades['emissio']:'', 0, 1, 'L');
-				
-		$pdf->SetXY($xCad, $yCad+$gap);
-		$pdf->Cell(0, 0, isset($dades['caducitat'])?$dades['caducitat']:'', 0, 1, 'L');
+		
+		if (isset($dades['caducitat'])) {
+    		$pdf->SetXY($xCad, $yCad+$gap);
+    		$pdf->Cell(0, 0, $dades['caducitat'], 0, 1, 'L');
+		}
 				
 		$pdf->SetXY($xNum, $yNum+$gap);
-		$pdf->Cell(0, 0, isset($dades['expedicio'])?$dades['expedicio']:'', 0, 1, 'L');
+		$pdf->Cell(0, 0, isset($dades['num'])?$dades['num']:'', 0, 1, 'L');
 		
 		// Logo club
 		/*$pdf->SetXY($xLogoC, $yLogoC);
@@ -1181,7 +1209,6 @@ class PDFController extends BaseController {
 							false, false, false, array());*/
 		
 	}
-
 
 	public function actacurspdfAction(Request $request) {
 			

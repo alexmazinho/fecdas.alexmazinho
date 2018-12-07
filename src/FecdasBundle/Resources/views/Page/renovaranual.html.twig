@@ -42,7 +42,7 @@
         <div class="col-md-4 {% if admin != true %} col-md-offset-3 {% endif %} col-xs-2">
         	<div class="form-right">
         		<div class="required">&nbsp;</div>	
-        		<a id="submit-renovar" class="btn btn-default" alt="Renovar llista" title="Renovar llicències" ><i class="fa fa-retweet green"></i> Renovar</a>
+        		<a id="submit-renovar" class="btn btn-default" alt="Renovar llista" {% if not anual %}disabled="disabled"{% endif %} title="Renovar llicències" ><i class="fa fa-retweet green"></i> Renovar</a>
         				
         		<!-- <button type="submit" alt="Renovar llista" title="Renovar llicències" 
         			 id="formrenovar-button-renovar" class="btn btn-default">

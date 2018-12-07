@@ -46,6 +46,18 @@ class EntityTitulacio {
 	protected $datasuperacio;
 
 	/**
+	 * @ORM\OneToOne(targetEntity="EntityArxiu")
+	 * @ORM\JoinColumn(name="foto", referencedColumnName="id")
+	 */
+	protected $foto;
+	
+	/**
+	 * @ORM\OneToOne(targetEntity="EntityArxiu")
+	 * @ORM\JoinColumn(name="certificat", referencedColumnName="id")
+	 */
+	protected $certificat;
+	
+	/**
 	 * @ORM\Column(type="datetime")
 	 */
 	protected $dataentrada;
@@ -245,7 +257,7 @@ class EntityTitulacio {
 	 * @param string $numfedas
 	 */
 	public function setNumfedas($numfedas) {
-	    $this->num = $numfedas;
+	    $this->numfedas = $numfedas;
 	}
 	
 	/**
@@ -262,6 +274,48 @@ class EntityTitulacio {
 		return $this->datasuperacio;
 	}
 
+	/**
+	 * Set foto
+	 *
+	 * @param EntityArxiu $foto
+	 * @return EntityArxiu
+	 */
+	public function setFoto(EntityArxiu $foto = null)
+	{
+	    $this->foto = $foto;
+	}
+	
+	/**
+	 * Get foto
+	 *
+	 * @return EntityArxiu
+	 */
+	public function getFoto()
+	{
+	    return $this->foto;
+	}
+	
+	/**
+	 * Set certificat
+	 *
+	 * @param EntityArxiu $certificat
+	 * @return EntityArxiu
+	 */
+	public function setCertificat(EntityArxiu $certificat = null)
+	{
+	    $this->certificat = $certificat;
+	}
+	
+	/**
+	 * Get certificat
+	 *
+	 * @return EntityArxiu
+	 */
+	public function getCertificat()
+	{
+	    return $this->certificat;
+	}
+	
 	/**
      * Set dataentrada
      *

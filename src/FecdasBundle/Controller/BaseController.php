@@ -3531,6 +3531,7 @@ class BaseController extends Controller {
             }
             $persona->setFoto($foto);
         }
+        return $foto;
     }
     
     protected function gestionarArxiuPersona($persona, $esborrar = true, $arxiu, $foto = false, $certificat = false) {
@@ -3614,6 +3615,7 @@ class BaseController extends Controller {
             }
             $persona->setCertificat($certificat);
         }
+        return $certificat;
     }
     
 	/*

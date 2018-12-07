@@ -746,7 +746,8 @@ a.link.footer-link { padding: 0 10px; }
 
 .table-responsive .stockacumulat-entrades { border-left: 2px solid #cccccc; }
 .table-responsive .stockacumulat-sortides,
-.table-responsive .stockacumulat-total  { border-left: 1px solid #cccccc; }
+.table-responsive .stockacumulat-total,
+.table-responsive .stockacumulat-inicial  { border-left: 1px solid #cccccc; }
 .table-responsive .stockacumulat-void  { border-right: 1px solid #cccccc; }
 
 .table-responsive .header-stockacumulat-stock { width: 60px; border-left: 1px solid #96c4ea; }
@@ -1280,6 +1281,14 @@ ul.detalls li .alert { margin: 10px 0; }
     text-decoration: none;
 }
 
+.table > thead > tr > th.col-listheader:last-child, .col-listheader:last-child {
+	border-right: 1px solid #96c4ea;
+}
+
+
+#summary-header .col-listheader:last-child { border-left: none; } 
+
+
 .list-header .col-listheader { cursor: pointer; }
 
 #main-col .col-listheader a {
@@ -1494,8 +1503,10 @@ tr:first-child > .data-detall-cell  {
 }
 
 
-.table-fixheader    { overflow-y: auto; height: 450px; }
-.table-fixheader > .table { border-collapse: separate; }
+.table-fixheader    { overflow-y: auto; /* height: 450px;*/ }
+.table-scroll.table-fixheader { border-left: none;border-right: none; }
+
+.table-fixheader > .table { border-collapse: separate; margin-bottom: 0; }
 .table-fixheader > .table > thead > tr { display: table-row; position: sticky; top: 0; }
 .table-fixheader .data-detall-header { background: none; }
 .table-fixheader > .table > thead > tr > th { height: 40px; background:  repeat-x scroll 0 0 #F0F9FF; position: sticky; top: 0; border-collapse: collapse; } 
@@ -1512,6 +1523,8 @@ tr:first-child > .data-detall-cell  {
 .table-fixheader tr:first-child > .data-detall-cell {
 	border-top: 1px solid #96C4EA;
 }
+.table-fixheader > .table > tbody > tr > td.data-detall-cell:nth-child(2) { border-left: 1px solid #81C6FF; }
+.table-fixheader > .table > tbody > tr > td.data-detall-cell:last-child { border-right: 1px solid #81C6FF; }
 
 
 .navigation {
@@ -2252,8 +2265,9 @@ select#parte_renovar_tipus { width: 240px; }
 
 
 .col-alumne-dni { width: 12%; text-align: center; }
-.col-alumne-nom { width: 32%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
-.col-alumne-certificat { width: 25%; text-align: left;  position: relative; }
+.col-alumne-nom { width: 25%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-superacio { width: 12%; text-align: center; }
+.col-alumne-certificat { width: 20%; text-align: left;  position: relative; }
 .col-alumne-foto { width: 10%; text-align: center; position: relative; }
 .col-alumne-num { width: 15%; text-align: center; }
 .col-alumne-actions { width: 5%; text-align: center; }
@@ -2262,6 +2276,7 @@ select#parte_renovar_tipus { width: 240px; }
 
 .col-alumne-certificat .file-upload { position: relative; }
 .col-alumne-certificat .file-info { position: absolute;  bottom: -24px; right: 0; }
+.col-alumne-certificat .file-not-found { text-align: center; }
 
 #llista-alumnes .data-detall-cell .subtitle, #llista-alumnes .col-listheader .subtitle { display: block; font-style: italic; font-size: 0.9em; color: #005a8c; }
 

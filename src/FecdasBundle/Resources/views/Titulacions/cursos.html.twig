@@ -9,9 +9,9 @@
 			<div class="col-md-8"><h1>Relació de cursos</h1></div>
 	        <div class="col-md-4 col-last-right">
 				<div class="buttons-top-bootstrap">
-					<div class="button-top"><a class="link export-pdf" href="javascript:void(0);{# path('FecdasBundle_cursostopdf') #}" alt="Descarregar els cursos" 
+					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_cursos', { 'format': 'pdf' } ) }}" alt="Descarregar els cursos" 
 							title="Descarregar els cursos"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
-					<div class="button-top"><a class="link export-csv" href="javascript:void(0);{# path('FecdasBundle_exportcursos') #}" alt="Exportar dades dels cursos" 
+					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_cursos', { 'format': 'csv' } ) }}" alt="Exportar dades dels cursos" 
 							title="Exportar dades dels cursos"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
 				</div> 
 			</div>
@@ -108,7 +108,7 @@
         				   		<th id="header-curs-alumnes" class="col-listheader collistheader-noorder">Alumnes</th>
         				   		<th id="header-curs-docents" class="col-listheader collistheader-noorder">Docents</th>
         				   		<th id="header-curs-estat" class="col-listheader collistheader-noorder">Estat</th>
-        				   		<th id="header-curs-actions" class="col-listheader collistheader-noorder total-rowcount">
+        				   		<th id="header-curs-actions" class="col-listheader collistheader-noorder total-rowcount" data-total="{{ cursos.getTotalItemCount }}">
         				   			Total: {{ cursos.getTotalItemCount|number_format(0, ',', '.') }}
         				   		</th>
             				</tr> 
@@ -223,6 +223,19 @@
 				//filtreLlistacursos();
 			}
 		);
+
+		$('.export-pdf, .export-csv').click( function(e) {
+			e.preventDefault();
+
+			if ($('.total-rowcount').attr('data-total') > 1000) {
+				dialegInfo("Nombre excessiu de cursos", "El límit de l'informe són 1000 cursos", 400, 'auto');
+				return;
+			}
+			
+			var url = getUrlWithFilterParams($(this).attr('href'));
+			window.location = url;
+		});
+
 		
 		// filtre clubs disponible per admins
 		{% if admin == true  %} 

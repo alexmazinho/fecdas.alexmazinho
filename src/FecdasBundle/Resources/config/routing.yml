@@ -367,21 +367,15 @@ FecdasBundle_dadespersonals:
     requirements:
         methods:  GET
 
-FecdasBundle_exportcursos:
-    path:  /exportcursos
-    defaults: { _controller: "FecdasBundle:Titulacions:exportcursos" }
+FecdasBundle_actacurspdf:
+    path:  /actacurspdf
+    defaults: { _controller: "FecdasBundle:PDF:actacurspdf" }
     requirements:
         methods:  GET
 
 FecdasBundle_cursostopdf:
     path:  /cursostopdf
-    defaults: { _controller: "FecdasBundle:Titulacions:cursostopdf" }
-    requirements:
-        methods:  GET
-
-FecdasBundle_actacurspdf:
-    path:  /actacurspdf
-    defaults: { _controller: "FecdasBundle:PDF:actacurspdf" }
+    defaults: { _controller: "FecdasBundle:PDF:cursostopdf" }
     requirements:
         methods:  GET
 

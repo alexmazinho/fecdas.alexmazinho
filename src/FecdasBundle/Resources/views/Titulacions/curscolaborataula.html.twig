@@ -39,7 +39,7 @@
 				<div class="col-listheader col-docent-carnet">Núm. carnet</div>
 				<div class="col-listheader col-docent-hpiscina">Immesions Piscina{% if immersionspiscina > 0 %}<br/>(min. {{ immersionspiscina }}){% endif %}</div>
 				<div class="col-listheader col-docent-hmar">Immesions Mar{% if immersionsmar > 0 %}<br/>(min. {{ immersionsmar }}){% endif %}</div>
-				{% if curs.editable == true and (admin or roleinstructor) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
+				{% if curs.editable and (admin or roleinstructor) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
 			</div>
 		</div>
 		<div class="table-noscroll">
@@ -49,7 +49,7 @@
 				{% for docent in docents %}
 					{% include 'FecdasBundle:Titulacions:curscolabora.html.twig' %}
 				{% endfor %}
-				<li class="empty-alert {% if docents|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></li>
+				<li class="empty-alert {% if docents|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap col·laborador assignat</div></li>
 			 </ul> 
 		</div>				 
 	</div>

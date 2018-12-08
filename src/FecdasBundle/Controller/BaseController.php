@@ -201,7 +201,13 @@ class BaseController extends Controller {
     const INDEX_SUBDPT_INGRESOS_VARIS_LLIBRES           = 2;
     const INDEX_SUBDPT_INGRESOS_VARIS_TRANSPORT         = 4;
 	
-	
+    // Estats curs
+    const CURS_ANULAT       = array('lletra' => 'A', 'text' => 'Anul·lat');
+    const CURS_FINALITZAT   = array('lletra' => 'F', 'text' => 'Finalitzat');
+    const CURS_VALIDAT      = array('lletra' => 'V', 'text' => 'Validat pel club. Enviat a la federació');
+    const CURS_TANCAT       = array('lletra' => 'T', 'text' => 'Tancat pel director. Pendent de validar pel club');
+    const CURS_EDICIO       = array('lletra' => 'E', 'text' => 'El director està omplint les dades');
+    
 	// Titulacions
 	const TIPUS_TITOL_BUSSEIG	= 'BU';
 	const TIPUS_TITOL_TECNIC	= 'TE';

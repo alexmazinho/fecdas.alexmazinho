@@ -9,6 +9,7 @@ use Symfony\Component\Form\FormError;
 
 use FecdasBundle\Form\FormCurs;
 use FecdasBundle\Form\FormPersona;
+use FecdasBundle\Classes\Funcions;
 use FecdasBundle\Entity\EntityCurs;
 use FecdasBundle\Entity\EntityDocencia;
 use FecdasBundle\Entity\EntityStock;
@@ -182,6 +183,30 @@ class TitulacionsController extends BaseController {
 	    foreach ($altrestitulacions as $titol) {
 	        $data[] = $titol->csvRow($i);
 	        $i ++;
+	    }
+	    
+	    $response = $this->exportCSV($request, $header, $data, $filename);
+	    return $response;
+	}
+	
+	private function exportCursos($request, $cursos, $club, $titol, $cerca, $desde, $fins) {
+	    /* CSV Llistat de dades personals filtrades */
+	    $filename = "export_cursos";
+	    if ($club != null) $filename .= "_".Funcions::netejarPath($club->getNom());
+	    if ($titol != null) $filename .= "_".Funcions::netejarPath($titol->getTitol());
+	    if ($cerca != null) $filename .= "_".Funcions::netejarPath($cerca);
+	    if ($desde != null || $fins != null) $filename .= "_".BaseController::getInfoTempsNomFitxer($desde, $fins);
+	    
+	    $filename .= ".csv";
+	    
+	    $header = EntityCurs::csvHeader( );
+	    
+	    $data = array(); // Get only data matrix
+	    $i = 1;
+	    
+	    foreach ($cursos as $curs) {
+	        $data[] = $curs->csvRow($i);
+	        $i++;
 	    }
 	    
 	    $response = $this->exportCSV($request, $header, $data, $filename);
@@ -706,7 +731,7 @@ class TitulacionsController extends BaseController {
 
 	public function cursosAction(Request $request) {
 		// Llista de cursos
-		if (!$this->isAuthenticated())
+	    if (!$this->isAuthenticated())
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 
 		$checkRole = $this->get('fecdas.rolechecker');
@@ -716,7 +741,8 @@ class TitulacionsController extends BaseController {
 		    $this->logEntryAuth('VIEW CURSOS NOT ALLOWED', "rol ".$rol);
 		    return $this->redirect($this->generateUrl('FecdasBundle_homepage')); 
 		}
-		
+
+		$format = $request->query->get('format', '');
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'c.datadesde');
 		$direction = $request->query->get('direction', 'desc');
@@ -732,6 +758,8 @@ class TitulacionsController extends BaseController {
 		}
 		
 		$desde = $request->query->get('desde', '')!=''?\DateTime::createFromFormat('d/m/Y', $request->query->get('desde')):null;
+		if ($desde == null) $desde = \DateTime::createFromFormat('Y-m-d', date("Y") . "-01-01");
+		
 		$fins = $request->query->get('fins', '')!=''?\DateTime::createFromFormat('d/m/Y', $request->query->get('fins')):null;
 
 		$currentTitol = $request->query->get('titols', '');
@@ -745,6 +773,26 @@ class TitulacionsController extends BaseController {
 											"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--'));
 		
 		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $cerca, $desde, $fins, $currentPerValidar, $sort.' '.$direction);
+		
+		
+		if ($format == 'csv') {
+		    // Generar CSV
+		    return $this->exportCursos($request, $query->getResult(), $club, $titol, $cerca, $desde, $fins);
+		}
+		
+		if ($format == 'pdf') {
+		    // Generar PDF
+		    return $this->forward('FecdasBundle:PDF:cursostopdf', array(
+		        'cursos'        => $query->getResult(),
+		        'club' 		    => $club,
+		        'titol' 		=> $titol,
+		        'alumne' 		=> $cerca,
+		        'desde'			=> $desde,
+		        'fins'			=> $fins,
+		        'pervalidar'	=> $currentPerValidar
+		    ));
+		}
+		
 		
 		$paginator  = $this->get('knp_paginator');
 		$cursos = $paginator->paginate(
@@ -810,7 +858,6 @@ class TitulacionsController extends BaseController {
 		$requeriments = array( 'titol' => '', 'errors' => array( 'total' => 0 ));
 		
 		//$participantscurrent = null;
-
 		$club = null;
 		$codi = '';
     	if ($request->getMethod() != 'POST') {
@@ -829,8 +876,8 @@ class TitulacionsController extends BaseController {
 			$action = (isset($data['action'])?$data['action']:'');
 			$codi = (isset($data['club'])?$data['club']:'');
     	}
-    	
-		if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
+
+    	if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
 
 		if ($codi != '' && $curs == null) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
@@ -862,22 +909,20 @@ class TitulacionsController extends BaseController {
 				}
 			}
     	}
-		
+
 		if ($request->getMethod() == 'POST') {
 			$this->initDadesPostCurs($request->request->get('curs'), $curs);
 		}
-			
+
 		$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
     		    //throw new \Exception('Operació pendent. No es poden desar les dades del curs');
-    		    
 			 	$form->handleRequest($request);
 			 	if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrors(true, true) );
-				
 				// Comprovacions genèriques
 				$this->validacionsCurs($curs, $stock, $form, $action);
-				
+
 				// Fotos i arxius
 				foreach ($form->get('participants') as $formparticipant) {
 					$idMeta = $formparticipant->get('metapersona')->getData();
@@ -899,12 +944,11 @@ class TitulacionsController extends BaseController {
 				}
 
 				$this->accionsPostValidacions($curs, $action);
-	    		
 				$curs->setDatamodificacio(new \DateTime('now'));
 				
 	    		$em->flush();
-	    		
-    			$this->get('session')->getFlashBag()->add('sms-notice',	'Canvis desats correctament');
+
+	    		$this->get('session')->getFlashBag()->add('sms-notice',	'Canvis desats correctament');
     			
     			return $this->redirect($this->generateUrl('FecdasBundle_curs', 
     					array( 'id' => $curs->getId() )));
@@ -922,7 +966,6 @@ class TitulacionsController extends BaseController {
     		// Ko, mostra form amb errors
     		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     	}
-		
 		if (!$curs->finalitzat()) {
 			// Resultat check Requeriments titulació
 			$resultat = $this->comprovaRequerimentsCurs($curs);
@@ -1117,9 +1160,7 @@ class TitulacionsController extends BaseController {
 			$form->get('auxdirector')->addError(new FormError('Obligatori'));
 			throw new \Exception('Cal indicar un director per al curs');
 		} 
-		
 		$this->validaCarnetDocent($director, $form->get('auxcarnet'));
-		
 		if ($codirector != null) {
 		    if ($codirector->getMetadocent() === $director->getMetadocent()) {
         		$form->get('auxcodirector')->addError(new FormError('Duplicat'));
@@ -1128,7 +1169,6 @@ class TitulacionsController extends BaseController {
 		    
 		    $this->validaCarnetDocent($codirector, $form->get('auxcocarnet'));
 		}
-		
 		// Director / Co-director poden ser instructors també?
 
 		$docentIds = array();
@@ -1163,18 +1203,16 @@ class TitulacionsController extends BaseController {
 			// Si $fins <= $desde està tot el periode cobert
 			if ($finsVariable->format('Y-m-d') > $desde->format('Y-m-d')) throw new \Exception('L\'instructor '.$meta->getDni().' no té llicència tècnic durant tot el periode del curs');
 		}
-		
 		$docenciesCollaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
-		foreach ($docenciesCollaboradors as $docencia) {
+		foreach ($docenciesCollaboradors as $k => $docencia) {
 		    $this->validaCarnetDocent($docencia, $form->get('collaboradors')->get($k)->get('carnet'));
-		    
-			$meta = $docencia->getMetadocent();
+			
+		    $meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('El col·laborador '.$meta->getNomCognoms().' està repetit');
 			$docentIds[] = $meta->getId();
 			
 			$this->validaDocenciaHoresImmersions($docencia);
 		}
-
 		// Validar alumne repetit
 		$alumnesIds = array();
 		$participants = $curs->getParticipantsSortedByCognomsNom();
@@ -1183,7 +1221,7 @@ class TitulacionsController extends BaseController {
 			if (in_array($meta->getId(), $alumnesIds)) throw new \Exception('L\'alumne '.$meta->getNomCognoms().' està repetit');
 			$alumnesIds[] = $meta->getId();
 		}
-		
+
 		// Valida stock
 		if ($titol->esKitNecessari()) {
 			$kit = $titol->getKit();

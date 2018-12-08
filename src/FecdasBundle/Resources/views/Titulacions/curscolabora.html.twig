@@ -6,7 +6,7 @@
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-carnet">{{ form_widget(docent.carnet, { 'attr': {'class': 'form-control form-control-left'} }) }}<span>{{ form_errors(docent.carnet)}}</span></div>
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-hpiscina">{{ form_widget(docent.ipiscina, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-hmar">{{ form_widget(docent.imar, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-	{% if proto == false and curs.editable == true and (admin or roleinstructor) %}
+	{% if (proto or (curs.editable and (admin or roleinstructor))) %}
 		<div class="data-detall-cell col-actions"><a class="remove-docent link" href="javascript:void(0);" ><i class="fa fa-trash fa-1x red"></i></a></div>
 	{% endif %}
 </li>

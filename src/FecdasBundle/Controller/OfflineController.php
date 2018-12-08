@@ -606,7 +606,7 @@ class OfflineController extends BaseController {
                 // Cercar existent o crear curs sense docents
                 $num = $currentTitolError['numcurso'];
                 if (!isset($cursos[ $num ])) {
-                    $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
+                    $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('numfedas' => $num));
                             
                     if ($curs == null) {
                         $curs = new EntityCurs(null, $titol, $datadesde, $datafins, $club, $clubhistoric);
@@ -618,7 +618,7 @@ class OfflineController extends BaseController {
                                 
                         $cursosNous++;
                     }
-                    $cursos[$curs->getNumActa()] = $curs;  // Afegir als cursos consultats
+                    $cursos[$curs->getNumfedas()] = $curs;  // Afegir als cursos consultats
                             
                 } else {
                     $curs = $cursos[ $num ];
@@ -1018,7 +1018,7 @@ class OfflineController extends BaseController {
 					if ($pos === false) throw new \Exception($id.'#ERROR. Número curs format KO: '.$titol); //ERROR
 					$num = substr( $currentTitol['numcurso'], $pos+1 ); // Treure any */
 
-					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('num' => $num));
+					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('numfedas' => $num));
 					
 					if ($curs == null) {
 					    $curs = new EntityCurs(null, 0, $datadesde, $datafins, $club, $clubhistoric, $titol);			
@@ -1030,7 +1030,7 @@ class OfflineController extends BaseController {
 						
 						$cursosNous++;
 					}
-					$cursos[$curs->getNumActa()] = $curs;  // Afegir als cursos consultats
+					$cursos[$curs->getNumfedas()] = $curs;  // Afegir als cursos consultats
 					
 				} else {
 					$curs = $cursos[ $num ];

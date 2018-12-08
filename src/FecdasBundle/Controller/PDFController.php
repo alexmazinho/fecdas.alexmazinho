@@ -1210,6 +1210,293 @@ class PDFController extends BaseController {
 		
 	}
 
+	public function cursostopdfAction($cursos, $club = null, $titol = null, $alumne = '', $desde = null, $fins = null, $pervalidar = false) {
+	    /* PDF Llistat de dades personals filtrades */
+	    
+	    $pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	    $pdf->init(array('author' => 'FECDAS', 'title' => "Llista de cursos"),
+	        true, ($this->isCurrentAdmin()?'ADMINISTRADOR - ':''));
+	    
+	    $pdf->AddPage();
+	    
+	    // set color for background
+	    $pdf->SetFillColor(255, 255, 255); //Blanc
+	    // set color for text
+	    $pdf->SetTextColor(0, 0, 0); // Negre
+	    
+	    $y_ini = $pdf->getY();
+	    $x_ini = $pdf->getX();
+	    
+	    $y = $y_ini;
+	    $x = $x_ini;
+	    
+	    $pdf->SetFont('dejavusans', '', 12, '', true);
+	    $pdf->Ln();
+
+	    if ($club != null || $titol != null || $alumne != "" || $desde != null || $fins != null || $pervalidar) {
+	        // Afegir dades del filtre
+	        $y += 10;
+	        $pdf->SetFont('dejavusans', 'I', 10, '', true);
+	        $pdf->writeHTMLCell(0, 0, $x, $y, 'Opcions de filtre', 'B', 1, 1, true, '', true);
+	        $pdf->SetFont('dejavusans', '', 9, '', true);
+	        if ($pervalidar) {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Cursos pendents de validar', '', 1, 1, true, '', true);
+	        }
+	        if ($club != null) {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Club "'.$club->getNom().'"', '', 1, 1, true, '', true);
+	        }
+	        if ($titol != null) {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Titulació "'.$titol->getTitol().'"', '', 1, 1, true, '', true);
+	        }
+	        if ($alumne != "") {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Participant "'.$alumne.'"', '', 1, 1, true, '', true);
+	        }
+	        if ($desde != null || $fins != null) {
+	            $y += 7;
+	            $text  = $desde != null?"Des de ".$desde->format('d/m/Y')." ":"";
+	            $text .= $fins != null?"Fins ".$fins->format('d/m/Y'):""; 
+	            $pdf->writeHTMLCell(0, 0, $x, $y, $text, '', 1, 1, true, '', true);
+	        }
+	        $y += 2;
+	        $pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
+	        
+	        $pdf->Ln();
+	    } else {
+	        $y += 15;
+	    }
+
+	    $w = array(8, 8, 16, 25, 25, 16, 41, 41); // Amplades 180
+	    $this->dadescursHeader($pdf, $w);
+	    $pdf->SetFillColor(255, 255, 255); //Blanc
+	    $pdf->SetFont('dejavusans', '', 6.5, '', true);
+	    
+	    $total = 0;
+
+	    foreach ($cursos as $curs) {
+	        $total++;
+	        
+	        $num_pages = $pdf->getNumPages();
+	        $pdf->startTransaction();
+	        
+	        $this->dadescursRow($pdf, $w, $total, $curs);
+	        
+	        if($num_pages < $pdf->getNumPages()) {
+	            
+	            //Undo adding the row.
+	            $pdf->rollbackTransaction(true);
+	            
+	            $pdf->AddPage();
+	            $this->dadescursHeader($pdf, $w);
+	            $pdf->SetFillColor(255, 255, 255); //Blanc
+	            $pdf->SetFont('dejavusans', '', 6.5, '', true);
+	            
+	            $this->dadescursRow($pdf, $w, $total, $curs);
+	            
+	        } else {
+	            //Otherwise we are fine with this row, discard undo history.
+	            $pdf->commitTransaction();
+	        }
+	        
+	    }
+
+	    $pdf->Ln(10);
+	    
+	    // Afegir llista abreviatures estats 
+
+	    $pdf->SetFont('dejavusans', '', 5.5, '', true);
+	    $pdf->SetTextColor(100, 100, 100); // Gris
+	    $pdf->SetDrawColor(150, 150, 150); // Gris
+	    
+	    $h_llista = 26;
+	    //if ($pdf->getY() > ( ($pdf->getPageHeight()-PDF_MARGIN_BOTTOM-PDF_MARGIN_TOP)/3) ) {
+	    if ($pdf->getY() + $h_llista > ( $pdf->getPageHeight()-PDF_MARGIN_BOTTOM) ) {  // La llista abreviatures mesura unes 80 unitats
+	        $pdf->AddPage();
+	    }
+	    
+	    $pdf->setY($pdf->getPageHeight()-PDF_MARGIN_BOTTOM - $h_llista - 5);
+	    
+	    $html  = '<h3>Abreviatures estats:</h3><ul>';
+	    $pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $html, '', 1, false, true, 'L', true);
+	    
+	    // 4 cols
+	    $x_tit 	= $pdf->getX();
+	    $y_tit 	= $pdf->getY();
+	    
+	    $pdf->Rect($x_tit, $y_tit-3,$pdf->getPageWidth()-PDF_MARGIN_LEFT*2, $h_llista,  'DF', '', '');
+	    
+	    $html   = '<table border="0" cellspacing="0" cellpadding="1">';
+	    $html  .= '<tr><td align="right" style="font-size: large;font-weight: bold; width: 20;">'.BaseController::CURS_ANULAT['lletra'].'</td><td align="center" style="width: 15;">-</td><td style="font-size: large;width: 300;">'.BaseController::CURS_ANULAT['text'].'</td></tr>';
+	    $html  .= '<tr><td align="right" style="font-size: large;font-weight: bold;">'.BaseController::CURS_FINALITZAT['lletra'].'</td><td align="center">-</td><td style="font-size: large;">'.BaseController::CURS_FINALITZAT['text'].'</td></tr>';
+	    $html  .= '<tr><td align="right" style="font-size: large;font-weight: bold;">'.BaseController::CURS_VALIDAT['lletra'].'</td><td align="center">-</td><td style="font-size: large;">'.BaseController::CURS_VALIDAT['text'].'</td></tr>';
+	    $html  .= '<tr><td align="right" style="font-size: large;font-weight: bold;">'.BaseController::CURS_TANCAT['lletra'].'</td><td align="center">-</td><td style="font-size: large;">'.BaseController::CURS_TANCAT['text'].'</td></tr>';
+	    $html  .= '<tr><td align="right" style="font-size: large;font-weight: bold;">'.BaseController::CURS_EDICIO['lletra'].'</td><td align="center">-</td><td style="font-size: large;">'.BaseController::CURS_EDICIO['text'].'</td></tr>';
+	    $html  .= '</table>';
+	    
+        //$pdf->setCellPaddings(4, 2, 4, 2);
+        //$pdf->setCellHeightRatio(1.2);
+        
+	    $pdf->writeHTMLCell(0, 0, $x_tit, $y_tit, $html, '', 0, false, true, 'L', true);
+    
+	    $pdf->SetTextColor(0, 0, 0); // Negre
+	    
+	    $pdf->setPage(1); // Move to first page
+	    
+	    $pdf->setY($y_ini);
+	    $pdf->setX($pdf->getPageWidth() - 100);
+	    
+	    $pdf->SetFont('dejavusans', '', 13, '', true);
+	    $text = '<b>Total : '. $total . '</b>';
+	    $pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $text, '', 1, 1, true, 'R', true);
+	    
+	    // reset pointer to the last page
+	    $pdf->lastPage();
+	    
+	    $filename = "cursos_".date("Ymd").".pdf";
+	    
+	    // Close and output PDF document
+	    $response = new Response($pdf->Output($filename, "D")); // save as...
+	    
+	    $response->headers->set('Content-Type', 'application/pdf');
+	    return $response;
+	    
+	}
+	
+	private function dadescursHeader($pdf, $w) {
+	    $pdf->SetFont('dejavusans', 'B', 8, '', true);
+	    $pdf->SetFillColor(221, 221, 221); //Gris
+	    
+	    $h = 8;
+	    $ini = $pdf->getX();
+	    $x = $ini;
+	    $y = $pdf->getY();
+	    
+	    $pdf->setCellPaddings(1, 2, 1, 2);
+	    
+	    //$pdf->multiCell(w, h, txt, border = 0, align = 'J', fill = 0, ln = 1, x = '', y = '', reseth = true, stretch = 0, ishtml = false, autopadding = true, maxh = 0, valign = '', adjusttext)
+	    $pdf->multiCell($w[0], $h, '#', 1, 'C', 1, 0, $x, $y, true, 0, false, true, $h, 'M', true);
+	    $x += $w[0];
+	    
+	    $pdf->multiCell($w[1], $h, 'Estat', 1, 'C', 1, 0, $x, $y, true, 0, false, true, $h, 'M', true);
+	    $x += $w[1];
+	    
+	    $pdf->multiCell($w[2], $h, 'Acta', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[2];
+	    
+	    $pdf->multiCell($w[3], $h, 'Titol', 1, 'L', 1, 0, $x, $y, true, 1, false, true, $h, 'M', false);
+	    $x += $w[3];
+	    
+	    $pdf->multiCell($w[4], $h, 'Club', 1, 'L', 1, 0, $x, $y, true, 1, false, true, $h, 'M', false);
+	    $x += $w[4];
+	    
+	    $pdf->multiCell($w[5], $h, 'Durada', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[5];
+	    
+	    $pdf->multiCell($w[6], $h, 'Equip docent', 1, 'L', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[6];
+	    
+	    $pdf->multiCell($w[7], $h, 'Participants', 1, 'L', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    
+	    $pdf->setY($y+$h);
+	    $pdf->setX($ini);
+	    
+	}
+	
+	private function dadescursRow($pdf, $w, $i, $curs) {
+	    
+	    $totalDocents = 0;
+	    $txtDocents = array();
+	    if ($curs->getDirector() != null && $curs->getDirector()->getMetadocent() != null) {
+	        $txtDocents[] = 'Director: '.$curs->getDirector()->getMetadocent()->getNomCognoms();
+	        $totalDocents++;
+	    }
+	    if ($curs->getCodirector() != null && $curs->getDirector()->getMetadocent() != null) {
+	        $totalDocents++;
+	        $txtDocents[] = 'Co-Director: '.$curs->getCodirector()->getMetadocent()->getNomCognoms();
+	    }
+	    if (count($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR)) > 0) {
+	        $txtDocents[] = 'Instructors';
+	        $totalDocents++;
+	    }
+	    foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR) as $docent) {
+	        $txtDocents[] = '  '.$docent->getMetadocent()->getNomcognoms();
+	        $totalDocents++;
+	    }
+	    if (count($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR)) > 0) {
+	        $txtDocents[] = 'Col·laboradors';
+	        $totalDocents++;
+	    }
+	    foreach ($curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR) as $docent) {
+	        $txtDocents[] = '  '.$docent->getMetadocent()->getNomcognoms();
+	        $totalDocents++;
+	    }
+	    
+	    /**
+	     * Director: ...
+	     * Co-Director: ....
+	     * Docents
+	     * --------------------
+	     * - sdasda
+	     * - aasdasd
+	     * 
+	     */
+	    $totalAlumnes = 0;
+	    $htmlAlumnes = array();
+	    foreach ($curs->getParticipantsSortedByCognomsNom() as $participant) {
+	        $htmlAlumnes[] = $participant->getMetapersona()->getNomcognoms();
+	        $totalAlumnes++;
+	    }
+
+	    $hrow = 8;
+	    $h = $hrow + (max($totalDocents, $totalAlumnes)-1) * 2.4;
+	    $ini = $pdf->getX();
+	    $x = $ini;
+	    $y = $pdf->getY();
+	    
+	    $pdf->setCellPaddings(1, 2, 1, 2);
+	    
+	    //$pdf->multiCell(w, h, txt, border = 0, align = 'J', fill = 0, ln = 1, x = '', y = '', reseth = true, stretch = 0, ishtml = false, autopadding = true, maxh = 0, valign = '', adjusttext)
+	    $pdf->multiCell($w[0], $h, $i, 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[0];
+	    
+	    $pdf->multiCell($w[1], $h, $curs->getEstat(true), 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[1];
+	    
+	    $pdf->multiCell($w[2], $h, $curs->getNumActa(), 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[2];
+	    
+	    $pdf->SetFont('dejavusans', '', 6, '', true);
+	    $pdf->multiCell($w[3], $h, $curs->getTitol()->getTitol(), 1, 'L', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[3];
+	    
+	    $pdf->multiCell($w[4], $h, $curs->getClubInfo(), 1, 'L', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[4];
+	    
+	    $pdf->SetFont('dejavusans', '', 6.5, '', true);
+	    $pdf->setCellHeightRatio(0.85);
+	    $pdf->multiCell($w[5], $h, $curs->getDatadesde()->format('d/m/y').LF.'-'.LF.$curs->getDatafins()->format('d/m/y'), 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[5];
+	    
+	    $pdf->SetFont('dejavusans', '', 5.5, '', true);
+	    
+	    $pdf->setCellHeightRatio(1.3);
+	    //$pdf->multiCell($w[1], $h, 'Estat', 1, 'C', 1, 0, $x, $y, true, 0, false, true, $h, 'M', true);
+	    $pdf->multiCell($w[6], $h, implode(LF,$txtDocents), 1, 'L', 0, 0, $x, $y, true, 0, false, false, $h, 'M', false);
+	    $x += $w[6];
+	    
+	    
+	    
+	    $pdf->multiCell($w[7], $h, implode(LF,$htmlAlumnes), 1, 'L', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    
+	    $pdf->setY($y+$h);
+	    $pdf->setX($ini);
+	    
+	}
+	
+	
 	public function actacurspdfAction(Request $request) {
 			
 		if (!$this->isAuthenticated())
@@ -1253,7 +1540,6 @@ class PDFController extends BaseController {
 		$rowH = 12;
 		$cellH = 8;
 		//$tableRowH = 7.5;
-		$alumneRowH = 8;
 		$wSmall = 15;
 		$wMed = 30;
 		$wDates = 35;
@@ -1282,8 +1568,8 @@ class PDFController extends BaseController {
 		$xCampCarnet = $xEtiqCarnet + 13;
 		
 		$ySubtitolInstructors = $yFilaCoDirector + $rowH;
-		$yTaulaInstructors = $ySubtitolInstructors + $rowH;
-		$nFilesInstructors = max(count($docents) + 1, 5);
+		$yTaulaInstructors = $ySubtitolInstructors + $rowH-2;
+		$nFilesInstructors = max(count($docents) + 1, 4);
 		
 		//$ySubtitolCollaboradors = $yTaulaInstructors + ($nFilesInstructors * $tableRowH) + $rowH + $rowH + 10;  /* $rowH ~ capçalera taula docents */
 		//$yTaulaCollaboradors = $ySubtitolCollaboradors + $rowH;
@@ -1376,7 +1662,7 @@ class PDFController extends BaseController {
 		$pdf->Cell(0, $cellH, 'REALITZAT PEL CLUB:', 0, 0, 'L');
 
 		$pdf->SetXY($xEtiquetes1,$yHeaderFila3);
-		$pdf->Cell(0, $cellH, 'EN LES DATES COMPRESSES DEL DIA:', 0, 0, 'L');
+		$pdf->Cell(0, $cellH, 'EN LES DATES COMPRESES DEL DIA:', 0, 0, 'L');
 
 		$pdf->SetXY($xEtiqDiaFi, $yHeaderFila3);
 		$pdf->Cell(0, $cellH, 'AL DIA:', 0, 0, 'L');
@@ -1414,7 +1700,7 @@ class PDFController extends BaseController {
 		$pdf->SetFont('dejavusans', '', 8, '', true);
 		$pdf->SetY($yTaulaInstructors);
 		
-		$tbl = $this->getHtmlTaulaDocents($nFilesInstructors, $docents);
+		$tbl = $this->getHtmlTaulaDocents($nFilesInstructors, $docents, BaseController::DOCENT_INSTRUCTOR);
 		$pdf->writeHTML($tbl, false, false, false, false, '');
 
 		$pdf->Ln(5);
@@ -1423,12 +1709,12 @@ class PDFController extends BaseController {
 		$pdf->Cell(0, 0, 'HAN COL·LABORAT COM A EQUIP DE SEGURETAT', 0, 0, 'C');
 		
 		$pdf->SetFont('dejavusans', '', 8, '', true);
-		$pdf->SetY($pdf->getY()+$rowH);
+		$pdf->SetY($pdf->getY()+$rowH -2);
 		
-		$tbl = $this->getHtmlTaulaDocents($nFilesCollaboradors, $collaboradors);
+		$tbl = $this->getHtmlTaulaDocents($nFilesCollaboradors, $collaboradors, BaseController::DOCENT_COLLABORADOR);
 		$pdf->writeHTML($tbl, false, false, false, false, '');
 		
-		$pdf->Ln(10);
+		$pdf->Ln(5);
 		$pdf->SetFont('dejavusans', 'I', 7, '', true);
 		$pdf->Cell(0, 0, 'Signat', 0, 0, 'L');
 		$pdf->Cell(0, 0, 'Segellat', 0, 0, 'R');
@@ -1442,27 +1728,29 @@ class PDFController extends BaseController {
 		
 		if (count($participants) > 0) {
 			$pdf->AddPage();			
+			$pageHeight = $pdf->getPageHeight()-PDF_MARGIN_TOP-PDF_MARGIN_BOTTOM-20;
 			
 			$pdf->SetFont('dejavusans', 'BU', 13, '', true);
-			$pdf->SetXY($xEtiquetes1, $pdf->getY());
+
+			$pdf->SetXY($xEtiquetes1, PDF_MARGIN_TOP);
+
 			$pdf->Cell(0, 0, 'RELACIÓ D\'ALUMNES APTES', 0, 0, 'C');
 			
-			$pdf->Ln(10);
+			$alumneRowHeight = $pageHeight/3;
 			
 			$i = 0;
 			foreach ($participants as $participant) {
 				
+			    $p = $i%3;  // 0 1 o 2
+			    if ($i > 0 && $p == 0) $pdf->AddPage();
+				
+				$pdf->SetXY($xEtiquetes1, PDF_MARGIN_TOP + 10 + ($p*($alumneRowHeight)));
+				
+				if ($p == 1) $pdf->SetY($pdf->getY() - 5);  // Ajust
+				
 				$this->printAlumneCurs($pdf, $curs, $participant); 
 				
 				$i++;
-				if ($i%3 == 0) {  // 3 per pàgina
-					$i = 0;
-					$pdf->AddPage();
-					$pdf->SetXY($xEtiquetes1, $pdf->getY());
-					$pdf->Ln(10);
-				} else {	
-					$pdf->SetY($pdf->getY() + $alumneRowH * 9);
-				}	
 			}
 		}
 		
@@ -1572,7 +1860,14 @@ class PDFController extends BaseController {
 				
 		$pdf->Ln($ln);
 		$pdf->SetX($xCamps1);
-		$pdf->Cell($wLarge, 2*$cellH, 'ETIQUETA DE CONTROL', 1, 0, 'C');
+		//$pdf->Cell($wLarge, 2*$cellH, 'ETIQUETA DE CONTROL', 1, 0, 'C');
+		$kit = $curs->getKit();
+		if ($kit != null) {
+		    //$pdf->multiCell(w, h, txt, border = 0, align = 'J', fill = 0, ln = 1, x = '', y = '', reseth = true, stretch = 0, ishtml = false, autopadding = true, maxh = 0, valign = '', adjusttext)
+		    $pdf->multiCell($wLarge, 2*$cellH, 'CORRESPONENT A 1 KIT '.$kit->getDescripcio(), 1, 'C', 
+		                   0, 0, $pdf->getX(), $pdf->getY(), true, 1, false, true, 0, 'M', true);
+		}
+		
 					
 		$pdf->SetXY($xFoto, $yFila1);	
 		$pdf->Cell($wFoto, 6*$cellH, 'FOTO', 1, 0, 'C');
@@ -1582,73 +1877,110 @@ class PDFController extends BaseController {
 			$pdf->Image($persona->getFoto()->getAbsolutePath(), $xFoto+$fMargin, $yFila1+$fMargin, $wFoto-2*$fMargin, 0, $persona->getFoto()->getExtension(), '', 'CT', false, 150, '', false, false, array(), 'LT', false, false, false, array());
 		
 		}
-		$pdf->Ln($cellH);
+		//$pdf->Ln($cellH);
 		
 	}
 
-	private function getHtmlTaulaDocents($files, $docencies) {
+	private function getHtmlTaulaDocents($files, $docencies, $tipus) {
 		$color = 'color="#000080"';
 		$bordercolor = '#000000';
 		$border = 'border:0.5px solid '.$bordercolor.';';
-		$tbl = '<table border="0" cellpadding="5" cellspacing="0" nobr="true">
-				  <tr style="">
-				  	<td width="100" align="center" rowspan="3" style="'.$border.' font-size: large; line-height:50px;">DNI</td>
-				  	<td width="220" align="center" rowspan="3"  style="'.$border.' font-size: large; line-height:50px;">NOM i COGNOMS</td>
-				  	<td width="200" align="center" colspan="4" style="'.$border.' font-size: small;">CLASSES</td>
-				  	<td width="120" align="center" rowspan="3"  style="'.$border.' font-size: large; line-height:50px;">SIGNATURES</td>
-				  </tr>
-				  <tr>
-				  	<td width="50" align="center" rowspan="2" style="'.$border.' font-size: x-small; line-height:30px;">TEÒRIQUES</td>
-				  	<td width="150" align="center" colspan="3" style="'.$border.' font-size: small;">PRÀCTIQUES</td>
-				  </tr>
-				  <tr>
-				  	<td width="50" align="center" style="'.$border.' font-size: small;">AULA</td>
-				  	<td width="50" align="center" style="'.$border.' font-size: small;">PISCINA</td>
-				  	<td width="50" align="center" style="'.$border.' font-size: small;">MAR</td>
-				  </tr>';
-		
-		$ht = $hp = $hm = $ha = 0;
+		$funcio = $tipus == BaseController::DOCENT_INSTRUCTOR?'CLASSES':'IMMERSIONS';
+
+		$tbl = '<table border="0" cellpadding="3" cellspacing="0" nobr="true">';
+		if ($tipus == BaseController::DOCENT_INSTRUCTOR) {
+		    $tbl .= '<tr style="">
+    				  	<td width="100" align="center" rowspan="3" style="'.$border.' font-size: large; line-height:45px;">DNI</td>
+    				  	<td width="220" align="center" rowspan="3"  style="'.$border.' font-size: large; line-height:45px;">NOM i COGNOMS</td>
+    				  	<td width="200" align="center" colspan="4" style="'.$border.' font-size: small;">'.$funcio.'</td>
+    				  	<td width="120" align="center" rowspan="3"  style="'.$border.' font-size: large; line-height:45px;">SIGNATURES</td>
+				     </tr>
+                     <tr>
+    				  	<td width="50" align="center" rowspan="2" style="'.$border.' font-size: x-small; line-height:30px;">TEÒRIQUES</td>
+    				  	<td width="150" align="center" colspan="3" style="'.$border.' font-size: small;">PRÀCTIQUES</td>
+    				 </tr>
+                     <tr>
+    				  	<td width="50" align="center" style="'.$border.' font-size: small;">AULA</td>
+    				  	<td width="50" align="center" style="'.$border.' font-size: small;">PISCINA</td>
+    				  	<td width="50" align="center" style="'.$border.' font-size: small;">MAR</td>
+    				 </tr>';
+		} else {
+		    $tbl .= '<tr style="">
+    				  	<td width="100" align="center" rowspan="2" style="'.$border.' font-size: large; line-height:30px;">DNI</td>
+    				  	<td width="220" align="center" rowspan="2"  style="'.$border.' font-size: large; line-height:30px;">NOM i COGNOMS</td>
+    				  	<td width="200" align="center" colspan="2" style="'.$border.' font-size: small;">'.$funcio.'</td>
+    				  	<td width="120" align="center" rowspan="2"  style="'.$border.' font-size: large; line-height:30px;">SIGNATURES</td>
+    				 </tr>
+                     <tr>
+    				  	<td width="100" align="center" style="'.$border.' font-size: small;">PISCINA</td>
+    				  	<td width="100" align="center" style="'.$border.' font-size: small;">MAR</td>
+    				 </tr>';
+		}
+		$ht = $hp = $hm = $ha = $ip = $im = 0;
 		$fila = 0;
+		
 		foreach ($docencies as $docencia) {
 			$meta = $docencia->getMetadocent();
 			$ht += $docencia->getHteoria();
 			$hp += $docencia->getHpiscina();
 			$hm += $docencia->getHmar();
 			$ha += $docencia->getHaula();
+			$ip += $docencia->getIpiscina();
+			$im += $docencia->getImar();
 			
 			$tbl .= '<tr>
 				  		<td style="'.$border.'" '.$color.' align="center">'.$meta->getDni().'</td>
-				  		<td style="'.$border.'" '.$color.' align="left">'.$meta->getCognomsNom().'</td>
-				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHteoria().'</td>
-				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHaula().'</td>
-				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHpiscina().'</td>
-				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHmar().'</td>
-				  		<td style="'.$border.'"><span style="font-size: large;"></span></td>
-					</tr>';
+				  		<td style="'.$border.'" '.$color.' align="left">'.$meta->getCognomsNom().'</td>';
+
+			if ($tipus == BaseController::DOCENT_INSTRUCTOR) {
+    			$tbl .= '
+    				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHteoria().'</td>
+    				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHaula().'</td>
+    				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHpiscina().'</td>
+    				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getHmar().'</td>';
+			} else {
+    		    $tbl .= '
+    				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getIpiscina().'</td>
+    				  		<td style="'.$border.'" '.$color.' align="center">'.$docencia->getImar().'</td>';
+			}
+			$tbl .= '	<td style="'.$border.'"><span style="font-size: large;"></span></td>
+			         </tr>';
 			$fila++;
 		}
-				
+		
+		
 		for ($i=$fila; $i < $files; $i++) { 
 			$tbl .= '<tr>
 				  		<td style="'.$border.'" align="center"></td>
-				  		<td style="'.$border.'" align="left"></td>
-				  		<td style="'.$border.'" align="center"></td>
-				  		<td style="'.$border.'" align="center"></td>
-				  		<td style="'.$border.'" align="center"></td>
-				  		<td style="'.$border.'" align="center"></td>
-				  		<td style="'.$border.'"><span style="font-size: large;"></span></td>
+				  		<td style="'.$border.'" align="left"></td>';
+			if ($tipus == BaseController::DOCENT_INSTRUCTOR) {
+    			$tbl .= '	<td style="'.$border.'" align="center"></td>
+    				  		<td style="'.$border.'" align="center"></td>
+    				  		<td style="'.$border.'" align="center"></td>
+    				  		<td style="'.$border.'" align="center"></td>';
+			} else {
+    		    $tbl .= '	<td style="'.$border.'" align="center"></td>
+    				  		<td style="'.$border.'" align="center"></td>';
+			}
+			$tbl .= '	<td style="'.$border.'"><span style="font-size: large;"></span></td>
 					</tr>';	
-		}		
+		}
+				
 		$tbl .= '<tr>
-				  	<td colspan="2" style="border-bottom: 0.1em solid #ffffff; border-left: 0.1em solid #ffffff;" align="right">Totals</td>
-			  		<td align="center" style="'.$border.'" '.$color.'>'.$ht.'</td>
-			  		<td align="center" style="'.$border.'" '.$color.'>'.$ha.'</td>
-			  		<td align="center" style="'.$border.'" '.$color.'>'.$hp.'</td>
-			  		<td align="center" style="'.$border.'" '.$color.'>'.$hm.'</td>
-			  		<td style="border-bottom: 0.1em solid #ffffff; border-right: 0.1em solid #ffffff; "></td>
+				  	<td colspan="2" style="border-bottom: 0.1em solid #ffffff; border-left: 0.1em solid #ffffff;" align="right">Totals</td>';
+		if ($tipus == BaseController::DOCENT_INSTRUCTOR) {
+    		$tbl .= '   <td align="center" style="'.$border.'" '.$color.'>'.$ht.'</td>
+    			  		<td align="center" style="'.$border.'" '.$color.'>'.$ha.'</td>
+    			  		<td align="center" style="'.$border.'" '.$color.'>'.$hp.'</td>
+    			  		<td align="center" style="'.$border.'" '.$color.'>'.$hm.'</td>';
+		} else {
+    		$tbl .= '   <td align="center" style="'.$border.'" '.$color.'>'.$ip.'</td>
+    			  		<td align="center" style="'.$border.'" '.$color.'>'.$im.'</td>';
+        }
+        $tbl .= '	<td style="border-bottom: 0.1em solid #ffffff; border-right: 0.1em solid #ffffff; "></td>
 				</tr>
 			  </table>';
-			  
+
 		return $tbl;	  
 	}
 }

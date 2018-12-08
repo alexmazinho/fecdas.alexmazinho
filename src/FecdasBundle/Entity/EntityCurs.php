@@ -136,6 +136,54 @@ class EntityCurs {
 		$this->participants = new \Doctrine\Common\Collections\ArrayCollection();
 	}
 	
+	public static function csvHeader() {
+	    
+	    return array (
+	        'num', 
+	        'estat',
+	        'acta',
+	        'títol',
+	        'club',
+	        'des de',
+	        'fins',
+	        'director',
+	        'co-director',
+	        'instructors',
+	        'col·laboradors',
+	        'participants'
+	    );
+	}
+	
+	/**
+	 * Get curs info. as csv data
+	 *
+	 * @return string
+	 */
+	public function csvRow($i = 0)
+	{
+	    $director = '';
+	    if ($this->getDirector() != null && $this->getDirector()->getMetadocent() != null) $director = $this->getDirector()->getMetadocent()->getNomCognoms();
+
+	    $codirector = '';
+	    if ($this->getCodirector() != null && $this->getCodirector()->getMetadocent() != null) $codirector = $this->getCodirector()->getMetadocent()->getNomCognoms();
+	    
+	    return array (
+	        $i,
+	        $this->getEstat(),
+	        $this->getNumActa(),
+	        $this->getTitol()->getTitol(),
+	        $this->getClubInfo(),
+	        $this->getDatadesde()->format('d/m/Y'),
+	        $this->getDatafins()->format('d/m/Y'),
+	        $director,
+	        $codirector,
+	        count($this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR)),
+	        count($this->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR)),
+	        count($this->getParticipantsSortedByCognomsNom())
+	    );
+	}
+	
+	
 	public function esNou()
 	{
 		return ($this->id == 0);
@@ -214,18 +262,21 @@ class EntityCurs {
 	 * Retorna estat: Pendent validació del club, Enviat a la federació, Finalitzat 
 	 * @return boolean
 	 */
-	public function getEstat() {
+	public function getEstat($lletra = false) {
 		
-		if ($this->anulat()) return '';	
+	    $key = $lletra?'lletra':'text';
+	    
+	    if ($this->anulat()) return BaseController::CURS_ANULAT[$key];	
 			
-		if ($this->finalitzat) return 'Finalitzat';
+	    if ($this->finalitzat) return BaseController::CURS_FINALITZAT[$key];	
 		
-		if ($this->validat) return 'Enviat a la federació';
+	    if ($this->validat) return BaseController::CURS_VALIDAT[$key];
 		
-		if ($this->editable) return 'Pendent de validar pel club';
+	    if ($this->tancat()) return BaseController::CURS_TANCAT[$key];
 		
-		return 'En procés...';
+	    return BaseController::CURS_EDICIO[$key];
 	}
+	
 	public function getEstatColor() {
 			
 		if ($this->finalitzat || $this->anulat()) return '';

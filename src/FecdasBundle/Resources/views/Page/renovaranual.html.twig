@@ -90,9 +90,7 @@ reloadLlistaLlicencies = function(url) {
 		$('#llicencies-anuals-renovar').html(resposta.data); 
 
 		if ($(".renovar-checkbox:checked").length == 0) {
-			$("#submit-renovar").addClass('disabled');
-		} else {
-			$("#submit-renovar").removeClass('disabled');
+			$("#parte_renovar_checkall").prop("checked", false);
 		}
 		
 	}).fail( function(xhr, status, error) {
@@ -107,53 +105,69 @@ reloadLlistaLlicencies = function(url) {
 
 submitLlistaLlicencies = function(urlSubmit, params) {
 
-	obrirMascaraBlock("#llicencies-anuals-renovar");
 
-	$.post(urlSubmit, params,
-	function(data) {
-		
-		var resposta = JSON.parse(data);
-
-		if (resposta.url != '') {
-			// OK. Redirecció
-			window.location = resposta.url; 
+	var html = "<p>Has escollit tramitar les següents llicències per l'<b>any ";
+	html += $("#parte_renovar_dataalta").val().slice(-4);
+	html += "</b>, per un import total de <b>";
+	html += $(".parte-preu-valor").html()+"€</b>:</p>";
+	html += "<ul class='list-group'>";
+	$('#parte-detalls > div').each(function(){ 
+		if (parseInt($(this).find('.parte-detalls-total').html()) != 0 ) {
+			html += "<li class='list-group-item'>"+$(this).html()+"</li>";
 		}
-		tancarMascaraBlock("#table-llicencies-renovar");
+	});	
+	html += "</ul>";
+	
+	dialegConfirmacio( html, "Abans de continuar...", 0, 420, function() {
+
+		obrirMascaraBlock("#llicencies-anuals-renovar");
 		
-		if (resposta.error != '') {
-			var sms = smsResultAjax('KO', resposta.error);
-			 
+		$.post(urlSubmit, params, function(data) {
+			var resposta = JSON.parse(data);
+
+			if (resposta.url != '') {
+				// OK. Redirecció
+				window.location = resposta.url; 
+			}
+			tancarMascaraBlock("#table-llicencies-renovar");
+					
+			if (resposta.error != '') {
+				var sms = smsResultAjax('KO', resposta.error);
+				 
+				$(".error-block").html(sms);
+			}
+					
+			$('#llicencies-anuals-renovar').html(resposta.data); 
+
+			if ($(".renovar-checkbox:checked").length == 0) {
+				$("#parte_renovar_checkall").prop("checked", false);
+			}
+
+			closeDialegConfirmacio();
+			  	
+		}).fail( function(xhr, status, error) {
+			// xhr.status + " " + xhr.statusText, status, error
+			tancarMascaraBlock("#table-llicencies-renovar");
+					
+		    var sms = smsResultAjax('KO', xhr.responseText);
+						 
 			$(".error-block").html(sms);
-		}
-		
-		$('#llicencies-anuals-renovar').html(resposta.data); 
 
-		if ($(".renovar-checkbox:checked").length == 0) {
-			$("#submit-renovar").addClass('disabled');
-		} else {
-			$("#submit-renovar").removeClass('disabled');
-		}
+			closeDialegConfirmacio();
+		});
     	
-	}).fail( function(xhr, status, error) {
-		// xhr.status + " " + xhr.statusText, status, error
-		tancarMascaraBlock("#table-llicencies-renovar");
-		
-    	var sms = smsResultAjax('KO', xhr.responseText);
-			 
-    	$(".error-block").html(sms);
-    	return;
-	});
+    }, function() { closeDialegConfirmacio(); }, function() {});
+	
 }
 
 $(document).ready(function(){
 	setMenuActive("menu-anual");
+
 	
 	//validarRenovarNoBuida();
 	// Desactivar submit
 	if ($(".renovar-checkbox:checked").length == 0) {
-		$("#submit-renovar").addClass('disabled');
-	} else {
-		$("#submit-renovar").removeClass('disabled');
+		$("#parte_renovar_checkall").prop("checked", false);
 	}
 	var url = $('#formrenovaranual').attr('action');
 	var urlReload = url+'?page=1&clubs=&anyrenova='+$('select#parte_renovar_anyrenova').val()+'&uncheckpersones='+$('#parte_renovar_uncheckpersones').val();	
@@ -184,7 +198,7 @@ $(document).ready(function(){
 	$("#submit-renovar").click(function(e) {
 		e.preventDefault();
 
-		if ($(".renovar-checkbox:checked").length == 0) {
+		if (parseFloat($('#parte-preu .parte-preu-valor').attr('data-preu')) == 0) {
 			dialegError("Error", "Cal seleccionar alguna llicència per renovar", 400, 0);
 			return false;
 		}
@@ -249,6 +263,21 @@ $(document).ready(function(){
 		$('#parte-preu .parte-preu-valor').html( preuTotal.toLocaleString('ca-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})  );
 	
 	});
+
+	$('#llicencies-anuals-renovar').on('change', '#parte_renovar_checkall', function () {
+		var checked = $(this).is(':checked');
+		if (checked) {
+			$('.renovar-checkbox:not(:checked)').each(function(){ 
+				$(this).click(); 
+			});				
+		} else {
+			$('.renovar-checkbox:checked').each(function(){ 
+				$(this).click(); 
+			});
+		};
+	});
+	
+
 });
 
 </script>

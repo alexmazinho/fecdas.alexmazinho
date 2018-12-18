@@ -389,3 +389,7 @@ html>body #left-menu a:hover {
 #no-js p { line-height: 1.5em; margin-bottom: 20px; }
 
 #no-js ul { line-height: 2em; list-style: circle outside none;}
+
+ul.list-group { list-style: disc outside none; margin: unset; padding: unset; margin-bottom: 20px;  }
+
+ul.list-group > li {   }

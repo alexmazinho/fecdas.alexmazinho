@@ -92,7 +92,12 @@ class FormParteRenovar extends AbstractType {
 		$builder->add('page', 'hidden', array(
 		    'mapped' 	 => false,
 		));
-		
+
+		$builder->add('checkall', 'checkbox', array(
+		    'required'    => false,
+		    'mapped' 	  => false,
+		    'data'        => true
+		));
 	}
 	
 	public function configureOptions(OptionsResolver $resolver)

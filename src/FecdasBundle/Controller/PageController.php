@@ -726,12 +726,12 @@ class PageController extends BaseController {
 	    $dataalta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyrenova+1). "-01-01 00:00:00");
 	    if ($dataalta->format('Y-m-d') < $this->getCurrentDate()->format('Y-m-d')) $dataalta = $this->getCurrentDate();
 	    
-	    if (!$this->validaTramitacioAnySeguent($dataalta)) {
+	    /*if (!$this->validaTramitacioAnySeguent($dataalta)) {
 	        $anual = false;
 	        $error = 'Encara no es poden tramitar llicències per a l\'any vinent';
-	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$error);
+	        //$this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$error);
 	        $this->get('session')->getFlashBag()->add('error-notice',	$error);
-	    }
+	    }*/
 	    
 	    // Les llicències es renoven tipus A 
 	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_A);
@@ -815,7 +815,10 @@ class PageController extends BaseController {
 	    // Form
         $form = $this->createForm(new FormParteRenovar($anyrenova, $uncheckpersones), $parte);
 	    try {
-	        if (!$this->validaTramitacioAnySeguent($dataalta)) throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
+	        if (!$this->validaTramitacioAnySeguent($dataalta)) {
+	            $anual = false;
+	            throw new \Exception('Encara no es poden tramitar llicències per a l\'any vinent');
+	        }
 	        $avisos = "";
 	        if ($request->getMethod() == 'POST') {
 	            //$form->handleRequest($request);
@@ -845,6 +848,8 @@ class PageController extends BaseController {
                         $avisos[] = $e->getMessage();
                     }
                 }
+                
+                if (count($parte->getLlicencies()) == 0) $avisos[] = 'No hi ha cap llicència per renovar';
                 
                 /*                
                 foreach ($parte->getLlicencies() as $llicencia) {
@@ -887,7 +892,7 @@ class PageController extends BaseController {
                 return $response;
 	        }
 	    } catch (\Exception $e) {
-	        //$em->clear();
+	        $em->clear();
 	            
 	        $this->logEntryAuth('RENOVAR ANUAL KO', ' Club '.$club->getCodi().' Any '.$anyrenova.' '.$e->getMessage());
 	    

@@ -32,14 +32,17 @@
 				   	<th class="header-llicenciacategoria th-listheader col-listheader collistheader-noorder">Categoria</th>
 				   	<th class="header-llicenciapreu th-listheader col-listheader data-detall-cell-right collistheader-noorder">Preu</th>
 		   			{% if parte.perImprimir == true and parte.perEnviarFederat != true %}<div class="header-llicenciaenviarllicencia th-listheader col-listheader collistheader-noorder"><i class="fa fa-envelope fa-1x"></i></th>{% endif %}
-				   	<th class="header-llicenciaactions th-listheader col-listheader collistheader-noorder">Renovar?</th>
+				   	<th class="header-llicenciaactions th-listheader col-listheader collistheader-noorder">
+				   		Renovar?<br/>
+				    	<div class="checkbox-inline"><label>{{ form_widget(form.checkall) }} totes</label></div>
+				   	</th>
 				</tr>
 	   		</thead>
    		   	<tbody>
                 {% for llicencia in form.llicencies %}
                 	{% set persona = llicencia.vars.value.persona %}
                 	{% set categoria = llicencia.vars.value.categoria %}
-    				<tr class="data-detall {% if llicencia.renovar is not defined %} data-detall-fosc {% endif %} {% if llicencia.renovar is defined %}darkgreen{% endif %}">
+    				<tr class="data-detall {% if llicencia.renovar is not defined or not llicencia.renovar.vars.data %} data-detall-fosc {% endif %} {% if llicencia.renovar is defined %}darkgreen{% endif %}">
     					<td class="data-detall-cell llicenciapersonaid hidden">{{ form_widget(llicencia.persona) }}</td>
     					<td class="data-detall-cell llicencianum">{{ anteriors + loop.index }}</td>
 						<td class="data-detall-cell data-detall-cell-left llicenciapersona">{{ persona.cognomsNom }}</td>

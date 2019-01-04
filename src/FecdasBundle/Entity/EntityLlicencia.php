@@ -129,7 +129,7 @@ class EntityLlicencia {
 	/**
 	 * @ORM\Column(type="boolean")
 	 */
-	protected $enviarllicencia;
+	protected $imprimir;
 	
 	/**
 	 * @ORM\Column(type="boolean")
@@ -189,7 +189,7 @@ class EntityLlicencia {
 		$this->bampolles = false;
 		$this->nocmas = false;
 		$this->fusell = false;
-		$this->enviarllicencia = false;
+		$this->imprimir = false;
 		$this->impresa = false;
 		$this->mailenviat = false;
 	}
@@ -700,23 +700,23 @@ class EntityLlicencia {
     }
     
     /**
-     * Set enviarllicencia
+     * Set imprimir
      *
-     * @param boolean $enviarllicencia
+     * @param boolean $imprimir
      */
-    public function setEnviarllicencia($enviarllicencia)
+    public function setImprimir($imprimir)
     {
-    	$this->enviarllicencia = $enviarllicencia;
+        $this->imprimir = $imprimir;
     }
     
     /**
-     * Get enviarllicencia
+     * Get imprimir
      *
      * @return boolean
      */
-    public function getEnviarllicencia()
+    public function getImprimir()
     {
-    	return $this->enviarllicencia;
+        return $this->imprimir;
     }
     
     /**

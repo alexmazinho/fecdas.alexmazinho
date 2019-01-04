@@ -64,8 +64,6 @@ class BaseController extends Controller {
 	const SEXE_HOME = 'H';
 	const SEXE_DONA = 'M';
 	const EDAT_MINIMA = 4;
-	const INDEX_ENVIARLLICENCIA = 1;
-    const INDEX_NOENVIARLLICENCIA = 0;
     const MAX_TELEFON = 999999999;
     const LANG_CA = 'CA';
     const LANG_ES = 'ES';
@@ -78,6 +76,7 @@ class BaseController extends Controller {
 	const TARIFA_MINPES3 = 10000; // 10 Kg
 	const TARIFA_MINPES2 = 5000; // 5 Kg
 	const PRODUCTE_CORREUS = 7590004;	// Abans juliol 2016 => 6290900 / 6290004
+	const PRODUCTE_IMPRESS_PLASTIC_ID = 3;	
 	const COMPTE_COMPTA_IVA = 4770000;	 
 	
 	const PREFIX_ASSENTAMENTS = 'APU';  // Prefix del fitxer
@@ -846,9 +845,6 @@ class BaseController extends Controller {
 	
 	protected function validaParteLlicencia($parte, $llicencia) {
 		
-        if ($llicencia->getEnviarllicencia() == null || $llicencia->getEnviarllicencia() == 0) $llicencia->setEnviarllicencia(false); 
-        else $llicencia->setEnviarllicencia(true);
-
 		$dataalta = $parte->getDataalta();
 		$tipus = $parte->getTipus();
 		$errData = $this->validaDataLlicencia($dataalta, $tipus);
@@ -1040,7 +1036,7 @@ class BaseController extends Controller {
 		return null;
 	}
 	
-	protected function consultaPartesRecents($club, $estat, $baixa, $nopagat, $noimpres, $compta, 
+	protected function consultaPartesRecents($club, $estat, $baixa, $nopagat, $noimpres, $noenviat, $compta, 
 											$numfactura, $anyfactura, $numrebut, $anyrebut, 
 	                                        $dni, $nom, $mail, $strOrderBY = '') {
 		$em = $this->getDoctrine()->getManager();
@@ -1080,7 +1076,8 @@ class BaseController extends Controller {
 		if ($nopagat == true) $strQuery .= " AND p.rebut IS NULL ";
 		//if ($noimpres == true) $strQuery .= " AND (p.impres IS NULL OR p.impres = 0) AND p.pendent = 0 AND t.template IN (:templates)";
 		// No impreses totes excepte sense template => Llicències de dia
-		if ($noimpres == true) $strQuery .= " AND l.impresa = 0 AND l.mailenviat = 0 AND p.pendent = 0 AND t.template <> ''";
+		if ($noimpres == true) $strQuery .= " AND l.imprimir = 1 AND l.impresa = 0 AND p.pendent = 0 ";
+		if ($noenviat == true) $strQuery .= " AND l.mailenviat = 0 AND p.pendent = 0 AND t.template <> ''";
 		if ($compta == true) $strQuery .= " AND f.comptabilitat IS NULL AND p.pendent = 0 ";
 
 		if (is_numeric($numfactura) && $numfactura > 0) { 
@@ -2493,6 +2490,7 @@ class BaseController extends Controller {
 					//$this->printPlasticGeneral($pdf, $llicencia);
 					$this->printPlasticTecnocampus($pdf, $llicencia);
 			}
+			$llicencia->setImprimir(0);
 			$llicencia->setImpresa(1);
 			$llicencia->setDataimpressio( new \DateTime() );
 		}
@@ -3479,25 +3477,6 @@ class BaseController extends Controller {
         return 1;
     }
 
-	protected function getPesComandaCart($cart)
-    {
-		$pesComanda = 0;
-		foreach ($cart['productes'] as $info) {
-			if (isset($info['transport']) && $info['transport'] == true)	{
-				$pesComanda += $info['pes'];
-			}
-		}
-		return $pesComanda;
-    }
-	
-	protected function getTotalComandaCart($cart)
-    {
-		$total = 0;
-		foreach ($cart['productes'] as $info) {
-			$total += $info['unitats']*$info['import'];
-		}
-		return $total;
-    }
 	
 	protected function getSessionCart()
     {
@@ -3507,7 +3486,121 @@ class BaseController extends Controller {
 		
         return $cart;
     }
+    
+    protected function addProducteToCart($idProducte, $unitats)
+    {
+        $cart = $this->getSessionCart();	
+        
+        $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
+        
+        if ($producte == null) throw new \Exception("Producte no trobat");
+            
+        if ($unitats == 0) throw new \Exception("Cal indicar el nombre d'unitats del producte");
+            
+        if ($unitats < 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
+            
+        // Comprovar que tots els detalls siguin d'abonament o normals
+        if (count($cart['productes']) > 0) {
+            $abonament = false;
+            foreach ($cart['productes'] as $info) {
+                if ($info['unitats'] < 0) $abonament = true;
+            }
+                
+            if (($abonament == true && $unitats > 0) ||
+                ($abonament == false && $unitats < 0)) throw new \Exception("No es poden barrejar abonaments i comandes normals");
+        }
+            
+        $import = $producte->getPreuAny(date('Y'));
+            
+        if ( !isset( $cart['productes'][$idProducte] ) ) {
+            $cart['productes'][$idProducte] = array(
+                    'abreviatura' 	=> $producte->getAbreviatura(),
+                    'descripcio' 	=> $producte->getDescripcio(),
+                    'transport'		=> $producte->getTransport(),
+                    'pes'			=> 0,
+                    'unitats' 		=> $unitats,
+                    'import' 		=> $import
+            );
+        } else {
+            $cart['productes'][$idProducte]['unitats'] += $unitats;
+        }
+            
+        $unitats = $cart['productes'][$idProducte]['unitats'];
+            
+        if ($producte->getTransport() && $unitats > 0) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes();
+            
+        if ($cart['productes'][$idProducte]['unitats'] == 0 ||
+           ($cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
+                // Afegir unitats < 0
+            unset( $cart['productes'][$idProducte] );
+        }
+                
+        if (count($cart['productes']) <= 0) {
+            $this->get('session')->remove('cart');
+            $cart = $this->getSessionCart();
+        } else {
+            $session = $this->get('session');
+            $session->set('cart', $cart);
+        }
+    }
+    
+    protected function formulariTransport() {
+        // Revisar si cal transport
+        $cart = $this->getSessionCart();
+        $tarifa = 0;
+        $total = 0;
+        if (count($cart['productes']) > 0) { 
+            $pesComanda = $this->getPesComandaCart($cart);
+            $total = $this->getTotalComandaCart($cart);
+            
+            $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+            $unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
+            $tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
+            
+            $cart['tarifatransport'] = $tarifa;
 
+            $session = $this->get('session');
+            $session->set('cart', $cart);
+        }
+
+        $formBuilder = $this->createFormBuilder()
+        ->add('tarifatransport', 'hidden', array(
+            'data' => $tarifa
+        ));
+        $formBuilder->add('importcomanda', 'hidden', array(
+            'data' => $total
+        ));
+        $formBuilder->add('transport', 'choice', array(
+            'choices'   => array(0 => 'Incloure enviament', 1 => 'Recollir a la federació'),
+            'multiple'  => false,
+            'expanded'  => true,
+            'data' 		=> 0
+        ));
+        
+        return $formBuilder->getForm()->createView();
+    }
+
+    protected function getPesComandaCart($cart)
+    {
+        $pesComanda = 0;
+        foreach ($cart['productes'] as $info) {
+            if (isset($info['transport']) && $info['transport'] == true)	{
+                $pesComanda += $info['pes'];
+            }
+        }
+        return $pesComanda;
+    }
+    
+    protected function getTotalComandaCart($cart)
+    {
+        $total = 0;
+        foreach ($cart['productes'] as $info) {
+            $total += $info['unitats']*$info['import'];
+        }
+        return $total;
+    }
+    
+    
     protected function gestionarFotoPersona($persona, $fotoPath, $foto) {
         
         if ($foto == null) {

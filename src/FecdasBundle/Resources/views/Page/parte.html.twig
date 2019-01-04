@@ -252,15 +252,45 @@
     	
     	showResumParteDetall();
     
-    	sortLlista("col-listheader", "list-data");
+    	//sortLlista("col-listheader", "list-data");
     
-    	$('.table-scroll').each(function() {
+    	/*$('.table-scroll').each(function() {
     		if ($(this).hasOverflowY()) {
     			$(this).css({"width":"101.5%"});
     		}
+    	});*/
+    
+    
+    	if ($("#parte_tipus option").length == 1) {
+    	/* Només si hi ha disponible més d'una llicència */
+    		$("#help-tipusparte").hide();
+    	} else {
+    		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
+    			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
+    			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 31/08</p>\
+    			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
+    			<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
+    			<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
+    			<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
+    			<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
+    			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
+    			No habilitada per competició ni per fer cursos federats.</p>\
+    			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
+    	};	
+
+    	$('#llista-llicencies').on('change', '#parte_baixes_checkall', function () {
+    		var checked = $(this).is(':checked');
+    		if (checked) {
+    			$('.check-llicencia-remove:not(:checked)').each(function(){ 
+    				this.checked = true; 
+    			});				
+    		} else {
+    			$('.check-llicencia-remove:checked').each(function(){ 
+    				this.checked = false; 
+    			});
+    		};
     	});
-    
-    
+
     	$('#button-llicencies-remove').click(function(e) {
     		e.preventDefault();
     
@@ -310,22 +340,61 @@
     		
     	});
     	
-    	if ($("#parte_tipus option").length == 1) {
-    	/* Només si hi ha disponible més d'una llicència */
-    		$("#help-tipusparte").hide();
-    	} else {
-    		helpBubbles("#help-tipusparte", '<p align="left" style="text-decoration: underline"><b>Llicències federatives habilitades per competir</b></p>\
-    			<p align="left"><b>A</b>: Llicència federativa anual fins a 31/12.</p>\
-    			<p align="left"><b>AC</b>: Llicència federativa habilitada per competició temporada, fins 31/08</p>\
-    			<p align="left"><b>AE</b>: Llicència federativa 365 dies a partir de l\'alta.</p>\
-    			<p align="left"><b>AQ</b>: Llicència federativa Reduïda, darrer Quatrimestre, des del 01/09 fins 31/12. <br/>Habilitada per competició temporada</p>\
-    			<p align="left" style="text-decoration: underline"><b>Assegurances no habilitades per competir</b></p>\
-    			<p align="left"><b>B</b>: Assegurança federativa anual fins a 31/12.</p>\
-    			<p align="left"><b>B 365</b>: Assegurança federativa 365 dies a partir de l\'alta. <br/>\
-    			Per a bussejadors o instructors que no tenen una titulació FECDAS/CMAS. <br/>\
-    			No habilitada per competició ni per fer cursos federats.</p>\
-    			<p align="left"><b>D</b>: Assegurança per un dia.</p>');
-    	};	
+    	$('#llista-llicencies').on('change', '#parte_plastics_checkall', function () {
+    		var checked = $(this).is(':checked');
+    		if (checked) {
+    			$('.check-llicencia-plastic:not(:checked):not(:disabled)').each(function(){
+    				this.checked = true; 
+    			});				
+    		} else {
+    			$('.check-llicencia-plastic:checked:not(:disabled)').each(function(){
+    				this.checked = false; 
+    			});
+    		};
+    	});
+
+    	$('#button-llicencies-plastic').click(function(e) {
+    		e.preventDefault();
+    
+    		var url = $(this).attr('href');
+    		var idsLlicencies = [];
+    		// Comprovar que hi hagi alguna llicències seleccionada
+    		$('input.check-llicencia-plastic').each( function() {
+    			if ( $(this).is(':checked') ) {
+    				var idCurrent = $(this).attr('data-id');
+    				idsLlicencies.push(idCurrent);
+    			}
+    	    });
+    
+    		if (idsLlicencies.length == 0) {
+    			dialegError("Error", "No hi ha cap llicència seleccionada per imprimir", 400, 0);
+    			return false;
+    		}
+
+    		url += '&llicencies='+encodeURIComponent(JSON.stringify(idsLlicencies));
+    		var urlComanda = url+'&action=consultar';
+    		
+    		$.get(urlComanda, function(data) {
+
+				var html = '<div class="cistella-resum">';
+				html += '<h3><i class="fa fa-shopping-cart"></i> Impressió de targetes</h3>';
+				html += data+'</div>';
+        		
+        		dialegConfirmacio( html, "Abans de continuar...", 0, 500, function() {
+
+        			url += '&action=desar'+'&transport='+($('#form_transport_0').is(':checked')?1:0);
+            		window.location = url;	
+                }, 
+                function() { closeDialegConfirmacio(); /* Cancel */ }, 
+                function() { transportCistella(); }
+                );
+        		
+        	}).fail( function(xhr, status, error) {
+        		 var sms = smsResultAjax('KO', xhr.responseText);
+        		 
+        		 $("#list-forms").prepend(sms);
+        	});
+    	});
     });
 
 </script>

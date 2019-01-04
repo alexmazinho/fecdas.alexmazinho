@@ -1199,6 +1199,63 @@ class PageController extends BaseController {
 		return $response;
 	}
 
+	public function plasticllicenciesAction(Request $request) {
+	    
+	    $action = $request->query->get('action', '');
+	    
+	    $parteid = $request->query->get('id', 0);
+	    
+	    $idsLlicencies = $request->query->get('llicencies', '');
+
+	    $arrayIdsLlicencies = array();
+	    if ($idsLlicencies != '') {
+	        $idsLlicencies = urldecode($idsLlicencies);
+	        
+	        $arrayIdsLlicencies = json_decode($idsLlicencies); // Array
+	    }
+	    
+	    
+	    $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+	    
+	    $total = 0;
+	    foreach ($parte->getLlicencies() as $llicencia) {
+	        $key = array_search($llicencia->getId(), $arrayIdsLlicencies);
+	        
+	        if ($key !== false && !$llicencia->esBaixa() && !$llicencia->getImprimir() && !$llicencia->getImpresa()) { // Trobat, no és baixa i no marcada per imprimir
+	            $total++;
+	            $llicencia->setImprimir(true);
+	        }
+	    }
+	    // Buidar carrito
+	    $session = $this->get('session');
+	    $session->remove('cart');
+	    try {
+	        if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
+	        
+	        $this->addProducteToCart(BaseController::PRODUCTE_IMPRESS_PLASTIC_ID, $total);
+	    
+	        if ($action == 'consultar') {
+	           $form = $this->formulariTransport();
+	           
+	           return $this->render('FecdasBundle:Facturacio:graellaproductescistellaform.html.twig',
+	               array('formtransport' => $form, 'cart' => $this->getSessionCart(), 'tipus' => BaseController::TIPUS_PRODUCTE_ALTRES, 
+	                     'allowremove' => false, 'admin' => $this->isCurrentAdmin()));  
+	        }
+	        // Tramitar comanda
+	        $request->query->set('tipus', BaseController::TIPUS_PRODUCTE_ALTRES);
+	        
+	        $response = $this->forward('FecdasBundle:Facturacio:tramitarcistella', array(
+	            'request'  => $request
+	        ));
+	    } catch (\Exception $e) {
+	        // Ko, mostra form amb errors
+	        $response = new Response($e->getMessage());
+	        $response->setStatusCode(500);
+	    }
+	    
+	    return $response;
+	}
+	
 	public function baixallicenciesAction(Request $request) {
 
 		if ($this->isAuthenticated() != true)
@@ -1875,7 +1932,7 @@ class PageController extends BaseController {
 		$llicencia->name = 'llicencia-nova';
 		$llicencia->setDatacaducitat($datacaducitat);
 		
-		$llicencia->setEnviarllicencia(false); // Per defecte no
+		$llicencia->setImprimir(false); // Per defecte no
 
 		// Checks depends on parte type
 		switch ($tipusparteId) {

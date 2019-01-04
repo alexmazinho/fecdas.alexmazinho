@@ -21,11 +21,12 @@ class FormLlicenciaImprimir extends FormLlicenciaSortida {
 			
 			/* Check we're looking at the right data/form */
 			if ($llicencia instanceof EntityLlicencia) {
-				$persona = $llicencia->getPersona();
+				//$persona = $llicencia->getPersona();
 					
 				$form->add('imprimir', 'checkbox', array(
 					'mapped'  	=> false,
-					'data'		=> $persona->getMail() == '' && !$llicencia->getImpresa()
+					//'data'		=> $persona->getMail() == '' && !$llicencia->getImpresa()
+				    'data'		=> $llicencia->getImprimir() && !$llicencia->getImpresa()
 				));
 			}
 		});

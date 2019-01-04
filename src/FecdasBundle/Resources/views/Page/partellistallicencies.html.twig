@@ -66,69 +66,94 @@
 </div>
 {% endif %}   	
 
-<div class="table-header">
-	<div id="list-header">
-		<div id="header-llicenciaparteid" class="col-listheader">{{ parte.id }}</div>
-		<div id="header-llicenciaparteindex" class="col-listheader  hidden">#</div>  
-		<!-- recull parte id, per informar input parte_id quan es fa l'alta de la 
-		primera llicència que crea el parte. Veure my-jquery-scripts / addLlicenciaClick -->
-	   	<div id="header-llicenciapersona" class="col-listheader">Llicències<span class="listheader-order"></span></div>
-	   	<div id="header-llicenciamail" class="col-listheader">Correu<span class="listheader-order"></span></div>
-	   	<div id="header-llicenciadni" class="col-listheader">DNI o equivalent<span class="listheader-order"></span></div>
-	   	<div id="header-llicenciacategoria" class="col-listheader">Categoria<span class="listheader-order"></span></div>
-	   	<div id="header-llicenciaactivitats" class="col-listheader">Activitats</div>
-	   	{% if parte.perImprimir == true and parte.perEnviarFederat != true %}<div id="header-llicenciaenviarllicencia" class="col-listheader"><i class="fa fa-envelope fa-1x"></i></div>{% endif %}
-	   	<div id="header-llicenciacheck" class="col-listheader">{% if admin == true %}<i class="fa fa-check-square-o fa-1x"></i>{% endif %}</div>
-	   	<div id="header-llicenciaactions" class="col-listheader">&nbsp;</div>
-	</div>
+<div class="row">
+    <div class="col-md-12">
+    	<div id="list-llicenciesllista" class="table-scroll table-fixheader">
+        	<table class="table">	
+           		<thead>
+       			   	<tr class="header">
+    					<th class="header-llicenciaparteid th-listheader col-listheader collistheader-noorder hidden">{{ parte.id }}</th>
+    					<th class="header-llicenciaparteindex th-listheader col-listheader collistheader-noorder">#</th>
+    				   	<th class="header-llicenciapersona th-listheader col-listheader data-detall-cell-left collistheader-noorder">Llicències</th>
+    				   	<th class="header-llicenciadni th-listheader col-listheader collistheader-noorder">DNI</th>
+    				   	<th class="header-llicenciamail th-listheader col-listheader data-detall-cell-left collistheader-noorder">Correu</th>
+    				   	<th class="header-llicenciacategoria th-listheader col-listheader collistheader-noorder">Categoria</th>
+    				   	{% if parte.perImprimir %}
+        				   	<th class="header-llicenciacheckplastic th-listheader col-listheader data-detall-cell-center">
+        				   		<i class="fa fa-address-card-o fa-1x green"></i><br/>
+        				   		<div class="checkbox-inline"><label><input id="parte_plastics_checkall" name="parte_plastics_checkall" value="0" type="checkbox"> <i class="fa fa-check-circle fa-1x"></i></label></div>
+        				   	</th>
+    				   	{% endif %}
+    				   	{% if admin == true %}
+        				   	<th class="header-llicenciacheck th-listheader col-listheader data-detall-cell-center">
+        				   		<i class="fa fa-remove fa-1x red"></i><br/>
+        				   		<div class="checkbox-inline"><label><input id="parte_baixes_checkall" name="parte_baixes_checkall" value="0" type="checkbox"> <i class="fa fa-check-circle fa-1x"></i></label></div>
+        				   	</th>
+    				   	{% endif %}
+    				   	<th class="header-llicenciaactions th-listheader col-listheader collistheader-noorder"> </th>
+    				</tr>
+    	   		</thead>
+       		   	<tbody>
+                {% for llicencia in parte.llicenciessortedbyname %}
+    				<tr class="data-detall">
+      					<td class="data-detall-cell llicencia-id hidden">{{ llicencia.id }}</td>
+       					<td class="data-detall-cell llicencia-index">{{ loop.index }}</td>
+      					<td class="data-detall-cell data-detall-cell-left llicencia-persona">{{ llicencia.persona.cognomsNom }}</td>
+       					<td class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</td>
+       					<td class="data-detall-cell data-detall-cell-left llicencia-mail">{{ llicencia.persona.mail }}</td>
+       					<td class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</td>
+       				   	{% if parte.perImprimir %}
+           					<td class="data-detall-cell llicencia-checkplastic">
+           					    {% if not llicencia.impresa and not llicencia.imprimir %}
+                   					<div class="checkbox-inline"><input type="checkbox" autocomplete="off" class="check-llicencia-plastic" value="0" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][plastic]" id="form_llicencies_{{ loop.index0 }}_plastic"></div>
+                   				{% else %}
+                   					<div class="checkbox-inline"><input type="checkbox" autocomplete="off" class="check-llicencia-plastic" value="1" checked="checked" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][plastic]" id="form_llicencies_{{ loop.index0 }}_plastic" disabled="disabled"></div>
+                   				{% endif %}
+           					</td>
+       					{% endif %}
+       					{% if admin == true %}
+           					<td class="data-detall-cell llicencia-checkllicencia">
+           						<div class="checkbox-inline"><input type="checkbox" class="check-llicencia-remove" value="0" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][baixa]" id="form_llicencies_{{ loop.index0 }}_baixa"></div>
+           					</td>
+       					{% endif %}
+       					<td class="data-detall-cell data-detall-cell-right llicenciaactions">
+       						{% if parte.allowPrintLlicencia == true %}
+           						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}" alt="llicència" title="llicència"><i class="fa fa-credit-card fa-1x orange"></i></a>
+           					{% endif %}
+           					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
+           					{% if admin == true %}
+           						<a href="{{ path('FecdasBundle_llicencia') }}" value="{{ llicencia.id }}" class="link remove-llicencia" name="remove-llicencia" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
+           					{% endif %}
+       					</td>
+    				</tr>
+    	   		{% else %}
+        			{% set colspan = 7 %}
+                    {% if admin == true %}{% set colspan = colspan + 1 %}{% endif %}
+                    {% if parte.perImprimir %}{% set colspan = colspan + 1 %}{% endif %}
+        			<tr class="data-detall">
+    					<td class="data-detall-cell hidden">&nbsp;</td>
+    					<td class="data-detall-cell" 
+    						colspan="{{ colspan }}"><div class="sms-notice">No hi ha cap llicència</div>
+    					</td>
+    				</tr>
+        		{% endfor %} 
+        		</tbody>
+        	</table>
+        </div>
+    </div>
 </div>
-{% if parte.numLlicencies > 0 %}
-<div class="table-scroll">
-	<ol id="list-data">
-		{% for llicencia in parte.llicenciessortedbyname %}
-			{# if llicencia.id != "" #}
-			{% if llicencia.persona.nom is defined %}
-				<li class="data-detall">
-	  				<div class="data-detall-cell llicencia-id">{{ llicencia.id }}</div>
-	  				<div class="data-detall-cell llicencia-index hidden">{{ loop.index }}</div>
-					<div class="data-detall-cell llicencia-persona">{{ llicencia.persona.cognomsNom }}</div>
-					<div class="data-detall-cell llicencia-mail">{{ llicencia.persona.mail }}</div>
-					<div class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</div>
-					<div class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</div>
-					<div class="data-detall-cell llicencia-activitats">{{ llicencia.activitats }}</div>
-					{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
-						<div class="data-detall-cell llicencia-enviarllicencia">		
-						{% if llicencia.enviarllicencia == 1 %} Si 	{% else %} No {% endif %}
-						</div>
-					{% endif %}
-					<div class="data-detall-cell llicencia-checkllicencia">
-						{% if admin == true %}
-						<div class="checkbox-inline"><input type="checkbox" class="check-llicencia-remove" value="0" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][baixa]" id="form_llicencies_{{ loop.index0 }}_baixa"></div>
-						{% endif %}
-					</div>
-					<div class="data-detall-cell llicencia-actions link">
-					{% if parte.allowPrintLlicencia == true %}
-						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}" alt="llicència" title="llicència"><i class="fa fa-credit-card fa-1x orange"></i></a>
-					{% endif %}
-					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
-					{% if admin == true %}
-						<a href="{{ path('FecdasBundle_llicencia') }}" value="{{ llicencia.id }}" class="link remove-llicencia" name="remove-llicencia" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
-					{% endif %}
-					</div>
-	  			</li>
-	   		{% endif %}
-	   	{% endfor %}
-	</ol>
-</div>
-{% else %}
-<div class="sms-notice">No hi ha llicències en aquesta llistats d'assegurats</div>
-{% endif %}
+
 
 <div class="row">
-	<div class="col-md-9"><div class="sms-footer">Per esborrar alguna llicència cal posar-se en contacte amb la Federació</div></div>
-	{% if parte.numLlicencies > 0 and admin == true %}
-		<div class="col-md-3 col-last-right">
-			<a id="button-llicencies-remove" href="{{ path('FecdasBundle_baixallicencies', { 'id': parte.id}) }}" class="btn btn-default"><i class="fa fa-trash"></i> Anul·lar seleccionades</a>
+	<div class="col-md-7"><div class="sms-footer">Per esborrar alguna llicència cal posar-se en contacte amb la Federació</div></div>
+	{% if parte.numLlicencies > 0 %}
+		<div class="col-md-5 col-last-right">
+			{% if parte.perImprimir %}
+				<a id="button-llicencies-plastic" href="{{ path('FecdasBundle_plasticllicencies', { 'id': parte.id}) }}" class="btn btn-default"><i class="fa fa-address-card-o green"></i> Impressió targetes</a>
+			{% endif %}
+			{% if admin == true %}
+				<a id="button-llicencies-remove" href="{{ path('FecdasBundle_baixallicencies', { 'id': parte.id}) }}" class="btn btn-default"><i class="fa fa-trash red"></i> Anul·lar seleccionades</a>
+			{% endif %}
 		</div>
 	{% endif %}
 </div>

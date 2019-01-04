@@ -94,6 +94,11 @@
 					</div>
 					<div class="checkbox-inline">
 				    	<label>
+				      		{{ form_widget(form.noenviat) }} No enviades
+				    	</label>
+					</div>
+					<div class="checkbox-inline">
+				    	<label>
 				      		{{ form_widget(form.compta) }} Pendent enviar comptabilitat
 				    	</label>
 					</div>
@@ -125,7 +130,7 @@
     
     	selectRecentsClub();
     
-    	$('#form_clubs, #form_numfactura, #form_numrebut, #form_nom, #form_dni, #form_mail, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_compta').change(function () {
+    	$('#form_clubs, #form_numfactura, #form_numrebut, #form_nom, #form_dni, #form_mail, #form_estat, #form_baixa, #form_nopagat, #form_noimpres, #form_noenviat, #form_compta').change(function () {
     		// Recarrega consulta afegint la dades del formulari
     		var url = "{{ path('FecdasBundle_recents', sortparams)|raw }}";
     		var params = recentsParams();

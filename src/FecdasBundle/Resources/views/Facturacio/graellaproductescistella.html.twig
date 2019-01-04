@@ -1,50 +1,23 @@
 {% include 'FecdasBundle:Includes:inner-messages.html.twig' %}
 <div class="alert alert-success">
-	{%  if app.session.has('cart') == true  %}
-	
-		{% set cart = app.session.get('cart', {'productes' : {}, 'total' : 0}) %}
-		
-		<h3 class=""><i class="fa fa-shopping-cart"></i> comanda pendent de confirmar</h3>
-		<ul>
-			{% set total = 0 %}
-			{% for idProducte, item in cart.productes  %}
-		   		<li>
-		   			<span>{{ item.unitats }}</span>
-		   			<span> x {{ item.abreviatura }} - {{ item.descripcio }} ({{ item.import|number_format(2, ',', '.') }} €/u)</span>
-		   			<span>
-		   				<a class="producte-action-remove-cart link" href="{{ path('FecdasBundle_treurecistella', { 'id': idProducte, 'tipus' : tipus }) }}" alt="Treure de la cistella" title="Treure de la cistella"><i class="fa fa-remove red"></i></a>
-		   			</span>
-		   		</li>
-		   		{% set total = total + (item.import * item.unitats) %}
-			{% endfor %}
-			{% if cart.tarifatransport > 0 %}
-				<li class="cistella-transport">
-		   			<span>&nbsp;</span>
-		   			<span><label> incloure enviament ({{ cart.tarifatransport|number_format(2, ',', '.') }} €/u)</label></span>
-		   			<span>{{ form_widget(formtransport.transport[0], { 'attr': {'class': 'radio'} }) }}</span>
-		   		</li>
-		   		{% set total = total + cart.tarifatransport %}
-		   		<li class="cistella-transport">
-		   			<span>&nbsp;</span>
-		   			<span><label> Recollir a la federació	</label></span>
-		   			<span>{{ form_widget(formtransport.transport[1], { 'attr': {'class': 'radio'} }) }}</span>
-		   		</li>
-			{% endif %}
-			<li class="cistella-summary">
-				<span>&nbsp;</span><span class="blue">Total: <i id="totalcomanda">{{ total|number_format(2, ',', '.') }}</i> €</span><span>&nbsp;</span>
-	   		</li>
-		</ul>
-		{{ form_widget(formtransport.tarifatransport) }}
-		{{ form_widget(formtransport.importcomanda) }}
-		<a class="anular-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'anular',  'tipus' : tipus  }) }}">cancel·lar la comanda <i class="fa fa-trash red"></i></a>
-		<a class="desar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'desar',  'tipus' : tipus }) }}">només confirmar comanda <i class="fa fa-check blue"></i></a>
-		{% if admin == true %}
-			<a class="pagar-cistella-admin  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">desar comanda i confirmar pagament (admin)<i class="fa fa-euro green"></i></a>
-		{% else %}
-			<a class="pagar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">confirmar i pagar comanda <i class="fa fa-credit-card green"></i></a>
-		{% endif %}
-						
-	{% else %}
-		<p class=""><i class="fa fa-shopping-cart"></i> No hi ha cap producte a la cistella</p>
-	{% endif %}
+	<h3 class=""><i class="fa fa-shopping-cart"></i> comanda pendent de confirmar</h3>
+	{%  if app.session.has('cart') %}
+	    {% set cart = app.session.get('cart', {'productes' : {}, 'total' : 0}) %}
+	    {% if cart.productes|length > 0 %}
+    	    {% set allowremove = true %}	
+    	    {% include "FecdasBundle:Facturacio:graellaproductescistellaform.html.twig" %}
+    	
+        	<a class="anular-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'anular',  'tipus' : tipus  }) }}">cancel·lar la comanda <i class="fa fa-trash red"></i></a>
+        	<a class="desar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'desar',  'tipus' : tipus }) }}">només confirmar comanda <i class="fa fa-check blue"></i></a>
+        	{% if admin == true %}
+        		<a class="pagar-cistella-admin  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">desar comanda i confirmar pagament (admin)<i class="fa fa-euro green"></i></a>
+        	{% else %}
+        		<a class="pagar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">confirmar i pagar comanda <i class="fa fa-credit-card green"></i></a>
+        	{% endif %}
+        {% else %}
+			<p class=""><i class="fa fa-shopping-cart"></i> No hi ha cap producte a la cistella</p>
+	    {% endif %}
+    {% else %}
+		<p class=""><i class="fa fa-shopping-cart"></i> La cistella està buida</p>
+    {% endif %}
 </div>

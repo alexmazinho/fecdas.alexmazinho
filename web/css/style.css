@@ -813,22 +813,22 @@ a.link.footer-link { padding: 0 10px; }
 
 /*************** FECDAS NOU graella productes ****************/
 
-.cistella-resum ul { margin-bottom: 20px; color: #444444; }
+.cistella-resum > table { margin-bottom: 20px; color: #444444; }
 
-.cistella-resum ul li { display: table-row; line-height: 2.5; }
+/*.cistella-resum ul li { display: table-row; }*/
 
-.cistella-resum ul li span { display: table-cell; padding-right: 5px; }
+.cistella-resum table tr > td { padding-right: 5px; line-height: 1.2em; text-align: right; padding: 15px 5px; }
 
-.cistella-resum .cistella-summary  { text-align: right; font-size: 1.2em; font-weight: bold; padding: 10px 0; margin-top: 10px;  }
+.cistella-resum .cistella-transport td { line-height: 1; }
 
-.cistella-resum .cistella-summary span { padding: 10px 5px; /*border-top: 1px solid #cccccc;*/ }
-
-
-.cistella-resum li.cistella-transport { line-height: 1; }
-
-.cistella-resum .cistella-transport span { text-align: right;  vertical-align: top; }
+.cistella-resum .cistella-transport td { padding: 5px 5px; text-align: right;  vertical-align: top; }
 
 .cistella-resum .cistella-transport input { margin-left: 5px; margin-top: 0;}
+
+.cistella-resum .cistella-summary  { text-align: right; font-weight: bold;  }
+
+.cistella-resum .cistella-summary td { padding: 10px 5px; /*border-top: 1px solid #cccccc;*/ }
+
 
 .total-productes-grid {
 	color: #1240a0;
@@ -1507,7 +1507,7 @@ tr:first-child > .data-detall-cell  {
 .table-scroll.table-fixheader { border-left: none;border-right: none; }
 
 .table-fixheader > .table { border-collapse: separate; margin-bottom: 0; }
-.table-fixheader > .table > thead > tr { display: table-row; position: sticky; top: 0; }
+.table-fixheader > .table > thead > tr { display: table-row; position: sticky; top: 0; z-index: 1000; }
 .table-fixheader .data-detall-header { background: none; }
 .table-fixheader > .table > thead > tr > th { height: 40px; background:  repeat-x scroll 0 0 #F0F9FF; position: sticky; top: 0; border-collapse: collapse; } 
 
@@ -1706,11 +1706,6 @@ input#form_dni {
     width: 10%;
 }
 
-#formllicencia-enviarllicencia{
-	margin-top:17px
-	
-}
-
 .form-row {
 	width:100%;
 	margin-bottom: 5px;
@@ -1794,45 +1789,10 @@ input#form_dni {
 
 #formparte-rest { display: none; }
 
-#header-llicenciaparteid { display:none}
-#header-llicenciapersona {	width: 23%; text-align: left;}
-#header-llicenciamail {	width: 20%; text-align: left;}
-#header-llicenciapersonalong {	width: 35%; text-align: left;}	/* Import CSV */
-#header-llicenciadni {	width: 10%; }
-#header-llicenciacategoria {	width: 13%;  }
-#header-llicenciaactivitats {	/* width: 20%; */ display: none; }
-#header-llicenciaactivitatslong {	width: 30%;  }  /* Renovar */
-#header-llicenciapreu {	width: 6%; text-align: right;  }
-#header-llicenciaenviarllicencia {	width: 4%; text-align: center; }
-#header-llicenciaenviarllicencia img {	
-	bottom: 10px;
-    position: relative;
-}
-#header-llicenciacheck {	width: 3%; text-align: center; }
-#header-llicenciaactions { width: 8%; }
-.header-llicenciaactions-scroll { width: 12%; }
-
-.llicencia-id {	display:none}
-.llicencia-persona { width: 23%; text-align: left; font-size: 0.9em;}
-.llicencia-mail { width: 20%; text-align: left; font-size: 0.9em;}
-.llicencia-personalong { width: 35%; text-align: left; }
-.llicencia-dni { width: 10%; }
-.llicencia-categoria { width: 13%; }
-.llicencia-activitats {	/*width: 20%;*/ display: none;  font-size: 9px; letter-spacing: 0; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.llicencia-activitatslong {	width: 30%; font-size: 9px; letter-spacing: 0; }
-.llicencia-preu { width: 6%; text-align: right;}
-.llicencia-enviarllicencia { width: 4%; text-align: center; font-size: 0.9em; white-space: nowrap; overflow: visible; }
-.llicencia-checkllicencia { width: 3%; text-align: center;}
-.llicencia-no { width: 6%; }
-.llicencia-actions { width: 8%; text-align: right; margin-top: -14px}
-
-
 #formrenovar #header-llicenciaactivitatslong {	width: 25%;  }
-#formrenovar #header-llicenciaenviarllicencia {	width: 8%; }
 #formrenovar #header-llicenciaactions { width: 13%; }
 
 #formrenovar .llicencia-activitatslong { width: 25%; font-size: 9px; letter-spacing: 0; }
-#formrenovar .llicencia-enviarllicencia { width: 8%; }
 #formrenovar .llicencia-actions { width: 13%; text-align: center; }
 #formrenovar .llicencia-actions.llicencia-no { text-align: right; }
 
@@ -2967,8 +2927,6 @@ p.info-bold {
 #list-llicenciesrenovaranual .llicenciacategoria { width: 100px; }
 #list-llicenciesrenovaranual .header-llicenciapreu,
 #list-llicenciesrenovaranual .llicenciapreu { width: 100px; }
-#list-llicenciesrenovaranual .header-llicenciaenviarllicencia,
-#list-llicenciesrenovaranual .llicenciaenviarllicencia { width: 60px; }
 #list-llicenciesrenovaranual .header-llicenciaactions,
 #list-llicenciesrenovaranual .llicenciaactions { width: 150px; }
 

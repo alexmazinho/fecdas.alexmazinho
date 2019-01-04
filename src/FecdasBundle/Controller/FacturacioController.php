@@ -2175,8 +2175,7 @@ class FacturacioController extends BaseController {
 		
 		$this->addClubsActiusForm($formBuilder, $club);
 		
-		$cart = $this->getSessionCart();
-		$formtransport = $this->formulariTransport($cart);		
+		$formtransport = $this->formulariTransport();		
 			
 		$producteTransport = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
 		
@@ -2329,78 +2328,19 @@ class FacturacioController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_graellaproductes', array( 'tipus' => $tipus, 'club' => $club->getCodi())));
 	}
 
-	
-
 	public function afegircistellaAction(Request $request) {
 		// Afegir producte a la cistella (desada temporalment en cookie)
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		$producte = null;
 		$idProducte = $request->query->get('id', 0);
 		$unitats = $request->query->get('unitats', 1);
 		$tipus = $request->query->get('tipus', 0);
 		
 		// Recollir cistella de la sessió
-		$cart = $this->getSessionCart();				
 		$form = null;
 
 		try {
-			$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
-			
-			//if ($producte != null && $unitats > 0) {
-			if ($producte != null) {
-				
-				if ($unitats == 0) throw new \Exception("Cal indicar el nombre d'unitats del producte");
-				
-				if ($unitats < 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
-				
-				// Comprovar que tots els detalls siguin d'abonament o normals
-				if (count($cart['productes']) > 0) {
-					$abonament = false;
-					foreach ($cart['productes'] as $info) {
-						if ($info['unitats'] < 0) $abonament = true;
-					}
-					
-					if (($abonament == true && $unitats > 0) ||
-						($abonament == false && $unitats < 0)) throw new \Exception("No es poden barrejar abonaments i comandes normals");
-				}			
-				
-				$import = $producte->getPreuAny(date('Y'));
-				
-				if ( !isset( $cart['productes'][$idProducte] ) ) {
-					$cart['productes'][$idProducte] = array(
-							'abreviatura' 	=> $producte->getAbreviatura(),
-							'descripcio' 	=> $producte->getDescripcio(),
-							'transport'		=> $producte->getTransport(),
-							'pes'			=> 0,
-							'unitats' 		=> $unitats,
-							'import' 		=> $import
-					);
-				} else {
-					$cart['productes'][$idProducte]['unitats'] += $unitats;
-				}
-				//$cart['total'] += $import;
-	
-				$unitats = $cart['productes'][$idProducte]['unitats'];
-				
-				if ($producte->getTransport() == true && $unitats > 0) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes(); 
-				
-				if ($cart['productes'][$idProducte]['unitats'] == 0 ||
-					($cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
-					// Afegir unitats < 0
-					unset( $cart['productes'][$idProducte] );
-				}
-				
-				if (count($cart['productes']) <= 0) {
-					$this->get('session')->remove('cart');
-				} else {
-					$form = $this->formulariTransport($cart);		
-					
-					$session = $this->get('session');
-					$session->set('cart', $cart);
-				}
-			}
+		    if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
+		    
+		    $this->addProducteToCart($idProducte, $unitats);
 		} catch (\Exception $e) {
 			// Ko, mostra form amb errors
 			$response = new Response($e->getMessage());
@@ -2410,11 +2350,10 @@ class FacturacioController extends BaseController {
 			return $response;
 		}
 		
-		if ($form == null) $form = $this->formulariTransport($cart);
+		$form = $this->formulariTransport();
 		
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
 							array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin())); 
-		
 	}
 
 	public function treurecistellaAction(Request $request) {
@@ -2436,43 +2375,15 @@ class FacturacioController extends BaseController {
 			}*/
 			unset( $cart['productes'][$idProducte] );
 
-			if (count($cart['productes'] <= 0)) $this->get('session')->remove('cart');  			
+			if (count($cart['productes']) <= 0) $this->get('session')->remove('cart');  			
 			else $this->get('session')->set('cart', $cart);
 		}
 
-		$form = $this->formulariTransport($cart);
+		$form = $this->formulariTransport();
 				
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
-						array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin()));
+		                      array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin()));
 		
-	}
-
-	private function formulariTransport(&$cart) {
-		// Revisar si cal transport
-		$pesComanda = $this->getPesComandaCart($cart);
-		$total = $this->getTotalComandaCart($cart);
-		
-		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
-		$unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
-		$tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
-		
-		$cart['tarifatransport'] = $tarifa;
-				
-		$formBuilder = $this->createFormBuilder()
-			->add('tarifatransport', 'hidden', array(
-				'data' => $tarifa
-		));
-		$formBuilder->add('importcomanda', 'hidden', array(
-				'data' => $total
-		));
-		$formBuilder->add('transport', 'choice', array(
-				'choices'   => array(0 => 'Incloure enviament', 1 => 'Recollir a la federació'),
-				'multiple'  => false,
-				'expanded'  => true,
-				'data' 		=> 0 
-		));
-		
-		return $formBuilder->getForm()->createView();
 	}
 
 	public function editarcomandaAction(Request $request) {
@@ -2852,8 +2763,8 @@ class FacturacioController extends BaseController {
     			}
     			
     			// No es permeten canvis producte stockable <--> no stockable
-    			if ((EntityProducte::esTipusStockable($tipusOriginal) && !$producte->esStockable()) ||
-    			    (!EntityProducte::esTipusStockable($tipusOriginal) && $producte->esStockable())) {
+    			if ((!$producte->esNou() && EntityProducte::esTipusStockable($tipusOriginal) && !$producte->esStockable()) ||
+    			    (!$producte->esNou() && !EntityProducte::esTipusStockable($tipusOriginal) && $producte->esStockable())) {
     			    $form->get('tipus')->addError(new FormError('Canvi no permés'));
     			    if ($producte->esStockable()) throw new \Exception('No es pot canviar a un tipus de producte que gestiona stock' );
     			    throw new \Exception('No es pot canviar a un tipus de producte que NO gestiona stock' );

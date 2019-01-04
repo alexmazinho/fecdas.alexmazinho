@@ -42,19 +42,6 @@
 						{{ form_widget(form.datacaducitat, { 'id': 'parte_llicencies_datacaducitat' }) }}
 					</div>
 				</div>
-				{% if parte.perImprimir == true and parte.perEnviarFederat != true %}
-				<div class="col-md-3 col-sm-6 col-xs-6">
-					<div class="form-group">
-						<label>
-    						Rebre llicència per correu?
-    						<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[0]) }}{{ form_label(form.enviarllicencia[0]) }}</div>
-    		      			<div class="checkbox-inline">{{ form_widget(form.enviarllicencia[1]) }}{{ form_label(form.enviarllicencia[1]) }}</div>
-						</label>
-					</div>
-				</div>
-				{% else %}
-					{{ form_widget(form.enviarllicencia) }}
-				{% endif %}
 				<div class="col-md-3 col-sm-6 col-xs-6 col-last-right">
 					<div class="form-group">
 						<label class="required"><span class="" style="color:transparent">.</span></label>
@@ -145,18 +132,10 @@
 $(document).ready(function(){
 	setMenuActive("menu-partes");
 
-	selectAllChecks();
-
 	$('#formllicencia-renovar').click(function(e) {
 		//Cancel the link behavior
 	    e.preventDefault();
 
-		if ($("#llicencia_renovar_enviarllicencia_0").prop("checked") == false &&
-			$("#llicencia_renovar_enviarllicencia_1").prop("checked") == false) { // Radio button
-				dialegError("Error", "cal indicar si es vol rebre la llicència per correu", 400);
-				return false;
-		}
-	    
 	    $("#formrenovar").submit();
 	});
 	        

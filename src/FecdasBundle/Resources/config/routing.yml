@@ -78,6 +78,12 @@ FecdasBundle_baixallicencies:
     requirements:
         methods:  GET
 
+FecdasBundle_plasticllicencies:
+    path:  /plasticllicencies
+    defaults: { _controller: "FecdasBundle:Page:plasticllicencies" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_llicenciespermail:
     path:  /llicenciespermail
     defaults: { _controller: "FecdasBundle:Page:llicenciespermail" }

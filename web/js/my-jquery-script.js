@@ -1437,19 +1437,6 @@
         	
         	loadLlicenciaData(data);
 		
-        	/*
-        	 * Amagar / mostrar columna enviar per correu de la llista de llicències
-        	 * Només llicències noves => selector tipus de parte => change
-        	 * n ==> 0
-        	 */
-        	if (n == 0) {
-        		if ($('.llicencia-check.check-correu').length) { // Es mostra el check, mostrar columna
-        			$('#header-llicenciaenviarllicencia').show();
-        		} else {	// El check està ocult, columna també
-        			$('#header-llicenciaenviarllicencia').hide();
-        		}
-        	}
-        	
         	
         }).fail( function(xhr, status, error) {
         	
@@ -1592,7 +1579,7 @@
 	 	        	$("#llista-llicencies").html(data);
 	 	        	removeLlicenciaClick();
 	 	        	showResumParteDetall();
-	 	        	sortLlista("col-listheader", "list-data");
+	 	        	//sortLlista("col-listheader", "list-data");
 	 	        	// Hide llicencia
 	 		    	if ($.browser.msie) $('#formparte-llicencia').hide(); 
 	 		    	else $('#formparte-llicencia').stop().slideUp('fast');
@@ -1650,11 +1637,6 @@
 				dialegError("Error", "cal seleccionar una persona de la llista d'assegurats", 400);
 				return false;
 			}
-			if ($("#llicencia_enviarllicencia_0").prop("checked") == false &&
-				$("#llicencia_enviarllicencia_1").prop("checked") == false) { // Radio button
-				dialegError("Error", "cal indicar si es vol rebre la llicència per correu", 400);
-				return false;
-			}
 			
 			$('#progressbar').show();  // Rellotge
 			
@@ -1707,7 +1689,7 @@
 	        	
 				showResumParteDetall();
 	        	
-				sortLlista("col-listheader", "list-data");
+				//sortLlista("col-listheader", "list-data");
 			}).fail( function(xhr, status, error) {
 				 // xhr.status + " " + xhr.statusText, status, error
 				
@@ -1724,6 +1706,23 @@
 	    });
 	};
 
+	
+	transportCistella = function() {
+		$( ".cistella-resum" ).on( "click", "#form_transport_0", function(e) {
+			var total = $('#form_importcomanda').val()*1 + $('#form_tarifatransport').val()*1; 
+			$('#totalcomanda').html(  total.toFixed(2) );
+			
+		});
+		
+		$( ".cistella-resum" ).on( "click", "#form_transport_1", function(e) {
+			//e.preventDefault();			
+			var total = $('#form_importcomanda').val()*1;
+			$('#totalcomanda').html( total.toFixed(2) );
+			
+		});
+	};
+	
+	
 	pagamentComandaSMS = function(admin, iban, ibanescola) {
 		
 		var dialegHtml = '';
@@ -1909,17 +1908,6 @@
 		
 	};
 
-	selectAllChecks = function() {
-		$("#llicencia_seleccionat-tot").click(function(){
-			var checked = $(this).is(':checked');
-			if (checked) {
-				$('.formcheckbox-right').not("#llicencia_renovar_enviarllicencia").each(function(){ this.checked = true; });				
-			} else {
-				$('.formcheckbox-right').not("#llicencia_renovar_enviarllicencia").each(function(){ this.checked = false; });
-			};
-		});
-	};
-	
 	validarDadesPersona = function(dni, estranger) {
 		/* Només valida si nacionalitat és Espanyola */
 		/*if (nacionalitat == "ESP") {*/

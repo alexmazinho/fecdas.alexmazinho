@@ -268,11 +268,11 @@ $(document).ready(function(){
 		var checked = $(this).is(':checked');
 		if (checked) {
 			$('.renovar-checkbox:not(:checked)').each(function(){ 
-				$(this).click(); 
+				$(this).click(); // Actualitzar preu
 			});				
 		} else {
 			$('.renovar-checkbox:checked').each(function(){ 
-				$(this).click(); 
+				$(this).click(); // Actualitzar preu
 			});
 		};
 	});

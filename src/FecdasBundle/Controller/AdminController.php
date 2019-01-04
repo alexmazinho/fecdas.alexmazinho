@@ -205,6 +205,8 @@ class AdminController extends BaseController {
 		if ($request->query->has('nopagat') && $request->query->get('nopagat') == 1) $currentNoPagat = true;
 		$currentNoImpres = false;// No impres
 		if ($request->query->has('noimpres') && $request->query->get('noimpres') == 1) $currentNoImpres = true;
+		$currentNoEnviat = false;// No enviat mail
+		if ($request->query->has('noenviat') && $request->query->get('noenviat') == 1) $currentNoEnviat = true;
 		$currentCompta = false;// Pendents compta
 		if ($request->query->has('compta') && $request->query->get('compta') == 1) $currentCompta = true;
 
@@ -297,6 +299,10 @@ class AdminController extends BaseController {
 					'required'  => false,
 					'data' => $currentNoImpres,
 		));
+		$formBuilder->add('noenviat', 'checkbox', array(
+		            'required'  => false,
+		            'data' => $currentNoEnviat,
+		));
 		$formBuilder->add('baixa', 'checkbox', array(
     				'required'  => false,
 					'data' => $currentBaixa,
@@ -326,7 +332,7 @@ class AdminController extends BaseController {
 							'estat' => $currentEstat, 'baixa' => true, 'nopagat' => true, 'noimpres' => 'true' */);
 
 		$query = $this->consultaPartesRecents($currentClub, $currentEstat, $currentBaixa, 
-											$currentNoPagat, $currentNoImpres, $currentCompta, 
+		                                    $currentNoPagat, $currentNoImpres, $currentNoEnviat, $currentCompta, 
 											$currentNumfactura, $currentAnyfactura,
 											$currentNumrebut, $currentAnyrebut, 
 		                                    $currentDni, $currentNom, $currentMail, $sort.' '.$direction);

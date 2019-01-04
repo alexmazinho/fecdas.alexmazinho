@@ -215,20 +215,6 @@ class EntityParte extends EntityComanda {
 	}
 	
 	/**
-	 * Parte imprès ?
-	 *
-	 * @return boolean
-	 */
-	public function getImpres()
-	{
-		// Pendent d'imprimir si alguna llicència pendent imprimir
-		foreach ($this->llicencies as $llicencia) {
-			if (!$llicencia->esBaixa() && !$llicencia->getImpresa()) return false;   
-		}	
-		return true;
-	}
-	
-	/**
 	 * Es pot enviar per mail al federat?
 	 *
 	 * @return boolean
@@ -489,13 +475,13 @@ class EntityParte extends EntityComanda {
      *
      * @return integer
      */
-    public function getNumEnviar()
+    public function getNumImprimir()
     {
     	
     	// Només si no estan donades de baixa
     	$count = 0;
-    	foreach($this->llicencies as $llicencia_iter) {
-    		if (!$llicencia_iter->esBaixa() && $llicencia_iter->getEnviarllicencia() == true) $count++;
+    	foreach($this->llicencies as $llicencia) {
+    	    if (!$llicencia->esBaixa() && $llicencia->getImprimir() && !$llicencia->getImpresa()) $count++;
     	}
     	return $count;
     }
@@ -510,12 +496,26 @@ class EntityParte extends EntityComanda {
     	
     	// Només si no estan donades de baixa
     	$count = 0;
-    	foreach($this->llicencies as $llicencia_iter) {
-    		if (!$llicencia_iter->esBaixa() && $llicencia_iter->getImpresa() == true) $count++;
+    	foreach($this->llicencies as $llicencia) {
+    	    if (!$llicencia->esBaixa() && $llicencia->getImpresa()) $count++;
     	}
     	return $count;
     }
 	
+    /**
+     * Parte imprès ?
+     *
+     * @return boolean
+     */
+    public function getImpres()
+    {
+        // Pendent d'imprimir si alguna llicència pendent imprimir
+        foreach ($this->llicencies as $llicencia) {
+            if (!$llicencia->esBaixa() && $llicencia->getImprimir() && !$llicencia->getImpresa()) return false;
+        }
+        return true;
+    }
+    
 	/**
      * Obté número de llicències enviades per mail
      *
@@ -526,8 +526,8 @@ class EntityParte extends EntityComanda {
     	
     	// Només si no estan donades de baixa
     	$count = 0;
-    	foreach($this->llicencies as $llicencia_iter) {
-    		if (!$llicencia_iter->esBaixa() && $llicencia_iter->getMailenviat() == true) $count++;
+    	foreach($this->llicencies as $llicencia) {
+    		if (!$llicencia->esBaixa() && $llicencia->getMailenviat() == true) $count++;
     	}
     	return $count;
     }

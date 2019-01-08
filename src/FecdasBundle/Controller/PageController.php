@@ -710,7 +710,13 @@ class PageController extends BaseController {
 	        $page = isset($p['page'])?$p['page']:1;
 	        $uncheckpersones = isset($p['uncheckpersones'])?$p['uncheckpersones']:'';
 	    } else {
-	        $anyrenova = $request->query->get('anyrenova', $this->getCurrentDate()->format('Y'));
+	        $currentYear = date('Y');
+	        $anysRenova = BaseController::getArrayAnysPreus(
+	            date('m-d') < BaseController::INICI_TRAMITACIO_QUATRIMESTRE_MES."-".BaseController::INICI_TRAMITACIO_QUATRIMESTRE_DIA?$currentYear - 1:$currentYear,
+	            date('m-d') >= BaseController::INICI_TRAMITACIO_QUATRIMESTRE_MES."-".BaseController::INICI_TRAMITACIO_QUATRIMESTRE_DIA?$currentYear:$currentYear
+	            );
+	        
+	        $anyrenova = $request->query->get('anyrenova', reset($anysRenova));
 	        
 	        $codi = $request->query->get('clubs', ''); // filtra club
 	        $page = $request->query->get('page', 1);
@@ -725,6 +731,13 @@ class PageController extends BaseController {
 	    if ($club == null) $club = $this->getCurrentClub();
 	    $dataalta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyrenova+1). "-01-01 00:00:00");
 	    if ($dataalta->format('Y-m-d') < $this->getCurrentDate()->format('Y-m-d')) $dataalta = $this->getCurrentDate();
+	    
+	    if ($this->getCurrentDate()->format('Y-m-d') != $dataalta->format('Y-m-d')) {
+	        $dataalta->setTime(0, 1); // No és el mateix dia
+	    }
+	    else {
+	        $dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
+	    }
 	    
 	    /*if (!$this->validaTramitacioAnySeguent($dataalta)) {
 	        $anual = false;
@@ -845,7 +858,7 @@ class PageController extends BaseController {
                             $this->addParteDetall($parte, $llicencia);
                         }
                     } catch (\Exception $e) {
-                        $avisos[] = $e->getMessage();
+                        if (!in_array($e->getMessage(), $avisos)) $avisos[] = $e->getMessage();
                     }
                 }
                 
@@ -883,9 +896,10 @@ class PageController extends BaseController {
                 $this->get('session')->getFlashBag()->add('sms-notice',	'Llicències renovades correctament');
 	            
                 $resposta = array(
-                    'url'   => $this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')),
-                    'error' => '',
-                    'data'  => ''
+                    'url'       => $this->generateUrl('FecdasBundle_parte', array('id' => $parte->getId(), 'action' => 'view')),
+                    'error'     => '',
+                    'data'      => '',
+                    'dataalta'  => ''
                 );
                 $response = new Response(json_encode($resposta));
                 
@@ -902,6 +916,7 @@ class PageController extends BaseController {
         $resposta = array(
             'url'  => '',
             'error'=> $error, 
+            'dataalta' => $parte->getDataalta()->format('d/m/Y'),
             'data' => $this->renderView('FecdasBundle:Page:renovaranualtaula.html.twig',
                 $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'parte' => $parte, 'totals' => $totals, 
                                                                     'pagesize' => $pageSize, 'pagination' => $pagination, 'anual' => $anual,
@@ -1214,17 +1229,18 @@ class PageController extends BaseController {
 	        $arrayIdsLlicencies = json_decode($idsLlicencies); // Array
 	    }
 	    
-	    
 	    $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 	    
 	    $total = 0;
+	    $extra = array();
 	    foreach ($parte->getLlicencies() as $llicencia) {
 	        $key = array_search($llicencia->getId(), $arrayIdsLlicencies);
 	        
 	        if ($key !== false && !$llicencia->esBaixa() && !$llicencia->getImprimir() && !$llicencia->getImpresa()) { // Trobat, no és baixa i no marcada per imprimir
 	            $total++;
 	            $llicencia->setImprimir(true);
-	        }
+	            $extra[] = $llicencia->getPersona()->getNomCognoms();
+	        } 
 	    }
 	    // Buidar carrito
 	    $session = $this->get('session');
@@ -1232,7 +1248,7 @@ class PageController extends BaseController {
 	    try {
 	        if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
 	        
-	        $this->addProducteToCart(BaseController::PRODUCTE_IMPRESS_PLASTIC_ID, $total);
+	        $this->addProducteToCart(BaseController::PRODUCTE_IMPRESS_PLASTIC_ID, $total, $extra);
 	    
 	        if ($action == 'consultar') {
 	           $form = $this->formulariTransport();

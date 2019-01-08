@@ -3487,7 +3487,7 @@ class BaseController extends Controller {
         return $cart;
     }
     
-    protected function addProducteToCart($idProducte, $unitats)
+    protected function addProducteToCart($idProducte, $unitats, $extra = array())
     {
         $cart = $this->getSessionCart();	
         
@@ -3519,12 +3519,14 @@ class BaseController extends Controller {
                     'transport'		=> $producte->getTransport(),
                     'pes'			=> 0,
                     'unitats' 		=> $unitats,
+                    'extra'         => count($extra) > 0?$extra:'',
                     'import' 		=> $import
             );
         } else {
             $cart['productes'][$idProducte]['unitats'] += $unitats;
+            if (count($extra) > 0) $cart['productes'][$idProducte]['extra'] = $extra;
         }
-            
+
         $unitats = $cart['productes'][$idProducte]['unitats'];
             
         if ($producte->getTransport() && $unitats > 0) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes();

@@ -86,6 +86,8 @@ reloadLlistaLlicencies = function(url) {
 			 
 			$(".error-block").html(sms);
 		}
+
+		$('#parte_renovar_dataalta').val(resposta.dataalta);
 		
 		$('#llicencies-anuals-renovar').html(resposta.data); 
 
@@ -136,7 +138,9 @@ submitLlistaLlicencies = function(urlSubmit, params) {
 				 
 				$(".error-block").html(sms);
 			}
-					
+
+			$('#parte_renovar_dataalta').val(resposta.dataalta);
+			
 			$('#llicencies-anuals-renovar').html(resposta.data); 
 
 			if ($(".renovar-checkbox:checked").length == 0) {
@@ -182,18 +186,18 @@ $(document).ready(function(){
 			placeholder: 'Escollir club'
 		});
 
-		// Delegate
-		//$( "#llicencies-anuals-renovar" ).on( "change", "select#parte_clubs, select#parte_anyrenova", function( e ) {
-		$("select#parte_renovar_clubs, select#parte_renovar_anyrenova").change(function() {
-			var cerca = $('select#parte_renovar_clubs').val();
-			var selectedAnyRenova = $('select#parte_renovar_anyrenova').val();
-			var uncheckPersones = $('#parte_renovar_uncheckpersones').val();
-
-			urlReload = url+'?page=1&clubs='+cerca+'&anyrenova='+selectedAnyRenova+'&uncheckpersones='+uncheckPersones;	
-			reloadLlistaLlicencies(urlReload);
-	    });
 	{% endif %}
 
+	// Delegate
+	//$( "#llicencies-anuals-renovar" ).on( "change", "select#parte_clubs, select#parte_anyrenova", function( e ) {
+	$("select#parte_renovar_clubs, select#parte_renovar_anyrenova").change(function() {
+		var cerca = $('select#parte_renovar_clubs').val();
+		var selectedAnyRenova = $('select#parte_renovar_anyrenova').val();
+		var uncheckPersones = $('#parte_renovar_uncheckpersones').val();
+
+		urlReload = url+'?page=1&clubs='+cerca+'&anyrenova='+selectedAnyRenova+'&uncheckpersones='+uncheckPersones;	
+		reloadLlistaLlicencies(urlReload);
+    });
 
 	$("#submit-renovar").click(function(e) {
 		e.preventDefault();

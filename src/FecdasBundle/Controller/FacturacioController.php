@@ -2229,6 +2229,7 @@ class FacturacioController extends BaseController {
 				
 				$cart = $this->getSessionCart();
 				
+				$extra = array();
 				foreach ($cart['productes'] as $id => $info) {
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($id);
 					
@@ -2238,6 +2239,8 @@ class FacturacioController extends BaseController {
 					
 					$anotacions = $info['unitats'].'x'.$info['descripcio'];
 		
+					if (isset($info['extra']) && $info['extra'] != '') $extra[$id] = $info['extra'];
+					
 					$this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
 				}
 				
@@ -2259,8 +2262,16 @@ class FacturacioController extends BaseController {
 				// Validacions comuns i anotacions stock
 				$this->tramitarComanda($comanda);
 
-				$this->crearFactura($comanda, $datafacturacio, '', $comptefactura);
+				$factura = $this->crearFactura($comanda, $datafacturacio, '', $comptefactura);
 			
+				if (count($extra) > 0) {
+    				$detalls = $comanda->getDetallsAcumulats();
+                    foreach(array_keys($detalls) as $id){
+                        if (isset($extra[$id])) $detalls[$id]['extra'] = $extra[$id];
+                    }
+    				$factura->setDetalls(json_encode($detalls)); // Desar estat detalls a la factura
+				}
+				
 				$em ->flush();
 			
 				// Enviar notificació mail Albert si és una comanda de Kits

@@ -141,7 +141,7 @@ class BaseController extends Controller {
 	
 	// Templates plàstic
 	const TEMPLATE_GENERAL = 'G0';
-	const TEMPLATE_TIPUS_F = 'F0';
+	const TEMPLATE_PESCA = 'F0';
 	const TEMPLATE_TECNOCAMPUS_1 = 'T1';
 	const TEMPLATE_TECNOCAMPUS_2 = 'T2';
 	const TEMPLATE_ESCOLAR = 'ES';
@@ -151,6 +151,7 @@ class BaseController extends Controller {
 	const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664.jpg';
 	const IMATGE_ANVERS_ESCOLAR        = 'images/fonsanysescolar_1024x664.jpg';
 	const IMATGE_ANVERS_TECNOCAMPUS    = 'images/fonstecnocampus_910x600.jpg';
+	const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602.jpg';
 	
 	const IMATGE_LOGO_FECDAS       = 'images/fecdaslogopdf.gif';
 	const IMATGE_LOGO_GENE         = 'images/logo-generalitat.jpg';
@@ -2094,41 +2095,53 @@ class BaseController extends Controller {
 		);
 	}
 	
-	protected function printLlicenciaG0pdf( $llicencia ) {
+	protected function printLlicenciaG0pdf( $request, $llicencia ) {
 		$yLinks = 77;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
-				array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
-				array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+				array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+				array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 				
 		$pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_GENERAL );
 		
 		return $pdf;
 	}
 	
-	protected function printLlicenciaESpdf( $llicencia ) {
+	protected function printLlicenciaESpdf( $request, $llicencia ) {
 		$yLinks = 77;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
-				array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
-				array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)));
+		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
+				array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
+				array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)));
 				
 		$pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_ESCOLAR );
 		
 		return $pdf;
 	}
 	
-	protected function printLlicenciaCSpdf( $llicencia ) {
+	protected function printLlicenciaCSpdf( $request, $llicencia ) {
 		$yLinks = 67;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
-						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
-						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)),
-						array('text'=> 'pòlissa busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
-						array('text'=> 'protocol busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
-						array('text'=> 'comunicat busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
+						array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
+						array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)),
+						array('text'=> 'pòlissa busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+						array('text'=> 'protocol busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+						array('text'=> 'comunicat busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 				
 		$pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_ESCOLAR_SUBMARINISME );
 		
 		return $pdf;
 	}
+	
+	protected function printLlicenciaF0pdf( $request, $llicencia ) {
+	    $yLinks = 77;
+	    $links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+	        array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+	        array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+	    
+	    $pdf = $this->printDigitalFecdas( $llicencia, $links, $yLinks, BaseController::TEMPLATE_PESCA );
+	    
+	    return $pdf;
+	}
+	
 		
 	private function printDigitalFecdas( $llicencia, $links, $yLinks, $template ) {
 		
@@ -2138,21 +2151,79 @@ class BaseController extends Controller {
 		
 	    //$width = 150; => 86         Mida nova = Mida actual * 86/150
 	    //$height = 90; => 54         Mida nova = Mida actual * 54/90
+	    
 	    $factor_w = 86/150;    //  0.573
 	    $factor_h = 54/90;     //  0.6
 	    
 	    $x_titols = 5*$factor_w;
-		
-		// Posicions
-		$xTit = 0;
-		$yTit =	($template == BaseController::TEMPLATE_GENERAL?12:8)*$factor_h;
-		$offset = ($template == BaseController::TEMPLATE_GENERAL?3:5)*$factor_h;		
+	    
+	    // Posicions
+	    $xTit = 0;
+	    $yTit =	0;
+	    $yCad = 0;
+	    $yNai =	0;
+	    $offset = 0;
+	    $title = "";
+	    $image = "";
+	    $textShadow1 = array();
+	    $textShadow2 = array();
+	    $fontSize = 8.5;
+	    $marginRight = "";
+	    $linksColor = array();
+	    
+	    switch ($template) {
+	        case BaseController::TEMPLATE_ESCOLAR:
+	        case BaseController::TEMPLATE_ESCOLAR_SUBMARINISME:
+	            $yTit =	8*$factor_h;
+	            $offset = 5*$factor_h;
+	            $yNai =	58*$factor_h-$offset;
+	            $title = 'Llicència Curs Escolar FECDAS' . date("Y");
+	            $image = BaseController::IMATGE_ANVERS_ESCOLAR;
+	            $fontSize = 9;
+	            $textShadow1 = array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal');
+	            $textShadow2 = array('enabled' => true, 'depth_w' => 0.3, 'depth_h' => 0.3, 'color' => array(53,153,179), 'opacity' => 0.6, 'blend_mode' => 'Normal');
+	            $linksColor  = array(53,153,179);
+	            $yCad = (count($links) <= 3 ? 70*$factor_h-$offset: $yNai-0.2);
+	            
+	            break;
+	            
+	        case BaseController::TEMPLATE_PESCA:
+	            $yTit =	16*$factor_h;
+	            $offset = 3*$factor_h;
+	            $yCad = 71*$factor_h-$offset;
+	            $yNai =	58*$factor_h-$offset;
+	            $title = 'Llicència Pesca submarina' . date("Y");
+	            $image = BaseController::IMATGE_ANVERS_PESCA;
+	            $textShadow1 = array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.75, 'blend_mode' => 'Normal');
+	            $textShadow2 = array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.6, 'blend_mode' => 'Normal');
+	            $marginRight = 10*$factor_w;
+	            $linksColor = array(39,65,140);
+	            
+	            break;
+	            
+	        default:       //  case BaseController::TEMPLATE_GENERAL:
+	            $yTit =	12*$factor_h;
+	            $offset = 3*$factor_h;
+	            $yCad = 71*$factor_h-$offset;
+	            $yNai =	58*$factor_h-$offset;
+	            $title = 'Llicència FECDAS' . date("Y");
+	            $image = BaseController::IMATGE_ANVERS_GENERAL;
+	            $textShadow1 = array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.75, 'blend_mode' => 'Normal');
+	            $textShadow2 = array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.6, 'blend_mode' => 'Normal');
+	            $marginRight = 10*$factor_w;
+	            $linksColor = array(39,65,140);
+	            
+	            break;
+	    }
+	    
+		//$yTit =	($template == BaseController::TEMPLATE_GENERAL?12:8)*$factor_h;
+		//$offset = ($template == BaseController::TEMPLATE_GENERAL?3:5)*$factor_h;		
 		$yNom =	40*$factor_h-$offset;		
 		$yDni =	46*$factor_h-$offset;	
 		$yCat =	52*$factor_h-$offset;		
 		$yNai =	58*$factor_h-$offset;
-		if ($template == BaseController::TEMPLATE_GENERAL) $yCad = 71*$factor_h-$offset;		
-		else $yCad = (count($links) <= 3 ? 70*$factor_h-$offset: $yNai-0.2);
+		//if ($template == BaseController::TEMPLATE_GENERAL) $yCad = 71*$factor_h-$offset;		
+		//else $yCad = (count($links) <= 3 ? 70*$factor_h-$offset: $yNai-0.2);
 		$yClu =	65*$factor_h-$offset;		
 		$yTlf =	$yClu-0.3;	
 		
@@ -2169,8 +2240,7 @@ class BaseController extends Controller {
 		$format = \TCPDF_STATIC::getPageSizeFromFormat('BUSINESS_CARD_ISO7810');
 		$pdf = new TcpdfBridge('L', PDF_UNIT, $format, true, 'UTF-8', false);
 		
-		$pdf->init(array('author' => 'FECDAS',
-		              'title' => ($template == BaseController::TEMPLATE_GENERAL?'Llicència FECDAS':'Llicència Curs Escolar FECDAS') . date("Y")));
+		$pdf->init(array('author' => 'FECDAS', 'title' => $title));
 
 		$pdf->setPrintFooter(false);
 		$pdf->setPrintHeader(false);
@@ -2186,7 +2256,7 @@ class BaseController extends Controller {
 			
 		$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 		
-		$srcImatge = ($template == BaseController::TEMPLATE_GENERAL?BaseController::IMATGE_ANVERS_GENERAL:BaseController::IMATGE_ANVERS_ESCOLAR);
+		$srcImatge = $image;
 		
 		$pdf->Image($srcImatge, 0, 0, $pdf->getPageWidth(), $pdf->getPageHeight(), 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
@@ -2208,13 +2278,8 @@ class BaseController extends Controller {
 //		$pdf->SetFillColor(224,224,224);
 //		$pdf->SetAlpha(0.7);
 	
-		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
-		else $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.5, 'depth_h' => 0.5, 'color' => array(53,153,179), 'opacity' => 0.75, 'blend_mode' => 'Normal'));
-		if ($template == BaseController::TEMPLATE_GENERAL) {
-		    $pdf->SetFont('dejavusans', 'B', 8.5, '', true);
-		} else {
-		    $pdf->SetFont('dejavusans', 'B', 9, '', true);
-		}
+		$pdf->setTextShadow($textShadow1);
+		$pdf->SetFont('dejavusans', 'B', $fontSize, '', true); 
 		$pdf->setFontStretching(100);		
 		//$pdf->SetXY($xTit, $yTit);
 		$pdf->MultiCell(0,0,$titolPlastic,0,'C', 0, 0, $xTit, $yTit);
@@ -2223,9 +2288,7 @@ class BaseController extends Controller {
 		$pdf->SetFont('dejavusans', 'B', 7);
 		$pdf->SetTextColor(255, 255, 255);
 
-		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.2, 'depth_h' => 0.2, 'color' => array(39,65,140), 'opacity' => 0.6, 'blend_mode' => 'Normal'));		
-		else $pdf->setTextShadow(array('enabled' => true, 'depth_w' => 0.3, 'depth_h' => 0.3, 'color' => array(53,153,179), 'opacity' => 0.6, 'blend_mode' => 'Normal'));
-		
+		$pdf->setTextShadow($textShadow2);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yNom, '<span style="font-size: small;">Nom: </span>'.$persona->getNomCognoms(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yDni, '<span style="font-size: small;">DNI/Passaport: </span>'.$persona->getDni(), 0, 0, false, true, 'L', true);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCat, '<span style="font-size: small;">Categoria/Nivell: </span>'.$llicencia->getCategoria()->getCategoria(), 0, 0, false, true, 'L', true);
@@ -2237,7 +2300,7 @@ class BaseController extends Controller {
 		$pdf->SetX(20*$factor_w);
 		$pdf->Cell(75*$factor_w, 0, $club->getNom(), 0, 0, 'L', false, '', 1);
 		
-		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetRightMargin(10*$factor_w);
+		if ($marginRight != "") $pdf->SetRightMargin($marginRight);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
 		$pdf->SetFont('dejavusans', 'B', 6);
@@ -2253,9 +2316,9 @@ class BaseController extends Controller {
 		$margins = $pdf->getMargins();
 		$width = $pdf->getPageWidth() - $margins['left'] - $margins['right'];
 		
-		
-		if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetTextColor(39,65,140);
-		else  $pdf->SetTextColor(53,153,179);
+		//if ($template == BaseController::TEMPLATE_GENERAL) $pdf->SetTextColor(39,65,140);
+		//else  $pdf->SetTextColor(53,153,179);
+		$pdf->SetTextColor($linksColor);
 		$pdf->SetFont('helvetica', 'B', 6, '', true);
 
 		$margins = $pdf->getMargins();
@@ -2285,27 +2348,27 @@ class BaseController extends Controller {
 	}	
 		
 		
-	protected function printLlicenciaT1pdf( $llicencia ) {
+	protected function printLlicenciaT1pdf( $request, $llicencia ) {
 	
 		$yLinks = 70;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
-						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
-						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)));
+		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
+						array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
+						array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)));
 						
 		$pdf = $this->printDigitalTecnocampus( $llicencia, $links, $yLinks );
 		
 		return $pdf;
 	}
 	
-	protected function printLlicenciaT2pdf( $llicencia ) {
+	protected function printLlicenciaT2pdf( $request, $llicencia ) {
 	
 		$yLinks = 67;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
-						array('text'=> 'protocol', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
-						array('text' => 'comunicat', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)),
-						array('text'=> 'pòlissa busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
-						array('text'=> 'protocol busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
-						array('text'=> 'comunicat busseig', 'link'=> $this->getRequest()->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
+						array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
+						array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)),
+						array('text'=> 'pòlissa busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+						array('text'=> 'protocol busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+						array('text'=> 'comunicat busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 		
 	
 		$pdf = $this->printDigitalTecnocampus( $llicencia, $links, $yLinks );
@@ -2479,7 +2542,7 @@ class BaseController extends Controller {
 			// Add a page
 			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TIPUS_F ||
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_PESCA ||
 			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
 			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME) {
 			        $this->printPlasticGeneral($pdf, $llicencia);

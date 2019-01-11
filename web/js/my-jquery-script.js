@@ -1496,7 +1496,7 @@
 
     	addLlicenciaClick();
     	
-    	selectAllChecks();
+    	//selectAllChecks();
     	
 	    $("#formparte-llicencia .close").click(function (e) {
 	        //Cancel the link behavior
@@ -1652,16 +1652,16 @@
 				$('#progressbar').hide();  // Rellotge
 		    	
 		    	$("#llista-llicencies").html(data);
-				
-	        	if ($("#parte_id").val() == 0 && $("#header-llicenciaparteid").length)	{
+			
+	        	if ($("#parte_id").val() == 0 && $(".header-llicenciaparteid").length)	{
 	        		
-	        		url = $("#formparte").attr("action")+'?id='+$("#header-llicenciaparteid").html();
+	        		url = $("#formparte").attr("action")+'?id='+$(".header-llicenciaparteid").html();
 	        		
 	        		window.location = url;
 	        		
 	        		/*
 	        		// Creació del parte si no hi ha error. reload
-					$("#parte_id").val($("#header-llicenciaparteid").html());
+					$("#parte_id").val($(".header-llicenciaparteid").html());
 	        		
 	        		// Parte nou creat, deixa només el tipus de parte seleccionat
 					$("#parte_tipus option:not(:selected)").each(function(i, item){
@@ -1682,7 +1682,7 @@
 
 					$(".buttons-top").show();
 	        		 	*/
-					//window.location = window.location.pathname + '?id=' + $("#header-llicenciaparteid").html(); 
+					//window.location = window.location.pathname + '?id=' + $(".header-llicenciaparteid").html(); 
 	        	};
 		    	
 				removeLlicenciaClick();
@@ -2006,6 +2006,7 @@
     	params.push( {'name':'baixa','value': ($('#form_baixa').is(':checked'))?1:0} );
     	params.push( {'name':'nopagat','value': ($('#form_nopagat').is(':checked'))?1:0} );
     	params.push( {'name':'noimpres','value': ($('#form_noimpres').is(':checked'))?1:0} );
+    	params.push( {'name':'noenviat','value': ($('#form_noenviat').is(':checked'))?1:0} );
     	params.push( {'name':'compta','value': ($('#form_compta').is(':checked'))?1:0} );
     	
     	//params.push( {'name':'nosincro','value': ($('#form_nosincro').is(':checked'))?1:0} );

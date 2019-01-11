@@ -170,7 +170,7 @@
     	
     	{% if parte.esnova == true %}
     		$('#parte_tipus').val(0);
-    		if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
+    		//if ($('#formparte-novallicencia option').length > 1) $('#formparte-novallicencia').hide();
     
     		var current = new Date();
    			var mindate = new Date( {{ datesparte['min']['any'] }}, {{ datesparte['min']['mes'] }} - 1, {{ datesparte['min']['dia'] }});	

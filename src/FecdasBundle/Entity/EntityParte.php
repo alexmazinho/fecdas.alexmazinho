@@ -225,7 +225,8 @@ class EntityParte extends EntityComanda {
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 ||
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME ||
-				$this->tipus->getTemplate() == BaseController::TEMPLATE_GENERAL;
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_GENERAL ||
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_PESCA;
 	}
 	
 	/**
@@ -739,6 +740,7 @@ class EntityParte extends EntityComanda {
 		$datamaxedicio->add(BaseController::getIntervalConsolidacio()); // Add 20 minutes
 		
 		return $datamaxedicio->format('Y-m-d H:i:s') >= date('Y-m-d H:i:s');
+		
 		
     	/*return (boolean) $this->comandaPagada() == false && 
     			$this->dataalta->format('Y-m-d') >= $currentdate->format('Y-m-d');*/

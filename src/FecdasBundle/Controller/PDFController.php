@@ -1038,7 +1038,7 @@ class PDFController extends BaseController {
 		
 			if (!method_exists($this, $method)) throw new \Exception("Error generant la llicència. No existeix la plantilla"); 		
 
-			$pdf = $this->$method( $llicencia );
+			$pdf = $this->$method( $request, $llicencia );
 			
 			$this->logEntryAuth('LLICENCIA DIGITAL OK ', $llicenciaid);
 				

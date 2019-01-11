@@ -1400,7 +1400,7 @@ class PageController extends BaseController {
                         $llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);
 	                        
                         if ($llicencia != null) {
-                            $this->enviarMailLlicencia($club, $llicencia, $cursAny, $template);
+                            $this->enviarMailLlicencia($request, $club, $llicencia, $cursAny, $template);
 	                            
                             $enviades++;
                             $res .= $llicenciaArray['nom']. ' '.($llicenciaArray['mail'] != ''?$llicenciaArray['mail']:'(Correu del club) '.$club->getMail()).'</br>';
@@ -1477,7 +1477,7 @@ class PageController extends BaseController {
             );
 	}
 	
-	private function enviarMailLlicencia($club, $llicencia, $cursAny, $template) {
+	private function enviarMailLlicencia($request, $club, $llicencia, $cursAny, $template) {
 	    if ($club == null) throw new \Exception("Error en les dades del club");
 	    
 	    if ($llicencia == null) throw new \Exception("Error en les dades de la llicència");
@@ -1515,7 +1515,7 @@ class PageController extends BaseController {
 	        
 	        if (!method_exists($this, $method)) throw new \Exception("Error generant la llicència. No existeix la plantilla");
 	        
-	        $pdf = $this->$method( $llicencia );
+	        $pdf = $this->$method( $request, $llicencia );
 	        
 	        $nom =  "llicencia_".$cursAny."_".$llicencia->getId()."_".$llicencia->getPersona()->getDni().".pdf";
 	        

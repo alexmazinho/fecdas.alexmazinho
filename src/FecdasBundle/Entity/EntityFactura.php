@@ -112,7 +112,7 @@ class EntityFactura {
 
 		if ($comanda != null) {
 			if ($import == 0) $this->import = $comanda->getTotalDetalls();
-			if ($iva == 0) $this->iva = $comanda->getTotalIVADetalls();
+			if ($iva == 0 && $this->import > 0) $this->iva = $comanda->getTotalIVADetalls();
 			
 			if (trim($concepte) == '') $this->concepte = $comanda->getConcepteComanda();
 			if ($detalls == null || count($detalls) == 0) {

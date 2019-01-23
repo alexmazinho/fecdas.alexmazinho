@@ -160,7 +160,7 @@ class BaseController extends Controller {
 	const IMATGE_BUTTON            = 'images/white_button.png';
 	
 	// Docs assegurança
-	const POLISSA_BUSSEIG = 'polissa_busseig_2018.pdf';
+	const POLISSA_BUSSEIG = 'polissa_busseig_2019.pdf';
 	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2018-19.pdf';
 	const POLISSA_ESCOLAR = 'polissa_escolar_2018-19.pdf';
 	
@@ -2023,6 +2023,9 @@ class BaseController extends Controller {
 		return $this->textLlicenciaFecdasmail($curs); 
 	}
 
+	protected function textLlicenciaF0mail( $curs ) {
+	    return $this->textLlicenciaFecdasmail($curs);
+	}
 
 	private function textLlicenciaFecdasmail( $curs ) {
 		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
@@ -3165,7 +3168,7 @@ class BaseController extends Controller {
 			
 			$import += $detall->getTotal(true);
 			$iva += $detall->getIva(true);
-
+			
 			$concepte .= $unitats.'x'.$producte->getDescripcio().' ';
 			
 			//$detallsFactura[$producte->getCodi()] = $detall->getDetallsArray(true);
@@ -3200,7 +3203,7 @@ class BaseController extends Controller {
 		} */
 
 		$maxNumFactura = $this->getMaxNumEntity($datafactura->format('Y'), BaseController::FACTURES) + 1;
-		
+
 		$factura = new EntityFactura($datafactura, $maxNumFactura, $comanda, $import, $iva, $concepte, $detallsFactura, $this->getIbanGeneral());
 		
 		$em->persist($factura);
@@ -3574,6 +3577,7 @@ class BaseController extends Controller {
         }
             
         $import = $producte->getPreuAny(date('Y'));
+        $iva = $producte->getIvaAny(date('Y')); /* % IVA aplicar */
             
         if ( !isset( $cart['productes'][$idProducte] ) ) {
             $cart['productes'][$idProducte] = array(
@@ -3583,7 +3587,8 @@ class BaseController extends Controller {
                     'pes'			=> 0,
                     'unitats' 		=> $unitats,
                     'extra'         => count($extra) > 0?$extra:'',
-                    'import' 		=> $import
+                    'import' 		=> $import,
+                    'iva'           => $iva
             );
         } else {
             $cart['productes'][$idProducte]['unitats'] += $unitats;
@@ -3660,7 +3665,11 @@ class BaseController extends Controller {
     {
         $total = 0;
         foreach ($cart['productes'] as $info) {
-            $total += $info['unitats']*$info['import'];
+            $factorIVA = 1;
+            if (isset($info['iva']) && is_numeric($info['iva'])) $factorIVA += $info['iva'];
+            
+            $total += $info['unitats']*$info['import']*$factorIVA;
+
         }
         return $total;
     }

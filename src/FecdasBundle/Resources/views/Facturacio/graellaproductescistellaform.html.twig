@@ -1,17 +1,24 @@
 	<table>
 		{% set total = 0 %}
 		{% for idProducte, item in cart.productes  %}
-	   		<tr>
+			{% set iva = 0 %}
+			<tr>
 	   			<td>{{ item.unitats }} x </td>
 	   			<td>{{ item.abreviatura }} - {{ item.descripcio }} ({{ item.import|number_format(2, ',', '.') }} €/u)</td>
-	   			<td>{{ (item.import * item.unitats)|number_format(2, ',', '.') }}€</td>
+	   			<td>
+	   			    {{ (item.import * item.unitats)|number_format(2, ',', '.') }}€
+	   			    {% if item.iva is defined and item.iva > 0 %}
+	   			    	{% set iva = (item.import * item.unitats)*item.iva %}
+	   			    	<br/><span class="red">IVA {{ ((item.import * item.unitats)*item.iva)|number_format(2, ',', '.') }}€</span>
+	   			    {% endif %}	
+	   			</td>
 	   			<td>
 	   				{% if allowremove %}
 		   				<a class="producte-action-remove-cart link" href="{{ path('FecdasBundle_treurecistella', { 'id': idProducte, 'tipus' : tipus }) }}" alt="Treure de la cistella" title="Treure de la cistella"><i class="fa fa-remove red"></i></a>
 	   				{% endif %}
 	   			</td>
 	   		</tr>
-	   		{% set total = total + (item.import * item.unitats) %}
+	   		{% set total = total + (item.import * item.unitats) + iva %}
 		{% endfor %}
 		{% if cart.tarifatransport > 0 %}
 			<tr class="cistella-transport">

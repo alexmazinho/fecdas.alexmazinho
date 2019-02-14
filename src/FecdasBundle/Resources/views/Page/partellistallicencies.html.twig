@@ -78,13 +78,13 @@
     				   	<th class="header-llicenciadni th-listheader col-listheader collistheader-noorder">DNI</th>
     				   	<th class="header-llicenciamail th-listheader col-listheader data-detall-cell-left collistheader-noorder">Correu</th>
     				   	<th class="header-llicenciacategoria th-listheader col-listheader collistheader-noorder">Categoria</th>
-    				   	{% if parte.perImprimir %}
+    				   	{% if not parte.esNova() and parte.perImprimir %}
         				   	<th class="header-llicenciacheckplastic th-listheader col-listheader data-detall-cell-center">
         				   		<i class="fa fa-address-card-o fa-1x green"></i><br/>
         				   		<div class="checkbox-inline"><label><input id="parte_plastics_checkall" name="parte_plastics_checkall" value="0" type="checkbox"> <i class="fa fa-check-circle fa-1x"></i></label></div>
         				   	</th>
     				   	{% endif %}
-    				   	{% if admin == true %}
+    				   	{% if not parte.esNova() and admin == true %}
         				   	<th class="header-llicenciacheck th-listheader col-listheader data-detall-cell-center">
         				   		<i class="fa fa-remove fa-1x red"></i><br/>
         				   		<div class="checkbox-inline"><label><input id="parte_baixes_checkall" name="parte_baixes_checkall" value="0" type="checkbox"> <i class="fa fa-check-circle fa-1x"></i></label></div>
@@ -102,7 +102,7 @@
        					<td class="data-detall-cell llicencia-dni">{{ llicencia.persona.dni }}</td>
        					<td class="data-detall-cell data-detall-cell-left llicencia-mail">{{ llicencia.persona.mail }}</td>
        					<td class="data-detall-cell llicencia-categoria">{{ llicencia.categoria.categoria }}</td>
-       				   	{% if parte.perImprimir %}
+       				   	{% if not parte.esNova() and parte.perImprimir %}
            					<td class="data-detall-cell llicencia-checkplastic">
            					    {% if not llicencia.impresa and not llicencia.imprimir %}
                    					<div class="checkbox-inline"><input type="checkbox" autocomplete="off" class="check-llicencia-plastic" value="0" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][plastic]" id="form_llicencies_{{ loop.index0 }}_plastic"></div>
@@ -111,17 +111,17 @@
                    				{% endif %}
            					</td>
        					{% endif %}
-       					{% if admin == true %}
+       					{% if not parte.esNova() and admin %}
            					<td class="data-detall-cell llicencia-checkllicencia">
            						<div class="checkbox-inline"><input type="checkbox" class="check-llicencia-remove" value="0" data-id="{{ llicencia.id }}" name="form[llicencies][{{ loop.index0 }}][baixa]" id="form_llicencies_{{ loop.index0 }}_baixa"></div>
            					</td>
        					{% endif %}
        					<td class="data-detall-cell data-detall-cell-right llicenciaactions">
-       						{% if parte.allowPrintLlicencia == true %}
+       						{% if not parte.esNova() and parte.allowPrintLlicencia == true %}
            						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}" alt="llicència" title="llicència"><i class="fa fa-credit-card fa-1x orange"></i></a>
            					{% endif %}
            					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
-           					{% if admin == true %}
+           					{% if not parte.esNova() and admin %}
            						<a href="{{ path('FecdasBundle_llicencia') }}" value="{{ llicencia.id }}" class="link remove-llicencia" name="remove-llicencia" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>
            					{% endif %}
        					</td>

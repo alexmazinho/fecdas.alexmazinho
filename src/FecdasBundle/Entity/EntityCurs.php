@@ -537,14 +537,14 @@ class EntityCurs {
     }
 
 	/**
-	 * @return string
+	 * @return integer
 	 */
 	public function getNum() {
 		return $this->num;
 	}
 	
 	/**
-	 * @param string $num
+	 * @param integer $num
 	 */
 	public function setNum($num) {
 		$this->num = $num;

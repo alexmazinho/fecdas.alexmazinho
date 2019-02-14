@@ -137,7 +137,7 @@ class EntityParte extends EntityComanda {
 	{
 		return true;
 	}
-	
+
 	/**
 	 * Reescriptura
 	 */
@@ -847,7 +847,7 @@ class EntityParte extends EntityComanda {
      */
     public function allowPrintLlicencia()
     {
-    	if ($this->web == false) return false;  // No web no permet imprimir
+    	if (!$this->web) return false;  // No web no permet imprimir
     	
     	if ($this->comandaPagada()) return true; // Comanda pagada
     	

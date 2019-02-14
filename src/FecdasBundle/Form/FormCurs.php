@@ -52,6 +52,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('num', 'text', array(
 				'required' 	=> true,
 				'attr'		=>	array('readonly' => !$curs->finalitzat()),
+			    'mapped'	=> false,
 			    'data'  	=> $curs->getNumActa()
 			));
 			

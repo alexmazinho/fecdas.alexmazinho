@@ -19,6 +19,8 @@ class ServeisController extends BaseController {
 	 * 
 	 * Resposta: Format JSON 
 	 * 		resultat: 'OK' | 'KO' | 'ERROR'
+	 *      club: 'EL NOM DEL CLUB' 
+	 *      cif:  'EL CIF DEL CLUB'
 	 * 		text:	text de la resposta	en format UTF-8
 	 * 
 	 * 		'OK' => Llicència de competició existeix i està vigent
@@ -52,18 +54,77 @@ class ServeisController extends BaseController {
 
 			$em = $this->getDoctrine()->getManager();
 				
-			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityPersona p ";
+			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p ";
 			$strQuery .= " WHERE p.dni = :dni ";
-			$strQuery .= " AND p.databaixa IS NULL ";
 				
 			$query = $em->createQuery($strQuery)->setParameter('dni', $dni);
+
+			$metapersones = $query->getResult();
+			
+			if (count($metapersones) == 0) {
+			    $this->logEntryAuth('COMPETICIO KO', 'NO Metapersona Cap llicencia '.$dni.' '.($estranger == true?'estranger':'') );
+			    
+			    $response->setData(array('result' => 'KO',
+			                             'club'   => '',
+			                             'cif'    => '',
+			                             'text'   => 'Cap llicencia trobada amb les dades indicades, dni '.$dni));
+			    return $response;
+			}
+			
+			if (count($metapersones) > 1) {
+			    $this->logEntryAuth('COMPETICIO WARN', 'Varies persones mateix DNI '. $dni.' '.($estranger == true?'estranger':'') );
+			}
+			$metapersona = $metapersones[0];
+			
+			$llicenciaVigent = $metapersona->getLlicenciaVigent();
+			
+			if ($llicenciaVigent == null) {
+			    
+			    $darreraLlicencia = $metapersona->getLastLlicencia();
+			    
+			    if ($darreraLlicencia == null) {
+			        $this->logEntryAuth('COMPETICIO KO', 'Metapersona OK Cap llicencia '. $dni.' '.($estranger == true?'estranger':'') );
+			        
+			        $response->setData(array('result' => 'KO',
+                    			             'club'   => '',
+                    			             'cif'    => '', 
+                    			             'text' => 'Cap llicencia trobada amb les dades indicades, dni '.$dni));
+			        return $response;
+			    }
+			    $lastParte = $darreraLlicencia->getParte();
+			    
+			    $finalvigencia = $lastParte->getDataCaducitat()->format('Y-m-d H:i:s');
+			    
+			    // KO. caducada
+			    $this->logEntryAuth('COMPETICIO KO', 'Metapersona OK Darrera llicencia '.$finalvigencia.' '.$dni.' '.($estranger == true?'estranger':'') );
+			    
+			    $response->setData(array('result' => 'KO',
+                    			         'club'   => $lastParte->getClub()->getNom(),
+                    			         'cif'    => $lastParte->getClub()->getCif(),
+                        			     'text' => 'Darrera llicencia finalitzada el dia '.$finalvigencia));
+			    return $response;
+			}
+			$parteVigent = $llicenciaVigent->getParte();
+			
+			$finalvigencia = $parteVigent->getDataCaducitat()->format('Y-m-d H:i:s');
+			
+			// OK. vigència correcte
+			$this->logEntryAuth('COMPETICIO OK', $dni.' '.($estranger == true?'estranger':'') );
+			
+			$response->setData(array('result' => 'OK',
+			                         'club'   => $parteVigent->getClub()->getNom(),
+			                         'cif'    => $parteVigent->getClub()->getCif(),
+                    			     'text' => 'Llicencia vigent fins '.$finalvigencia));
+			return $response;
+			
+/*			
 			$persones = $query->getResult();
 	
 			$current = $this->getCurrentDate()->format('Y-m-d H:i:s');
 
 			if (count($persones) > 0) {
 				foreach ($persones as $persona) {
-					/* Obtenir llicències competició encara no caducades per aquesta persona */
+					// Obtenir llicències competició encara no caducades per aquesta persona 
 					$strQuery = "SELECT l FROM FecdasBundle\Entity\EntityLlicencia l INNER JOIN l.parte p ";
 					$strQuery .= " WHERE p.tipus IN (1, 4, 5, 7) ";
 					$strQuery .= " AND p.databaixa IS NULL ";
@@ -102,17 +163,24 @@ class ServeisController extends BaseController {
 					}
 				}
 			}
+*/
 		} catch (\Exception $e) {
 			$this->logEntryAuth('COMPETICIO ERROR', $e->getMessage() );
 			
 			$response->setStatusCode(Response::HTTP_OK);	
-			$response->setData(array('result' => 'ERROR', 'text' => $e->getMessage()));
+			$response->setData(array('result' => 'ERROR', 
+                    			     'club'   => '',
+                    			     'cif'    => '',
+                    			     'text' => $e->getMessage()));
 			return $response;
 		}
 
 		$this->logEntryAuth('COMPETICIO KO', $dni.' '.($estranger == true?'estranger':'') );
 		
-		$response->setData(array('result' => 'KO', 'text' => 'Cap llicencia trobada amb les dades indicades, dni '.$dni));
+		$response->setData(array(   'result' => 'KO',
+                        		    'club'   => '',
+                        		    'cif'    => '',
+                        		    'text' => 'Cap llicencia trobada amb les dades indicades, dni '.$dni));
 		return $response;
 	}
 	

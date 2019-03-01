@@ -2484,7 +2484,7 @@ input#formuserclub-randompassword { width: 150px; }
 /************************************************* Persona  ******************************************************/
 
 #edicio-persona {
-	z-index: 300;
+	z-index: 2000;
 }
 
 #edicio-persona h3 {
@@ -3609,7 +3609,7 @@ li.parte-pendent-sincro .parterecents-actions {
   	position:absolute;
   	left: 0;
   	top: 0;
-  	z-index:200;
+  	z-index:1999;
   	background-color:#FFFFFF;
   	display:none;
 }

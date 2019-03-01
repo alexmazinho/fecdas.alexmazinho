@@ -208,6 +208,14 @@ class BaseController extends Controller {
     const CURS_TANCAT       = array('lletra' => 'T', 'text' => 'Tancat pel director. Pendent de validar pel club');
     const CURS_EDICIO       = array('lletra' => 'E', 'text' => 'El director està omplint les dades');
     
+    
+    const PROVINCIES_ALTRES = array("Albacete", "Alacant", "Almería", "Araba", "Álava", "Asturias", "Ávila", "Badajoz", "Illes Balears",
+                                    "Bizkaia", "Burgos", "Cáceres", "Cádiz", "Cantabria", "Castelló", "Ciudad Real", "Córdoba", "A Coruña", 
+                                    "Cuenca", "Gipuzkoa", "Granada", "Guadalajara", "Huelva", "Huesca", "Jaén", "León", "Lugo", "Madrid", 
+                                    "Málaga", "Murcia", "Navarra", "Ourense", "Palencia", "Las Palmas", "Pontevedra", "La Rioja", "Salamanca", 
+                                    "Santa Cruz de Tenerife", "Segovia", "Sevilla", "Soria", "Teruel", "Toledo", "València", "Valladolid", 
+                                    "Zamora", "Zaragoza", "Ceuta", "Melilla");
+    
 	// Titulacions
 	const TIPUS_TITOL_BUSSEIG	= 'BU';
 	const TIPUS_TITOL_TECNIC	= 'TE';
@@ -1998,7 +2006,7 @@ class BaseController extends Controller {
 	protected function textLlicenciaG0mail( $cursAny ) {
 		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa ".$cursAny;
 		
-		$body = "<div style=''><p>Benvolguda, benvolgut,</p>";
+		/*$body = "<div style=''><p>Benvolguda, benvolgut,</p>";
 		$body .= "<p style='text-align: justify;'>Vull donar-te la benvinguda al nou model de llicència de la FECDAS, que espero que sigui del teu grat.</p>";
 		$body .= "<p style='text-align: justify;'>Qualsevol comentari que ens vulguis fer, el tindrem molt en compte!</p>";
 		$body .= "<p style='text-align: justify;'>De la nostra banda, t’agraïm un cop mes la confiança que diposites en el teu club i en la FECDAS.</p>";
@@ -2006,7 +2014,23 @@ class BaseController extends Controller {
 		
 		$salutacio = "<p>Rep una abraçada!</p>";
 		$salutacio .= "<p>Salvador Punsola<br/>";
-		$salutacio .= "President de la FECDAS</p>";
+		$salutacio .= "President de la FECDAS</p>";*/
+		
+		
+		$body  = "<div style=''><p>Benvolgut/da esportista</p>";
+		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$cursAny.".</p>"; 
+		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
+		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
+		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d'incidents.</p>";
+		$body .= "<p style='text-align: justify;'><b>Recordeu que cal avisar al club en el moment de fer sortida al estranger</b>. enviant un e-mail a ";
+		$body .= "<a href='mailto:info@fecdas.cat'>info@fecdas.cat</a>";
+		$body .= " indicant el vostre nom complert, dies que esteu fora bussejant i el país.</p>";
+		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents i aquest enllaç et portarà als <b>descomptes</b> per ser Federat,</p>";
+		$body .= "<p style='text-align: justify;'><a href='http://www.fecdas.cat/docs/centres2019.pdf' target='_blank'>http://www.fecdas.cat/docs/centres2019.pdf</a></p>";
+		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p>";
+		
+		$salutacio = "<p>Cordialment,</p>";
+		$salutacio .= "<p>Equip FECDAS</p>";
 		
 		return array(
 			'subject' 	=> 	$subject,
@@ -2037,7 +2061,7 @@ class BaseController extends Controller {
 		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d’incidents.</p>";
 		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents.</p>";
 		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p></div>";
-		
+
 		$salutacio = "<p>Cordialment,</p>";
 		$salutacio .= "<p>Salvador Punsola<br/>";
 		$salutacio .= "President</p>";
@@ -4075,6 +4099,10 @@ class BaseController extends Controller {
 		$provincies = array();
 		foreach ($result as $res)
 			$provincies[$res['provincia']] = $res['provincia'];
+		
+		// Add altres províncies espanyoles	
+		foreach (self::PROVINCIES_ALTRES as $prov) $provincies[$prov] = $prov;
+			
 		return $provincies;
 	}
 	

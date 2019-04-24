@@ -421,7 +421,7 @@ class CronController extends BaseController {
 			$tomails = self::getCarnetsMails();
 			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';
 		}
-				
+			
 		$body = "<p>Benvolgut club ".$club->getNom()."</p>";
 		$body .= "<p>Us fem arribar els següents documents relacionats amb la comanda <b>".$comanda->getNumComanda()."</b> tramitada en data <b>".$comanda->getDataentrada()->format('d/m/Y')."</b></p>";
 		

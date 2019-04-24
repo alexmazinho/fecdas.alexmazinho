@@ -962,7 +962,7 @@ class SecurityController extends BaseController
 	   		}
 		} catch (\Exception $e) {
 			//$em->clear();
-            $em->refresh($club);
+		    if (!$nouclub) $em->refresh($club);
 
 			$this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
 			$this->logEntryAuth(($nouclub)?"CLUB NEW ":"CLUB UPD ". 'KO', 'club : ' . $clubCodi . ' - ' . $e->getMessage());

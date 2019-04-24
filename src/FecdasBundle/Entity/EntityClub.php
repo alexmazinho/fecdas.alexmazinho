@@ -27,6 +27,11 @@ class EntityClub {
 	protected $nom;
 	
 	/**
+	 * @ORM\Column(type="string", length=100, nullable=true)
+	 */
+	protected $nomfiscal;
+	
+	/**
      * @ORM\ManyToOne(targetEntity="EntityClubType")
      * @ORM\JoinColumn(name="tipus", referencedColumnName="id")
      */
@@ -299,6 +304,17 @@ class EntityClub {
         return $this->codi == BaseController::CODI_FECDAS;
     }
 	
+    /**
+     * Get nom factura, si está informat nomfiscal, en cas contrari nom 
+     *
+     * @return string
+     */
+    public function getNomfactura()
+    {
+        return $this->nomfiscal != null && $this->nomfiscal != ""?$this->nomfiscal:$this->nom;
+    }
+    
+    
 	/**
      * Add user, role, metadata
      *
@@ -786,6 +802,26 @@ class EntityClub {
     public function getNom()
     {
         return $this->nom;
+    }
+    
+    /**
+     * Set nomfiscal
+     *
+     * @param string $nomfiscal
+     */
+    public function setNomfiscal($nomfiscal)
+    {
+        $this->nomfiscal = substr($nomfiscal,0,100);
+    }
+    
+    /**
+     * Get nomfiscal
+     *
+     * @return string
+     */
+    public function getNomfiscal()
+    {
+        return $this->nomfiscal;
     }
 
     /**

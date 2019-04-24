@@ -1446,7 +1446,7 @@ class BaseController extends Controller {
 		//$w, $h, $txt, $border = 0, $align = 'J', $fill = false, $ln = 1, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true,
 		// 	$maxh = 0, $valign = 'T', $fitcell = false 
 		$pdf->SetFont('freesans', 'B', 11, '', true);
-		$pdf->MultiCell($w_half,5,$club->getNom(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 10, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$club->getNomfactura(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 10, true, 3, false, true, 5, 'M', true);
 		$pdf->SetFont('freesans', '', 11, '', true);
 		$pdf->MultiCell($w_half,5,$club->getAddradreca(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 15, true, 3, false, true, 5, 'M', true);
 		$pdf->MultiCell($w_half,5,$club->getAddrcp() . " - " . $club->getAddrpob(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 20, true, 3, false, true, 5, 'M', true);
@@ -1894,7 +1894,7 @@ class BaseController extends Controller {
 		$pdf->writeHTMLCell(0, 0, $x_header_row1, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
 		$pdf->SetTextColor(0, 0, 0); // Negre	
-		$pdf->MultiCell(80,0,$club->getNom(),0,'L',true, 1, $x_header_row1 + 25, $y_header_row2 - 0.5, true, 3, false, true, 5, 'M', true); // Amplada variable
+		$pdf->MultiCell(80,0,$club->getNomfactura(),0,'L',true, 1, $x_header_row1 + 25, $y_header_row2 - 0.5, true, 3, false, true, 5, 'M', true); // Amplada variable
 		$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
 		
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">NIF:&nbsp;';

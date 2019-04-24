@@ -93,6 +93,8 @@ class FormClub extends AbstractType {
 		
 		$builder->add('nom', 'text', array('attr' =>	array('readonly' => true)));
 		
+		$builder->add('nomfiscal', 'text', array('attr' =>	array('readonly' => true)));
+		
 		$builder->add('telefon', 'text', array(
 				'required'  => false,
 		));

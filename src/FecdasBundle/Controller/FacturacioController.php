@@ -3216,11 +3216,10 @@ class FacturacioController extends BaseController {
 		$datadesde->sub(new \DateInterval('P1Y')); // Substract 1 year	
 		
 		foreach ($comandesPendents as $comanda) {
-			if ($comanda->getNumFactures(true) == 1 &&
+			if (//$comanda->getNumFactures(true) == 1 &&
 				$comanda->getTotalComanda() > 0 &&
 			    $comanda->getDataentrada()->format('Y-m-d') > $datadesde->format('Y-m-d')) $comandes[] = $comanda;
-			
-			
+
 		}
 		
 		// Nou rebut
@@ -3283,7 +3282,7 @@ class FacturacioController extends BaseController {
 				
 			}
 		}				
-		
+
 		return $this->render('FecdasBundle:Facturacio:ingres.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'rebut' => $rebut, 'comandes' =>$comandes)));
 	}
@@ -3569,6 +3568,7 @@ class FacturacioController extends BaseController {
 				}
 				
 				// Import rebut > 0
+				
 				if ($rebut->getImport() - $total < -0.01) {
 				//if ($total > $rebut->getImport()) {	
 									

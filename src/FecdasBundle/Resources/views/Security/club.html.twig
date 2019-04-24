@@ -100,21 +100,30 @@
 							</div>
 						</div>
 					</div>
+					<div class="col-md-7">
+			  			<div class="space20">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Correu*</span>
+								{{ form_label(form.mail, 'Correu', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.mail, { 'attr': {'class': 'form-control','placeholder':'Correu *' } }) }}
+							</div>
+						</div>
+					</div>
+					<div class="col-md-5">
+			  			<div class="space20">
+			  				<div class="input-group">
+					    		<span class="input-group-addon input-group-addon-icon">Nom fiscal</span>
+								{{ form_label(form.nomfiscal, 'Nom fiscal', { 'label_attr': {'class': 'sr-only'} }) }}
+								{{ form_widget(form.nomfiscal, { 'attr': {'class': 'form-control','placeholder':'Nom fiscal' } }) }}
+							</div>
+						</div>
+					</div>
 					<div class="col-md-3">
 			  			<div class="space20">
 			  				<div class="input-group">
 					    		<span class="input-group-addon input-group-addon-icon">CIF*</span>
 								{{ form_label(form.cif, 'CIF', { 'label_attr': {'class': 'sr-only'} }) }}
 								{{ form_widget(form.cif, { 'attr': {'class': 'form-control','placeholder':'CIF *' } }) }}
-							</div>
-						</div>
-					</div>
-					<div class="col-md-4">
-			  			<div class="space20">
-			  				<div class="input-group">
-					    		<span class="input-group-addon input-group-addon-icon">Correu*</span>
-								{{ form_label(form.mail, 'Correu', { 'label_attr': {'class': 'sr-only'} }) }}
-								{{ form_widget(form.mail, { 'attr': {'class': 'form-control','placeholder':'Correu *' } }) }}
 							</div>
 						</div>
 					</div>

@@ -51,6 +51,7 @@ class FormClubAdmin extends FormClub {
 		});
 		
 		$builder->add('nom', 'text', array('attr'	=>	array('readonly' => false)));
+		$builder->add('nomfiscal', 'text', array('attr'	=>	array('readonly' => false)));
 		$builder->add('mail', 'email', array('attr'	=>	array('readonly' => false)));
 		$builder->add('cif', 'text', array('attr'	=>	array('readonly' => false)));
 		$builder->add('databaixa', 'date', array(

@@ -27,11 +27,14 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class PageController extends BaseController {
 	
 	public function indexAction() {
+	    if ($this->isAuthenticated()) if($redirect = $this->frontEndLoginCheck()) return $redirect;
+	    
 		return $this->render('FecdasBundle:Page:index.html.twig', $this->getCommonRenderArrayOptions()); 
 	}
 
 	public function contactAction(Request $request) {
-
+	    if ($this->isAuthenticated()) if($redirect = $this->frontEndLoginCheck()) return $redirect;
+	    
 		$contact = new EntityContact();
 
 		if ($this->get('session')->has('username')) $contact->setEmail($this->get('session')->get('username'));
@@ -83,10 +86,8 @@ class PageController extends BaseController {
 	public function importcsvAction(Request $request) {
 		
 		//$request->getSession()->getFlashBag()->clear();
-		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
 		if (!$this->getCurrentClub()->potTramitar()) {
 			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
 			$response = $this->redirect($this->generateUrl('FecdasBundle_partes', array('club'=> $this->getCurrentClub()->getCodi())));
@@ -224,8 +225,7 @@ class PageController extends BaseController {
 	
 	public function confirmcsvAction(Request $request) {
 		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		if (!$request->query->has('club') || 
 		    !$request->query->has('tipus') || 
@@ -372,13 +372,10 @@ class PageController extends BaseController {
 	
 	public function llicenciesfederatAction(Request $request) {
 	
-		if ($this->isAuthenticated() != true) return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), true)) return $redirect;
 	
 		$checkRole = $this->get('fecdas.rolechecker');
     	
-		if (!$checkRole->isCurrentInstructor() && !$checkRole->isCurrentFederat())
-					 return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
 		$user = $checkRole->getCurrentUser();
 		$llicencies = array();
 		$metapersona = null;
@@ -401,8 +398,7 @@ class PageController extends BaseController {
 	
 	public function partesAction(Request $request) {
 
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		$club = $this->getCurrentClub();
 		
@@ -481,7 +477,7 @@ class PageController extends BaseController {
 	
 	public function llicenciesParteAction(Request $request) {
 	
-		if ($this->isAuthenticated() != true) return new Response("");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		if (!$request->query->has('id')) return new Response("");
 	
@@ -498,8 +494,7 @@ class PageController extends BaseController {
 
 	public function busseigAction(Request $request) {
 
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		if ($request->getMethod() == 'POST') {
 			$formdata = $request->request->get('form');
@@ -554,6 +549,8 @@ class PageController extends BaseController {
 			$this->get('session')->set('url_request', $url_request);
 			return $this->redirect($this->generateUrl('FecdasBundle_login'));
 		}
+		
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 		
 		if (!$this->getCurrentClub()->potTramitar()) {
 			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
@@ -682,6 +679,8 @@ class PageController extends BaseController {
 	        $this->get('session')->set('url_request', $url_request);
 	        return $this->redirect($this->generateUrl('FecdasBundle_login'));
 	    }
+	    
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	    
 	    if (!$this->getCurrentClub()->potTramitar()) {
 	        $this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
@@ -967,8 +966,7 @@ class PageController extends BaseController {
 
 		if ($request->query->has('source') == false) $this->get('session')->getFlashBag()->clear(); // No ve de renovació
 		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		if (!$this->getCurrentClub()->potTramitar()) {
 			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
@@ -1032,8 +1030,10 @@ class PageController extends BaseController {
 
 	public function llicenciaAction(Request $request) {
 	
-		if (!$request->isXmlHttpRequest())  return new Response("<div class='sms-notice'>Error d'accés</div>");
+		//if (!$request->isXmlHttpRequest())  return new Response("<div class='sms-notice'>Error d'accés</div>");
 	
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+		
 		$em = $this->getDoctrine()->getManager();
 
 		$id = 0;
@@ -1246,7 +1246,8 @@ class PageController extends BaseController {
 	    $session = $this->get('session');
 	    $session->remove('cart');
 	    try {
-	        if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
+	        //if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
+	        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	        
 	        $this->addProducteToCart(BaseController::PRODUCTE_IMPRESS_PLASTIC_ID, $total, $extra);
 	    
@@ -1274,8 +1275,7 @@ class PageController extends BaseController {
 	
 	public function baixallicenciesAction(Request $request) {
 
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		if (!$this->getCurrentClub()->potTramitar()) {
 			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
@@ -1347,11 +1347,7 @@ class PageController extends BaseController {
 
 	public function llicenciespermailAction(Request $request) {
 	        
-	    if ($this->isAuthenticated() != true) {
-	        $response = new Response('Acció no permesa. Cal tornar a iniciar la sessió');
-	        $response->setStatusCode(500);
-	        return $response;
-	    }
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 	    if (!$this->getCurrentClub()->potTramitar()) {
 	        $response = new Response('Per poder fer aquest tràmit cal us poseu en contacte amb la Federació');
@@ -1748,8 +1744,7 @@ class PageController extends BaseController {
 	
 	public function duplicatsAction(Request $request) {
 	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
 		 
@@ -1916,9 +1911,9 @@ class PageController extends BaseController {
 	
 	public function duplicatsformAction(Request $request) {
 		// retorna els camps del formulari de duplicats de la petició   	
-		
-		if ($this->isAuthenticated() != true || 
-			!$request->query->has('carnet') ||
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
+		if (!$request->query->has('carnet') ||
 			!$request->query->has('persona')) return new Response("");
 
 		$em = $this->getDoctrine()->getManager();

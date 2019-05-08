@@ -1,3 +1,5 @@
+{% form_theme formpersona 'FecdasBundle:Includes:formtheming.html.twig' %}
+
 {% block formpersona_start %}
 {{ form_start(formpersona, {'action': path('FecdasBundle_persona'), 'method': 'POST', 'attr': {'class': 'modalform appform container-fluid', 'id':'formpersona'}}) }}
 	<a class="close" href="#"><img src="{{ asset('images/close.png') }}" style="cursor: pointer;"></a>
@@ -14,14 +16,16 @@
 					<div class="row">
         				<div id="formpersona-nom" class="col-md-5 col-sm-5 col-xs-5">
         				  	<div class="form-group">
-        						{{ form_label(formpersona.nom, 'Nom', { 'label_attr': {'class': 'sr-only'} }) }}
-        						{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom'} }) }}
-        					</div>{{ form_errors(formpersona.nom) }}
+        						{{ form_label(formpersona.nom, 'Nom*', { 'label_attr': {'class': 'sr-only'} }) }}
+        						{{ form_widget(formpersona.nom, { 'attr': {'class': 'form-control', 'placeholder': 'Nom*'} }) }}
+        						{{ form_errors(formpersona.nom) }}
+        					</div>
         				</div>
         				<div id="formpersona-cognoms"  class="col-md-7 col-sm-7 col-xs-7">
         					<div class="form-group">
-            					{{ form_label(formpersona.cognoms, 'Cognoms', { 'label_attr': {'class': 'sr-only'} }) }}
-            					{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'form-control', 'placeholder': 'Cognoms'} }) }}
+            					{{ form_label(formpersona.cognoms, 'Cognoms*', { 'label_attr': {'class': 'sr-only'} }) }}
+            					{{ form_widget(formpersona.cognoms, { 'attr': {'class': 'form-control', 'placeholder': 'Cognoms*'} }) }}
+            					{{ form_errors(formpersona.cognoms) }}
         					</div>
         				</div> 
         				
@@ -31,9 +35,10 @@
         				  	<div class="form-group">
         				  		<div  class="input-group">
         					  		<span class="input-group-addon"></span>
-        							{{ form_label(formpersona.datanaixement, 'Data de naixement', { 'label_attr': {'class': 'sr-only'}}) }}
-        							{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'Data de naixement' } }) }}
+        							{{ form_label(formpersona.datanaixement, '*Data naixement', { 'label_attr': {'class': 'sr-only'}}) }}
+        							{{ form_widget(formpersona.datanaixement, { 'attr': {'class': 'form-control form-control-center', 'placeholder': '*Data de naixement' } }) }}
         							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+        							{{ form_errors(formpersona.datanaixement) }}
         						</div>
         					</div>
         				</div>
@@ -53,13 +58,14 @@
         			  		<div class="form-group">
         				  		<div class="input-group">
         				  			<span class="input-group-addon"></span>				
-        							{{ form_label(formpersona.dni, 'DNI', { 'label_attr': {'class': 'sr-only'} }) }}
-        							{{ form_widget(formpersona.dni, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'DNI'} }) }}
+        							{{ form_label(formpersona.dni, 'DNI*', { 'label_attr': {'class': 'sr-only'} }) }}
+        							{{ form_widget(formpersona.dni, { 'attr': {'class': 'form-control form-control-center', 'placeholder': 'DNI*'} }) }}
         							<span id="help-dni" class="input-group-addon input-group-addon-action">
         								<a class="" href="javascript:void(0);">
         									<i class="fa fa-info-circle fa-lg"></i>
         								</a>
         							</span>
+        							{{ form_errors(formpersona.dni) }}
         						</div>
         					</div>			
         				</div>
@@ -86,6 +92,7 @@
         							{{ form_label(formpersona.telefon1, 'Telf1', { 'label_attr': {'class': 'sr-only'} }) }}
         							{{ form_widget(formpersona.telefon1, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon' } }) }}
         							<span class="input-group-addon"></span>
+        							{{ form_errors(formpersona.telefon1) }}
         						</div>
         					</div>
         				</div>
@@ -96,6 +103,7 @@
         							{{ form_label(formpersona.telefon2, 'Telf2', { 'label_attr': {'class': 'sr-only'} }) }}
         							{{ form_widget(formpersona.telefon2, { 'attr': {'class': 'form-control', 'placeholder': 'Telèfon'} }) }}
         							<span class="input-group-addon"></span>
+        							{{ form_errors(formpersona.telefon2) }}
         						</div>
         					</div>
         				</div>

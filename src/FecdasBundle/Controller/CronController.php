@@ -533,7 +533,7 @@ class CronController extends BaseController {
 
 		if (!$this->getCurrentClub()->potTramitar()) {
 			$this->get('session')->getFlashBag()->add('error-notice',$this->getCurrentClub()->getInfoLlistat());
-			$response = $this->redirect($this->generateUrl('FecdasBundle_dadespersonals'));
+			$response = $this->redirect($this->generateUrl('FecdasBundle_dadesfederats'));
 			return $response;
 		}
 		

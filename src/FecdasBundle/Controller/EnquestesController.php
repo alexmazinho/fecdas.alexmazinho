@@ -13,8 +13,7 @@ use FecdasBundle\Form\Enquestes\FormEnquesta;
 class EnquestesController extends BaseController {
 	public function enquestesAction(Request $request) {
 	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		//$this->get('session')->getFlashBag()->clear();
 		
@@ -43,9 +42,8 @@ class EnquestesController extends BaseController {
 	
 	public function tancarenquestaAction(Request $request) {
 		
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+	    
 		if ($request->query->has('id')) {
 			$enquesta = $this->getDoctrine()->getRepository('FecdasBundle:Enquestes\EntityEnquesta')->find($request->query->get('id'));
 			
@@ -77,9 +75,8 @@ class EnquestesController extends BaseController {
 	
 	public function enquestaAction(Request $request) {
 	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+	    
 		$em = $this->getDoctrine()->getManager();
 		
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\Enquestes\EntityPregunta p";
@@ -244,7 +241,7 @@ class EnquestesController extends BaseController {
 	public function enquestausuariAction(Request $request) {
 		
 		//if ($this->isAuthenticated() != true or $this->get('session')->has('enquestapendent') != true) return new Response("error");
-		if ($this->isAuthenticated() != true) return new Response("error");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 		
 		$action = "";
 		if ($request->getMethod() == 'POST') {
@@ -431,9 +428,7 @@ class EnquestesController extends BaseController {
 
 	public function estadistiquesAction(Request $request) {
 		
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-		
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$this->logEntryAuth('VIEW ESTATS. ENQUESTES');
 		
@@ -455,7 +450,7 @@ class EnquestesController extends BaseController {
 		$enunciats = array();
 		$dades = array();
 
-		if ($this->isCurrentAdmin() != true) return new Response("La sessió ha expirat");
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
 		
@@ -503,11 +498,9 @@ class EnquestesController extends BaseController {
 	public function estadistiquesTab2Action(Request $request) {  
 		/* AJAX. Evolució d'una pregunta tipus RANG o BOOL al llarg de les diferents enquestes (temps) */
 		
-		if ($this->isCurrentAdmin() != true) return new Response("La sessió ha expirat");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
-		
-		
 		
 		/* Obtenir totes les preguntes */
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\Enquestes\EntityPregunta p";

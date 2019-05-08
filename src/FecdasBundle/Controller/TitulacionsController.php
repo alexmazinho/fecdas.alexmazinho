@@ -15,17 +15,16 @@ use FecdasBundle\Entity\EntityDocencia;
 use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Entity\EntityTitulacio;
 use FecdasBundle\Entity\EntityTitol;
+use FecdasBundle\Entity\EntityMetaPersona;
 use FecdasBundle\Entity\EntityPersona;
 use FecdasBundle\Entity\EntityLlicencia;
 
 
 class TitulacionsController extends BaseController {
 	
-	public function dadespersonalsAction(Request $request) {
+	public function dadesfederatsAction(Request $request) {
 		// Llista de membres del club amb les dades personals
-
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 		
 		$page = $request->query->get('page', 1);
 		$sort = $request->query->get('sort', 'e.cognoms');
@@ -67,18 +66,18 @@ class TitulacionsController extends BaseController {
 													"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--').
 													" titol ".$currentTitol." altres ". $currentTitolExtern);
 			
-		$query = $this->consultaDadespersonals($currentDNI, $currentNom, $currentCognoms, $currentMail, $currentProfessio, $club, $desde, $fins, $currentVigent, $titol, $titolExtern, $sort.' '.$direction);
+		$query = $this->consultaDadesfederats($currentDNI, $currentNom, $currentCognoms, $currentMail, $currentProfessio, $club, $desde, $fins, $currentVigent, $titol, $titolExtern, $sort.' '.$direction);
 		
 		if ($format == 'csv') {
 			// Generar CSV
-			return $this->exportDadespersonals($request, $query->getResult(), $desde, $fins);
+			return $this->exportDadesfederats($request, $query->getResult(), $desde, $fins);
 		}
 		
 		if ($format == 'pdf') {
 			// Generar PDF
 			$print = $request->query->has('print') && $request->query->get('print') == true?true:false;
 			
-			return $this->forward('FecdasBundle:PDF:dadespersonalstopdf', array(
+			return $this->forward('FecdasBundle:PDF:dadesfederatstopdf', array(
 							        'persones'       => $query->getResult(),
 							        'print' 		=> $print,
 							        'desde'			=> $desde,
@@ -126,16 +125,16 @@ class TitulacionsController extends BaseController {
 		
 		$form = $formBuilder->getForm(); 
 	
-		return $this->render('FecdasBundle:Titulacions:dadespersonals.html.twig',
+		return $this->render('FecdasBundle:Titulacions:dadesfederats.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
 						'sortparams' => array('sort' => $sort,'direction' => $direction)) 
 						));
 
 	}
 	
-	private function exportDadespersonals($request, $persones, $desde, $fins) {
+	private function exportDadesfederats($request, $persones, $desde, $fins) {
 		/* CSV Llistat de dades personals filtrades */
-		$filename = "export_dadespersonals_".BaseController::getInfoTempsNomFitxer($desde, $fins).".csv";
+		$filename = "export_dadesfederats_".BaseController::getInfoTempsNomFitxer($desde, $fins).".csv";
 			
 		$header = EntityPersona::csvHeader( $this->isCurrentAdmin(), BaseController::getInfoTempsNomFitxer($desde, $fins, " ", "/") );
 			
@@ -215,28 +214,12 @@ class TitulacionsController extends BaseController {
 	
 	
 	public function llicenciesfederatAction(Request $request) {
-	    $user = null;
-	    try {
-	        $user = $this->checkAccessNoClub();
-	    } catch (\Exception $e) {
-	        if ($this->isCurrentAdmin()) {
-	            if ($request->isXmlHttpRequest()) return new Response();
-	            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	        }
-	        
-	        $this->logEntryAuth('ACCESS NO CLUB KO', $e->getMessage());
-	        
-	        if ($request->isXmlHttpRequest()) {
-	            $response = new Response($e->getMessage());
-	            $response->setStatusCode(500);
-	            return $response;
-	        }
-	        $this->get('session')->getFlashBag()->clear();
-	        $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
-	        if (!$this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	    }
 	    
+	    if ($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), true)) return $redirect;
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    $user = $checkRole->getCurrentUser();
+
 	    $metapersona = $user->getMetapersona();
 	    
 	    $page = $request->query->get('page', 1);
@@ -341,27 +324,10 @@ class TitulacionsController extends BaseController {
 	
 	public function titulacionsfederatAction(Request $request) {
 	    
-	    $user = null;
-	    try {
-	        $user = $this->checkAccessNoClub();
-	    } catch (\Exception $e) {
-	        if ($this->isCurrentAdmin()) {
-	            if ($request->isXmlHttpRequest()) return new Response();
-	            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	        }
-	        
-	        $this->logEntryAuth('ACCESS NO CLUB KO', $e->getMessage());
-	        
-	        if ($request->isXmlHttpRequest()) {
-	            $response = new Response($e->getMessage());
-	            $response->setStatusCode(500);
-	            return $response;
-	        } 
-   	        $this->get('session')->getFlashBag()->clear();
-   	        $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
-   	        if (!$this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_login'));
-   	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	    }
+	    if ($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), true)) return $redirect;
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    $user = $checkRole->getCurrentUser();
 	    
 	    $metapersona = $user->getMetapersona();
 	        
@@ -505,46 +471,57 @@ class TitulacionsController extends BaseController {
 	     return $response;
 	}
 	
-	public function dadesfederatAction(Request $request) {
+	public function dadespersonalsAction(Request $request) {
 	    
-	    $user = null;
-	    try {
-	        $user = $this->checkAccessNoClub();
-	    } catch (\Exception $e) {
-	        if ($this->isCurrentAdmin()) {
-	            if ($request->isXmlHttpRequest()) return new Response();
-	            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-	        }
-	        
-	        $this->logEntryAuth('ACCESS NO CLUB KO', $e->getMessage());
-	        
-	        $this->get('session')->getFlashBag()->clear();
-	        $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage());
-	        if (!$this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    $user = $checkRole->getCurrentUser();
+	    
+	    if ($user == null || !$user->isPendentDadesPersonals()) {
+	        if ($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), true)) return $redirect;
 	    }
 	    
 	    $metapersona = $user->getMetapersona();
-	    $persona = $metapersona->getUltimesDadesPersonals();
 	    
+	    $em = $this->getDoctrine()->getManager();
+
 	    $options = array();
 	    /* Get provincies, comarques, nacions*/
 	    $options['edit'] = false;
-	    $options['editdni'] = false;
 	    $options['provincies'] = $this->getProvincies();
 	    $options['comarques'] = $this->getComarques();
 	    $options['nacions'] = $this->getNacions();
 	    
-	    $em = $this->getDoctrine()->getManager();
+	    $persona = null;
+	    if ($metapersona == null) {
+	        $clubs = $user->getClubsRole(BaseController::ROLE_FEDERAT);
+	        if (count($clubs) == 0) {
+	            $clubs[] = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBINDEFEDE);
+	        }
+	        
+	        $metapersona = new EntityMetaPersona();
+	        $metapersona->setUsuari($user);
+	        $user->setMetapersona($metapersona);
+	        $persona = new EntityPersona($metapersona, $clubs[0]);
+	        $persona->setMail($user->getUser());
+	        $em->persist($persona);
+	        $em->persist($metapersona);
+	        
+	        $options['editdni'] = true;
+	    } else {
+	        $options['editdni'] = false;
+    	    $persona = $metapersona->getUltimesDadesPersonals();
+	    }
+	    
+	    $formpersona = $this->createForm(new FormPersona($options), $persona);
+	    
 	    try {
 	        if ($request->getMethod() == 'POST') {
-	            $formpersona = $this->createForm(new FormPersona($options), $persona);
 	            
 	            $formpersona->handleRequest($request);
 	            
 	            if (!$formpersona->isValid())  throw new \Exception("Les dades no són vàlides: ".$formpersona->getErrors(true, true).", poseu-vos en contacte amb la Federació.");
 	                
-	            $this->validarDadesPersona($persona, false, $formpersona);
+	            $this->validarDadesPersona($persona, $options['editdni'], $formpersona);
 
 	            if ($persona->getMail() == null || $persona->getMail() == "") $persona->setMail($user->getUser());
 	            
@@ -565,20 +542,23 @@ class TitulacionsController extends BaseController {
 	            $this->get('session')->getFlashBag()->add('sms-notice',	"Dades personals actualitzades correctament");
 	            $this->logEntryAuth('DADES FEDERAT UPD OK', 'metapersona '. $metapersona->getDni().', persona '. $persona->getId());
 	            
-	            return $this->redirect($this->generateUrl('FecdasBundle_dadesfederat'));
+	            return $this->redirect($this->generateUrl('FecdasBundle_dadespersonals'));
 	        }
 
 	    } catch (\Exception $e) {
-	        $em->refresh($metapersona);
-	        $em->refresh($persona);
-	        
+	        if (!$metapersona->nova()) $em->refresh($metapersona);
+	        if (!$persona->nova()) $em->refresh($persona);
+
 	        $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
-	        $this->logEntryAuth('DADES FEDERAT UPD KO', 'error: '.$e->getMessage(). '. Metapersona '. $metapersona->getDni().', persona '. $persona->getId());
+	        
+	        if (!$metapersona->nova() && !$persona->nova()) {
+    	        $this->logEntryAuth('DADES FEDERAT UPD KO', 'error: '.$e->getMessage(). '. Metapersona '. $metapersona->getDni().', persona '. $persona->getId());
+	        }
 	    }
 	    
-	    $formpersona = $this->createForm(new FormPersona($options), $persona);
+	    //$formpersona = $this->createForm(new FormPersona($options), $persona);
 	    
-	    return $this->render('FecdasBundle:Titulacions:dadesfederat.html.twig',
+	    return $this->render('FecdasBundle:Titulacions:dadespersonals.html.twig',
 	        $this->getCommonRenderArrayOptions(array('formpersona' => $formpersona->createView(), 'persona' => $persona) ) 
 	    );
 	}
@@ -587,7 +567,7 @@ class TitulacionsController extends BaseController {
 	    
 	    $personaId = $request->query->get('persona', 0);
 	    try {
-	        if (!$this->isAuthenticated()) throw new \Exception('Cal indicar les credencials per accedir a l\'Aplicació');
+	        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	        
 	        $persona = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($personaId);
 	        
@@ -605,10 +585,15 @@ class TitulacionsController extends BaseController {
 	               
 	            } else {
 	                // Accés federat o instructor
-	                $user = $this->checkAccessNoClub();
+	                $checkRole = $this->get('fecdas.rolechecker');
 	                
+	                if (!$checkRole->isCurrentFederat() && !$checkRole->isCurrentInstructor())
+	                    throw new \Exception('El rol actual de l\'usuari no disposa de permisos per realitzar aquesta acció');
+	                
+	                $user = $checkRole->getCurrentUser();
+	                    
 	                // Persona diferent
-	                if ($persona->getMetapersona() != $user->getMetapersona()) throw new \Exception('L\'usuari no disposa de permisos per realitzar aquesta acció');
+	                if ($user == null || $persona->getMetapersona() != $user->getMetapersona()) throw new \Exception('L\'usuari no disposa de permisos per realitzar aquesta acció');
 	            }
 	        }
 	        
@@ -651,7 +636,7 @@ class TitulacionsController extends BaseController {
 	
 	public function historialllicenciesAction(Request $request) {
 		
-		if ($this->isAuthenticated() != true) return new Response("");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		if (!$request->query->has('id')) return new Response("");
 		
@@ -703,7 +688,7 @@ class TitulacionsController extends BaseController {
 
 	public function historialtitulacionsAction(Request $request) {
 		
-		if ($this->isAuthenticated() != true) return new Response("");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		if (!$request->query->has('id')) return new Response("");
 		
@@ -731,8 +716,7 @@ class TitulacionsController extends BaseController {
 
 	public function cursosAction(Request $request) {
 		// Llista de cursos
-	    if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		$checkRole = $this->get('fecdas.rolechecker');
 		$rol = $checkRole->getCurrentRole();
@@ -830,8 +814,7 @@ class TitulacionsController extends BaseController {
 	public function cursAction(Request $request) {
 		// Consulta/edicio curs 
 
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		$checkRole = $this->get('fecdas.rolechecker');
 		$rol = $checkRole->getCurrentRole();
@@ -2165,7 +2148,7 @@ class TitulacionsController extends BaseController {
 		return $dades;
 	}
 
-	private function consultaDadespersonals($dni, $nom, $cognoms, $mail = "", $professio = "", $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 
+	private function consultaDadesfederats($dni, $nom, $cognoms, $mail = "", $professio = "", $club = null, $desde = null, $fins = null, $vigent = true, $titol = null, $titolExtern = null, $strOrderBY = '') { 
 		$em = $this->getDoctrine()->getManager();
 	
 		$current = $this->getCurrentDate();

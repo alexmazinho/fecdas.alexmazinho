@@ -13,13 +13,8 @@ class AdminController extends BaseController {
 	public function imprimircarnetsAction(Request $request) {
 		// Formulari per imprimir carnet CMAS
 		 
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
-		/* De moment administradors */
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_home'));
-				 
 		$current = $this->getCurrentDate();
 		$emissio = $current; 
 		$caducitat = $this->getCurrentDate();
@@ -189,8 +184,7 @@ class AdminController extends BaseController {
 	
 	public function recentsAction(Request $request) {
 	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -362,12 +356,12 @@ class AdminController extends BaseController {
 	
 	public function desarmailAction(Request $request) {
 	    /* Desar e-Mail */
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+	    
 	    $email = '';
 	    $id = 0;
 	    $result = "";
 	    try {
-	        if ($this->isCurrentAdmin() != true) throw new \Exception ('Acció no permesa. L\'esdeveniment a quedat registrat'); 
-	        
 	        $em = $this->getDoctrine()->getManager();
 	        
 	        $id = $request->query->get("id", 0);
@@ -400,8 +394,7 @@ class AdminController extends BaseController {
 	
 	public function consultaadminAction(Request $request) {
 	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -1031,8 +1024,7 @@ GROUP BY c.nom
 	
 	public function consultaclubsAction(Request $request) {
 	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -1560,9 +1552,8 @@ GROUP BY c.nom
 	    // Permetre passar llista partes per paràmetre GET i imprimir totes les llicències. Funció auxiliar directament executar URL
 	    // https://www.fecdas.dev/imprimirpartes?secret=abc&partes=117036,XXXXX 
 	    
-	    if ($this->isCurrentAdmin() != true) 
-	        return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	   
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+	    
 	    $em = $this->getDoctrine()->getManager();
 	        
 	    $partesid = explode(",", $request->query->get('partes', ''));
@@ -1615,8 +1606,7 @@ GROUP BY c.nom
 	public function imprimirparteAction(Request $request) {
 	    // https://www.fecdas.dev/imprimirparte?id=117036&llicencies
 	    
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 		
@@ -1727,8 +1717,7 @@ GROUP BY c.nom
 	}
 	
 	public function sincroaccessAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 
@@ -1767,7 +1756,7 @@ GROUP BY c.nom
 	}
 	
 	public function canviestatclubAction (Request $request) {
-		if ($this->isCurrentAdmin() != true) return new Response("no admin");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($request->query->get('codiclub'));
 		$estat = $request->query->get('action');
@@ -1822,8 +1811,7 @@ GROUP BY c.nom
 	}
 	
 	public function clubsAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -1902,9 +1890,7 @@ GROUP BY c.nom
 	
 	public function anularpeticioAction(Request $request) {
 		/* Anular petició duplicat */
-				
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
 		
@@ -1937,9 +1923,7 @@ GROUP BY c.nom
 	
 	public function imprespeticioAction(Request $request) {
 		/* Marca petició duplicat com impressa i enviar un correu */
-	
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 
@@ -1992,9 +1976,7 @@ GROUP BY c.nom
 	
 	public function duplicatllicenciaAction(Request $request) {
 		/* Anular petició duplicat */
-				
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
 		

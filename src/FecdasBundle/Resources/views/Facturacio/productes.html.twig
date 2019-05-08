@@ -124,7 +124,7 @@
 	
 	filtreLlistaProductes = function(id, tipusproducte, baixes) {
 		
-		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+id+"&tipus="+tipusproducte+"&baixes="+baixes;
+		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+id+"&tipus="+tipusproducte+"&baixes="+(baixes?1:0);
 	}; 
 	
 	$(document).ready(function(){

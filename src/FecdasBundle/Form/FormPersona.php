@@ -38,7 +38,7 @@ class FormPersona extends AbstractType {
 				));
 			
 				$form->add('fotoupld', 'file', array('mapped' => false, 'required'  => false, 'attr' => array('accept' => 'image/*')));
-				
+
 				$form->add('foto', 'hidden', array('mapped' => false, 'required'  => false, 'data'	=> ($persona->getFoto()==null?'':$persona->getFoto()->getPath())));
 				
 				$form->add('arxiuupld', 'file', array('mapped' => false, 'required'  => false, 'attr' => array('accept' => 'application/pdf,application/msword,text/*')));

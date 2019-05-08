@@ -29,11 +29,7 @@ class FacturacioController extends BaseController {
 	public function stockAction(Request $request) {
 		// Llista de productes i edició massiva
 
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-
-		if (!$this->isCurrentAdmin()) 
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$club = null;
 		$codi = $request->query->get('clubs', BaseController::CODI_FECDAS); // filtra club
@@ -362,12 +358,7 @@ class FacturacioController extends BaseController {
 		// Formulari introducció / edició / baixa registre d'stock
 		$this->get('session')->getFlashBag()->clear();
     	
-    	if ($this->isAuthenticated() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
-    
-    	/* De moment administradors */
-    	if ($this->isCurrentAdmin() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
     	
     	$em = $this->getDoctrine()->getManager();
 		
@@ -472,9 +463,8 @@ class FacturacioController extends BaseController {
 	public function stockclubAction(Request $request) {
 		// Llista de productes i edició massiva
 
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
 		$sms = '';
 		$club = null;
 		$codi = $request->query->get('clubs', ''); // filtra club
@@ -632,12 +622,7 @@ class FacturacioController extends BaseController {
 		
 	public function registresaldosAction(Request $request) {
 		// Llistat de comandes
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$club = null;
 		$saldo = 0;
@@ -994,11 +979,7 @@ class FacturacioController extends BaseController {
 		
 	public function traspascomptabilitatAction(Request $request) {
 		// http://www.fecdasnou.dev/traspascomptabilitat
-		if (!$this->isAuthenticated())
-			throw new \Exception("Usuari no autenticat");
-	
-		if (!$this->isCurrentAdmin())
-			throw new \Exception("Usuari sense privilegis");
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$page = $request->query->get('page', 1);
 			
@@ -1077,11 +1058,7 @@ class FacturacioController extends BaseController {
 	
 	public function anulartraspasAction(Request $request) {
 		// http://www.fecdasnou.dev/traspascomptabilitat
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$id = $request->query->get('id', 0);
 		$rebutid = $request->query->get('rebut', 0);
@@ -1147,11 +1124,7 @@ class FacturacioController extends BaseController {
 	
 	public function fitxercomptabilitatAction(Request $request) {
 		// http://www.fecdasnou.dev/fitxercomptabilitat?inici=2015-01-01&final=2015-06-22
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
 		
@@ -1633,9 +1606,7 @@ class FacturacioController extends BaseController {
 	
 	public function ingresosAction(Request $request) {
 		// Llistat ingresos a compte dels clubs
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$this->logEntryAuth('VIEW INGRESOS', $this->get('session')->get('username'));
 
@@ -1698,9 +1669,7 @@ class FacturacioController extends BaseController {
 	
 	public function comandesAction(Request $request) {
 		// Llistat de comandes
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$club = null;
 		$saldo = 0;
@@ -1819,9 +1788,7 @@ class FacturacioController extends BaseController {
 
 	public function facturesAction(Request $request) {
 		// Llistat de factures
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$club = null;
 		$codi = $request->query->get('cerca', ''); // Admin filtra club
@@ -1894,9 +1861,7 @@ class FacturacioController extends BaseController {
 
 	public function apuntsAction(Request $request) {
 		// Llistat d'apunts d'un club ordenats per data descendent
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$club = null;
 		if ($this->isCurrentAdmin()) {   
@@ -2123,9 +2088,7 @@ class FacturacioController extends BaseController {
 	
 	public function graellaproductesAction(Request $request) {
 		// Graella de productes per afegir a la cistella
-
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		$this->logEntryAuth('VIEW GRAELLA PRODUCTES', $this->get('session')->get('username'));
 		
@@ -2194,9 +2157,7 @@ class FacturacioController extends BaseController {
 	
 	public function tramitarcistellaAction(Request $request) {
 		// Recupera la cookie amb els productes del carrito
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$action = $request->query->get('action', '');
 		$tipus = $request->query->get('tipus', 0);
@@ -2369,8 +2330,7 @@ class FacturacioController extends BaseController {
 
 	public function treurecistellaAction(Request $request) {
 		// Afegir producte a la cistella (desada temporalment en cookie)
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$producte = null;
 		$idProducte = $request->query->get('id', 0);
@@ -2399,12 +2359,7 @@ class FacturacioController extends BaseController {
 
 	public function editarcomandaAction(Request $request) {
 		// Edició d'una nova comanda existent
-	
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 		$comanda = null;
@@ -2498,12 +2453,7 @@ class FacturacioController extends BaseController {
 		// Crida per donar de baixa una comanda
 		$this->get('session')->getFlashBag()->clear();
 			
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		/* De moment administradors */
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -2546,8 +2496,7 @@ class FacturacioController extends BaseController {
 	
 	public function pagamentcomandaAction(Request $request) {
 	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 		
 		$comandaid = 0;
 		if ($request->query->has('id')) {
@@ -2604,12 +2553,7 @@ class FacturacioController extends BaseController {
 	
 	public function productesAction(Request $request) {
 		// Llista de productes i edició massiva
-
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-
-		if (!$this->isCurrentAdmin()) 
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$idproducte = $request->query->get('cerca', 0);
 
@@ -2630,7 +2574,7 @@ class FacturacioController extends BaseController {
 			$page = 1;
 		}	
 
-		$query = $this->consultaProductes($idproducte, $compte, $tipus, true, $sort, $direction);
+		$query = $this->consultaProductes($idproducte, $compte, $tipus, $baixes, $sort, $direction);
 			
 		$paginator  = $this->get('knp_paginator');
 			
@@ -2680,13 +2624,7 @@ class FacturacioController extends BaseController {
 	public function editarproducteAction(Request $request) {
 		// Formulari d'edició d'un producte
 		//$this->get('session')->getFlashBag()->clear();
-    	
-    	if ($this->isAuthenticated() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
-    
-    	/* De moment administradors */
-    	if ($this->isCurrentAdmin() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
     	
     	$em = $this->getDoctrine()->getManager();
     	
@@ -2880,12 +2818,7 @@ class FacturacioController extends BaseController {
 		// Formulari de creació d'un producte
 		$this->get('session')->getFlashBag()->clear();
     	
-    	if ($this->isAuthenticated() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
-    
-    	/* De moment administradors */
-    	if ($this->isCurrentAdmin() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_home'));
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
     	
     	$this->logEntryAuth('PRODUCTE NOU',	'');
     	
@@ -2902,12 +2835,7 @@ class FacturacioController extends BaseController {
 		// Crida per donar de baixa un producte
 		$this->get('session')->getFlashBag()->clear();
 			
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		/* De moment administradors */
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$em = $this->getDoctrine()->getManager();
 	
@@ -2935,12 +2863,7 @@ class FacturacioController extends BaseController {
 		// Crida per donar de baixa un producte
 		$response = new Response();
 		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		/* De moment administradors */
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 
 		$em = $this->getDoctrine()->getManager();
 		
@@ -3178,11 +3101,7 @@ class FacturacioController extends BaseController {
 	
 	public function nouingresAction(Request $request) {
 		// Introduir un ingrés d'un club
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-		
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$this->get('session')->getFlashBag()->clear();
 		
@@ -3289,11 +3208,7 @@ class FacturacioController extends BaseController {
 	 
 	public function esborrarultimrebutAction(Request $request) {
 		// http://www.fecdasnou.dev/esborrarultimrebut?rebut=xxx
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		if (!$this->isCurrentAdmin())
-			return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$rebutid = $request->query->get('rebut', 0);
 
@@ -3361,15 +3276,7 @@ class FacturacioController extends BaseController {
 	    $em = $this->getDoctrine()->getManager();
 	            
 	    try {
-	        if (!$this->isAuthenticated()) {
-	            $this->logEntryAuth('AUTH ERROR BAIXA REBUT', ' Rebut '.$rebutid);
-	            throw new \Exception("Usuari no registrat o sessió finalitzada. Si us plau torneu-vos a registrar");
-	        }
-	            
-	        if (!$this->isCurrentAdmin()) {
-	            $this->logEntryAuth('ADMIN ERROR BAIXA REBUT', ' Rebut '.$rebutid);
-	            throw new \Exception("L'usuari no pot realitzar aquesta acció. L'incident quedarà registrat");
-	        }
+	        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	        
 	        if ($rebutid > 0) $rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($rebutid);
 	                    
@@ -3437,13 +3344,7 @@ class FacturacioController extends BaseController {
 	public function editarrebutAction(Request $request) {
 		// Formulari d'edició d'un rebut
 		//$this->get('session')->getFlashBag()->clear();
-		 
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
-	
-		/* De moment administradors */
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_home'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 				 
 		$em = $this->getDoctrine()->getManager();
 				 
@@ -3916,8 +3817,7 @@ class FacturacioController extends BaseController {
 	}
 
 	public function confirmapagamentAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
 		

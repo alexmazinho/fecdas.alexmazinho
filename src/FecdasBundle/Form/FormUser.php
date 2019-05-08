@@ -26,11 +26,9 @@ class FormUser extends AbstractType {
 	        $user = $event->getData();
 	        
 	        /* Check we're looking at the right data/form */
-	        $newsletter = true;
 	        $userDisabled = false;
 	        $usertoken = '';
 	        if ($user instanceof EntityUser) {
-	            $newsletter = $user->getNewsletter();
 	            $userDisabled = true;
 	            $usertoken = $user->getUser();
 	        } else {
@@ -42,22 +40,13 @@ class FormUser extends AbstractType {
 	                   'data'      => $this->options['dni']
 	                ));
 	            }
-	            if (isset($this->options['newsletter'])) {
-	                $newsletter = $this->options['newsletter'];
-	            }
 	        }
 
 	        $form->add('usertoken', 'hidden', array(
 	            'mapped'    => false,
 	            'data'      => $usertoken
 	        ));
-	        
-	        $form->add('newsletter', 'checkbox', array(
-	            'required'  => false,
-	            'data'      => $newsletter,
-	            'mapped'    => false
-	        ));
-	        
+
 	        $form->add('user', 'email',array(
 	            'attr'		=>	array('readonly' => $userDisabled)
 	        ));
@@ -71,6 +60,11 @@ class FormUser extends AbstractType {
     		'first_name'  => 'first',
     		'second_name' => 'second',
 		));
+		
+		$builder->add('newsletter', 'checkbox', array(
+		    'required'  => false,
+		));
+		
 		
 		/*$builder->add('forceupdate', 'checkbox', array(
     	    'required'  => false

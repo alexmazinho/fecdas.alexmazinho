@@ -16,7 +16,7 @@ class SecurityController extends BaseController
 {
 	
 	public function changeroleAction(Request $request) {
-		if (!$this->isAuthenticated()) return new Response(""); 
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 		// Params => currentrole: role, currentclub: club
 		
 		if (!$request->query->has('currentrole') || $request->query->get('currentrole') == '') return "";
@@ -43,9 +43,8 @@ class SecurityController extends BaseController
 	
     public function loginAction(Request $request)
     {
-    	if ($this->isAuthenticated()) {
-    		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-    	}
+    	if ($this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+    	
     	$userlogin = new EntityUser();
     	$form = $this->createForm(new FormLogin(), $userlogin);
     	
@@ -134,7 +133,9 @@ class SecurityController extends BaseController
     
     public function userAction(Request $request)
     {
-    	$request->getSession()->getFlashBag()->clear();
+        if ($this->isAuthenticated()) if($redirect = $this->frontEndLoginCheck()) return $redirect;
+        
+        $request->getSession()->getFlashBag()->clear();
     	
 		$checkRole = $this->get('fecdas.rolechecker');
 		
@@ -229,7 +230,7 @@ class SecurityController extends BaseController
     	    			
     	    	$user->setPwd(sha1($user->getPwd())); 
     
-    			if (!$this->isAuthenticated()) $checkRole->authenticateUser($user, $this->getActiveEnquesta());  
+    			if (!$this->isAuthenticated()) $checkRole->authenticateUser($user, $this->getActiveEnquesta());  // Pot fallar
     	    			
     			$user->setNewsletter($newsletter);
     					
@@ -238,6 +239,10 @@ class SecurityController extends BaseController
     	    	if ($this->isAuthenticated()) $this->logEntryAuth('USER UPDATE', 'user : ' . $username);
     	    	else $this->logEntryAuth('PWD RESET', 'user : ' . $username);
     	    			
+    	    	
+    	    	if($redirect = $this->frontEndLoginCheck()) return $redirect;
+
+    	    	
     	    	$this->get('session')->getFlashBag()->clear();
     	    	$this->get('session')->getFlashBag()->add('sms-notice', "Dades actualitzades correctament!");
     	    			
@@ -258,9 +263,7 @@ class SecurityController extends BaseController
     
     public function registreAction(Request $request)
     {
-        if ($this->isAuthenticated()) {
-            return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-        }
+        if ($this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
         
         $form = $this->createForm(new FormUser());
         
@@ -331,7 +334,7 @@ class SecurityController extends BaseController
                         }
                     }
                     
-                    $options = array('newsletter' => $newsletter);
+                    $options = array();
                     if (count($metapersones) > 1 || $dniShown) {
                         // Existeixen vàries persones amb aquest mail, afegir camp i actualitzar $form
                         $options['dni'] = $dni;
@@ -340,11 +343,17 @@ class SecurityController extends BaseController
                     $form = $this->createForm(new FormUser( $options ));
                     
                     $form->get('user')->setData($mail);
+                    $form->get('newsletter')->setData(true);
                     
                     if (count($metapersones) != 1) {
                         if (count($metapersones) == 0) {
                             // No trobat    
-                            if (!$dniShown) throw new \Exception("No existeixen dades per aquesta adreça de correu");
+                            if (!$dniShown) {
+                                //throw new \Exception("No existeixen dades per aquesta adreça de correu");
+                                
+                                return $this->registreIndependent($mail, $newsletter, $user);
+                                
+                            }
                             
                             throw new \Exception("No existeixen dades per aquesta adreça de correu i document d'identitat");
                         } 
@@ -362,6 +371,7 @@ class SecurityController extends BaseController
                 }
                 
                 if ($metapersona->getLlicenciaVigent() == null) throw new \Exception("Només es pot accedir al sistema si les dades associades a l’usuari tenen una llicència vigent per la data actual");
+                
                 $oldUser = null;
                 $subjectMail = $user == null && $metapersona->getUsuari() == null?"Creació d'un nou usuari per accedir":"Activació d'un usuari existent per accedir"; // " a l'Aplicació ..."
                 if ($metapersona->getUsuari() != null) {
@@ -382,9 +392,10 @@ class SecurityController extends BaseController
                 if ($user != null) {
                     // Mirar si és baixa i activar
                     $user->activarUsuariRole($metapersona, BaseController::ROLE_FEDERAT);
+                    $user->setNewsletter($newsletter);
                 } else {
                     // Crear nou usuari
-                    $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $metapersona);
+                    $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $newsletter, $metapersona);
                     $em->persist($user);
                 }
 
@@ -439,10 +450,45 @@ class SecurityController extends BaseController
     }
     
     
+    private function registreIndependent($mail, $newsletter, $user = null)  {       // tramitació federatives: Pesca
+        // Alta usuari rol FEDERAT sense club => INDE F (tramitació pesca)
+        // Sense metapersona => obligació a informar dades al login
+        $em = $this->getDoctrine()->getManager();
+        
+        if ($user != null) {
+            // Mirar si és baixa i activar
+            $user->activarUsuariRole(null, BaseController::ROLE_FEDERAT);
+            
+            $subjectMail = "Activació de l'usuari per accedir";
+        } else {
+            // Crear nou usuari
+            $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $newsletter, null);
+            $em->persist($user);
+            
+            $club = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBINDEFEDE);
+            
+            if (!$user->hasRoleClub($club, BaseController::ROLE_FEDERAT)) {
+                $userClubRole = $club->addUsuariRole($user, BaseController::ROLE_FEDERAT);
+                $em->persist($userClubRole);
+            }
+            
+            $subjectMail = "Creació d'un nou usuari per accedir";
+        }
+        $em->flush();
+        
+        $this->sendMailRecuperacioAccess($user, $subjectMail, $newsletter);
+        
+        $this->logEntry($mail, 'INDE F REGISTER', 'Registre nou usuari '.$mail.' INDE F');
+        
+        $this->get('session')->getFlashBag()->clear();
+        $this->get('session')->getFlashBag()->add('sms-notice', 'S\'han enviat instruccions per a finalitzar el registre a l\'adreça de correu ' . $mail);
+        
+        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+    }
+    
     public function baixausuariAction(Request $request)
     {
-        if (!$this->isAuthenticated())
-            return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
             
         $checkRole = $this->get('fecdas.rolechecker');
         
@@ -484,10 +530,8 @@ class SecurityController extends BaseController
     
     public function pwdrecoveryAction(Request $request)
     {
-    	if ($this->isAuthenticated()) {
-    		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
-    	}
-    	
+    	if ($this->isAuthenticated()) return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+    	    	
     	$userEmail = $request->query->get('email', '');
     	
     	$formbuilder = $this->createFormBuilder()->add('user', 'email', array('data' => $userEmail));
@@ -789,8 +833,7 @@ class SecurityController extends BaseController
 
 	
     public function clubAction(Request $request) {
-    	if ($this->isAuthenticated() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
     
     	/* De moment administradors */
     	/*if ($this->isCurrentAdmin() != true)
@@ -1028,8 +1071,7 @@ class SecurityController extends BaseController
     }
 
     public function baixaclubAction(Request $request) {
-    	if ($this->isAuthenticated() != true)
-    		return $this->redirect($this->generateUrl('FecdasBundle_login'));
+        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
     	
 		$codi	= $request->query->get('club', '');    	
 
@@ -1038,8 +1080,6 @@ class SecurityController extends BaseController
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
 		try {
-			if ($this->isCurrentAdmin() != true) throw new \Exception('Acció no permesa');
-			
 			$current = $this->getCurrentDate();
 			if ($club == null) throw new \Exception('No s\'ha pogut trobar el club per donar-lo de baixa');
 
@@ -1313,7 +1353,7 @@ class SecurityController extends BaseController
 			}
 			
 		} else {
-		    $checkuser = new EntityUser($useruser, sha1($randomPassword), $metaPersona);
+		    $checkuser = new EntityUser($useruser, sha1($randomPassword), true, $metaPersona);
 		    $em->persist($checkuser);
 			
 			$info = "Nou usuari ".$userrole." creat correctament amb clau ".$randomPassword.PHP_EOL;

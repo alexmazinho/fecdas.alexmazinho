@@ -1,268 +1,31 @@
 {# src/Fecdas/PartesBundle/Resources/views/Titulacions/dadespersonals.html.twig #}
 {% extends 'FecdasBundle::layout.html.twig' %}
 
-{% block title %}Aplicació gestió FECDAS. Informació de titulacions i dades personals del Club{% endblock %}
+{% block title %}Aplicació gestió FECDAS. Dades personals{% endblock %}
 
 {% block body %}
-   	
-	<header>
+   	<header>
 		<div class="row">
-			<div class="col-md-8"><h1>Titulacions i dades personals</h1></div>
-    	    <div class="col-md-4 col-last-right">
-				{# if persones.getTotalItemCount <= 3000 #}
-					<div class="buttons-top-bootstrap">
-						<div class="button-top">
-							<a class="link export-csv" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'csv' })) }}" alt="Exportar les llistes de dades personals" 
-							title="Exportar les llistes de dades personals"><i class="fa fa-file-excel-o fa-1x green"></i></a>
-						</div>	
-						<div class="button-top"><a class="print link" target="_blank" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf', 'print': 1 })) }}" alt="Imprimir les llistes de dades personals" 
-							title="Imprimir les llistes de dades personals"><i class="fa fa-print fa-1x blue"></i></a>
-						</div>
-						<div class="button-top"><a class="link" href="{{ path('FecdasBundle_dadespersonals', persones.params|merge({ 'format': 'pdf' })) }}" alt="Descarregar les llistes de dades personals" 
-							title="Descarregar les llistes de dades personals"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
-						</div>	
-					</div> 
-				{# endif #}
+			<div class="col-md-8 col-sm-8 col-xs-8"><h1>Dades personals</h1></div>
+			<div class="col-md-3 col-sm-4 col-xs-4 col-last-right">
+				<div class="buttons-top-bootstrap">
+					<div class="button-top">
+						<a class="link save-data" href="{{ path('FecdasBundle_dadespersonals') }}" alt="Desar els canvis" 
+						title="Desar els canvis"><i class="fa fa-save fa-1x green"></i></a>
+					</div>	
+				</div> 
 			</div>
 		</div>
-   	</header>
+	</header>
    	
-   	{% include 'FecdasBundle:Includes:messages.html.twig' %}
-   	
-   	<div id="list-forms">	
-   		{{ form_start(form, {'action': path('FecdasBundle_dadespersonals'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_dadespersonals'}}) }}
-   		<section class="form-dadespersonals">
-	   		<div class="row">
-				{% if admin == true %}
-					<div class="col-md-3 col-xs-6">
-						<div class="form-group">
-						   	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
-							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
-						</div>
-					</div>
-				{% endif %}
-				<div class="{% if admin %}col-md-3 col-xs-6{% else %}col-md-4 col-xs-6 col-xs-offset-6{% endif %}">
-				  	<div class="form-group">
-						{{ form_label(form.dni, 'Dades personals', { 'label_attr': {'class': ''} }) }}
-				  		<div class="input-group">
-							{{ form_widget(form.dni, { 'attr': {'class': 'form-control','placeholder':'DNI/NIE' } }) }}
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-				<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-xs-5">
-				  	<div class="form-group">
-				  		<label class="" for="form_nom">&nbsp;</label>
-				  		<div class="input-group">
-							{{ form_widget(form.nom, { 'attr': {'class': 'form-control', 'placeholder':'Nom' } }) }}
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-				<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-xs-7">
-				  	<div class="form-group">
-				  		<label class="" for="form_cognoms">&nbsp;</label>
-				  		<div class="input-group">
-							{{ form_widget(form.cognoms, { 'attr': {'class': 'form-control', 'placeholder':'Cognoms' } }) }}
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-			</div>	
-			<div class="row">	
-				<div class="col-md-5 col-xs-12">
-				  	<div class="form-group">
-				  		{{ form_label(form.desde, 'Adreça de correu') }}
-				  		<div class="input-group">
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-envelope fa-1x"></span></span>
-							{{ form_widget(form.mail, { 'attr': {'class': 'form-control', 'placeholder':'Mail' } }) }}
-						</div>
-					</div>
-				</div>
-				<div class="col-md-2 col-xs-4">
-					<div class="form-group">
-						{{ form_label(form.desde, 'Amb llicència des de') }}
-						<div class="input-group" >
-							{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-		    	<div class="col-md-2 col-xs-4">
-					<div class="form-group">
-						{{ form_label(form.fins, 'fins') }}
-						<div class="input-group" >
-							{{ form_widget(form.fins, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
-							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-3 col-xs-4">
-					<div class="form-group">
-						<label>&nbsp;</label>
-						<div class="checkbox">
-					    	<label>
-					      		{{ form_widget(form.vigent) }} Amb llicència vigent
-					    	</label>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-2 col-xs-6">
-				  	<div class="form-group">
-				  		{{ form_label(form.professio, 'Professió') }}
-				  		<div class="input-group">
-							{{ form_widget(form.professio, { 'attr': {'class': 'form-control', 'placeholder':'Professió' } }) }}
-							<span class="input-group-addon input-group-addon-icon"><span class="fa fa-search fa-1x"></span></span>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4 col-xs-6 bottom10">
-					<div class="form-group">
-					   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
-						{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				</div>
-				<div class="col-md-4 col-xs-6">
-					<div class="form-group">
-					   	{{ form_label(form.titolsexterns, 'Titols altres organismes', { 'label_attr': {'class': ''} }) }}
-						{{ form_widget(form.titolsexterns, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				</div>
-				<div class="col-md-2 col-xs-6 col-last-right">
-					<div class="form-group">
-						<label class="" for="form_submit">&nbsp;</label>
-						<button id="formdadespersonals-submit"  type="submit" class="btn btn-default"><i class="fa fa-search blue"></i> cerca</button>
-					</div>
-				</div>
-			</div>
-			<div class="hidden">{{ form_rest(form) }}</div>
-		</section>
-    {{ form_end(form) }}
+  	<div id="edicio-persona">
+  		<div  class="row">
+  			<div class="col-md-11 col-sm-12 col-xs-12">
+   	        {% include 'FecdasBundle:Titulacions:dadespersona.html.twig' %}
+   	    	</div>
+		</div> 
 	</div>
-    
-	<div id="llista-dadespersonals" class="llista-dadespersonals">
-		<div class="table-header">	
-		   	<div id="list-header">
-		   		<div id="header-dadespersonalsid" class="col-listheader">id</div>
-		   		<div id="header-dadespersonalsdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'DNI', 'm.dni') }}
-		   				<span class="listheader-icon {% if persones.isSorted('m.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-dadespersonalscognomsnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nom', 'e.cognoms') }}
-		   				<span class="listheader-icon {% if persones.isSorted('e.cognoms') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-dadespersonalsnaixement" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(persones, 'Nascut/da', 'e.datanaixement') }}
-		   				<span class="listheader-icon {% if persones.isSorted('e.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-dadespersonalshistorialllicencies" class="col-listheader listheader-noorder">Llicències</div>
-		   		<div id="header-dadespersonalshistorialtitulacions" class="col-listheader listheader-noorder">Titulacions i docències</div>
-		   		<div id="header-dadespersonalsactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ persones.getTotalItemCount|number_format(0, ',', '.') }}</div>
-		   	</div>
-	   	</div> 
-		{% if persones|length > 0 %}
-		<div class="table-noscroll table-noscroll-large">
-		   	<ol id="list-data">
-				{% for persona in persones %}
-					{% set metapersona = persona.metapersona %}
-					{% if admin == true %}
-   						{% set personaId = metapersona.id %}
-   					{% else %}
-   						{% set personaId = persona.id %}
-  					{% endif %}	
-					
-			   		<li class="data-detall">
-				   		<div class="data-detall-cell dadespersonals-id">{{ personaId }}</div>
-				   		<div class="data-detall-cell dadespersonals-dni col-noresponsive">{{ persona.dni }}</div>
-				   		<div class="data-detall-cell dadespersonals-cognomsnom col-noresponsive">
-				   		    {{ persona.cognomsnom }}
-				   		    {% if persona.usuari is not null %}
-				   		    	<span class="subtitle"><a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
-		   						{{ persona.usuari.user }}</a></span>
-		   					{% else %}
-		   					    {% if persona.mail is not null and persona.mail != "" %}
-		   					   		<span class="subtitle">{{ persona.mail }}</span>
-		   					    {% endif %}
-				   		    {% endif %}
-				   		    {% if persona.professio is not null and persona.professio != "" %}
-		   					    <span class="subtitle darkgreen"><i class="fa fa-industry fa-1x"></i> {{ persona.professio }}</span>
-		   					{% endif %}
-				   		</div>
-				   		<div class="data-detall-cell dadespersonals-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
-				   		<div class="data-detall-cell dadespersonals-historialllicencies">
-				   			<a class="link-historial historial-llicencies nolink" href="{{ path('FecdasBundle_historialllicencies', { 'id': personaId }) }}"  alt="Historial de llicències" title="Historial de llicències">
-				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoHistorialLlicencies(admin, persones.params.desde, persones.params.fins) }}</span>
-			   				</a>
-						</div>
-						<div class="data-detall-cell dadespersonals-historialtitulacions">
-							{% set titulacions = persona.getInfoHistorialTitulacions() %}
-							{% if titulacions != '' %}
-				   				<a class="link-historial historial-titulacions nolink" href="{{ path('FecdasBundle_historialtitulacions', { 'id': personaId }) }}"  alt="Historial de titulacions" title="Historial de titulacions">
-				   					<i class="fa fa-graduation-cap systemblue"></i><span>{{ titulacions }}</span>
-			   					</a>
-			   				{% else %}
-			   					<span>{{ titulacions }}</span>
-			   				{% endif %}
-						</div>
-						<div class="data-detall-cell dadespersonals-actions">
-						{% set llicenciaVigent = persona.llicenciaVigent %}
-				   		{% if llicenciaVigent is not null and llicenciaVigent.parte is not null %}
-				   		    {% set parte = llicenciaVigent.parte %}
-							{% if parte.allowPrintLlicencia == true %}
-								<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': llicenciaVigent.id}) }}" alt="Llicència provisional" title="Llicència provisional">
-									<i class="fa fa-list-alt fa-1x orange"></i></a>
-							{% endif %}
-							{% if admin == true %}
-								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': llicenciaVigent.id}) }}" 
-									data-club="{{ parte.clubparte.nom }}"
-									data-persona="{{ persona.nomcognoms }}" alt="Imprimir llicència plàstic" title="Imprimir llicència plàstic">
-									<i class="fa fa-print blue"></i></a>
-								{% if parte.perEnviarFederat == true  %}
-        			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
-        			   					alt="Enviar llicència digital" title="Enviar llicència digital"><i class="fa systemblue"><b>@</b></i></a>
-        			   			{% endif %}
-        			   		{% else %}
-        			   			{# if parte.comandaPagada == true or parte.club.saldo >= 0 %}
-           			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
-           			   					alt="Demanar reenviament llicència digital" title="Demanar reenviament llicència digital"><i class="fa fa-reply fa-1x systemblue"></i></a>
-       			   				{% endif #}
-							{% endif  %}
-							{% if parte.allowRenovar %}
-								<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-				   					<i class="fa fa-retweet fa-1x green"></i></a>
-			   				{% endif %}
-			   				<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': parte.id, 'action':'view' }) }}"  alt="Veure llicència" title="Veure llicència">
-			   					<i class="fa fa-search fa-1x blue"></i></a>
-			   			{% else %}
-			   				{% if persona.lastLlicencia is not null and persona.lastLlicencia.parte is not null %}
-			   					{% set parte = persona.lastLlicencia.parte %}
-			   					{% if parte.allowRenovar %}
-    			   					<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': persona.lastLlicencia.id }) }}" alt="Renovar llicència" title="Renovar llicència">
-    			   						<i class="fa fa-retweet fa-1x green"></i></a>
-			   					{% endif %}
-			   					<a class="parte-action-view link" href="{{ path('FecdasBundle_parte', { 'id': persona.lastLlicencia.parte.id, 'action':'view' }) }}" alt="Veure llicència" title="Veure llicència">
-			   						<i class="fa fa-search fa-1x blue"></i></a>
-			   				{% endif %}
-				   		{% endif %}
-				   		{% if persona.usuari is not null %}
-				   			<a class="view-user link" href="{{ path('FecdasBundle_user', { 'id': persona.usuari.id }) }}"  alt="Veure dades usuari" title="Veure dades usuari">
-		   						<i class="fa fa-user-circle fa-1x darkgreen"></i></a>	
-				   		{% endif %}
-		   					<a class="formpersona-openmodal link" href="{{ path('FecdasBundle_persona', { 'id': persona.id }) }}" name="modal"  alt="Editar dades federat" title="Editar dades federat">
-		   						<i class="fa fa-address-book fa-1x red"></i></a>	
-				   		</div>
-			   		</li>
-			   		
-				{% endfor %}
-			</ol>
-		</div>
-		{% if persones.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(persones, null, sortparams) }}</div>{% endif %}		
-	   	{% else %}
-	        <div class="sms-notice">Cerca sense resultats</div>
-	    {% endif %}
-	    <div id="historial-overlay" class="finestra-overlay"></div>
-	</div>
-    
-   
-    <div id="edicio-persona" class="finestra-overlay"></div>
-    
+	<div class="row space50"></div>
 {% endblock %}
 
 {% block javascripts %}
@@ -272,201 +35,103 @@
 	<script src="{{ asset('js/utils/purl.js') }}" type="text/javascript"></script>
 	
 	<script type="text/javascript">
-	
+
 	$(document).ready(function(){
-		setMenuActive("menu-persones");
-
-		$("select#form_clubs").select2({
-			minimumInputLength: 2,
-			allowClear: true,
-			placeholder: 'Escollir club'
-		});
-
-		$("select#form_titols").select2({
-			minimumInputLength: 2,
-			allowClear: true,
-			placeholder: 'Escollir títol'
-		});
-
-		$("select#form_titolsexterns").select2({
-			minimumInputLength: 2,
-			allowClear: true,
-			placeholder: 'Escollir altre títols'
-		});
-		
-		helpBubbles("#form_dni", '<p>Indica tot o part del <b>DNI/NIE</b> a cercar</p>');
-		
-		helpBubbles("#form_nom", '<p>Indica tot o part del <b>NOM</b> a cercar</p>\
-		<p>La cerca no distingeix majúscules o minúscules</p>');
-	
-		helpBubbles("#form_cognoms", '<p>Indica tot o part dels <b>COGNOMS</b> a cercar</p>\
-		<p>La cerca no distingeix majúscules o minúscules</p>');
-
-		helpBubbles("#form_mail", '<p>Indica tot o part d\'una <b>adreça de correu</b> a cercar</p>\
-		<p>La cerca no distingeix majúscules o minúscules</p>');
-		
-		$('#form_dadespersonals').submit(function ( e ) {
-		
-			// Recarrega consulta afegint la dades del formulari
-			var url = "{{ path('FecdasBundle_dadespersonals', sortparams)|raw }}";
-		
-			var params = []; 
-			params.push( {'name':'clubs','value': $('#form_clubs').val()} );
-			params.push( {'name':'vigent','value': ($('#form_vigent').is(':checked'))?1:0} );
-			params.push( {'name':'dni','value': $('#form_dni').val()} );
-			params.push( {'name':'nom','value': $('#form_nom').val()} );
-			params.push( {'name':'cognoms','value': $('#form_cognoms').val()} );
-			params.push( {'name':'mail','value': $('#form_mail').val()} );
-			params.push( {'name':'professio','value': $('#form_professio').val()} );
-			params.push( {'name':'desde','value': $('#form_desde').val()} );
-			params.push( {'name':'fins','value': $('#form_fins').val()} );
-			params.push( {'name':'titols','value': $('#form_titols').val()} );
-			params.push( {'name':'titolsexterns','value': $('#form_titolsexterns').val()} );
-			
-			redirectLocationUrlParams(url, params);
-
-			e.preventDefault();
-		});
+		setMenuActive("menu-personals");
 
 		var current = new Date();
-		var mindate = new Date (current.getFullYear()-5, current.getMonth(), current.getDay());
-		var maxdate = new Date (current.getFullYear()+1, current.getMonth(), current.getDay());
+		var mindate = new Date( current.getFullYear() - 100, 1 - 1, 1);
+		var maxdate = new Date ( current.getFullYear() - 4, 1 - 1, 1);
+		var opendate = new Date ( current.getFullYear() - 30, 1 - 1, 1);
 		initDateTimePicker ( 
-			$( '#form_desde' ), 
+			$( '#persona_datanaixement' ), 
 			mindate, 
 			maxdate, 
-			current, 
-			'desde-picker', 
-			false,
-			function (selectedDateTime) {
-				//dadespersonalsReload("{# path('FecdasBundle_dadespersonals', sortparams)|raw #}");  
-			}
-		);
-	
-		initDateTimePicker ( 
-			$( '#form_fins' ), 
-			mindate, 
-			maxdate, 
-			current, 
-			'fins-picker', 
-			false,
-			function (selectedDateTime) {
-				//dadespersonalsReload("{# path('FecdasBundle_dadespersonals', sortparams)|raw #}"); 
-			}
+			opendate, 
+			'datanaixement-picker', 
+			false
 		);
 
-		$('#form_vigent').change(function () {
-			// Recarrega consulta afegint la dades del formulari
-			if ( $('#form_vigent').is(':checked') ) {
-				$( '#form_desde, #form_fins' ).prop('disabled', 'disabled').val( '' );
-				//$( '#form_desde, #form_fins' ).prop('placeholder', '--');
-			} else {
-				// Posar dates any en curs
-				$( '#form_desde, #form_fins' ).removeAttr('disabled');
-				$( '#form_desde' ).val( '01/01/'+current.getFullYear() );	
-				$( '#form_fins' ).val( '31/12/'+current.getFullYear() );
-				//dadespersonalsReload("{# path('FecdasBundle_dadespersonals', sortparams)|raw #}");
-			}
-			
-		});
-
-		showHistorialLlicencies();
-
-
-		//select all the a tag with name equal to modal
-		$('.formpersona-openmodal')
-	    .off('click')
-	    .click(function(e) {
-			//Cancel the link behavior
-	        e.preventDefault();
-	         
-	        var url = $(this).attr("href");
-	        showPersonModal(url, 'dadespersonals', function () {
-		        // Reload 
-	        	$('#form_dadespersonals').submit();
-	        });
-	    });
-
-		$(window).resize(function() {
-			hideMask();
-	        
-	        if ($.browser.msie) $('.dadespersonals-historial').hide(); 
-	    	else $('.dadespersonals-historial').slideUp('slow');
-		});
+		formFocus();
 		
+		autocompleters( $('#formpersona-autocompleters').attr('href'), $('#persona_addrpob'), $('#persona_addrcp'), $('#persona_addrprovincia'), $('#persona_addrcomarca'), "#edicio-persona" );
+		
+		imageUploadForm("#persona_fotoupld", 104);
 
-		$( ".llicencia-duplicat" ).click(function (e) {
-			e.preventDefault();
-			
-			var url = $(this).attr('href');
-
-			var club = $(this).attr('data-club'); 
-
-			var persona = $(this).attr('data-persona');
-			
-			var strHtml = "<p>Duplicat llicència "+persona+"</p>";
-			strHtml += "   <div class='form-group'>";
-			strHtml += "	  <div class='checkbox'>";
-			strHtml += "		<label>";
-			strHtml += "			<input type='checkbox' value='0' id='checkfactura'>"; 
-			strHtml += "			Cal crear una comanda nova per aquest duplicat a càrrec del club "+club+"?";
-			strHtml += "		</label>";
-			strHtml += "	  </div>";
-			/*strHtml += "      <div id='formduplicat-datafactura' style='display:none'>";
-			strHtml += "      	<label for='comanda_datafactura'>Data facturació</label>";
-			strHtml += "	    <input type='text' id='datafacturacio' disabled='disabled'/>";
-			strHtml += "      </div>";*/
-			strHtml += "  </div>";
-
-			dialegConfirmacio(strHtml, 'Comanda duplicat', 'auto', 400, function() { 
-				
-				//url += '&factura='+($('#checkfactura').is(':checked')?1:0)+'&datafacturacio='+$('#datafacturacio').val();
-				url += '&factura='+($('#checkfactura').is(':checked')?1:0);
-					
-				window.location = url;
-
-				closeDialegConfirmacio();
-				 
-			}, function() { closeDialegConfirmacio(); }, function() {
-
-				/*$("#checkfactura").click(function(){
-					var checked = $(this).is(':checked');
-					if (checked) {
-						$( "#datafacturacio" ).datepicker({
-				      		showOn: "button",
-				            //buttonImage: "/images/icon-calendar.gif",
-				            buttonText: "<i class='fa fa-calendar fa-1x blue'></i>",
-				            //buttonImageOnly: true,
-				            dateFormat: 'dd/mm/yy'
-				      	});
-					    
-					  	$( "#datafacturacio" ).datepicker( "setDate", new Date() );
-
-					  	$( "#formduplicat-datafactura").show();
-					} else {
-						$( "#formduplicat-datafactura").hide();
-
-						$( "#datafacturacio" ).datepicker('destroy');
-					}
-				});*/
-	        	
-			});
+		prepareRemoveFotoGaleria();
+		
+		prepareRemoveFile();
+		
+		prepareFileInput( $("#persona_arxiuupld") );
+		
+		$("select#persona_addrprovincia").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: "Província",
+		});
+		$("select#persona_addrcomarca").select2({
+			minimumInputLength: 2,
+			allowClear: true,
+			placeholder: "Comarca",
+		});
+		$("select#persona_addrnacionalitat").select2({
+			minimumInputLength: 1,
+			allowClear: true,
+			placeholder: "ESP",
 		});
 
+		$('.save-data').click(function (e) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	        var i = '';
+	        $("#dialeg").dialog({
+	          	buttons : {
+	            	"Confirmar" : {
+	            		click: function() {
+		    	        	$(this).dialog("close");
+		    	        	if ($('#persona_mail').val() != "") {  // Múltiples adreces acceptades mail 1; mail 2; ...
+		    	        		var mails = $('#persona_mail').val().split(";");
+	
+		    	        		for (i in mails) {
+		    	        			if (mails[i].trim() != "" && !isValidEmailAddress( mails[i].trim() ) ) {
+							        	dialegError("Error", "L'adreça de correu -"+mails[i]+"- no té un format correcte", 400);
+										return false;
+					   	        	}
+								}
+		    	        	}	
+		    	        	$('#formpersona').submit();
+		    	        	
 
-		// Delegate. Form llicència digital
-    	$( "#main-col" ).on( "click", ".enviar-llicencia", function(e) {
-    		e.preventDefault();
-    
-    		// Obrir form selecció federats
-    		var url = $(this).attr("href");
-    
-    		obrirTaulaSortidaLlicencies(url, 'Enviar llicència per mail', 'Enviar', function() {
-    			$('.alert.alert-dismissible').remove();
-    	   		submitEnviarLllicencies( '', function(){} );
-    	    });
-    		
-    	});
+	            		},
+	            		text: "Confirmar",
+	            		class: "btn btn-default"
+	        		},
+	            	"Cancel·lar" : {
+	            		click: function() {
+	            			$(this).dialog("close");
+	            		},
+	            		text: "Cancel·lar",
+	            		class: "btn btn-default"
+	            	}
+	          	},
+	        	title: "Actualitzar dades",
+	        	height: "auto",
+	        	width: 400,
+	        	zIndex:	350
+	        });
+			
+			var htmlRecordatori = "";
+			
+			if ($('#persona_mail').val() == "") {
+				htmlRecordatori += "<p>Cal indicar alguna <strong>l'adreça de correu</strong></p>";	
+			}
+			if (htmlRecordatori == "") {
+				htmlRecordatori = "<p>Confirmeu per desar els canvis o cancel·leu per descartar-los</p>";
+			}
+	        $("#dialeg").html(htmlRecordatori);
+	        $("#dialeg").dialog("open");
+	        
+	    }); 
 		
 	});
 	

@@ -100,8 +100,8 @@ class BaseController extends Controller {
 	
 	const CODI_FECDAS 					= 'CAT999';		
 	const CODI_CLUBTEST					= 'CAT000';
-	const CODI_CLUBINDEF				= 'CAT292';
-	const CODI_CLUBINDEPEDNENT			= 'CAT998';
+	const CODI_CLUBINDEFEDE				= 'CAT292';        // Federatives independents
+	const CODI_CLUBINDEPENDENT			= 'CAT998';        // Merchandising independents
 	
 	const CODI_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
@@ -724,6 +724,83 @@ class BaseController extends Controller {
 		return new \DateInterval('PT1200S'); // 20 minuts 
 	}
 	
+	protected function frontEndLoginCheck($isXmlHttpRequest = false, $accessFederats = false, $admin = false) {
+	    // No autenticat reenvia a login
+	    if ($this->isAuthenticated() != true) {
+	        $this->logEntryAuth('LOGIN CHECK', "Error no authenticated");
+	        
+	        return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_login', "Cal indicar les credencials per accedir a l\'Aplicació");
+	    }
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    $user = $checkRole->getCurrentUser();
+
+	    if ($user == null) {
+	        $this->logEntryAuth('LOGIN CHECK', "User null");
+	        
+	        return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_login', "No s'ha trobat l'usuari, poseu-vos en contacte amb la Federació");
+	    }
+
+	    /* Administradors */
+	    if ($admin && !$this->isCurrentAdmin()) {
+	        $this->logEntryAuth('LOGIN CHECK', "Error no admin ".$user->getUser());
+	        
+	        return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_home', "Acció no permesa. L\'esdeveniment a quedat registrat");
+	    }
+	    
+	    // Comprova usuari pendent d'indicar dades personals
+	    if ($user->isPendentDadesPersonals()) {
+	        return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'sms-notice', 'FecdasBundle_dadespersonals', "Cal omplir les dades personals");
+	    }
+	    
+	    if ($accessFederats) {
+	        if ($this->isCurrentAdmin()) {
+	            $this->logEntryAuth('ACCESS NO CLUB', "Error accés Admin");
+	            
+	            return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_homepage', "Només es pot accedir a aquesta funcionalitat amb rol Federat");
+	        }
+	        
+	    
+	        if (!$checkRole->isCurrentFederat() && !$checkRole->isCurrentInstructor()) {
+	            
+	            $this->logEntryAuth('ACCESS NO CLUB', "Error accés club ".$user->getUser());
+	                
+	            return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_homepage', "L\'usuari no disposa de permisos per realitzar aquesta acció, poseu-vos en contacte amb la Federació");
+	        }
+
+	        if ($user->getMetapersona() == null) {
+	            $this->logEntryAuth('ACCESS NO CLUB', "Error usuari sense metapersona ".$user->getUser());
+	            
+	            return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_homepage', $user->getUser().": "."No s'han trobat les dades personals de l'usuari, poseu-vos en contacte amb la Federació");
+	        }
+	            
+	        if ($user->getMetapersona()->getUltimesDadesPersonals() == null) {
+	            $this->logEntryAuth('ACCESS NO CLUB', "Error metapersona sense dades personals ".$user->getUser()." ".$user->getMetapersona()->getId());
+	            
+	            return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_homepage', $user->getUser().": "."No s'han trobat les dades personals corresponents a l'usuari, poseu-vos en contacte amb la Federació");
+	        }
+	    }
+	    
+	    // Continua
+	    return null;
+	}
+	
+	private function frontEndLoginCheckReturn($isXmlHttpRequest = false, $notice = 'error-notice', $url = 'FecdasBundle_homepage', $message = '') {
+	
+	    if ($isXmlHttpRequest) {
+	       $response = new Response($message);
+	       $response->setStatusCode(500);
+	       return $response;
+	    }
+	
+	    $this->get('session')->getFlashBag()->clear();
+	    $this->get('session')->getFlashBag()->add($notice, $message);
+	
+    	return $this->redirect($this->generateUrl($url));
+	
+	}
+	
 	protected function isAuthenticated() {
 		
 		$checkRole = $this->get('fecdas.rolechecker');
@@ -757,8 +834,8 @@ class BaseController extends Controller {
 		
 		if ($club == null) return false;
 		
-		if ($club->getCodi() == self::CODI_CLUBINDEF ||
-		    $club->getCodi() == self::CODI_CLUBINDEPEDNENT) return true;
+		if ($club->getCodi() == self::CODI_CLUBINDEFEDE ||
+		    $club->getCodi() == self::CODI_CLUBINDEPENDENT) return true;
 		
 		if (in_array( $club->getTipus()->getId(), self::getTipusClubsNoComandes() )) return false;
 		
@@ -2779,30 +2856,74 @@ class BaseController extends Controller {
 	    $club = $persona->getClub();
 	    
 	    if ($persona->getNom() == null || $persona->getNom() == "") {
-	        //if ($form != null) $form->get('nom')->addError(new FormError('Falta el nom'));
+	        if ($form != null) $form->get('nom')->addError(new FormError('Falta el nom'));
 	        throw new \Exception("Cal indicar el nom");
 	    }
 	    
 	    if ($persona->getCognoms() == null || $persona->getCognoms() == "") {
-	        //if ($form != null) $form->get('cognoms')->addError(new FormError('Falten els cognoms'));
+	        if ($form != null) $form->get('cognoms')->addError(new FormError('Falten els cognoms'));
 	        throw new \Exception("Cal indicar els cognoms");
 	    }
 	    
-	    if ($persona->getDni() == "") throw new \Exception("Cal indicar el DNI");
+	    if ($persona->getDni() == "") {
+	        if ($form != null) $form->get('dni')->addError(new FormError('Falta el DNI'));
+	        throw new \Exception("Cal indicar el DNI");
+	    }
 	    
-	    if ($persona->getSexe() != BaseController::SEXE_HOME && $persona->getSexe() != BaseController::SEXE_DONA)
-	        throw new \Exception('Manca indicar correctament el sexe de la persona ');
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($persona->getAddrnacionalitat());
+	    
+	    if ($nacio == null) $persona->setAddrnacionalitat('ESP');
+	    
+	    
+	    if ($checkdni) {
+	        /* Només validar DNI nacionalitat espanyola */
+	        $dnivalidar = $persona->getDni();
+	        /* Tractament fills sense dni, prefix M o P + el dni del progenitor */
+	        if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
+	        
+	        if (BaseController::esDNIvalid($dnivalidar) != true) {
+	            if ($form != null) $form->get('dni')->addError(new FormError('DNI incorrecte'));
+	            throw new \Exception('El DNI és incorrecte ');
+	        }
+	    }
+	    
+	    /* Check persona amb dni no repetida al mateix club */
+	    if ($persona->getId() == 0) {
+	        
+	        $metapersona = $persona->getMetapersona();
+	        
+	        $personaClub = $metapersona->getPersonaClub($club);
+	        
+	        if ($personaClub != null && $personaClub->getId() > 0) throw new \Exception("Existeix una altra persona al club amb aquest DNI");
+	    }
+	    
 	        
 	    $currentMin = $this->getCurrentDate();
 	    $currentMin->sub(new \DateInterval('P'.BaseController::EDAT_MINIMA.'Y')); // -4 anys
 	        
-	    if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "") throw new \Exception('Cal indicar la data de naixement');
+	    if ($persona->getDatanaixement() == null || $persona->getDatanaixement() == "") {
+	        if ($form != null) $form->get('datanaixement')->addError(new FormError('Falta la data'));
+	        throw new \Exception('Cal indicar la data de naixement');
+	    }
 	        
-	    if ($persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) throw new \Exception('La data de naixement és incorrecte');
+	    if ($persona->getDatanaixement()->format('Y-m-d') > $currentMin->format('Y-m-d')) {
+	        if ($form != null) $form->get('datanaixement')->addError(new FormError('Data incorrecte'));
+	        throw new \Exception('La data de naixement és incorrecte');
+	    }
 	        
+	    if ($persona->getSexe() != BaseController::SEXE_HOME && $persona->getSexe() != BaseController::SEXE_DONA)
+	        throw new \Exception('Manca indicar el sexe');
 	        
-	    if ($persona->getTelefon1() > BaseController::MAX_TELEFON) throw new \Exception("El número de telèfon no és correcte");
-	    if ($persona->getTelefon2() > BaseController::MAX_TELEFON) throw new \Exception("El número de mòbil no és correcte");
+	    if ($persona->getTelefon1() > BaseController::MAX_TELEFON) {
+	        if ($form != null) $form->get('telefon1')->addError(new FormError('Telèfon incorrecte'));
+	        throw new \Exception("El número de telèfon no és correcte");
+	    }
+	    if ($persona->getTelefon2() > BaseController::MAX_TELEFON) {
+	        if ($form != null) $form->get('telefon2')->addError(new FormError('Mòbil incorrecte'));
+	        throw new \Exception("El número de mòbil no és correcte");
+	    }
 	        
 	    /*if ($persona->getId() == 0 &&
 	         ($persona->getTelefon1() == null || $persona->getTelefon1() == 0 || $persona->getTelefon1() == "") &&
@@ -2819,31 +2940,6 @@ class BaseController extends Controller {
 	        $persona->setMail($strMails);
 	    }
 	        
-	    $em = $this->getDoctrine()->getManager();
-	        
-	    $nacio = $em->getRepository('FecdasBundle:EntityNacio')->findOneByCodi($persona->getAddrnacionalitat());
-	        
-	    if ($nacio == null) $persona->setAddrnacionalitat('ESP');
-	        
-	        
-	    if ($checkdni) {
-	         /* Només validar DNI nacionalitat espanyola */
-	         $dnivalidar = $persona->getDni();
-	         /* Tractament fills sense dni, prefix M o P + el dni del progenitor */
-	         if ( substr ($dnivalidar, 0, 1) == 'P' or substr ($dnivalidar, 0, 1) == 'M' ) $dnivalidar = substr ($dnivalidar, 1,  strlen($dnivalidar) - 1);
-	            
-	         if (BaseController::esDNIvalid($dnivalidar) != true) throw new \Exception('El DNI és incorrecte ');
-	    }
-	        
-	    /* Check persona amb dni no repetida al mateix club */
-	    if ($persona->getId() == 0) {
-	            
-	        $metapersona = $persona->getMetapersona();
-	            
-	        $personaClub = $metapersona->getPersonaClub($club);
-	            
-	        if ($personaClub != null && $personaClub->getId() > 0) throw new \Exception("Existeix una altra persona al club amb aquest DNI");
-	    }
 	        
 	    // Canviar format Nom i COGNOMS
 	    // Specials chars ñ, à, etc...
@@ -4022,26 +4118,6 @@ class BaseController extends Controller {
 		return $registre;
 	}
 
-	protected function checkAccessNoClub() {
-	    if (!$this->isAuthenticated()) throw new \Exception('Cal indicar les credencials per accedir a l\'Aplicació');
-	    
-	    $checkRole = $this->get('fecdas.rolechecker');
-	    
-	    if (!$checkRole->isCurrentFederat() &&
-	        !$checkRole->isCurrentInstructor())
-	        throw new \Exception('El rol actual de l\'usuari no disposa de permisos per realitzar aquesta acció');
-	        
-	    $user = $checkRole->getCurrentUser();
-	        
-	    if ($user == null) throw new \Exception($user->getUser().": "."No s'ha trobat l'usuari, poseu-vos en contacte amb la Federació");
-	        
-	    if ($user->getMetapersona() == null) throw new \Exception($user->getUser().": "."No s'han trobat les dades personals de l'usuari, poseu-vos en contacte amb la Federació");
-	        
-	    if ($user->getMetapersona()->getUltimesDadesPersonals() == null) throw new \Exception($user->getUser().": "."No s'han trobat les dades personals corresponents a l'usuari, poseu-vos en contacte amb la Federació");
-	    
-	    return $user;
-	}
-	
 	protected function exportCSV($request, $header, $data, $filename) {
 
 	    //$csvTxt = '"'.iconv('UTF-8', 'ISO-8859-1//TRANSLIT',implode('";"',$header)).'"'.CRLF;

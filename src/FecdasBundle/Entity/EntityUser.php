@@ -33,6 +33,11 @@ class EntityUser {
 	protected $pwd;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $newsletter;
+	
+	/**
 	 * @ORM\OneToMany(targetEntity="EntityUserClub", mappedBy="usuari")
 	 */
 	protected $clubs;	// Owning side of the relationship
@@ -63,10 +68,11 @@ class EntityUser {
 	 */
 	protected $databaixa;
 	
-	public function __construct( $user = null, $pwd = null, $metapersona = null ) {
+	public function __construct( $user = null, $pwd = null, $newsletter = true, $metapersona = null ) {
 		$this->id = 0;
 		$this->user = $user;
 		$this->pwd 	= $pwd;
+		$this->newsletter 	= $newsletter;
 		$this->metapersona = $metapersona;
 		$this->clubs = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -247,6 +253,17 @@ class EntityUser {
         return !$this->isAdmin() && !$this->isClub();
     }
     
+    
+    /**
+     * Usuari pendent d'omplir dades personals. Rol Federat + metapersona == null
+     *
+     * @return boolean
+     */
+    public function isPendentDadesPersonals()
+    {
+        return $this->isFederat() && $this->metapersona == null;
+    }
+    
 	/**
      * Get club
      *
@@ -314,29 +331,6 @@ class EntityUser {
     	return null;
     }
 	
-    
-    
-    /**
-     * Si metapersona => $this->metapersona->getNewsletter()
-     * En cas contrari false
-     * 
-     * @return boolean
-     */
-    public function getNewsletter()
-    {
-        return $this->metapersona != null?$this->metapersona->getNewsletter():false;
-    }
-    
-    /**
-     * Set metapersona newsletter si no és null
-     *
-     * @param boolean $newsletter
-     */
-    public function setNewsletter($newsletter)
-    {
-        if ($this->metapersona != null) $this->metapersona->setNewsletter($newsletter);
-    }
-    
 	/**
      * Get id
      *
@@ -398,6 +392,29 @@ class EntityUser {
         return $this->pwd;
     }
 	
+    /**
+     * Get newsletter
+     *
+     * @return boolean
+     */
+    public function getNewsletter()
+    {
+        return $this->newsletter;
+    }
+    
+    /**
+     * Set newsletter
+     * Set metapersona newsletter si no és null
+     *
+     * @param boolean $newsletter
+     */
+    public function setNewsletter($newsletter)
+    {
+        $this->newsletter = $newsletter;
+        if ($this->metapersona != null) $this->metapersona->setNewsletter($newsletter);
+    }
+    
+    
 	/**
      * Get clubs
      *

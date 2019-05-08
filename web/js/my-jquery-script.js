@@ -891,12 +891,12 @@
 		    	else $('#historial-overlay').stop().fadeIn('fast');
 		        	
 	        	var cssTop = (index * 35);
-	        	if ($('#historial-overlay').height() + cssTop > $('#llista-dadespersonals').height() ) {
-	        		cssTop = $('#llista-dadespersonals').height() - ($('#historial-overlay').height() + cssTop); // Negatiu
+	        	if ($('#historial-overlay').height() + cssTop > $('#llista-dadesfederats').height() ) {
+	        		cssTop = $('#llista-dadesfederats').height() - ($('#historial-overlay').height() + cssTop); // Negatiu
 	        	}
 	        	$('#historial-overlay').css({'top': cssTop });
 	        	
-		        obrirMascaraBlock(  $('.llista-dadespersonals .table-scroll') );
+		        obrirMascaraBlock(  $('.llista-dadesfederats .table-scroll') );
 		        
 		        actionsModalOverlay();
 			        
@@ -915,7 +915,7 @@
         		// xhr.status + " " + xhr.statusText, status, error
 	        	var sms = smsResultAjax('KO', xhr.responseText);
 	    			 
-	   			$('#form_dadespersonals').append(sms);
+	   			$('#form_dadesfederats').append(sms);
         	});
 	    });
 	};

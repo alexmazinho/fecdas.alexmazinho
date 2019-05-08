@@ -145,9 +145,9 @@ FecdasBundle_llicenciesfederattopdf:
     requirements:
         methods:  GET
 
-FecdasBundle_dadespersonalstopdf:
-    path:  /dadespersonalstopdf
-    defaults: { _controller: "FecdasBundle:PDF:dadespersonalstopdf" }
+FecdasBundle_dadesfederatstopdf:
+    path:  /dadesfederatstopdf
+    defaults: { _controller: "FecdasBundle:PDF:dadesfederatstopdf" }
     requirements:
         methods:  GET
 
@@ -367,9 +367,9 @@ FecdasBundle_curs:
     requirements:
         methods:  GET|POST
 
-FecdasBundle_dadespersonals:
-    path:  /dadespersonals
-    defaults: { _controller: "FecdasBundle:Titulacions:dadespersonals" }
+FecdasBundle_dadesfederats:
+    path:  /dadesfederats
+    defaults: { _controller: "FecdasBundle:Titulacions:dadesfederats" }
     requirements:
         methods:  GET
 
@@ -410,9 +410,9 @@ FecdasBundle_titulacionsfederat:
     requirements:
         methods:  GET
         
-FecdasBundle_dadesfederat: 
-    path:  /dadesfederat
-    defaults: { _controller: "FecdasBundle:Titulacions:dadesfederat" }
+FecdasBundle_dadespersonals: 
+    path:  /dadespersonals
+    defaults: { _controller: "FecdasBundle:Titulacions:dadespersonals" }
     requirements:
         methods:  GET/POST        
 

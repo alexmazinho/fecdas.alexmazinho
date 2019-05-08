@@ -2042,30 +2042,30 @@ select#parte_renovar_tipus { width: 240px; }
 /********************************************* Llista persones ****************************************************/
 
 
-#header-dadespersonalsid { display:none}
-#header-dadespersonalsdni {	width: 10%;  }
-#header-dadespersonalscognomsnom {	width: 20%; text-align: left;}
-#header-dadespersonalsnaixement { width: 10%;text-align: center; }
-#header-dadespersonalshistorialllicencies { width: 29%;text-align: left; }
-#header-dadespersonalshistorialtitulacions { width: 19%;text-align: left; }
-#header-dadespersonalsactions { width: 12%;text-align: right; }
+#header-dadesfederatsid { display:none}
+#header-dadesfederatsdni {	width: 10%;  }
+#header-dadesfederatscognomsnom {	width: 20%; text-align: left;}
+#header-dadesfederatsnaixement { width: 10%;text-align: center; }
+#header-dadesfederatshistorialllicencies { width: 29%;text-align: left; }
+#header-dadesfederatshistorialtitulacions { width: 19%;text-align: left; }
+#header-dadesfederatsactions { width: 12%;text-align: right; }
 
-.dadespersonals-id {	display:none}
-.dadespersonals-dni { width: 10%;  }
-.dadespersonals-cognomsnom { width: 20%; text-align: left; }
-.dadespersonals-naixement { width: 10%; text-align:center;}
-.dadespersonals-historialllicencies { width: 29%; text-align:left; }
-.dadespersonals-historialtitulacions { width: 19%; text-align:left; }
-.dadespersonals-actions { width: 12%; text-align: right;   }
+.dadesfederats-id {	display:none}
+.dadesfederats-dni { width: 10%;  }
+.dadesfederats-cognomsnom { width: 20%; text-align: left; }
+.dadesfederats-naixement { width: 10%; text-align:center;}
+.dadesfederats-historialllicencies { width: 29%; text-align:left; }
+.dadesfederats-historialtitulacions { width: 19%; text-align:left; }
+.dadesfederats-actions { width: 12%; text-align: right;   }
 
-#llista-dadespersonals { position: relative; }
+#llista-dadesfederats { position: relative; }
 
-#llista-dadespersonals #list-header  { position: relative;  }
-#llista-dadespersonals .data-detall { /*display:inline*/ /*display: inline-block;*/  width: 100%; /*position: relative; */ } /* Permet afegir historial*/
+#llista-dadesfederats #list-header  { position: relative;  }
+#llista-dadesfederats .data-detall { /*display:inline*/ /*display: inline-block;*/  width: 100%; /*position: relative; */ } /* Permet afegir historial*/
 
-#llista-dadespersonals .historial-llicencies, #llista-dadespersonals .historial-titulacions  { color: #555555; }
+#llista-dadesfederats .historial-llicencies, #llista-dadesfederats .historial-titulacions  { color: #555555; }
 
-#llista-dadespersonals .historial-llicencies:hover, #llista-dadespersonals .historial-titulacions:hover  { color: #2281CF; }
+#llista-dadesfederats .historial-llicencies:hover, #llista-dadesfederats .historial-titulacions:hover  { color: #2281CF; }
 
 .taula-historial img { /*position: absolute; right:0; bottom:0; width: 90%; padding: 0;*/ display:inline-block; vertical-align:middle  }
 

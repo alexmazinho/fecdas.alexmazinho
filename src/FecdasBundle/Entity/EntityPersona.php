@@ -509,6 +509,16 @@ class EntityPersona {
     }
     
     /**
+     * Nova?
+     *
+     * @return boolean
+     */
+    public function nova()
+    {
+        return $this->id == 0;
+    }
+    
+    /**
      * Get id
      *
      * @return integer 

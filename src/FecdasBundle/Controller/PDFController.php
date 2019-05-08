@@ -47,9 +47,7 @@ class PDFController extends BaseController {
 	
 	public function facturatopdfAction(Request $request) {
 		/* Factura parte */
-		
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 
 		$reqId = 0;
 		if ($request->query->has('id')) {
@@ -85,9 +83,7 @@ class PDFController extends BaseController {
 
 	public function rebuttopdfAction(Request $request) {
 		/* Rebut comanda */
-	
-		if ($this->isAuthenticated() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$reqId = $request->query->get('id', 0);
 		$rebut = $this->getDoctrine()->getRepository('FecdasBundle:EntityRebut')->find($reqId);
@@ -109,7 +105,7 @@ class PDFController extends BaseController {
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function dadespersonalstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '', $mail = '', $professio = '') {
+	public function dadesfederatstopdfAction($persones, $print = false, $desde = null, $fins = null, $vigents = false, $dni = '', $nom = '', $cognoms = '', $mail = '', $professio = '') {
 		/* PDF Llistat de dades personals filtrades */
 		$club = $this->getCurrentClub();
 		
@@ -174,7 +170,7 @@ class PDFController extends BaseController {
 		
 		//$w = array(8, 44, 20, 26, 82); // Amplades
 		$w = array(8, 37, 16, 22, 67, 30); // Amplades
-		$this->dadespersonalsHeader($pdf, $w);
+		$this->dadesfederatsHeader($pdf, $w);
 		$pdf->SetFillColor(255, 255, 255); //Blanc
 		$pdf->SetFont('dejavusans', '', 7, '', true);
 		
@@ -186,7 +182,7 @@ class PDFController extends BaseController {
 			$num_pages = $pdf->getNumPages();
 			$pdf->startTransaction();
 				
-			$this->dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w);
+			$this->dadesfederatsRow($pdf, $persona, $desde, $fins, $total, $w);
 					
 			if($num_pages < $pdf->getNumPages()) {
 	
@@ -194,11 +190,11 @@ class PDFController extends BaseController {
 				$pdf->rollbackTransaction(true);
 				
 				$pdf->AddPage();
-				$this->dadespersonalsHeader($pdf, $w);
+				$this->dadesfederatsHeader($pdf, $w);
 				$pdf->SetFillColor(255, 255, 255); //Blanc
 				$pdf->SetFont('dejavusans', '', 9, '', true);
 				
-				$this->dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w);
+				$this->dadesfederatsRow($pdf, $persona, $desde, $fins, $total, $w);
 					
 			} else {
 				//Otherwise we are fine with this row, discard undo history.
@@ -275,7 +271,7 @@ class PDFController extends BaseController {
 		// reset pointer to the last page
 		$pdf->lastPage();
 					
-		$filename = "dadespersonals_".BaseController::getInfoTempsNomFitxer($desde, $fins).".pdf";
+		$filename = "dadesfederats_".BaseController::getInfoTempsNomFitxer($desde, $fins).".pdf";
 		
 		if ($print) {
 			// force print dialog
@@ -292,7 +288,7 @@ class PDFController extends BaseController {
 		
 	}
 	
-	private function dadespersonalsRow($pdf, $persona, $desde, $fins, $total, $w) {
+	private function dadesfederatsRow($pdf, $persona, $desde, $fins, $total, $w) {
 		$llicencia = $persona->getLlicenciaVigent();
 		
 		$h = 6;
@@ -387,7 +383,7 @@ class PDFController extends BaseController {
 		
 	}
 	
-	private function dadespersonalsHeader($pdf, $w) {
+	private function dadesfederatsHeader($pdf, $w) {
 		$pdf->SetFont('dejavusans', 'B', 9, '', true);
 		$pdf->SetFillColor(221, 221, 221); //Gris
 		
@@ -407,6 +403,8 @@ class PDFController extends BaseController {
 	
 	public function partetopdfAction(Request $request) {
 	
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
 		if ($request->query->has('id')) {
 			$parte = $this->getDoctrine()
 				->getRepository('FecdasBundle:EntityParte')
@@ -809,7 +807,8 @@ class PDFController extends BaseController {
 	}
 	
 	public function licensetopdfAction(Request $request) {
-	
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
 		if ($request->query->has('id')) {
 			$llicencia = $this->getDoctrine()
 							->getRepository('FecdasBundle:EntityLlicencia')
@@ -979,8 +978,7 @@ class PDFController extends BaseController {
 	}
 
 	public function imprimirllicenciaAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		$llicenciaid = $request->query->get("id");
 	
@@ -1022,6 +1020,8 @@ class PDFController extends BaseController {
 
 			$checkRole = $this->get('fecdas.rolechecker');
 			
+			if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+			
 			if (!$this->isCurrentAdmin() && 
 			    ($checkRole->isCurrentClub() ||
 			    $llicencia->getPersona()->getMetapersona()->getId() != 
@@ -1061,8 +1061,7 @@ class PDFController extends BaseController {
 	}
 	
 	public function carnettopdfAction(Request $request) {
-		if ($this->isCurrentAdmin() != true)
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 	
 		if ($request->query->has('participant')) {
 		    $participant = $request->query->get('participant', 0);
@@ -1212,7 +1211,6 @@ class PDFController extends BaseController {
 
 	public function cursostopdfAction($cursos, $club = null, $titol = null, $alumne = '', $desde = null, $fins = null, $pervalidar = false) {
 	    /* PDF Llistat de dades personals filtrades */
-	    
 	    $pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	    $pdf->init(array('author' => 'FECDAS', 'title' => "Llista de cursos"),
 	        true, ($this->isCurrentAdmin()?'ADMINISTRADOR - ':''));
@@ -1499,8 +1497,7 @@ class PDFController extends BaseController {
 	
 	public function actacurspdfAction(Request $request) {
 			
-		if (!$this->isAuthenticated())
-			return $this->redirect($this->generateUrl('FecdasBundle_login'));
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
 		$id = $request->query->get('id', 0);
 		

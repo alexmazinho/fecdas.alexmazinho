@@ -11,55 +11,23 @@
 
 {% block body %}
 	<header>
-        <h1><a href="{{ backurl }}">{{ comanda.backTextPagament }}</a> > Pagament {{ comanda.origenpagament }} </h1>
+		<div class="row">
+    		<div class="col-md-9 col-sm-9 col-xs-12"><h1><a href="{{ backurl }}">{{ comanda.backTextPagament }}</a> > Pagament {{ comanda.origenpagament }}</h1></div>
+    		<div class="col-md-1 col-sm-1 col-xs-12 col-last-right">
+    			<div class="buttons-top-bootstrap">
+    				<div class="button-top">
+    					<a class="link pagament-tpv" href="{{ payment.url }}" alt="Passarel·la de pagament" 
+    					title="Passarel·la de pagament"><i class="fa fa-credit-card fa-1x green"></i></a>
+    				</div>	
+    			</div> 
+    		</div>
+    	</div>
     </header>
 
-    {% for flashMessage in app.session.flashbag.get('error-notice') %}
-    <div class="sms-notice">
-		{{ flashMessage }}
-  	</div>	
-	{% endfor %}
-        
-    <div id="fact-header">
-	   	<div id="fact-dadesclub">
-    		<ol class="fact-summary-table table-noscroll">
-    			{% set club = comanda.club %}
-	   			<li class="data-detall">
-	   				<div class="data-detall-cell fact-titol">Club</div>
-	   				<div id="fact-club" class="data-detall-cell">{{ club.nom }}</div>
-	   		   	</li>
-	   		   	<li class="data-detall">
-	   		   		<div class="data-detall-cell fact-titol">Adreça</div>
-	   		   		<div id="fact-adreca" class="data-detall-cell">{{ club.addradreca }}</div>
-	   		   	</li>
-	   		   	<li class="data-detall">
-	   		   		<div class="data-detall-cell fact-titol">Població</div>
-	   		   		<div id="fact-pobcp" class="data-detall-cell">{{ club.addrpob }} ({{ club.addrcp}}) </div>
-	   		   	</li>
-	   		   	<li class="data-detall">
-	   		   		<div class="data-detall-cell fact-titol">Província</div>
-	   		   		<div id="fact-prov" class="data-detall-cell">{{ club.addrprovincia }}</div>
-	   		   	</li>
-	   		   	<li class="data-detall">
-	   		   		<div class="data-detall-cell fact-titol">Telèfon</div>
-	   		   		<div id="fact-telefon" class="data-detall-cell">{{ club.telefon }}</div>
-		   		</li>
-			</ol>
-	   	</div>	   		
-	   	<div id="fact-dadesfactura">
-    		<ol class="fact-summary-table table-noscroll">
-	   			<li class="data-detall">
-	   		   		<div class="data-detall-cell fact-titol">Data</div>
-	   		   		<div id="fact-data" class="data-detall-cell">{{ "now"|date("m/d/Y") }}</div>
-	   		   	</li>
-	   		   	<li class="data-detall">
-	   		   		<div class="data-detall-cell fact-titol">CIF</div>
-	   		   		<div id="fact-cif" class="data-detall-cell">{{ club.cif }}</div>
-	   		   	</li>
-	   		</ol>
-	   		
-	   		{{ form_start(formpayment, {'action': payment.url, 'method': 'POST', 'attr': {'class': 'appform', 'id':'formpayment'}}) }}
-	   			{# form_widget(formpayment.preu, { 'name': 'Ds_Merchant_Amount'} ) }}
+	<div class="pagament-llicencies container-fluid">
+		<div class="row"><div class="col-md-10 col-sm-10 col-xs-12 form-viewport">
+        {{ form_start(formpayment, {'action': payment.url, 'method': 'POST', 'attr': {'class': 'appform', 'id':'formpayment'}}) }}
+       			{# form_widget(formpayment.preu, { 'name': 'Ds_Merchant_Amount'} ) }}
 	   			{{ form_widget(formpayment.numordre, { 'name': 'Ds_Merchant_Order'} ) }}
 	   			{{ form_widget(formpayment.codi, { 'name': 'Ds_Merchant_MerchantCode'} ) }}
 	   			{{ form_widget(formpayment.terminal, { 'name': 'Ds_Merchant_Terminal'} ) }}
@@ -75,18 +43,111 @@
 	   			{{ form_widget(formpayment.params, { 'name': 'Ds_MerchantParameters'} ) }}
 	   			{{ form_widget(formpayment.signatura, { 'name': 'Ds_Signature'} ) }}
 	   			{{ form_widget(formpayment.version, { 'name': 'Ds_SignatureVersion'} ) }}
-	   			<div id="formpayment-buttons" class="payment-submit">
-					<input type="submit" id="formpayment-button-payment" class="btn btn-default" value="Confirmar" name="formpayment-button-payment"/>
-				</div> 
-	   		{{ form_end(formpayment) }}
-	   	</div>
-    </div>
+    	<div class="row">
+			 <div class="col-md-12 col-sm-12 col-xs-12">
+                {% include 'FecdasBundle:Includes:messages.html.twig' %}
+			 </div>
+		</div>
+        
+        <div class="row">
+        	<div class="col-md-4 col-sm-6 col-xs-12">
+            	<div class="factura-dadesclub">
+            		<div class="bottom50"></div>
+            		<h3 class="underline blue bottom25">Facturar a</h3>
+            		{% if comanda.comandaUsuari == true %}
+                	    {% set usuari = comanda.usuari %}
+                	    {% set metapersona = usuari.metapersona %}
+                	    {% set persona = metapersona.getPersona(constant('FecdasBundle\\Controller\\BaseController::CODI_CLUBINDEFEDE')) %}
+        				<table class="table">
+                   		   	<tbody class="table-noscroll">
+               					<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Nom</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ persona.getNomCognoms() }}</td>
+               			   		</tr>
+               			   		<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">DNI/NIE</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ persona.dni }}</td>
+               			   		</tr>
+               			   		<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol  data-detall-cell-left">Adreça</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">
+                   				   	    {{ persona.addradreca }}<br/>
+                   				   	    {{ persona.addrpob }} {% if persona.addrcp != '' %} ({{ persona.addrcp}}) {% endif %}
+                   				   	    {{ persona.addrprovincia }}
+                   				   	</td>
+               			   		</tr>
+               			   		<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Telèfon</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ persona.getTelefons() }}</td>
+               			   		</tr>
+                   			</tbody>
+        		   		</table> 
+    		   		{% else %}
+    		   		    {% set club = comanda.club %}
+        				<table class="table">
+                   		   	<tbody class="table-noscroll">
+               					<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Club</td>
+                   				   	<td class="data-detall-cell data-detall-cell-left">{{ club.nomfactura }}</td>
+               			   		</tr>
+               			   		<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">DNI/NIE</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ club.cif }}</td>
+               			   		</tr>
+               			   		<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Adreça</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">
+                   				   	    {{ club.addradreca }}<br/>
+                   				   	    {{ club.addrpob }} {% if club.addrcp != '' %} ({{ club.addrcp}}){% endif %}<br/>
+                   				   	    {{ club.addrprovincia }}
+                   				   	</td>
+               			   		</tr>
+               			   		<tr class="data-detall">
+                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Telèfon</td>
+                   				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ club.telefons }}</td>
+               			   		</tr>
+                   			</tbody>
+        		   		</table> 
+    		   		{% endif %}
+    			</div>
+        	</div>
+        	<div class="col-md-6 col-md-offset-2 col-sm-6 col-xs-12">
+        		<div class="factura-dadesfederacio">
+        			<div class="row row-no-gutters blue bottom25" style="text-align: right;">
+        				<div class="col-md-10">
+        					Federació Catalana d'Activitats Subaquàtiques<br/>
+        					Moll de la Vela, 1 (Zona Fòrum)<br/>
+                   			08930 - Sant Adrià de Besòs<br/>
+                   			Barcelona </div>
+                   		<div class="col-md-2"><img width="40" src="{{ asset('images/fecdaslogo.png') }}"></div>
+					</div>
+					<div class="row"> 
+						<div class="col-md-6 col-md-offset-6">
+            				<table class="table">
+                       		   	<tbody class="table-noscroll">
+                   					<tr class="data-detall">
+                       				   	<td class="data-detall-cell fact-titol data-detall-cell-right">Núm. factura</td>
+                       				   	<td class="data-detall-cell data-detall-cell-right">{{ comanda.factura.numFactura }}</td>
+                   			   		</tr>
+                   			   		<tr class="data-detall">
+                       				   	<td class="data-detall-cell fact-titol data-detall-cell-right">Data</td>
+                       				   	<td class="data-detall-cell data-detall-cell-right">{{ "now"|date("m/d/Y") }}</td>
+                   			   		</tr>
+                       			</tbody>
+            		   		</table> 
+            		   	</div>
+    		   		</div>
+    			</div>
+        	</div>
+        </div>
+        
+    
    
     <div class="table-header">
     	<div id="list-header" >
     		<div id="header-factdetallid" class="col-listheader">id</div>
-   			<div id="header-factdetallcodi" class="col-listheader">Codi</div>
-		   	<div id="header-factdetalldesc" class="col-listheader">Descripció</div>
+   			<div id="header-factdetallcodi" class="col-listheader">Codi</div> 
+		   	<div id="header-factdetalldesc" class="col-listheader">Descripció</div> 
 		   	<div id="header-factdetallquantitat" class="col-listheader">Quantitat</div>
 		   	<div id="header-factdetallpreuunitat" class="col-listheader">Preu<br/>Unitat</div>
 		   	<div id="header-factdetallpreusiva" class="col-listheader">Preu<br/>Total</div>
@@ -129,6 +190,9 @@
 		<div class="sms-footer">Factura exempta d'I.V.A. d'acord a l'article UNO 20.13 de la llei de l'IVA</div>
 		{% endif %}
   	 {% endif %}
+	 	{{ form_end(formpayment) }}
+		</div></div>
+	</div>
 
 {% endblock %}
 
@@ -138,17 +202,23 @@
 
 <script type="text/javascript">
 
-$(document).ready(function() {
-	setMenuActive("{{ comanda.menuActiuPagament }}");
-	
-    $('#formpayment').submit(function() {
-    	//event.preventDefault();
-        
-    	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
-        this.target = 'tpv';
-        location.reload(); // Refresca pàgina i ordre TPV
+    $(document).ready(function() {
+    	setMenuActive("{{ comanda.menuActiuPagament }}");
+    	
+    	$('.pagament-tpv').click(function (e) {	
+        	e.preventDefault();
+            
+            $('#formpayment').submit();
+        });
+            
+        $('#formpayment').submit(function() {
+        	//event.preventDefault();
+            
+        	window.open('','tpv','width=800,height=600,scrollbars=yes,resizable=yes,status=yes,menubar=no,location=no');
+            this.target = 'tpv';
+            location.reload(); // Refresca pàgina i ordre TPV
+        });
     });
-});
 
 
 </script>

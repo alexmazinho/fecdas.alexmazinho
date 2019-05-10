@@ -1,0 +1,150 @@
+{# src/Fecdas/PartesBundle/Resources/views/Page/tramitaciollicencia.html.twig #}
+{% extends 'FecdasBundle::layout.html.twig' %}
+
+{% block title %}Aplicació gestió FECDAS. Tramitació assegurança pesca esportiva{% endblock %}
+
+{% block body %}
+	
+    <header>
+    	<div class="row">
+    		<div class="col-md-6 col-sm-10 col-xs-12"><h1>Tramitació assegurança pesca esportiva</h1></div>
+    		<div class="col-md-2 col-sm-1 col-xs-12 col-last-right">
+    			<div class="buttons-top-bootstrap">
+    				<div class="button-top">
+    					<a class="link pagament-llicencia" href="{{ path('FecdasBundle_tramitaciollicencia') }}" alt="Tramitar llicència" 
+    					title="Tramitar llicència"><i class="fa fa-shopping-cart fa-1x green"></i></a>
+    				</div>	
+    			</div> 
+    		</div>
+    	</div>
+    </header>
+
+	<div class="tramitacio-llicencia container-fluid">
+		<div class="row"><div class="col-md-8 col-sm-11 col-xs-12 form-viewport">
+        {{ form_start(llicencia, {'action': path('FecdasBundle_tramitaciollicencia'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formtramitacio-llicencia'}}) }}
+		<div class="row">
+			 <div class="col-md-12 col-sm-12 col-xs-12">
+                {% include 'FecdasBundle:Includes:messages.html.twig' %}
+			 </div>
+		</div>
+	
+		<div class="row">
+			<div id="formllicencia-id">
+		        {{ form_widget(llicencia.id) }}
+			</div>
+			<div class="col-md-12 col-sm-12 col-xs-12">
+				<h3 class="underline blue bottom25">
+					Dades del titular
+					<a id="formtramitacio-dadespersonals"  class="btn btn-link link" href="{{ path('FecdasBundle_dadespersonals') }}" alt="Actualitzar dades personals" title="Actualitzar dades personals">
+    					<i class="fa fa-pencil orange"></i>
+    				</a>
+				</h3>
+			</div>
+			<div class="col-md-7 col-sm-7 col-xs-10">
+				<div class="form-group">
+					{{ form_label(llicencia.persona, 'Nom', { 'label_attr': {'class': ''} }) }}
+					<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-user fa-1x"></span></span>
+						{{ form_widget(llicencia.persona, { 'attr': {'class': 'form-control','placeholder':'Titular'} }) }}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-4 col-sm-4 col-xs-8">
+				<div class="form-group">
+					{{ form_label(llicencia.dni, 'DNI / NIE', { 'label_attr': {'class': ''} }) }}
+					<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-address-card fa-1x"></span></span>
+						{{ form_widget(llicencia.dni, { 'attr': {'class': 'form-control form-control-center','placeholder':'DNI / NIE'} }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-4 col-xs-8">
+				<div class="form-group">
+					{{ form_label(llicencia.datanaixement, 'Data naixement') }}
+					<div class="input-group" >
+						{{ form_widget(llicencia.datanaixement, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="space50"></div>
+		<div class="row">
+			<div class="col-md-12 col-sm-12 col-xs-12">
+				<h3 class="underline blue bottom25">Dades assegurança</h3>
+			</div>			
+			<div class="col-md-6 col-sm-7 col-xs-10">
+				<div class="form-group">
+					{{ form_label(llicencia.tipus, 'Llicència', { 'label_attr': {'class': ''} }) }}
+					<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-bars fa-1x"></span></span>
+						{{ form_widget(llicencia.tipus, { 'attr': {'class': 'form-control','placeholder':'Llicència' } }) }}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-4 col-sm-4 col-xs-8">
+				<div class="form-group">
+					{{ form_label(llicencia.categoria, 'Tipus', { 'label_attr': {'class': ''} }) }}
+					<div class="input-group">
+						<span class="input-group-addon input-group-addon-icon"><span class="fa fa-bars fa-1x"></span></span>
+						{{ form_widget(llicencia.categoria, { 'attr': {'class': 'form-control','placeholder':'Tipus' } }) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-4 col-xs-8">
+				<div class="form-group">
+					{{ form_widget(llicencia.datacaducitat) }}
+					{{ form_label(llicencia.datacaducitatshow, 'Fins a') }}
+					<div class="input-group" >
+						{{ form_widget(llicencia.datacaducitatshow, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
+						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		<div class="hidden">{{ form_rest(llicencia) }}</div>	
+		</div></div>
+	</div>
+     
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+	
+    <script type="text/javascript">
+    
+    $(document).ready(function() {
+    
+    	setMenuActive("menu-tramitallicencia");
+
+    	
+    	$('.pagament-llicencia').click(function (e) {	
+    		e.preventDefault();
+    
+    		var url = $(this).attr('href');
+    		var idsLlicencies = [];
+    
+    		var strHtml = '<p>Continuar amb el pagament?</p>';
+    		
+    		dialegConfirmacio( strHtml, "Pagament ...", 0, 400, function() {
+    			$('#formtramitacio-llicencia').submit();
+
+    			closeDialegConfirmacio();
+            }, 
+            function() { closeDialegConfirmacio(); /* Cancel */ }, 
+            function() { });
+    		
+    	});
+    });
+
+</script>
+
+
+{% endblock %}
+

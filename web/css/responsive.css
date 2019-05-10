@@ -91,7 +91,7 @@ Examples
 	
 	#header .notifications { display: none;  }
 	
-	.login .btn-primary.user-login { width: 150px; }
+	.login .btn-primary.user-login { max-width: 220px; }
 }
 
 /* BOOTSTRAP -SM */

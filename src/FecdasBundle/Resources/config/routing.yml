@@ -66,6 +66,12 @@ FecdasBundle_confirmcsv:
     requirements:
         methods:  GET
 
+FecdasBundle_tramitaciollicencia:
+    path:  /tramitaciollicencia
+    defaults: { _controller: "FecdasBundle:Page:tramitaciollicencia" }
+    requirements:
+        methods:  GET|POST
+
 FecdasBundle_llicencia:
     path:  /llicencia
     defaults: { _controller: "FecdasBundle:Page:llicencia" }

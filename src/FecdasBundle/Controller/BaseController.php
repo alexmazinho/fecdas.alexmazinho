@@ -68,6 +68,7 @@ class BaseController extends Controller {
     const LANG_CA = 'CA';
     const LANG_ES = 'ES';
     const ID_TIPUS_PARTE_LLICENCIES_A = 1;
+    const ID_TIPUS_PARTE_LLICENCIES_F = 8;
     
 	//const TIPUS_CLUBS_NO_COMANDES = array(6, 7);
 	const REGISTRE_STOCK_ENTRADA = 'E';
@@ -999,7 +1000,7 @@ class BaseController extends Controller {
 		// Comprovar que no hi ha llicències vigents 
 		// Per la pròpia persona
 		$parteoverlap = $this->validaPersonaTeLlicenciaVigent($llicencia, $llicencia->getPersona()); 
-		if ($parteoverlap != null) throw new \Exception($llicencia->getPersona()->getNomCognoms(). ' - Aquesta persona ja té una llicència per a l\'any actual en aquest club, en data ' . 
+		if ($parteoverlap != null) throw new \Exception($llicencia->getPersona()->getNomCognoms(). ' - Té una llicència per a l\'any actual, en data ' . 
 															$parteoverlap->getDataalta()->format('d/m/Y'));
 
 	}

@@ -32,23 +32,58 @@ class FormLlicencia extends AbstractType {
 		
 				$parte = $llicencia->getParte(); 
 				$club = $parte->getClubparte();
-				$form->add('persona', 'entity', array(
-							'class' => 'FecdasBundle:EntityPersona',
-							'query_builder' => function($repository) use ($club) {
-								return $repository->createQueryBuilder('e')
-									->where('e.club = :codiclub')
-									->andWhere('e.databaixa is null')
-									->orderBy('e.cognoms', 'ASC')
-									->setParameter('codiclub', $club->getCodi());
-								},
-							'choice_label' => 'llistaText',
-							'placeholder' => '',
-							'required'  => false,
-							'property_path' => 'persona',
-							'data'          => ($llicencia->getPersona()!=null?$llicencia->getPersona():null),
-							'attr'			=>	array('readonly' => !$parte->isAllowEdit())
-				));
 				
+				if ($parte->getUsuari() != null) {
+				    $persona = $llicencia->getPersona();
+				    $form->add('persona', 'entity', array(
+				        'class'         => 'FecdasBundle:EntityPersona',
+				        'choices'       => array ( $persona ),
+				        'required'      => true,
+				        'property_path' => 'persona',
+				        'data'		    => $persona,
+				        'attr'			=>	array('readonly' => true)
+				    ));
+				    
+				    $form->add('dni', 'text', array(
+				        'required'      => false,
+				        'data'		    => $persona->getDni(),
+				        'mapped'        => false,
+				        'attr'			=>	array('readonly' => true)
+				    ));
+				    
+				    $form->add('datanaixement', 'date', array(
+				        'widget' => 'single_text',
+				        'format' => 'dd/MM/yyyy',
+				        'data'   => $persona->getDatanaixement(),
+				        'mapped' => false,
+				        'attr'	 =>	array('readonly' => true)
+				    ));
+				    
+				    $form->add('tipus', 'choice', array(
+				        'choices'       => array ( $parte->getTipus()->getDescripcio() ), 
+				        'data'		    => $parte->getTipus()->getDescripcio(),
+				        'required'      => true,
+				        'mapped'        => false,
+				        'empty_data'    => ''
+				    ));
+				} else {
+    				$form->add('persona', 'entity', array(
+    							'class' => 'FecdasBundle:EntityPersona',
+    							'query_builder' => function($repository) use ($club) {
+    								return $repository->createQueryBuilder('e')
+    									->where('e.club = :codiclub')
+    									->andWhere('e.databaixa is null')
+    									->orderBy('e.cognoms', 'ASC')
+    									->setParameter('codiclub', $club->getCodi());
+    								},
+    							'choice_label' => 'llistaText',
+    							'placeholder' => '',
+    							'required'  => false,
+    							'property_path' => 'persona',
+    							'data'          => ($llicencia->getPersona()!=null?$llicencia->getPersona():null),
+    							'attr'			=>	array('readonly' => !$parte->isAllowEdit())
+    				));
+				}
 				
 				$current = $parte->getAny();
 				$llistacategoria = function ($value, $key, $index) use ($current) {

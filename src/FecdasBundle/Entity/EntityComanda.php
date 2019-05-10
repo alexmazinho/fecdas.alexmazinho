@@ -40,6 +40,12 @@ class EntityComanda {
 	protected $club;	// FK taula m_clubs
 	
 	/**
+	 * @ORM\ManyToOne(targetEntity="EntityUser")
+	 * @ORM\JoinColumn(name="usuari", referencedColumnName="id")
+	 */
+	protected $usuari;	// FK taula m_users
+	
+	/**
 	 * @ORM\OneToOne(targetEntity="EntityFactura", inversedBy="comanda")
 	 * @ORM\JoinColumn(name="factura", referencedColumnName="id")
 	 **/
@@ -144,6 +150,11 @@ class EntityComanda {
 	    return $this->rebut != null && !$this->rebut->esBaixa();
 	}
 
+	public function comandaUsuari()
+	{
+	    return $this->usuari != null;
+	}
+	
 	/**
      * Allow edit. Permetre modificar / Afegir detalls. ==> Fals. Sobreescrit a partes (20 minuts)
      *
@@ -909,13 +920,37 @@ class EntityComanda {
     /**
      * Get club
      *
-     * @return \FecdasBundle\Entity\EntityClub 
+     * @return \FecdasBundle\Entity\EntityClub
      */
     public function getClub()
     {
         return $this->club;
     }
-
+    
+    /**
+     * Set club
+     *
+     * @param \FecdasBundle\Entity\EntityUser $usuari
+     * @return EntityComanda
+     */
+    public function setUsuari(\FecdasBundle\Entity\EntityUser $usuari = null)
+    {
+        $this->usuari = $usuari;
+        
+        return $this;
+    }
+    
+    /**
+     * Get usuari
+     *
+     * @return \FecdasBundle\Entity\EntityUser
+     */
+    public function getUsuari()
+    {
+        return $this->usuari;
+    }
+    
+    
     /**
      * Set factura
      *

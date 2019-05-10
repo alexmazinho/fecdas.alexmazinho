@@ -211,7 +211,7 @@ a img {border: none; }
 .login { /*float: right; */ /*display: inline-block; width: auto;*/ }
 
 .login #menu-user { float: right; }
-.login .btn-primary.user-login { /*max-width: 240px;*/ text-overflow: ellipsis; width: 170px; }
+.login .btn-primary.user-login { max-width: 240px; text-overflow: ellipsis; /*width: 170px;*/ }
 
 #menu-user { /* max-width: 270px; */ }
 

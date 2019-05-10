@@ -37,10 +37,18 @@ class PageController extends BaseController {
 	    
 		$contact = new EntityContact();
 
-		if ($this->get('session')->has('username')) $contact->setEmail($this->get('session')->get('username'));
-		$currentClub = $this->getCurrentClub();
-		if ($currentClub != null) $contact->setName($currentClub->getNom());
-
+		$checkRole = $this->get('fecdas.rolechecker');
+		
+		$user = $checkRole->getCurrentUser();
+		$contact->setEmail($user->getUser());
+		if ($checkRole->isCurrentFederat() || $checkRole->isCurrentInstructor()) {
+		    $metapersona = $user->getMetapersona();
+		    if ($metapersona != null) $contact->setName($metapersona->getNomCognoms());
+		} else {
+		    $currentClub = $this->getCurrentClub();
+		    if ($currentClub != null) $contact->setName($currentClub->getNom());
+		}
+		
 		if ($request->query->has('subject')) {
 			$subject = $request->query->get('subject');
 			$contact->setSubject($subject);
@@ -1214,6 +1222,100 @@ class PageController extends BaseController {
 		return $response;
 	}
 
+	public function tramitaciollicenciaAction(Request $request) {
+	    
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), true)) return $redirect;    // Accés federats
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    $user = $checkRole->getCurrentUser();
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    if ($request->getMethod() != 'POST') $this->logEntryAuth('TRAMITA LLICENCIA', $user->getUser());
+	    
+	    $dataalta = $this->getCurrentDate();
+	    //$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
+	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_F);
+	    //$club = $this->getCurrentClub();
+	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_CLUBINDEFEDE);
+	    
+	    $parte = $this->crearComandaParte($dataalta, $tipus, $club, 'Tramitació llicència usuari');
+	    
+	    $parte->setUsuari($user);
+	    
+	    $this->crearFactura($parte);
+	    
+	    // Noves llicències, permeten edició no pdf
+	    $llicencia = $this->prepareLlicencia(BaseController::ID_TIPUS_PARTE_LLICENCIES_F, $parte->getDataCaducitat());
+	    $em->persist($llicencia);
+	    $parte->addLlicencia($llicencia);
+	    
+	    $metapersona = $user->getMetapersona();
+	    $persona = $metapersona->getPersona($club);
+	    
+	    $llicencia->setPersona($persona);
+	    
+	    $formllicencia = $this->createForm(new FormLlicencia($this->isCurrentAdmin()),$llicencia);
+	    
+        $formllicencia->get('datacaducitatshow')->setData($formllicencia->get('datacaducitat')->getData());
+	    
+        if ($request->getMethod() == 'POST') {
+            // POST
+            try {
+                $formllicencia->handleRequest($request);
+                if (!$formllicencia->isValid()) throw new \Exception('Error validant les dades de la llicència: '.$formllicencia->getErrors(true, false). ', poseu-vos en contacte amb la Federació');
+                
+                // Errors generen excepció
+                $this->validaParteLlicencia($parte, $llicencia);
+                $llicencia->setDatamodificacio($this->getCurrentDate());
+                
+                $this->addParteDetall($parte, $llicencia);
+
+                // Comprovació datacaducitat
+                if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat()->format('d/m/Y')) {
+                    $llicencia->setDatacaducitat($parte->getDataCaducitat());
+                }
+                
+                $em->flush();
+                
+                $this->get('session')->getFlashBag()->add('sms-notice', 'Llicència tramitada correctament. Cal procedir amb el pagament');
+                
+                $this->logEntryAuth('PAGAR LLICENCIA', $user->getUser().' Parte:' . $parte->getId() . ' llicencia: ' . $llicencia->getId());
+                
+                return $this->redirect($this->generateUrl('FecdasBundle_pagamentcomanda', array( 'id' => $parte->getId())));
+                
+                
+            } catch (\Exception $e) {
+                
+                //$em->clear();
+                /*
+                 if ($llicencia != null) {
+                 if ($llicencia->getId() == 0) $em->detach($llicencia);
+                 else $em->refresh($llicencia);
+                 }
+                 if ($parte != null) {
+                 if ($parte->getId() == 0) $em->detach($parte);
+                 else $em->refresh($parte);
+                 }
+                 if ($factura != null) {
+                 if ($factura->getId() == 0) $em->detach($factura);
+                 else $em->refresh($factura);
+                 } */
+                
+                $this->get('session')->getFlashBag()->add('error-notice', $e->getMessage(). ', poseu-vos en contacte amb la Federació');
+                
+                $this->logEntryAuth('PAGAR LLICENCIA KO', $user->getUser().' Error: '.$e->getMessage());
+            }
+        }
+        
+        
+	    return $this->render('FecdasBundle:Page:tramitaciollicencia.html.twig',
+	        $this->getCommonRenderArrayOptions(array('llicencia' => $formllicencia->createView())));
+
+	}
+	
+	
+	
 	public function plasticllicenciesAction(Request $request) {
 	    
 	    $action = $request->query->get('action', '');

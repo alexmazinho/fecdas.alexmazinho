@@ -54,6 +54,7 @@ class BaseController extends Controller {
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
+	const PAGAMENT_USUARIS = 'usuari'; // Llicències pesca
 	const PAGAMENT_LLICENCIES = 'llicencies';
 	const PAGAMENT_DUPLICAT = 'duplicat';
 	const PAGAMENT_ALTRES = 'varis';
@@ -1512,6 +1513,28 @@ class BaseController extends Controller {
 			$pdf->writeHTMLCell($w_half * 2, 0, $x_clubinfo, $y_clubinfo+40, $text, '', 1, false, true, 'C', false);
 		}
 		
+		$nomFactura = $club->getNomfactura();
+		$adrecaFactura = $club->getAddradreca();
+		$poblacioFactura = $club->getAddrpob().($club->getAddrcp()!=''?' - '.$club->getAddrcp():'');
+		$provinciaFactura = $club->getAddrprovincia();
+		$cifFactura = $club->getCif();
+		$tlfFactura = $club->getTelefon();
+		if ($comanda->comandaUsuari()) {
+		    $usuari = $comanda->getUsuari();
+		    $metapersona = $usuari->getMetapersona();
+		    $nomFactura = $metapersona->getNomCognoms();
+		    $cifFactura =  $metapersona->getDni();
+		    
+		    $persona = $metapersona->getPersona(BaseController::CODI_CLUBINDEFEDE);
+		    if ($persona != null) {
+		        $adrecaFactura  = $persona->getAddradreca();
+		        $poblacioFactura = $persona->getAddrpob().($persona->getAddrcp()!=''?' - '.$persona->getAddrcp():'');
+		        $provinciaFactura = $persona->getAddrprovincia();
+		        $tlfFactura = $persona->getTelefons();
+		    }
+		} 
+		
+		
 		/*$pdf->SetFontSize(11);
 		$tbl = '<p align="left" style="padding:0;"><b>' . $club->getNom(). '</b><br/>';
 		$tbl .= '' . $club->getAddradreca() . '<br/>';
@@ -1524,13 +1547,13 @@ class BaseController extends Controller {
 		//$w, $h, $txt, $border = 0, $align = 'J', $fill = false, $ln = 1, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true,
 		// 	$maxh = 0, $valign = 'T', $fitcell = false 
 		$pdf->SetFont('freesans', 'B', 11, '', true);
-		$pdf->MultiCell($w_half,5,$club->getNomfactura(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 10, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$nomFactura,0,'L',false, 1, $x_clubinfo, $y_clubinfo + 10, true, 3, false, true, 5, 'M', true);
 		$pdf->SetFont('freesans', '', 11, '', true);
-		$pdf->MultiCell($w_half,5,$club->getAddradreca(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 15, true, 3, false, true, 5, 'M', true);
-		$pdf->MultiCell($w_half,5,$club->getAddrcp() . " - " . $club->getAddrpob(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 20, true, 3, false, true, 5, 'M', true);
-		$pdf->MultiCell($w_half,5,$club->getAddrprovincia(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 25, true, 3, false, true, 5, 'M', true);
-		$pdf->MultiCell($w_half,5,$club->getCif(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 30, true, 3, false, true, 5, 'M', true);
-		if ($club->getTelefon() != null && $club->getTelefon() > 0) $pdf->MultiCell($w_half,5,'Telf: ' . $club->getTelefon(),0,'L',false, 1, $x_clubinfo, $y_clubinfo + 35, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$adrecaFactura,0,'L',false, 1, $x_clubinfo, $y_clubinfo + 15, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$poblacioFactura,0,'L',false, 1, $x_clubinfo, $y_clubinfo + 20, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$provinciaFactura,0,'L',false, 1, $x_clubinfo, $y_clubinfo + 25, true, 3, false, true, 5, 'M', true);
+		$pdf->MultiCell($w_half,5,$cifFactura,0,'L',false, 1, $x_clubinfo, $y_clubinfo + 30, true, 3, false, true, 5, 'M', true);
+		if ($tlfFactura != null && $tlfFactura > 0) $pdf->MultiCell($w_half,5,'Telf: ' . $tlfFactura,0,'L',false, 1, $x_clubinfo, $y_clubinfo + 35, true, 3, false, true, 5, 'M', true);
 		
 		/* FACTU INFO */	
 		$pdf->SetFontSize(10);
@@ -1971,12 +1994,21 @@ class BaseController extends Controller {
 		//$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getNom().'</span></p>';
 		$pdf->writeHTMLCell(0, 0, $x_header_row1, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
+		$nomRebut = $club->getNomfactura();
+		$cifRebut = $club->getCif();
+		$usuari = $rebut->usuariComanda();
+		if ($usuari != null) {
+		    $metapersona = $usuari->getMetapersona();
+		    $nomRebut = $metapersona->getNomCognoms();
+		    $cifRebut =  $metapersona->getDni();
+		} 
+		
 		$pdf->SetTextColor(0, 0, 0); // Negre	
-		$pdf->MultiCell(80,0,$club->getNomfactura(),0,'L',true, 1, $x_header_row1 + 25, $y_header_row2 - 0.5, true, 3, false, true, 5, 'M', true); // Amplada variable
+		$pdf->MultiCell(80,0,$nomRebut,0,'L',true, 1, $x_header_row1 + 25, $y_header_row2 - 0.5, true, 3, false, true, 5, 'M', true); // Amplada variable
 		$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366		
 		
 		$txt = '<p align="left" style="padding:0;'.$hideText.'">NIF:&nbsp;';
-		$txt .= '<span style="color:#000000; font-size:12px;">'.$club->getCif().'</span></p>';
+		$txt .= '<span style="color:#000000; font-size:12px;">'.$cifRebut.'</span></p>';
 		$pdf->writeHTMLCell(50, 0, $x_header_col2, $y_header_row2, $txt, '', 1, false, true, 'L', false);
 		
 		/* REBUT QUANTITAT */	
@@ -2058,12 +2090,13 @@ class BaseController extends Controller {
 		$dateFormated = utf8_encode( strftime('%A %e '.$litDe.'%B de %Y', $rebut->getDatapagament()->format('U') ) );
 		setlocale(LC_TIME, $oldLocale);*/
 		
-		$mesData = $rebut->getDatapagament()->format('m');
+		/*$mesData = $rebut->getDatapagament()->format('m');
 		$litDe = "de ";
-		if ($mesData == 4 || $mesData == 8 || $mesData == 10) $litDe = "d''";
+		if ($mesData == 4 || $mesData == 8 || $mesData == 10) $litDe = "d''";*/
 		
 		$formatter = new \IntlDateFormatter('ca_ES.utf8', \IntlDateFormatter::FULL, \IntlDateFormatter::FULL);
-		$formatter->setPattern("eeee d '".$litDe."'MMMM "."'de'"." yyyy");
+		//$formatter->setPattern("eeee d '".$litDe."'MMMM "."'de'"." yyyy");
+		$formatter->setPattern("eeee d MMMM "."'de'"." yyyy");
 		$dateFormated = $formatter->format($rebut->getDatapagament());
 
 

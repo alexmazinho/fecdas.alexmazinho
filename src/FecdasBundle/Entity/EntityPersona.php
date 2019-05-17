@@ -319,12 +319,13 @@ class EntityPersona {
     	return  $strAdreca;
     }
 	
-	public static function getLlicenciesSortedByDateStatic($llicencies, $baixes = false, $desde = null, $fins = null)
+	public static function getLlicenciesSortedByDateStatic($llicencies, $baixes = false, $pendents = false, $desde = null, $fins = null)
     {
     	/* Ordenades de última a primera */
     	$arr = array();
     	foreach ($llicencies as $llicencia) {
-    		if ($llicencia->isValida() || $baixes == true) {
+    	    if ((!$llicencia->isBaixa() || $baixes) &&
+    		    ($llicencia->isValida() || $pendents)) {
     			$parte = $llicencia->getParte();
 				
 				if ($parte != null && 
@@ -338,10 +339,10 @@ class EntityPersona {
     	return $arr;
     }
     
-    public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)
+    public function getLlicenciesSortedByDate($baixes = false, $pendents = false, $desde = null, $fins = null)
     {
     	/* Ordenades de última a primera */
-    	return EntityPersona::getLlicenciesSortedByDateStatic($this->llicencies, $baixes, $desde, $fins);
+        return EntityPersona::getLlicenciesSortedByDateStatic($this->llicencies, $baixes, $pendents, $desde, $fins);
     }
 
 	/**
@@ -360,7 +361,7 @@ class EntityPersona {
     }
     
 	public static function getLastLlicenciaStatic($llicencies, $desde = null, $fins = null) {
-    	$llicenciesOrdenades = EntityPersona::getLlicenciesSortedByDateStatic($llicencies, false, $desde, $fins);
+    	$llicenciesOrdenades = EntityPersona::getLlicenciesSortedByDateStatic($llicencies, false, false, $desde, $fins);
     	foreach ($llicenciesOrdenades as $llicencia) return $llicencia;
     	
     	return null;

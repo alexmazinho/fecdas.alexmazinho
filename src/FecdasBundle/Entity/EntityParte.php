@@ -277,7 +277,8 @@ class EntityParte extends EntityComanda {
 	 */
 	public function getOrigenPagament()
 	{
-		return BaseController::PAGAMENT_LLICENCIES;	
+	    if ($this->comandaUsuari()) BaseController::PAGAMENT_USUARIS;
+	    return BaseController::PAGAMENT_LLICENCIES;	
 	}			
 	/**
 	 * Get dades TPV. Sobreescriptura

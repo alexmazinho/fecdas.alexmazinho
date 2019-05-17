@@ -5,6 +5,7 @@
    		{{ form_start(form, {'action': path('FecdasBundle_titulacionsfederat'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_titulacionsfederat'}}) }}
    		<section class="form-titulacionsfederat">
 	   		<div class="row">
+	   			{% if form.club is defined %}
 				<div class="col-md-5 col-xs-5">
 					<div class="form-group input-group">
 	   					<span class="input-group-addon input-group-addon-icon">Club</span>
@@ -12,7 +13,8 @@
 						{{ form_widget(form.club, { 'attr': {'class': 'form-control','placeholder':'Club'} }) }}
 					</div>
 				</div>
-				<div class="col-md-7 col-xs-7">
+				{% endif %}
+				<div class="{% if form.club is defined %}col-md-7 col-xs-7{% else %}col-md-12 col-xs-12{% endif %}">
 					<div class="total-rowcount form-text">
 						Total: {{ total|number_format(0, ',', '.') }}
 					</div>

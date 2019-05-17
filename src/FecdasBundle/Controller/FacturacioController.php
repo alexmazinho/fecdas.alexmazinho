@@ -3709,7 +3709,8 @@ class FacturacioController extends BaseController {
 	}
 	
 	public function notificacioOnLine(Request $request) {
-	
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+	    
 		$url = $this->generateUrl('FecdasBundle_homepage');
 		$error = '';
 		$tpvresponse = array();
@@ -3727,6 +3728,8 @@ class FacturacioController extends BaseController {
 			if ($tpvresponse['itemId'] > 0) {
 				if ($tpvresponse['pendent'] == true) $result = 'PEND';
 				
+				if ($tpvresponse['source'] = BaseController::PAGAMENT_USUARIS)
+				    $url = $this->generateUrl('FecdasBundle_llicenciesfederat');
 				if ($tpvresponse['source'] = BaseController::PAGAMENT_LLICENCIES)
 					$url = $this->generateUrl('FecdasBundle_parte', array('id'=> $tpvresponse['itemId']));
 				if ($tpvresponse['source'] = BaseController::PAGAMENT_DUPLICAT)

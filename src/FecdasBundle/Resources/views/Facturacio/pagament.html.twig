@@ -50,9 +50,18 @@
 		</div>
         
         <div class="row">
+        	<div class="col-md-6 col-md-offset-6 col-sm-10 col-sm-offset-2 col-xs-12">
+        		<div class="row row-no-gutters blue" style="text-align: right;">
+        			<div class="col-md-10">
+        				Federació Catalana d'Activitats Subaquàtiques<br/>
+        				Moll de la Vela, 1 (Zona Fòrum)<br/>
+                		08930 - Sant Adrià de Besòs<br/>
+                		Barcelona </div>
+                	<div class="col-md-2"><img width="40" src="{{ asset('images/fecdaslogo.png') }}"></div>
+				</div>
+        	</div>
         	<div class="col-md-4 col-sm-6 col-xs-12">
             	<div class="factura-dadesclub">
-            		<div class="bottom50"></div>
             		<h3 class="underline blue bottom25">Facturar a</h3>
             		{% if comanda.comandaUsuari == true %}
                 	    {% set usuari = comanda.usuari %}
@@ -61,15 +70,15 @@
         				<table class="table">
                    		   	<tbody class="table-noscroll">
                					<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Nom</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">Nom</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ persona.getNomCognoms() }}</td>
                			   		</tr>
                			   		<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">DNI/NIE</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">DNI/NIE</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ persona.dni }}</td>
                			   		</tr>
                			   		<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol  data-detall-cell-left">Adreça</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">Adreça</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">
                    				   	    {{ persona.addradreca }}<br/>
                    				   	    {{ persona.addrpob }} {% if persona.addrcp != '' %} ({{ persona.addrcp}}) {% endif %}
@@ -77,7 +86,7 @@
                    				   	</td>
                			   		</tr>
                			   		<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Telèfon</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">Telèfon</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ persona.getTelefons() }}</td>
                			   		</tr>
                    			</tbody>
@@ -87,15 +96,15 @@
         				<table class="table">
                    		   	<tbody class="table-noscroll">
                					<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Club</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">Club</td>
                    				   	<td class="data-detall-cell data-detall-cell-left">{{ club.nomfactura }}</td>
                			   		</tr>
                			   		<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">DNI/NIE</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">DNI/NIE</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ club.cif }}</td>
                			   		</tr>
                			   		<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Adreça</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">Adreça</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">
                    				   	    {{ club.addradreca }}<br/>
                    				   	    {{ club.addrpob }} {% if club.addrcp != '' %} ({{ club.addrcp}}){% endif %}<br/>
@@ -103,7 +112,7 @@
                    				   	</td>
                			   		</tr>
                			   		<tr class="data-detall">
-                   				   	<td class="data-detall-cell fact-titol data-detall-cell-left">Telèfon</td>
+                   				   	<td class="data-detall-cell fact-titol fact-fixed-width data-detall-cell-left">Telèfon</td>
                    				   	<td class="data-detall-cell fact-info data-detall-cell-left">{{ club.telefons }}</td>
                			   		</tr>
                    			</tbody>
@@ -111,85 +120,72 @@
     		   		{% endif %}
     			</div>
         	</div>
-        	<div class="col-md-6 col-md-offset-2 col-sm-6 col-xs-12">
+        	<div class="col-md-4 col-md-offset-4 col-sm-6 col-xs-12">
         		<div class="factura-dadesfederacio">
-        			<div class="row row-no-gutters blue bottom25" style="text-align: right;">
-        				<div class="col-md-10">
-        					Federació Catalana d'Activitats Subaquàtiques<br/>
-        					Moll de la Vela, 1 (Zona Fòrum)<br/>
-                   			08930 - Sant Adrià de Besòs<br/>
-                   			Barcelona </div>
-                   		<div class="col-md-2"><img width="40" src="{{ asset('images/fecdaslogo.png') }}"></div>
-					</div>
-					<div class="row"> 
-						<div class="col-md-6 col-md-offset-6">
-            				<table class="table">
-                       		   	<tbody class="table-noscroll">
-                   					<tr class="data-detall">
-                       				   	<td class="data-detall-cell fact-titol data-detall-cell-right">Núm. factura</td>
-                       				   	<td class="data-detall-cell data-detall-cell-right">{{ comanda.factura.numFactura }}</td>
-                   			   		</tr>
-                   			   		<tr class="data-detall">
-                       				   	<td class="data-detall-cell fact-titol data-detall-cell-right">Data</td>
-                       				   	<td class="data-detall-cell data-detall-cell-right">{{ "now"|date("m/d/Y") }}</td>
-                   			   		</tr>
-                       			</tbody>
-            		   		</table> 
-            		   	</div>
-    		   		</div>
+            		<h3 class="underline blue bottom25">Factura</h3>
+       				<table class="table">
+               		   	<tbody class="table-noscroll">
+          					<tr class="data-detall">
+                  				<td class="data-detall-cell fact-titol data-detall-cell-right">Núm. factura</td>
+                  				<td class="data-detall-cell fact-fixed-width data-detall-cell-right">{{ comanda.factura.numFactura }}</td>
+               			   	</tr>
+              			   	<tr class="data-detall">
+                   			   	<td class="data-detall-cell fact-titol data-detall-cell-right">Data</td>
+                   			   	<td class="data-detall-cell fact-fixed-width data-detall-cell-right">{{ "now"|date("m/d/Y") }}</td>
+               			   	</tr>
+                   		</tbody>
+       		   		</table> 
     			</div>
         	</div>
         </div>
         
     
-   
-    <div class="table-header">
-    	<div id="list-header" >
-    		<div id="header-factdetallid" class="col-listheader">id</div>
-   			<div id="header-factdetallcodi" class="col-listheader">Codi</div> 
-		   	<div id="header-factdetalldesc" class="col-listheader">Descripció</div> 
-		   	<div id="header-factdetallquantitat" class="col-listheader">Quantitat</div>
-		   	<div id="header-factdetallpreuunitat" class="col-listheader">Preu<br/>Unitat</div>
-		   	<div id="header-factdetallpreusiva" class="col-listheader">Preu<br/>Total</div>
-		   	<div id="header-factdetalliva" class="col-listheader">I.V.A.</div>
-		   	<div id="header-factdetallpreutotal" class="col-listheader">Total</div>
-   		</div>
-   	</div>
-	{% if detall|length > 0 %}
-   		<div class="table-scroll">
-	   		<ol id="list-data">
-			{% for lineadetall in detall %}
-		   		<li class="data-detall">
-		   			<div class="data-detall-cell factdetall-id">{{ lineadetall.id }}</div>
-			   		<div class="data-detall-cell factdetall-codi">{{ lineadetall.codi }}</div>
-			   		<div class="data-detall-cell factdetall-desc">{{ lineadetall.producte|raw }}</div>
-			   		<div class="data-detall-cell factdetall-quantitat">{{ lineadetall.total }}</div>
-			   		<div class="data-detall-cell factdetall-preuunitat">{{ lineadetall.preuunitat|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-preusiva">{{ (lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ (lineadetall.ivaunitat*lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-preutotal">{{ lineadetall.import|number_format(2, '.', ',') }} €</div>
-		   		</li>
-	   		{% endfor %}
-	   		</ol>
-	   		<ol id="list-data">
-	   			<li id="factdetall-totals" class="data-detall">
-	   				<div class="data-detall-cell factdetall-tab"></div>
-	   				{% if comanda.isFacturaModificada == true %}
-			   		<div class="data-detall-cell factdetall-totalparcial">{{ comanda.totalComanda|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ 0|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-total">{{ comanda.totalComanda|number_format(2, '.', ',') }} €</div>
-					{% else %}
-			   		<div class="data-detall-cell factdetall-totalparcial">{{ comanda.totalDetalls|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-iva">{{ comanda.totalIVADetalls|number_format(2, '.', ',') }} €</div>
-			   		<div class="data-detall-cell factdetall-total">{{ comanda.totalDetalls|number_format(2, '.', ',') }} €</div>
+    	<table class="table">
+    		<thead>	
+    		   	<tr class="data-detall-header">
+    		   		<th scope="col" id="header-factdetallid" class="col-listheader hidden">id</th>
+    		   		<th scope="col" id="header-factdetallcodi" class="col-listheader col-noresponsive">Codi</th>
+    		   		<th scope="col" id="header-factdetalldesc" class="col-listheader data-detall-cell-left col-noresponsive data-detall-cell-left">Descripció</th>
+    		   		<th scope="col" id="header-factdetallquantitat" class="col-listheader col-noresponsive">Quantitat</th>
+    		   		<th scope="col" id="header-factdetallpreuunitat" class="col-listheader data-detall-cell-right col-noresponsive">Preu<br/>Unitat</th>
+    		   		<th scope="col" id="header-factdetallpreusiva" class="col-listheader data-detall-cell-right col-noresponsive">Preu<br/>Total</th>
+    		   		<th scope="col" id="header-factdetalliva" class="col-listheader data-detall-cell-right col-noresponsive">I.V.A.</th>
+    		   		<th scope="col" id="header-factdetallpreutotal" class="col-listheader data-detall-cell-right col-noresponsive">Total</th>
+    		   	</tr>
+    		</thead>
+			<tbody class="table-noscroll table-noscroll-large">	
+				{% for lineadetall in detall %}
+				<tr class="data-detall">
+					<td class="data-detall-cell factdetall-id hidden">{{ lineadetall.id }}</td>
+			   		<td class="data-detall-cell factdetall-codi col-noresponsive">{{ lineadetall.codi }}</td>
+			   		<td class="data-detall-cell data-detall-cell-left factdetall-desc col-noresponsive">{{ lineadetall.producte|raw }}</td>
+			   		<td class="data-detall-cell factdetall-quantitat col-noresponsive">{{ lineadetall.total }}</td>
+			   		<td class="data-detall-cell data-detall-cell-right factdetall-preuunitat col-noresponsive">{{ lineadetall.preuunitat|number_format(2, '.', ',') }}€</td>
+			   		<td class="data-detall-cell data-detall-cell-right factdetall-preusiva col-noresponsive">{{ (lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }}€</td>
+			   		<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ (lineadetall.ivaunitat*lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }}€</td>
+			   		<td class="data-detall-cell data-detall-cell-right factdetall-preutotal col-noresponsive">{{ lineadetall.import|number_format(2, '.', ',') }}€</td>
+				</tr>
+				{% endfor %}
+				<tr id="factdetall-totals" class="data-detall">
+					<td class="data-detall-cell hidden">&nbsp;</td>
+					<td class="data-detall-cell factdetall-tab" colspan="4">&nbsp;</td>
+					{% if comanda.isFacturaModificada == true %}
+    			   		<td class="data-detall-cell data-detall-cell-right factdetall-totalparcial col-noresponsive">{{ comanda.totalComanda|number_format(2, '.', ',') }}€</td>
+    			   		<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ 0|number_format(2, '.', ',') }}€</td>
+    			   		<td class="data-detall-cell data-detall-cell-right factdetall-total col-noresponsive">{{ comanda.totalComanda|number_format(2, '.', ',') }}€</td>
+			   		{% else %}
+    			   		<td class="data-detall-cell data-detall-cell-right factdetall-totalparcial col-noresponsive">{{ comanda.totalDetalls|number_format(2, '.', ',') }}€</td>
+    			   		<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ comanda.totalIVADetalls|number_format(2, '.', ',') }}€</td>
+    			   		<td class="data-detall-cell data-detall-cell-right factdetall-total col-noresponsive">{{ comanda.totalDetalls|number_format(2, '.', ',') }}€</td>
 			   		{% endif %}
-			   	</li>	
-			</ol>
-		</div>
-		{%  if (comanda.totalIVADetalls == 0) %}
-		<div class="sms-footer">Factura exempta d'I.V.A. d'acord a l'article UNO 20.13 de la llei de l'IVA</div>
-		{% endif %}
-  	 {% endif %}
+				</tr>
+			</tbody>
+		</table>
+   
+        {%  if (comanda.totalIVADetalls == 0) %}
+			<div class="sms-footer">Factura exempta d'I.V.A. d'acord a l'article UNO 20.13 de la llei de l'IVA</div>
+		{% endif %} 
+   
 	 	{{ form_end(formpayment) }}
 		</div></div>
 	</div>

@@ -229,9 +229,9 @@
     			<div id="tabs-llicencies">
     				<div class="row">
     					{% if admin %}
-    						{% set llicencies = persona.getLlicenciesSortedByDate(true) %}
+    						{% set llicencies = persona.getLlicenciesSortedByDate(true, true) %}
     					{% else %}
-    						{% set llicencies = persona.metapersona.getLlicenciesSortedByDate(false) %}
+    						{% set llicencies = persona.metapersona.getLlicenciesSortedByDate() %}
     					{% endif %}
     					{% include 'FecdasBundle:Titulacions:llicencieshistorial.html.twig' %}
     				</div>

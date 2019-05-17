@@ -235,25 +235,40 @@ class TitulacionsController extends BaseController {
 	    $llicenciesPaginated = array();
 	    $response = null;
 	    
-	    $formBuilder = $this->createFormBuilder()->add(
-	        'club', 'entity', array(
-	            'class' 	   => 'FecdasBundle:EntityClub',
-	            'choices'      => $metapersona->getClubs(),
-	            'choice_label' => 'nom',
-	            'placeholder'  => '',	// Important deixar en blanc pel bon comportament del select2
-	            'required'     => false,
-	            'data'         => ($club != null?$club:null)
-	        ));
-	    
-	    $formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
+	    $clubs = $metapersona->getClubs();
+	    if (count($clubs) == 1 && $clubs[0]->getCodi() == BaseController::CODI_CLUBINDEFEDE) {
+	        // Ocultar club Inde F
+	        $formBuilder = $this->createFormBuilder();
+	    } else {
+    	    $formBuilder = $this->createFormBuilder()->add(
+    	        'club', 'entity', array(
+    	            'class' 	   => 'FecdasBundle:EntityClub',
+    	            'choices'      => $metapersona->getClubs(),
+    	            'choice_label' => 'nom',
+    	            'placeholder'  => '',	// Important deixar en blanc pel bon comportament del select2
+    	            'required'     => false,
+    	            'data'         => ($club != null?$club:null)
+    	        ));
+    	    
+    	    $formBuilder->add('vigent', 'checkbox', array('required'  => false, 'data' => $currentVigent));
+	    }
 	    
 	    try {
-	        foreach ($metapersona->getLlicenciesSortedByDate() as $llicencia) {
-	            if ((!$currentVigent || $llicencia->isVigent()) &&
-	                ($currentClub == '' || $currentClub == $llicencia->getParte()->getClub()->getCodi())) $llicencies[] = $llicencia;
+	        foreach ($metapersona->getLlicenciesSortedByDate(false, true) as $llicencia) { // Incloure llicències pendents de pagament tramitades per l'usuari
+                $parte = $llicencia->getParte();
+                
+                if ((!$currentVigent || $llicencia->isVigent()) &&  
+                    (!$parte->getPendent() || $parte->comandaUsuari()) &&
+                    ($currentClub == '' || $currentClub == $parte->getClub()->getCodi())) {
+                        
+                        if ($parte->comandaUsuari() && $parte->getPendent()) {
+                            $this->get('session')->getFlashBag()->add('sms-notice', 'Hi ha llicències pendents de finalitzar la tramitació, si us plau, procediu per fer-ne el pagament');
+                        }
+                        $llicencies[] = $llicencia;
+                }
 	        }
 	        $total = count($llicencies);
-	         		
+
 	        EntityLlicencia::getLlicenciesSortedBy($llicencies, $sort, $direction);
 	        
 	        $paginator  = $this->get('knp_paginator');
@@ -345,17 +360,23 @@ class TitulacionsController extends BaseController {
 	    $altrestitulacions = array();
 	    $altrestitulacionsPaginated = array();
 	    $response = null;
-	            
-	    $formBuilder = $this->createFormBuilder()->add(
-	                'club', 'entity', array(
-	                'class' 	   => 'FecdasBundle:EntityClub',
-	                'choices'      => $metapersona->getClubs(),
-	                'choice_label' => 'nom',
-	                'placeholder'  => '',	// Important deixar en blanc pel bon comportament del select2
-	                'required'     => false,
-	                'data'         => ($club != null?$club:null)
-	    ));
-	            
+	    
+	    $clubs = $metapersona->getClubs();
+	    if (count($clubs) == 1 && $clubs[0]->getCodi() == BaseController::CODI_CLUBINDEFEDE) {
+	        // Ocultar club Inde F
+	        $formBuilder = $this->createFormBuilder();
+	    } else {
+    	    $formBuilder = $this->createFormBuilder()->add(
+    	                'club', 'entity', array(
+    	                'class' 	   => 'FecdasBundle:EntityClub',
+    	                'choices'      => $clubs,
+    	                'choice_label' => 'nom',
+    	                'placeholder'  => '',	// Important deixar en blanc pel bon comportament del select2
+    	                'required'     => false,
+    	                'data'         => ($club != null?$club:null)
+    	    ));
+	    }
+    	    
 	    try {
 	        foreach ($metapersona->getTitulacionsSortedByDate() as $titulacio) {
 	            if ($currentClub == '' || 
@@ -655,7 +676,7 @@ class TitulacionsController extends BaseController {
 
 			$llicencies = array();
 			foreach ($persones as $persona_iter) {
-				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate(true));  // Incloure baixes
+				$llicencies = array_merge($llicencies, $persona_iter->getLlicenciesSortedByDate(true, true));  // Incloure baixes
 			}
 			*/
 			/* Ordenades de última a primera 
@@ -672,7 +693,7 @@ class TitulacionsController extends BaseController {
 		
 		if (!$persona) return new Response("");
 						
-		$llicencies = $persona->getLlicenciesSortedByDate(true); // Incloure baixes
+		$llicencies = $persona->getLlicenciesSortedByDate(true, false); // Incloure baixes
 		
 		// Ordre
 		usort($llicencies, function($a, $b) {
@@ -1167,7 +1188,7 @@ class TitulacionsController extends BaseController {
 			
 			// Validació llicència federativa tècnic vigent 
 			$finsVariable = clone $fins;
-			$llicenciesPersonaPeriode = $meta->getLlicenciesSortedByDate(false, $desde, $fins); /* Ordenades de última a primera */
+			$llicenciesPersonaPeriode = $meta->getLlicenciesSortedByDate(false, false, $desde, $fins); /* Ordenades de última a primera */
 	
 			foreach ($llicenciesPersonaPeriode as $llicencia) {
 				// Totes les llicencies haurien d'estar parcialment dins el periode
@@ -1851,7 +1872,7 @@ class TitulacionsController extends BaseController {
 						$metapersona = $participant->getMetapersona();
 						
 						$finsVariable = clone $fins;
-						$llicenciesPersonaPeriode = $metapersona->getLlicenciesSortedByDate(false, $desde, $fins); /* Ordenades de última a primera */
+						$llicenciesPersonaPeriode = $metapersona->getLlicenciesSortedByDate(false, false, $desde, $fins); /* Ordenades de última a primera */
 	
 						foreach ($llicenciesPersonaPeriode as $llicencia) {
 							// Totes les llicencies haurien d'estar parcialment dins el periode

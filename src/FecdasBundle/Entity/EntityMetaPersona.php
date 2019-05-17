@@ -158,10 +158,10 @@ class EntityMetaPersona {
     	return new \Doctrine\Common\Collections\ArrayCollection( $llicencies );
     }
 	
-	public function getLlicenciesSortedByDate($baixes = false, $desde = null, $fins = null)
+    public function getLlicenciesSortedByDate($baixes = false, $pendents = false, $desde = null, $fins = null)
     {
     	/* Ordenades de última a primera */
-    	return EntityPersona::getLlicenciesSortedByDateStatic($this->getLlicencies(), $baixes, $desde, $fins);
+        return EntityPersona::getLlicenciesSortedByDateStatic($this->getLlicencies(), $baixes, $pendents, $desde, $fins);
     }
 
     public function getLlicenciaVigent() {

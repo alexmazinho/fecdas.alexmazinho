@@ -1,7 +1,7 @@
 	<header>
 		<div class="row">
-			<div class="col-md-8"><h1>Historial de llicències</h1></div>
-    	    <div class="col-md-4 col-last-right">
+			<div class="col-md-7"><h1>Historial de llicències</h1></div>
+    	    <div class="col-md-3 col-last-right">
 				<div class="buttons-top-bootstrap">
 					<div class="button-top">
 						<a class="link export-csv" href="{{ path('FecdasBundle_llicenciesfederat', llicencies.params|merge({ 'format': 'csv' })) }}" alt="Exportar l'historial de llicències" 
@@ -23,13 +23,23 @@
 		</div>
    	</header>
    	
-   	{% include 'FecdasBundle:Includes:messages.html.twig' %}
-   	
+	<div class="llicencies-federat container-fluid">
+		
+		<div class="row"><div class="col-md-10 col-sm-12 col-xs-12 form-viewport">
+    		<div class="row">
+    			 <div class="col-md-12 col-sm-12 col-xs-12">
+                    {% include 'FecdasBundle:Includes:messages.html.twig' %}
+    			 </div>
+    		</div>
+    		<div class="row">
+    			<div class="col-md-12 col-sm-12 col-xs-12">
 
+		
    	<div id="list-forms">	
    		{{ form_start(form, {'action': path('FecdasBundle_llicenciesfederat'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_llicenciesfederat'}}) }}
    		<section class="form-llicenciesfederat">
 	   		<div class="row">
+	   			{% if form.club is defined %}
 				<div class="col-md-5 col-xs-5">
 					<div class="form-group input-group">
 	   					<span class="input-group-addon input-group-addon-icon">Club</span>
@@ -46,7 +56,8 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-4 col-xs-4">
+				{% endif %}
+				<div class="{% if form.club is defined %}col-md-4 col-xs-4{% else %}col-md-12 col-xs-12{% endif %}">
 					<div class="total-rowcount form-text">
 						Total: {{ total|number_format(0, ',', '.') }}
 					</div>
@@ -64,8 +75,10 @@
 			<thead>	
     		   	<tr class="data-detall-header">
     		   		<th scope="col" id="header-llicenciesfederatid" class="col-listheader hidden">id</th>
-    		   		<th scope="col" id="header-llicenciesfederatclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Club', 'club') }}
-    		   				<span class="listheader-icon {% if (sortparams['sort'] == 'club') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		{% if form.club is defined %}
+        		   		<th scope="col" id="header-llicenciesfederatclub" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Club', 'club') }}
+        		   				<span class="listheader-icon {% if (sortparams['sort'] == 'club') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		{% endif %}
     		   		<th scope="col" id="header-llicenciesfederatdataalta" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Alta', 'dataalta') }}
     		   				<span class="listheader-icon {% if (sortparams['sort'] == 'dataalta') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-llicenciesfederatcaducitat" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Caducitat', 'datacaducitat') }}
@@ -74,17 +87,35 @@
     		   				<span class="listheader-icon {% if (sortparams['sort'] == 'categoria') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
     		   		<th scope="col" id="header-llicenciesfederatdescripcio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(llicencies, 'Descripció', 'categoria.descripcio') }}
     		   				<span class="listheader-icon {% if (sortparams['sort'] == 'categoria.descripcio') %} listheader-icon-{{ direction }} {% endif %}"></span></th>
+    		   		<th scope="col" id="header-llicenciesfederatactions" class="col-listheader col-noresponsive">&nbsp</th>
     		   	</tr>
 		   	</thead>
    		   	<tbody class="table-noscroll table-noscroll-large">
    				{% for llicencia in llicencies %}
    					<tr class="data-detall {% if llicencia.parte.pendent %}red{% endif %} {% if llicencia.isVigent %}llicencia-vigent{% endif %}">
    				   		<td class="data-detall-cell llicenciesfederat-id hidden">{{ llicencia.id }}</td>
-   				   		<td class="data-detall-cell llicenciesfederat-club col-noresponsive">{{ llicencia.parte.club.nom }}</td>
+   				   		{% if form.club is defined %}
+	   				   		<td class="data-detall-cell llicenciesfederat-club col-noresponsive">{{ llicencia.parte.club.nom }}</td>
+	   				   	{% endif %}
    				   		<td class="data-detall-cell llicenciesfederat-dataalta col-noresponsive">{{ llicencia.parte.dataalta|date('d/m/Y') }}</td>
    				   		<td class="data-detall-cell llicenciesfederat-caducitat col-noresponsive">{{ llicencia.datacaducitat|date('d/m/Y') }}</td>
    				   		<td class="data-detall-cell llicenciesfederat-categoria col-noresponsive">{{ llicencia.categoria.categoria }}</td>
    				   		<td class="data-detall-cell llicenciesfederat-descripcio col-noresponsive">{{ llicencia.categoria.descripcio }}</td>
+   				   		<td class="data-detall-cell llicenciesfederat-actions col-noresponsive">
+   				   		    {% set parteCurrent = llicencia.getParte() %}
+   				   		    {% if parteCurrent.comandaUsuari %}
+   				   		    	{% if parteCurrent.pendent %}
+   				   		        <a class="link pagament-llicencia" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': parteCurrent.id}) }}" alt="Pagar llicència" title="Pagar llicència"><i class="fa fa-shopping-cart fa-1x green"></i></a>
+   				   		        {% else %}
+   				   		        <a class="link factura-pdf" href="{{ path('FecdasBundle_facturatopdf', { 'id': parteCurrent.factura.id}) }}" alt="Descarregar factura" title="Descarregar factura"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
+   				   		        {% endif %}
+   				   		    {% endif %}
+   				   		    {% if metapersona != null and metapersona.getLlicenciaVigent() != null %}
+        					    {% set llicenciaVigent = metapersona.getLlicenciaVigent() %}
+            						<a class="link llicencia-digital" href="{{ path('FecdasBundle_llicenciadigital', { 'id': llicenciaVigent.id }) }}" alt="Descarregar llicència digital vigent" 
+            						title="Descarregar llicència digital vigent"><i class="fa fa-address-card fa-1x blue"></i></a>
+        					{% endif %}
+   				   		</td>
    			   		</tr>
    				{% endfor %}
    			</tbody>
@@ -94,3 +125,10 @@
     	    <div class="sms-notice">Sense dades per mostrar</div>
     	{% endif  %}
 	</div>
+
+			</div>
+		</div>
+	</div></div>
+</div>
+	
+	

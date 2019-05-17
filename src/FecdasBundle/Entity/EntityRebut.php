@@ -334,6 +334,14 @@ class EntityRebut {
 		return $this->comptabilitat != null;
 	}
 	
+	public function usuariComanda()
+	{
+	    if (count($this->comandes) != 1) return null;
+	    $comanda = $this->comandes[0];
+	    
+	    return $comanda->getUsuari();
+	}
+	
 	
 	public function infoToolTip($admin)
 	{

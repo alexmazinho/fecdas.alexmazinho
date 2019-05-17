@@ -1402,6 +1402,7 @@ tr:first-child > .data-detall-cell  {
 .table > thead > tr > th.data-detall-cell.data-detall-cell-left,
 .table > thead > tr > th.th-listheader.data-detall-cell-left, 
 .data-detall-cell.data-detall-cell-left,
+.table > thead > tr > th.col-listheader.data-detall-cell-left,
 .col-listheader.data-detall-cell-left { text-align: left; }
 
 
@@ -1413,6 +1414,7 @@ tr:first-child > .data-detall-cell  {
 .table > thead > tr > th.data-detall-cell.data-detall-cell-right, 
 .table > thead > tr > th.th-listheader.data-detall-cell-right,
 .data-detall-cell.data-detall-cell-right,
+.table > thead > tr > th.col-listheader.data-detall-cell-right,
 .col-listheader.data-detall-cell-right { text-align: right; }
 
 .th-listheader.data-detall-cell-right  { text-align: right; }
@@ -2793,6 +2795,8 @@ input#formuserclub-randompassword { width: 150px; }
     color: #555555;
 }
 
+.fact-fixed-width { width: 80px; }
+
 .fact-info {
 	color: #000000;
 }
@@ -2805,23 +2809,9 @@ input#formuserclub-randompassword { width: 150px; }
 	text-align: right;
 }
 
-#header-factdetallid {	display:none; }
-#header-factdetallcodi {	width: 10%; }
-#header-factdetalldesc {	width: 36%; text-align: left; }
-#header-factdetallquantitat {	width: 10%; }
-#header-factdetallpreuunitat {	width: 10%; text-align: right; line-height: 14px;}
-#header-factdetallpreusiva {	width: 10%; text-align: right; line-height: 14px;}
-#header-factdetalliva {	width: 10%; text-align: right; line-height: 14px;}
-#header-factdetallpreutotal {	width: 10%; text-align: right; }
-
-.factdetall-id {	display:none; }
-.factdetall-codi {	width: 10%; }
-.factdetall-desc {	width: 36%; text-align: left; }
-.factdetall-quantitat {	width: 10%;  }
-.factdetall-preuunitat { width: 10%; text-align: right; }
-.factdetall-preusiva { width: 10%; text-align: right; }
-.factdetall-iva { width: 10%; text-align: right; }
-.factdetall-preutotal { width: 10%; text-align: right;}
+#header-factdetallpreuunitat,
+#header-factdetallpreusiva,
+#header-factdetalliva {	line-height: 14px; }
 
 
 #factdetall-totals {
@@ -2830,16 +2820,11 @@ input#formuserclub-randompassword { width: 150px; }
 	background-color: #EEEEEE;
 }
 
-.factdetall-tab { width: 66%; }
-.factdetall-totalparcial { width: 11%; text-align: right; font-style: italic;}
+.factdetall-totalparcial,
 .factdetall-iva { font-style: italic;}
-.factdetall-total {	
-	width: 10%; text-align: right; font-weight: bold;
-	border-color: #EDF1F5;
-    border-style: solid;
-    border-width: 1px 0;}
+.factdetall-total {	font-weight: bold; font-size: 1.2em;}
 
-.sms-footer { text-align: justify; font-style: italic; color: #555555; line-height: 20px; margin-top: 30px;}
+.sms-footer { text-align: justify; font-style: italic; color: #555555; line-height: 20px; /*margin-top: 30px;*/}
 
 .sms-info { text-align: justify; color: #555555; line-height: 20px; margin-top: 30px;}
 

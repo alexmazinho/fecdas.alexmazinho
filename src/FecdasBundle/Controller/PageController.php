@@ -1231,8 +1231,16 @@ class PageController extends BaseController {
 	    
 	    $em = $this->getDoctrine()->getManager();
 	    
-	    if ($request->getMethod() != 'POST') $this->logEntryAuth('TRAMITA LLICENCIA', $user->getUser());
+	    $metapersona = $user->getMetapersona();
 	    
+	    $llicenciesVigents = $metapersona->getLlicenciesSortedByDate(false, true, $this->getCurrentDate(), $this->getCurrentDate());
+	    foreach ($llicenciesVigents as $vigent) {
+	        if ($vigent->getParte()->comandaUsuari() && $vigent->getParte()->getPendent())
+	            return $this->redirect($this->generateUrl('FecdasBundle_llicenciesfederat'));
+	    }
+	    
+	    if ($request->getMethod() != 'POST') $this->logEntryAuth('TRAMITA LLICENCIA', $user->getUser());
+
 	    $dataalta = $this->getCurrentDate();
 	    //$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
 	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_F);
@@ -1244,14 +1252,13 @@ class PageController extends BaseController {
 	    $parte->setUsuari($user);
 	    
 	    $this->crearFactura($parte);
+
+	    $persona = $metapersona->getPersona($club);
 	    
 	    // Noves llicències, permeten edició no pdf
 	    $llicencia = $this->prepareLlicencia(BaseController::ID_TIPUS_PARTE_LLICENCIES_F, $parte->getDataCaducitat());
 	    $em->persist($llicencia);
 	    $parte->addLlicencia($llicencia);
-	    
-	    $metapersona = $user->getMetapersona();
-	    $persona = $metapersona->getPersona($club);
 	    
 	    $llicencia->setPersona($persona);
 	    
@@ -1270,7 +1277,7 @@ class PageController extends BaseController {
                 $llicencia->setDatamodificacio($this->getCurrentDate());
                 
                 $this->addParteDetall($parte, $llicencia);
-
+                $parte->setPendent(true);
                 // Comprovació datacaducitat
                 if ($llicencia->getDatacaducitat()->format('d/m/Y') != $parte->getDataCaducitat()->format('d/m/Y')) {
                     $llicencia->setDatacaducitat($parte->getDataCaducitat());

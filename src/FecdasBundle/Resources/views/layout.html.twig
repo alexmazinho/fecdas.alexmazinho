@@ -285,6 +285,25 @@
 		  </div><!-- /.container-fluid -->
 		</nav>
 	</div>
+    	{% block usermessages %}
+    	<div id="missatges-col" class="container">
+    		<div class="row">
+    			<div class="col-md-12">
+                    {%  if app.session.flashbag.has('user-notice') %}
+                    <div class="alert alert-info form-alert alert-dismissible" role="alert">
+                    	<button type="button" class="close" data-dismiss="alert">
+                    	<span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    	<ul>
+                    	{% for flashMessage in app.session.flashbag.get('user-notice') %}
+                    		<li><span class="fa fa-info-circle fa-1x"></span> {{ flashMessage|raw }}</li>
+                    	{% endfor %}
+                    	</ul>
+                    </div>
+                    {% endif %}   							
+    			</div>
+    		</div>
+    	</div>
+    	{% endblock %}
     {% endif %} 
 	
 {% endblock %}
@@ -328,7 +347,7 @@
 	<script src="{{ asset('js/jquery.cookieBar.js?v=0.0.3') }}" type="text/javascript"></script>
 
 	<script src="{{ asset('js/my-jquery-script.js?v=3.17') }}" type="text/javascript"></script>	
-    <script src="{{ asset('js/my-jquery-script-admin.js?v=3.00') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/my-jquery-script-admin.js?v=3.01') }}" type="text/javascript"></script>
 
 	<script type="text/javascript">
 		if (($.browser.msie && parseInt($.browser.version, 10) < 8) ||
@@ -359,7 +378,6 @@
 			    $(this).slideUp();
 			});
 
-			
 			if ($("#menu-user select#form_currentclub").length !== 0) {
 				$("#menu-user select#form_currentclub").select2({
 					minimumInputLength: 2,

@@ -12,6 +12,7 @@ h4
 .h1 span, h2 span, h3 span, h4 span { font-weight: bold; }
 
 .subtitle { font-style: italic; }
+.subtitle.uppercase { text-transform: uppercase; }
 h1.subtitle { font-size: 24px; }
 h2.subtitle { font-size: 20px; }
 h3.subtitle { font-size: 14px; }
@@ -256,11 +257,12 @@ input[type="email"] { max-width: 600px; }
 input[type="submit"]  { line-height: 30px; min-height: 30px; }
 
 input[type="file"]  {
-	position:absolute;z-index:2;top:0;left:0;
+	display:none;
+	/*position:absolute;z-index:2;top:0;left:0;
 	filter: alpha(opacity=0);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";opacity:0;
 	background-color:transparent;
-	color:transparent;
+	color:transparent;*/
 }
 
 textarea  { 

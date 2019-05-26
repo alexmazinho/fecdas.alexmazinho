@@ -68,7 +68,7 @@
     {{ form_end(form) }}
 	</div>
     
-    <div id="llista-llicenciesfederat" class="llista-llicenciesfederat">
+    <div id="llista-llicenciesfederat" class="llista-llicenciesfederat bottom50">
     	{% if llicencies|length > 0 %}
     		{% set direction = sortparams['direction']=='asc'?'desc':'asc' %}
 		<table class="table">
@@ -92,7 +92,8 @@
 		   	</thead>
    		   	<tbody class="table-noscroll table-noscroll-large">
    				{% for llicencia in llicencies %}
-   					<tr class="data-detall {% if llicencia.parte.pendent %}red{% endif %} {% if llicencia.isVigent %}llicencia-vigent{% endif %}">
+   				    {% set parteCurrent = llicencia.getParte() %}
+   					<tr class="data-detall {% if not parteCurrent.comandaPagada %}red{% endif %} {% if llicencia.isVigent %}llicencia-vigent{% endif %}">
    				   		<td class="data-detall-cell llicenciesfederat-id hidden">{{ llicencia.id }}</td>
    				   		{% if form.club is defined %}
 	   				   		<td class="data-detall-cell llicenciesfederat-club col-noresponsive">{{ llicencia.parte.club.nom }}</td>
@@ -100,11 +101,15 @@
    				   		<td class="data-detall-cell llicenciesfederat-dataalta col-noresponsive">{{ llicencia.parte.dataalta|date('d/m/Y') }}</td>
    				   		<td class="data-detall-cell llicenciesfederat-caducitat col-noresponsive">{{ llicencia.datacaducitat|date('d/m/Y') }}</td>
    				   		<td class="data-detall-cell llicenciesfederat-categoria col-noresponsive">{{ llicencia.categoria.categoria }}</td>
-   				   		<td class="data-detall-cell llicenciesfederat-descripcio col-noresponsive">{{ llicencia.categoria.descripcio }}</td>
+   				   		<td class="data-detall-cell llicenciesfederat-descripcio col-noresponsive">
+   				   		    {{ llicencia.categoria.descripcio }}
+   				   		    {% if parteCurrent.comandaUsuari and not parteCurrent.comandaPagada %}
+   				   		    	<span class="subtitle uppercase blue">Pendent fins confirmar el pagament</span>
+   				   		    {% endif %}
+   				   		</td>
    				   		<td class="data-detall-cell llicenciesfederat-actions col-noresponsive">
-   				   		    {% set parteCurrent = llicencia.getParte() %}
    				   		    {% if parteCurrent.comandaUsuari %}
-   				   		    	{% if parteCurrent.pendent %}
+   				   		    	{% if not parteCurrent.comandaPagada %}
    				   		        <a class="link pagament-llicencia" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': parteCurrent.id}) }}" alt="Pagar llicència" title="Pagar llicència"><i class="fa fa-shopping-cart fa-1x green"></i></a>
    				   		        {% else %}
    				   		        <a class="link factura-pdf" href="{{ path('FecdasBundle_facturatopdf', { 'id': parteCurrent.factura.id}) }}" alt="Descarregar factura" title="Descarregar factura"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
@@ -126,6 +131,20 @@
     	{% endif  %}
 	</div>
 
+	{% if rolefederat and licpendents %}	
+	<div class="row">
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<h3 class="underline blue bottom25">
+				Recordatori pagaments per transferència
+			</h3>
+		</div>
+		<div class="col-md-12 col-sm-12 col-xs-12">
+			<p>En cas d'haver realitzat el pagament per transferència, per tal de validar-ho i rebre la federativa, 
+			<b>cal enviar el comprovant del pagament</b> al correu electrònic: 
+			<a href="mailto:fecdas@fecdas.cat?Subject=pagament%20llic%C3%A8ncia%20{{ currentrolenom|url_encode }}">fecdas@fecdas.cat</a> especificant: <span class="subtitle">NOM COGNOM</span></p>
+		</div>
+	</div>
+	{% endif %}
 			</div>
 		</div>
 	</div></div>

@@ -121,7 +121,7 @@
 			
 			var url = $(this).attr("href")+'&club='+$('#form_clubs').val()+'&transport='+($('#form_transport_0').is(':checked')?1:0);
 			
-			confirmarPagament(url, "Confirmació de pagament", "{{ path('FecdasBundle_comandes') }}");
+			confirmarPagament(url, "Confirmació de pagament", false, "{{ path('FecdasBundle_comandes') }}");
 		});
 		
 		$( ".cistella-resum" ).on( "click", ".desar-cistella, .pagar-cistella", function(e) {

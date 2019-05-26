@@ -91,8 +91,9 @@
 		});
 	};
 	
-	confirmarPagament = function(url, titol, urlok) {
+	confirmarPagament = function(url, titol, enviar, urlok) {
 		
+		enviar = typeof enviar === undefined ? false : enviar;
 		$(".alert.alert-dismissible").remove();
 		
 		$("#dialeg").dialog({
@@ -103,16 +104,21 @@
     	        	$(this).dialog("close");
     	        	
     	        	$('#progressbar').show();  // Rellotge
-        	
+    	        
+    	        	enviar = false;
+    	        	if ($("#enviarllicencies").length > 0 && $("#enviarllicencies").is(':checked') ) {
+    	        		enviar = true;
+    	        	}
+    	        	
     	    		var params = { 	datafacturacio: $( "#datafacturacio" ).val(), 
     	    						datapagament: $( "#datapagament" ).val(), 
     	    						tipuspagament: $( "#tipuspagament" ).val(),
     	    						dadespagament: $( "#dadespagament" ).val(),
-    	    						pagatcomentari: $( "#pagatcomentari" ).val() };
+    	    						pagatcomentari: $( "#pagatcomentari" ).val(),
+    	    						enviar: enviar?1:0 };
     	    		$.get(url, params,
     	    		function(data, textStatus) {
     	    			$('#progressbar').hide();
-    	    	        	
     	    			if (urlok !== undefined) window.location = urlok; 
     	    			else location.reload();
     	    		}).fail( function(xhr, status, error) {
@@ -147,6 +153,15 @@
 		   
 		var dialegHtml = "";
 		dialegHtml += "<div class='row'>";
+		if (enviar) {
+		    dialegHtml +="   <div class='col-md-12 bottom10'>";
+		    dialegHtml +="		<div class='checkbox-inline'>";
+		    dialegHtml +="     		<label>";
+		    dialegHtml +="      		<input id='enviarllicencies' name='form_enviarllicencies' checked='checked' type='checkbox'> Enviar <b>llicències digitals</b>";
+		    dialegHtml +="      	</label>";
+		    dialegHtml +="   	</div>";
+		    dialegHtml +="   </div>";
+		}
 		dialegHtml += "   <div class='col-md-10'>";
 		dialegHtml += "   	<div class='form-group'>";
 		dialegHtml += "     	<label for='rebut_datafactura'>Factura</label>";

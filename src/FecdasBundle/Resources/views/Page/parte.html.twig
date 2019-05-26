@@ -118,7 +118,7 @@
 							<div class="form-group">
     							<label>Pagament</label>
     							<div id="formparte-pagament" class="input-group" >
-    								<a class="confirmar-pagament btn btn-default" 
+    								<a class="confirmar-pagament btn btn-default" data-enviar="{{ parte.numLlicencies - parte.numEnviadesMail }}" 
     									href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}"><i class="fa fa-euro"></i></a>
     							</div>  			 
 	      			 		</div>
@@ -245,7 +245,7 @@
     
     	$('.confirmar-pagament').click(function(e) {
     		e.preventDefault();
-    		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+    		confirmarPagament($(this).attr("href"), "Confirmar el pagament", parseInt($(this).attr("data-enviar")) > 0);
     	});
     
     	tramitarPagamentButton("#formparte-payment", "{{ iban }}" );

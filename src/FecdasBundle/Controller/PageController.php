@@ -1245,7 +1245,7 @@ class PageController extends BaseController {
 	    //$dataalta->add($this->getIntervalConsolidacio()); // Add 20 minutes
 	    $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(BaseController::ID_TIPUS_PARTE_LLICENCIES_F);
 	    //$club = $this->getCurrentClub();
-	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_CLUBINDEFEDE);
+	    $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_CLUBLLICWEB);
 	    
 	    $parte = $this->crearComandaParte($dataalta, $tipus, $club, 'Tramitació llicència usuari');
 	    
@@ -1494,9 +1494,6 @@ class PageController extends BaseController {
                 $enviades = 0;
                 $res = '';
                 $log = '';
-                if ($parte->getTipus()->getEs365()) $cursAny = $parte->getCurs();
-                else $cursAny = $parte->getAny();
-                $template = $parte->getTipus()->getTemplate();
                 foreach ($llicencies as $llicenciaArray) {
                     $llicenciaId = $llicenciaArray['id'];
                     
@@ -1505,7 +1502,7 @@ class PageController extends BaseController {
                         $llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);
 	                        
                         if ($llicencia != null) {
-                            $this->enviarMailLlicencia($request, $club, $llicencia, $cursAny, $template);
+                            $this->enviarMailLlicencia($request, $llicencia);
 	                            
                             $enviades++;
                             $res .= $llicenciaArray['nom']. ' '.($llicenciaArray['mail'] != ''?$llicenciaArray['mail']:'(Correu del club) '.$club->getMail()).'</br>';
@@ -1582,60 +1579,6 @@ class PageController extends BaseController {
             );
 	}
 	
-	private function enviarMailLlicencia($request, $club, $llicencia, $cursAny, $template) {
-	    if ($club == null) throw new \Exception("Error en les dades del club");
-	    
-	    if ($llicencia == null) throw new \Exception("Error en les dades de la llicència");
-	    
-	    $persona = $llicencia->getPersona();
-	    
-	    if ($persona == null) throw new \Exception("Error en les dades de la persona");
-	    
-	    $tomails = array();
-	    if ($persona->getMail() == '' || $persona->getMail() == null) {
-	        // Si la persona no té mail s'envia al club
-	        if ($club->getMail() == '' || $club->getMail() == null) throw new \Exception($persona->getNomCognoms().' i club sense mail');
-	        
-	        $tomails = $club->getMails();
-	    } else {
-	        $tomails = $persona->getMails();
-	    }
-	    
-	    $attachments = array();
-	    
-	    $method = "textLlicencia".$template."mail";
-	    
-	    if (!method_exists($this, $method)) throw new \Exception("Error generant el text del correu de la llicència. No existeix la plantilla");
-	    
-	    $textMail = $this->$method( $cursAny );
-	    
-	    if (!isset($textMail['subject']) || !isset($textMail['body']) || !isset($textMail['greeting']))
-	        throw new \Exception("Error generant el text del correu de la llicència");
-	        
-	        $subject = $textMail['subject'];
-	        $body = $textMail['body'];
-	        $salutacio = $textMail['greeting'];
-	        
-	        $method = "printLlicencia".$template."pdf";
-	        
-	        if (!method_exists($this, $method)) throw new \Exception("Error generant la llicència. No existeix la plantilla");
-	        
-	        $pdf = $this->$method( $request, $llicencia );
-	        
-	        $nom =  "llicencia_".$cursAny."_".$llicencia->getId()."_".$llicencia->getPersona()->getDni().".pdf";
-	        
-	        $attachments[] = array( 'name' => $nom,
-	            //'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)
-	            'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
-	        );
-	        
-	        $this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments, 470, $salutacio);
-	        
-	        $llicencia->setMailenviat( 1 );
-	        $llicencia->setDatamail( new \DateTime() );
-	}
-	
-
 	public function personaAction(Request $request) {
 
 		$options = array();

@@ -217,13 +217,19 @@ class EntityLlicencia {
 	 */
 	public function csvRow($i = 0)
 	{
+	    $descripcio = $this->categoria->getDescripcio();
+	    $parte = $this->getParte();
+	    if ($parte != null && $parte->comandaUsuari() && !$parte->comandaPagada()) {
+	        $descripcio = '(Pendent fins confirmar el pagament)';
+	    }
+	    
 	    return array( 
 	        $i, 
 	        $this->parte->getClub()->getNom(), 
 	        $this->parte->getDataalta()->format("d/m/Y"),
 	        $this->datacaducitat->format("d/m/Y"),
 	        $this->categoria->getCategoria(),
-	        $this->categoria->getDescripcio(),
+	        $descripcio,
 	    );
 	}
 	
@@ -237,7 +243,7 @@ class EntityLlicencia {
      */
     public function isValida()
     {
-    	return ($this->getDatabaixa() == null && $this->getParte() != null && $this->getParte()->getPendent() == false);
+    	return ($this->getDatabaixa() == null && $this->getParte() != null && !$this->getParte()->getPendent());
     }
 
 	/**
@@ -253,7 +259,7 @@ class EntityLlicencia {
      */
     public function isVigent()
     {
-    	return ($this->isValida() == true && $this->getParte()->isVigent() == true);
+    	return ($this->isValida() && $this->getParte()->isVigent());
     }
 	
 	/**

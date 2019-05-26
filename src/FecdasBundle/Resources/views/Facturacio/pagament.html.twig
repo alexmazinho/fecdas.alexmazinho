@@ -9,6 +9,10 @@
 	<input type="hidden" {{ block('attributes') }} value="{{ value }}" name="{{ name }}"/>
 {% endblock %}
 
+{% block usermessages %}
+	<span class="hidden"> {{ parent() }}</span>
+{% endblock %}
+
 {% block body %}
 	<header>
 		<div class="row">
@@ -66,7 +70,7 @@
             		{% if comanda.comandaUsuari == true %}
                 	    {% set usuari = comanda.usuari %}
                 	    {% set metapersona = usuari.metapersona %}
-                	    {% set persona = metapersona.getPersona(constant('FecdasBundle\\Controller\\BaseController::CODI_CLUBINDEFEDE')) %}
+                	    {% set persona = metapersona.getPersona(constant('FecdasBundle\\Controller\\BaseController::CODI_CLUBLLICWEB')) %}
         				<table class="table">
                    		   	<tbody class="table-noscroll">
                					<tr class="data-detall">

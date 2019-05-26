@@ -3759,12 +3759,13 @@ class FacturacioController extends BaseController {
 
 			$tpvresponse = $this->tpvResponse($redsysapi);
 			
+			// Ok
+			$id = !isset($tpvresponse['itemId'])?0:$tpvresponse['itemId'];
+			$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
+			
+			if ($comanda == null) throw new \Exception('Error actualitzar comanda TPV. id: '.$id);
+			
 			if ($tpvresponse['Ds_Response'] < '0100') {
-				// Ok
-				$id = !isset($tpvresponse['itemId'])?0:$tpvresponse['itemId'];
-				$comanda = $this->getDoctrine()->getRepository('FecdasBundle:EntityComanda')->find($id);
-					
-				if ($comanda == null) throw new \Exception('Error actualitzar comanda TPV. id: '.$id);
 				
 				// Afegir rebut dia següent
 				$datapagament = $this->getCurrentDate();
@@ -3773,6 +3774,23 @@ class FacturacioController extends BaseController {
 				$this->crearRebut($datapagament, BaseController::TIPUS_PAGAMENT_TPV, $comanda, $tpvresponse['Ds_Response'].':'.$tpvresponse['Ds_Order']);
 					
 				$em = $this->getDoctrine()->getManager();
+
+				// Enviar llicències per correu
+				if ($comanda->esParte()) {
+				    
+				    $parte = $comanda;
+				    $enviades = 0;
+				    foreach ($parte->getLlicenciesSortedByName() as $llicencia) {
+				        if (!$llicencia->getMailenviat()) {
+				            $enviades++;
+				            $this->enviarMailLlicencia($request, $llicencia);
+				        }
+				    }
+				    
+				    // Marcar el parte com modificat
+				    $parte->setDatamodificacio($this->getCurrentDate());
+				}
+				
 				
 				$em->flush();
 				
@@ -3782,17 +3800,41 @@ class FacturacioController extends BaseController {
 			} 
 			
 			if ($tpvresponse['pendent'] == true) {
-				// Pendent, enviar mail 
-				$subject = ":: TPV. Pagament pendent de confirmació ::";
-				$bccmails = array();
-				$tomails = array($this->getParameter('MAIL_ADMINTEST'));
-						
-				$body = "<h1>Parte pendent</h1>";
-				$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
-				$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-					
-				$this->logEntryAuth('TPV PEND', $tpvresponse['logEntry']);
-					
+			    if ($comanda->esParte() && $comanda->comandaUsuari()) {
+			        // Enviar correu pendent a usuari
+			        $usuari = $comanda->getUsuari();
+			        
+			        $nomUsuari = $usuari!=null&&$usuari->getMetapersona()!=null?$usuari->getMetapersona()->getNomCognoms():"";
+			        
+			        $tomails = array( $usuari->getUser() );
+			        $bccmails = array( $this->getParameter('MAIL_FACTURACIO') );
+			        
+			        $subject = "Federació Catalana d'Activitats Subaquàtiques. Pagament pendent de confirmació";
+			        
+			        $body  = "<p>Benvolgut/da esportista</p>";
+			        $body .= "<p>Per tal de validar el pagament i rebre la federativa,";
+			        $body .= "<b>cal enviar el comprovant del pagament</b> al correu electrònic:"; 
+			        $body .= "<a href='mailto:fecdas@fecdas.cat?Subject=pagament%20llic%C3%A8ncia%20".$nomUsuari."'>fecdas@fecdas.cat</a> "; 
+			        $body .= "especificant: <span style='font-style: italic'>".$nomUsuari."</span>";
+			        $body .= "<p>Cordialment,</p>";
+		            $body .= "<p>Equip FECDAS</p>";
+
+			        $this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+			        
+			        $this->logEntryAuth('TPV PEND USER', implode(' - ', $tpvresponse));
+			        
+			    } else {
+    				// Pendent, enviar mail federació
+    				$subject = ":: TPV. Pagament pendent de confirmació ::";
+    				$bccmails = array();
+    				$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+    						
+    				$body = "<h1>Parte pendent</h1>";
+    				$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
+    				$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+    					
+    				$this->logEntryAuth('TPV PEND', implode(' - ', $tpvresponse));
+			    }
 				return new Response('');
 			}
 			
@@ -3845,11 +3887,32 @@ class FacturacioController extends BaseController {
 				return $response;
 			}*/
 			
+			$enviarLlicencies = $request->query->get('enviar', 0) == 1?true:false;
 			$dataAux = $request->query->get('datapagament', '');
 			$dataPagament = ($dataAux!='')? \DateTime::createFromFormat('d/m/Y',$dataAux): $this->getCurrentDate();
 			$dadesPagament = $request->query->get('dadespagament', '');
 			$comentariPagament = $request->query->get('pagatcomentari', 'Confirmació del pagament manual');
 			$this->crearRebut($dataPagament, $tipusPagament, $comanda, $dadesPagament, $comentariPagament);
+
+			$this->get('session')->getFlashBag()->add('sms-notice', 'Pagament confirmat correctament ');
+			
+			// Partes, enviament llicències digitals automàtic
+			if ($comanda->esParte() && $enviarLlicencies) {
+			    
+			    $parte = $comanda;
+			    $enviades = 0;
+			    foreach ($parte->getLlicenciesSortedByName() as $llicencia) {
+			        if (!$llicencia->getMailenviat()) {
+			            $enviades++;
+			            $this->enviarMailLlicencia($request, $llicencia);
+			        }
+			    }
+			    
+			    $this->get('session')->getFlashBag()->add('sms-notice', 'S\'ha enviat '.$enviades.' llicències digitals');
+			    // Marcar el parte com modificat 
+			    $parte->setDatamodificacio($this->getCurrentDate());
+			}
+			
 			$em->flush();
 
 			$this->logEntryAuth('CONF. PAGAMENT OK', $comandaId);

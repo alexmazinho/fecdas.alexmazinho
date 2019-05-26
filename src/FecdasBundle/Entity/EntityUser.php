@@ -1,6 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 
+use FecdasBundle\Controller\BaseController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -196,13 +197,15 @@ class EntityUser {
     }
     
     /**
-     * Activar rol usuari
+     * Activar rol usuari a tots els clubs. Només federat
      *
      */
     public function activarUsuariRole($metapersona, $role)
     {
+        if ($role != BaseController::ROLE_FEDERAT) return;
         $this->databaixa = null;
         $this->metapersona = $metapersona;
+        
         foreach ($this->clubs as $userClubRole) $userClubRole->activarRole($role);
     }
     
@@ -461,7 +464,7 @@ class EntityUser {
      */
     public function setMetapersona(EntityMetaPersona $metapersona = null)
     {
-        if ($metapersona == null) $this->metapersona->setUsuari(null);
+        if ($metapersona == null && $this->metapersona != null) $this->metapersona->setUsuari(null);
         
         $this->metapersona = $metapersona;
     }

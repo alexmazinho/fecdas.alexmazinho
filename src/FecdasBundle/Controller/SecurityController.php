@@ -16,9 +16,6 @@ class SecurityController extends BaseController
 {
 	
 	public function changeroleAction(Request $request) {
-	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
-		// Params => currentrole: role, currentclub: club
-		
 		if (!$request->query->has('currentrole') || $request->query->get('currentrole') == '') return "";
 		
 		$currentrole = $request->query->get('currentrole');		// Usuaris: parella role;codi	Admin: només role
@@ -36,7 +33,10 @@ class SecurityController extends BaseController
 			$currentclub = isset($currentroleArray[1])?$currentroleArray[1]:"";
 		}
 		$checkRole->setCurrentClubRole( $currentclub, $currentrole );
-	
+
+		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return new Response("reload"); //return $redirect;
+		// Params => currentrole: role, currentclub: club
+		
 		if (!$this->isCurrentAdmin()) return new Response("reload");
 		return new Response("");
 	}
@@ -456,8 +456,18 @@ class SecurityController extends BaseController
         $em = $this->getDoctrine()->getManager();
         
         if ($user != null) {
-            // Mirar si és baixa i activar
-            $user->activarUsuariRole(null, BaseController::ROLE_FEDERAT);
+            
+            $roleClubs = $user->getClubs();
+            // Afegir usuari FEDERAT als clubs associats a l'usuari
+            foreach ($roleClubs as $roleClub) {
+                $club = $roleClub->getClub(); 
+                if ($roleClub->getRole() === BaseController::ROLE_FEDERAT && $roleClub->anulat()) {
+                    $roleClub->activarRole(BaseController::ROLE_FEDERAT);
+                } else {
+                    $userClubRole = $club->addUsuariRole($user, BaseController::ROLE_FEDERAT);
+                    $em->persist($userClubRole);
+                }
+            }
             
             $subjectMail = "Activació de l'usuari per accedir";
         } else {
@@ -465,7 +475,7 @@ class SecurityController extends BaseController
             $user = new EntityUser($mail, sha1($this->generateRandomPassword()), $newsletter, null);
             $em->persist($user);
             
-            $club = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBINDEFEDE);
+            $club = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBLLICWEB);
             
             if (!$user->hasRoleClub($club, BaseController::ROLE_FEDERAT)) {
                 $userClubRole = $club->addUsuariRole($user, BaseController::ROLE_FEDERAT);

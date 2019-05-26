@@ -236,7 +236,7 @@ class TitulacionsController extends BaseController {
 	    $response = null;
 	    
 	    $clubs = $metapersona->getClubs();
-	    if (count($clubs) == 1 && $clubs[0]->getCodi() == BaseController::CODI_CLUBINDEFEDE) {
+	    if (count($clubs) == 1 && $clubs[0]->getCodi() == BaseController::CODI_CLUBLLICWEB) {
 	        // Ocultar club Inde F
 	        $formBuilder = $this->createFormBuilder();
 	    } else {
@@ -261,9 +261,6 @@ class TitulacionsController extends BaseController {
                     (!$parte->getPendent() || $parte->comandaUsuari()) &&
                     ($currentClub == '' || $currentClub == $parte->getClub()->getCodi())) {
                         
-                        if ($parte->comandaUsuari() && $parte->getPendent()) {
-                            $this->get('session')->getFlashBag()->add('sms-notice', 'Hi ha llicències pendents de finalitzar la tramitació, si us plau, procediu per fer-ne el pagament');
-                        }
                         $llicencies[] = $llicencia;
                 }
 	        }
@@ -362,7 +359,7 @@ class TitulacionsController extends BaseController {
 	    $response = null;
 	    
 	    $clubs = $metapersona->getClubs();
-	    if (count($clubs) == 1 && $clubs[0]->getCodi() == BaseController::CODI_CLUBINDEFEDE) {
+	    if (count($clubs) == 1 && $clubs[0]->getCodi() == BaseController::CODI_CLUBLLICWEB) {
 	        // Ocultar club Inde F
 	        $formBuilder = $this->createFormBuilder();
 	    } else {
@@ -516,7 +513,7 @@ class TitulacionsController extends BaseController {
 	    if ($metapersona == null) {
 	        $clubs = $user->getClubsRole(BaseController::ROLE_FEDERAT);
 	        if (count($clubs) == 0) {
-	            $clubs[] = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBINDEFEDE);
+	            $clubs[] = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBLLICWEB);
 	        }
 	        
 	        $metapersona = new EntityMetaPersona();

@@ -529,7 +529,7 @@ class EntityParte extends EntityComanda {
     	// Només si no estan donades de baixa
     	$count = 0;
     	foreach($this->llicencies as $llicencia) {
-    		if (!$llicencia->esBaixa() && $llicencia->getMailenviat() == true) $count++;
+    		if (!$llicencia->esBaixa() && $llicencia->getMailenviat()) $count++;
     	}
     	return $count;
     }
@@ -768,9 +768,9 @@ class EntityParte extends EntityComanda {
      * @return boolean
      */
     public function isVigent() {
-    	if ($this->pendent == true) return false;
+    	if ($this->pendent) return false;
     	
-    	$currentdate = new \DateTime();
+    	if ($this->comandaUsuari() && !$this->comandaPagada()) return false;
     	
     	/*if ($this->tipus->getId() == 11) {
     		if ($this->dataalta->format("Y-m-d") == $currentdate->format("Y-m-d")) return true;
@@ -784,8 +784,18 @@ class EntityParte extends EntityComanda {
     	return  ($this->tipus->getEs365() == 0 and $this->dataalta >= $inianual) or
     		($this->tipus->getEs365() == 1 and $this->dataalta >= $ini365);*/
     	   
-    	return ( $this->dataalta->format('Y-m-d') <= $currentdate->format('Y-m-d') 
-    			&& $currentdate->format('Y-m-d') <= $this->getDataCaducitat()->format("Y-m-d"));
+    	return $this->isActual();
+    }
+    
+    /**
+     * Comprova si el parte és actual
+     *
+     * @return boolean
+     */
+    public function isActual() {
+        $currentdate = new \DateTime();
+        return ( $this->dataalta->format('Y-m-d') <= $currentdate->format('Y-m-d')
+            && $currentdate->format('Y-m-d') <= $this->getDataCaducitat()->format("Y-m-d"));
     }
     
     

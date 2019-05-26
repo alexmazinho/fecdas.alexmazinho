@@ -104,6 +104,7 @@ class BaseController extends Controller {
 	const CODI_CLUBTEST					= 'CAT000';
 	const CODI_CLUBINDEFEDE				= 'CAT292';        // Federatives independents
 	const CODI_CLUBINDEPENDENT			= 'CAT998';        // Merchandising independents
+	const CODI_CLUBLLICWEB				= 'CAT311';        // Llicències WEB
 	
 	const CODI_PAGAMENT_CASH 			= 5700000;		// 5700000  Metàl·lic
 	const CODI_PAGAMENT_CAIXA			= 5720001;		// 5720001  La Caixa
@@ -577,7 +578,7 @@ class BaseController extends Controller {
 	
 	protected function getCommonRenderArrayOptions($more = array()) {
 		$options = array( 	'currentuser' => null, 'role' => '', 'authenticated' => false, 'admin' => false, 
-							'roleclub' => false, 'roleinstructor' => false, 'rolefederat' => false,
+							'roleclub' => false, 'roleinstructor' => false, 'rolefederat' => false, 'licpendents' => false,
 							'userclub' => '', 'currentrolenom' => '',
 							'allowcomandes' => false, 'busseig' => false, 
 							'enquestausuari' => '', 'enquestausuaripendent' => '',
@@ -623,17 +624,34 @@ class BaseController extends Controller {
 			if ($checkRole->isCurrentFederat() || $checkRole->isCurrentInstructor()) {
 			    $user = $this->getCurrentUser();
 			    $options['currentrolenom'] = $user!=null&&$user->getMetapersona()!=null?$user->getMetapersona()->getNomCognoms():'';
+	
+			    $this->frontEndMissatgesUsuari($options, $user);
 			} else {
 			    $options['currentrolenom'] = $this->getCurrentClub()!=null?$this->getCurrentClub()->getNom():'';
 			}
 				
 			$cart = $this->getSessionCart();
 			$options['cartItems'] = count( $cart['productes'] );
+			
 		}
 		
 		return  array_merge($more, $options);
 	}
 	
+	protected function frontEndMissatgesUsuari(&$options, $user = null) {
+	    // Comprovar si té cap llicència pendent de pagament
+	    if ($user == null) return;
+	    
+	    $query = $this->consultaPartesUsuari($user, true);
+	    
+	    $partesPendentsPagament = $query->getResult();
+	    foreach ($partesPendentsPagament as $parte) {
+	        if ($parte->isActual() && $parte->comandaUsuari() && !$parte->comandaPagada()) {
+	            $options['licpendents'] = true;
+	            $this->get('session')->getFlashBag()->add('user-notice',"Cal finalitzar la tramitació d'una llicència amb data ".$parte->getDataalta()->format('d/m/Y').", tingueu en compte que no serà vàlida fins que se'n confirmi el pagament");
+	        }
+	    }
+	}
 	
 	protected function addClubsActiusForm($formBuilder, $club, $nom = 'clubs') {
 			
@@ -752,7 +770,7 @@ class BaseController extends Controller {
 	    }
 	    
 	    // Comprova usuari pendent d'indicar dades personals
-	    if ($user->isPendentDadesPersonals()) {
+	    if ($checkRole->isCurrentFederat() && $user->isPendentDadesPersonals()) {
 	        return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'sms-notice', 'FecdasBundle_dadespersonals', "Cal omplir les dades personals");
 	    }
 	    
@@ -802,7 +820,7 @@ class BaseController extends Controller {
     	return $this->redirect($this->generateUrl($url));
 	
 	}
-	
+
 	protected function isAuthenticated() {
 		
 		$checkRole = $this->get('fecdas.rolechecker');
@@ -837,7 +855,8 @@ class BaseController extends Controller {
 		if ($club == null) return false;
 		
 		if ($club->getCodi() == self::CODI_CLUBINDEFEDE ||
-		    $club->getCodi() == self::CODI_CLUBINDEPENDENT) return true;
+		    $club->getCodi() == self::CODI_CLUBINDEPENDENT || 
+		    $club->getCodi() == self::CODI_CLUBLLICWEB) return true;
 		
 		if (in_array( $club->getTipus()->getId(), self::getTipusClubsNoComandes() )) return false;
 		
@@ -1236,6 +1255,21 @@ class BaseController extends Controller {
 		return $anulacions;	
 	}
 	
+	protected function consultaPartesUsuari($usuari, $pendents = false) {
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    // Consultar comandes usuari opcionalment pendents de pagament
+	    $strQuery = "SELECT c FROM FecdasBundle\Entity\EntityParte c LEFT OUTER JOIN c.rebut r ";
+	    $strQuery .= "WHERE c.usuari = :usuari ";
+	    $strQuery .= " AND c.databaixa IS NULL ";
+	    if (!$pendents) $strQuery .= " AND c.rebut IS NOT NULL AND r.databaixa IS NULL ";
+	    $strQuery .= " ORDER BY c.dataalta DESC";
+   
+	    $query = $em->createQuery($strQuery)->setParameter('usuari', $usuari->getId());
+	    
+	    return $query;
+	}
+	
 	
 	protected function consultaPartesClub($club, $tipus, $desde, $fins, $strOrderBY = '') {
 		$em = $this->getDoctrine()->getManager();
@@ -1525,7 +1559,7 @@ class BaseController extends Controller {
 		    $nomFactura = $metapersona->getNomCognoms();
 		    $cifFactura =  $metapersona->getDni();
 		    
-		    $persona = $metapersona->getPersona(BaseController::CODI_CLUBINDEFEDE);
+		    $persona = $metapersona->getPersona(BaseController::CODI_CLUBLLICWEB);
 		    if ($persona != null) {
 		        $adrecaFactura  = $persona->getAddradreca();
 		        $poblacioFactura = $persona->getAddrpob().($persona->getAddrcp()!=''?' - '.$persona->getAddrcp():'');
@@ -2112,6 +2146,69 @@ class BaseController extends Controller {
 		
 		return $pdf;
 	
+	}
+	
+	protected function enviarMailLlicencia($request, $llicencia) {
+	    
+	    if ($llicencia == null) throw new \Exception("Error en les dades de la llicència");
+	    
+	    $parte = $llicencia->getParte();
+	    
+	    if ($parte == null) throw new \Exception("Error en les dades de la llista");
+	    
+	    $club = $parte->getClub();
+	    
+	    if ($club == null) throw new \Exception("Error en les dades del club");
+	    
+	    if ($parte->getTipus()->getEs365()) $cursAny = $parte->getCurs();
+	    else $cursAny = $parte->getAny();
+	    $template = $parte->getTipus()->getTemplate();
+	    
+	    $persona = $llicencia->getPersona();
+	    
+	    if ($persona == null) throw new \Exception("Error en les dades de la persona");
+	    
+	    $tomails = array(); 
+	    if ($persona->getMail() == '' || $persona->getMail() == null) {
+	        // Si la persona no té mail s'envia al club
+	        if ($club->getMail() == '' || $club->getMail() == null) throw new \Exception($persona->getNomCognoms().' i club sense mail');
+	        
+	        $tomails = $club->getMails();
+	    } else {
+	        $tomails = $persona->getMails();
+	    }
+	    
+	    $attachments = array();
+	    
+	    $method = "textLlicencia".$template."mail";
+	    
+	    if (!method_exists($this, $method)) throw new \Exception("Error generant el text del correu de la llicència. No existeix la plantilla");
+	    
+	    $textMail = $this->$method( $cursAny );
+	    
+	    if (!isset($textMail['subject']) || !isset($textMail['body']) || !isset($textMail['greeting'])) throw new \Exception("Error generant el text del correu de la llicència");
+	        
+	    $subject = $textMail['subject'];
+	    $body = $textMail['body'];
+	    $salutacio = $textMail['greeting'];
+	    
+	    $method = "printLlicencia".$template."pdf";
+	    
+	    if (!method_exists($this, $method)) throw new \Exception("Error generant la llicència. No existeix la plantilla");
+	    
+	    $pdf = $this->$method( $request, $llicencia );
+	    
+	    $nom =  "llicencia_".$cursAny."_".$llicencia->getId()."_".$llicencia->getPersona()->getDni().".pdf";
+	    
+	    $attachments[] = array( 'name' => $nom,
+	        //'data' => $attachmentData = $pdf->Output($attachmentName, "E") 	// E: return the document as base64 mime multi-part email attachment (RFC 2045)
+	        'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
+	    );
+	    
+	    $this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments, 470, $salutacio);
+	    
+	    $llicencia->setMailenviat( 1 );
+	    $llicencia->setDatamail( new \DateTime() );
 	}
 	
 	protected function textLlicenciaG0mail( $cursAny ) {

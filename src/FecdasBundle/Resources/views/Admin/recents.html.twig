@@ -152,7 +152,7 @@
     	// Delegate
     	$( "#main-col" ).on( "click", ".confirmar-pagament", function(e) {
     		e.preventDefault();
-    		confirmarPagament($(this).attr("href"), "Confirmació de pagament");
+    		confirmarPagament($(this).attr("href"), "Confirmació de pagament", parseInt($(this).attr("data-enviar")) > 0);
     	});
     
     	// Delegate

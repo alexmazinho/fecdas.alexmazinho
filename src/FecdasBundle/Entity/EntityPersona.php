@@ -351,7 +351,7 @@ class EntityPersona {
      */
     public static function getLlicenciaVigentStatic($llicencies) {
         foreach ($llicencies as $llicencia) {
-    		if ($llicencia->isVigent() == true) return $llicencia;
+    		if ($llicencia->isVigent()) return $llicencia;
     	} 
     	return null;
     }

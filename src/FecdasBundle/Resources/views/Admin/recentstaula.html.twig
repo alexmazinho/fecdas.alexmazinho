@@ -51,7 +51,7 @@
 		   			<div class="data-detall-cell parterecents-actions">
 			   			{% if parte.comandaPagada == false  %}
 			   				<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': parte.id }) }}" 
-			   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+			   					alt="Confirmar pagament" title="Confirmar pagament" data-enviar="{{ parte.numLlicencies - parte.numEnviadesMail }}"><i class="fa fa-euro green"></i></a>
 			   			{% endif %}
 			   			{% if parte.perEnviarFederat == true  %}
 			   				<a class="enviament-llicencies link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id }) }}" 

@@ -2238,7 +2238,7 @@ class FacturacioController extends BaseController {
 				// Enviar notificació mail Albert si és una comanda de Kits
 				if ($comanda->comandaKits()) {
 					$subject = ":: Comanda KITS ::";
-					$tomails = $this->getCarnetsMails(); // Carnets Albert
+					$tomails = array($this->getParameter('MAIL_FECDAS'));
 					
 					$body = "<h3>Nova comanda Kits del club ". $comanda->getClub()->getNom()."</h3>";
 					$body .= "<p>Comanda: ". $comanda->getNumcomanda() ."</p>";
@@ -3322,7 +3322,7 @@ class FacturacioController extends BaseController {
 	            
 	            $subject = ":: Acció comptabilitat pendent. Esborrar rebut ".$rebut->getNumRebut()."::";
 	            
-	            $tomails = $this->getFacturacioMails();
+	            $tomails = array($this->getParameter('MAIL_FACTURACIO'));
 	            $body = "<h1>Recordatori: Esborrar rebut a comptabilitat</h1>";
 	            $body .= "<p>El rebut ".$rebut->getNumRebut()." s'havia enviat a comptabilitat i cal esborrar-lo de comptabilitat</p>"; 
 	            
@@ -3807,14 +3807,14 @@ class FacturacioController extends BaseController {
 			        $nomUsuari = $usuari!=null&&$usuari->getMetapersona()!=null?$usuari->getMetapersona()->getNomCognoms():"";
 			        
 			        $tomails = array( $usuari->getUser() );
-			        $bccmails = array( $this->getParameter('MAIL_FACTURACIO') );
+			        $bccmails = array( $this->getParameter('MAIL_LLICENCIES') );
 			        
 			        $subject = "Federació Catalana d'Activitats Subaquàtiques. Pagament pendent de confirmació";
 			        
 			        $body  = "<p>Benvolgut/da esportista</p>";
 			        $body .= "<p>Per tal de validar el pagament i rebre la federativa,";
 			        $body .= "<b>cal enviar el comprovant del pagament</b> al correu electrònic:"; 
-			        $body .= "<a href='mailto:fecdas@fecdas.cat?Subject=pagament%20llic%C3%A8ncia%20".$nomUsuari."'>fecdas@fecdas.cat</a> "; 
+			        $body .= "<a href='mailto:".$this->getParameter('MAIL_LLICENCIES')."?Subject=pagament%20llic%C3%A8ncia%20".$nomUsuari."'>".$this->getParameter('MAIL_LLICENCIES')."</a> "; 
 			        $body .= "especificant: <span style='font-style: italic'>".$nomUsuari."</span>";
 			        $body .= "<p>Cordialment,</p>";
 		            $body .= "<p>Equip FECDAS</p>";
@@ -3827,7 +3827,7 @@ class FacturacioController extends BaseController {
     				// Pendent, enviar mail federació
     				$subject = ":: TPV. Pagament pendent de confirmació ::";
     				$bccmails = array();
-    				$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+    				$tomails = array($this->getParameter('MAIL_ADMIN'));
     						
     				$body = "<h1>Parte pendent</h1>";
     				$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
@@ -3848,7 +3848,7 @@ class FacturacioController extends BaseController {
 				
 			$subject = ':: Incidència TPV ::';
 			$bccmails = array();
-			$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+			$tomails = array($this->getParameter('MAIL_ADMIN'));
 				
 			$body = '<h1>Error TPV</h1>';
 			$body .= '<h2>Missatge: '.$e->getMessage().'</h2>';

@@ -863,41 +863,6 @@ class BaseController extends Controller {
 		return true;		
 	}
 	
-	protected function getAdminMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array($this->getParameter('MAIL_ADMINTEST'));
-		
-		$mails = array($this->getParameter('MAIL_LLICENCIES'), $this->getParameter('MAIL_ADMIN'));
-		return $mails;
-	}
-	
-	protected function getFacturacioMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array($this->getParameter('MAIL_ADMINTEST'));
-		
-		$mails = array($this->getParameter('MAIL_FACTURACIO'), $this->getParameter('MAIL_LLICENCIES'));
-		return $mails;
-	}
-
-	protected function getLlicenciesMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array($this->getParameter('MAIL_ADMINTEST'));
-		
-		$mails = array($this->getParameter('MAIL_LLICENCIES'));
-		return $mails;
-	}
-	
-	protected function getCarnetsMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array($this->getParameter('MAIL_ADMINTEST'));
-	
-		$mails = array($this->getParameter('MAIL_CARNETS'));
-		return $mails;
-	}
-	
-	protected function getContactMails() {
-		if ($this->get('kernel')->getEnvironment() == 'dev') return array($this->getParameter('MAIL_ADMINTEST'));
-		
-		$mails = array($this->getParameter('MAIL_CONTACTE'), $this->getParameter('MAIL_ADMINTEST'), $this->getParameter('MAIL_LLICENCIES'), $this->getParameter('MAIL_CARNETS'));
-		return $mails;
-	}
-	
 	protected function validateMails($mails = array()) {
 	    for ($i = 0; $i < count($mails); $i++) {
 	        $mails[$i] = trim($mails[$i]);
@@ -1493,8 +1458,7 @@ class BaseController extends Controller {
 
 		
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
-		$showTemplate = ($this->get('session')->get('username', '') != $this->getParameter('MAIL_FACTURACIO')) &&
-						($this->get('session')->get('username', '') != $this->getParameter('MAIL_FACTURACIO2'));  
+		$showTemplate = ($this->get('session')->get('username', '') != $this->getParameter('MAIL_FACTURACIO'));  
 		$showTemplate = true; // De moment imprimir sense plantilla
 		
 		
@@ -1532,7 +1496,7 @@ class BaseController extends Controller {
 			$tbl .= '<span style="font-size:11px;">Moll de la Vela, 1 (Zona Fòrum)<br/>';
 			$tbl .= '08930 Sant Adrià de Besòs<br/>';
 			$tbl .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
-			$tbl .= 'Adreça electrònica: info@fecdas.cat<br/>';
+			$tbl .= 'Adreça electrònica: '.$this->getParameter('MAIL_FECDAS').'<br/>';
 			$tbl .= 'www.fecdas.cat<br/>';
 			$tbl .= 'NIF: Q5855006B</span></p>';
 			$pdf->writeHTMLCell($w_half+5-5, $h_fedeinfo, $x_fedeinfo, $y_fedeinfo, $tbl, '', 1, false, true, 'R', false);
@@ -1973,8 +1937,7 @@ class BaseController extends Controller {
 		$pdf->SetFontSize(8.5);
 		
 		//$showTemplate = !$this->isCurrentAdmin(); // Remei no mostrar elements fixes
-		$showTemplate = ($this->get('session')->get('username', '') != $this->getParameter('MAIL_FACTURACIO')) &&
-						($this->get('session')->get('username', '') != $this->getParameter('MAIL_FACTURACIO2'));  
+		$showTemplate = ($this->get('session')->get('username', '') != $this->getParameter('MAIL_FACTURACIO'));  
 		$showTemplate = true; // De moment imprimir sense plantilla
 		
 		if ($showTemplate == true) {
@@ -2003,7 +1966,7 @@ class BaseController extends Controller {
 			$txt .= '<span style="font-size:6.5px;">Moll de la Vela, 1 (Zona Fòrum)<br/>';
 			$txt .= '08930 Sant Adrià de Besòs<br/>';
 			$txt .= 'Tel: 93 356 05 43 / Fax: 93 356 30 73<br/>';
-			$txt .= 'Adreça electrònica: info@fecdas.cat<br/>';
+			$txt .= 'Adreça electrònica: '.$this->getParameter('MAIL_FECDAS').'<br/>';
 			$txt .= 'www.fecdas.cat<br/>';
 			$txt .= 'NIF: Q5855006B</span></p>';
 			$pdf->writeHTMLCell($w_fedeinfo, $h_fedeinfo, $x_corp+$w_fedelogo+$w_genelogo+5, $y_corp, $txt, '', 1, false, true, 'L', false);
@@ -2231,8 +2194,8 @@ class BaseController extends Controller {
 		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
 		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d'incidents.</p>";
 		$body .= "<p style='text-align: justify;'><b>Recordeu que cal avisar al club en el moment de fer sortida al estranger</b>. enviant un e-mail a ";
-		$body .= "<a href='mailto:info@fecdas.cat'>info@fecdas.cat</a>";
-		$body .= " indicant el vostre nom complert, dies que esteu fora bussejant i el país.</p>";
+		$body .= "<a href='mailto:".$this->getParameter('MAIL_FECDAS')."'>".$this->getParameter('MAIL_FECDAS')."</a>";
+		$body .= " indicant el vostre nom complert, DNI, dies que esteu fora bussejant i el país. Els viatges a Portugal, Andorra i França no cal notificar.</p>";
 		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents i aquest enllaç et portarà als <b>descomptes</b> per ser Federat,</p>";
 		$body .= "<p style='text-align: justify;'><a href='http://www.fecdas.cat/docs/centres2019.pdf' target='_blank'>http://www.fecdas.cat/docs/centres2019.pdf</a></p>";
 		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p>";
@@ -3604,7 +3567,7 @@ class BaseController extends Controller {
 	
 			$subject = "Revisió stock. Federació Catalana d'Activitats Subaquàtiques";
 				
-			$tomails = self::getCarnetsMails();
+			$tomails =  array($this->getParameter('MAIL_FECDAS'));
 				
 			$this->buildAndSendMail($subject, $tomails, $body);
 		}		
@@ -4561,7 +4524,7 @@ class BaseController extends Controller {
             $errorAuth = " Error auth ".$action." ".$secret." clau incorrecta <br/>";
             //echo $errorAuth;
             
-            $tomails = self::getAdminMails();
+            $tomails = array($this->getParameter('MAIL_ADMIN'));
             $subject = "Federació Catalana d'Activitats Subaquàtiques. ERROR ".$action;
         
             $this->buildAndSendMail($subject, $tomails, $errorAuth);
@@ -4573,7 +4536,7 @@ class BaseController extends Controller {
 	protected function buildAndSendMail($subject, $tomails, $innerbody, $bccmails = array(), $attachmentPath = null, $attachments = array(), $width = 600, $salutacio = '') {
 		
 		if ($this->get('kernel')->getEnvironment() != 'prod') {
-			$tomails = array($this->getParameter('MAIL_ADMINTEST'));  // Entorns de test
+			$tomails = array($this->getParameter('MAIL_ADMIN'));  // Entorns de test
 			$bccmails = array(); // Entorns de test
 		} else {
 		    // Producció
@@ -4591,11 +4554,10 @@ class BaseController extends Controller {
 		    });
 		}
 		
-		$from = $this->container->getParameter('fecdas_partes.emails.contact_email');
 		
 		$message = \Swift_Message::newInstance()
 		->setSubject($subject)
-		->setFrom($from)
+		->setFrom($this->getParameter('MAIL_FECDASGESTIO'))
 		->setBcc($bccmails)
 		->setTo($tomails);
 
@@ -4617,16 +4579,6 @@ class BaseController extends Controller {
 		}
 		$logosrc = $message->embed(\Swift_Image::fromPath(BaseController::IMATGE_LOGO_FECDAS_MAIL));
 		
-		/*$footer .= "<div style='float:left;padding-right:20px'><img src=".$logosrc." alt='FECDAS' /></div>";
-		$footer .= "<div style='float:left;text-align:right'>";
-		$footer .= "<small><b>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES</b></small><br/>";
-		$footer .= "<span style='font-size: 10px;'>Moll de la Vela, 1 (Zona Fòrum)<br/>";
-		$footer .= "08930  Sant Adrià de Besòs<br/>";
-		$footer .= "Tel. 93 356 05 43<br/>";
-		$footer .= "Fax: 93 356 30 73<br/>";
-		$footer .= "Adreça electrònica: ".$this->getParameter('MAIL_CONTACTE')."<br/>";
-		$footer .= "</span></div>";*/ 
-		
 		$footer = "<table border='0' cellpadding='0' cellspacing='0' width='100%'>";
 		$footer .= "<tr><td><img src=".$logosrc." alt='FECDAS' width='82' height='78' /></td>";
 		$footer .= "<td style='padding: 0 0 0 20px;'>";
@@ -4635,7 +4587,7 @@ class BaseController extends Controller {
 		$footer .= "08930  Sant Adrià de Besòs<br/>";
 		$footer .= "Tel. 93 356 05 43<br/>";
 		$footer .= "Fax: 93 356 30 73<br/>";
-		$footer .= "Adreça electrònica: ".$this->getParameter('MAIL_CONTACTE')."<br/>";
+		$footer .= "Adreça electrònica: ".$this->getParameter('MAIL_FECDAS')."<br/>";
 		$footer .= "</span></td></tr></table>";
 		
 		$body = "<html style='font-family: Helvetica,Arial,sans-serif;'><head></head><body>";

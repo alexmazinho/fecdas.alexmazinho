@@ -224,7 +224,6 @@
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Clubs i usuaris <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			            <li id="menu-admconsultaclubs" class="separator"><a href="{{ path('FecdasBundle_consultaclubs') }}">Consulta amb criteris</a></li>
 			          	<li id="menu-admnouclub" class="separator"><a href="{{ path('FecdasBundle_club', { 'action': 'nouclub' }) }}">Nou club</a></li>
 			          	<li id="menu-admnouusuari" class="separator"><a href="{{ path('FecdasBundle_club', { 'action': 'adduser' }) }}">Afegir usuari</a></li>
 			          	<li id="menu-admclubs"><a href="{{ path('FecdasBundle_club') }}">Edició clubs</a></li>
@@ -235,8 +234,6 @@
 		      		<li class="dropdown">
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Llicències <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			          	<li id="menu-admconsulta"><a href="{{ path('FecdasBundle_consultaadmin') }}">Consulta amb criteris</a></li>
-			          	<li class="divider"></li>
 			          	<li id="menu-admllistes" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc' }) }}">Llistes recents</a></li>
 			          	<li id="menu-admpendents" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc', 'nopagat': 1 }) }}">Pendents pagament</a></li>
 			          	<li id="menu-admperimprimir" class="separator"><a href="{{ path('FecdasBundle_recents', { 'sort': 'p.dataalta', 'direction':'desc', 'noimpres': 1 }) }}">Per imprimir</a></li>
@@ -264,13 +261,20 @@
 			          </ul>
 			        </li>
 			        <li class="dropdown">	
-			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Enquestes <span class="caret"></span></a>
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consultes <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			        	<li id="menu-admenquesta" class="separator"><a href="{{ path('FecdasBundle_enquesta') }}">Nova enquesta</a></li>
-			        	<li id="menu-admenquestes" class="separator"><a href="{{ path('FecdasBundle_enquestes') }}">Enquestes</a></li>
-			          	<li id="menu-admestadistiques"><a href="{{ path('FecdasBundle_estadistiques') }}">Estadistiques</a></li>
+			        	<li id="menu-admconsulta"><a href="{{ path('FecdasBundle_consultaadmin') }}">Dades llicències</a></li>
+			        	<li id="menu-admconsultaclubs"><a href="{{ path('FecdasBundle_consultaclubs') }}">Dades clubs</a></li>
 			          </ul>
 			        </li>
+			        <!-- <li class="dropdown">	
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Enquestes <span class="caret"></span></a>
+			          <ul class="dropdown-menu" role="menu">
+			        	<li id="menu-admenquesta" class="separator"><a href="{# path('FecdasBundle_enquesta') #}">Nova enquesta</a></li>
+			        	<li id="menu-admenquestes" class="separator"><a href="{# path('FecdasBundle_enquestes') #}">Enquestes</a></li>
+			          	<li id="menu-admestadistiques"><a href="{# path('FecdasBundle_estadistiques') #}">Estadistiques</a></li>
+			          </ul>
+			        </li> -->
 		      	</ul>
 <!-- ENDS ADMIN MENU -->		      	
 		      {% else %}

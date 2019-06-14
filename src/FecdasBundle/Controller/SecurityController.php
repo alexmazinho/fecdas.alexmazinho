@@ -34,7 +34,7 @@ class SecurityController extends BaseController
 		}
 		$checkRole->setCurrentClubRole( $currentclub, $currentrole );
 
-		if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return new Response("reload"); //return $redirect;
+		if ($this->frontEndLoginCheck($request->isXmlHttpRequest())) return new Response("reload"); //return $redirect;
 		// Params => currentrole: role, currentclub: club
 		
 		if (!$this->isCurrentAdmin()) return new Response("reload");
@@ -592,14 +592,14 @@ class SecurityController extends BaseController
         $user->setRecoveryexpiration($expiration);
         
         if ($this->get('kernel')->getEnvironment() != 'prod') {
-            $tomails = array($this->getParameter('MAIL_ADMINTEST'));  // Entorns de test
+            $tomails = array($this->getParameter('MAIL_ADMIN'));  // Entorns de test
         } else {
             $tomails = array($user->getUser());
         }
         
         $message = \Swift_Message::newInstance()
             ->setSubject("::".$action." a l'Aplicació de Gestió de FECDAS::")
-            ->setFrom($this->container->getParameter('fecdas_partes.emails.contact_email'))
+            ->setFrom($this->getParameter('MAIL_FECDASGESTIO'))
             ->setTo($tomails);
         
         $logosrc = $message->embed(\Swift_Image::fromPath('images/fecdaslogo.png'));

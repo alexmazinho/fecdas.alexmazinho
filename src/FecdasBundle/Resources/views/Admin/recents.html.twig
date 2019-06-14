@@ -210,7 +210,10 @@
         		input.attr('data-value-init', email);
         		input.addClass('form-control-saved');
         		input.removeClass('form-control-error');
-                
+
+        		var sms = smsResultAjax('OK', 'Adreça de correu actualitzada correctament');
+          		 
+        		$("#table-federats").prepend(sms);
         	}).fail( function(xhr, status, error) {
         		 // xhr.status + " " + xhr.statusText, status, error
         		input.addClass('form-control-error');

@@ -467,6 +467,37 @@
     	    });
     		
     	});
+
+    	$( "#dialeg" ).on( "click", ".desar-email", function(e) {
+    		e.preventDefault();
+    		
+    		$('.alert.alert-dismissible').remove();
+
+			var input = $(this).parent().prev().find('input');
+        	var email = input.val();
+        	var url = $(this).attr("href")+'&mail='+email;
+        	input.removeClass('form-control-changed');
+        	
+        	$.get(url, function(data) {
+        		input.attr('data-value-init', email);
+        		input.addClass('form-control-saved');
+        		input.removeClass('form-control-error');
+
+        		var sms = smsResultAjax('OK', 'Adreça de correu actualitzada correctament');
+       		 
+        		$("#table-federats").prepend(sms);
+                
+        	}).fail( function(xhr, status, error) {
+        		 // xhr.status + " " + xhr.statusText, status, error
+        		input.addClass('form-control-error');
+        		input.removeClass('form-control-saved');
+        		 
+        		var sms = smsResultAjax('KO', xhr.responseText);
+        		 
+        		$("#table-federats").prepend(sms);
+        	});
+    		
+    	});
 		
 	});
 	

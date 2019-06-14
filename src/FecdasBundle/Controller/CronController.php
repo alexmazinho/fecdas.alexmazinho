@@ -358,7 +358,7 @@ class CronController extends BaseController {
 		$subject = ""; 
 		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
-			$tomails = self::getCarnetsMails();
+		    $tomails = array($this->getParameter('MAIL_FECDAS'));
 			$subject .= " (CLUB SENSE CORREU DE CONTACTE) ";
 		}
 		
@@ -418,7 +418,7 @@ class CronController extends BaseController {
 		
 		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
-			$tomails = self::getCarnetsMails();
+		    $tomails = array($this->getParameter('MAIL_FECDAS'));
 			$subject .= ' (CLUB SENSE CORREU DE CONTACTE)';
 		}
 			
@@ -1091,19 +1091,12 @@ class CronController extends BaseController {
     								$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
     								//if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
     									
-    								/*$bccmails = $this->getFacturacioMails();
-    								$tomails = $club->getMails();
-    								$body = "<p>Benvolgut club ".$club->getNom()."</p>";
-    								$body .= "<p>Us fem saber que l'import de les tramitacions que heu fet a dèbit en aquest sistema ha arribat als límits establerts.
-    								Per poder fer noves gestions, cal que contacteu amb la FECDAS</p>";*/
-    									
-    								$tomails = $this->getFacturacioMails();
-                                    $bccmails = $this->getAdminMails(); 
+    								$tomails = array($this->getParameter('MAIL_FACTURACIO'));
     								$body = "<p>Club ".$club->getNom()."</p>";
     								$body .= "<p>L'import de les tramitacions que ha fet a dèbit en aquest sistema ha arribat als límits establerts</p>";
     								$body .= "<p>El saldo actual del club és ".number_format($club->getSaldo(), 2, ',', '.')." €</p>";
     								
-    								$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+    								$this->buildAndSendMail($subject, $tomails, $body);
     								
     								$club->setLimitnotificacio($this->getCurrentDate());
     							} else {
@@ -1134,7 +1127,7 @@ class CronController extends BaseController {
     		
     		$subject = "Informe diari de l'estat dels clubs";
     		$bccmails = array();
-    		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+    		$tomails = array($this->getParameter('MAIL_ADMIN'));
     		$body = $sortida;
     		$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 		
@@ -1179,7 +1172,7 @@ class CronController extends BaseController {
     
     		
     		$bccmails = array();
-    		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+    		$tomails = array($this->getParameter('MAIL_ADMIN'));
     		
     		foreach ($clubs as $club) {
     		    if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
@@ -1317,7 +1310,7 @@ class CronController extends BaseController {
             if ($diesPendent <= self::DIES_PENDENT_NOTIFICA) {
                 // Enviar mail notificació duplicat nou pendent a Federació
                 $subject = "Notificació tramitació pendent. Federació Catalana d'Activitats Subaquàtiques";
-                $tomails = $this->getFacturacioMails();
+                $tomails = array($this->getParameter('MAIL_FACTURACIO'));
                 //$body = "<p>".$tipus." pendent de pagament del club ".$club->getNom();
                 //$body .= " en data del " . $dataentrada . "</p>";
                 
@@ -1342,7 +1335,7 @@ class CronController extends BaseController {
                 $subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
                 if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
                             
-                $bccmails = $this->getFacturacioMails();
+                $bccmails = array($this->getParameter('MAIL_FACTURACIO'));
                 $tomails = $club->getMails();
                 $body = "<p>Benvolgut club ".$club->getNom()."</p>";
                     
@@ -1400,7 +1393,7 @@ class CronController extends BaseController {
 		// Revisar incidències. Parte sincronitzat  o pagat. Enviar mail
 		$subject = ":: Incidència revisió partes pendents ::";
 		$bccmails = array();
-		$tomails = array($this->getParameter('MAIL_ADMINTEST'));
+		$tomails = array($this->getParameter('MAIL_ADMIN'));
 		$club = $parte->getClubparte();
 		
 		if ($parte->getIdparteAccess() != null) {
@@ -1477,7 +1470,7 @@ class CronController extends BaseController {
     							
     							$subject = "::Llicència Duplicada Diferents Clubs::";
     							$bccmails = array();
-    							$tomails = $this->getLlicenciesMails();
+    							$tomails = array($this->getParameter('MAIL_LLICENCIES'));
     							
     							$body = "<h1>Detectada una llicència duplicada, en data ".$dataavui->format('Y-m-d')."</h1>";
     							$body .= "<h2>Tramitació nova</h2>";

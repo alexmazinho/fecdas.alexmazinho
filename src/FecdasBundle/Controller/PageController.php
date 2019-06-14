@@ -75,7 +75,7 @@ class PageController extends BaseController {
 				$message = \Swift_Message::newInstance()
 				->setSubject('::Contacte de Fecdas::'. $form->getData()->getSubject())
 				->setFrom($form->getData()->getEmail())
-				->setTo($this->getContactMails())
+				->setTo(array($this->getParameter('MAIL_FECDAS')))
 						->setBody($this->renderView('FecdasBundle:Page:contactEmail.txt.twig',
 								array('contact' => $contact)));
 
@@ -1887,10 +1887,9 @@ class PageController extends BaseController {
 					// Enviar notificació mail
 					$subject = ":: Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " ::";
 					
-					//$tomails = $this->getLlicenciesMails();
 					$tomails = array();
-					if ($duplicat->getCarnet()->esLlicencia()) $tomails = $this->getLlicenciesMails(); // Llicències Remei
-					else $tomails = $this->getCarnetsMails(); // Carnets Albert
+					if ($duplicat->getCarnet()->esLlicencia()) $tomails[] = $this->getParameter('MAIL_LLICENCIES'); 
+					else $tomails[] = $this->getParameter('MAIL_FECDAS');
 					$body = "<h3>Petició de duplicat del club ". $duplicat->getClub()->getNom()."</h3>";
 					$body .= "<p>". $duplicat->getTextCarnet() ."</p>";
 					$body .= "<p>". $duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms();

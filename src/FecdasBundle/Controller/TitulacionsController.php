@@ -1336,7 +1336,7 @@ class TitulacionsController extends BaseController {
 				$club = $curs->getClub();
 				
 				$subject = ":: Nou curs validat :: ";
-				$tomails = $this->getCarnetsMails(); // Albert 
+				$tomails = array($this->getParameter('MAIL_FECDAS'));  
 				$body = "<p>Hola</p>";
 				$body .= "<p>El club ".$club->getNom()." ha validat les dades d'un nou curs en data ".$current->format('d/m/Y');
 				$body .= "<p>Curs: <b>".$curs->getTitol()->getLlistaText()."</b></p>";

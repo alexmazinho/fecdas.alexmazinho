@@ -141,7 +141,7 @@
 		<div class="col-md-12 col-sm-12 col-xs-12">
 			<p>En cas d'haver realitzat el pagament per transferència, per tal de validar-ho i rebre la federativa, 
 			<b>cal enviar el comprovant del pagament</b> al correu electrònic: 
-			<a href="mailto:fecdas@fecdas.cat?Subject=pagament%20llic%C3%A8ncia%20{{ currentrolenom|url_encode }}">fecdas@fecdas.cat</a> especificant: <span class="subtitle">NOM COGNOM</span></p>
+			<a href="mailto:{{ MAIL_LLICENCIES }}?Subject=pagament%20llic%C3%A8ncia%20{{ currentrolenom|url_encode }}">{{ MAIL_LLICENCIES }}</a> especificant: <span class="subtitle">NOM COGNOM</span></p>
 		</div>
 	</div>
 	{% endif %}

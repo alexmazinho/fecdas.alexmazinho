@@ -22,7 +22,7 @@ class EntityPayment {
 		/**
 		 * Configuració sermepa
 		 * host: http://www.fecdasgestio.cat
-		 * mail: webadmin@fecdasgestio.cat
+		 * mail: MAIL_ADMIN
 		 * Con notificación ON-LINE: HTTP + Email Comercio 
 		 * Asíncrona: Enviament al client i comerç del resultat alhora
 		 * Parámetros en las URLs : Si

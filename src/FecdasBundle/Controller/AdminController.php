@@ -190,7 +190,7 @@ class AdminController extends BaseController {
 	
 		$states = explode(";", self::CLUBS_STATES);
 		$defaultEstat = self::TOTS_CLUBS_DEFAULT_STATE; // Tots normal
-		if ($this->get('session')->get('username', '') == $this->getParameter('MAIL_FACTURACIO'))  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits Remei
+		if ($this->get('session')->get('username', '') == $this->getParameter('MAIL_FACTURACIO'))  $defaultEstat = self::CLUBS_DEFAULT_STATE; // Diferits 
 
 		// Cerca
 		$currentBaixa = false; // Inclou Baixes
@@ -465,7 +465,9 @@ class AdminController extends BaseController {
 		$groupQuey = $intervals || $edats || $groupclub || $grouptipus || $groupcategoria || $groupsexe || $groupmunicipi || $groupcomarca || $groupprovincia;
 
 		$queryparams = array ('action' => $action, 'clubs' => $clubs, 'activats' => $activats, 'tipusparte' => $tipusparte, 'categoria' => $categoria,
-								'datainici' => $strDatainici, 'datafinal' => $strDatafinal, 'intervals' => ($intervals == true?1:0),
+		                        'datainici' => $strDatainici, 'datafinal' => $strDatafinal, 
+		                        'datahorainici' => $strDatainici.' 00:00:00', 'datahorafinal' => $strDatafinal.' 23:59:59', 
+		                        'intervals' => ($intervals == true?1:0),
 								'intervaldata' => ($intervals == true?$intervaldata:''), 'edats' => ($edats == true?1:0),
 								'edatsdata' => ($edats == true?$edatsdata:''), 'groupclub' => ($groupclub == true?1:0),
 								'grouptipus' => ($grouptipus == true?1:0),
@@ -604,10 +606,17 @@ class AdminController extends BaseController {
 				
 				// Només consultar preus a partir de l'any 2012
 				if ($datainici->format('Y') > 2012 && $datafinal->format('Y') > 2012) {	
-					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, SUM(r.preu) AS import FROM FecdasBundle\Entity\EntityLlicencia l 
+					/*$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, SUM(r.preu) AS import FROM FecdasBundle\Entity\EntityLlicencia l 
 									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c 
 									JOIN a.producte o JOIN o.preus r
-									WHERE (YEAR(p.dataalta) = r.anypreu AND o.id = r.producte) ";  // Funció YEAR afegida a la configuració de $em => addCustomDatetimeFunction('YEAR', 'FecdasBundle\Classes\MysqlYear');
+									WHERE (YEAR(p.dataalta) >= r.anypreu AND o.id = r.producte) "; */ // Funció YEAR afegida a la configuració de $em => addCustomDatetimeFunction('YEAR', 'FecdasBundle\Classes\MysqlYear');
+					
+				    // Query anterior possible error perquè no sempre existeixen tots els preus per tots els anys
+					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, SUM(d.preuunitat) AS import FROM FecdasBundle\Entity\EntityParte p
+                                    JOIN p.detalls d JOIN d.producte o
+                                    JOIN p.llicencies l JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c
+									WHERE 1 = 1 "; 
+					
 				} else {
 					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, 'NS/NC' AS import FROM FecdasBundle\Entity\EntityLlicencia l 
 									JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c 
@@ -641,11 +650,15 @@ class AdminController extends BaseController {
 				$strQuery .= " AND p.dataalta <= :datafinal ";
 				$params['datafinal'] = $datafinal->format('Y-m-d');
 			}
-			if ($baixes == 0) { // Excloure
-				$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
+			if ($baixes == 0) { // Excloure baixes dins el perìode
+				//$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";
+			    $strQuery .= " AND (p.databaixa IS NULL OR p.databaixa > :datahorafinal) AND (l.databaixa IS NULL OR l.databaixa > :datahorafinal) ";
+			    $params['datahorafinal'] = $datafinal->format('Y-m-d').' 23:59:59';
 			}
-			if ($baixes == 2) { // Excloure
-				$strQuery .= " AND (p.databaixa IS NOT NULL OR l.databaixa IS NOT NULL) ";
+			if ($baixes == 2) { // Incloure baixes dins el perìode
+				//$strQuery .= " AND (p.databaixa IS NOT NULL OR l.databaixa IS NOT NULL) ";
+			    $strQuery .= " AND ((p.databaixa IS NOT NULL AND p.databaixa <= :datahorafinal) OR (l.databaixa IS NOT NULL AND l.databaixa <= :datahorafinal)) ";
+			    $params['datahorafinal'] = $datafinal->format('Y-m-d').' 23:59:59';
 			}
 			
 			if ($groupQuey == true) $strQuery .= " GROUP BY ".implode(', ', $agrupats);
@@ -1786,7 +1799,7 @@ GROUP BY c.nom
 				$subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
 				if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
 				
-				$bccmails = $this->getFacturacioMails();
+				$bccmails = array($this->getParameter('MAIL_FACTURACIO'));
 				$tomails = $club->getMails();
 				$body = "<p>Benvolgut club ".$club->getNom()."</p>";
 				$body .= "<p>Us fem saber que, a partir de la recepció d’aquest correu, 
@@ -1942,8 +1955,8 @@ GROUP BY c.nom
 	
 			// Enviar notificació mail
 			$fedeMail = array();
-			if ($duplicat->getCarnet()->esLlicencia() == true) $fedeMail = $this->getLlicenciesMails(); // Llicències Remei
-			else $fedeMail = $this->getCarnetsMails(); // Carnets Albert
+			if ($duplicat->getCarnet()->esLlicencia() == true) $fedeMail[] = $this->getParameter('MAIL_LLICENCIES');
+			else $fedeMail[] = $this->getParameter('MAIL_FECDAS');
 			
 			if ($duplicat->getClub()->getMail() != null) {
 				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();

@@ -2235,7 +2235,7 @@ class FacturacioController extends BaseController {
 				
 				$em ->flush();
 			
-				// Enviar notificació mail Albert si és una comanda de Kits
+				// Enviar notificació mail fecdas si és una comanda de Kits
 				if ($comanda->comandaKits()) {
 					$subject = ":: Comanda KITS ::";
 					$tomails = array($this->getParameter('MAIL_FECDAS'));
@@ -3827,7 +3827,7 @@ class FacturacioController extends BaseController {
     				// Pendent, enviar mail federació
     				$subject = ":: TPV. Pagament pendent de confirmació ::";
     				$bccmails = array();
-    				$tomails = array($this->getParameter('MAIL_ADMIN'));
+    				$tomails = array($this->getParameter('MAIL_LLICENCIES'));
     						
     				$body = "<h1>Parte pendent</h1>";
     				$body .= "<p>". $tpvresponse['logEntry']. "</p>"; 
@@ -3848,7 +3848,7 @@ class FacturacioController extends BaseController {
 				
 			$subject = ':: Incidència TPV ::';
 			$bccmails = array();
-			$tomails = array($this->getParameter('MAIL_ADMIN'));
+			$tomails = array($this->getParameter('MAIL_LLICENCIES'));
 				
 			$body = '<h1>Error TPV</h1>';
 			$body .= '<h2>Missatge: '.$e->getMessage().'</h2>';

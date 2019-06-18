@@ -1282,15 +1282,21 @@ class TitulacionsController extends BaseController {
 				
 				// Enviar mail al club
 				$subject = "Federació Catalana d'Activitats Subaquàtiques. Curs pendent de validació ";
-				$tomails = $club->getMail();
-				if (count($tomails) == 0) $subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
+				$bccmails = array( $this->getParameter('MAIL_FECDAS') );
+				$tomails = $club->getMails();
+				if (count($tomails) == 0) {
+				    $subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
+				    $tomails = array( $this->getParameter('MAIL_FECDAS') );
+				    $bccmails = array();
+				}
+				
 				
 				$body = "<p>Benvolgut club ".$club->getNom()."</p>";
 				$body .= "<p>Les dades d'un nou curs han estat introduïdes per un dels instructors capacitats a tal efecte, ";
 				$body .= "i resta pendent de la teva validació per notificar-lo a la Federació</p>";
 				$body .= "<p>Curs: <b>".$curs->getTitol()->getLlistaText()."</b></p>";
 				
-				$this->buildAndSendMail($subject, $tomails, $body);
+				$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 						
 				break;
 	

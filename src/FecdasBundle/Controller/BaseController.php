@@ -2168,7 +2168,8 @@ class BaseController extends Controller {
 	        'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
 	    );
 	    
-	    $this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments, 470, $salutacio);
+	    $bccmails = array($this->getParameter('MAIL_LLICENCIES'));
+	    $this->buildAndSendMail($subject, $tomails, $body, $bccmails, null, $attachments, 470, $salutacio);
 	    
 	    $llicencia->setMailenviat( 1 );
 	    $llicencia->setDatamail( new \DateTime() );
@@ -4524,7 +4525,7 @@ class BaseController extends Controller {
             $errorAuth = " Error auth ".$action." ".$secret." clau incorrecta <br/>";
             //echo $errorAuth;
             
-            $tomails = array($this->getParameter('MAIL_ADMIN'));
+            $tomails = array($this->getParameter('MAIL_LLICENCIES'));
             $subject = "Federació Catalana d'Activitats Subaquàtiques. ERROR ".$action;
         
             $this->buildAndSendMail($subject, $tomails, $errorAuth);

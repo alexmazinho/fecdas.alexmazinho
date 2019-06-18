@@ -198,11 +198,14 @@ class CronController extends BaseController {
 		
 		foreach ($partesrenovar as $parte) {
 			$tomails = array();
+			$bccmails = array($this->getParameter('MAIL_LLICENCIES'));
 			$subject = "Notificació. Renovació llicència FECDAS";
 			$club = $parte->getClubparte();
 			/* Per cada parte */
 			if ($club->getMail() == null || $club->getMail() == '') { 
 				$subject .= ' (Cal avisar aquest club no té adreça de mail al sistema)';
+				$tomails = array($this->getParameter('MAIL_LLICENCIES'));
+				$bccmails = array();
 			} else {
 			    $tomails = $club->getMails();
 			}
@@ -212,7 +215,7 @@ class CronController extends BaseController {
 				if ($this->checkSendMail($llicencia) == true) {
 					$body = $this->renderView('FecdasBundle:Cron:renovacioEmail.html.twig',
 							array('llicencia' => $llicencia, 'dies' => $dies));
-					$this->buildAndSendMail($subject, $tomails, $body);
+					$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
 					$sortida .= $body;
 						
 					$this->logEntry($this->getParameter('MAIL_ADMINLOG'), 'CRON RENEW',
@@ -355,10 +358,12 @@ class CronController extends BaseController {
 		
 		$club = $rebut->getClub();
 		
+		$bccmails = array($this->getParameter('MAIL_FECDAS'));
 		$subject = ""; 
 		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
 		    $tomails = array($this->getParameter('MAIL_FECDAS'));
+		    $bccmails = array();
 			$subject .= " (CLUB SENSE CORREU DE CONTACTE) ";
 		}
 		
@@ -386,7 +391,7 @@ class CronController extends BaseController {
 									'data' => $pdf->Output($nom, "S")  // S: return the document as a string (name is ignored).)
 							);
 		
-		$this->buildAndSendMail($subject, $tomails, $body, array(), null, $attachments);
+		$this->buildAndSendMail($subject, $tomails, $body, $bccmails, null, $attachments);
 
 		$rebut->setEnviat(true);
 		// Si tot correcte actualitzar rebut a enviat		
@@ -1171,8 +1176,8 @@ class CronController extends BaseController {
     		$clubs = $query->getResult();
     
     		
-    		$bccmails = array();
-    		$tomails = array($this->getParameter('MAIL_ADMIN'));
+    		$bccmails = array($this->getParameter('MAIL_ADMIN'));
+    		$tomails = array();
     		
     		foreach ($clubs as $club) {
     		    if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
@@ -1310,9 +1315,15 @@ class CronController extends BaseController {
             if ($diesPendent <= self::DIES_PENDENT_NOTIFICA) {
                 // Enviar mail notificació duplicat nou pendent a Federació
                 $subject = "Notificació tramitació pendent. Federació Catalana d'Activitats Subaquàtiques";
-                $tomails = array($this->getParameter('MAIL_FACTURACIO'));
                 //$body = "<p>".$tipus." pendent de pagament del club ".$club->getNom();
                 //$body .= " en data del " . $dataentrada . "</p>";
+                $bccmails = array($this->getParameter('MAIL_LLICENCIES'));
+                $tomails = $club->getMails();
+                if ($club->getMail() == null || $club->getMail() == '') {
+                    $subject = "Notificació tramitació pendent. Cal avisar aquest club no té adreça de mail al sistema";
+                    $tomails = array($this->getParameter('MAIL_LLICENCIES'));
+                    $bccmails = array();
+                }
                 
                 $body  = "<p>Benvolgut club ".$club->getNom()."</p>";
                 $body .= "<p>Se us acaba d'enviar la factura número ".$factura->getNumFactura()." . Segons les nostres dades aquesta factura consta ";
@@ -1320,7 +1331,7 @@ class CronController extends BaseController {
                 $body .= "<p>Us recordem que per consolidar la validesa de la tramitació cal fer efectiu el pagament abans de ".self::DIES_PENDENT_MAX." dies, ";
                 $body .= "en cas contrari ens veurem obligats a donar-la de baixa. Gràcies per la vostra comprensió.</p>";
                 
-                $this->buildAndSendMail($subject, $tomails, $body);
+                $this->buildAndSendMail($subject, $tomails, $body, $bccmails);
                 $sortida .= " ".$tipus." pendent >> Notificació Federació ". $club->getNom();
                 $sortida .= " (".$tipus." ". $comanda->getId() . " entrat el dia ". $dataentrada .")</br>";
                 
@@ -1333,10 +1344,14 @@ class CronController extends BaseController {
                 $databaixa->add(new \DateInterval('P'.self::DIES_PENDENT_MAX.'D')); // Add 20 dies
                             
                 $subject = "Notificació. Federació Catalana d'Activitats Subaquàtiques";
-                if ($club->getMail() == null || $club->getMail() == '') $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
-                            
-                $bccmails = array($this->getParameter('MAIL_FACTURACIO'));
                 $tomails = $club->getMails();
+                $bccmails = array($this->getParameter('MAIL_LLICENCIES'));
+                if ($club->getMail() == null || $club->getMail() == '') {
+                    $subject = "Notificació. Cal avisar aquest club no té adreça de mail al sistema";
+                    $tomails = array($this->getParameter('MAIL_LLICENCIES'));
+                    $bccmails = array();
+                }
+                
                 $body = "<p>Benvolgut club ".$club->getNom()."</p>";
                     
                 $itemPendent = "";
@@ -1389,32 +1404,6 @@ class CronController extends BaseController {
     }
     
     
-	/*private function incidenciesPendents($parte) {
-		// Revisar incidències. Parte sincronitzat  o pagat. Enviar mail
-		$subject = ":: Incidència revisió partes pendents ::";
-		$bccmails = array();
-		$tomails = array($this->getParameter('MAIL_ADMIN'));
-		$club = $parte->getClubparte();
-		
-		if ($parte->getIdparteAccess() != null) {
-			$body = "<h1>Parte pendent sincronitzat</h1>";
-			$body .= "<h2>Club : " . $club->getNom() . "</h2>";
-			$body .= "<p>Parte " .  $parte->getId() . " entrat el dia ". $parte->getDataentrada()->format('d-m-Y') ."</p>";
-			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-			return true;
-		}
-		
-		if ($parte->getDatapagament() != null || $parte->getImportpagament() != null) {
-			$body = "<h1>Parte pendent pagat</h1>";
-			$body .= "<h2>Club : " . $club->getNom() . "</h2>";
-			$body .= "<h3>Valor 'pendent' no atualitzat  correctament</h3>";
-			$body .= "<p>Parte " .  $parte->getId() . " entrat el dia ". $parte->getDataentrada()->format('d-m-Y') ."</p>";
-			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-			return true;
-		}
-		return false;
-	}*/
-	
 	public function checkpartesdiaAction(Request $request) {
 		/* Revisar partes tramitats durant el dia
 		 * Validar llicències mateix dni diferents clubs */

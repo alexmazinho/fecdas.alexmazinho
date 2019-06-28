@@ -3779,16 +3779,19 @@ class FacturacioController extends BaseController {
 				if ($comanda->esParte()) {
 				    
 				    $parte = $comanda;
-				    $enviades = 0;
-				    foreach ($parte->getLlicenciesSortedByName() as $llicencia) {
-				        if (!$llicencia->getMailenviat()) {
-				            $enviades++;
-				            $this->enviarMailLlicencia($request, $llicencia);
-				        }
-				    }
 				    
-				    // Marcar el parte com modificat
-				    $parte->setDatamodificacio($this->getCurrentDate());
+				    if ($parte->perEnviarFederat()) {
+				    
+    				    $enviades = 0;
+    				    foreach ($parte->getLlicenciesSortedByName() as $llicencia) {
+    				        if (!$llicencia->getMailenviat()) {
+    				            $enviades++;
+    				            $this->enviarMailLlicencia($request, $llicencia);
+    				        }
+    				    }
+    				    // Marcar el parte com modificat
+    				    $parte->setDatamodificacio($this->getCurrentDate());
+				    }
 				}
 				
 				

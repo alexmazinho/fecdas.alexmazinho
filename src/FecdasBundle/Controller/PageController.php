@@ -39,9 +39,9 @@ class PageController extends BaseController {
 
 		$checkRole = $this->get('fecdas.rolechecker');
 		
-		$user = $checkRole->getCurrentUser();
-		$contact->setEmail($user->getUser());
 		if ($checkRole->isCurrentFederat() || $checkRole->isCurrentInstructor()) {
+		    $user = $checkRole->getCurrentUser();
+		    $contact->setEmail($user->getUser());
 		    $metapersona = $user->getMetapersona();
 		    if ($metapersona != null) $contact->setName($metapersona->getNomCognoms());
 		} else {

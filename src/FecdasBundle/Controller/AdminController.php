@@ -615,7 +615,7 @@ class AdminController extends BaseController {
 					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, SUM(d.preuunitat) AS import FROM FecdasBundle\Entity\EntityParte p
                                     JOIN p.detalls d JOIN d.producte o
                                     JOIN p.llicencies l JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c
-									WHERE 1 = 1 "; 
+									WHERE a.producte = d.producte "; // Evita JOINS creuats 
 					
 				} else {
 					$strQuery = "SELECT ".implode(', ', $agrupats).", COUNT(l.id) AS total, 'NS/NC' AS import FROM FecdasBundle\Entity\EntityLlicencia l 
@@ -698,7 +698,7 @@ GROUP BY c.nom
 			 */  	 
 			$strQuery .= " ORDER BY ".$sort." ".$direction;
 			$query = $em->createQuery($strQuery);
-				
+error_log($strQuery);				
 			foreach ($params as $k => $p) $query->setParameter($k, $p);
 				
 			$total = count($query->getResult());

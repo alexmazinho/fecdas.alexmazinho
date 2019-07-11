@@ -746,7 +746,7 @@ class BaseController extends Controller {
 	
 	protected function frontEndLoginCheck($isXmlHttpRequest = false, $accessFederats = false, $admin = false) {
 	    // No autenticat reenvia a login
-	    if ($this->isAuthenticated() != true) {
+	    if (!$this->isAuthenticated()) {
 	        $this->logEntryAuth('LOGIN CHECK', "Error no authenticated");
 	        
 	        return $this->frontEndLoginCheckReturn($isXmlHttpRequest, 'error-notice', 'FecdasBundle_login', "Cal indicar les credencials per accedir a l\'Aplicació");

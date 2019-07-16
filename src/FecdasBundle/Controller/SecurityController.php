@@ -477,10 +477,8 @@ class SecurityController extends BaseController
             
             $club = $em->getRepository('FecdasBundle:EntityClub')->findOneByCodi(BaseController::CODI_CLUBLLICWEB);
             
-            if (!$user->hasRoleClub($club, BaseController::ROLE_FEDERAT)) {
-                $userClubRole = $club->addUsuariRole($user, BaseController::ROLE_FEDERAT);
-                $em->persist($userClubRole);
-            }
+            $userClubRole = $club->addUsuariRole($user, BaseController::ROLE_FEDERAT);
+            $em->persist($userClubRole);
             
             $subjectMail = "Creació d'un nou usuari per accedir";
         }

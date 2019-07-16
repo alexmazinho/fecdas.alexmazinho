@@ -47,14 +47,14 @@
     						<span class="step-description"><span class="step-step green">Pas 1.</span> Instructor: Introduïr les dades i desar</span>
     					{% endif %}
     
-    					<div class="button-step {% if (curs.esNou or curs.editable) and (roleinstructor or admin) %}button-step-active {% endif %}">
+    					<div class="button-step {% if (curs.esNou or curs.editable) and (roleinstructor or roleclub or admin) %}button-step-active {% endif %}">
     						<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'save' }) }}" data-action="save" alt="Desar dades curs" 
     							title="Desar dades curs">
     							<i class="fa-stack fa-xs"><i class="fa fa-circle fa-stack-2x green"></i><i class="fa fa-floppy-o fa-stack-1x fa-inverse"></i></i>
     						</a>
     					</div>
                         
-    					{% if roleinstructor or admin %}
+    					{% if roleinstructor or roleclub or admin %}
     						{% if curs.editable and not curs.esNou %}
 							<span class="step-description"><span class="step-step orange">Pas 2.</span> Instructor: Confirmar les dades i validació per part del club</span>
     						{% endif %}
@@ -531,10 +531,14 @@
 			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&nom=1&tecnic=1';
 
 
-			callbackPropagate = function(added) {
-				// added = {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
+			callbackPropagate = function(elem_sel, added) {
+				// added = {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP", "numcarnet": "ES/F01/M2/..."}
 				$(".alert.alert-dismissible, .alert.field-error-alert").remove();
+
+				// elem_sel curs_auxdirector => curs_auxcarnet
+				// 			curs_auxcodirector => curs_auxcocarnet	
 				
+				if (added.numcarnet != '') $("#form_nom").val(added.numcarnet);
 		    };
 			selectionFormat = function(item) {
 		        return item.text+"-"+item.nomcognoms;
@@ -608,10 +612,10 @@
 		        var activeLink = $(this).parent('.button-step-active').length;
 		        if (activeLink == 0) {
 					strInfo = 'Opció no disponible';
-		        	if (action == 'save') strInfo += '. Només els instructors poden editar les dades del curs';
-		        	if (action == 'close') strInfo += '. Només els instructors poden tancar el curs per tal que el Club les validi ';		        			        
+		        	if (action == 'save') strInfo += '. Només els instructors o el club poden editar les dades del curs';
+		        	if (action == 'close') strInfo += '. Només els instructors o el club poden tancar el curs per tal que el Club les validi ';		        			        
 		        	if (action == 'unclose') strInfo += '. Només es pot reobrir un curs si està tancat i pendent de validació, només el Club pot reobrir el curs ';
-		        	if (action == 'validate') strInfo += '. Per poder validar un curs cal que l\'instructor l\'hagi tancat primer. Només el Club pot confirmar la validesa de les dades del curs ';
+		        	if (action == 'validate') strInfo += '. Per poder validar un curs cal tancar-lo prèviament. Només el Club pot confirmar la validesa de les dades del curs ';
 		        	if (action == 'finalize') strInfo += '. Per poder finalitzar un curs cal que el Club l\'hagi validat primer. Només des de la Federació es pot finalitzar un curs ';
 		        	dialegError('Avís', strInfo, 400, 0);
 		        	return false;
@@ -637,8 +641,8 @@
 
 				if (action == 'save') {
 
-					if (!admin && !roleinstructor) {
-						dialegError('Error', 'Només els instructors poden editar les dades del curs', 400, 0);
+					if (!admin && !roleinstructor && !roleclub) {
+						dialegError('Error', 'Només els instructors o el club poden editar les dades del curs', 400, 0);
 			        	return false;
 					}
 					
@@ -647,8 +651,8 @@
 
 				if (action == 'close') {
 
-					if (!admin && !roleinstructor) {
-						dialegError('Error', 'Només els instructors poden tancar el curs', 400, 0);
+					if (!admin && !roleinstructor && !roleclub) {
+						dialegError('Error', 'Només els instructors o el club poden tancar el curs', 400, 0);
 			        	return false;
 					}
 					
@@ -670,7 +674,7 @@
 			        	return false;
 					}
 					
-					var strText = 'Vols tornar a obrir el curs perquè l\'instructor pugui editar-lo?';	
+					var strText = 'Vols tornar a obrir el curs perquè l\'instructor o el club puguin editar-lo?';	
 					dialegConfirmacio(strText, 'Reobrir el curs', 'auto', 400, function() {
 						// Continue
 						$('#formcurs').submit();

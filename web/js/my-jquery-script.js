@@ -424,7 +424,7 @@
 			if (typeof callbackPropagateValues !== "undefined"
 				&& typeof e.added  !== "undefined") {
 				//e.val, e.added, e.removed
-				callbackPropagateValues(e.added);
+				callbackPropagateValues(elem_sel, e.added);
 			}
 		}).on("select2-clearing", onclearingFunction).on("select2-loaded", loadedFunction);		
 	};
@@ -2478,7 +2478,7 @@
 		
 		//								elem_sel, 				placeholder, 			minInput, 	allowclear, 		url, callbackPropagateValues, selectionFunction, onclearingFunction, loadedFunction		    		
 		init_cercapernomdnimail_JSON('#user_auxinstructordni', 'Cercar instructor per mail', 4, allowClear, url, 	// Cerca per mail sense opció clear
-		function ( added ) {
+		function ( elem_sel, added ) {
 			/*
 			{"id":52052,"text":"52628669F-Alex2 MACIA PEREZ","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP"}
 			*/

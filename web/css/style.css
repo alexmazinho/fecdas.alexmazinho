@@ -40,7 +40,7 @@ h3.underline { border-bottom: solid 0.05em rgba(18,64,160,0.2); line-height: 2em
 	bottom: -15px;
 	z-index: 100;
 }
-.form-group .field-error-alert { bottom: 5px; }
+/*.form-group .field-error-alert { bottom: 5px; }*/
 
 .alert .form-group {  margin-bottom: 0; }
 

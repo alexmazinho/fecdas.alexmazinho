@@ -2,7 +2,7 @@
 	<div class="col-md-5">
 		<h3 class="blue space5">{{ titol }}</h3>
 	</div>
-	{% if curs.editable == true and (admin or roleinstructor) %}
+	{% if curs.editable == true and (admin or roleinstructor or roleclub) %}
 	<div class="col-md-7 col-last-right">
 		<div class="form-inline">	
 			<div class="form-group">

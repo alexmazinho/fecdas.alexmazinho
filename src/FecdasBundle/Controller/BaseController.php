@@ -226,6 +226,16 @@ class BaseController extends Controller {
 	const TIPUS_COMPETICIO		= 'CO';
 	const ORGANISME_CMAS		= 'CMAS';
 	
+	// Títols cerca números de carnet
+	const TITOL_B1E		        = 48;
+	const TITOL_B2E		        = 50;
+	const TITOL_B3E		        = 51;
+	const TITOL_B4E		        = 243;
+	const TITOL_I1E		        = 53;
+	const TITOL_I2E		        = 54;
+	const TITOL_I3E		        = 55;
+	
+	
 	// Rols docents
 	const DOCENT_DIRECTOR		= 'Director';
 	const DOCENT_CODIRECTOR		= 'Co-director';
@@ -259,6 +269,13 @@ class BaseController extends Controller {
 	protected static $carrecs; 			// Veure getCarrecs()
 	protected static $estats; 			// Veure getEstats()
 	protected static $roles; 			// Veure getRoles()
+	
+	
+	
+	public static function getTitolsCercaNumCarnets() {
+	    return array(self::TITOL_I3E, self::TITOL_I2E, self::TITOL_I1E, self::TITOL_B4E, self::TITOL_B3E, self::TITOL_B2E, self::TITOL_B1E);
+	}
+	
 	
 	public static function getTipusClubsNoComandes() {
 	    // Symfony no deixa definir constants com Arrays TIPUS_CLUBS_NO_COMANDES   
@@ -834,7 +851,28 @@ class BaseController extends Controller {
 		
 		return $checkRole->isCurrentAdmin();
 	}
+	
+	protected function isCurrentClub() {
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    return $checkRole->isCurrentClub();
+	}
+	
+	protected function isCurrentInstructor() {
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    return $checkRole->isCurrentInstructor();
+	}
 
+	protected function isCurrentFederat() {
+	    
+	    $checkRole = $this->get('fecdas.rolechecker');
+	    
+	    return $checkRole->isCurrentFederat();
+	}
+	
 	protected function getCurrentClub() {
 		$checkRole = $this->get('fecdas.rolechecker');
 		

@@ -866,10 +866,16 @@ class TitulacionsController extends BaseController {
 			$action = $request->query->get('action', '');
 			$codi = $request->query->get('club', '');
 			
-			if ($id == 0 && !$checkRole->isCurrentInstructor() && !$this->isCurrentAdmin()) {
+			if ($id == 0 && !$checkRole->isCurrentInstructor() && !$this->isCurrentAdmin() && !$this->isCurrentClub()) {
 				$this->get('session')->getFlashBag()->add('error-notice', 'Només els instructors poden crear un nou curs');
 				return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
 			}
+			
+			if ($codi == '' && $this->isCurrentClub()) {
+			    $club = $this->getCurrentClub();
+			    $codi = $club->getCodi();
+			}
+			
     	} else {
    			/* Alta o modificació de preus */
     		$data = $request->request->get('curs');
@@ -880,7 +886,7 @@ class TitulacionsController extends BaseController {
 
     	if ($id > 0) $curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->find($id);
 
-		if ($codi != '' && $curs == null) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
+		if ($codi != '' && $club == null && $curs == null) $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
     	if ($curs == null) {
     		$this->logEntryAuth('CURS NOU',	($request->getMethod() != 'POST'?'GET':'POST').' action: '.$action);
@@ -893,9 +899,11 @@ class TitulacionsController extends BaseController {
     		$maxNumCurs = $this->getMaxNumEntity($this->getCurrentDate()->format('Y'), BaseController::CURSOS) + 1;
     		
     		$curs = new EntityCurs($checkRole->getCurrentUser(), $maxNumCurs, $this->getCurrentDate(), $this->getCurrentDate(), $club);
-			$em->persist($curs);
-			
-			$this->novaDocenciaCurs($checkRole->getCurrentUser()->getMetapersona(), array(), $curs, BaseController::DOCENT_DIRECTOR);
+    		$em->persist($curs);
+    		
+    		if ($checkRole->isCurrentInstructor()) {
+    			$this->novaDocenciaCurs($checkRole->getCurrentUser()->getMetapersona(), array(), $curs, BaseController::DOCENT_DIRECTOR);
+    	    }
     	} else {
     	    $club = $curs->getClub();
     	    
@@ -915,7 +923,7 @@ class TitulacionsController extends BaseController {
 			$this->initDadesPostCurs($request->request->get('curs'), $curs);
 		}
 
-		$form = $this->createForm(new FormCurs( array('editor' => $curs->getEditor() === $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
+		$form = $this->createForm(new FormCurs( array('currentuser' => $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
     		    //throw new \Exception('Operació pendent. No es poden desar les dades del curs');
@@ -1081,7 +1089,13 @@ class TitulacionsController extends BaseController {
 	}
 	
 	private function updateDocenciaCurs($docent, $docencia) {
-		$docencia->setCarnet( isset($docent['carnet'])?$docent['carnet']:'' );
+	    $carnet = '';
+	    if ($docencia->getCarnet() == null || $docencia->getCarnet() == '') $carnet = isset($docent['carnet'])?$docent['carnet']:'';
+	    else {
+	        if (isset($docent['carnet']) && $docent['carnet'] != $docencia->getCarnet()) $carnet = $docent['carnet'];
+	    }
+	    
+	    $docencia->setCarnet( $carnet );
 
 		if ($docencia->esInstructor()) {
     		$docencia->setHteoria( isset($docent['hteoria'])&&is_numeric($docent['hteoria'])?$docent['hteoria']:0 );
@@ -1098,7 +1112,8 @@ class TitulacionsController extends BaseController {
 	private function novaDocenciaCurs($metadocent, $docent = array(), $curs, $rol) {
 		$em = $this->getDoctrine()->getManager();
 		
-		$docencia = new EntityDocencia($metadocent, $curs, $rol);	
+		$docencia = new EntityDocencia($metadocent, $curs, $rol);
+		
 		$this->updateDocenciaCurs($docent, $docencia); 			
 
 		$em->persist($docencia);
@@ -1106,6 +1121,39 @@ class TitulacionsController extends BaseController {
 		return $docencia;
 	}
 
+	
+	private function consultarNumCarnetDocent($metadocent) {
+error_log("0");
+	    if ($metadocent == null) return null;
+error_log("1");	    
+	    /* Num. carnet major disponible */
+	    /* Obtenir num carnet instructor superior */
+	    /* Bussejador 1 Estrella => B1E  48 */
+	    /* Bussejador 2 Estrelles => B2E  50 */
+	    /* Bussejador 3 Estrelles => B3E  51 */
+	    /* Bussejador 4 Estrella => B4E 243  */
+	    /* Instructor 1 Estrella => I1E  53 */
+	    /* Instructor 2 Estrelles => I2E  54 */
+	    /* Instructor 3 Estrelles => I3E  55 */
+	    /* Director => requeriment 300 titols suficients o 301 títols necessaris */
+	    /* Profe teòriques => requeriment 302 titols suficients o 303 títols necessaris */
+	    /* Profe pràctiques => requeriment 304 titols suficients o 305 títols necessaris */
+	    /* Busse. seguretat => requeriment 306 titols suficients o 307 títols necessaris */
+	    
+	    foreach (BaseController::getTitolsCercaNumCarnets() as $titol) {
+error_log("2 ".$titol);
+	        $titulacions = $metadocent->getTitulacionsByTitolId($titol);
+error_log("3 ".count($titulacions));
+if (count($titulacions) > 0) {
+    error_log("4 ".(is_array($titulacions)?"ARRAY":"NO"));
+    //error_log("4 ".get_class($titulacions[0]));
+    return $titulacions[0]->getNumfedas()!=''?$titulacions[0]->getNumfedas():$titulacions[0]->getNumTitulacio();
+}
+	    }
+error_log("4");
+	    return null;
+	}
+	
 	private function gestionarParticipacioCurs($participant, $curs) { 
 		$em = $this->getDoctrine()->getManager();
 		$id = isset($participant['metapersona'])?$participant['metapersona']:0;
@@ -1126,8 +1174,8 @@ class TitulacionsController extends BaseController {
 		
 		$checkRole = $this->get('fecdas.rolechecker');
 		
-		if ($action == 'save' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden desar les dades del curs');
-		if ($action == 'close' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor()) throw new \Exception('Només els instructors poden tancar el curs');
+		if ($action == 'save' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor() && !$checkRole->isCurrentClub()) throw new \Exception('Només els instructors o el club poden desar les dades del curs');
+		if ($action == 'close' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor() && !$checkRole->isCurrentClub()) throw new \Exception('Només els instructors o el club poden tancar el curs');
 		
 		if ($action == 'unclose' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden tornar a obrir el curs per editar-lo');
 		if ($action == 'validate' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentClub()) throw new \Exception('Només els clubs poden confirmar la validesa de les dades del curs');
@@ -2315,6 +2363,12 @@ class TitulacionsController extends BaseController {
 				$telf  = $persona->getTelefon1()!=null?$persona->getTelefon1():'';
 				$telf .= $persona->getTelefon2()!=null&&$telf=''?$persona->getTelefon2():'';
 				
+				$numCarnet = null;
+				if ($tecnic && $persona->getMetapersona() != null) {
+				    $numCarnet = $this->consultarNumCarnetDocent($persona->getMetapersona());
+error_log($numCarnet);				    
+				}
+				
 				$response->setContent(json_encode(array(
 							"id" => $persona->getId(), 
 							"text" => $persona->getDni(),
@@ -2326,7 +2380,8 @@ class TitulacionsController extends BaseController {
 							"telf" => $telf,
 							"nascut" => $persona->getDatanaixement()->format('d/m/Y'),
 							"poblacio" => $persona->getAddrpob(),
-							"nacionalitat" => $persona->getAddrnacionalitat() 
+							"nacionalitat" => $persona->getAddrnacionalitat(),
+				            "numcarnet" => $numCarnet == null?'':$numCarnet
 				)));
 				return $response;
 			}
@@ -2385,6 +2440,11 @@ class TitulacionsController extends BaseController {
 					$telf  = $persona->getTelefon1()!=null?$persona->getTelefon1():'';
 					$telf .= $persona->getTelefon2()!=null&&$telf=''?$persona->getTelefon2():'';
 					
+					$numCarnet = null;
+					if ($tecnic) {
+					    $numCarnet = $this->consultarNumCarnetDocent($metapersona);
+					}
+					
 					$search[] = array("id" => $persona->getId(), 
 									"text" => $persona->getDni(),
 									"meta" => $metapersona->getId(),
@@ -2395,7 +2455,8 @@ class TitulacionsController extends BaseController {
 									"telf" => $telf,
 									"nascut" => $persona->getDatanaixement()->format('d/m/Y'),
 									"poblacio" => $persona->getAddrpob(),
-									"nacionalitat" => $persona->getAddrnacionalitat()
+									"nacionalitat" => $persona->getAddrnacionalitat(),
+					                "numcarnet" => $numCarnet == null?'':$numCarnet
 						);
 				}
 			}

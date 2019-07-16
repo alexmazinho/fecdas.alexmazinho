@@ -13,13 +13,13 @@ use FecdasBundle\Entity\EntityCurs;
 
 class FormCurs extends AbstractType  implements EventSubscriberInterface {
 
-	private $editor;
+    private $currentuser;
 	private $stock;
 	private $admin;
 	
 	public function __construct( $options )
 	{
-		$this->editor = isset($options['editor'])?$options['editor']:false;
+	    $this->currentuser = isset($options['currentuser'])?$options['currentuser']:null;
 		$this->admin = isset($options['admin'])?$options['admin']:false;
 		$this->stock = isset($options['stock'])?$options['stock']:'';
 	}
@@ -47,7 +47,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			
 			$club = $curs->getClub();
 			
-			$editable = $curs->editable() && ($this->editor || $this->admin);
+			$editable = $curs->editable() && ($this->admin || $curs->getEditor() === $this->currentuser || $this->currentuser->hasRoleClub($curs->getClub(), BaseController::ROLE_CLUB));
 		
 			$form->add('num', 'text', array(
 				'required' 	=> true,
@@ -138,7 +138,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('auxdirector', 'text', array(
 				'mapped'	=> false,
 				'data'  	=> $persona != null?$persona->getId():'',
-			    'attr'		=>	array('readonly' => !$editable || !$this->admin)  // Admin pot tramitar cursos instructor escollint el director
+			    'attr'		=>	array('readonly' => !$editable && !$this->admin)  // Admin pot tramitar cursos instructor escollint el director
 			));	
 
 			$form->add('auxcarnet', 'text', array(
@@ -215,7 +215,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
-	    $builder->addEventSubscriber ( new FormCurs ( array('editor' => $this->editor, 'admin' => $this->admin, 'stock' => $this->stock ) ));
+	    $builder->addEventSubscriber ( new FormCurs ( array('currentuser' => $this->currentuser, 'admin' => $this->admin, 'stock' => $this->stock ) ));
 	
 		$builder->add('id', 'hidden');
 		

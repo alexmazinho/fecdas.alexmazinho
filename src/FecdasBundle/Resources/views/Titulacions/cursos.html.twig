@@ -139,7 +139,7 @@
             						{% if curs.editable %} <i class="fa fa-pencil text-info blue"></i> {% else %} <i class="fa fa-search text-info blue"></i> {% endif %}
             						</a>
             						{% if admin == true and not curs.anulat %}
-            							<a class="curs-action-baixa link" href="{{ path('FecdasBundle_curs', sortparams|merge({ 'id': curs.id, 'action': 'baixa' }) ) }}" alt="Baixa" title="Baixa">
+            							<a class="curs-action-baixa link" href="{{ path('FecdasBundle_curs', sortparams|merge({ 'id': curs.id, 'action': 'remove' }) ) }}" alt="Baixa" title="Baixa">
             		   						<i class="fa fa-trash-o text-danger red"></i></a>
             	   					{% endif %}
             		   			</td>

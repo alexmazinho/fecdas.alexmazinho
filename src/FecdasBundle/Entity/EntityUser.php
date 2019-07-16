@@ -191,7 +191,7 @@ class EntityUser {
     public function hasRoleClub($club, $role)
     {
         foreach ($this->clubs as $userClubRole) {
-            if ($userClubRole->getClub() === $club && $userClubRole->getRole() === $role) return true;
+            if (!$userClubRole->anulat() && $userClubRole->getClub() === $club && $userClubRole->getRole() === $role) return true;
         }
         return false;
     }

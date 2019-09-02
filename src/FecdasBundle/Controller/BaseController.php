@@ -49,8 +49,8 @@ class BaseController extends Controller {
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_ANUAL_MES = 12; //12; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = 01; // a partir de 01/10 any en curs
-	const INICI_TRAMITACIO_QUATRIMESTRE_MES = 10; // a partir de 01/10 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = '09'; // a partir de 01/10 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_MES = '09'; // a partir de 01/10 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -1010,7 +1010,7 @@ class BaseController extends Controller {
 		/* Fi modificacio 12/12/2014. Missatge no es poden tramitar */
 
 		// Comprovar data llicències reduïdes. Alta posterior 01/09 any actual
-		$datainici_reduida = new \DateTime(date("Y-m-d", strtotime($dataalta->format('Y') . "-09-01")));
+		$datainici_reduida = new \DateTime(date("Y-m-d", strtotime($dataalta->format('Y') . "-".self::INICI_TRAMITACIO_QUATRIMESTRE_MES."-".self::INICI_TRAMITACIO_QUATRIMESTRE_DIA."")));
 		if (($tipus->getId() == 5 or $tipus->getId() == 6) &&
 			($dataalta->format('Y-m-d') < $datainici_reduida->format('Y-m-d'))) { // reduïdes
 			throw new \Exception('Les llicències reduïdes només a partir de 1 de setembre');

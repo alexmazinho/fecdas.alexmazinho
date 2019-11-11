@@ -633,7 +633,7 @@ a.link.footer-link { padding: 0 10px; }
  	width: 90%;   
 }
 
-#header #menu-user .menu-user-dropdown.open .dropdown-menu { width: 100%; text-align: right; left:inherit; right: 0; }
+#header #menu-user .menu-user-dropdown.open .dropdown-menu { width: 100%; text-align: right; left:inherit; right: 0; min-width: 190px; }
 
 #header #menu-user .menu-user-dropdown.open .dropdown-menu a { color: #555555; font-weight: normal; line-height: 2; }
 
@@ -653,12 +653,17 @@ a.link.footer-link { padding: 0 10px; }
     white-space: nowrap;
 }
 
-#header .notifications { /*color: #fff;*/ font-weight: 400; font-size: 30px; line-height: 0.9; }
+#header .logo a { position: relative; }
+#header .logo img { position: absolute; }
+
+#header .notifications, #header .notifications-xs { /*color: #fff;*/ font-weight: 400; font-size: 30px; line-height: 0.9; }
 
 #header .notifications .notifications-title,
-#header .notifications .dev-environment { vertical-align: middle; display: block; }
+#header .notifications .dev-environment,
+#header .notifications-xs .notifications-title,
+#header .notifications-xs .dev-environment { vertical-align: middle; display: block; }
 
-#header .notifications .dev-environment { color: red; font-style: italic; font-size: 0.7em; text-shadow: -1px 2px 2px #fff; text-transform: uppercase; padding-bottom: 6px; }
+#header .notifications .dev-environment, #header .notifications-xs .dev-environment { color: red; font-style: italic; font-size: 0.7em; text-shadow: -1px 2px 2px #fff; text-transform: uppercase; padding-bottom: 6px; }
 
 #slider {
   position: relative;
@@ -2220,17 +2225,19 @@ select#parte_renovar_tipus { width: 240px; }
 
 /*************** cursos ****************/
 
-#header-curs-num { width: 7%; text-align: center; }
-#header-curs-titol { width: 22%; text-align: left; }
-#header-curs-dates { width: 10%; text-align: center; }
+#header-curs-num { width: 5%; text-align: center; }
+#header-curs-titol { width: 18%; text-align: left; }
+#header-curs-entrada { width: 8%; text-align: center; }
+#header-curs-dates { width: 8%; text-align: center; }
 #header-curs-alumnes { width: 21%; text-align: left; }
 #header-curs-docents { width: 21%; text-align: left; }
 #header-curs-estat { width: 11%; text-align: center; }
 #header-curs-actions { width: 6%; text-align: right; }
 
-.data-detall-cell.curs-num { width: 7%; text-align: center; }
-.data-detall-cell.curs-titol { width: 22%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.data-detall-cell.curs-dates { width: 10%; text-align: center; }
+.data-detall-cell.curs-num { width: 5%; text-align: center; }
+.data-detall-cell.curs-titol { width: 18%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-detall-cell.curs-entrada { width: 8%; text-align: center; }
+.data-detall-cell.curs-dates { width: 8%; text-align: center; }
 .data-detall-cell.curs-alumnes { width: 21%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .data-detall-cell.curs-docents { width: 21%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .data-detall-cell.curs-estat { width: 11%; text-align: center; }
@@ -2246,17 +2253,17 @@ select#parte_renovar_tipus { width: 240px; }
 
 
 .col-alumne-dni { width: 12%; text-align: center; }
-.col-alumne-nom { width: 25%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
-.col-alumne-superacio { width: 12%; text-align: center; }
-.col-alumne-certificat { width: 20%; text-align: left;  position: relative; }
+.col-alumne-nom { width: 35%; text-align: left; nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-alumne-superacio { display:none; }
+.col-alumne-certificat { width: 22%; text-align: left;  position: relative; vertical-align: middle; }
 .col-alumne-foto { width: 10%; text-align: center; position: relative; }
 .col-alumne-num { width: 15%; text-align: center; }
 .col-alumne-actions { width: 5%; text-align: center; }
 
 .col-alumne-num .datasuperacio-titulacio { font-style: italic; font-size: 0.9em; color: #005a8c; }
 
-.col-alumne-certificat .file-upload { position: relative; }
-.col-alumne-certificat .file-info { position: absolute;  bottom: -24px; right: 0; }
+.col-alumne-certificat .file-upload { /*position: relative;*/ }
+.col-alumne-certificat .file-info { /*position: absolute;  bottom: -24px; right: 0;*/ }
 .col-alumne-certificat .file-not-found { text-align: center; }
 
 #llista-alumnes .data-detall-cell .subtitle, #llista-alumnes .col-listheader .subtitle { display: block; font-style: italic; font-size: 0.9em; color: #005a8c; }

@@ -771,10 +771,13 @@ class TitulacionsController extends BaseController {
 		$currentPerValidar = false;
 		if ($request->query->has('pervalidar') && $request->query->get('pervalidar') == 1) $currentPerValidar = true;
 		
+		$currentFinalitzat = false;
+		if ($request->query->has('finalitzat') && $request->query->get('finalitzat') == 1) $currentFinalitzat = true;
+		
 		$this->logEntryAuth('VIEW CURSOS', "rol ".$rol. " club: " . $currentClub." "." titol ".$currentTitol.
 											"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--'));
 		
-		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $cerca, $desde, $fins, $currentPerValidar, $sort.' '.$direction);
+		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $cerca, $desde, $fins, $currentPerValidar, $currentFinalitzat, $sort.' '.$direction);
 		
 		
 		if ($format == 'csv') {
@@ -791,7 +794,8 @@ class TitulacionsController extends BaseController {
 		        'alumne' 		=> $cerca,
 		        'desde'			=> $desde,
 		        'fins'			=> $fins,
-		        'pervalidar'	=> $currentPerValidar
+		        'pervalidar'	=> $currentPerValidar,
+		        'finalitzat'	=> $currentFinalitzat,
 		    ));
 		}
 		
@@ -804,6 +808,7 @@ class TitulacionsController extends BaseController {
 		); 
 
 		$formBuilder = $this->createFormBuilder()->add('pervalidar', 'checkbox', array('required'  => false, 'data' => $currentPerValidar));
+		$formBuilder->add('finalitzat', 'checkbox', array('required'  => false, 'data' => $currentFinalitzat));
 		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('participant', 'text', array('required'  => false, 'data' => $cerca, 'attr' => array( 'placeholder' => 'Alumne: dni, nom o mail', 'readonly' => false)));
@@ -920,7 +925,7 @@ class TitulacionsController extends BaseController {
     	}
 
 		if ($request->getMethod() == 'POST') {
-			$this->initDadesPostCurs($request->request->get('curs'), $curs);
+		    if ($curs->editable()) $this->initDadesPostCurs($request->request->get('curs'), $curs);
 		}
 
 		$form = $this->createForm(new FormCurs( array('currentuser' => $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
@@ -969,6 +974,12 @@ class TitulacionsController extends BaseController {
 				    
 				    // Baixa curs, alumnes i docents. Restaura kits si escau 
 				    $this->accionsPostValidacions($curs, $action);
+				    
+				    $em->flush();
+				    
+				    $this->get('session')->getFlashBag()->add('sms-notice',	'Baixa del curs tramitada correctament');
+				    
+				    return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
 				}
 	   		}
 		} catch (\Exception $e) {
@@ -989,7 +1000,6 @@ class TitulacionsController extends BaseController {
 	private function initDadesPostCurs($data, $curs) {
 		if (isset($data['auxdirector']) && isset($data['auxdirector']) > 0) $auxdirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxdirector']);
 		$auxcarnet = isset($data['auxcarnet'])?$data['auxcarnet']:'';
-
 		if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
 		$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
 			
@@ -1089,13 +1099,8 @@ class TitulacionsController extends BaseController {
 	}
 	
 	private function updateDocenciaCurs($docent, $docencia) {
-	    $carnet = '';
-	    if ($docencia->getCarnet() == null || $docencia->getCarnet() == '') $carnet = isset($docent['carnet'])?$docent['carnet']:'';
-	    else {
-	        if (isset($docent['carnet']) && $docent['carnet'] != $docencia->getCarnet()) $carnet = $docent['carnet'];
-	    }
-	    
-	    $docencia->setCarnet( $carnet );
+	    $carnet = isset($docent['carnet'])?$docent['carnet']:'';
+        if ($carnet != '') $docencia->setCarnet( $carnet );
 
 		if ($docencia->esInstructor()) {
     		$docencia->setHteoria( isset($docent['hteoria'])&&is_numeric($docent['hteoria'])?$docent['hteoria']:0 );
@@ -1123,9 +1128,8 @@ class TitulacionsController extends BaseController {
 
 	
 	private function consultarNumCarnetDocent($metadocent) {
-error_log("0");
+
 	    if ($metadocent == null) return null;
-error_log("1");	    
 	    /* Num. carnet major disponible */
 	    /* Obtenir num carnet instructor superior */
 	    /* Bussejador 1 Estrella => B1E  48 */
@@ -1141,16 +1145,11 @@ error_log("1");
 	    /* Busse. seguretat => requeriment 306 titols suficients o 307 títols necessaris */
 	    
 	    foreach (BaseController::getTitolsCercaNumCarnets() as $titol) {
-error_log("2 ".$titol);
 	        $titulacions = $metadocent->getTitulacionsByTitolId($titol);
-error_log("3 ".count($titulacions));
-if (count($titulacions) > 0) {
-    error_log("4 ".(is_array($titulacions)?"ARRAY":"NO"));
-    //error_log("4 ".get_class($titulacions[0]));
-    return $titulacions[0]->getNumfedas()!=''?$titulacions[0]->getNumfedas():$titulacions[0]->getNumTitulacio();
-}
+            if (count($titulacions) > 0) {
+                return $titulacions[0]->getNumfedas()!=''?$titulacions[0]->getNumfedas():$titulacions[0]->getNumTitulacio();
+            }
 	    }
-error_log("4");
 	    return null;
 	}
 	
@@ -1431,6 +1430,8 @@ error_log("4");
 			    $stock = $curs->getStock();
 			    if ($stock != null) $stock->setDatabaixa($this->getCurrentDate());
 
+			    $curs->setDatabaixa($this->getCurrentDate());
+			    
 			    break;
 				
 			default:
@@ -2289,7 +2290,7 @@ error_log("4");
 	}
 
 
-	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $participant = '', $desde = null, $fins = null, $pervalidar = false, $strOrderBY = '') {
+	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $participant = '', $desde = null, $fins = null, $pervalidar = false, $finalitzat = false, $strOrderBY = '') {
 
 		$em = $this->getDoctrine()->getManager();
 	
@@ -2306,6 +2307,10 @@ error_log("4");
 		
 		if ($pervalidar == true) {
 			$strQuery .= " AND c.validat = 0 ";
+		}
+		
+		if ($finalitzat == true) {
+		    $strQuery .= " AND c.finalitzat = 1 ";
 		}
 		
 		if ($desde != null) $strQuery .= " AND c.datafins >= :desde ";
@@ -2366,7 +2371,6 @@ error_log("4");
 				$numCarnet = null;
 				if ($tecnic && $persona->getMetapersona() != null) {
 				    $numCarnet = $this->consultarNumCarnetDocent($persona->getMetapersona());
-error_log($numCarnet);				    
 				}
 				
 				$response->setContent(json_encode(array(

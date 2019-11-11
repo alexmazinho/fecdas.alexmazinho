@@ -27,14 +27,14 @@
 		{{ form_start(form, {'action': path('FecdasBundle_cursos'), 'method': 'GET', 'attr': {'class': 'appform', 'id':'form_cursos'}}) }}
 		<div class="row">
     	{% if admin or roleinstructor %}
-    		<div class="col-md-4 col-xs-12">
+    		<div class="col-md-4 col-sm-8 col-xs-12">
 			  	<div class="form-group">
 			    	{{ form_label(form.clubs, 'Clubs', { 'label_attr': {'class': ''} }) }}
 					{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 				</div>
 			</div>
 		{% endif %}
-			<div class="col-md-4 col-xs-12">
+			<div class="col-md-4 col-sm-6 col-xs-12">
 				<div class="form-group">
 				   	{{ form_label(form.participant, 'Alumne', { 'label_attr': {'class': ''} }) }}
 				   	<div class="input-group" >
@@ -43,15 +43,15 @@
 					</div>
 				</div>
 			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-4 col-xs-6">
+			<div class="col-md-4 col-sm-6 col-xs-12">
 				<div class="form-group">
 				   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
 					{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
 				</div>
 			</div>
-			<div class="col-md-2 col-xs-3">
+		</div>
+		<div class="row">
+			<div class="col-md-3 col-sm-4 col-xs-6">
 				<div class="form-group">
 					{{ form_label(form.desde, 'des de') }}
 					<div class="input-group" >
@@ -60,7 +60,7 @@
 					</div>
 				</div>
 			</div>
-		   	<div class="col-md-2 col-xs-3">
+		   	<div class="col-md-3 col-sm-4 col-xs-6">
 				<div class="form-group">
 					{{ form_label(form.fins, 'fins') }}
 					<div class="input-group" >
@@ -69,7 +69,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2 col-xs-6">
+			<div class="col-md-2 col-sm-2 col-xs-4">
 				<div class="form-group">
 					<label>&nbsp;</label>
 					<div class="checkbox">
@@ -79,8 +79,18 @@
 					</div>
 				</div>
 			</div>
+			<div class="col-md-2 col-sm-2 col-xs-4">
+				<div class="form-group">
+					<label>&nbsp;</label>
+					<div class="checkbox">
+				    	<label>
+				      		{{ form_widget(form.finalitzat) }} Finalitzat
+				    	</label>
+					</div>
+				</div>
+			</div>
 			{% if roleinstructor or admin %}
-			<div class="col-md-2 col-xs-6 col-last-right">
+			<div class="col-md-2 col-sm-12 col-xs-4 col-last-right">
 				<div class="form-group">
 					<label>&nbsp;</label>
 					<a class="btn btn-default nou-curs" href="{{ path('FecdasBundle_curs') }}">Nou curs <i class="fa fa-plus green"></i></a>
@@ -103,6 +113,8 @@
         				   			<span class="listheader-icon {% if cursos.isSorted('c.num') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
         				   		<th id="header-curs-titol" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(cursos, 'Títol', 't.titol') }}
         				   			<span class="listheader-icon {% if cursos.isSorted('t.titol') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+        				   		<th id="header-curs-entrada" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(cursos, 'Entrada', 'c.dataentrada') }}
+        				   			<span class="listheader-icon {% if cursos.isSorted('c.dataentrada') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
         				   		<th id="header-curs-dates" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(cursos, 'Durada', 'c.datadesde') }}
         				   			<span class="listheader-icon {% if cursos.isSorted('c.datadesde') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
         				   		<th id="header-curs-alumnes" class="col-listheader collistheader-noorder">Alumnes</th>
@@ -130,6 +142,7 @@
             		   					</span>
             			   			{% endif %}
             	   				</td>
+            	   				<td class="data-detall-cell curs-entrada">{{ curs.dataentrada|date('d/m/y') }}</td>
             		   			<td class="data-detall-cell curs-dates">{{ curs.datadesde|date('d/m/y') }} a<br/>{{ curs.datafins|date('d/m/y') }}</td>
             		   			<td class="data-detall-cell curs-alumnes {{ curs.estatcolor }}">{{ curs.alumnes(admin)|nl2br }}</td>
             		   			<td class="data-detall-cell curs-docents {{ curs.estatcolor }}">{{ curs.equipdocent|nl2br }}</td>
@@ -169,12 +182,13 @@
 	getUrlWithFilterParams = function(url) {
 		var club = $( "#form_clubs" ).val();
 		var pervalidar = ($( '#form_pervalidar' ).is(':checked')?1:0);
+		var finalitzat = ($( '#form_finalitzat' ).is(':checked')?1:0);
 		var desde = $( "#form_desde" ).val();
 		var fins = $( "#form_fins" ).val();
 		var titol = $( "#form_titols" ).val();
 		var participant = $( "#form_participant" ).val();  
 
-		return url + "&clubs="+club+"&pervalidar="+pervalidar+"&desde="+desde+"&fins="+fins+"&titols="+titol+"&participant="+participant;
+		return url + "&clubs="+club+"&pervalidar="+pervalidar+"&finalitzat="+finalitzat+"&desde="+desde+"&fins="+fins+"&titols="+titol+"&participant="+participant;
 	}
 
 	filtreLlistacursos = function() {
@@ -187,7 +201,7 @@
 		setMenuActive("menu-cursos");
 		
 		
-		$("#form_clubs, #form_titols, #form_desde, #form_fins, #form_pervalidar, #form_participant ").change(function() {
+		$("#form_clubs, #form_titols, #form_desde, #form_fins, #form_pervalidar, #form_finalitzat, #form_participant ").change(function() {
 			filtreLlistacursos();
 	    });
 

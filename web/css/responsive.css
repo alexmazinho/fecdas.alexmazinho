@@ -59,7 +59,7 @@ Examples
 	
 	.navbar { min-height: 0; }
 	
-	.logo img { width: 80px; }
+	.logo img { width: 70px; }
 	
 	/*.title { padding-left: 110px; }*/
 	
@@ -76,6 +76,7 @@ Examples
 /* BOOTSTRAP -MD */
 
 @media only screen and (min-width: 992px) {
+	#header .notifications-xs { display: none;  }
 }
 
 
@@ -86,10 +87,13 @@ Examples
 	/*.title { font-size: 16px; line-height: 1.1; }
 	.title i { font-size: 14px; }*/
 	
-	#header .notifications .notifications-title { font-size: 0.75em; }
-	#header .notifications .dev-environment { font-size: 0.5em; }
-	
 	#header .notifications { display: none;  }
+	#header .notifications-xs { display: block; padding-top: 10px;  }
+	html, body { background-size: auto 160px; }
+	#header { height: 120px; }
+	/*#header.header-nologin { height: 100px; }*/
+	#header .notifications-xs .notifications-title { font-size: 0.75em; text-align: center; }
+	#header .notifications-xs .dev-environment { font-size: 0.5em; text-align: center; }
 	
 	.login .btn-primary.user-login { max-width: 220px; }
 }
@@ -98,9 +102,6 @@ Examples
 
 @media only screen and (min-width: 768px) and (max-width: 991px) {
 	/*.title { padding-left: 30px; }*/
-	
-	
-	
 	.logo img { width: 60px; }
 }
 
@@ -165,16 +166,12 @@ Examples
 	}
 	
 	#header {
-	    height: auto;
+	   /* height: auto;*/
 	    /*padding: 10px;
 	    position: relative;*/
 	    background-image:none;
 	    background-color: #67A2CF;
 	    margin-bottom: 20px;
-	}
-	
-	#header.header-nologin {
-		/* height: 60px;*/
 	}
 	
 	/*.title {
@@ -201,14 +198,15 @@ Examples
 	
 	.title { margin-left: -15px; }
 	
-	.logo img {
-	    width: 65px;
-	    position: absolute;
-	}
+	.logo img { width: 85px; }
 }
 
-@media only screen and (max-width: 479px) {
+@media only screen and (max-width: 560px) {
+	
+/*@media only screen and (max-width: 479px) {*/
 	#main-col header { /*width: auto;*/ }
+
+	.title { display: none; }
 
 	.login {
 	    /*display: block;
@@ -218,21 +216,26 @@ Examples
 	    text-align: center;
 	    width: 100%;*/
 	    margin-left: 0;
-	    width: 100%;
+	    width: 80%;
+	    padding: 0;
 	}
 
+	/*.login { padding-top: 10px; }*/
+	
 	.logo img {
-	    width: 60px;
-	    position: absolute;
+	    left: -15px;
 	}
 	
-	.title { padding-left: 30px; }
+	.login .btn-primary.user-login {
+	    /*max-width: 200px;*/
+	    white-space: nowrap;
+  		overflow: hidden;
+  		text-overflow: ellipsis;
+	}
 	
 	#header #menu-user .menu-user-dropdown.open .dropdown-menu a { font-size: 13px; line-height: 2; }
 	
 	#main-col .content-center { padding: 0; }
-	
-	#menu-user .select2-container { width: 200px;}
 	
 	#formllicencia-persona #s2id_parte_llicencies_persona_select {
 		width: 200px;

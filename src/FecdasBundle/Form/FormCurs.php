@@ -146,7 +146,6 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			    'data'  	=> $director != null?$director->getCarnet():'',
 				'attr'		=>	array('readonly' => !$editable)
 			));	
-			
 			$persona = null;
 			if ($codirector != null && $codirector->getMetadocent() != null) $persona = $codirector->getMetadocent()->getPersona($club);
 			$form->add('auxcodirector', 'text', array(

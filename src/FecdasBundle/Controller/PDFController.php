@@ -1209,7 +1209,7 @@ class PDFController extends BaseController {
 		
 	}
 
-	public function cursostopdfAction($cursos, $club = null, $titol = null, $alumne = '', $desde = null, $fins = null, $pervalidar = false) {
+	public function cursostopdfAction($cursos, $club = null, $titol = null, $alumne = '', $desde = null, $fins = null, $pervalidar = false, $finalitzat = false) {
 	    /* PDF Llistat de dades personals filtrades */
 	    $pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	    $pdf->init(array('author' => 'FECDAS', 'title' => "Llista de cursos"),
@@ -1231,7 +1231,7 @@ class PDFController extends BaseController {
 	    $pdf->SetFont('dejavusans', '', 12, '', true);
 	    $pdf->Ln();
 
-	    if ($club != null || $titol != null || $alumne != "" || $desde != null || $fins != null || $pervalidar) {
+	    if ($club != null || $titol != null || $alumne != "" || $desde != null || $fins != null || $pervalidar || $finalitzat) {
 	        // Afegir dades del filtre
 	        $y += 10;
 	        $pdf->SetFont('dejavusans', 'I', 10, '', true);
@@ -1240,6 +1240,10 @@ class PDFController extends BaseController {
 	        if ($pervalidar) {
 	            $y += 7;
 	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Cursos pendents de validar', '', 1, 1, true, '', true);
+	        }
+	        if ($finalitzat) {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Cursos finalitzats', '', 1, 1, true, '', true);
 	        }
 	        if ($club != null) {
 	            $y += 7;

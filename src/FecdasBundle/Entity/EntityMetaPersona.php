@@ -219,7 +219,7 @@ class EntityMetaPersona {
     {
         $arr = array();
         foreach ($this->getTitulacionsSortedByDate() as $titulacio) {
-            if ($titulacio->getTitol()->getId() == $idTitol) return $arr[] = $titulacio;
+            if ($titulacio->getTitol()->getId() == $idTitol) $arr[] = $titulacio;
         }
         return $arr;
     }

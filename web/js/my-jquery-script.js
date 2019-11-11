@@ -362,7 +362,7 @@
 	init_cercapernomdnimail_JSON = function(elem_sel, placeholder_txt, minInput, allowclear, url, 
 											callbackPropagateValues, selectionFormat, resultFormat, onclearingFunction, 
 											loadedFunction) {
-		
+
 		if (typeof selectionFormat === "undefined") {
 			selectionFormat = function(item) {
 		        return item.text;
@@ -384,7 +384,6 @@
 			//e.val, e.added, e.removed
 			onclearingFunction = function( e ) { };	// e.preventDefault() to avoid clearing
 		}
-		
 		// Inicialitza el control de cerca (input hidden) 
 		$(elem_sel).select2({
 			minimumInputLength: minInput,

@@ -31,11 +31,11 @@ class FormDocencia extends AbstractType {
 		
 			if ($docencia instanceof EntityDocencia) {
 				$metadocent = $docencia->getMetadocent();
-				$curs = $docencia->getCurs();
+				/*$curs = $docencia->getCurs();
 				if ($curs != null && !$curs->editable()) {
 					// Curs en procés
 					$this->editable = false;	
-				}
+				}*/
 			}
 		
 			$form->add('metadocent', 'hidden', array(

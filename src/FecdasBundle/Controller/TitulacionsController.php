@@ -1271,7 +1271,7 @@ class TitulacionsController extends BaseController {
 		}
 
 		// Valida stock
-		if ($titol->esKitNecessari()) {
+		if ($titol->esKitNecessari() && !$this->isCurrentAdmin()) {
 			$kit = $titol->getKit();
 			// El club no té prous kits per tots els alumnes del curs. No es pot validar
 			if ($action == 'validate' && count($participants) > $stock) throw new \Exception('El club no disposa de prou kits "'.$kit->getDescripcio().'" per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
@@ -1372,17 +1372,19 @@ class TitulacionsController extends BaseController {
 
 					$unitats = count($curs->getParticipantsSortedByCognomsNom());
 					
-					if ($stock < $unitats)  throw new \Exception('No hi ha prou kits "'.$kit->getDescripcio().'" disponibles per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
-					
-					$em = $this->getDoctrine()->getManager();
-					
-					$comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$kit->getDescripcio();
-					
-					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
-					
-					$em->persist($registreStockClub);
-					
-					$curs->setStock($registreStockClub);
+					if ($stock < $unitats) {
+					    if (!$this->isCurrentAdmin()) throw new \Exception('No hi ha prou kits "'.$kit->getDescripcio().'" disponibles per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
+					} else {
+    					$em = $this->getDoctrine()->getManager();
+    					
+    					$comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$kit->getDescripcio();
+    					
+    					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
+    					
+    					$em->persist($registreStockClub);
+    					
+    					$curs->setStock($registreStockClub);
+					}
 				}
 				
 				// Enviar mail a Federació

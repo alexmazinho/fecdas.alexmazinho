@@ -931,9 +931,32 @@ class TitulacionsController extends BaseController {
 		$form = $this->createForm(new FormCurs( array('currentuser' => $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
-    		    //throw new \Exception('Operació pendent. No es poden desar les dades del curs');
+    		   
+    		    // Refer numeració seqüencial docencies pq handle funciona malament si s'esborra una docencia del mig
+    		    $arrayInstructors = array();
+    		    if (isset($data['instructors'])) {
+    		        foreach ($data['instructors'] as $instructor) {
+    		            $arrayInstructors[] = $instructor;
+    		        }
+    		    }
+    		    $data['instructors'] = $arrayInstructors;
+    		    
+    		    $arrayCollaboradors = array();
+    		    if (isset($data['collaboradors'])) {
+    		        foreach ($data['collaboradors'] as $collaborador) {
+    		            $arrayCollaboradors[] = $collaborador;
+    		        }
+    		    }
+    		    $data['collaboradors'] = $arrayCollaboradors;
+    		    
+    		    $request->request->set('curs', $data);
+    		    
+    		    
+    		    // Handle no gestiona bé les dades del formulari
 			 	$form->handleRequest($request);
+			 	
 			 	if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrors(true, true) );
+				
 				// Comprovacions genèriques
 				$this->validacionsCurs($curs, $stock, $form, $action);
 
@@ -958,6 +981,7 @@ class TitulacionsController extends BaseController {
 				}
 
 				$this->accionsPostValidacions($curs, $action);
+				
 				$curs->setDatamodificacio(new \DateTime('now'));
 				
 	    		$em->flush();
@@ -969,6 +993,7 @@ class TitulacionsController extends BaseController {
     		} else {
 	   			
 				if ($action == 'remove') {
+				    
 				    // Comprovacions genèriques
 				    $this->validacionsCurs($curs, $stock, $form, $action);
 				    
@@ -977,7 +1002,7 @@ class TitulacionsController extends BaseController {
 				    
 				    $em->flush();
 				    
-				    $this->get('session')->getFlashBag()->add('sms-notice',	'Baixa del curs tramitada correctament');
+				    $this->get('session')->getFlashBag()->add('sms-notice',	'Curs esborrat correctament');
 				    
 				    return $this->redirect($this->generateUrl('FecdasBundle_cursos'));
 				}
@@ -986,13 +1011,12 @@ class TitulacionsController extends BaseController {
     		// Ko, mostra form amb errors
     		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     	}
-		if (!$curs->finalitzat()) {
+    	if (!$curs->finalitzat() && $action != 'remove') {
 			// Resultat check Requeriments titulació
 			$resultat = $this->comprovaRequerimentsCurs($curs);
 			// Dades estructurades requeriments
 			$requeriments = $this->getRequerimentsEstructuraInforme($curs->getTitol(), $resultat);
 		}
-
 		return $this->render('FecdasBundle:Titulacions:curs.html.twig',
 				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'curs' => $curs, 'requeriments' => $requeriments)));
 	}
@@ -1000,6 +1024,7 @@ class TitulacionsController extends BaseController {
 	private function initDadesPostCurs($data, $curs) {
 		if (isset($data['auxdirector']) && isset($data['auxdirector']) > 0) $auxdirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxdirector']);
 		$auxcarnet = isset($data['auxcarnet'])?$data['auxcarnet']:'';
+		
 		if (isset($data['auxcodirector']) && isset($data['auxcodirector']) > 0) $auxcodirector = $this->getDoctrine()->getRepository('FecdasBundle:EntityPersona')->find($data['auxcodirector']);
 		$auxcocarnet = isset($data['auxcocarnet'])?$data['auxcocarnet']:'';
 			
@@ -1044,7 +1069,9 @@ class TitulacionsController extends BaseController {
 		$currentInstructorsIds = $curs->getDocenciesIds(BaseController::DOCENT_INSTRUCTOR);
 		foreach ($instructors as $docent) {		// Afegir/treure/modificar instructors
 			$index = array_search(isset($docent['id'])?$docent['id']:0, $currentInstructorsIds);
-			if ($index !== false) array_splice($currentInstructorsIds, $index, 1);		// Treu els existents de l'array
+			if ($index !== false) {
+			    array_splice($currentInstructorsIds, $index, 1);		// Treu els existents de l'array
+			}
 				
 			$this->gestionarDocenciaCurs($docent, $curs, BaseController::DOCENT_INSTRUCTOR);		
 		}
@@ -1060,7 +1087,9 @@ class TitulacionsController extends BaseController {
 		$docenciesIdsEsborrar = array_merge($currentInstructorsIds, $currentCollaboradorsIds);
 		foreach ($docenciesIdsEsborrar as $id) {  // Esborrar
 			$docencia = $curs->getDocenciaById($id);
-			if ($docencia != null) $docencia->baixa();	
+			if ($docencia != null) {
+			    $docencia->baixa();	
+			}
 		} 		
 			
 		$currentParticipantsIds = $curs->getParticipantsIds();
@@ -1075,7 +1104,6 @@ class TitulacionsController extends BaseController {
 			$participant = $curs->getParticipantById($id);
 			if ($participant != null) $participant->baixa();
 		} 		
-		
 	} 
 	
 	
@@ -1121,8 +1149,11 @@ class TitulacionsController extends BaseController {
 		
 		$this->updateDocenciaCurs($docent, $docencia); 			
 
-		$em->persist($docencia);
 		$curs->addDocencia($docencia);
+		$metadocent->addDocencia($docencia);
+		
+		$em->persist($docencia);
+		
 		return $docencia;
 	}
 
@@ -1143,7 +1174,7 @@ class TitulacionsController extends BaseController {
 	    /* Profe teòriques => requeriment 302 titols suficients o 303 títols necessaris */
 	    /* Profe pràctiques => requeriment 304 titols suficients o 305 títols necessaris */
 	    /* Busse. seguretat => requeriment 306 titols suficients o 307 títols necessaris */
-	    
+
 	    foreach (BaseController::getTitolsCercaNumCarnets() as $titol) {
 	        $titulacions = $metadocent->getTitulacionsByTitolId($titol);
             if (count($titulacions) > 0) {
@@ -1166,11 +1197,12 @@ class TitulacionsController extends BaseController {
 	
 			$em->persist($titulacio);
 			$curs->addParticipant($titulacio);
+			$metapersona->addTitulacions($titulacio);
 		}
 	}
 
+	
 	private function validacionsCurs($curs, $stock, $form, $action) {
-		
 		$checkRole = $this->get('fecdas.rolechecker');
 		
 		if ($action == 'save' 	&& !$this->isCurrentAdmin() && !$checkRole->isCurrentInstructor() && !$checkRole->isCurrentClub()) throw new \Exception('Només els instructors o el club poden desar les dades del curs');
@@ -1200,6 +1232,8 @@ class TitulacionsController extends BaseController {
 		$fins = $curs->getDatafins();
 		if ($desde == null || $fins == null) throw new \Exception('Cal indicar les dates d\'inici i final del curs');  // Per validar llicència tècnic 
 
+		if ($fins->format('Y-m-d') < $desde->format('Y-m-d')) throw new \Exception('La data d\'inici del curs ha de ser anterior o igual a la data de finalització');
+		
 		// Validar instructor repetit
 		$director = $curs->getDirector();
 		$codirector = $curs->getCodirector();
@@ -1208,6 +1242,7 @@ class TitulacionsController extends BaseController {
 			$form->get('auxdirector')->addError(new FormError('Obligatori'));
 			throw new \Exception('Cal indicar un director per al curs');
 		} 
+		
 		$this->validaCarnetDocent($director, $form->get('auxcarnet'));
 		if ($codirector != null) {
 		    if ($codirector->getMetadocent() === $director->getMetadocent()) {
@@ -1220,9 +1255,12 @@ class TitulacionsController extends BaseController {
 		// Director / Co-director poden ser instructors també?
 
 		$docentIds = array();
-		$docenciesInstructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
-		foreach ($docenciesInstructors as $k => $docencia) {
-		    $this->validaCarnetDocent($docencia, $form->get('instructors')->get($k)->get('carnet'));
+		$docenciesInstructors = $curs->getDocentsByRole(BaseController::DOCENT_INSTRUCTOR);
+		
+		foreach ($docenciesInstructors as $docencia) {
+		    $child = $this->getFormDocencia('instructors', $docencia, $form);
+		    
+		    $this->validaCarnetDocent($docencia, $child!=null?$child->get('carnet'):null);
 		    
 			$meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('L\'instructor '.$meta->getNomCognoms().' està repetit');
@@ -1251,9 +1289,13 @@ class TitulacionsController extends BaseController {
 			// Si $fins <= $desde està tot el periode cobert
 			if ($finsVariable->format('Y-m-d') > $desde->format('Y-m-d')) throw new \Exception('L\'instructor '.$meta->getDni().' no té llicència tècnic durant tot el periode del curs');
 		}
-		$docenciesCollaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
-		foreach ($docenciesCollaboradors as $k => $docencia) {
-		    $this->validaCarnetDocent($docencia, $form->get('collaboradors')->get($k)->get('carnet'));
+		
+		$docentIds = array();
+		$docenciesCollaboradors = $curs->getDocentsByRole(BaseController::DOCENT_COLLABORADOR);
+		foreach ($docenciesCollaboradors as $docencia) {
+		    $child = $this->getFormDocencia('collaboradors', $docencia, $form);
+		    
+		    $this->validaCarnetDocent($docencia, $child!=null?$child->get('carnet'):null);
 			
 		    $meta = $docencia->getMetadocent();
 			if (in_array($meta->getId(), $docentIds)) throw new \Exception('El col·laborador '.$meta->getNomCognoms().' està repetit');
@@ -1261,6 +1303,7 @@ class TitulacionsController extends BaseController {
 			
 			$this->validaDocenciaHoresImmersions($docencia);
 		}
+		
 		// Validar alumne repetit
 		$alumnesIds = array();
 		$participants = $curs->getParticipantsSortedByCognomsNom();
@@ -1278,11 +1321,23 @@ class TitulacionsController extends BaseController {
 		}
 	}
 
+	private function getFormDocencia($tipus = 'instructors', $docencia, $form) {
+	    if (!$form->has($tipus)) return null;
+	    
+	    foreach ($form->get($tipus)->all() as $child) {
+	        if ($docencia === $child->getData()) {
+	            return $child;
+	        }
+	    }
+	    return null;
+	}
+	
+	
 	private function validaCarnetDocent($docencia, $field) {
 	    if ($docencia == null) return;
 
 	    if ($docencia->getCarnet() == null || trim($docencia->getCarnet()) == "") {
-	        $field->addError(new FormError('Obligatori'));
+	        if ($field != null) $field->addError(new FormError('Obligatori'));
 	        throw new \Exception('Cal indicar el número d\'instructor ('.$docencia->getRol().')');
 	    }
 	}
@@ -1375,15 +1430,15 @@ class TitulacionsController extends BaseController {
 					if ($stock < $unitats) {
 					    if (!$this->isCurrentAdmin()) throw new \Exception('No hi ha prou kits "'.$kit->getDescripcio().'" disponibles per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
 					} else {
-    					$em = $this->getDoctrine()->getManager();
-    					
-    					$comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$kit->getDescripcio();
-    					
-    					$registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
-    					
-    					$em->persist($registreStockClub);
-    					
-    					$curs->setStock($registreStockClub);
+					    $em = $this->getDoctrine()->getManager();
+					    
+					    $comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$kit->getDescripcio();
+					    
+					    $registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, new \DateTime('today'), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
+					    
+					    $em->persist($registreStockClub);
+					    
+					    $curs->setStock($registreStockClub);
 					}
 				}
 				
@@ -1869,22 +1924,25 @@ class TitulacionsController extends BaseController {
 	        $currentTitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolRequeriment);
 	        $titolsSuficients[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
 	        
-	        if (!$trobat && count($metapersona->getTitulacionsByTitolId($idTitolRequeriment)) > 0) $trobat = true;
+	        if (!$trobat && count($metapersona->getTitulacionsByTitolId($idTitolRequeriment, true)) > 0) $trobat = true;
 	    }
-	    if (!$trobat) return ' no hi ha cap registre de cap de les següents titulacions: '.implode(",",$titolsSuficients);
+	    if (!$trobat) return ' no s\'ha trobat cap de les següents titulacions '.implode(",",$titolsSuficients);
 	    return '';
 	}
 	
 	private function comprovarTitulacionsNecessaries($metapersona, $idsTitols) {
-	    $titolsNecessaris = array();
+	    $titolsNecessarisFalten = array();
 	    foreach ($idsTitols as $idTitolRequeriment) {
-	        if (count($metapersona->getTitulacionsByTitolId($idTitolRequeriment)) > 0) {
+	        
+	        $cursosTitol = $metapersona->getTitulacionsByTitolId($idTitolRequeriment, true); // Consolidats
+	        
+	        if (count($cursosTitol) == 0) {
 	            $currentTitol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($idTitolRequeriment);
 	            
-	            $titolsNecessaris[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
+	            $titolsNecessarisFalten[] = ($currentTitol != null?$currentTitol->getTitol():"títol desconegut id ".$idTitolRequeriment);
 	        }
 	    }
-	    if (count($titolsNecessaris) > 0) return ' no hi ha cap registre de cap de les següents titulacions: '.implode(",",$titolsNecessaris);
+	    if (count($titolsNecessarisFalten) > 0) return ' manquen les següents titulacions: '.implode(",",$titolsNecessarisFalten);
 	    return '';
 	}
 	

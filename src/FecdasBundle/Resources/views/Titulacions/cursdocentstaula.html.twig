@@ -49,14 +49,14 @@
 				<div class="col-listheader col-docent-haula">Aula{% if minaula > 0 %}<br/>(min. {{ minaula }}h.){% endif %}</div>
 				<div class="col-listheader col-docent-hpiscina">Piscina{% if minpiscina > 0 %}<br/>(min. {{ minpiscina }}h.){% endif %}</div>
 				<div class="col-listheader col-docent-hmar">Mar{% if minmar > 0 %}<br/>(min. {{ minmar }}h.){% endif %}</div>
-				{% if curs.editable == true and (admin or roleinstructor) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
+                {% if curs.editable == true and (admin or roleinstructor or roleclub) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
 			</div>
 		</div>
 		<div class="table-noscroll">
    			<ul id="list-data-{{ tipus }}s" class="list-data docents-curs {{ tipus }}s" data-prototype="{{ prototype|e('html_attr') }}">
 				{% set proto = false %}
-					
 				{% for docent in docents %}
+				    {% set index = loop.index %}
 					{% include 'FecdasBundle:Titulacions:cursdocent.html.twig' %}
 				{% endfor %}
 				<li class="empty-alert {% if docents|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap {{ tipus }} assignat</div></li>

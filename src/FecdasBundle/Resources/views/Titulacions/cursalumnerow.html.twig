@@ -7,7 +7,7 @@
 	{% endif %}
 {% endif %}
 
-<li class="{% if proto %}curs-form-prototype{% else %}alumne-form-row data-detall{% endif %}">
+<li class="{% if proto %}curs-form-prototype{% else %}alumne-form-row form-row-index data-detall{% endif %}" data-index="{% if index is defined %}{{ index }}{% else %}{% endif %}">
 	<div class="col-id col-seq hidden">{{ form_widget(participant.id) }}</div>
 	<div class="data-detall-cell col-alumne-meta hidden">{{ form_widget(participant.metapersona) }}</div>
 	<div class="data-detall-cell col-alumne-dni">{{ form_widget(participant.auxdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
@@ -17,7 +17,7 @@
    	    {{ form_widget(participant.certificat) }}
    		{{ form_widget(participant.certificatupld) }}
    		<div class="file-upload">
-   			{% if proto or (curs.editable and roleinstructor) %}
+            {% if proto or (curs.editable and (admin or roleinstructor or roleclub)) %}
     			<div class="input-group">
     				<span class="input-group-addon"></span>
         			<input id="upload-file-{% if proto or persona is null %}__name__{% else %}{{ persona.id }}{% endif %}-info" class="upload-file-info form-control" type="text">
@@ -36,7 +36,7 @@
     			</div>
    			{% else %}
    				<div class="file-not-found">
-   				{% if proto or (curs.editable and roleinstructor) %}
+                {% if proto or (curs.editable and (admin or roleinstructor or roleclub)) %}
    				{% else %}
    						<span class="blue">Certificat mèdic no disponible </span>
    				{% endif %}
@@ -56,7 +56,7 @@
    		   			</a>
    		   		</div>
 			{% else %}
-	   			{% if proto or (curs.editable and roleinstructor)  %}
+                {% if proto or (curs.editable and (admin or roleinstructor or roleclub))  %}
 	   				<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
 	   			{% else %}
 	   				<div class="image-noupload"><span class="box-center-txt">Imatge no<br/>disponible</span></div>
@@ -70,7 +70,7 @@
        		<a class="imprimir-carnet" alt="Imprimir carnet" title="Imprimir carnet" href="{{ path('FecdasBundle_carnettopdf') }}"><i class="fa fa-address-card-o red fa-1x"></i></a>
     	</div>
 	{% endif %}
-	{% if proto or (curs.editable and (admin or roleinstructor)) %}
+    {% if proto or (curs.editable and (admin or roleinstructor or roleclub)) %}
 		<div class="data-detall-cell col-actions"><a class="remove-alumne link" href="javascript:void(0);" ><i class="fa fa-trash fa-1x red"></i></a></div>
 	{% endif %}
 </li>

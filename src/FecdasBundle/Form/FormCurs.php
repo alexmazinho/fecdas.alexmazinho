@@ -130,8 +130,8 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			
 			$director = $curs->getDirector();
 			$codirector = $curs->getCodirector();
-			$instructors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_INSTRUCTOR);
-			$collaboradors = $curs->getDocentsByRoleSortedByCognomsNom(BaseController::DOCENT_COLLABORADOR);
+			$instructors = $curs->getDocentsByRole(BaseController::DOCENT_INSTRUCTOR);
+			$collaboradors = $curs->getDocentsByRole(BaseController::DOCENT_COLLABORADOR);
 			
 			$persona = null;
 			if ($director != null && $director->getMetadocent() != null) $persona = $director->getMetadocent()->getPersona($club);
@@ -176,7 +176,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('instructors', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'		 	=> $instructors,
-		        'type' 		   	=> new FormDocencia($editable),
+			    'type' 		   	=> new FormDocencia(array('currentuser' => $this->currentuser, 'admin' => $this->admin)),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false
@@ -185,7 +185,7 @@ class FormCurs extends AbstractType  implements EventSubscriberInterface {
 			$form->add('collaboradors', 'collection', array(
 				'mapped' 	   	=> false,
 				'data'			=> $collaboradors,
-		        'type' 			=> new FormDocencia($editable),
+			    'type' 			=> new FormDocencia(array('currentuser' => $this->currentuser, 'admin' => $this->admin)),
 		        'allow_add'    	=> true,
 		        'allow_delete' 	=> true,
 		        'by_reference' 	=> false

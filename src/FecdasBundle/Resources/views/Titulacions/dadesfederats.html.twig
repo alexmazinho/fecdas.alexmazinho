@@ -34,14 +34,14 @@
    		<section class="form-dadesfederats">
 	   		<div class="row">
 				{% if admin == true %}
-					<div class="col-md-3 col-xs-6">
+					<div class="col-md-3 col-sm-6 col-xs-6">
 						<div class="form-group">
 						   	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
 				{% endif %}
-				<div class="{% if admin %}col-md-3 col-xs-6{% else %}col-md-4 col-xs-6 col-xs-offset-6{% endif %}">
+				<div class="{% if admin %}col-md-3 col-sm-6 col-xs-6{% else %}col-md-4 col-sm-4 col-xs-8{% endif %}">
 				  	<div class="form-group">
 						{{ form_label(form.dni, 'Dades personals', { 'label_attr': {'class': ''} }) }}
 				  		<div class="input-group">
@@ -50,7 +50,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-xs-5">
+				<div class="{% if admin %}col-md-3 col-sm-5 col-xs-5{% else %}col-md-4 col-sm-3 col-xs-5{% endif %}">
 				  	<div class="form-group">
 				  		<label class="" for="form_nom">&nbsp;</label>
 				  		<div class="input-group">
@@ -59,7 +59,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="{% if admin %}col-md-3{% else %}col-md-4{% endif %} col-xs-7">
+				<div class="{% if admin %}col-md-3 col-sm-7 col-xs-7{% else %}col-md-4 col-sm-5 col-xs-7{% endif %} ">
 				  	<div class="form-group">
 				  		<label class="" for="form_cognoms">&nbsp;</label>
 				  		<div class="input-group">

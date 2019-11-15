@@ -698,7 +698,7 @@ GROUP BY c.nom
 			 */  	 
 			$strQuery .= " ORDER BY ".$sort." ".$direction;
 			$query = $em->createQuery($strQuery);
-error_log($strQuery);				
+			
 			foreach ($params as $k => $p) $query->setParameter($k, $p);
 				
 			$total = count($query->getResult());

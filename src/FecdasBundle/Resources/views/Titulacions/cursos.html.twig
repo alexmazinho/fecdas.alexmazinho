@@ -12,7 +12,11 @@
 					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_cursos', { 'format': 'pdf' } ) }}" alt="Descarregar els cursos" 
 							title="Descarregar els cursos"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
 					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_cursos', { 'format': 'csv' } ) }}" alt="Exportar dades dels cursos" 
-							title="Exportar dades dels cursos"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>	
+							title="Exportar dades dels cursos"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>
+					{% if roleinstructor or roleclub or admin %}
+						<div class="button-top"><a class="link nou-curs" href="{{ path('FecdasBundle_curs') }}" alt="Nou curs" 
+								title="Nou curs"><i class="fa fa-plus-square fa-1x blue"></i></a></div>
+					{% endif %}
 				</div> 
 			</div>
 		</div>
@@ -48,7 +52,7 @@
 				   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
 					{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
 				</div>
-			</div>
+			</div>			
 		</div>
 		<div class="row">
 			<div class="col-md-3 col-sm-4 col-xs-6">
@@ -74,7 +78,7 @@
 					<label>&nbsp;</label>
 					<div class="checkbox">
 				    	<label>
-				      		{{ form_widget(form.pervalidar) }} Pendents de validació
+				      		{{ form_widget(form.pervalidar, { 'attr': {'class': 'checkbox-right'} }) }} Pendents de validació
 				    	</label>
 					</div>
 				</div>
@@ -84,19 +88,11 @@
 					<label>&nbsp;</label>
 					<div class="checkbox">
 				    	<label>
-				      		{{ form_widget(form.finalitzat) }} Finalitzat
+				      		{{ form_widget(form.finalitzat, { 'attr': {'class': 'checkbox-right'} }) }} Finalitzat
 				    	</label>
 					</div>
 				</div>
 			</div>
-			{% if roleinstructor or admin %}
-			<div class="col-md-2 col-sm-12 col-xs-4 col-last-right">
-				<div class="form-group">
-					<label>&nbsp;</label>
-					<a class="btn btn-default nou-curs" href="{{ path('FecdasBundle_curs') }}">Nou curs <i class="fa fa-plus green"></i></a>
-				</div>
-			</div>
-			{% endif %}
 		</div> 
 		{{ form_end(form) }}
 	</section>
@@ -129,8 +125,8 @@
                             {% for curs in cursos %}
         					<tr class="data-detall{% if curs.anulat %} data-detall-fosc{% endif %}">
             					<td class="data-detall-cell curs-id hidden">{{ curs.id }}</td>
-            		   			<td class="data-detall-cell curs-num">{{ curs.num }}</td>
-            		   			<td class="data-detall-cell curs-titol">
+            		   			<td class="data-detall-cell curs-num">{{ curs.numActa }}</td>
+            		   			<td class="data-detall-cell data-detall-cell-left curs-titol">
             		   				{{ curs.titol.llistaText }}
             		   				{% if admin or roleinstructor %}	
             		   					<br/><span class="curs-club">
@@ -144,10 +140,10 @@
             	   				</td>
             	   				<td class="data-detall-cell curs-entrada">{{ curs.dataentrada|date('d/m/y') }}</td>
             		   			<td class="data-detall-cell curs-dates">{{ curs.datadesde|date('d/m/y') }} a<br/>{{ curs.datafins|date('d/m/y') }}</td>
-            		   			<td class="data-detall-cell curs-alumnes {{ curs.estatcolor }}">{{ curs.alumnes(admin)|nl2br }}</td>
-            		   			<td class="data-detall-cell curs-docents {{ curs.estatcolor }}">{{ curs.equipdocent|nl2br }}</td>
+            		   			<td class="data-detall-cell data-detall-cell-left curs-alumnes {{ curs.estatcolor }}">{{ curs.alumnes(admin)|nl2br }}</td>
+            		   			<td class="data-detall-cell data-detall-cell-left curs-docents {{ curs.estatcolor }}">{{ curs.equipdocent|nl2br }}</td>
             		   			<td class="data-detall-cell curs-estat {{ curs.estatcolor }}">{{ curs.estat }}</td>
-            		   			<td class="data-detall-cell curs-actions">
+            		   			<td class="data-detall-cell data-detall-cell-right curs-actions">
             						<a class="curs-action-edit link" href="{{ path('FecdasBundle_curs', { 'id': curs.id }) }}" alt="Accedir al curs" title="Accedir al curs">
             						{% if curs.editable %} <i class="fa fa-pencil text-info blue"></i> {% else %} <i class="fa fa-search text-info blue"></i> {% endif %}
             						</a>

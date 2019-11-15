@@ -39,14 +39,14 @@
 				<div class="col-listheader col-docent-carnet">Núm. carnet</div>
 				<div class="col-listheader col-docent-hpiscina">Immesions Piscina{% if immersionspiscina > 0 %}<br/>(min. {{ immersionspiscina }}){% endif %}</div>
 				<div class="col-listheader col-docent-hmar">Immesions Mar{% if immersionsmar > 0 %}<br/>(min. {{ immersionsmar }}){% endif %}</div>
-				{% if curs.editable and (admin or roleinstructor) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
+                {% if curs.editable and (admin or roleinstructor or roleclub) %}<div class="col-listheader col-actions">&nbsp;</div>{% endif %}
 			</div>
 		</div>
 		<div class="table-noscroll">
    			<ul id="list-data-{{ tipus }}s" class="list-data docents-curs {{ tipus }}s" data-prototype="{{ prototype|e('html_attr') }}">
 				{% set proto = false %}
-					
 				{% for docent in docents %}
+				    {% set index = loop.index %}	
 					{% include 'FecdasBundle:Titulacions:curscolabora.html.twig' %}
 				{% endfor %}
 				<li class="empty-alert {% if docents|length > 0 %}hidden{% endif %}"><div class="alert alert-success" role="alert">Cap col·laborador assignat</div></li>

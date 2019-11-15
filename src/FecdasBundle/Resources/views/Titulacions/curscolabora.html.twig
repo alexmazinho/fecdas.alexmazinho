@@ -1,4 +1,4 @@
-<li class="{% if proto == true %}curs-form-prototype{% else %}docent-form-row data-detall{% endif %}">
+<li class="{% if proto == true %}curs-form-prototype{% else %}docent-form-row form-row-index data-detall{% endif %}" data-index="{% if index is defined %}{{ index }}{% else %}{% endif %}">
 	<div class="col-id col-seq hidden">{{ form_widget(docent.id) }}</div>
 	<div class="data-detall-cell col-docent-meta hidden">{{ form_widget(docent.metadocent) }}</div>
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-dni">{{ form_widget(docent.auxdni, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
@@ -6,7 +6,8 @@
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-carnet">{{ form_widget(docent.carnet, { 'attr': {'class': 'form-control form-control-left'} }) }}<span>{{ form_errors(docent.carnet)}}</span></div>
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-hpiscina">{{ form_widget(docent.ipiscina, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
 	<div class="data-detall-cell data-detall-cell-formfield col-docent-hmar">{{ form_widget(docent.imar, { 'attr': {'class': 'form-control form-control-center'} }) }}</div>
-	{% if (proto or (curs.editable and (admin or roleinstructor))) %}
+	<div class="col-docent-databaixa hidden">{{ form_widget(docent.databaixa) }}</div>
+    {% if (proto or (curs.editable and (admin or roleinstructor or roleclub))) %}
 		<div class="data-detall-cell col-actions"><a class="remove-docent link" href="javascript:void(0);" ><i class="fa fa-trash fa-1x red"></i></a></div>
 	{% endif %}
 </li>

@@ -342,14 +342,20 @@ class EntityCurs {
 		return implode(PHP_EOL, $arr);
 	}
 	
+	public function getDocentsByRole($role = '', $baixes = false)
+	{
+	    $arr = array();
+	    foreach ($this->docents as $docencia) {
+	        if ((!$docencia->anulada() || $baixes == true) &&
+	            ($role == '' || strtolower($docencia->getRol()) == strtolower($role))) $arr[] = $docencia;
+	    }
+	    return $arr;
+	}
+	
 	public function getDocentsByRoleSortedByCognomsNom($role = '', $baixes = false)
     {
     	/* Ordenades per rol director, co-director, instructor, colaborador => cognoms nom*/
-    	$arr = array();
-    	foreach ($this->docents as $docencia) {
-    		if ((!$docencia->anulada() || $baixes == true) && 
-    			($role == '' || strtolower($docencia->getRol()) == strtolower($role))) $arr[] = $docencia;
-    	}
+        $arr = $this->getDocentsByRole($role, $baixes);
 		
     	usort($arr, function($a, $b) {
     		if ($a === $b) {
@@ -643,6 +649,17 @@ class EntityCurs {
         $this->docents->add($docencia);
     }
 
+    public function addInstructor(EntityDocencia $docencia)
+    {
+        $this->addDocencia($docencia);
+    }
+    
+    public function addCollaborador(EntityDocencia $docencia)
+    {
+        $this->addDocencia($docencia);
+    }
+    
+    
 	/**
      * Remove docencia
      *
@@ -653,6 +670,17 @@ class EntityCurs {
         $this->docents->removeElement($docencia);
     }
 
+    public function removeInstructor(EntityDocencia $docencia)
+    {
+        $this->removeDocencia($docencia);
+    }
+    
+    public function removeCollaborador(EntityDocencia $docencia)
+    {
+        $this->removeDocencia($docencia);
+    }
+    
+    
     /**
      * Get docencies
      *

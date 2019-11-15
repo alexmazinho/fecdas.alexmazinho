@@ -49,8 +49,8 @@ class BaseController extends Controller {
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_ANUAL_MES = 12; //12; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = '09'; // a partir de 01/10 any en curs
-	const INICI_TRAMITACIO_QUATRIMESTRE_MES = '09'; // a partir de 01/10 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = '09'; // a partir de 09/09 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_MES = '09'; // a partir de 09/09 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';
 	const DATES_INFORME_TRIMESTRAL = '31/03;30/06;30/09;30/11';
@@ -2092,7 +2092,7 @@ class BaseController extends Controller {
 			else $concepte .= 'FACTURES: ';
 			$concepte .= $rebut->getLlistaNumsFactures();
 		}
-		if ($rebut->getComentari()!=null && $rebut->getComentari() != '') { 
+		if (strlen($concepte) < 50 && $rebut->getComentari()!=null && $rebut->getComentari() != '') { 
 			$concepte .= '<br/>'.$rebut->getComentari();
 		}
 		
@@ -2102,7 +2102,19 @@ class BaseController extends Controller {
 			$pdf->Rect($x_concepte + $x_concepte_offset, $y_concepte + $y_concepte_offset, $w_concepte , $h_concepte , '', 
 					array('LTRB' => array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 51, 102))), '' );
 		}
-		$txt = '<p style="color:#000000; font-size:14px; ">'.$concepte.'</p>';
+		
+		$font = "font-size:14px;";
+		
+		if (strlen($concepte) > 300) $font = "font-size:8px;";
+		else {
+		    if (strlen($concepte) > 150) $font = "font-size:10px;";
+		    else {
+		        if (strlen($concepte) > 100) $font = "font-size:12px;";
+		    }
+		}
+		
+		
+		$txt = '<p style="color:#000000; '.$font.' ">'.$concepte.'</p>';
 		$pdf->writeHTMLCell($w_concepte - 10, 0, $x_concepte + $x_concepte_offset + 5, $y_concepte + $y_concepte_offset + 2, $txt, '', 1, false, true, 'L', false);
 		
 		

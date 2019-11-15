@@ -7,16 +7,19 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use FecdasBundle\Controller\BaseController;
 use FecdasBundle\Entity\EntityDocencia;
 
 
 class FormDocencia extends AbstractType {
 
-	private $editable;
+    private $currentuser;
+    private $admin;
 	
-	public function __construct($editable = false)
+    public function __construct($options)
 	{
-		$this->editable = $editable;
+	    $this->currentuser = isset($options['currentuser'])?$options['currentuser']:null;
+	    $this->admin = isset($options['admin'])?$options['admin']:false;
 	}
 
 	public function buildForm(FormBuilderInterface $builder, array $options)
@@ -27,90 +30,98 @@ class FormDocencia extends AbstractType {
 			$docencia = $event->getData();
 			$metadocent = null;
 
+			if ($docencia == null) $docencia = new EntityDocencia;
+			
 			/* Check we're looking at the right data/form */
-		
 			if ($docencia instanceof EntityDocencia) {
 				$metadocent = $docencia->getMetadocent();
-				/*$curs = $docencia->getCurs();
-				if ($curs != null && !$curs->editable()) {
+				$curs = $docencia->getCurs();
+				/*if ($curs != null && !$curs->editable()) {
 					// Curs en procés
-					$this->editable = false;	
+					$editable = false;	
 				}*/
+				
+				$editable = true;
+				if ($curs != null) $editable = $curs->editable() && ($this->admin || $curs->getEditor() === $this->currentuser || $this->currentuser->hasRoleClub($curs->getClub(), BaseController::ROLE_CLUB));
+				
+				$form->add('metadocent', 'hidden', array(
+				    'mapped'	=> false,
+				    'data'		=> $metadocent!=null?$metadocent->getId():0
+				));
+				
+				$form->add('auxdni', 'text', array(
+				    'mapped'	=> false,
+				    'data'		=> $metadocent!=null?$metadocent->getDni():'',
+				    'disabled'	=> true
+				));
+				
+				$form->add('auxnom', 'text', array(
+				    'mapped'	=> false,
+				    'data'		=> $metadocent!=null?$metadocent->getNomcognoms():'',
+				    'disabled'	=> true
+				));
+				
+				$form->add ('hteoria', 'integer', array (
+				    'required' 	=> true,
+				    'scale' 	=> 0,
+				    'data'		=> $docencia!=null?$docencia->getHteoria():0,
+				    'empty_data' => '',
+				    'attr'		=>	array('readonly' => !$editable)
+				));
+				
+				$form->add ('haula', 'integer', array (
+				    'required' 	=> true,
+				    'scale' 	=> 0,
+				    'data'		=> $docencia!=null?$docencia->getHaula():0,
+				    'empty_data' => '',
+				    'attr'		=>	array('readonly' => !$editable)
+				));
+				
+				$form->add ('hpiscina', 'integer', array (
+				    'required' 	=> true,
+				    'scale' 	=> 0,
+				    'data'		=> $docencia!=null?$docencia->getHpiscina():0,
+				    'empty_data' => '',
+				    'attr'		=>	array('readonly' => !$editable)
+				));
+				
+				$form->add ('hmar', 'integer', array (
+				    'required' 	=> true,
+				    'scale' 	=> 0,
+				    'data'		=> $docencia!=null?$docencia->getHmar():0,
+				    'empty_data' => '',
+				    'attr'		=>	array('readonly' => !$editable)
+				));
+				
+				$form->add ('ipiscina', 'integer', array (
+				    'required' 	=> true,
+				    'scale' 	=> 0,
+				    'data'		=> $docencia!=null?$docencia->getIpiscina():0,
+				    'empty_data' => '',
+				    'attr'		=>	array('readonly' => !$editable)
+				));
+				
+				$form->add ('imar', 'integer', array (
+				    'required' 	=> true,
+				    'scale' 	=> 0,
+				    'data'		=> $docencia!=null?$docencia->getImar():0,
+				    'empty_data' => '',
+				    'attr'		=>	array('readonly' => !$editable)
+				));
+				
+				$form->add('carnet', 'text', array(
+				    'required' 	=> false,
+				    'attr'		=>	array('readonly' => !$editable)
+				));
 			}
 		
-			$form->add('metadocent', 'hidden', array(
-				'mapped'	=> false,
-				'data'		=> $metadocent!=null?$metadocent->getId():0
-			));
-					
-			$form->add('auxdni', 'text', array(
-				'mapped'	=> false,
-				'data'		=> $metadocent!=null?$metadocent->getDni():'',
-				'disabled'	=> true
-			));	
-				
-			$form->add('auxnom', 'text', array(
-				'mapped'	=> false,
-				'data'		=> $metadocent!=null?$metadocent->getNomcognoms():'',
-				'disabled'	=> true
-			));
-				
-			$form->add ('hteoria', 'integer', array (
-				'required' 	=> true,
-				'scale' 	=> 0,
-				'data'		=> $docencia!=null?$docencia->getHteoria():0,
-				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$this->editable)
-			));
-				
-			$form->add ('haula', 'integer', array (
-				'required' 	=> true,
-				'scale' 	=> 0,
-				'data'		=> $docencia!=null?$docencia->getHaula():0,
-				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$this->editable)
-			));
-				
-			$form->add ('hpiscina', 'integer', array (
-				'required' 	=> true,
-				'scale' 	=> 0,
-				'data'		=> $docencia!=null?$docencia->getHpiscina():0,
-				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$this->editable)
-			));
-				
-			$form->add ('hmar', 'integer', array (
-				'required' 	=> true,
-				'scale' 	=> 0,
-				'data'		=> $docencia!=null?$docencia->getHmar():0,
-				'empty_data' => '',
-				'attr'		=>	array('readonly' => !$this->editable)
-			));
-
-			$form->add ('ipiscina', 'integer', array (
-			    'required' 	=> true,
-			    'scale' 	=> 0,
-			    'data'		=> $docencia!=null?$docencia->getIpiscina():0,
-			    'empty_data' => '',
-			    'attr'		=>	array('readonly' => !$this->editable)
-			));
 			
-			$form->add ('imar', 'integer', array (
-			    'required' 	=> true,
-			    'scale' 	=> 0,
-			    'data'		=> $docencia!=null?$docencia->getImar():0,
-			    'empty_data' => '',
-			    'attr'		=>	array('readonly' => !$this->editable)
-			));
-			
-			$form->add('carnet', 'text', array(
-				'required' 	=> false,
-				'attr'		=>	array('readonly' => !$this->editable)
-			));
 			
 		});
 		
 		$builder->add('id', 'hidden');
+		
+		$builder->add('databaixa', 'hidden');
 		
 	}
 	

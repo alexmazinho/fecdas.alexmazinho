@@ -69,9 +69,7 @@
                         {% if roleclub or admin %}
 						    {% if curs.tancat %}
     							<span class="step-description"><span class="step-step orange">Pas 2.</span> Club: Reobrir el curs per editar-lo</span>
-                            {% endif %}
                             
-                            {% if curs.tancat or (curs.editable and roleclub) %}
         						<div class="button-step {% if curs.tancat %}button-step-active {% endif %}">
         							<a class="link save-curs" href="{{ path('FecdasBundle_curs', { 'action' : 'unclose' }) }}" data-action="unclose" alt="Reobrir curs" 
         								title="Reobrir curs">
@@ -346,15 +344,19 @@
 		    // increase the index with one for the next item
 		    index++;
 		    holder.data('index', index);
+		    
 		    // Display the form in the page in an li, before the "Add a tag" link li
 		    var $newFormLi = $(newForm);
-		    $newFormLi.removeClass('curs-form-prototype').addClass( newItemclass+'-form-row data-detall' );
+		    $newFormLi.attr('data-index', index);
+		    
+		    $newFormLi.removeClass('curs-form-prototype').addClass( newItemclass+'-form-row form-row-index data-detall' );
 
 		    // Set selected persona values
 		    $newFormLi.find('.col-id input').val( 0 );
 		    $newFormLi.find('.col-'+newItemclass+'-meta input').val( item.meta );
 		    $newFormLi.find('.col-'+newItemclass+'-dni input').val( item.text );
 		    $newFormLi.find('.col-'+newItemclass+'-nom input').val( item.nomcognoms );
+		    if (item.numcarnet != '') $newFormLi.find('.col-'+newItemclass+'-carnet input').val( item.numcarnet );
 
 			// Canviar/esborrar foto des de la taula d'alumnes
 		    holder.append($newFormLi);
@@ -378,19 +380,28 @@
 			var parentRow = elClick.parents('li');
 	        var parentTable = parentRow.parents('.list-data');
 	        
-	        var index = holder.data('index');
-	        index--;
-	        holder.data('index', index);
+	        parentRow.remove();
 
-	        if (index === 0) {
+	        calculateHolderElementIndex(holder);
+	        
+	        if (holder.data('index') === 0) {
 		        // Últim
 	        	parentTable.children('.empty-alert').removeClass('hidden'); 
 		    }
-	        
-	        parentRow.remove();
 		};
 
+		function calculateHolderElementIndex(holder) {
+			var indexvalues = holder.find('.form-row-index').map(function() {
+                return parseInt($(this).data('index'));
+            }).get();
 
+			var max = 0;
+			if (indexvalues.length > 0) {
+				max = Math.max.apply(Math, indexvalues);
+			}
+            holder.data('index', max);
+		};
+		
 		$(document).ready(function(){
 			setMenuActive("menu-cursos");
 
@@ -430,9 +441,14 @@
 			collaboradorsHolder	= $('ul.docents-curs.collaboradors');
 			alumnesHolder	= $('ul.alumnes-curs');
 
-			instructorsHolder.data('index', instructorsHolder.find('.docent-form-row').length);	
-			collaboradorsHolder.data('index', collaboradorsHolder.find('.docent-form-row').length);
-			alumnesHolder.data('index', alumnesHolder.find('.alumne-form-row').length);
+
+			calculateHolderElementIndex(instructorsHolder);
+			calculateHolderElementIndex(collaboradorsHolder);
+			calculateHolderElementIndex(alumnesHolder);
+
+			//instructorsHolder.data('index', instructorsHolder.find('.form-row-index').last().attr('data-index'));	
+			//collaboradorsHolder.data('index', collaboradorsHolder.find('.form-row-index').last().attr('data-index'));
+			//alumnesHolder.data('index', alumnesHolder.find('.form-row-index').last().attr('data-index'));
 
 			$('a.add-instructor').on('click', function(e) {
 		        // prevent the link from creating a "#" on the URL
@@ -535,10 +551,16 @@
 				// added = {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP", "numcarnet": "ES/F01/M2/..."}
 				$(".alert.alert-dismissible, .alert.field-error-alert").remove();
 
-				// elem_sel curs_auxdirector => curs_auxcarnet
-				// 			curs_auxcodirector => curs_auxcocarnet	
-				
-				if (added.numcarnet != '') $("#form_nom").val(added.numcarnet);
+				switch(elem_sel) {
+    				case '#curs_auxdirector':
+    					$('#curs_auxcarnet').val(added.numcarnet);					    
+    			    	break;
+    			  	case '#curs_auxcodirector':
+    			  		$('#curs_auxcocarnet').val(added.numcarnet);
+    			    	break;
+    			  	default:
+    			    
+				} 
 		    };
 			selectionFormat = function(item) {
 		        return item.text+"-"+item.nomcognoms;

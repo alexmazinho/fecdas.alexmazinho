@@ -358,11 +358,11 @@ class CronController extends BaseController {
 		
 		$club = $rebut->getClub();
 		
-		$bccmails = array($this->getParameter('MAIL_FECDAS'));
+		$bccmails = array($this->getParameter('MAIL_FACTURACIO'));
 		$subject = ""; 
 		if ($club->getMail() != null && $club->getMail() != '') $tomails = $club->getMails();
 		else {
-		    $tomails = array($this->getParameter('MAIL_FECDAS'));
+		    $tomails = array($this->getParameter('MAIL_FACTURACIO'));
 		    $bccmails = array();
 			$subject .= " (CLUB SENSE CORREU DE CONTACTE) ";
 		}

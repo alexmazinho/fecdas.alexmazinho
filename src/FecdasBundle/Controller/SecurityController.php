@@ -1296,7 +1296,7 @@ class SecurityController extends BaseController
 		if ($checkuser != null) $metaPersona = $checkuser->getMetapersona();
 		// Check Roles existents pel mateix mail
 		
-		if ($checkuser != null && count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu "); 
+		//if ($checkuser != null && count($checkuser) > 1) throw new \Exception("Hi ha varis usuaris amb el mateix correu "); 
 		
 		// Check NEW Role				
 		if ($userrole == BaseController::ROLE_INSTRUCTOR ||

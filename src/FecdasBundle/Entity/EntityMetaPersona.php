@@ -215,11 +215,11 @@ class EntityMetaPersona {
     	return $arr; 
     }
     
-    public function getTitulacionsByTitolId($idTitol)
+    public function getTitulacionsByTitolId($idTitol, $consolidat = false)
     {
         $arr = array();
         foreach ($this->getTitulacionsSortedByDate() as $titulacio) {
-            if ($titulacio->getTitol()->getId() == $idTitol) $arr[] = $titulacio;
+            if (($titulacio->consolidada() || !$consolidat) &&  $titulacio->getTitol()->getId() == $idTitol) $arr[] = $titulacio;
         }
         return $arr;
     }
@@ -480,7 +480,7 @@ class EntityMetaPersona {
      *
      * @param EntityDocencia $docencia
      */
-    public function addDocencies(EntityDocencia $docencia)
+    public function addDocencia(EntityDocencia $docencia)
     {
         $this->docencies->add($docencia);
     }

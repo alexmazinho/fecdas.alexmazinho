@@ -391,6 +391,132 @@ class AdminController extends BaseController {
 	    return $response;
 	}
 	
+	public function llistatsassegurancaAction(Request $request) {
+	    
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+	    
+	    $error = "";
+	    
+	    try {
+	        $zipFilename = "llistats_assegurances_".date("Ymd").".zip";
+	        $zipPathFilename = __DIR__.BaseController::PATH_TO_VARIS_FILES.$zipFilename;
+    	    $zip = new \ZipArchive();
+    	    if ($zip->open($zipPathFilename, \ZipArchive::CREATE)!==TRUE) throw new \Exception("No es pot crear l'arxiu ".$zipPathFilename);
+    	    $header = array('Num.', 'Alta', 'Caduca', 'Categoria', 'DNI', 'Nom', 'Cognoms');
+    	    
+    	    $filename1 = "TECNO1ER_POL_121426_".date("Ymd").".csv";   // Tecnocampus 1er des de  01/09
+    	    $filename2 = "ESCOLAR_POL_121425_".date("Ymd").".csv";    // ACS Any Escolar des de  01/09
+    	    $filename3 = "POL_HELVETIA_".date("Ymd").".csv";          // Altres helvetia des de 01/01 
+    	    
+    	    $strQueryBase = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l
+						 JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c WHERE 
+                         p.databaixa IS NULL AND l.databaixa IS NULL AND t.actiu = 1 AND
+                         p.dataalta >= :inianual AND p.dataalta <= :ficonsulta ";
+    	    
+    	    $strQueryOrder = " ORDER BY p.dataalta, e.cognoms, e.nom ";
+    	    
+    	    $currentMes = date("m");
+    	    $currentAny = date("Y");
+    	    $currentDate = date('Y-m-d H:i:s');
+    	    
+    	    // Tecnocampus 1er
+    	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_TECNOCAMPUS_1." ".$strQueryOrder;
+    	    
+    	    $anyconsulta = $currentMes <= 9?$currentAny-1:$currentAny;    // Consulta al setembre o abans dades de l'any anterior
+    	    
+    	    $inianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . "-09-01 00:00:00");
+    	    $inianual = $inianual->format('Y-m-d H:i:s');
+    	    
+    	    if ($currentMes != 9) $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', $currentDate);
+    	    else $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyconsulta+1) . '-08-31 23:59:59');
+    	    $ficonsulta = $ficonsulta->format('Y-m-d H:i:s');
+    	    
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta);
+   	        
+    	    $zip->addFile($this->writeCSV($header, $dades, $filename1), $filename1);
+   	        
+    	    // Escolar Mutuacat ACS
+    	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_MUTUACAT." ".$strQueryOrder;
+
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta);
+    	    
+    	    $zip->addFile($this->writeCSV($header, $dades, $filename2), $filename2);
+    	    
+    	    // Altres
+    	    $strQuery = $strQueryBase." AND t.id NOT IN (".BaseController::TIPUS_TECNOCAMPUS_1.", ".BaseController::TIPUS_MUTUACAT.") ".$strQueryOrder;
+
+    	    $anyconsulta = $currentMes > 1?$currentAny:$currentAny-1;    // Consulta al gener dades de l'any anterior
+    	    
+    	    $inianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . "-01-01 00:00:00");
+    	    $inianual = $inianual->format('Y-m-d H:i:s');
+    	    
+    	    if ($anyconsulta == $currentAny) $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', $currentDate);
+    	    else $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . '-12-31 23:59:59');
+    	    $ficonsulta = $ficonsulta->format('Y-m-d H:i:s');
+
+            $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta);
+    	    
+    	    $zip->addFile($this->writeCSV($header, $dades, $filename3), $filename3);
+    	    
+    	    $zip->close();
+    	    
+    	    $response = new Response(file_get_contents($zipPathFilename));
+    	    $response->headers->set('Content-Type', 'application/zip');
+    	    $response->headers->set('Content-Disposition', 'attachment;filename="' . $zipFilename . '"');
+    	    $response->headers->set('Content-length', filesize($zipPathFilename));
+    	    
+    	    @unlink($zipFilename);
+    	    
+    	    $this->logEntryAuth('LLISTAT ASSEG OK',	' estat '.$zip->status. ' arxius '.$zip->numFiles);
+    	    
+    	    return $response;
+    	    
+    	} catch (\Exception $e) {
+    	    $this->logEntryAuth('LLISTAT ASSEG KO',	' error '.$e->getMessage());
+    	    
+    	    $error = $e->getMessage();
+    	}
+	    
+    	$this->get('session')->getFlashBag()->add('error-notice',"No s'han pogut generar els llistats per l'assegurança".($error!=""?". Motiu: ".$error:""));
+	    
+	    return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+	}
+	
+	public function dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta) {
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $query = $em->createQuery($strQuery);
+	    
+	    $query->setParameter('inianual', $inianual);
+	    $query->setParameter('ficonsulta', $ficonsulta);
+	    
+	    //$total = count($query->getResult());
+	    
+	    $resultat = $query->getResult();
+	    
+	    $index = 1;
+	    $dades = array ();
+	    
+	    foreach ($resultat as $llicencia) {
+	        $parte = $llicencia->getParte();
+	        $persona = $llicencia->getPersona();
+	        
+	        $dades[] = array(
+	            $index, 
+	            $parte->getDataalta()->format('d/m/y'),
+	            $parte->getDatacaducitat()->format('d/m/y'),
+	            $llicencia->getCategoria()->getCategoria(),
+	            $persona->getDni(),
+	            $persona->getNom(),
+	            $persona->getCognoms()
+	        );
+	      
+	        $index++;
+	    }
+	    
+	    return $dades;
+    }
+	
 	
 	public function consultaadminAction(Request $request) {
 	
@@ -1902,93 +2028,113 @@ GROUP BY c.nom
 	}
 	
 	public function anularpeticioAction(Request $request) {
-		/* Anular petició duplicat */
-	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
-		
-		$em = $this->getDoctrine()->getManager();
-		
-		$duplicatid = $request->query->get("id");
-		
-		$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
-		
-		if ($duplicat != null && $duplicat->getCarnet() != null && $producte = $duplicat->getCarnet()->getProducte() != null) {
-			$producte = $duplicat->getCarnet()->getProducte();
-
-			$detallsBaixa = array();
-			$detallsBaixa[] = $this->removeComandaDetall($duplicat, $producte, 1);	
-			
-			$this->crearFacturaRebutAnulacio($duplicat, $detallsBaixa);
-			
-			$em->flush();
-		
-			$this->get('session')->getFlashBag()->add('sms-notice', 'Petició de duplicat anul·lada correctament');
-			
-			$this->logEntryAuth('ANULA DUPLI OK', 'duplicat ' . $duplicatid);
-		} else {
-			$this->get('session')->getFlashBag()->add('error-notice', 'Error anulant la petició');
-
-			$this->logEntryAuth('ANULA DUPLI ERROR', 'duplicat ' . $duplicatid);
-		}
-		
-		return $this->forward('FecdasBundle:Page:duplicats');
-		//return $this->redirect($this->generateUrl('FecdasBundle_duplicats'));
+		/* Anular petició duplicat. Treu de la llista */
+	    return $this->processarDuplicat($request, "ANUL.LAR");
+	}
+	
+	public function finalitzapeticioAction(Request $request) {
+	    /* Marca petició duplicat com finalitzada sense enviar correu al club. Treu de la llista */
+	    return $this->processarDuplicat($request, "FINALITZAR");
 	}
 	
 	public function imprespeticioAction(Request $request) {
-		/* Marca petició duplicat com impressa i enviar un correu */
+	    /* Marca petició duplicat com impressa i enviar un correu. Treu de la llista */
+	    return $this->processarDuplicat($request, "PRINT");
+	}
+	
+	private function processarDuplicat($request, $action = "") {
 	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
-	
-		$em = $this->getDoctrine()->getManager();
-
-		$duplicatid = $request->query->get("id");
-	
-		$page = $request->query->get('page', 1);
-		$sort = $request->query->get('sort', 'd.datapeticio');
-		$direction = $request->query->get('direction', 'desc');
-	
-		$duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
-	
-		if ($duplicat != null) {
-			$duplicat->setDataimpressio($this->getCurrentDate());
-	
-			$em->flush();
-	
-			// Enviar notificació mail
-			$fedeMail = array();
-			if ($duplicat->getCarnet()->esLlicencia() == true) $fedeMail[] = $this->getParameter('MAIL_LLICENCIES');
-			else $fedeMail[] = $this->getParameter('MAIL_FECDAS');
-			
-			if ($duplicat->getClub()->getMail() != null) {
-				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();
-				$tomails = $duplicat->getClub()->getMails();
-				$bccmails = $fedeMail;
-			} else {
-				$subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " CLUB SENSE CORREU!! ";
-				$tomails = $fedeMail;
-				$bccmails = array();
-			}
-			
-			$body = "<p>Benvolgut club ".$duplicat->getClub()->getNom()."</p>";
-			$body .= "<p>Us fem saber que hem imprès el duplicat del/a ";
-			$body .= "<strong>".$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() . "</strong> (<i>".$duplicat->getTextCarnet()."</i>)";
-			$body .= "</p>";
-			
-			$this->buildAndSendMail($subject, $tomails, $body, $bccmails);
-			
-			$this->get('session')->getFlashBag()->add('sms-notice', 'S\'ha enviat un mail al club');
-				
-			$this->logEntryAuth('PRINT DUPLI OK', 'duplicat ' . $duplicatid);
-		} else {
-			$this->get('session')->getFlashBag()->add('error-notice', 'Error indicant impressió de la petició');
-	
-			$this->logEntryAuth('PRINT DUPLI ERROR', 'duplicat ' . $duplicatid);
-		}
-	
-		return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page)));
+	    
+	    $duplicatid = $request->query->get("id");
+	    
+	    $page = $request->query->get('page', 1);
+	    $sort = $request->query->get('sort', 'd.datapeticio');
+	    $direction = $request->query->get('direction', 'desc');
+	    
+	    $duplicat = $this->getDoctrine()->getRepository('FecdasBundle:EntityDuplicat')->find($duplicatid);
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    try {
+	        if ($duplicat == null) throw new \Exception('S\'ha produït un error processant la petició d\'aquest duplicat');
+	        
+	        switch ($action) {
+	        case "FINALITZAR":  
+	            $duplicat->setFinalitzat(true);
+	            
+	            $em->flush();
+	            
+	            $this->get('session')->getFlashBag()->add('sms-notice', 'Petició de duplicat finalitzada');
+	            
+	            break;
+	        
+	        case "ANUL.LAR":
+	            $producte = $duplicat->getCarnet()->getProducte();
+	            
+	            if ($producte == null)  throw new \Exception('S\'ha produït un error anul·lant la petició d\'aquest duplicat. No disposa de producte associat');
+	            
+	            $detallsBaixa = array();
+	            $detallsBaixa[] = $this->removeComandaDetall($duplicat, $producte, 1);
+	            
+	            $this->crearFacturaRebutAnulacio($duplicat, $detallsBaixa);
+	            
+	            $duplicat->setFinalitzat(true);
+	            
+	            $em->flush();
+	            
+	            $this->get('session')->getFlashBag()->add('sms-notice', 'Petició de duplicat anul·lada correctament');
+	                
+	            break;
+	                
+	                
+	        case "PRINT":
+        	    $duplicat->setDataimpressio($this->getCurrentDate());
+        	        
+        	    $duplicat->setFinalitzat(true);
+        	        
+        	    $em->flush();
+        	        
+        	    // Enviar notificació mail
+        	    $fedeMail = array();
+        	    if ($duplicat->getCarnet()->esLlicencia() == true) $fedeMail[] = $this->getParameter('MAIL_LLICENCIES');
+        	    else $fedeMail[] = $this->getParameter('MAIL_FECDAS');
+        	        
+        	    if ($duplicat->getClub()->getMail() != null) {
+        	        $subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus();
+        	        $tomails = $duplicat->getClub()->getMails();
+        	        $bccmails = $fedeMail;
+        	    } else {
+        	        $subject = "Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " CLUB SENSE CORREU!! ";
+        	        $tomails = $fedeMail;
+        	        $bccmails = array();
+        	    }
+        	        
+        	    $body = "<p>Benvolgut club ".$duplicat->getClub()->getNom()."</p>";
+        	    $body .= "<p>Us fem saber que hem imprès el duplicat del/a ";
+        	    $body .= "<strong>".$duplicat->getPersona()->getNom() . " " . $duplicat->getPersona()->getCognoms() . "</strong> (<i>".$duplicat->getTextCarnet()."</i>)";
+        	    $body .= "</p>";
+        	        
+        	    $this->buildAndSendMail($subject, $tomails, $body, $bccmails);
+        	       
+        	    $this->get('session')->getFlashBag()->add('sms-notice', 'S\'ha enviat un mail al club per notificar que aquest duplicat està imprés');
+	        
+	            break;
+	        }
+	        
+	        $this->logEntryAuth('DUPLI'.$action.' OK', 'duplicat ' . $duplicatid);
+	    } catch (\Exception $e) {
+	        $em->clear();
+	        
+	        $this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
+	        
+	        $this->logEntryAuth('DUPLI '.$action.' ERROR', 'duplicat ' . $duplicatid. ' ' .$e->getMessage()); 
+	    }
+	    
+	    return $this->redirect($this->generateUrl('FecdasBundle_duplicats', array('sort' => $sort,'direction' => $direction, 'page' => $page)));
 	}
 	
 	public function duplicatllicenciaAction(Request $request) {
-		/* Anular petició duplicat */
+		/* Petició duplicat llicència */
 	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
 		$em = $this->getDoctrine()->getManager();
@@ -2033,6 +2179,8 @@ GROUP BY c.nom
 				// Si tot Ok, obrir pdf per imprimir	
 				$duplicat->setDataimpressio($this->getCurrentDate());
 	
+				$duplicat->setFinalitzat(true);
+				
 				$em->flush();
 				
 				$this->logEntryAuth('DUPLI LLICENCIA OK', 'duplicat ' . $duplicat->getNumComanda() . ' de la llicència ' . $llicenciaid  );

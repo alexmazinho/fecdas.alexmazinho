@@ -142,6 +142,14 @@ class BaseController extends Controller {
 	const PREFIX_ALBARA_LLICENCIES = 'L';
 	const PREFIX_ALBARA_ALTRES = 'A';
 	
+	// Duplicats 
+	const DUPLICAT_LLICENCIA = 1;
+	const DUPLICAT_CARNET_CMAS = 3;
+	
+	// Tipus de partes 
+	const TIPUS_TECNOCAMPUS_1 = 9;
+	const TIPUS_MUTUACAT = 4;
+	
 	// Templates plàstic
 	const TEMPLATE_GENERAL = 'G0';
 	const TEMPLATE_PESCA = 'F0';
@@ -3797,7 +3805,7 @@ class BaseController extends Controller {
 		return $duplicat;
 	}
 	
-    protected function getUnitatsTarifaTransport($pes)
+    protected static function getUnitatsTarifaTransport($pes)
     {
         if (!is_numeric($pes)) return 1;
         if ($pes <= 0) return 1;
@@ -3885,8 +3893,8 @@ class BaseController extends Controller {
         $tarifa = 0;
         $total = 0;
         if (count($cart['productes']) > 0) { 
-            $pesComanda = $this->getPesComandaCart($cart);
-            $total = $this->getTotalComandaCart($cart);
+            $pesComanda = self::getPesComandaCart($cart);
+            $total = self::getTotalComandaCart($cart);
             
             $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
             $unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
@@ -3915,7 +3923,7 @@ class BaseController extends Controller {
         return $formBuilder->getForm()->createView();
     }
 
-    protected function getPesComandaCart($cart)
+    protected static function getPesComandaCart($cart)
     {
         $pesComanda = 0;
         foreach ($cart['productes'] as $info) {
@@ -3926,7 +3934,7 @@ class BaseController extends Controller {
         return $pesComanda;
     }
     
-    protected function getTotalComandaCart($cart)
+    protected static function getTotalComandaCart($cart)
     {
         $total = 0;
         foreach ($cart['productes'] as $info) {
@@ -4305,7 +4313,7 @@ class BaseController extends Controller {
                 
         $file = __DIR__.BaseController::PATH_TO_VARIS_FILES.$filename;
                 
-        if ($fs->exists($file)) throw new \Exception("El fitxer ja existeix ".$file);
+        //if ($fs->exists($file)) throw new \Exception("El fitxer ja existeix ".$file);
                 
         $fs->dumpFile($file, $csvTxt);
         return $file;

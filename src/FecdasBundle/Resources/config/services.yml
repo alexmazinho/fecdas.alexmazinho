@@ -13,3 +13,8 @@ services:
     fecdas.rolechecker:
         class:     FecdasBundle\Service\RoleChecker
         arguments: ["@session", "@request_stack","@doctrine"]
+        
+    fecdas.cartcheckout:
+        class:     FecdasBundle\Service\CartCheckOut
+        arguments: ["@session", "@request_stack","@doctrine", "@form.factory"]
+        

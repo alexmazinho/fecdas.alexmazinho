@@ -1,6 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -46,6 +47,13 @@ class EntityCarnet {
 		//return $this->getCodisortida() == 7090000;
 		$pos = stripos($this->producte->getDescripcio(), "llicència");
 		return $pos !== false;
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function validarLlicenciaVigent() {
+	    return $this->id == BaseController::DUPLICAT_LLICENCIA || $this->id == BaseController::DUPLICAT_CARNET_CMAS;
 	}
 	
 	public function __toString() {

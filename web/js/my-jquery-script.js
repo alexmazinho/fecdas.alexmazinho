@@ -2656,19 +2656,23 @@
 				var params = { 	persona:$("select#duplicat_persona").val(), carnet:$("select#duplicat_carnet").val() };
 				$.get(url,	params,
 				function(data) {
-					$("#formduplicats-titols").remove();
+					//$("#formduplicats-titols").remove();
 					
 					$("#formduplicats-dades").replaceWith( data );
 
-					var titols = $("#formduplicats-titols").detach(); // Colocar titols als camps superiors
-					$("#formduplicats .form-row").first().append(titols);
+					/*var titols = $("#formduplicats-titols").detach(); // Colocar titols als camps superiors
+					$("#formduplicats .row").first().append(titols);
 					
 					if ($.browser.msie) $('select#duplicat_titol').show(); 
-				    else $('select#duplicat_titol').stop().slideLeftShow('slow');
+				    else $('select#duplicat_titol').stop().slideLeftShow('slow');*/
 					
-					if ($.browser.msie) $('#formduplicats-dades').show(); 
-				    else $('#formduplicats-dades').stop().slideDown('slow');
-			
+					if ($.browser.msie) {
+						$('#formduplicats .hidden-field').show();
+					}
+				    else {
+						$('#formduplicats .hidden-field').stop().slideDown('slow');
+				    }
+					
 					imageUploadForm("#duplicat_fotoupld", 104);
 					
 					prepareRemoveFotoGaleria();
@@ -2686,7 +2690,7 @@
 							dialegError("Error", "Cal escollir un títol", 300, 100);
 							return false;
 						}
-						if ($('input#duplicat_fotoupld').length > 0 && $('#formduplicats-foto .file-input-thumb').length == 0) {
+						if ($('input#duplicat_fotoupld').length > 0 && $('.galeria-upload .file-input-thumb').length == 0) {
 							dialegError("Error", "Cal carregar una foto", 300, 100);
 							return false;
 						}
@@ -2709,15 +2713,17 @@
 	
 	initFormDuplicats = function(tot) {
 		if (tot) {
+			$("select#duplicat_carnet").val("");
+			
 			if ($.browser.msie) $('select#duplicat_carnet').hide(); 
 		    else $('select#duplicat_carnet').stop().slideLeftHide('slow');
 		}
 		
-		if ($.browser.msie) $('select#duplicat_titol').hide(); 
-	    else $('select#duplicat_titol').stop().slideLeftHide('slow');
+		/*if ($.browser.msie) $('select#duplicat_titol').hide(); 
+	    else $('select#duplicat_titol').stop().slideLeftHide('slow');*/
 		
-		if ($.browser.msie) $('#formduplicats-dades').hide(); 
-	    else $('#formduplicats-dades').stop().slideUp('slow');
+		if ($.browser.msie) $('#formduplicats .hidden-field').hide(); 
+	    else $('#formduplicats .hidden-field').stop().slideUp('slow');
 	};
 	
 	prepareRemoveFotoGaleria = function() {

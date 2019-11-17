@@ -1830,12 +1830,10 @@ class PageController extends BaseController {
 					if ($duplicat->getTitol() == null && $duplicat->getCarnet()->getId() != 1) throw new \Exception('Cal indicar un títol');  
 					if ($duplicat->getTitol() != null && $duplicat->getCarnet()->getId() == 1) throw new \Exception('Dades del títol incorrectes'); 
 
-					
-					
-					if ($duplicat->getCarnet()->esLlicencia()) {
+					if ($duplicat->getCarnet()->validarLlicenciaVigent()) {
 					    /* Validar duplicat llicència, llicència vigent */
 					    $vigent = $duplicat->getPersona()->getLlicenciaVigent();
-					    if ($vigent == null) throw new \Exception('Aquest federat no té cap llicència vigent per demanar-ne un duplicat'); 
+					    if ($vigent == null) throw new \Exception('Per poder tramitar el duplicat cal que aquest federat disposi de llicència vigent'); 
 					}
 					
 					//$em->persist($duplicat);
@@ -1935,11 +1933,11 @@ class PageController extends BaseController {
 		$strQuery = "SELECT d, p, c FROM FecdasBundle\Entity\EntityDuplicat d JOIN d.persona p JOIN d.carnet c";
 		/* Administradors totes les peticions, clubs només les seves*/
 		if (!$this->isCurrentAdmin()) {
-			$strQuery .= " WHERE d.club = :club ORDER BY d.datapeticio";  
+			$strQuery .= " WHERE d.club = :club AND d.databaixa IS NULL ORDER BY d.datapeticio";  
 			$query = $em->createQuery($strQuery)
 				->setParameter('club', $currentClub);
 		} else {
-			if ($totes == false) $strQuery .= " WHERE d.dataimpressio IS NULL AND d.databaixa IS NULL ";  
+			if ($totes == false) $strQuery .= " WHERE d.dataimpressio IS NULL AND d.databaixa IS NULL AND d.finalitzat = 0 "; 
 
 			$strQuery .= " ORDER BY d.datapeticio";
 			
@@ -1954,8 +1952,11 @@ class PageController extends BaseController {
 		);
 		$duplicats->setParam('totes',$totes);
 		
+		$cartcheckout = $this->get('fecdas.cartcheckout');
+		$formtransport = $cartcheckout->formulariTransport();
+		
 		return $this->render('FecdasBundle:Page:duplicats.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'duplicats' => $duplicats,
+		    $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'formtransport' => $formtransport, 'duplicats' => $duplicats,
 						'sortparams' => array('sort' => $sort,'direction' => $direction))
 						));
 	}
@@ -1978,10 +1979,18 @@ class PageController extends BaseController {
 		$fotocarnet = false;
 		
 		if ($carnet != null and $carnet->getFoto() == true) $fotocarnet = true;
-			
+		
+		$cartcheckout = $this->get('fecdas.cartcheckout');
+		$cartcheckout->initSessionCart();
+		
+		$producte = $carnet->getProducte();
+		$cartcheckout->addProducteToCart($producte->getId(), 1);
+		
 		$form = $this->createForm(new FormDuplicat(array('persona' => $persona, 'carnet' => $carnet, 'foto' => $fotocarnet)), $duplicat);   // Només select titols
 		
-		return $this->render('FecdasBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView()))); 
+		$formtransport = $cartcheckout->formulariTransport();
+		
+		return $this->render('FecdasBundle:Page:duplicatsform.html.twig', $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'formtransport' => $formtransport))); 
 	} 
 	
 	private function allowEdit(EntityParte $parte) {

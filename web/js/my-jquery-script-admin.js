@@ -336,15 +336,21 @@
 			dadesPagamentFactura($(this).attr("href"), "Afegir dades de pagament i/o facturació", varFactura);
 		});
 		
+		$('a.duplicat-esborrar').click(function(e) {
+			e.preventDefault();
+			adminConfirm($(this).attr("href"), "Anul·lar petició", "<p>Segur que vols anul·lar aquesta petició?</p>", 350, 150);
+		});
+
+		$('a.duplicat-finalitzar').click(function(e) {
+			e.preventDefault();
+			adminConfirm($(this).attr("href"), "Finalitzar petició", "<p>Vols finalitzar aquesta petició i treure-la de la llista?</p>", 300, 150);
+		});
+		
 		$('a.duplicat-impres').click(function(e) {
 			e.preventDefault();
 			adminConfirm($(this).attr("href"), "Petició impresa", "<p>La petició es marcarà com impresa i s'enviarà un correu al club, vols continuar?</p>", 350, 170);
 		});
 		
-		$('a.duplicat-esborrar').click(function(e) {
-			e.preventDefault();
-			adminConfirm($(this).attr("href"), "Anul·lar petició", "<p>Segur que vols anul·lar aquesta petició?</p>", 350, 150);
-		});
 
 	};
 	

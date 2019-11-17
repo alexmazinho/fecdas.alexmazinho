@@ -26,7 +26,7 @@
     
     <!-- <link href="{# asset('js/select2-3.4.5/select2.css') #}" type="text/css" rel="stylesheet" /> -->
     <link href="{{ asset('css/select2.css?v=3.5.1') }}" type="text/css" rel="stylesheet" />
-    <link href="{{ asset('css/style.css?v=3.21') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ asset('css/style.css?v=3.22') }}" type="text/css" rel="stylesheet" />
     <link href="{{ asset('css/responsive.css?v=3.02') }}" type="text/css" rel="stylesheet" />
 {% endblock %}
 
@@ -217,7 +217,7 @@
 <!-- ENDS INSTRUCTORS i FEDERATS MENU -->			        
 		        {% endif %}
 		      </ul>
-		      {% if admin == true  %}
+		      {% if admin  %}
 <!-- STARTS ADMIN MENU -->
 		      	<ul class="nav navbar-nav navbar-right"><li><p class="navbar-text"><i class="admin-nav">ADMINISTRACIÓ </i></p></li></ul>
 		      	<ul class="nav navbar-nav navbar-right">
@@ -263,8 +263,10 @@
 			        <li class="dropdown">	
 			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Consultes <span class="caret"></span></a>
 			          <ul class="dropdown-menu" role="menu">
-			        	<li id="menu-admconsulta"><a href="{{ path('FecdasBundle_consultaadmin') }}">Dades llicències</a></li>
+			        	<li id="menu-admconsulta" class="separator"><a href="{{ path('FecdasBundle_consultaadmin') }}">Dades llicències</a></li>
 			        	<li id="menu-admconsultaclubs"><a href="{{ path('FecdasBundle_consultaclubs') }}">Dades clubs</a></li>
+			        	<li class="divider"></li>
+			        	<li id="menu-admconsultaclubs"><a href="{{ path('FecdasBundle_llistatsasseguranca') }}">Llistats assegurances</a></li>
 			          </ul>
 			        </li>
 			        <!-- <li class="dropdown">	
@@ -315,7 +317,7 @@
 
 {% block body %}
 	<nav>
-	{% if authenticated != true  %}
+	{% if not authenticated  %}
 		<ul class="nav nav-pills">
 			<li id="menu-home" role="presentation"><a href="{{ path('FecdasBundle_homepage') }}"><i class="fa fa-home"></i>Inici</a></li>
 			<li id="menu-login" role="presentation"><a href="{{ path('FecdasBundle_login') }}"><i class="fa fa-user"></i>Entrar</a></li>
@@ -350,8 +352,8 @@
 	<!-- Cookie Bar lightweight jQuery plugin. https://github.com/carlwoodhouse/jquery.cookieBar -->
 	<script src="{{ asset('js/jquery.cookieBar.js?v=0.0.3') }}" type="text/javascript"></script>
 
-	<script src="{{ asset('js/my-jquery-script.js?v=3.17') }}" type="text/javascript"></script>	
-    <script src="{{ asset('js/my-jquery-script-admin.js?v=3.01') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/my-jquery-script.js?v=3.18') }}" type="text/javascript"></script>	
+    <script src="{{ asset('js/my-jquery-script-admin.js?v=3.02') }}" type="text/javascript"></script>
 
 	<script type="text/javascript">
 		if (($.browser.msie && parseInt($.browser.version, 10) < 8) ||
@@ -382,55 +384,57 @@
 			    $(this).slideUp();
 			});
 
-			if ($("#menu-user select#form_currentclub").length !== 0) {
-				$("#menu-user select#form_currentclub").select2({
-					minimumInputLength: 2,
-				});
-
-				$("#menu-user select#form_currentclub").change(function( e ) {
-					var url =  "{{ path('FecdasBundle_changerole') }}";
-					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
-					var role = $("#menu-user #form_currentrole").length > 0?$("#menu-user #form_currentrole").val():'';
-
-					reloadCurrentClub( url, urlCallback, role, $(this).val());
-				});
-					
-			}
-
-			if ($("#menu-user select#form_currentrole").length !== 0) {
-
-				var disableRoleSelect = ($("#menu-user select#form_currentrole").attr("readonly") === true || 
-				  						 $("#menu-user select#form_currentrole").attr("readonly") === "readonly");
-
-				$("#menu-user select#form_currentrole").select2({
-					minimumInputLength: 0,
-					minimumResultsForSearch: -1, 		// Disables search
-					formatSelection: function(item) {
-					  	//var originalOption = item.element;
-						//return "Rol "+item.text.toUpperCase();
-						return "Rol "+item.text;
-					},
-					formatResult: function(item) {
-					  	//var originalOption = item.element;
-						//return item.text.toUpperCase();
-						return item.text;
-					}
-				});
-
-				if (disableRoleSelect) $("#menu-user select#form_currentrole").attr("disabled", true);
-				
-				$("#menu-user select#form_currentrole").change(function( e ) {
-					var url =  "{{ path('FecdasBundle_changerole') }}";
-					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
-					var club = $("#menu-user #form_currentclub").length > 0?$("#menu-user #form_currentclub").val():'';
-					
-					reloadCurrentClub( url, urlCallback, $(this).val(), club );
-				});
-			}
-
-			{% if admin or roleinstructor  %}
-    			var url =  "{{ path('FecdasBundle_jsonformseleccioclubcurs') }}";
-    			nouCursSelectClub( url );
+			{% if authenticated  %}
+    			if ($("#menu-user select#form_currentclub").length !== 0) {
+    				$("#menu-user select#form_currentclub").select2({
+    					minimumInputLength: 2,
+    				});
+    
+    				$("#menu-user select#form_currentclub").change(function( e ) {
+    					var url =  "{{ path('FecdasBundle_changerole') }}";
+    					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
+    					var role = $("#menu-user #form_currentrole").length > 0?$("#menu-user #form_currentrole").val():'';
+    
+    					reloadCurrentClub( url, urlCallback, role, $(this).val());
+    				});
+    					
+    			}
+    
+    			if ($("#menu-user select#form_currentrole").length !== 0) {
+    
+    				var disableRoleSelect = ($("#menu-user select#form_currentrole").attr("readonly") === true || 
+    				  						 $("#menu-user select#form_currentrole").attr("readonly") === "readonly");
+    
+    				$("#menu-user select#form_currentrole").select2({
+    					minimumInputLength: 0,
+    					minimumResultsForSearch: -1, 		// Disables search
+    					formatSelection: function(item) {
+    					  	//var originalOption = item.element;
+    						//return "Rol "+item.text.toUpperCase();
+    						return "Rol "+item.text;
+    					},
+    					formatResult: function(item) {
+    					  	//var originalOption = item.element;
+    						//return item.text.toUpperCase();
+    						return item.text;
+    					}
+    				});
+    
+    				if (disableRoleSelect) $("#menu-user select#form_currentrole").attr("disabled", true);
+    				
+    				$("#menu-user select#form_currentrole").change(function( e ) {
+    					var url =  "{{ path('FecdasBundle_changerole') }}";
+    					var urlCallback =  "{{ path('FecdasBundle_homepage') }}";
+    					var club = $("#menu-user #form_currentclub").length > 0?$("#menu-user #form_currentclub").val():'';
+    					
+    					reloadCurrentClub( url, urlCallback, $(this).val(), club );
+    				});
+    			}
+    
+    			{% if admin or roleinstructor  %}
+        			var url =  "{{ path('FecdasBundle_jsonformseleccioclubcurs') }}";
+        			nouCursSelectClub( url );
+    			{% endif %}
 			{% endif %}
 			
 		});

@@ -20,23 +20,26 @@
         <h1>Petició de carnets, llicències en plàstic i duplicats</h1>
     </header>
 
-	<div class="row">
-		<div class="col-md-12">
-		   	{{ form_start(form, {'action': path('FecdasBundle_duplicats'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formduplicats', 'enctype':'multipart/form-data'}}) }}
-		   		<div class="form-row clearfix">
-		   			<div id="formduplicats-persones" class="form-left">
-						{{ form_widget(form.persona, { 'attr': {'class': 'form-control'} }) }}
-					</div> 
-					<div id="formduplicats-carnets" class="form-left">
-						{{ form_widget(form.carnet, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				</div>
-				<div id="formduplicats-dades" class="form-row clearfix">
-					{{ form_rest(form) }}				
-				</div>
-		    {{ form_end(form) }}
-    	</div>
-    </div>
+   	{{ form_start(form, {'action': path('FecdasBundle_duplicats'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formduplicats', 'enctype':'multipart/form-data'}}) }}
+   	<div class="row">
+		<div class="col-md-3 col-sm-5">
+			<div class="form-group">
+			    {{ form_widget(form.persona, { 'attr': {'class': 'form-control'} }) }}
+			</div>
+		</div>
+		<div class="col-md-4 col-sm-6">
+			<div class="form-group">
+			    {{ form_widget(form.carnet, { 'attr': {'class': 'form-control'} }) }}
+			</div>
+		</div>
+	</div>
+	<div id="formduplicats-dades" class="row">
+	    <div class="hidden">{{ form_rest(form) }}</div>	
+	</div>
+	
+    {{ form_end(form) }}
+	<div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
+    
     <div class="row">
     	<div class="col-md-offset-8 col-md-4 col-last-right">
     		{% if duplicats.params.totes == true %}
@@ -49,115 +52,126 @@
     	</div>
     </div>
 
-	<div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
-    
-	<div id="llista-duplicats">
-		<div class="table-header">	
-		   	<div id="list-header">
-		   		<div id="header-duplicat-estat" class="col-listheader collistheader-noorder">Estat</div>
-		   		<div id="header-duplicatid" class="col-listheader">{{ knp_pagination_sortable(duplicats, 'Albarà', 'd.id') }}
-		   			<span class="listheader-icon {% if duplicats.isSorted('d.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-duplicatpeticio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Petició', 'd.datapeticio') }}
-		   			<span class="listheader-icon {% if duplicats.isSorted('d.datapeticio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-duplicatdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'DNI', 'p.dni') }}
-		   			<span class="listheader-icon {% if duplicats.isSorted('p.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-duplicatnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Nom', 'p.cognoms, p.nom') }}
-		   			<span class="listheader-icon {% if duplicats.isSorted('p.cognoms, p.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-duplicatcarnet" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Carnet', 'c.tipus') }}
-		   			<span class="listheader-icon {% if duplicats.isSorted('c.tipus') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
-		   		<div id="header-duplicatfoto" class="col-listheader listheader-noorder">Foto<span class="listheader-order"></span></div>
-		   		<div id="header-duplicatimpressio" class="col-listheader listheader-noorder">Notificat club<span class="listheader-order"></span></div>
-		   		<div id="header-duplicatextra" class="col-listheader listheader-noorder">Observacions<span class="listheader-order"></span></div>
-		   		<div id="header-duplicatactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ duplicats.getTotalItemCount|number_format(0, ',', '.') }}</div>
-		   	</div>
-	   	</div>
-		{% if duplicats|length > 0 %}
-		<div class="table-scroll">
-		   	<ol id="list-data">
-			{% for duplicat in duplicats %}
-				{% if admin == true or (admin != true and duplicat.databaixa is null) %}
-					{% if duplicat.databaixa is null %}
-					<li class="data-detall">
-						<div class="data-detall-cell duplicat-estat">
-		   					{% if duplicat.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ duplicat.estat }}{% endif %}
-		   				</div>
-				   		<div class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</div>
-				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
-				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
-				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
-				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</div>
-				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
-				   		<div class="data-detall-cell duplicat-foto">
-				   		{% if duplicat.carnet.foto == true %}
-				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
-				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
-				   			{% else %}
-				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
-				   		{% endif %}
-				   		</div>
-				   		<div class="data-detall-cell duplicat-impressio">
-				   		{% if duplicat.dataimpressio is null %}
-				   			{% if admin == true %}
-					   			<a class="duplicat-impres link" href="{{ path('FecdasBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Notificar club duplicat està imprès" title="Notificar club duplicat està imprès">
-			   							<i class="fa fa-thumbs-o-up orange"></i></a>
-			   				{% endif %}
-			   			{% else %}
-			   				{{ duplicat.dataimpressio|date('d/m/y') }}
-			   			{% endif %}
-			   			</div>
-				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</div>
-				   		<div class="data-detall-cell duplicat-actions">
-					   		{% if admin == true  %}
-								{% if duplicat.comandaPagada != true %} 
-									<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': duplicat.id }) }}" 
-					   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
-								{% endif %}	
-						   		<a class="veure-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': duplicat.id}) }}" alt="Veure comanda" title="Veure comanda">
-									<i class="fa fa-search fa-1x blue"></i></a>
-		   						<a class="duplicat-esborrar link" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Anul·lar petició" title="Anul·lar petició">
-			   						<i class="fa fa-trash-o fa-1x red"></i></a>
-							{% else %}
-								{% if duplicat.comandaPagada != true %} 
-									<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
-										<i class="fa fa-euro fa-1x green"></i></a>
-								{% endif %}	
-				   			{% endif %}
-			   			</div>
-			   		</li>
-					{% else %}
-			   		<li class="data-detall data-detall-fosc">
-			   			<div class="data-detall-cell duplicat-estat">
-		   					{% if duplicat.comandaPagada != true %}<i class="fa fa-exclamation fa-1x red" style="color:red"></i>{% else %}{{ duplicat.estat }}{% endif %}
-		   				</div>
-				   		<div class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</div>
-				   		<div class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
-				   		<div class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</div>
-				   		<div class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
-				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</div>
-				   		<div class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</div>
-				   		<div class="data-detall-cell duplicat-foto">
-				   		{% if duplicat.carnet.foto == true %}
-				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
-				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}" class="link">
-				   				<img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
-				   			{% else %}
-				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
-				   		{% endif %}
-				   		</div>
-				   		<div class="data-detall-cell duplicat-impressio"></div>
-				   		<div class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</div>
-				   		<div class="data-detall-cell duplicat-actions"></div>
-			   		</li>
-			   		{% endif %}
-			   	{% endif %}
-			{% endfor %}
-			</ol>
+	<section id="peticions-duplicats">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="table-responsive">
+            		<table class="table">
+               			<thead>
+               				<tr class="data-detall-header">
+                				<th id="header-duplicat-estat" class="col-listheader collistheader-noorder">&nbsp;</th>
+                		   		<th id="header-duplicatid" class="col-listheader">{{ knp_pagination_sortable(duplicats, 'Albarà', 'd.id') }}
+                		   			<span class="listheader-icon {% if duplicats.isSorted('d.id') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+                		   		<th id="header-duplicatpeticio" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Petició', 'd.datapeticio') }}
+                		   			<span class="listheader-icon {% if duplicats.isSorted('d.datapeticio') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+                		   		<th id="header-duplicatdni" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'DNI', 'p.dni') }}
+                		   			<span class="listheader-icon {% if duplicats.isSorted('p.dni') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+                		   		<th id="header-duplicatnom" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Nom', 'p.cognoms, p.nom') }}
+                		   			<span class="listheader-icon {% if duplicats.isSorted('p.cognoms, p.nom') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+                		   		<th id="header-duplicatcarnet" class="col-listheader col-noresponsive col-listheader-sortable">{{ knp_pagination_sortable(duplicats, 'Carnet', 'c.tipus') }}
+                		   			<span class="listheader-icon {% if duplicats.isSorted('c.tipus') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></th>
+                		   		<th id="header-duplicatfoto" class="col-listheader listheader-noorder">Foto<span class="listheader-order"></span></th>
+                		   		<th id="header-duplicatimpressio" class="col-listheader listheader-noorder">Notifica{% if admin %}<br/>Finalitza{% endif %}<span class="listheader-order"></span></th>
+                		   		<th id="header-duplicatextra" class="col-listheader listheader-noorder">Observacions<span class="listheader-order"></span></th>
+                		   		<th id="header-duplicatactions" class="col-listheader listheader-noorder total-rowcount">Total: {{ duplicats.getTotalItemCount|number_format(0, ',', '.') }}</th>
+            				</tr> 
+                		</thead>
+        				<tbody>
+        			    {% for duplicat in duplicats %}
+        					{% if duplicat.databaixa is null %}
+        					<tr class="data-detall">
+        						<td class="data-detall-cell duplicat-estat">
+        		   					{% if not duplicat.comandaPagada %}<i class="fa fa-exclamation-circle fa-1x red" style="color:red" title="Pagament pendent"></i>{% endif %}
+        		   				</td>
+        				   		<td class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</td>
+        				   		<td class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
+        				   		<td class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</td>
+        				   		<td class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
+        				   			{% if admin %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</td>
+        				   		<td class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</td>
+        				   		<td class="data-detall-cell duplicat-foto">
+        				   		{% if duplicat.carnet.foto == true %}
+        				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
+        				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}"><img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
+        				   			{% else %}
+        				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
+        				   		{% endif %}
+        				   		</td>
+        				   		<td class="data-detall-cell duplicat-impressio">
+        				   		{% if duplicat.dataimpressio is null and not duplicat.finalitzat %}
+        				   			{% if admin == true %}
+        					   			<a class="duplicat-impres link" href="{{ path('FecdasBundle_imprespeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Notificar al club que el duplicat està imprès" title="Notificar al club que el duplicat està imprès">
+        			   							<i class="fa fa-thumbs-o-up orange"></i></a>
+        			   					<a class="duplicat-finalitzar link" href="{{ path('FecdasBundle_finalitzapeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Finalitzar petició sense notificar al club" title="Finalitzar petició sense notificar al club">
+        			   							<i class="fa fa-check-circle-o green"></i></a>		
+        			   				{% endif %}
+        			   			{% else %}
+        			   				{% if duplicat.dataimpressio is not null %}
+        			   				    <span>Notificat {{ duplicat.dataimpressio|date('d/m/y') }}</span>
+        			   				{% else %}
+        			   					{% if admin and duplicat.finalitzat %}
+        			   						<span>Finalitzat</span>
+        			   					{% endif %}
+        			   				{% endif %}
+        			   			{% endif %}
+        			   			</td>
+        				   		<td class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</td>
+        				   		<td class="data-detall-cell duplicat-actions">
+        					   		{% if admin == true  %}
+        								{% if duplicat.comandaPagada != true %} 
+        									<a class="confirmar-pagament link" href="{{ path('FecdasBundle_confirmapagament', { 'id': duplicat.id }) }}" 
+        					   					alt="Confirmar pagament" title="Confirmar pagament"><i class="fa fa-euro green"></i></a>
+        								{% endif %}	
+        						   		<a class="veure-comanda link" href="{{ path('FecdasBundle_editarcomanda', { 'id': duplicat.id}) }}" alt="Veure comanda" title="Veure comanda">
+        									<i class="fa fa-search fa-1x blue"></i></a>
+        		   						<a class="duplicat-esborrar link" href="{{ path('FecdasBundle_anularpeticio', duplicats.params|merge({ 'id': duplicat.id })) }}" alt="Anul·lar petició" title="Anul·lar petició">
+        			   						<i class="fa fa-trash-o fa-1x red"></i></a>
+        							{% else %}
+        								{% if duplicat.comandaPagada != true %} 
+        									<a class="duplicat-pagament link" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': duplicat.id}) }}"  alt="Pagament On-line" title="Pagament On-line">
+        										<i class="fa fa-euro fa-1x green"></i></a>
+        								{% endif %}	
+        				   			{% endif %}
+        			   			</td>
+        			   		</tr>
+        					{% else %}
+        			   		<tr class="data-detall data-detall-fosc">
+        			   			<td class="data-detall-cell duplicat-estat"><i class="fa fa-trash-o fa-1x"></i></td>
+        				   		<td class="data-detall-cell duplicat-id">{{ duplicat.numalbara }}</td>
+        				   		<td class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></td>
+        				   		<td class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</td>
+        				   		<td class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
+        				   			{% if admin == true %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</td>
+        				   		<td class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</td>
+        				   		<td class="data-detall-cell duplicat-foto">
+        				   		{% if duplicat.carnet.foto == true %}
+        				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}
+        				   			<a href="{{ duplicat.foto.webPath }}" target="_blank" download="{{ duplicat.foto.path }}" class="link">
+        				   				<img src="{{ duplicat.foto.webPath }}" alt="{{ duplicat.foto.titol }}" width="30px"/></a>
+        				   			{% else %}
+        				   			<span class="noimage-available">Foto no<br/>Disponible</span>{% endif %}
+        				   		{% endif %}
+        				   		</td>
+        				   		<td class="data-detall-cell duplicat-impressio"></td>
+        				   		<td class="data-detall-cell duplicat-extra">{{ duplicat.infoLlistat|nl2br }}</td>
+        				   		<td class="data-detall-cell duplicat-actions"></td>
+        			   		</tr>
+        			   		{% endif %}
+        			   	{% else %}
+                    		<tr class="data-detall">
+                    			<td class="data-detall-cell" colspan="10"><div class="sms-notice">No hi ha peticions per mostrar</div></td>
+                    		</tr>
+        				{% endfor %}        				
+        				</tbody>
+        			</table>
+    			</div>
+    		</div>
+    		<div class="col-md-12">
+    		    {% if duplicats.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(duplicats, null, sortparams) }}</div>{% endif %}
+    		</div>
 		</div>
-		{% if duplicats.getTotalItemCount > 10 %}<div class="navigation">Pàgines: {{ knp_pagination_render(duplicats, null, sortparams) }}</div>{% endif %}		
-	   	{% else %}
-	        <div class="sms-notice">Sense peticions</div>
-	    {% endif %}
-	</div>
+	</section>
+	
 {% endblock %}
 
 {% block javascripts %}

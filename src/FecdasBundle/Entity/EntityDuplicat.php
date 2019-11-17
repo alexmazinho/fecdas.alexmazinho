@@ -46,20 +46,25 @@ class EntityDuplicat extends EntityComanda {
 	protected $observacions;
 	
 	/**
-	 * @ORM\Column(type="datetime", nullable=true)
-	 */
-	protected $dataimpressio;
-
-	/**
 	 * @ORM\OneToOne(targetEntity="EntityArxiu")
 	 * @ORM\JoinColumn(name="foto", referencedColumnName="id")
 	 */
 	protected $foto;
 	
+	/**
+	 * @ORM\Column(type="datetime", nullable=true)
+	 */
+	protected $dataimpressio;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $finalitzat;
 	
 	public function __construct() {
 		$this->datapeticio = new \DateTime();
-
+		$this->finalitzat = false;
+		
 		parent::__construct();
 		
 		$a = func_get_args();
@@ -224,6 +229,28 @@ class EntityDuplicat extends EntityComanda {
 	}
 	
 	/**
+	 * Set foto
+	 *
+	 * @param EntityArxiu $imatge
+	 * @return EntityArxiu
+	 */
+	public function setFoto(EntityArxiu $foto = null)
+	{
+	    $this->foto = $foto;
+	}
+	
+	/**
+	 * Get foto
+	 *
+	 * @return EntityArxiu
+	 */
+	public function getFoto()
+	{
+	    return $this->foto;
+	}
+	
+	
+	/**
 	 * @return \DateTime
 	 */
 	public function getDataimpressio() {
@@ -238,25 +265,25 @@ class EntityDuplicat extends EntityComanda {
 	}
 
 	/**
-	 * Set foto
+	 * Set finalitzat
 	 *
-	 * @param EntityArxiu $imatge
-	 * @return EntityArxiu
+	 * @param boolean $finalitzat
 	 */
-	public function setFoto(EntityArxiu $foto = null)
+	public function setFinalitzat($finalitzat)
 	{
-		$this->foto = $foto;
+	    $this->finalitzat = $finalitzat;
 	}
 	
 	/**
-	 * Get foto
+	 * Get finalitzat
 	 *
-	 * @return EntityArxiu
+	 * @return boolean
 	 */
-	public function getFoto()
+	public function getFinalitzat()
 	{
-		return $this->foto;
+	    return $this->finalitzat;
 	}
+	
 	
 	/**
 	 * @return string

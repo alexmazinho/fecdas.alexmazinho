@@ -280,7 +280,7 @@ class EntityComanda {
 	 * @return string
 	 */
 	public function getNumComanda() {
-		return $this->getPrefixAlbara().str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("Y");
+		return $this->getPrefixAlbara().str_pad($this->num, 5,"0", STR_PAD_LEFT) . "/".$this->dataentrada->format("y");
 	}
 
 	/**

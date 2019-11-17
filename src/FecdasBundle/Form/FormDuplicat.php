@@ -15,7 +15,7 @@ class FormDuplicat extends AbstractType {
 	
 	public function __construct(array $options = null)
 	{
-		$this->options = $options;
+	    $this->options = $options;
 	}
 	
 	public function buildForm(FormBuilderInterface $builder, array $options)
@@ -28,7 +28,12 @@ class FormDuplicat extends AbstractType {
 				'multiple' => false,
 				'required'  => false,
 				'preferred_choices' => array(),
-				'placeholder' => ' ... selecciona el carnet ',
+		        'placeholder' => ' ... selecciona el carnet ',
+		        'query_builder' => function($repository) {
+        		    return $repository->createQueryBuilder('c')
+        		    ->innerJoin('c.producte', 'p', 'WITH', 'p.visible = 1')
+        		    ->orderby('c.id');
+    		    },
 		));
 		
 		$personesSelectOptions = array('class' => 'FecdasBundle:EntityPersona',
@@ -97,6 +102,7 @@ class FormDuplicat extends AbstractType {
 						//$form->add('fotoupld', 'file', array('mapped' => false, 'required' => true, 'attr' => array('accept' => 'image/*')));
 						$form->add('fotoupld', 'file', array('mapped' => false, 'attr' => array('accept' => 'image/*')));
 					}
+					
 				}
 			}
 		});

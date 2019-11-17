@@ -471,6 +471,12 @@ FecdasBundle_consultaclubs:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_llistatsasseguranca:
+    path:  /llistatsasseguranca
+    defaults: { _controller: "FecdasBundle:Admin:llistatsasseguranca" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_clubs:
     path:  /clubs
     defaults: { _controller: "FecdasBundle:Admin:clubs" }
@@ -510,6 +516,12 @@ FecdasBundle_anularpeticio:
 FecdasBundle_imprespeticio:
     path:  /imprespeticio
     defaults: { _controller: "FecdasBundle:Admin:imprespeticio" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_finalitzapeticio:
+    path:  /finalitzapeticio
+    defaults: { _controller: "FecdasBundle:Admin:finalitzapeticio" }
     requirements:
         methods:  GET
 

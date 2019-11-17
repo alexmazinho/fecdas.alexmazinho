@@ -2206,7 +2206,7 @@ class FacturacioController extends BaseController {
 				}
 				
 				if ($transport == true) {
-					$pesComanda = $this->getPesComandaCart($cart);
+					$pesComanda = BaseController::getPesComandaCart($cart);
 					
 					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
 					

@@ -2154,6 +2154,7 @@ GROUP BY c.nom
 		
 		$duplicat = null;
 		$detall = null;
+		$factura = null;
 		
 		try {
 		
@@ -2174,7 +2175,9 @@ GROUP BY c.nom
 				$duplicat->setPersona($persona);
 				$duplicat->setCarnet($carnet);
 						
-				$detall = $this->addDuplicatDetall($duplicat, $dataFacturacio);
+				$detall = $this->addDuplicatDetall($duplicat);
+				
+				$factura = $this->crearFactura($duplicat, $dataFacturacio, $duplicat->getComentariDefault());
 				
 				// Si tot Ok, obrir pdf per imprimir	
 				$duplicat->setDataimpressio($this->getCurrentDate());
@@ -2194,6 +2197,7 @@ GROUP BY c.nom
 			
 			if ($duplicat != null) $em->detach($duplicat);
 			if ($detall != null) $em->detach($detall);
+			if ($factura != null) $em->detach($factura);
 			
 			$this->logEntryAuth('DUPLI LLICENCIA KO', 'duplicat de la llicència ' . $llicenciaid  );
 					

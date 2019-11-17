@@ -1321,8 +1321,6 @@ class PageController extends BaseController {
 
 	}
 	
-	
-	
 	public function plasticllicenciesAction(Request $request) {
 	    
 	    $action = $request->query->get('action', '');
@@ -1352,19 +1350,21 @@ class PageController extends BaseController {
 	        } 
 	    }
 	    // Buidar carrito
-	    $session = $this->get('session');
-	    $session->remove('cart');
+	    $cartcheckout = $this->get('fecdas.cartcheckout');
+	    $cartcheckout->initSessionCart();
+	    
 	    try {
 	        //if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
 	        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	        
-	        $this->addProducteToCart(BaseController::PRODUCTE_IMPRESS_PLASTIC_ID, $total, $extra);
+	        $cartcheckout->addProducteToCart(BaseController::PRODUCTE_IMPRESS_PLASTIC_ID, $total, $extra);
 	    
 	        if ($action == 'consultar') {
-	           $form = $this->formulariTransport();
+	            
+	           $formtransport = $cartcheckout->formulariTransport();
 	           
 	           return $this->render('FecdasBundle:Facturacio:graellaproductescistellaform.html.twig',
-	               array('formtransport' => $form, 'cart' => $this->getSessionCart(), 'tipus' => BaseController::TIPUS_PRODUCTE_ALTRES, 
+	               array('formtransport' => $formtransport, 'cart' => $cartcheckout->getSessionCart(), 'tipus' => BaseController::TIPUS_PRODUCTE_ALTRES, 
 	                     'allowremove' => false, 'admin' => $this->isCurrentAdmin()));  
 	        }
 	        // Tramitar comanda
@@ -1810,6 +1810,10 @@ class PageController extends BaseController {
 		if ($request->getMethod() != 'POST') $this->logEntryAuth('VIEW DUPLICATS', 'club ' . $currentClub);
 		
 		$duplicat = $this->crearComandaDuplicat();
+		$detall = null;
+		$detallTransport = null;
+		$factura = null;
+		
 		//$duplicat = new EntityDuplicat();
 		$form = $this->createForm(new FormDuplicat(array('club' => $currentClub)), $duplicat);
 		
@@ -1822,7 +1826,8 @@ class PageController extends BaseController {
 				    $data = $request->request->get('duplicat');
 				    $nom = (isset($data['nom'])?$data['nom']:'');
 				    $cognoms = (isset($data['cognoms'])?$data['cognoms']:'');
-				    
+				    $transport = (isset($data['transport']) && $data['transport'] == 0?true:false);
+			    
 					//$duplicat->setClub($this->getCurrentClub());
 					//$duplicat->setDatapeticio($this->getCurrentDate());
 					
@@ -1878,9 +1883,19 @@ class PageController extends BaseController {
 						$duplicat->getPersona()->setValidat(false);
 					}
 					
-					$this->addDuplicatDetall($duplicat);
-							
+					$detall = $this->addDuplicatDetall($duplicat);
+
+					if ($transport) {
+					    $detallTransport = $this->addTransportToComanda($duplicat);
+					}
+
+					$factura = $this->crearFactura($duplicat, $this->getCurrentDate(), $duplicat->getComentariDefault());
+					
 					$em->flush();
+					
+					// Buidar carrito
+					$cartcheckout = $this->get('fecdas.cartcheckout');
+					$cartcheckout->initSessionCart();
 					
 					// Enviar notificació mail
 					$subject = ":: Petició de duplicat. " . $duplicat->getCarnet()->getTipus() . " ::";
@@ -1904,8 +1919,11 @@ class PageController extends BaseController {
 					
 				} catch (\Exception $e) {
 					if ($duplicat != null) $em->detach($duplicat);
+					if ($detall != null) $em->detach($detall);
+					if ($detallTransport != null) $em->detach($detallTransport);
+					if ($factura != null) $em->detach($factura);
 					
-					$this->logEntryAuth('ERROR DUPLICAT', 'club ' . $currentClub . ' ' .$e->getMessage());
+					$this->logEntryAuth('ERROR DUPLICAT', 'club ' . $currentClub . ' ' .$e->getMessage()); 
 						
 					$this->get('session')->getFlashBag()->add('error-notice',$e->getMessage());
 				}

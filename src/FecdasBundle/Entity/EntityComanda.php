@@ -209,6 +209,20 @@ class EntityComanda {
 		return false;
     }
 
+    /**
+     * conté transport?
+     *
+     * @return boolean
+     */
+    public function conteTransport()
+    {
+        foreach ($this->getDetalls() as $detall) {
+            if (!$detall->esBaixa() && $detall->esTransport()) return true;
+        }
+        
+        return false;
+    }
+    
 	/**
 	 * Actualitza saldos club. Reescriptura updateClubSaldoTipusComanda
 	 * 

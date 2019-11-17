@@ -1,6 +1,7 @@
 <?php
 namespace FecdasBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity
@@ -186,6 +187,15 @@ class EntityComandaDetall {
 		return $this->getUnitats() == 0;
 	}
 	
+	/**
+	 * És transport?
+	 *
+	 * @return boolean
+	 */
+	public function esTransport()
+	{
+	    return $this->producte->getCodi() == BaseController::PRODUCTE_CORREUS;
+	}
 	
     /**
      * Get id

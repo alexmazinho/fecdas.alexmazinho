@@ -166,6 +166,9 @@ input.form-control-error:focus {
   	-ms-transition: background-color 0.3s ease-in-out;
   	-o-transition: background-color 0.3s ease-in-out;
   	transition: all 0.3s ease-in-out;
+  	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .btn.btn-default:hover {
@@ -848,17 +851,27 @@ a.link.footer-link { padding: 0 10px; }
 
 /*************** FECDAS NOU graella productes ****************/
 
-.cistella-resum > table { margin-bottom: 20px; color: #444444; }
+.cistella-resum { min-height: .01%; }
+
+.cistella-resum table { table-layout: fixed; margin-bottom: 20px; /*color: #444444;*/ }
 
 /*.cistella-resum ul li { display: table-row; }*/
 
 .cistella-resum table tr > td { padding-right: 5px; line-height: 1.2em; text-align: right; padding: 15px 5px; }
 
+.cistella-resum .table > tbody > tr > td { border: none; }
+
+.cistella-resum td.unitats { width: 45px; }
+.cistella-resum td.concepte { width: 300px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.cistella-resum td.import { width: 80px; }
+.cistella-resum td.action { width: 20px; }
+.cistella-resum td.autocolumn { width: auto; }
+
 .cistella-resum .cistella-transport td { line-height: 1; }
 
 .cistella-resum .cistella-transport td { padding: 5px 5px; text-align: right;  vertical-align: top; }
 
-.cistella-resum .cistella-transport input { margin-left: 5px; margin-top: 0;}
+.cistella-resum .cistella-transport input { margin-left: 30px; margin-top: 0;}
 
 .cistella-resum .cistella-summary  { text-align: right; font-weight: bold;  }
 
@@ -3012,7 +3025,7 @@ p.info-bold {
 
 #formduplicats #duplicat_observacions {  /*width: 380px; max-width: 380px; height: 60px;*/ max-height: 112px; padding:4px; }
 
-#formduplicats #duplicat_submit { margin-top: 85px;}
+#formduplicats #duplicat_submit { /*margin-top: 85px;*/ }
 
 #formduplicat label { margin-bottom: 0;}
 
@@ -3087,6 +3100,7 @@ p.info-bold {
 .table-responsive table tr td.data-detall-cell.duplicat-nom { width: 16%; text-align: left; }
 .table-responsive table tr td.data-detall-cell.duplicat-nom span { font-style: italic; font-size: 0.8em; }
 .table-responsive table tr td.data-detall-cell.duplicat-carnet { width: 16%; text-align: left; font-size: 0.8em;  white-space: normal; }
+.table-responsive table tr td.data-detall-cell.duplicat-carnet span { font-style: italic; font-size: 0.9em; }
 .table-responsive table tr td.data-detall-cell.duplicat-foto { width: 7%; }
 .table-responsive table tr td.data-detall-cell.duplicat-foto img { padding: 1px; border: 1px solid #dddddd }
 .table-responsive table tr td.data-detall-cell.duplicat-foto img:hover { border-color: #7fcff6 }

@@ -1710,7 +1710,6 @@
 		$( ".cistella-resum" ).on( "click", "#form_transport_0", function(e) {
 			var total = $('#form_importcomanda').val()*1 + $('#form_tarifatransport').val()*1; 
 			$('#totalcomanda').html(  total.toFixed(2) );
-			
 		});
 		
 		$( ".cistella-resum" ).on( "click", "#form_transport_1", function(e) {
@@ -2665,6 +2664,7 @@
 					
 					if ($.browser.msie) $('select#duplicat_titol').show(); 
 				    else $('select#duplicat_titol').stop().slideLeftShow('slow');*/
+					transportCistella();
 					
 					if ($.browser.msie) {
 						$('#formduplicats .hidden-field').show();
@@ -2684,6 +2684,12 @@
 					
 					$('#duplicat_submit').click(function(e) {
 						e.preventDefault();
+						// Afegir transport
+						if ($("#form_transport_0").is(":checked")) {
+							$("#duplicat_transport_0").prop("checked", true);
+						} else {
+							$("#duplicat_transport_1").prop("checked", true);
+						}
 						
 						// Validacions
 						if ($('select#duplicat_titol').length > 0 && $('select#duplicat_titol').val() == "") {

@@ -1,5 +1,5 @@
 <div id="formduplicats-dades" class="row">	
-	<div class="col-md-3 col-sm-5 hidden-field">
+	<div class="col-md-4 col-sm-5 hidden-field">
 		<div class="row">
     		<div class="form-group col-md-10">
     			<div class="input-group">
@@ -21,30 +21,32 @@
         	</div>
         </div>
 	</div>
-	{% if form.fotoupld is defined %} 
-	<div class="col-md-1 col-sm-2 hidden-field">
-       	{{ form_widget(form.fotoupld) }}
-       	<div class="galeria-upload">
-       		<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
-       	</div>
+	<div class="col-md-6 col-sm-7 bottom25 hidden-field">
+		<div class="row">
+    		{% set arearows = 5 %}
+    		{% if form.titol is defined %}
+    			{% set arearows = 2 %}
+    			<div class="form-group col-md-12">
+    	            {{ form_widget(form.titol, { 'attr': {'class': 'form-control'} }) }}
+    	        </div>
+            {% endif %}
+            {% if form.fotoupld is defined %} 
+            	<div class="col-md-3 col-sm-3">
+                   	{{ form_widget(form.fotoupld) }}
+                   	<div class="galeria-upload">
+                   		<div class="image-upload"><span class="box-center-txt">Pujar foto<br/>(click)</span></div>
+                   	</div>
+            	</div>
+            {% endif %}
+    	    <div class="form-group {% if form.fotoupld is defined %}col-md-9 col-sm-9{% else %}col-md-12 col-sm-12{% endif %}">
+        	    {{ form_label(form.observacions, 'Observacions:') }}
+        	    {{ form_widget(form.observacions, { 'attr': {'class': 'form-control', 'rows': arearows} }) }}
+        	</div>
+        </div>
 	</div>
-    {% endif %}
-	<div class="col-md-4 col-sm-8 hidden-field">
-		{% set arearows = 5 %}
-		{% if form.titol is defined %}
-			{% set arearows = 2 %}
-			<div class="form-group">
-	            {{ form_widget(form.titol, { 'attr': {'class': 'form-control'} }) }}
-	        </div>
-        {% endif %}
-	    <div class="form-group">
-    	    {{ form_label(form.observacions, 'Observacions:') }}
-    	    {{ form_widget(form.observacions, { 'attr': {'class': 'form-control', 'rows': arearows} }) }}
-    	</div>
-	</div>
-
-    <div class="col-md-5 col-sm-8 hidden-field cistella-resum">
+    <div class="col-md-10 col-sm-11 col-xs-12 hidden-field cistella-resum">
     	<div class="alert alert-success">
+    	<div class="hidden">{{ form_widget(form.transport) }}</div>
     	{%  if app.session.has('cart') %}
     		<h3 class=""><i class="fa fa-shopping-cart"></i> Petició de duplicat</h3>
     	    {% set cart = app.session.get('cart', {'productes' : {}, 'total' : 0}) %}
@@ -52,13 +54,13 @@
     	    	{% set allowremove = false %}
     	    	{% set tipus = constant('FecdasBundle\\Controller\\BaseController::TIPUS_PRODUCTE_DUPLICATS') %}
     	        {% include "FecdasBundle:Facturacio:graellaproductescistellaform.html.twig" %}
-    		{% endif %}        
+    		{% endif %}
+    		<div class="row">
+				<div class="col-md-12 col-sm-12 col-xs-12 col-last-right">
+					<a id="duplicat_submit" type="submit" class="btn btn-default" value="Enviar" name="formduplicats-button-envia"><i class="fa fa-check blue"></i> Tramitar petició</a>
+           		</div>
+           	</div>        
     	{% endif %}
 		</div>
     </div>
-
-    <div class="col-md-1 col-sm-2 hidden-field">
-    	<input id="duplicat_submit" type="submit" class="btn btn-default" value="Enviar" name="formduplicats-button-envia"/>
-    </div>
-    
 </div>

@@ -654,8 +654,11 @@ class BaseController extends Controller {
 			} else {
 			    $options['currentrolenom'] = $this->getCurrentClub()!=null?$this->getCurrentClub()->getNom():'';
 			}
-				
-			$cart = $this->getSessionCart();
+			
+			$cartcheckout = $this->get('fecdas.cartcheckout');
+			
+			$cart = $cartcheckout->getSessionCart();
+
 			$options['cartItems'] = count( $cart['productes'] );
 			
 		}
@@ -3122,6 +3125,42 @@ class BaseController extends Controller {
 		return $comanda;
 	}
 
+	protected function crearComandaDuplicat($comentaris = '', $club = null, $factura = null) {
+	    $data = $this->getCurrentDate();
+	    if ($club == null) $club = $this->getCurrentClub();
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $maxNumComanda = $this->getMaxNumEntity($data->format('Y'), BaseController::COMANDES) + 1;
+	    
+	    $duplicat = new EntityDuplicat($maxNumComanda, $factura, $club, $comentaris);
+	    $duplicat->setDatapeticio($data);
+	    
+	    $em->persist($duplicat);
+	    
+	    return $duplicat;
+	}
+	
+	protected function crearComandaParte($data, $tipus = null, $club = null, $comentaris = '', $factura = null) {
+	    if ($data == null) $data = $this->getCurrentDate();
+	    if ($tipus == null) $tipus = $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(1); // Per defecte 1
+	    
+	    if ($club == null) $club = $this->getCurrentClub();
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $maxNumComanda = $this->getMaxNumEntity($this->getCurrentDate()->format('Y'), BaseController::COMANDES) + 1;
+	    
+	    $parte = new EntityParte($maxNumComanda, $factura, $club, $comentaris);
+	    $parte->setDataalta($data);
+	    $parte->setTipus($tipus);
+	    if ($club != null && $club->pendentPagament()) $parte->setPendent(true);
+	    
+	    $em->persist($parte);
+	    
+	    return $parte;
+	}
+	
 	protected function addComandaDetall($comanda, $producte = null, $unitats = 1, $descomptedetall = 0, $anotacions = '') {
 		if ($comanda == null) return null;
 		$em = $this->getDoctrine()->getManager();
@@ -3147,6 +3186,40 @@ class BaseController extends Controller {
 		return $detall;
 	}
 
+	protected function addDuplicatDetall($duplicat) {
+	    if ($duplicat == null || $duplicat->getCarnet() == null) return null;
+	    
+	    $producte = $duplicat->getCarnet()->getProducte();
+	    
+	    if ($producte == null) return null;
+	    
+	    $anotacions = '1x'.$producte->getDescripcio();
+	    
+	    $detall = $this->addComandaDetall($duplicat, $producte, 1, 0, $anotacions);
+	    
+	    if ($detall != null) $duplicat->setComentaris($duplicat->getComentariDefault());
+	    
+	    return $detall;
+	}
+	
+	protected function addTransportToComanda($comanda) {
+	    $cartcheckout = $this->get('fecdas.cartcheckout');
+	    
+	    $pesComanda = $cartcheckout->getPesComandaCart();
+	    
+	    $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+	    
+	    if ($producte == null) throw new \Exception("No es pot afegir el transport a la comanda, poseu-vos en contacte amb la Federació");
+	    $unitats = $cartcheckout->getUnitatsTarifaTransport();
+	    
+	    $anotacions = $producte->getDescripcio().' '.$pesComanda.'g';
+	    $detall = $this->addComandaDetall($comanda, $producte, 1, 0, $anotacions);
+	    $detall->setPreuunitat($producte->getCurrentPreu() * $unitats);
+	    
+	    return $detall;
+	}
+	
+	
 	protected function addParteDetall($parte, $llicencia, $anotacions = '') {
 		// Canviar factura. No hi ha rebut perquè sinó estaria consolidat el parte
 		$factura = $parte->getFactura();
@@ -3751,203 +3824,6 @@ class BaseController extends Controller {
 		return null;		
 	}
 	
-	protected function crearComandaParte($data, $tipus = null, $club = null, $comentaris = '', $factura = null) {
-		if ($data == null) $data = $this->getCurrentDate();
-		if ($tipus == null) $tipus = $tipus = $this->getDoctrine()->getRepository('FecdasBundle:EntityParteType')->find(1); // Per defecte 1
-
-		if ($club == null) $club = $this->getCurrentClub();
-		
-		$em = $this->getDoctrine()->getManager();
-	
-		$maxNumComanda = $this->getMaxNumEntity($this->getCurrentDate()->format('Y'), BaseController::COMANDES) + 1;
-	
-		$parte = new EntityParte($maxNumComanda, $factura, $club, $comentaris);
-		$parte->setDataalta($data);
-		$parte->setTipus($tipus);
-		if ($club != null && $club->pendentPagament()) $parte->setPendent(true);
-		
-		$em->persist($parte);
-	
-		return $parte;
-	}
-	
-	protected function addDuplicatDetall($duplicat, $datafacturacio = null) {
-		if ($duplicat == null || $duplicat->getCarnet() == null) return null;
-		
-		$producte = $duplicat->getCarnet()->getProducte();
-		
-		if ($producte == null) return null;
-		
-		$anotacions = '1x'.$producte->getDescripcio();  
-		
-		$detall = $this->addComandaDetall($duplicat, $producte, 1, 0, $anotacions);
-
-		if ($detall != null) $duplicat->setComentaris($duplicat->getComentariDefault());
-		
-		$this->crearFactura($duplicat, $datafacturacio, $duplicat->getComentariDefault());
-		
-		return $detall;
-	}
-	
-	protected function crearComandaDuplicat($comentaris = '', $club = null, $factura = null) {
-		$data = $this->getCurrentDate();
-		if ($club == null) $club = $this->getCurrentClub();
-		
-		$em = $this->getDoctrine()->getManager();
-	
-		$maxNumComanda = $this->getMaxNumEntity($data->format('Y'), BaseController::COMANDES) + 1;
-	
-		$duplicat = new EntityDuplicat($maxNumComanda, $factura, $club, $comentaris);
-		$duplicat->setDatapeticio($data);
-		
-		$em->persist($duplicat);
-	
-		return $duplicat;
-	}
-	
-    protected static function getUnitatsTarifaTransport($pes)
-    {
-        if (!is_numeric($pes)) return 1;
-        if ($pes <= 0) return 1;
-        
-        if ($pes > self::TARIFA_MINPES3) return 3;
-        if ($pes > self::TARIFA_MINPES2) return 2;
-        
-        return 1;
-    }
-
-	
-	protected function getSessionCart()
-    {
-		// Recollir cistella de la sessió
-		$session = $this->get('session');
-		$cart = $session->get('cart', array('productes' => array(), 'tarifatransport' => 0)); // Crear cistella buida per defecte
-		
-        return $cart;
-    }
-    
-    protected function addProducteToCart($idProducte, $unitats, $extra = array())
-    {
-        $cart = $this->getSessionCart();	
-        
-        $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
-        
-        if ($producte == null) throw new \Exception("Producte no trobat");
-            
-        if ($unitats == 0) throw new \Exception("Cal indicar el nombre d'unitats del producte");
-            
-        if ($unitats < 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
-            
-        // Comprovar que tots els detalls siguin d'abonament o normals
-        if (count($cart['productes']) > 0) {
-            $abonament = false;
-            foreach ($cart['productes'] as $info) {
-                if ($info['unitats'] < 0) $abonament = true;
-            }
-                
-            if (($abonament == true && $unitats > 0) ||
-                ($abonament == false && $unitats < 0)) throw new \Exception("No es poden barrejar abonaments i comandes normals");
-        }
-            
-        $import = $producte->getPreuAny(date('Y'));
-        $iva = $producte->getIvaAny(date('Y')); /* % IVA aplicar */
-            
-        if ( !isset( $cart['productes'][$idProducte] ) ) {
-            $cart['productes'][$idProducte] = array(
-                    'abreviatura' 	=> $producte->getAbreviatura(),
-                    'descripcio' 	=> $producte->getDescripcio(),
-                    'transport'		=> $producte->getTransport(),
-                    'pes'			=> 0,
-                    'unitats' 		=> $unitats,
-                    'extra'         => count($extra) > 0?$extra:'',
-                    'import' 		=> $import,
-                    'iva'           => $iva
-            );
-        } else {
-            $cart['productes'][$idProducte]['unitats'] += $unitats;
-            if (count($extra) > 0) $cart['productes'][$idProducte]['extra'] = $extra;
-        }
-
-        $unitats = $cart['productes'][$idProducte]['unitats'];
-            
-        if ($producte->getTransport() && $unitats > 0) $cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes();
-            
-        if ($cart['productes'][$idProducte]['unitats'] == 0 ||
-           ($cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
-                // Afegir unitats < 0
-            unset( $cart['productes'][$idProducte] );
-        }
-                
-        if (count($cart['productes']) <= 0) {
-            $this->get('session')->remove('cart');
-            $cart = $this->getSessionCart();
-        } else {
-            $session = $this->get('session');
-            $session->set('cart', $cart);
-        }
-    }
-    
-    protected function formulariTransport() {
-        // Revisar si cal transport
-        $cart = $this->getSessionCart();
-        $tarifa = 0;
-        $total = 0;
-        if (count($cart['productes']) > 0) { 
-            $pesComanda = self::getPesComandaCart($cart);
-            $total = self::getTotalComandaCart($cart);
-            
-            $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
-            $unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
-            $tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
-            
-            $cart['tarifatransport'] = $tarifa;
-
-            $session = $this->get('session');
-            $session->set('cart', $cart);
-        }
-
-        $formBuilder = $this->createFormBuilder()
-        ->add('tarifatransport', 'hidden', array(
-            'data' => $tarifa
-        ));
-        $formBuilder->add('importcomanda', 'hidden', array(
-            'data' => $total
-        ));
-        $formBuilder->add('transport', 'choice', array(
-            'choices'   => array(0 => 'Incloure enviament', 1 => 'Recollir a la federació'),
-            'multiple'  => false,
-            'expanded'  => true,
-            'data' 		=> 0
-        ));
-        
-        return $formBuilder->getForm()->createView();
-    }
-
-    protected static function getPesComandaCart($cart)
-    {
-        $pesComanda = 0;
-        foreach ($cart['productes'] as $info) {
-            if (isset($info['transport']) && $info['transport'] == true)	{
-                $pesComanda += $info['pes'];
-            }
-        }
-        return $pesComanda;
-    }
-    
-    protected static function getTotalComandaCart($cart)
-    {
-        $total = 0;
-        foreach ($cart['productes'] as $info) {
-            $factorIVA = 1;
-            if (isset($info['iva']) && is_numeric($info['iva'])) $factorIVA += $info['iva'];
-            
-            $total += $info['unitats']*$info['import']*$factorIVA;
-
-        }
-        return $total;
-    }
-    
-    
     protected function gestionarFotoPersona($persona, $fotoPath, $foto) {
         
         if ($foto == null) {

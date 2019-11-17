@@ -34,6 +34,7 @@ class CartCheckOut
     {
         // Recollir cistella de la sessió
         $this->cart = $this->session->get('cart', array('productes' => array(), 'tarifatransport' => 0)); // Crear cistella buida per defecte
+        return $this->cart;
     }
     
     public function initSessionCart()
@@ -91,15 +92,15 @@ class CartCheckOut
         if ($this->cart['productes'][$idProducte]['unitats'] == 0 ||
             ($this->cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
                 // Afegir unitats < 0
-                unset( $this->cart['productes'][$idProducte] );
-            }
+            unset( $this->cart['productes'][$idProducte] );
+        }
             
-            if (count($this->cart['productes']) <= 0) {
-                $this->session->remove('cart');
-                $this->getSessionCart();
-            } else {
-                $this->session->set('cart', $this->cart);
-            }
+        if (count($this->cart['productes']) <= 0) {
+            $this->session->remove('cart');
+            $this->getSessionCart();
+        } else {
+            $this->session->set('cart', $this->cart);
+        }
     }
     
     public function formulariTransport() {

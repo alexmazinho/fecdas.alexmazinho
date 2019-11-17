@@ -6,14 +6,33 @@
 	    {% if cart.productes|length > 0 %}
     	    {% set allowremove = true %}	
     	    {% include "FecdasBundle:Facturacio:graellaproductescistellaform.html.twig" %}
-    	
-        	<a class="anular-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'anular',  'tipus' : tipus  }) }}">cancel·lar la comanda <i class="fa fa-trash red"></i></a>
-        	<a class="desar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'desar',  'tipus' : tipus }) }}">només confirmar comanda <i class="fa fa-check blue"></i></a>
-        	{% if admin == true %}
-        		<a class="pagar-cistella-admin  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">desar comanda i confirmar pagament (admin)<i class="fa fa-euro green"></i></a>
-        	{% else %}
-        		<a class="pagar-cistella  btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">confirmar i pagar comanda <i class="fa fa-credit-card green"></i></a>
-        	{% endif %}
+    	    <div class="row">
+				<div class="col-md-9 col-sm-12 col-xs-12">
+            		<div class="btn-group btn-group-justified" role="group" aria-label="...">
+        				<div class="btn-group" role="group">
+                        	<a class="anular-cistella btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'anular',  'tipus' : tipus  }) }}">
+                        		<i class="fa fa-trash red"></i> cancel·lar la comanda
+                        	</a>
+                		</div>
+                		<div class="btn-group" role="group">
+		                	<a class="desar-cistella btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'desar',  'tipus' : tipus }) }}">
+		                		<i class="fa fa-check blue"></i> confirmar comanda
+		                	</a>
+                		</div>
+                		<div class="btn-group" role="group">
+                    	{% if admin == true %}
+                    		<a class="pagar-cistella-admin btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">
+                    			<i class="fa fa-euro green"></i> confirmar i pagament (admin)
+                    		</a>
+                    	{% else %}
+                    		<a class="pagar-cistella btn btn-default" href="{{ path('FecdasBundle_tramitarcistella', { 'action': 'pagar',  'tipus' : tipus }) }}">
+                    			<i class="fa fa-credit-card green"></i> confirmar i pagar comanda
+                    		</a>
+                    	{% endif %}
+                		</div>
+                	</div>
+                </div>
+            </div>
         {% else %}
 			<p class=""><i class="fa fa-shopping-cart"></i> No hi ha cap producte a la cistella</p>
 	    {% endif %}

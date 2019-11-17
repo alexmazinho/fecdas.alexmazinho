@@ -22,12 +22,12 @@
 
    	{{ form_start(form, {'action': path('FecdasBundle_duplicats'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'formduplicats', 'enctype':'multipart/form-data'}}) }}
    	<div class="row">
-		<div class="col-md-3 col-sm-5">
+		<div class="col-md-4 col-sm-5">
 			<div class="form-group">
 			    {{ form_widget(form.persona, { 'attr': {'class': 'form-control'} }) }}
 			</div>
 		</div>
-		<div class="col-md-4 col-sm-6">
+		<div class="col-md-6 col-sm-7">
 			<div class="form-group">
 			    {{ form_widget(form.carnet, { 'attr': {'class': 'form-control'} }) }}
 			</div>
@@ -87,8 +87,13 @@
         				   		<td class="data-detall-cell duplicat-peticio"><time datetime="{{ duplicat.datapeticio|date('c') }}">{{ duplicat.datapeticio|date('d/m/y') }}</time></div>
         				   		<td class="data-detall-cell duplicat-dni">{{ duplicat.persona.dni }}</td>
         				   		<td class="data-detall-cell duplicat-nom">{{ duplicat.persona.cognomsNom }}
-        				   			{% if admin %}<br><span>({{ duplicat.club.nom }})</span>{% endif %}</td>
-        				   		<td class="data-detall-cell duplicat-carnet">{{ duplicat.textCarnet }}</td>
+        				   			{% if admin %}<br/><span>({{ duplicat.club.nom }})</span>{% endif %}</td>
+        				   		<td class="data-detall-cell duplicat-carnet">
+        				   		    {{ duplicat.textCarnet }}
+        				   		    {% if duplicat.conteTransport %}
+        				   		    	<br/><span>(+ transport, total: {{ duplicat.totalComanda|number_format(2, ',', '.') }} €)</span>
+        				   		    {% endif %}
+        				   		</td>
         				   		<td class="data-detall-cell duplicat-foto">
         				   		{% if duplicat.carnet.foto == true %}
         				   			{% if duplicat.foto is not null and duplicat.foto.width > 0 and duplicat.foto.height > 0 %}

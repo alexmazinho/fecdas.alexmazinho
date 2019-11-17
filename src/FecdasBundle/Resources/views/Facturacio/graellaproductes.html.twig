@@ -23,8 +23,10 @@
         
     <div id="productes-main">
     
-		<div class="cistella-resum">
-    		{% include 'FecdasBundle:Facturacio:graellaproductescistella.html.twig' %} 
+		<div class="row cistella-resum">
+			<div class="col-md-12 col-sm-12 col-xs-12">
+    		{% include 'FecdasBundle:Facturacio:graellaproductescistella.html.twig' %}
+    		</div> 
     	</div>
     	
     	{% if productes|length > 0 %}
@@ -32,19 +34,19 @@
 			{{ form_start(form, {'action': path('FecdasBundle_graellaproductes'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_productes'}}) }}
 				<div class="row">		
 					{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}
-					<div class="{% if admin != true %}hidden{% else %}col-md-3 col-xs-12{% endif %}">
+					<div class="{% if admin != true %}hidden{% else %}col-md-3 col-sm-6 col-xs-10{% endif %}">
 					  	<div class="form-group">
 					    	{{ form_label(form.clubs, 'Clubs (Admins.)', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.clubs, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
-				    <div class="col-md-4 col-xs-8">
+				    <div class="col-md-4 col-sm-6 col-xs-7">
 					  	<div class="form-group">
 					    	{{ form_label(form.cerca, 'Filtrar per descripció', { 'label_attr': {'class': ''} }) }}
 							{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
 						</div>
 					</div>
-					<div class="col-md-3 {% if admin != true %}col-md-offset-5{% else %}col-md-offset-2{% endif %} col-xs-4">
+					<div class="col-md-3 col-sm-4 {% if admin != true %}col-md-offset-5 col-sm-offset-2{% else %}col-md-offset-2 col-sm-offset-8{% endif %} col-xs-5">
 						<label class="required">&nbsp;</label>
 						<p class="total-productes-grid">Total productes: <span>{{ productes|length }}</span></p>
 					</div>

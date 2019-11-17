@@ -2138,7 +2138,8 @@ class FacturacioController extends BaseController {
 		
 		$this->addClubsActiusForm($formBuilder, $club);
 		
-		$formtransport = $this->formulariTransport();		
+		$cartcheckout = $this->get('fecdas.cartcheckout');
+		$formtransport = $cartcheckout->formulariTransport();
 			
 		$producteTransport = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
 		
@@ -2184,11 +2185,12 @@ class FacturacioController extends BaseController {
 		try {
 			$em = $this->getDoctrine()->getManager();
 	
+			$cartcheckout = $this->get('fecdas.cartcheckout');
 			if ($action == 'desar' || $action == 'pagar') {
 				// Comanda nova. Crear factura
 			    $comanda = $this->crearComanda($datafacturacio, $comentaris);
 				
-				$cart = $this->getSessionCart();
+			    $cart = $cartcheckout->getSessionCart();
 				
 				$extra = array();
 				foreach ($cart['productes'] as $id => $info) {
@@ -2205,17 +2207,8 @@ class FacturacioController extends BaseController {
 					$this->addComandaDetall($comanda, $producte, $info['unitats'], 0, $anotacions);
 				}
 				
-				if ($transport == true) {
-					$pesComanda = BaseController::getPesComandaCart($cart);
-					
-					$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
-					
-					if ($producte == null) throw new \Exception("No es pot afegir el transport a la comanda, poseu-vos en contacte amb la Federació"); 
-					$unitats = BaseController::getUnitatsTarifaTransport($pesComanda);
-					
-					$anotacions = $producte->getDescripcio().' '.$pesComanda.'g';	
-					$detall = $this->addComandaDetall($comanda, $producte, 1, 0, $anotacions);
-					$detall->setPreuunitat($producte->getCurrentPreu() * $unitats);
+				if ($transport) {
+				    $this->addTransportToComanda($comanda);
 				}
 				
 				if (count($cart['productes']) == 0) $this->addComandaDetall($comanda); // Sempre afegir un detall si comanda nova
@@ -2255,9 +2248,7 @@ class FacturacioController extends BaseController {
 			
 			if ($action == 'anular' || $action == 'desar' || $action == 'pagar') { // Totes borren sessió
 				// Esborrar comanda de la sessió
-				$session = $this->get('session');
-				
-				$session->remove('cart');
+			    $cartcheckout->initSessionCart();
 			}	
 			
 			switch ($action) {
@@ -2306,13 +2297,15 @@ class FacturacioController extends BaseController {
 		$unitats = $request->query->get('unitats', 1);
 		$tipus = $request->query->get('tipus', 0);
 		
+		$cartcheckout = $this->get('fecdas.cartcheckout');
+		
 		// Recollir cistella de la sessió
-		$form = null;
-
+		$formtransport = null;
+		
 		try {
 		    if (!$this->isAuthenticated()) throw new \Exception("Acció no permesa. Si us plau, contacteu amb la FECDAS –93 356 05 43– per a més informació");
 		    
-		    $this->addProducteToCart($idProducte, $unitats);
+		    $cartcheckout->addProducteToCart($idProducte, $unitats);
 		} catch (\Exception $e) {
 			// Ko, mostra form amb errors
 			$response = new Response($e->getMessage());
@@ -2322,10 +2315,11 @@ class FacturacioController extends BaseController {
 			return $response;
 		}
 		
-		$form = $this->formulariTransport();
+		
+		$formtransport = $cartcheckout->formulariTransport();
 		
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
-							array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin())); 
+		      array('formtransport' => $formtransport, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin())); 
 	}
 
 	public function treurecistellaAction(Request $request) {
@@ -2336,10 +2330,12 @@ class FacturacioController extends BaseController {
 		$idProducte = $request->query->get('id', 0);
 		$tipus = $request->query->get('tipus', 0);
 		
+		$cartcheckout = $this->get('fecdas.cartcheckout');
+		
 		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idProducte);
 		
 		if ($producte != null) {
-			$cart = $this->getSessionCart();	
+		    $cart = $cartcheckout->getSessionCart();	
 			
 			/*if ( isset( $cart['productes'][$idProducte] ) ) {
 				$cart['total'] -= $cart['productes'][$idProducte]['unitats'] * $cart['productes'][$idProducte]['import'];
@@ -2350,10 +2346,10 @@ class FacturacioController extends BaseController {
 			else $this->get('session')->set('cart', $cart);
 		}
 
-		$form = $this->formulariTransport();
+		$formtransport = $cartcheckout->formulariTransport();
 				
 		return $this->render('FecdasBundle:Facturacio:graellaproductescistella.html.twig', 
-		                      array('formtransport' => $form, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin()));
+		              array('formtransport' => $formtransport, 'tipus' => $tipus, 'admin' => $this->isCurrentAdmin()));
 		
 	}
 

@@ -862,7 +862,7 @@ a.link.footer-link { padding: 0 10px; }
 .cistella-resum .table > tbody > tr > td { border: none; }
 
 .cistella-resum td.unitats { width: 45px; }
-.cistella-resum td.concepte { width: 300px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.cistella-resum td.concepte { width: 400px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 .cistella-resum td.import { width: 80px; }
 .cistella-resum td.action { width: 20px; }
 .cistella-resum td.autocolumn { width: auto; }

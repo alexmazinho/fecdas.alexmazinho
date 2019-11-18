@@ -261,4 +261,7 @@ Examples
 	#main-col nav .nav-pills a { font-size: 0.9em; padding: 5px 10px; }
 	
 	#main-col nav .nav-pills .fa { width: 20px;}
+	
+	.cistella-resum td.concepte { width: 200px; }
+	
 }

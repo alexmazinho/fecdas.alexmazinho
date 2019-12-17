@@ -476,6 +476,12 @@ FecdasBundle_llistatsasseguranca:
     defaults: { _controller: "FecdasBundle:Admin:llistatsasseguranca" }
     requirements:
         methods:  GET
+        
+FecdasBundle_llistatcontrol1:
+    path:  /llistatcontrol1
+    defaults: { _controller: "FecdasBundle:Admin:llistatcontrol1" }
+    requirements:
+        methods:  GET        
 
 FecdasBundle_clubs:
     path:  /clubs

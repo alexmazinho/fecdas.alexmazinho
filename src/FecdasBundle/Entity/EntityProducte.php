@@ -232,12 +232,15 @@ class EntityProducte {
             // Descendent primer darrer any
             return ($a->getAnypreu() > $b->getAnypreu())? -1:1;
         });
+
+        if (date('d') >= BaseController::INICI_TRAMITACIO_ANUAL_DIA &&
+            date('m') >= BaseController::INICI_TRAMITACIO_ANUAL_MES) $any++;
             
-            foreach($preus as $preu) {
-                if ($preu->getAnypreu() <= $any) return $preu;
-            }
+        foreach($preus as $preu) {
+            if ($preu->getAnypreu() <= $any) return $preu;
+        }
             
-            return null; // No trobat cap aplicable
+        return null; // No trobat cap aplicable
     }
     
     /**
@@ -247,7 +250,7 @@ class EntityProducte {
      */
     public function getCurrentPreu()
     {
-        return $this->getPreuAny(Date('Y'));
+        return $this->getPreuAny(date('Y'));
     }
     
     /**
@@ -257,7 +260,7 @@ class EntityProducte {
      */
     public function getCurrentAny()
     {
-        $preu = $this->getPreuAplicable(Date('Y'));
+        $preu = $this->getPreuAplicable(date('Y'));
         //$preu = $this->getPreu($any);
         if ($preu == null) return '--';
         return $preu->getAnypreu();

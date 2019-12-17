@@ -404,9 +404,13 @@ class AdminController extends BaseController {
     	    if ($zip->open($zipPathFilename, \ZipArchive::CREATE)!==TRUE) throw new \Exception("No es pot crear l'arxiu ".$zipPathFilename);
     	    $header = array('Num.', 'Alta', 'Caduca', 'Categoria', 'DNI', 'Nom', 'Cognoms');
     	    
-    	    $filename1 = "TECNO1ER_POL_121426_".date("Ymd").".csv";   // Tecnocampus 1er des de  01/09
-    	    $filename2 = "ESCOLAR_POL_121425_".date("Ymd").".csv";    // ACS Any Escolar des de  01/09
-    	    $filename3 = "POL_HELVETIA_".date("Ymd").".csv";          // Altres helvetia des de 01/01 
+    	    $filename1 = "TECNO1ER_POL_121426_".date("Ymd").".csv";   // Tecnocampus 1er des de  01/09     TIPUS_TECNOCAMPUS_1 = 9
+    	    $filename2 = "ESCOLAR_POL_121425_".date("Ymd").".csv";    // AC Any Escolar des de  01/09     TIPUS_MUTUACAT = 4
+    	    $filenameHelv1 = "POL_HELVETIA_1DIA_".date("Ymd").".csv";      // helvetia 1 dia des de 01/01  TIPUS_D_1DIA = 11 + TIPUS_CENTRES_1DIA = 18
+    	    $filenameHelv7 = "POL_HELVETIA_7DIES_".date("Ymd").".csv";      // helvetia 7 dies des de 01/01    TIPUS_FEDE_7DIES = 16 + TIPUS_CENTRES_7DIES = 19
+    	    $filenameHelv30 = "POL_HELVETIA_30DIES_".date("Ymd").".csv";      // helvetia 30 dies des de 01/01 TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20
+    	    $filenameHelvA = "POL_HELVETIA_ANUAL_".date("Ymd").".csv";      // helvetia Anual des de 01/01     Tipus: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 14 FE, 21 CENTRES 365
+    	    $filenameHelvE = "POL_HELVETIA_ESCOLAR_".date("Ymd").".csv";   // helvetia Escolar des de 09/01     Tipus: 12 AG 2n, 13 ACS, 15 AEB
     	    
     	    $strQueryBase = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l
 						 JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c WHERE 
@@ -419,44 +423,88 @@ class AdminController extends BaseController {
     	    $currentAny = date("Y");
     	    $currentDate = date('Y-m-d H:i:s');
     	    
+    	    
+    	    $anyconsulta = $currentMes <= 9?$currentAny-1:$currentAny;   // Consulta al setembre o abans dades de l'any anterior
+    	    $inicurs = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . "-09-01 00:00:00");
+    	    $inicurs = $inicurs->format('Y-m-d H:i:s');
+    	    
+    	    if ($currentMes != 9) $ficurs = \DateTime::createFromFormat('Y-m-d H:i:s', $currentDate);
+    	    else $ficurs = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyconsulta+1) . '-08-31 23:59:59'); 
+    	    $ficurs = $ficurs->format('Y-m-d H:i:s');
+    	    
+    	    
+    	    $anyconsulta = $currentMes > 1?$currentAny:$currentAny-1;    // Consulta al gener dades de l'any anterior
+    	    $inianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . "-01-01 00:00:00");
+    	    $inianual = $inianual->format('Y-m-d H:i:s');
+    	    
+    	    if ($anyconsulta == $currentAny) $fianual = \DateTime::createFromFormat('Y-m-d H:i:s', $currentDate);
+    	    else $fianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . '-12-31 23:59:59');
+    	    $fianual = $fianual->format('Y-m-d H:i:s');
+    	    
+    	    
     	    // Tecnocampus 1er
     	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_TECNOCAMPUS_1." ".$strQueryOrder;
     	    
-    	    $anyconsulta = $currentMes <= 9?$currentAny-1:$currentAny;    // Consulta al setembre o abans dades de l'any anterior
-    	    
-    	    $inianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . "-09-01 00:00:00");
-    	    $inianual = $inianual->format('Y-m-d H:i:s');
-    	    
-    	    if ($currentMes != 9) $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', $currentDate);
-    	    else $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', ($anyconsulta+1) . '-08-31 23:59:59');
-    	    $ficonsulta = $ficonsulta->format('Y-m-d H:i:s');
-    	    
-    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta);
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs);
    	        
     	    $zip->addFile($this->writeCSV($header, $dades, $filename1), $filename1);
    	        
     	    // Escolar Mutuacat ACS
     	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_MUTUACAT." ".$strQueryOrder;
 
-    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta);
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs);
     	    
     	    $zip->addFile($this->writeCSV($header, $dades, $filename2), $filename2);
-    	    
-    	    // Altres
-    	    $strQuery = $strQueryBase." AND t.id NOT IN (".BaseController::TIPUS_TECNOCAMPUS_1.", ".BaseController::TIPUS_MUTUACAT.") ".$strQueryOrder;
 
-    	    $anyconsulta = $currentMes > 1?$currentAny:$currentAny-1;    // Consulta al gener dades de l'any anterior
+    	    // 1 Dia.  TIPUS_D_1DIA = 11 + TIPUS_CENTRES_1DIA = 18
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_D_1DIA.", ".BaseController::TIPUS_CENTRES_1DIA.") ".$strQueryOrder;
     	    
-    	    $inianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . "-01-01 00:00:00");
-    	    $inianual = $inianual->format('Y-m-d H:i:s');
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
     	    
-    	    if ($anyconsulta == $currentAny) $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', $currentDate);
-    	    else $ficonsulta = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . '-12-31 23:59:59');
-    	    $ficonsulta = $ficonsulta->format('Y-m-d H:i:s');
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelv1), $filenameHelv1);
 
-            $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta);
+    	    // 7 Dies.  TIPUS_FEDE_7DIES = 16 + TIPUS_CENTRES_7DIES = 19
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_FEDE_7DIES.", ".BaseController::TIPUS_CENTRES_7DIES.") ".$strQueryOrder;
     	    
-    	    $zip->addFile($this->writeCSV($header, $dades, $filename3), $filename3);
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
+    	    
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelv7), $filenameHelv7);
+    	    
+    	    // 30 Dies.  TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_FEDE_30DIES.", ".BaseController::TIPUS_CENTRES_30DIES.") ".$strQueryOrder;
+    	    
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
+    	    
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelv30), $filenameHelv30);
+    	    
+    	    // Altres. Helvetia cursos:  
+    	    //     Tipus cursos: TIPUS_TECNOCAMPUS_2 = 12 + TIPUS_ESCOLESBUSSEIG = 13 + TIPUS_AEBESCOLES = 15
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_TECNOCAMPUS_2.", ".
+        	                                           BaseController::TIPUS_ESCOLESBUSSEIG.", ".
+        	                                           BaseController::TIPUS_AEBESCOLES.") ".$strQueryOrder; 
+    	    
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs);
+
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelvE), $filenameHelvE);
+    	    
+    	    // Altres. Helvetia anual
+    	    //     Tipus anuals: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 12 AG 2n, 13 ACS, 14 FE, 15 AEB, 21 CENTRES 365
+    	    $strQuery = $strQueryBase." AND t.id NOT IN (".BaseController::TIPUS_TECNOCAMPUS_1.", ".
+        	                                               BaseController::TIPUS_TECNOCAMPUS_2.", ".
+        	                                               BaseController::TIPUS_ESCOLESBUSSEIG.", ".
+        	                                               BaseController::TIPUS_MUTUACAT.", ".
+        	                                               BaseController::TIPUS_D_1DIA.", ".
+        	                                               BaseController::TIPUS_CENTRES_1DIA.", ".
+        	                                               BaseController::TIPUS_FEDE_7DIES.", ".
+        	                                               BaseController::TIPUS_CENTRES_7DIES.", ".
+        	                                               BaseController::TIPUS_FEDE_30DIES.", ".
+        	                                               BaseController::TIPUS_CENTRES_30DIES.", ".
+        	                                               BaseController::TIPUS_AEBESCOLES.
+    	                                                   ") ".$strQueryOrder;
+
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
+    	    
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelvA), $filenameHelvA);
     	    
     	    $zip->close();
     	    
@@ -482,7 +530,7 @@ class AdminController extends BaseController {
 	    return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	public function dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta) {
+	private function dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta) {
 	    $em = $this->getDoctrine()->getManager();
 	    
 	    $query = $em->createQuery($strQuery);
@@ -517,7 +565,12 @@ class AdminController extends BaseController {
 	    return $dades;
     }
 	
-	
+    public function llistatcontrol1Action(Request $request) {
+        if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
+        
+        return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
+    }
+    
 	public function consultaadminAction(Request $request) {
 	
 	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;

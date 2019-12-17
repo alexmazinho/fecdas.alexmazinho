@@ -149,6 +149,17 @@ class BaseController extends Controller {
 	// Tipus de partes 
 	const TIPUS_TECNOCAMPUS_1 = 9;
 	const TIPUS_MUTUACAT = 4;
+	const TIPUS_D_1DIA = 11;
+	const TIPUS_CENTRES_1DIA = 18;
+	const TIPUS_FEDE_7DIES = 16;
+	const TIPUS_CENTRES_7DIES = 19;
+	const TIPUS_FEDE_30DIES = 17;
+	const TIPUS_CENTRES_30DIES = 20;
+
+	const TIPUS_TECNOCAMPUS_2 = 12;
+	const TIPUS_ESCOLESBUSSEIG = 13;
+	const TIPUS_AEBESCOLES = 15;
+	
 	
 	// Templates plàstic
 	const TEMPLATE_GENERAL = 'G0';
@@ -158,11 +169,14 @@ class BaseController extends Controller {
 	const TEMPLATE_ESCOLAR = 'ES';
 	const TEMPLATE_ESCOLAR_SUBMARINISME = 'CS';
 	
-	const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664.jpg';
-	const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664.jpg';
+	//const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664.jpg';
+	const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664_2020.jpg';
+	//const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664.jpg';
+	const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664_2020.jpg';
 	const IMATGE_ANVERS_ESCOLAR        = 'images/fonsanysescolar_1024x664.jpg';
 	const IMATGE_ANVERS_TECNOCAMPUS    = 'images/fonstecnocampus_910x600.jpg';
-	const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602.jpg';
+	//const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602.jpg';
+	const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602_2020.jpg';
 	
 	const IMATGE_LOGO_FECDAS       = 'images/fecdaslogopdf.gif';
 	const IMATGE_LOGO_GENE         = 'images/logo-generalitat.jpg';
@@ -171,17 +185,26 @@ class BaseController extends Controller {
 	const IMATGE_BUTTON            = 'images/white_button.png';
 	
 	// Docs assegurança
-	const POLISSA_BUSSEIG = 'polissa_busseig_2019.pdf';
-	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2018-19.pdf';
-	const POLISSA_ESCOLAR = 'polissa_escolar_2018-19.pdf';
+	//const POLISSA_BUSSEIG = 'polissa_busseig_2019.pdf';
+	const POLISSA_BUSSEIG = 'polissa_busseig_C30_0003109_%%YEAR%%.pdf';
+	
+	/*const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2018-19.pdf';
+	const POLISSA_ESCOLAR = 'polissa_escolar_2018-19.pdf';*/
+	const POLISSA_TECNOCAMPUS = 'polissa_tecnocampus_2019-20.pdf';     // 121426
+	const POLISSA_ESCOLAR = 'polissa_escolar_2019-20.pdf';     // 121425
 	
 	const COMUNICAT_INCIDENT_POLISSA_BUSSEIG = 'comunicat_incident_polissa_busseig.pdf';
 	const COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS = 'comunicat_incident_polissa_tecnocampus.pdf';
-	const COMUNICAT_INCIDENT_POLISSA_ESCOLAR = 'comunicat_incident_polissa_escolar.pdf';
+	/*const COMUNICAT_INCIDENT_POLISSA_ESCOLAR = 'comunicat_incident_polissa_escolar.pdf';*/
+	const COMUNICAT_INCIDENT_POLISSA_ESCOLAR = 'comunicat_incident_polissa_escolar_121425.pdf';
+	
+	
 
 	const PROTOCOL_INCIDENTS_POLISSA_BUSSEIG = 'protocol_incidents_polissa_busseig.pdf';
-	const PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS = 'protocol_incidents_polissa_tecnocampus.pdf';
-	const PROTOCOL_INCIDENTS_POLISSA_ESCOLAR = 'protocol_incidents_polissa_escolar.pdf';
+	/*const PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS = 'protocol_incidents_polissa_tecnocampus.pdf';
+	const PROTOCOL_INCIDENTS_POLISSA_ESCOLAR = 'protocol_incidents_polissa_escolar.pdf';*/
+	const PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS = 'protocol_incidents_polissa_mutuacat.pdf';
+	const PROTOCOL_INCIDENTS_POLISSA_ESCOLAR = 'protocol_incidents_polissa_mutuacat.pdf';
 
 	
 	// Templates plàstic
@@ -2230,7 +2253,7 @@ class BaseController extends Controller {
 	    );
 	    
 	    $bccmails = array($this->getParameter('MAIL_LLICENCIES'));
-	    $this->buildAndSendMail($subject, $tomails, $body, $bccmails, null, $attachments, 470, $salutacio);
+	    $this->buildAndSendMail($subject, $tomails, $body, $bccmails, null, $attachments, 600, $salutacio);
 	    
 	    $llicencia->setMailenviat( 1 );
 	    $llicencia->setDatamail( new \DateTime() );
@@ -2239,30 +2262,19 @@ class BaseController extends Controller {
 	protected function textLlicenciaG0mail( $cursAny ) {
 		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa ".$cursAny;
 		
-		/*$body = "<div style=''><p>Benvolguda, benvolgut,</p>";
-		$body .= "<p style='text-align: justify;'>Vull donar-te la benvinguda al nou model de llicència de la FECDAS, que espero que sigui del teu grat.</p>";
-		$body .= "<p style='text-align: justify;'>Qualsevol comentari que ens vulguis fer, el tindrem molt en compte!</p>";
-		$body .= "<p style='text-align: justify;'>De la nostra banda, t’agraïm un cop mes la confiança que diposites en el teu club i en la FECDAS.</p>";
-		$body .= "</div>";
-		
-		$salutacio = "<p>Rep una abraçada!</p>";
-		$salutacio .= "<p>Salvador Punsola<br/>";
-		$salutacio .= "President de la FECDAS</p>";*/
-		
-		
-		$body  = "<div style=''><p>Benvolgut/da esportista</p>";
-		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$cursAny.".</p>"; 
-		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
-		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
-		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d'incidents.</p>";
-		$body .= "<p style='text-align: justify;'><b>Recordeu que cal avisar al club en el moment de fer sortida al estranger</b>. enviant un e-mail a ";
+		$body  = "<p>Us donem la benvinguda, esportista</p>";
+		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la <b>temporada ".$cursAny."</b>.</p>";
+		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital. ";
+		$body .= "Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
+		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura, al protocol d'actuació en el cas d'accidents i al comunicat d'accidents. ";
+		$body .= "Aquests documents els tens a l'abast a la teva llicència federativa digital a través dels hipervincles corresponents.</p>";
+		$body .= "<p style='text-align: justify;'>A més a més, tenir la federativa et dóna molts avantatges i descomptes. Mira'ls en aquest enllaç: <a href='http://www.fecdas.cat/docs/centres2019.pdf' target='_blank'>http://www.fecdas.cat/docs/centres2019.pdf</a></p>";
+		$body .= "<p style='text-align: justify;'><b>Recordeu que cal notificar els viatges a l'estranger</b>. enviant un e-mail a ";
 		$body .= "<a href='mailto:".$this->getParameter('MAIL_FECDAS')."'>".$this->getParameter('MAIL_FECDAS')."</a>";
-		$body .= " indicant el vostre nom complert, DNI, dies que esteu fora bussejant i el país. Els viatges a Portugal, Andorra i França no cal notificar.</p>";
-		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents i aquest enllaç et portarà als <b>descomptes</b> per ser Federat,</p>";
-		$body .= "<p style='text-align: justify;'><a href='http://www.fecdas.cat/docs/centres2019.pdf' target='_blank'>http://www.fecdas.cat/docs/centres2019.pdf</a></p>";
-		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p>";
+		$body .= " indicant: el vostre nom complet, DNI, dies d'anada i tornada i el país. <b>Termini de notificació</b>: fins 7 dies abans de la sortida. No cal notificar els viatges a Portugal i França.</p>";
+		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir i gaudir de les activitats subaquàtiques amb il·lusió, i ens posem a la teva disposició per al que et calgui.</p>";
 		
-		$salutacio = "<p>Cordialment,</p>";
+		$salutacio  = "<p>Cordialment,</p>";
 		$salutacio .= "<p>Equip FECDAS</p>";
 		
 		return array(
@@ -2287,17 +2299,16 @@ class BaseController extends Controller {
 	private function textLlicenciaFecdasmail( $curs ) {
 		$subject = "Federació Catalana d'Activitats Subaquàtiques. Llicència federativa curs ".$curs;
 		
-		$body = "<div style=''><p>Benvolgut/da esportista</p>";
-		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la temporada ".$curs."</p>";
-		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital.</p>";
-		$body .= "<p style='text-align: justify;'>Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
-		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura; al protocol de relació amb l'asseguradora i al full de comunicat d’incidents.</p>";
-		$body .= "<p style='text-align: justify;'>Aquests documents els tens a l'abast a través dels hipervincles corresponents.</p>";
-		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir amb il·lusió i ens posem a la teva disposició per al que et calgui.</p></div>";
+		$body  = "<p>Us donem la benvinguda, esportista</p>";
+		$body .= "<p style='text-align: justify;'>Amb aquest mateix correu reps la teva llicència esportiva corresponent a la <b>temporada ".$curs."</b></p>";
+		$body .= "<p style='text-align: justify;'>La FECDAS ha fet un nou pas endavant en el procés constant de millora i ha intensificat la seva relació amb el món digital. ";
+		$body .= "Amb la digitalització de la llicència esportiva pretenem facilitar-ne l'ús i, també, posar a la teva disposició de manera senzilla tota la informació que hi està relacionada.</p>";
+		$body .= "<p style='text-align: justify;'>La teva llicència digital permet accedir a la pòlissa que et dóna cobertura, al protocol d'actuació en el cas d'accidents i al comunicat d'accidents. ";
+		$body .= "Aquests documents els tens a l'abast a la teva llicència federativa digital a través dels hipervincles corresponents.</p>";
+		$body .= "<p style='text-align: justify;'>T'agraïm la confiança que diposites en la FECDAS; t'animem a competir i gaudir de les activitats subaquàtiques amb il·lusió, i ens posem a la teva disposició per al que et calgui.</p>";
 
-		$salutacio = "<p>Cordialment,</p>";
-		$salutacio .= "<p>Salvador Punsola<br/>";
-		$salutacio .= "President</p>";
+		$salutacio  = "<p>Cordialment,</p>";
+		$salutacio .= "<p>Equip FECDAS</p>";
 		
 		return array(
 			'subject' 	=> 	$subject,
@@ -2308,17 +2319,17 @@ class BaseController extends Controller {
 
 
 	protected function textLlicenciaT1mail( $curs ) {
-		$subject = "AVÍS IMPORTANT: Assegurança  accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
+		$subject = "AVÍS IMPORTANT: Assegurança d'Accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
 		
-		$body = "<div style=''><p>Hola,</p>";
-		$body .= "<p style='text-align: justify;'>T'enviem en el  document adjunt el teu carnet digital vinculat a la teva assegurança acadèmica d'accidents del curs ".$curs."</p>";
-		$body .= "<p style='text-align: justify;'>El carnet, personalitzat t'identifica com a contractant d'una assegurança amb l'empresa Mútuacat";
-		$body .= " i et dóna accés als documents que hi estan relacionats: la pòlissa (inclou els centres mèdics on pots adreçar-te),";
-		$body .= " el protocol que cal seguir si es produeix algun incident i el comunicat que, un cop emplenat,";
-		$body .= " cal fer arribar a la companyia d'assegurances.</p></div>";
+		$body  = "<p>Hola,</p>";
+		$body .= "<p style='text-align: justify;'>T'enviem en el document adjunt el teu carnet digital vinculat a la teva assegurança acadèmica d'accidents del curs ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>El carnet personalitzat t'identifica com a contractant d'una assegurança amb l'empresa Mútuacat";
+		$body .= " i et dóna accés als documents que hi estan relacionats: la <b>pòlissa</b> (inclou els centres mèdics on pots adreçar-te),";
+		$body .= " el <b>protocol</b> que cal seguir si es produeix algun accident i el <b>comunicat</b> que, un cop emplenat,";
+		$body .= " cal fer arribar a la companyia d'assegurances.</p>";
 		
-		$salutacio = "<p>Salutacions cordials,</p>";
-		$salutacio .= "FECDAS</p>";
+		$salutacio  = "<p>Salutacions cordials,</p>";
+		$salutacio .= "<p>Equip FECDAS</p>";
 		
 		return array(
 			'subject' 	=> 	$subject,
@@ -2328,25 +2339,25 @@ class BaseController extends Controller {
 	}
 
 	protected function textLlicenciaT2mail( $curs ) {
-		$subject = "AVÍS IMPORTANT: Assegurança  accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
+		$subject = "AVÍS IMPORTANT: Assegurança d'Accidents TecnoCampus ".substr($curs,2);  // p.e. Curs 16-17
 		
-		$body = "<div style=''><p>Hola,</p>";
-		$body .= "<p style='text-align: justify;'>T'enviem en el  document adjunt el teu carnet digital vinculat a la teva assegurança acadèmica d'accidents del curs ".$curs."</p>";
-		$body .= "<p style='text-align: justify;'>El carnet, personalitzat t'identifica com a contractant d'una assegurança amb l'empresa Mútuacat";
-		$body .= " i et dóna accés als documents que hi estan relacionats: la pòlissa (inclou els centres mèdics on pots adreçar-te),";
-		$body .= " el protocol que cal seguir si es produeix algun incident i el comunicat que, un cop emplenat,";
-		$body .= " cal fer arribar a la companyia d'assegurances.</p></div>";
-		$body .= "<p style='text-align: justify;'>En el cas que cursis l'assignatura de Subaquàtiques, comptes amb una altra assegurança";
-		$body .= " –amb l'empresa Helvetia- vinculada a aquesta pràctica esportiva.</p>";
+		$body  = "<p>Hola,</p>";
+		$body .= "<p style='text-align: justify;'>T'enviem en el document adjunt el teu carnet digital vinculat a la teva assegurança acadèmica d'accidents del curs ".$curs."</p>";
+		$body .= "<p style='text-align: justify;'>El carnet personalitzat t'identifica com a contractant d'una assegurança amb l'empresa Mútuacat";
+		$body .= " i et dóna accés als documents que hi estan relacionats: la <b>pòlissa</b> (inclou els centres mèdics on pots adreçar-te),";
+		$body .= " el <b>protocol</b> que cal seguir si es produeix algun accident i el <b>comunicat</b> que, un cop emplenat,";
+		$body .= " cal fer arribar a la companyia d'assegurances.</p>";
+		$body .= "<p style='text-align: justify;'>En el cas que cursis l'assignatura de <b>Subaquàtiques</b>, comptes amb una altra assegurança ";
+		$body .= "-amb l'empresa Helvetia- vinculada a aquesta pràctica esportiva.</p>";
 		$body .= "<p style='text-align: justify;'>En aquest cas, el teu carnet digital compte amb dos jocs d'hipervincles:</p>";
-		$body .= "<p style='text-align: justify;'>1.- El primer joc està relacionat amb l'assegurança acadèmica d'accidents bàsica.</p>";
-		$body .= "<p style='text-align: justify;'>2.- El segon joc, distingit amb el mot \"busseig\",";
+		$body .= "<p style='text-align: justify;'>1.- El primer joc està relacionat amb l'<b>assegurança acadèmica</b> d'accidents bàsica.</p>";
+		$body .= "<p style='text-align: justify;'>2.- El segon joc, distingit amb el mot \"<b>busseig</b>\",";
 		$body .= " et dóna accés als documents que estan relacionats amb la pràctica de les activitats subaquàtiques:";
-		$body .= " la pòlissa d'Helvetia, el protocol amb Helvetia, que cal seguir si es produeix algun incident i el comunicat que,";
-		$body .= " un cop emplenat, cal fer arribar a la companyia d'assegurances Helvetia.</p>";
+		$body .= " la <b>pòlissa</b> d'Helvetia, el <b>protocol d'accidents</b> que cal seguir si es produeix algun accident i el <b>comunicat</b> que,";
+		$body .= " un cop emplenat, cal fer arribar a la companyia d'assegurances <b>Helvetia</b>.</p>";
 		
-		$salutacio = "<p>Salutacions cordials,</p>";
-		$salutacio .= "FECDAS</p>";
+		$salutacio  = "<p>Salutacions cordials,</p>";
+		$salutacio .= "<p>Equip FECDAS</p>";
 		
 		return array(
 			'subject' 	=> 	$subject,
@@ -2355,9 +2366,23 @@ class BaseController extends Controller {
 		);
 	}
 	
+	private function getAnyPolissa($llicencia) {
+	    if ($llicencia == null || $llicencia->getParte() == null) return date('Y');
+	    
+	    $parte = $llicencia->getParte();
+	    $anyAlta = $parte->getDataalta()->format('Y');
+	    $anyCaduca = $parte->getDatacaducitat()->format('Y');
+	    
+	    if ($anyAlta == $anyCaduca) return $anyAlta;
+
+	    if (date('Y') >= $anyCaduca) return $anyCaduca;
+	    
+	    return $anyAlta;
+	}
+	
 	protected function printLlicenciaG0pdf( $request, $llicencia ) {
 		$yLinks = 77;
-		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.str_replace("%%YEAR%%", $this->getAnyPolissa($llicencia), BaseController::POLISSA_BUSSEIG))),
 				array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
 				array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 				
@@ -2382,7 +2407,7 @@ class BaseController extends Controller {
 		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_ESCOLAR)),
 						array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_ESCOLAR)),
 						array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_ESCOLAR)),
-						array('text'=> 'pòlissa busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+		    array('text'=> 'pòlissa busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.str_replace("%%YEAR%%", $this->getAnyPolissa($llicencia), BaseController::POLISSA_BUSSEIG))),
 						array('text'=> 'protocol busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
 						array('text'=> 'comunicat busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 				
@@ -2393,7 +2418,7 @@ class BaseController extends Controller {
 	
 	protected function printLlicenciaF0pdf( $request, $llicencia ) {
 	    $yLinks = 77;
-	    $links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+	    $links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.str_replace("%%YEAR%%", $this->getAnyPolissa($llicencia), BaseController::POLISSA_BUSSEIG))),
 	        array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
 	        array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 	    
@@ -2462,7 +2487,7 @@ class BaseController extends Controller {
 	            break;
 	            
 	        default:       //  case BaseController::TEMPLATE_GENERAL:
-	            $yTit =	12*$factor_h;
+	            $yTit =	14*$factor_h;
 	            $offset = 3*$factor_h;
 	            $yCad = 71*$factor_h-$offset;
 	            $yNai =	58*$factor_h-$offset;
@@ -2626,7 +2651,7 @@ class BaseController extends Controller {
 		$links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_TECNOCAMPUS)),
 						array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_TECNOCAMPUS)),
 						array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_TECNOCAMPUS)),
-						array('text'=> 'pòlissa busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::POLISSA_BUSSEIG)),
+		                array('text'=> 'pòlissa busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.str_replace("%%YEAR%%", $this->getAnyPolissa($llicencia), BaseController::POLISSA_BUSSEIG))),
 						array('text'=> 'protocol busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
 						array('text'=> 'comunicat busseig', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
 		
@@ -3115,6 +3140,7 @@ class BaseController extends Controller {
 
 		$comanda = new EntityComanda($maxNumComanda, $factura, $this->getCurrentClub(), $comentaris);
 
+		
 		$em->persist($comanda);
 
 		if ($factura != null) {
@@ -4520,8 +4546,8 @@ class BaseController extends Controller {
 		$footer .= "<small><b>FEDERACIÓ CATALANA D’ACTIVITATS SUBAQUÀTIQUES</b></small><br/>";
 		$footer .= "<span style='font-size: 10px;'>Moll de la Vela, 1 (Zona Fòrum)<br/>";
 		$footer .= "08930  Sant Adrià de Besòs<br/>";
-		$footer .= "Tel. 93 356 05 43<br/>";
-		$footer .= "Fax: 93 356 30 73<br/>";
+		$footer .= "Tel. 93 356 05 43 | 620 28 29 39<br/>";
+		//$footer .= "Fax: 93 356 30 73<br/>";
 		$footer .= "Adreça electrònica: ".$this->getParameter('MAIL_FECDAS')."<br/>";
 		$footer .= "</span></td></tr></table>";
 		

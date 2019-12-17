@@ -822,6 +822,35 @@ class PDFController extends BaseController {
 			    $parte = $llicencia->getParte();
 			    $club = $parte->getClubparte();
 			    $persona = $llicencia->getPersona();
+			    $template = $parte->getTipus()->getTemplate();
+			    
+			    switch ($template) {
+			        case BaseController::TEMPLATE_ESCOLAR:
+			        case BaseController::TEMPLATE_ESCOLAR_SUBMARINISME:
+			            $title = 'Llicència provisional Curs Escolar FECDAS' . date("Y");
+			            $image = BaseController::IMATGE_ANVERS_ESCOLAR;
+			            
+			            break;
+			            
+			        case BaseController::TEMPLATE_PESCA:
+			            $title = 'Llicència provisional Pesca submarina' . date("Y");
+			            $image = BaseController::IMATGE_ANVERS_PESCA;
+			            
+			            break;
+			       
+			        case BaseController::TEMPLATE_TECNOCAMPUS_1:
+			        case BaseController::TEMPLATE_TECNOCAMPUS_2:
+			            $title = 'Llicència provisional Tecnocampus FECDAS' . date("Y");
+			            $image = BaseController::IMATGE_ANVERS_TECNOCAMPUS;
+			            
+			            break;
+			            
+			        default:       //  case BaseController::TEMPLATE_GENERAL:
+			            $title = 'Llicència provisional FECDAS' . date("Y");
+			            $image = BaseController::IMATGE_ANVERS_GENERAL;
+			            
+			            break;
+			    }
 			    
 				$this->logEntry($this->get('session')->get('username'), 'PRINT LLICENCIA',
 						$this->get('session')->get('remote_addr'),
@@ -831,7 +860,7 @@ class PDFController extends BaseController {
 				$pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	
 				$pdf->init(array('author' => 'FECDAS',
-				    'title' => 'Llicència FECDAS ' . date("Y")), true, $club->getNom());
+				    'title' => $title), true, $club->getNom());
 				
 				// Add a page
 				$pdf->AddPage();
@@ -856,11 +885,11 @@ class PDFController extends BaseController {
 				$pdf->SetLineStyle(array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 4, 'color' => array(0, 0, 0)));
 				//$pdf->writeHTMLCell($width + 4, 2*($height + 2), $x - 2, $y - 2, '', 1, 0, 0, true, 'L', true);
 				
-				$pdf->Image(BaseController::IMATGE_ANVERS_GENERAL, $x, $y, 
+				$pdf->Image($image, $x, $y, 
 						$width, $height , 'jpg', '', '', false, 320, 
 						'', false, false, 1, false, false, false);
 				
-						$pdf->Image(BaseController::IMATGE_REVERS_GENERAL, $x, $y + $height,
+				$pdf->Image(BaseController::IMATGE_REVERS_GENERAL, $x, $y + $height,
 						$width, $height , 'jpg', '', '', false, 320,
 						'', false, false, 1, false, false, false);
 				
@@ -874,23 +903,32 @@ class PDFController extends BaseController {
 				$x = $x_ini + 47;
 				$y = $y_ini + 35;
 			
+				if ($template == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+				    $template == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+				        $y += 15;
+				        $x += 4;
+				}
+				
 				$pdf->writeHTMLCell(0, 0, $x, $y, "Nom: " . $persona->getNom()." ".$persona->getCognoms(), 0, 0, 0, true, 'L', true);
 				
 				$y += 4;
 				$pdf->writeHTMLCell(0, 0, $x, $y, "DNI/Passaport: " . $persona->getDni(), 0, 0, 0, true, 'L', true);
 				
-				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Categoria/Nivell: " . $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
+				if ($template != BaseController::TEMPLATE_TECNOCAMPUS_1 &&
+				    $template != BaseController::TEMPLATE_TECNOCAMPUS_2) {
 				
-				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Data naixement: " . $persona->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
-				
-				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Entitat: " . $club->getNom(), 0, 0, 0, true, 'L', true);
-				
-				$y += 4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $club->getTelefon(), 0, 0, 0, true, 'L', true);
-
+    				$y += 4;
+    				$pdf->writeHTMLCell(0, 0, $x, $y, "Categoria/Nivell: " . $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
+    				
+    				$y += 4;
+    				$pdf->writeHTMLCell(0, 0, $x, $y, "Data naixement: " . $persona->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
+    				
+    				$y += 4;
+    				$pdf->writeHTMLCell(0, 0, $x, $y, "Entitat: " . $club->getNom(), 0, 0, 0, true, 'L', true);
+    				
+    				$y += 4;
+    				$pdf->writeHTMLCell(0, 0, $x, $y, "Telf. entitat: " . $club->getTelefon(), 0, 0, 0, true, 'L', true);
+				}
 				//$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
 				
 				/*$x = $x_ini + 54.2;
@@ -924,7 +962,13 @@ class PDFController extends BaseController {
 				
 				if ($datacaduca > $parte->getDatacaducitat()) $datacaduca = $parte->getDatacaducitat();
 				
-				$x += 28;
+				if ($template == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+				    $template == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+				    $x += 25;
+				} else {
+				    $x += 28;
+				}
+				    
 				$pdf->writeHTMLCell(0, 0, $x, $y + 4, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
 				/*$x += 41;
 				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);*/
@@ -935,9 +979,12 @@ class PDFController extends BaseController {
 
 				$pdf->SetFont('helvetica', 'B', 9, '', true);
 				//$pdf->SetTextColor(230, 230, 230); // Gris
-				$y = $y_ini + 17;
+				$y = $y_ini + 20;
 				$x = $x_ini + 62;
 
+				if ($template == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
+				    $template == BaseController::TEMPLATE_TECNOCAMPUS_2) $y += 12;
+				
 				$pdf->SetY($y);
 				$pdf->SetX($x);
 				$pdf->MultiCell($height,$width,$titolPlastic,0,'C',1);

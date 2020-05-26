@@ -2249,8 +2249,8 @@ select#parte_renovar_tipus { width: 240px; }
 
 /*************** cursos ****************/
 
-#header-curs-num { width: 5%; text-align: center; }
-#header-curs-titol { width: 18%; text-align: left; }
+#header-curs-num { width: 7%; text-align: center; }
+#header-curs-titol { width: 17%; text-align: left; }
 #header-curs-entrada { width: 8%; text-align: center; }
 #header-curs-dates { width: 8%; text-align: center; }
 #header-curs-alumnes { width: 20%; text-align: left; }
@@ -2258,8 +2258,8 @@ select#parte_renovar_tipus { width: 240px; }
 #header-curs-estat { width: 13%; text-align: center; }
 #header-curs-actions { width: 6%; text-align: right; }
 
-.data-detall-cell.curs-num { width: 5%; text-align: center; text-overflow: clip !important; }
-.data-detall-cell.curs-titol { width: 18%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-detall-cell.curs-num { width: 7%; text-align: center; text-overflow: clip !important; }
+.data-detall-cell.curs-titol { width: 17%; text-align: left; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .data-detall-cell.curs-entrada { width: 8%; text-align: center; }
 .data-detall-cell.curs-dates { width: 8%; text-align: center; }
 .data-detall-cell.curs-alumnes { width: 20%; text-align: left; font-size: 0.9em; }

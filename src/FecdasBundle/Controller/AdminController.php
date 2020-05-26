@@ -823,11 +823,11 @@ class AdminController extends BaseController {
 			}
 			if ($datainici != null) {
 				$strQuery .= " AND p.dataalta >= :datainici ";
-				$params['datainici'] = $datainici->format('Y-m-d');
+				$params['datainici'] = $datainici->format('Y-m-d').' 00:00:00';
 			}
 			if ($datafinal != null) {
 				$strQuery .= " AND p.dataalta <= :datafinal ";
-				$params['datafinal'] = $datafinal->format('Y-m-d');
+				$params['datafinal'] = $datafinal->format('Y-m-d').' 23:59:59';
 			}
 			if ($baixes == 0) { // Excloure baixes dins el perìode
 				//$strQuery .= " AND p.databaixa IS NULL AND l.databaixa IS NULL ";

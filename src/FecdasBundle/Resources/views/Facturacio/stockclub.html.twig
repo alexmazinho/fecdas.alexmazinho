@@ -79,15 +79,6 @@
 
 	$(document).ready(function(){
 		setMenuActive("menu-stockkits");
-
-		{% if admin == true  %}
-    		$("select#form_clubs").select2({
-    			minimumInputLength: 2,
-    			allowClear: true,
-    			placeholder: 'Escollir club'
-    		});
-    	{% endif %}
-		
 		
 		// Descripcio producte
 		$("#form_cerca").select2({
@@ -99,11 +90,6 @@
 		$("#form_cerca").change(function() {
 			reloadTaulaStock();
 	    });
-
-		$("#form_clubs").change(function() {
-			reloadTaulaStock();
-	    });
-
 
 		$(".stockclub-submit").click(function(e) {
 			e.preventDefault();
@@ -178,6 +164,25 @@
 			// Scroll
 			$('.table-scroll').width($('.table-scroll').width() + 12 );
 		}
+
+		{% if admin == true  %}
+
+			if ($("select#form_clubs option").length > 1) {
+        		$("select#form_clubs").select2({
+        			minimumInputLength: 2
+        		});
+			}
+			if ($("select#form_clubs").select2("data") == null || 
+				$("select#form_clubs").select2("val") == "") {
+				// Al canviar de rol el select es queda buit sense mostrar res	
+				$("select#form_clubs").select2("val", "{{ constant('FecdasBundle\\Controller\\BaseController::CODI_FECDAS') }}");
+			}
+
+    		$("#form_clubs").change(function() {
+    			reloadTaulaStock();
+    	    });
+    	{% endif %}
+		
 	});
 	
 	</script>

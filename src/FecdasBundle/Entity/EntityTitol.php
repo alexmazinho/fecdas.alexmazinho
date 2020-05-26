@@ -5,11 +5,13 @@ use FecdasBundle\Controller\BaseController;
 
 /**
  * @ORM\Entity(readOnly=true)
- * @ORM\Table(name="m_titols", uniqueConstraints={@ORM\UniqueConstraint(name="codi_idx", columns={"codi"})})
- * 
+ * @ORM\Table(name="m_titols")
+ *
  * @author alex
  *
  */
+
+//@ORM\Table(name="m_titols", uniqueConstraints={@ORM\UniqueConstraint(name="codi_idx", columns={"codi"})})
 class EntityTitol {
 
 	/**
@@ -36,7 +38,7 @@ class EntityTitol {
 	protected $prefix;
 	
 	/**
-	 * @ORM\Column(type="string", length=50)
+	 * @ORM\Column(type="string", length=100)
 	 */
 	protected $titol;
 

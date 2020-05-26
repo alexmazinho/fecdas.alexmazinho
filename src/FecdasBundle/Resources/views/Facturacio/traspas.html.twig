@@ -178,7 +178,7 @@
 				  }).fail( function(xhr, status, error) {
 					 tancarMascaraBlock('.table-scroll.enviaments');
 					 // xhr.status + " " + xhr.statusText, status, error
-					 var sms = smsResultAjax('OK', error);
+					 var sms = smsResultAjax('OK', xhr.responseText);
 					 if (xhr.status != 500) {
 						sms = smsResultAjax('OK', "Error desconegut: " + error );
 					 }

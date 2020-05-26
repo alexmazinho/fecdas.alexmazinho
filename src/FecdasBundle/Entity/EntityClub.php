@@ -345,6 +345,17 @@ class EntityClub {
 		return $partes;
 	}
 	
+	/**
+	 * Get telefons
+	 *
+	 * @return String
+	 */
+	public function getTelefons() {
+	    $tlfs = array();
+	    if ($this->getTelefon() != null && $this->getTelefon() != '') $tlfs[] = $this->getTelefon();
+	    if ($this->getMobil() != null && $this->getMobil() != '' && $this->getMobil() != $this->getTelefon()) $tlfs[] = $this->getMobil();
+	    return implode(", ", $tlfs);
+	}
 	
 	/**
      * Get mails

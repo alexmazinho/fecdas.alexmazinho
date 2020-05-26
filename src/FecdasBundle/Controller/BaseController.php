@@ -377,7 +377,7 @@ class BaseController extends Controller {
 			self::$tipusproducte = array(
 					self::TIPUS_PRODUCTE_LLICENCIES => 'Llicències',
 					self::TIPUS_PRODUCTE_DUPLICATS 	=> 'Duplicats',
-					self::TIPUS_PRODUCTE_KITS 		=> 'Kits',
+					self::TIPUS_PRODUCTE_KITS 		=> 'Kits i material Online',
 					self::TIPUS_PRODUCTE_MERCHA 	=> 'Merchandising',
 					self::TIPUS_PRODUCTE_CURSOS 	=> 'Cursos',
 			        self::TIPUS_PRODUCTE_MATERIAL 	=> 'Material',
@@ -704,22 +704,25 @@ class BaseController extends Controller {
 	    }
 	}
 	
-	protected function addClubsActiusForm($formBuilder, $club, $nom = 'clubs') {
+	protected function addClubsActiusForm($formBuilder, $club, $nom = 'clubs', $clear = true) {
 			
-		$formBuilder->add($nom, 'entity', array(
-				'class' 		=> 'FecdasBundle:EntityClub',
-				'query_builder' => function($repository) {
-						return $repository->createQueryBuilder('c')
-								->orderBy('c.nom', 'ASC')
-								->where('c.databaixa IS NULL')
-								->where('c.activat = 1');
-						}, 
-				'choice_label' 	=> 'nom',
-				'placeholder' 	=> '',	// Important deixar en blanc pel bon comportament del select2
-				'required'  	=> false,
-				'data' 			=> $club,
-		));
-		
+	    $opcions = array(
+	        'class' 		=> 'FecdasBundle:EntityClub',
+	        'query_builder' => function($repository) {
+    	        return $repository->createQueryBuilder('c')
+    	        ->orderBy('c.nom', 'ASC')
+    	        ->where('c.databaixa IS NULL')
+    	        ->where('c.activat = 1');
+	        },
+	        'choice_label' 	=> 'nom',
+	        'required'  	=> false,
+	        'data' 			=> $club,
+	    );
+
+	    if ($clear || $club == null) $opcions['placeholder'] = '';	// Important deixar en blanc pel bon comportament del select2
+	    
+	    $formBuilder->add($nom, 'entity', $opcions);
+	    
 	}
 
 	protected function addTitolsFilterForm($formBuilder, $titol, $cmas = true, $nom = 'titols') {
@@ -2372,7 +2375,7 @@ class BaseController extends Controller {
 	    $parte = $llicencia->getParte();
 	    $anyAlta = $parte->getDataalta()->format('Y');
 	    $anyCaduca = $parte->getDatacaducitat()->format('Y');
-	    
+    
 	    if ($anyAlta == $anyCaduca) return $anyAlta;
 
 	    if (date('Y') >= $anyCaduca) return $anyCaduca;
@@ -2827,10 +2830,13 @@ class BaseController extends Controller {
 			// Add a page
 			$pdf->AddPage('L', 'BUSINESS_CARD_ISO7810');
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_GENERAL ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_PESCA ||
 			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
 			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME) {
 			        $this->printPlasticGeneral($pdf, $llicencia);
+			}
+			
+			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_PESCA) {
+			    $this->printPlasticPesca($pdf, $llicencia);
 			}
 				
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
@@ -2851,35 +2857,38 @@ class BaseController extends Controller {
 	protected function printPlasticGeneral($pdf, $llicencia) {
 		// Posicions
 		$xTit = 0;
-		$yTit =	12+3.2;		
-		$xNom = 10-1.5;
-		$yNom =	27.4+0.7;		
-		$xDni = 18;
-		$yDni =	32.1;		
-		$xCat = 20.5-1;
-		$yCat =	36.7-0.3;		
-		$xNai = 19.5;
-		$yNai =	41.1-0.5;		
-		$xClu = 12-2.5;
-		$yClu =	45.6-1.0;		
-		$xTlf = 15;
-		$yTlf =	50.1-1.3;		
-		$xCad = 61-4;
-		$yCad =	50.1-1.3;
+		$yTit =	15.2-1.1;		
+		$xNom = 8.5-1.2;
+		$yNom =	28.1+2.5;		
+		$xDni = 18-2.4;
+		$yDni =	32.1+3.0;		
+		$xCat = 19.5-19.5;
+		$yCat =	36.4-13.4;		
+		$xNai = 19.5-2.7;
+		$yNai =	40.6-1.0;	
+		$xClu = 9.5-1.1;
+		$yClu =	46.6-2.6;		
+		//$xTlf = 9.5;
+		//$yTlf =	58.8;		
+		$xCad = 57+8.0;
+		$yCad =	48.8-1.4;
 		
 		/*********** Alex Test  *************/
-		/*$srcImatge = 'images/federativa_2017_anvers_test.jpg';
+		
+		/*$srcImatge = 'images/federativa_impressio_anvers_test.jpg';
 		$width = 86; //Original
 		$height = 54; //Original
-		$pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, 
-						'', false, false, 1, false, false, false);
+		$pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, '', false, false, 1, false, false, false);*/
+		
+		/*
 		//$pdf->SetTextColor(255, 0, 0); 
 		$pdf->setCellHeightRatio(1.1);
 		// php  vendor/tcpdf/tools/tcpdf_addfont.php -i RobotoCondensed-Regular.ttf,RobotoCondensed-Italic.ttf
 		// ls -l vendor/tcpdf/fonts
 
 		//$fontname = TCPDF_FONTS::addTTFfont('/home/alex/Android/Sdk/platforms/android-23/data/fonts/DroidSans.ttf', 'OpenTypeUnicode', '', 32);
-		//$pdf->SetFont($fontname, 'B', 10);	*/
+		//$pdf->SetFont($fontname, 'B', 10);	
+		 */
 		/*********** Alex Test Fi *************/
 		
 		$parte = $llicencia->getParte();
@@ -2898,6 +2907,10 @@ class BaseController extends Controller {
 		$pdf->SetXY($xTit, $yTit);
 		$pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
 
+		$pdf->SetXY($xCat, $yCat);
+		//$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
+		$pdf->MultiCell(0,0,$llicencia->getCategoria()->getCategoria(),0,'C',false);
+		
 		//$pdf->SetFont('dejavusans', 'B', 8);
 		$pdf->SetFont('helvetica', 'B', 9);
 		$pdf->setFontStretching(100);
@@ -2908,21 +2921,104 @@ class BaseController extends Controller {
 		$pdf->SetXY($xDni, $yDni);
 		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
 
-		$pdf->SetXY($xCat, $yCat);
-		$pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-				
 		$pdf->SetXY($xNai, $yNai);
 		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
 				
 		$pdf->SetXY($xClu, $yClu);
 		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
 
-		$pdf->SetXY($xTlf, $yTlf);
-		$pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
-				
+		//$pdf->SetXY($xTlf, $yTlf);
+		//$pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
+		
+		$pdf->SetFont('helvetica', 'B', 8);
+		$pdf->setFontStretching(90);
+		
 		$pdf->SetXY($xCad, $yCad);
 		$pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
 		
+	}
+	
+	protected function printPlasticPesca($pdf, $llicencia) {
+	    // Posicions
+	    $xTit = 0;
+	    $yTit =	15.2;
+	    $xNom = 8.5;
+	    $yNom =	28.1-0.5;
+	    $xDni = 18;
+	    $yDni =	32.1-0.5;
+	    $xCat = 19.5+1.4;
+	    $yCat =	36.4-1.0;
+	    $xNai = 19.5-0.3;
+	    $yNai =	40.6-1.2;
+	    $xClu = 9.5;
+	    $yClu =	46.6-3.1;
+	    $xTlf = 15;
+	    $yTlf =	49.8-2.4;
+	    $xCad = 57;
+	    $yCad =	49.8-2.4;
+	    
+	    /*********** Alex Test  *************/
+	    
+	    /*$srcImatge = 'images/federativa_impressio_anvers_botiga_test.jpg';
+	    $width = 86; //Original
+	    $height = 54; //Original
+	    $pdf->Image($srcImatge, 0, 0, $width, $height , 'jpg', '', '', false, 320, '', false, false, 1, false, false, false);*/
+	    
+	    /*
+	     //$pdf->SetTextColor(255, 0, 0);
+	     $pdf->setCellHeightRatio(1.1);
+	     // php  vendor/tcpdf/tools/tcpdf_addfont.php -i RobotoCondensed-Regular.ttf,RobotoCondensed-Italic.ttf
+	     // ls -l vendor/tcpdf/fonts
+	     
+	     //$fontname = TCPDF_FONTS::addTTFfont('/home/alex/Android/Sdk/platforms/android-23/data/fonts/DroidSans.ttf', 'OpenTypeUnicode', '', 32);
+	     //$pdf->SetFont($fontname, 'B', 10);
+	     */
+	    /*********** Alex Test Fi *************/
+	    
+	    $parte = $llicencia->getParte();
+	    $club = $parte->getClubparte();
+	    $persona = $llicencia->getPersona();
+	    if ( $persona == null) return;
+	    
+	    $datacaduca = $parte->getDatacaducitat();
+	    $titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
+	    
+	    //$pdf->SetFont('helvetica', 'B', 10, '', true);
+	    $pdf->SetFont('helvetica', 'B', 10);
+	    //$pdf->setFontSpacing(0.5);
+	    $pdf->setFontStretching(90);
+	    
+	    $pdf->SetXY($xTit, $yTit);
+	    $pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
+	    
+	    //$pdf->SetFont('dejavusans', 'B', 8);
+	    $pdf->SetFont('helvetica', 'B', 9);
+	    $pdf->setFontStretching(100);
+
+	    $pdf->SetXY($xNom, $yNom);
+	    $pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+	    
+	    $pdf->SetXY($xDni, $yDni);
+	    $pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
+
+	    $pdf->SetXY($xCat, $yCat);
+	    $pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
+	    
+	    $pdf->SetXY($xNai, $yNai);
+	    $pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
+	    
+	    $pdf->SetFont('helvetica', 'B', 8);
+	    $pdf->setFontStretching(90);
+
+	    $pdf->SetXY($xClu, $yClu);
+	    $pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
+	    
+	    $pdf->SetXY($xTlf, $yTlf);
+	    $pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
+	    
+	    $pdf->SetXY($xCad, $yCad);
+	    $pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
+	    
 	}
 	
 	protected function printPlasticTecnocampus($pdf, $llicencia) {

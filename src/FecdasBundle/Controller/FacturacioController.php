@@ -95,7 +95,7 @@ class FacturacioController extends BaseController {
 					$data[] = $row;
 				}
 			
-				$filename = "export_stock_acumulat_".($idproducte != 0?$idproducte:"tots")."_".$desde->format('Y-m-d')."_".date('Hms').".csv";
+				$filename = "export_stock_acumulat_".($idproducte != 0?$idproducte:"tots")."_".$desde->format('Y-m-d')."_".date('His').".csv";
 				$response = $this->exportCSV($request, $header, $data, $filename);
 				return $response;
 			}
@@ -150,7 +150,7 @@ class FacturacioController extends BaseController {
 				$row['sortides'] = $stockActual;
 				$data[] = $row;
 				
-				$filename = "export_stock_detall_".$idproducte."_".$desde->format('Y-m-d')."_".date('Hms').".csv";
+				$filename = "export_stock_detall_".$idproducte."_".$desde->format('Y-m-d')."_".date('His').".csv";
 				$response = $this->exportCSV($request, $header, $data, $filename);
 				return $response;
 			} 	
@@ -467,13 +467,19 @@ class FacturacioController extends BaseController {
 	    
 		$sms = '';
 		$club = null;
-		$codi = $request->query->get('clubs', ''); // filtra club
+		$form = null;
+		if ($request->getMethod() == 'POST') {
+		    $form = $request->request->get('form', null);
+		    if ($form != null && isset($form['clubs'])) $codi = $form['clubs'];
+		} else {
+    		$codi = $request->query->get('clubs', ''); // filtra club
+		}
 		$club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
 		
-		if ($club == null || !$this->isCurrentAdmin()) { // Cada club lo seu, els administradors tot   
-			$club = $this->getCurrentClub();
+		if ($club == null) { // Cada club lo seu, els administradors la FEDERACIO   
+		    if (!$this->isCurrentAdmin()) $club = $this->getCurrentClub();
+		    else $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find(BaseController::CODI_FECDAS);
 		}
-		
 		$idproducte = $request->query->get('cerca', 0);
 		
 		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->find($idproducte);
@@ -487,8 +493,6 @@ class FacturacioController extends BaseController {
 			try {
 				if ($request->getMethod() == 'POST') {
 					if (!$this->isCurrentAdmin()) throw new \Exception("Només es pot modificar l'stock manualment des de la Federació");
-					
-					$form = $request->request->get('form', null);
 					
 					if ($form == null) throw new \Exception("Dades incorrectes");
 	
@@ -510,7 +514,7 @@ class FacturacioController extends BaseController {
 							
 							$comentaris = 'Regulació stock '.$unitats.'x'.$kit->getDescripcio();
 							
-							$registreStock = new EntityStock($club, $kit, $unitats, $comentaris, $current, $tipus); // Manual, sense factura
+							$registreStock = new EntityStock($club, $kit, abs($unitats), $comentaris, $current, $tipus); // Manual, sense factura
 							//$registreStock->setStock($stockform);
 							$em->persist($registreStock);
 							// No cal recalcular saldo perquè sempre s'afegeixen al final 	
@@ -564,7 +568,7 @@ class FacturacioController extends BaseController {
 		
 		/* Selecció club */
     	if ($this->isCurrentAdmin()) {
-			$this->addClubsActiusForm($formBuilder, $club);  // clubs
+            $this->addClubsActiusForm($formBuilder, $club, 'clubs', false);  // clubs
     	}
     	
 		if ($request->isXmlHttpRequest()) {
@@ -736,7 +740,7 @@ class FacturacioController extends BaseController {
 				
 			}
 			
-			$filename = "export_saldos_".$strGrup."_".Funcions::netejarPath(($club != null?$club->getNom():"tots_els_clubs"))."_".$desde->format('Y-m-d')."_".$fins->format('Y-m-d')."_".date('Hms').".csv";
+			$filename = "export_saldos_".$strGrup."_".Funcions::netejarPath(($club != null?$club->getNom():"tots_els_clubs"))."_".$desde->format('Y-m-d')."_".$fins->format('Y-m-d')."_".date('His').".csv";
 				
 			$response = $this->exportCSV($request, $header, $data, $filename);
 			
@@ -1145,7 +1149,7 @@ class FacturacioController extends BaseController {
 		if ($datafinal->format('Y-m-d H:i:s') > $datamax->format('Y-m-d H:i:s')) $datafinal = $datamax;
 		 
 		//$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".txt";
-		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").".csv";
+		$filename = BaseController::PREFIX_ASSENTAMENTS.'_'.$datafinal->format("Ymd_His").'_'.date("YmdHis").'.csv';
 	
 		$enviament = null;
 		$fs = new Filesystem();
@@ -1158,23 +1162,20 @@ class FacturacioController extends BaseController {
 				//$assentaments = $this->generarFitxerAssentaments($enviament); // Array
 				$assentaments = $this->generarFitxerAssentamentsContasol($enviament); // Array
 				if ($enviament->getApunts() == 0) throw new \Exception("No hi ha assentaments per aquests criteris de cerca ");
-				
 				$fs->dumpFile(__DIR__.BaseController::PATH_TO_COMPTA_FILES.$filename, implode("\r\n",$assentaments));
-				
 				$em->flush();
 			}
 		} catch (\Exception $e) {
 			if ($enviament != null) $em->detach($enviament);
 			//$this->logEntryAuth('FITXER COMPTA KO',	'Dates : ' . $inici ." - ".$final);
-			
-			$response = new Response();
+            $response = new Response(mb_convert_encoding($e->getMessage(), 'ISO-8859-1',  'auto'));
 			//$response->setCharset('ISO-8859-1');
-			$response->setStatusCode(500, mb_convert_encoding($e->getMessage(), 'ISO-8859-1',  'auto'));
+			$response->setStatusCode(500);
 			return $response;
 		}
 		
 		$this->get('session')->getFlashBag()->add('sms-notice', 
-				'Nou enviament en data '.$enviament->getDataenviament()->format('Y-m-d H:m:s').' creat correctament ('.
+				'Nou enviament en data '.$enviament->getDataenviament()->format('Y-m-d H:i:s').' creat correctament ('.
 				$enviament->getFactures().' factures i '.$enviament->getRebuts().' rebuts)');
 		
 		$this->logEntryAuth('FITXER COMPTA OK',	'Dates : ' . $inici ." - ".$final);
@@ -1265,9 +1266,13 @@ class FacturacioController extends BaseController {
 	private function generarFitxerAssentamentsContasol($enviament) {
 
 		$num = 0;
+error_log("CONTA"." ==> 1 ");
 		$apuntsFactures = $this->generarAssentamentsFactures($enviament, $num);
+error_log("CONTA"." ==> 2 ");
 		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament, $num);
+error_log("CONTA"." ==> 3 ");
 		$assentaments = array_merge($apuntsFactures, $apuntsRebuts);
+error_log("CONTA"." ==> 4 ");
 		return $assentaments; 
 	}
 
@@ -1547,8 +1552,10 @@ class FacturacioController extends BaseController {
 			
 			$conc = $d->total.' '.utf8_decode($d->producte);
 			if (is_numeric($d->ivaunitat) && $d->ivaunitat > 0) {
-			    $ivaDetalls += $d->total*$d->preuunitat*$d->ivaunitat;
-			    $importDetall = $d->import - $d->total*$d->preuunitat*$d->ivaunitat;  // Detall sense IVA
+			    //$ivaDetalls += $d->total*$d->preuunitat*$d->ivaunitat;
+			    //$importDetall = $d->import - $d->total*$d->preuunitat*$d->ivaunitat;  // Detall sense IVA
+			    $importDetall = $d->total*$d->preuunitat;
+			    $ivaDetalls += ($d->import-$importDetall);
 			} else {
 			    $importDetall = $d->import;
 			}

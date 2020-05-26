@@ -198,7 +198,7 @@
 			   						<i class="fa fa-trash-o text-danger red"></i></a>
 			   				{% endif %}
 			   			{% else %}
-							{% if comanda.comandaPagada != true and comanda.totalComanda > 0 and saldo < 0 %}
+							{% if comanda.comandaPagada != true and comanda.totalComanda > 0 %}
 								{% set saldo = saldo + comanda.totalComanda %}
 				        		<a class="link pagar-comanda" href="{{ path('FecdasBundle_pagamentcomanda', { 'id': comanda.id}) }}" alt="Pagament On-Line" title="Pagament On-Line">
 				        			<i class="fa fa-credit-card fa-1x green"></i></a>

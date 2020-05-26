@@ -114,7 +114,7 @@ class CartCheckOut
             $producte = self::$em->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
             $unitats = $this->getUnitatsTarifaTransport();
             $tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
-            
+ 
             $this->cart['tarifatransport'] = $tarifa;
             
             $this->session->set('cart', $this->cart);

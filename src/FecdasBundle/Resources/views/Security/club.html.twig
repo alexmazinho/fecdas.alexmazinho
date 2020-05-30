@@ -67,7 +67,7 @@
 		<div id="tabs-club">
 			<ul>
 				<li><a href="#formclub-dades-tab1">Dades</a></li>
-				{% if admin == true %} <li><a href="#formclub-dades-tab3">Llicències admeses</a></li>{% endif %}
+				{% if admin == true %} <li><a href="#formclub-dades-tab3">Llicències</a></li>{% endif %}
 				{% if admin == true %} <li><a href="#formclub-dades-tab4">Saldos</a></li>{% endif %}
 				<li><a href="#formclub-dades-tab5">Dates i càrrecs</a></li>
 			</ul>
@@ -276,10 +276,18 @@
 	        {% if admin == true %} 
 		        <div id="formclub-dades-tab3" class="formclub-tab" >
 		        	<div class="row">
+						<div class="col-md-12 form-inline">
+				        	<div id="formclub-enviarllicencia" class="formfield-row">
+								{{ form_label(form.enviarllicencia, 'Enviar llicències per mail:', { 'label_attr': {'class': 'formlabel-left'} }) }}
+								{{ form_widget(form.enviarllicencia, { 'attr': {'class': 'checkbox'} }) }}
+							</div>
+						</div>
+					</div>
+		        	<!-- <div class="row">
 						<div class="col-md-12">
 							<h4 class="blue">Tipus de llicències</h4>
 						</div>
-					</div>
+					</div> -->
 					<div class="row">
 						<div class="col-md-9">
 							<div class="form-group">

@@ -95,6 +95,18 @@ FecdasBundle_llicenciespermail:
     defaults: { _controller: "FecdasBundle:Page:llicenciespermail" }
     requirements:
         methods:  GET|POST
+        
+FecdasBundle_llicenciespermailbulk:
+    path:  /llicenciespermailbulk
+    defaults: { _controller: "FecdasBundle:Page:llicenciespermailbulk" }
+    requirements:
+        methods:  GET
+
+FecdasBundle_taulallicenciesfiltre:
+    path:  /taulallicenciesfiltre
+    defaults: { _controller: "FecdasBundle:Page:taulallicenciesfiltre" }
+    requirements:
+        methods:  GET
 
 FecdasBundle_persona:
     path:  /persona

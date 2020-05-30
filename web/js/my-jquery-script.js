@@ -2013,7 +2013,7 @@
     };
 
 
-    obrirTaulaSortidaLlicencies = function(url, title, txtSubmit, callbackSubmit) {
+    obrirTaulaSortidaLlicencies = function(url, urlFiltre, title, txtSubmit, callbackSubmit) {
     	$('.alert.alert-dismissible').remove();
     	
     	$.get(url, function(data) {
@@ -2046,7 +2046,9 @@
     		    title: title
     		 });
 
-    		eventFilterTable("#formfederatssortida", "#table-federats", url);
+    		eventsTaulaSortidaLlicencies();
+    		
+    		eventFilterTable("#formfederatssortida", "#table-federats", urlFiltre);
     		
     	}).fail( function(xhr, status, error) {
     		 var sms = smsResultAjax('KO', xhr.responseText);
@@ -2054,6 +2056,66 @@
     		 $("#list-forms").prepend(sms);
     	});
     
+    };
+    
+    eventsTaulaSortidaLlicencies = function() {
+    	$( "#dialeg" ).on( "click", "#form_checkall", function() {
+    		var checked = $(this).is(':checked');
+    	
+    		if (checked) {
+    			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = true; });				
+    		} else {
+    			$('.checkbox-federat').not(".checkbox-federat[disabled='disabled']").each(function(){ this.checked = false; });
+    		};
+    	});
+
+    	$( "#dialeg" ).on( "click", ".desar-email", function(e) {
+    		e.preventDefault();
+    		
+    		$('.alert.alert-dismissible').remove();
+
+			var input = $(this).parent().prev().find('input');
+        	var email = input.val();
+        	var url = $(this).attr("href")+'&mail='+email;
+        	input.removeClass('form-control-changed');
+        	
+        	$.get(url, function(data) {
+        		input.attr('data-value-init', email);
+        		input.addClass('form-control-saved');
+        		input.removeClass('form-control-error');
+
+        		var sms = smsResultAjax('OK', 'Adreça de correu actualitzada correctament');
+          		 
+        		$("#table-federats").prepend(sms);
+        	}).fail( function(xhr, status, error) {
+        		 // xhr.status + " " + xhr.statusText, status, error
+        		input.addClass('form-control-error');
+        		input.removeClass('form-control-saved');
+        		 
+        		var sms = smsResultAjax('KO', xhr.responseText);
+        		 
+        		$("#table-federats").prepend(sms);
+        	});
+    		
+    	});
+
+    	$( "#dialeg" ).on( "change", "input.form-control", function() {
+
+		//$( '#dialeg input.form-control' ).change(function(e) {
+			var initValue = $(this).attr('data-value-init');
+			if (typeof initValue === 'undefined') initValue = "";
+			
+			if ($(this).val() == initValue) $(this).removeClass('form-control-changed');
+			else $(this).addClass('form-control-changed');
+		});
+    	
+    	
+    	//sortLlista("col-listheader", "list-data");
+    
+    	var tableScroll = $('.table-scroll');
+    	if (tableScroll.hasOverflowY()) {
+    		$('.table-scroll').css({"width":"101.5%"});
+    	}
     };
     
     submitEnviarLllicencies = function( urlCallback, callbackOk ) {
@@ -2093,6 +2155,7 @@
     		}
     					
     		var filtre = $(this).val(); 
+    		var llicenciesId = $('#form_llicenciesid').val(); 
     					  
     		if ( $(this).data('lastval') != filtre ) {
     			 
@@ -2105,9 +2168,11 @@
     		    	
     		    	timeout = setTimeout( function() {
     					
-    					url += '&filtre='+filtre;
+    					//url += '&filtre='+filtre+'&llicenciesid'+llicenciesId;
     
-    					$.get(url, function(data) {
+    					var params = $('#formfederatssortida').serializeArray();
+    					
+    					$.post(url, params, function(data) {
     
     						$(taulaSel).remove();
     						$(containerSel).append(data);

@@ -11,6 +11,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FormLlicenciaSortida extends AbstractType {
 
+    private $options;
+    
+    public function __construct(array $options = null)
+    {
+        $this->options = $options;
+    }
+    
 	public function buildForm(FormBuilderInterface $builder, array $options)
 	{
 		$builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {

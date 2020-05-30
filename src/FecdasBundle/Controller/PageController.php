@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
 use FecdasBundle\Form\FormContact;
-use FecdasBundle\Form\FormLlicenciaMail;
 use FecdasBundle\Form\FormParte;
 use FecdasBundle\Form\FormParteRenovar;
 use FecdasBundle\Form\FormPersona;
@@ -1454,42 +1453,88 @@ class PageController extends BaseController {
 		
 	}
 
-	public function llicenciespermailAction(Request $request) {
-	        
-	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	
+	public function llicenciespermailbulkAction($persones = array(), $club = null) {
+	    
 	    if (!$this->getCurrentClub()->potTramitar()) {
 	        $response = new Response('Per poder fer aquest tràmit cal us poseu en contacte amb la Federació');
 	        $response->setStatusCode(500);
 	        return $response;
 	    }
-	        
-        $em = $this->getDoctrine()->getManager();
-	        
-        $filtre = '';
-        $parteid = 0;
-        $llicenciaid = 0;
-        if ($request->getMethod() == 'POST') {
-            $formdata = $request->request->get('form');
-            $parteid = isset($formdata['id'])?$formdata['id']:0;
-        } else {
-            $parteid = $request->query->get('id', 0);
-            $llicenciaid = $request->query->get('llicencia', 0);
-            $filtre = $request->query->get('filtre', '');
+	    
+	    if (!$this->isCurrentAdmin() || $club == null) $club = $this->getCurrentClub();
+	    
+        // CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
+        $llicenciesId = array();
+        foreach ($persones as $persona) {
+            $vigent = $persona->getLlicenciaVigent();
+            // Llicència vigent pertany al club i es pot enviar per correu
+            if ($vigent != null && 
+                $vigent->getParte()->getClub() == $club && 
+                $vigent->getParte()->perEnviarFederat()) {
+                    $llicenciesId[] = $vigent->getId();
+                }
         }
+	            
+        // CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
+        $formBuilder = $this->createFormSortidaLlicencies('mail', null, 0, $llicenciesId, '', false);
+        
+        $this->get('session')->getFlashBag()->add('sms-notice', 'Les llicències de les persones sense correu s\'enviaran a l\'adreça de correu del club ');
+        
+	    $this->logEntryAuth('MAIL LLICENCIES FORM BULK', $club->getNom());
+	    
+	    // Temps des de la darrera llicència
+	    $form = $formBuilder->getForm();
+	    
+	    return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig',
+	        $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(),
+	            'action' => $this->generateUrl('FecdasBundle_llicenciespermail'),
+	            'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
+	            'club' => $club,
+	            'showFiltre' => true, 'filtre' => '' ) )
+	        );
+	}
+	
+	
+	public function llicenciespermailAction(Request $request) {
 	        
-        $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
-	        
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
+	    if (!$this->getCurrentClub()->potTramitar()) {
+	        $response = new Response('Per poder fer aquest tràmit cal us poseu en contacte amb la Federació');
+	        $response->setStatusCode(500);
+	        return $response;
+	    }
+	    
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $parteid = 0;
+	    $llicenciaid = 0;
+	    if ($request->getMethod() == 'POST') {
+	        $formdata = $request->request->get('form');
+	        $parteid = isset($formdata['id'])?$formdata['id']:0;
+	    } else {
+	        $parteid = $request->query->get('id', 0);
+	        $llicenciaid = $request->query->get('llicencia', 0);
+	    }
+	    
+	    $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+	    
+	    if ($parte != null) $club = $parte->getClub();
+	    else $club = $this->getCurrentClub();
+        
 	        
         try {
-            if ($parte == null) throw new \Exception ('Llista no trobada');
+            //if ($parte == null) throw new \Exception ('Llista no trobada');
 	            
-            $club = $parte->getClub();
-	            
-            if (!$this->isCurrentAdmin() && !$parte->comandaPagada() && $club->getSaldo() < 0) throw new \Exception ('Llista pendent de pagament. Poseu-vos en contacte amb la Federació');
+            if (!$this->isCurrentAdmin() && $parte != null && !$parte->comandaPagada() && $club->getSaldo() < 0) throw new \Exception ('Llista pendent de pagament. Poseu-vos en contacte amb la Federació');
+            
+            if ($parte != null && !$parte->perEnviarFederat()) throw new \Exception ('Aquest tipus de llicència no es pot enviar per correu. Poseu-vos en contacte amb la Federació');
 	            
             if ($request->getMethod() == 'POST') {
-                $llicencies = $formdata['llicencies'];      // PHP límit max_input_vars = 1000. El formulari té 6 camps per llicència => 166 llicències max.
+                if (!isset($formdata['llicencies'])) throw new \Exception ('No hi ha cap llicència seleccionada');
+                
+                $llicencies = $formdata['llicencies'];      // PHP límit max_input_vars = 5000. El formulari té 6 camps per llicència => 166 llicències max.
                 // Valor canviat a 3000 => 500 llicències
                 $enviades = 0;
                 $res = '';
@@ -1514,10 +1559,10 @@ class PageController extends BaseController {
                 
                 if ($enviades == 0)  throw new \Exception ('No s\'ha enviat cap llicència digital');
                 // Marcar el parte com enviat (imprès)
-                $parte->setDatamodificacio($this->getCurrentDate());
+                if ($parte != null) $parte->setDatamodificacio($this->getCurrentDate());
                 $em->flush();
 	                
-                $this->logEntryAuth('MAIL LLICENCIES OK', 'parte ' . $parteid . ' enviades  '.$enviades.' : '.$log );
+                $this->logEntryAuth('MAIL LLICENCIES OK', 'club'.$club->getNom().  ' parte ' . $parteid . ' enviades  '.$enviades.' : '.$log );
 	                
                 if ($enviades > 1)  $res = 'Total de llicències enviades '.$enviades.'<br/>'.$res;
                 else $res = 'Llicència enviada a '.$res;
@@ -1525,31 +1570,9 @@ class PageController extends BaseController {
                 return new Response($res);
             } else {
                 // CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
-                $llicencies = array();
-                if ($llicenciaid == 0) $llicencies = $parte->getLlicenciesSortedByName( $filtre );
-                else $llicencies[] = $parte->getLlicenciaById($llicenciaid);
+                $formBuilder = $this->createFormSortidaLlicencies('mail', $parte, $llicenciaid, array(), '', false);
                 
-                $formBuilder = $this->createFormBuilder();
-	                
-                $formBuilder->add('id', 'hidden', array(
-                    'data'	=> $parteid
-                ));
-	                
-                $formBuilder->add('filtre', 'text', array(
-                    'data'	=> $filtre
-                ));
-	                
-                $formBuilder->add('checkall', 'checkbox', array(
-                    'data'	=> true
-                ));
-	                
-                $formBuilder->add('llicencies', 'collection', array(
-                    'type' 	=> new FormLlicenciaMail(),
-                    'data'	=> $llicencies
-                ));
-	                
                 $this->get('session')->getFlashBag()->add('sms-notice', 'Les llicències de les persones sense correu s\'enviaran a l\'adreça de correu del club ');
-	                
             }
 	            
         } catch (\Exception $e) {
@@ -1565,18 +1588,58 @@ class PageController extends BaseController {
         // Temps des de la darrera llicència
         $form = $formBuilder->getForm();
 	        
-        if ($request->query->has('filtre')) {  // Recàrrega de la taula
-            return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
-	                $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'showFiltre' => true, 'filtre' => $filtre ) )
-                );
-        }
-	        
         return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig',
             $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(),
 	                'action' => $this->generateUrl('FecdasBundle_llicenciespermail'),
 	                'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
-	                'parte' => $parte, 'showFiltre' => ($llicenciaid == 0), 'filtre' => $filtre ) )
+                    'club' => $club,
+	                'parte' => $parte, 'showFiltre' => ($llicenciaid == 0), 'filtre' => '' ) )
             );
+	}
+	
+	public function taulallicenciesfiltreAction(Request $request) {
+	    
+	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
+	    
+	    if (!$this->getCurrentClub()->potTramitar()) {
+	        $response = new Response('Per poder fer aquest tràmit cal que us poseu en contacte amb la Federació');
+	        $response->setStatusCode(500);
+	        return $response;
+	    }
+	    
+	    if ($request->getMethod() != 'POST') {
+	        $response = new Response('Petició incorrecta. Cal que us poseu en contacte amb la Federació');
+	        $response->setStatusCode(500);
+	        return $response;
+	    }
+	        
+	    $formdata = $request->request->get('form');
+       
+	    $action = isset($formdata['action'])?$formdata['action']:'mail';
+	    $parteid = isset($formdata['id'])?$formdata['id']:0;
+	    $llicenciaid = isset($formdata['llicenciaid'])?$formdata['llicenciaid']:0;
+	    $llicenciesIdJson = isset($formdata['llicenciesid'])?$formdata['llicenciesid']:'';
+	    $llicenciesId = json_decode($llicenciesIdJson);
+	    $filtre = isset($formdata['filtre'])?$formdata['filtre']:'';
+	    $checkall = isset($formdata['checkall']) && $formdata['checkall']==1?true:false;
+	    
+	    $parte = null;
+	    if ($parteid > 0) $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
+	    
+	    // CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
+	    $formBuilder = $this->createFormSortidaLlicencies($action, $parte, $llicenciaid, $llicenciesId, $filtre, $checkall);
+	 
+	    $form = $formBuilder->getForm();
+	    
+	    if ($action == 'mail') {
+    	    return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulamail.html.twig',
+    	        $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte, 'showFiltre' => true, 'filtre' => $filtre ) )
+    	    );
+	    }
+	    
+	    return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig',
+	        $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte,'showFiltre' => true,  'filtre' => $filtre ) )
+	    );
 	}
 	
 	public function personaAction(Request $request) {

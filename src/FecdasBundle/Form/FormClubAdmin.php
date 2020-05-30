@@ -110,6 +110,10 @@ class FormClubAdmin extends FormClub {
 				})
 		);
 	
+		$builder->add('enviarllicencia', 'checkbox', array(
+		    'required'  => false,
+		));
+		
 		// Saldos. Comptabilitat
 		$builder->add('compte', 'text', array(
 				'required'  => true,

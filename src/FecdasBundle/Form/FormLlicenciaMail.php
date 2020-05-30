@@ -25,7 +25,7 @@ class FormLlicenciaMail extends FormLlicenciaSortida {
 					
 				$form->add('enviar', 'checkbox', array(
 					'mapped'  	=> false,
-					'data'		=> !$llicencia->getMailenviat(),
+				    'data'		=> !$llicencia->getMailenviat() && isset($this->options['checkall']) && $this->options['checkall'],
 					//'disabled'	=> $persona->getMail() == ''
 				));
 			}

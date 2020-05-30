@@ -60,13 +60,33 @@ class TitulacionsController extends BaseController {
 			if ($currentClub != '') $club = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($currentClub);
 			else $club = null;
 		}
-				
+			
+		// Permetre enviar llicències per mail global d'un club
+		$enviarLlicencies = false;
+		if ($currentVigent && $currentClub != '') {
+		    if ($this->isCurrentAdmin() || 
+		        ($this->isCurrentClub() && $this->getCurrentClub()->getEnviarllicencia()))  {
+		        
+		        $enviarLlicencies = true;
+		    }
+		}
+		
+		
 		$this->logEntryAuth('VIEW PERSONES CLUB', ($format != ''?$format:'')."club: " . $currentClub." ".$currentNom.", ".$currentCognoms . "(".$currentDNI. ") ".
 		                                            " mail: ".$currentMail." professio: ".$currentProfessio." ".
 													"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--').
 													" titol ".$currentTitol." altres ". $currentTitolExtern);
 			
 		$query = $this->consultaDadesfederats($currentDNI, $currentNom, $currentCognoms, $currentMail, $currentProfessio, $club, $desde, $fins, $currentVigent, $titol, $titolExtern, $sort.' '.$direction);
+		
+		
+		if ($format == 'mail') {
+		    // Obrir form enviament llicencies per mail
+		    return $this->forward('FecdasBundle:Page:llicenciespermailbulk', array(
+		        'persones'        => $query->getResult(),
+		        'club'            => $club
+		    ));
+		}
 		
 		if ($format == 'csv') {
 			// Generar CSV
@@ -126,7 +146,7 @@ class TitulacionsController extends BaseController {
 		$form = $formBuilder->getForm(); 
 	
 		return $this->render('FecdasBundle:Titulacions:dadesfederats.html.twig',
-				$this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 
+		      $this->getCommonRenderArrayOptions(array('form' => $form->createView(), 'persones' => $persones, 'enviarLlicencies' => $enviarLlicencies,
 						'sortparams' => array('sort' => $sort,'direction' => $direction)) 
 						));
 

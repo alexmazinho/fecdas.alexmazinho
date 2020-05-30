@@ -24,6 +24,8 @@ use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Entity\EntityComandaDetall;
 use FecdasBundle\Entity\EntityArxiu;
 use FecdasBundle\Entity\EntityStock;
+use FecdasBundle\Form\FormLlicenciaImprimir;
+use FecdasBundle\Form\FormLlicenciaMail;
 
 
 include_once (__DIR__.'/../../../vendor/tecnickcom/tcpdf/include/tcpdf_static.php');
@@ -1465,6 +1467,68 @@ class BaseController extends Controller {
 		
 		return $factura;
 	}
+	
+	protected function createFormSortidaLlicencies($action = 'mail', $parte = null, $llicenciaid = 0, $llicenciesId = array(), $filtre = '', $checkall = true) {
+	    $llicencies = array();
+	    $parteid = 0;
+	    
+	    if ($parte != null) {
+	        $parteid = $parte->getId();
+	        if ($llicenciaid == 0) $llicencies = $parte->getLlicenciesSortedByName( $filtre );
+	        else $llicencies[] = $parte->getLlicenciaById($llicenciaid);
+	    } else {
+	        foreach ($llicenciesId as $licId) {
+	            $llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($licId);
+	            
+	            if ($filtre == '' ||
+	                ($filtre != '' && strpos( mb_strtolower ($llicencia->getPersona()->getNomCognoms()),  mb_strtolower($filtre)) !== false)) {
+	                    
+	                    $llicencies[] = $llicencia;
+	                }
+	        }
+	    }
+	    
+	    $formBuilder = $this->createFormBuilder();
+	    
+	    $formBuilder->add('action', 'hidden', array(
+	        'data'	=> $action
+	    ));
+	    
+	    $formBuilder->add('id', 'hidden', array(
+	        'data'	=> $parteid
+	    ));
+	    
+	    $formBuilder->add('llicenciaid', 'hidden', array(
+	        'data'	=> $llicenciaid
+	    ));
+	    
+	    $formBuilder->add('llicenciesid', 'hidden', array(
+	        'data'	=> json_encode($llicenciesId)
+	    ));
+	    
+	    $formBuilder->add('filtre', 'text', array(
+	        'data'	=> $filtre
+	    ));
+	    
+	    $formBuilder->add('checkall', 'checkbox', array(
+	        'data'	=> $checkall
+	    ));
+	    
+	    if ($action == 'mail') {
+	        $formBuilder->add('llicencies', 'collection', array(
+	            'type' 	=> new FormLlicenciaMail(array('checkall' => $checkall)),
+	            'data'	=> $llicencies
+	        ));
+	    } else {
+	        $formBuilder->add('llicencies', 'collection', array(
+	            'type' 	=> new FormLlicenciaImprimir(array('checkall' => $checkall)),
+	            'data'	=> $llicencies
+	        ));
+	    }
+	    
+	    return $formBuilder;
+	}
+	
 	
 	protected function facturatopdf($factura) {
 		// Configuració 	/vendor/tcpdf/config/tcpdf_config.php

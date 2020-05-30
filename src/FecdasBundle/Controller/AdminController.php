@@ -3,10 +3,7 @@ namespace FecdasBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-
 use FecdasBundle\Classes\CSVReader;
-
-use FecdasBundle\Form\FormLlicenciaImprimir;
 
 class AdminController extends BaseController {
 	
@@ -1802,14 +1799,12 @@ GROUP BY c.nom
 	
 		$em = $this->getDoctrine()->getManager();
 		
-		$filtre = '';
 		$parteid = 0;
 		if ($request->getMethod() == 'POST') {
 			$formdata = $request->request->get('form');
 			$parteid = isset($formdata['id'])?$formdata['id']:0;
 		} else {
 			$parteid = $request->query->get('id', 0);
-			$filtre = $request->query->get('filtre', '');
 		}
 		
 		$parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
@@ -1857,27 +1852,7 @@ GROUP BY c.nom
 				return $response;
 			} else {
 				// CREAR FORMULARI federats amb checkbox filtrats opcionalment per nom
-				
-				$llicencies = $parte->getLlicenciesSortedByName( $filtre );
-
-				$formBuilder = $this->createFormBuilder();
-								
-				$formBuilder->add('id', 'hidden', array(
-					'data'	=> $parteid
-				));
-
-				$formBuilder->add('filtre', 'text', array(
-					'data'	=> $filtre
-				));
-				
-				$formBuilder->add('checkall', 'checkbox', array(
-					'data'	=> true
-				));
-				
-				$formBuilder->add('llicencies', 'collection', array(
-					'type' 	=> new FormLlicenciaImprimir(),
-					'data'	=> $llicencies
-				));
+			    $formBuilder = $this->createFormSortidaLlicencies('print', $parte, 0, array(), '', false);
 				
 			}
 			
@@ -1894,17 +1869,12 @@ GROUP BY c.nom
 		// Temps des de la darrera llicència
 		$form = $formBuilder->getForm();
 		
-		if ($request->query->has('filtre')) {  // Recàrrega de la taula
-			return $this->render('FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig', 
-			    $this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 'parte' => $parte,'showFiltre' => true,  'filtre' => $filtre ) )
-			);
-		}
-		
 		return $this->render('FecdasBundle:Admin:sortidallicenciesform.html.twig', 
 				$this->getCommonRenderArrayOptions( array( 'form' => $form->createView(), 
 															'action' => $this->generateUrl('FecdasBundle_imprimirparte'),
 															'includetaula' => 'FecdasBundle:Admin:sortidallicenciesformtaulaimpressio.html.twig',	 
-				                                            'parte' => $parte, 'showFiltre' => true, 'filtre' => $filtre ) )
+				                                            'club' => $parte->getClub(),
+				                                            'parte' => $parte, 'showFiltre' => true, 'filtre' => '' ) )
 		);
 	}
 	

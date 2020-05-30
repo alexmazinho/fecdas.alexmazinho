@@ -21,6 +21,17 @@
 						<div class="button-top"><a class="link" href="{{ path('FecdasBundle_dadesfederats', persones.params|merge({ 'format': 'pdf' })) }}" alt="Descarregar les llistes de dades personals" 
 							title="Descarregar les llistes de dades personals"><i class="fa fa-file-pdf-o fa-1x red"></i></a>
 						</div>	
+						{% if enviarLlicencies == true %}
+    						<div class="button-top"><a class="enviar-llicencies link" target="_blank" href="{{ path('FecdasBundle_dadesfederats', persones.params|merge({ 'format': 'mail' })) }}" alt="Enviar llicències vigents per mail" 
+    							title="Enviar llicències vigents per mail"><i class="fa fa-at fa-1x systemblue"></i></a>
+    						</div>
+    					{% else %}	
+    						<div class="button-top">
+    							<span class="link link-disabled" alt="Activat només per consulta de llicències vigents{% if admin == true %} d'un club{% endif %}" title="Activat només per consulta de llicències vigents{% if admin == true %} d'un club{% endif %}">
+    								<b><i class="fa fa-at fa-1x systemblue"></i></b>
+    							</span>
+    						</div>
+						{% endif %}
 					</div> 
 				{# endif #}
 			</div>
@@ -214,16 +225,16 @@
 									data-club="{{ parte.clubparte.nom }}"
 									data-persona="{{ persona.nomcognoms }}" alt="Imprimir llicència plàstic" title="Imprimir llicència plàstic">
 									<i class="fa fa-print blue"></i></a>
-								{% if parte.perEnviarFederat == true  %}
-        			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
-        			   					alt="Enviar llicència digital" title="Enviar llicència digital"><i class="fa systemblue"><b>@</b></i></a>
-        			   			{% endif %}
         			   		{% else %}
         			   			{# if parte.comandaPagada == true or parte.club.saldo >= 0 %}
            			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
            			   					alt="Demanar reenviament llicència digital" title="Demanar reenviament llicència digital"><i class="fa fa-reply fa-1x systemblue"></i></a>
        			   				{% endif #}
 							{% endif  %}
+							{% if (admin == true or enviarLlicencies == true) and parte.perEnviarFederat == true  %}
+        			   				<a class="enviar-llicencia link" href="{{ path('FecdasBundle_llicenciespermail', { 'id': parte.id, 'llicencia': llicenciaVigent.id }) }}" 
+        			   					alt="Enviar llicència digital" title="Enviar llicència digital"><i class="fa systemblue"><b>@</b></i></a>
+        			   		{% endif %}
 							{% if parte.allowRenovar %}
 								<a class="llicencia-renovar link" href="{{ path('FecdasBundle_renovarllicencia', { 'id': llicenciaVigent.id }) }}" alt="Renovar llicència" title="Renovar llicència">
 				   					<i class="fa fa-retweet fa-1x green"></i></a>
@@ -455,47 +466,17 @@
 
 
 		// Delegate. Form llicència digital
-    	$( "#main-col" ).on( "click", ".enviar-llicencia", function(e) {
+    	$( "#main-col" ).on( "click", ".enviar-llicencia, .enviar-llicencies", function(e) {
     		e.preventDefault();
     
     		// Obrir form selecció federats
     		var url = $(this).attr("href");
+    		var urlFiltre = "{{ path('FecdasBundle_taulallicenciesfiltre') }}";
     
-    		obrirTaulaSortidaLlicencies(url, 'Enviar llicència per mail', 'Enviar', function() {
+    		obrirTaulaSortidaLlicencies(url, urlFiltre, 'Enviar llicències per mail', 'Enviar', function() {
     			$('.alert.alert-dismissible').remove();
     	   		submitEnviarLllicencies( '', function(){} );
     	    });
-    		
-    	});
-
-    	$( "#dialeg" ).on( "click", ".desar-email", function(e) {
-    		e.preventDefault();
-    		
-    		$('.alert.alert-dismissible').remove();
-
-			var input = $(this).parent().prev().find('input');
-        	var email = input.val();
-        	var url = $(this).attr("href")+'&mail='+email;
-        	input.removeClass('form-control-changed');
-        	
-        	$.get(url, function(data) {
-        		input.attr('data-value-init', email);
-        		input.addClass('form-control-saved');
-        		input.removeClass('form-control-error');
-
-        		var sms = smsResultAjax('OK', 'Adreça de correu actualitzada correctament');
-       		 
-        		$("#table-federats").prepend(sms);
-                
-        	}).fail( function(xhr, status, error) {
-        		 // xhr.status + " " + xhr.statusText, status, error
-        		input.addClass('form-control-error');
-        		input.removeClass('form-control-saved');
-        		 
-        		var sms = smsResultAjax('KO', xhr.responseText);
-        		 
-        		$("#table-federats").prepend(sms);
-        	});
     		
     	});
 		

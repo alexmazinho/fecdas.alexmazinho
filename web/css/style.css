@@ -1812,7 +1812,18 @@ input#form_dni {
     text-align: center;
     width: 40px;
     padding: 7px 0 0;
+    -webkit-transition: background-color 0.3s ease-in-out;
+  	-moz-transition: background-color 0.3s ease-in-out;
+  	-ms-transition: background-color 0.3s ease-in-out;
+  	-o-transition: background-color 0.3s ease-in-out;
+  	transition: background-color 0.3s ease-in-out;
 }
+
+.buttons-top .link i.fa.fa-at,
+.buttons-top-bootstrap .link i.fa.fa-at {
+	font-weight: bold;
+}
+
 
 .buttons-top .link.factura-anulacio i.fa,
 .buttons-top-bootstrap .link.factura-anulacio i.fa,
@@ -1825,6 +1836,12 @@ input#form_dni {
     padding: 4px 0 0;
 }
 
+.buttons-top .link.link-disabled,
+.buttons-top-bootstrap .link.link-disabled {
+	cursor:default;
+	opacity:0.5;
+}
+
 
 .buttons-top-nous {
 	bottom: 20px;
@@ -1833,6 +1850,22 @@ input#form_dni {
 .buttons-top-bootstrap { /*margin-top: 10px;*/ }
 
 
+.buttons-top .link i.fa:hover,
+.buttons-top-bootstrap .link i.fa:hover {
+	color: white !important;	
+	border-radius: 50%;
+}
+
+.buttons-top .link.link-disabled i.fa:hover,
+.buttons-top-bootstrap .link.link-disabled i.fa:hover {
+	color: inherit !important;	
+	border-radius: 0;
+	background-color: inherit !important;
+}
+
+.link.link-disabled i.fa.systemblue:hover {
+	color: #2281cf !important;
+}
 
 
 .alert span.fa { margin-right: 10px; } 
@@ -2609,7 +2642,7 @@ input#formuserclub-randompassword { width: 150px; }
 #header-personacheck { width: 6%; font-size: 0.9em; }
 #header-personaenviada, #header-personaimpresa { width: 11%; text-align: right; }
 
-.data-detall-cell.federat-personaindex {	width: 4%; text-align: left;  vertical-align: middle; font-size: 0.9em; padding: 8px 4px;}
+.data-detall-cell.federat-personaindex {	width: 4%; text-align: left;  vertical-align: middle; font-size: 0.9em; padding: 8px 4px; word-wrap: normal !important;}
 .data-detall-cell.federat-personanom { width: 18%;  text-align: left; }
 .data-detall-cell.federat-personadni { width: 13%;  text-align: left; }
 .data-detall-cell.federat-personadni input { text-align: center; }

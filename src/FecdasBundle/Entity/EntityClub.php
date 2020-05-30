@@ -165,6 +165,11 @@ class EntityClub {
 	protected $impressio;
 	
 	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $enviarllicencia;
+		
+	/**
 	 * @ORM\Column(type="decimal", precision=6, scale=2)
 	 */
 	protected $limitcredit;
@@ -271,6 +276,7 @@ class EntityClub {
 	public function __construct() {
 		$this->activat = true;
 		$this->impressio = false;
+		$this->enviarllicencia = false;
 		$this->comptabilitat = false;
 		$this->limitcredit = 0;
 		$this->romanent = 0;
@@ -1374,6 +1380,26 @@ class EntityClub {
     public function getImpressio()
     {
     	return $this->impressio;
+    }
+    
+    /**
+     * Set enviarllicencia
+     *
+     * @param boolean $enviarllicencia
+     */
+    public function setEnviarllicencia($enviarllicencia)
+    {
+        $this->enviarllicencia = $enviarllicencia;
+    }
+    
+    /**
+     * Get enviarllicencia
+     *
+     * @return boolean
+     */
+    public function getEnviarllicencia()
+    {
+        return $this->enviarllicencia;
     }
     
     /**

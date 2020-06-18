@@ -2171,7 +2171,7 @@
     					//url += '&filtre='+filtre+'&llicenciesid'+llicenciesId;
     
     					var params = $('#formfederatssortida').serializeArray();
-    					
+					
     					$.post(url, params, function(data) {
     
     						$(taulaSel).remove();

@@ -1622,7 +1622,7 @@ class PageController extends BaseController {
 	    $llicenciesId = json_decode($llicenciesIdJson);
 	    $filtre = isset($formdata['filtre'])?$formdata['filtre']:'';
 	    $checkall = isset($formdata['checkall']) && $formdata['checkall']==1?true:false;
-	    
+
 	    $parte = null;
 	    if ($parteid > 0) $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 	    

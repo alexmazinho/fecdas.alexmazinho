@@ -25,8 +25,9 @@ class FormLlicenciaImprimir extends FormLlicenciaSortida {
 					
 				$form->add('imprimir', 'checkbox', array(
 					'mapped'  	=> false,
+				    'required'  => false,
 					//'data'		=> $persona->getMail() == '' && !$llicencia->getImpresa()
-				    'data'		=> $llicencia->getImprimir() && !$llicencia->getImpresa() && isset($this->options['checkall']) && $this->options['checkall']
+				    'data'		=> $llicencia->getImprimir() && !$llicencia->getImpresa() || (isset($this->options['checkall']) && $this->options['checkall']==1)
 				));
 			}
 		});

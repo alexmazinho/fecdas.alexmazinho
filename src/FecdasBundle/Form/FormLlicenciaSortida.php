@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FormLlicenciaSortida extends AbstractType {
 
-    private $options;
+    protected $options;
     
     public function __construct(array $options = null)
     {

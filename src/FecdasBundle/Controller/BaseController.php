@@ -1511,6 +1511,7 @@ class BaseController extends Controller {
 	    ));
 	    
 	    $formBuilder->add('checkall', 'checkbox', array(
+	        'required'  => false,
 	        'data'	=> $checkall
 	    ));
 	    

@@ -22,10 +22,11 @@ class FormLlicenciaMail extends FormLlicenciaSortida {
 			/* Check we're looking at the right data/form */
 			if ($llicencia instanceof EntityLlicencia) {
 				//$persona = $llicencia->getPersona();
-					
+
 				$form->add('enviar', 'checkbox', array(
 					'mapped'  	=> false,
-				    'data'		=> !$llicencia->getMailenviat() && isset($this->options['checkall']) && $this->options['checkall'],
+				    'required'  => false,
+				    'data'		=> !$llicencia->getMailenviat() || (isset($this->options['checkall']) && $this->options['checkall'] == 1),
 					//'disabled'	=> $persona->getMail() == ''
 				));
 			}

@@ -287,7 +287,8 @@
             	        //transition effect    
             	        $('.mask').fadeTo("slow",0.6); 
 
-            	        var params = { limitcredit: $("#club-limitcredit").val(), imprimir: $("#club-imprimir").is(':checked') };
+            	        //var params = { limitcredit: $("#club-limitcredit").val(), imprimir: $("#club-imprimir").is(':checked') };
+            	        var params = { limitcredit: $("#club-limitcredit").val() };
 
             	        $.get(hrefCanviEstat, params,
 	            		function(data, textStatus) {
@@ -310,8 +311,8 @@
 		    $("#dialeg").append("<div class='club-dialog-action'>"+estat+"</div>");
 		    $("#dialeg").append("<div class='club-dialog-row'><div class='club-dialog-label'>Límit de crèdit per al club (€)</div>" +
 		    		" <input id='club-limitcredit' type='text' value='"+$(this).parents().children('.club-limit').attr('data-limit')+"' /></div>");			    
-		    $("#dialeg").append("<div class='club-dialog-row'><div class='club-dialog-label'>Impressió web de llicències pendents de pagament?</div>" +
-		    					"<input id='club-imprimir' type='checkbox' value=1' /></div>");
+		    /*$("#dialeg").append("<div class='club-dialog-row'><div class='club-dialog-label'>Impressió web de llicències pendents de pagament?</div>" +
+		    					"<input id='club-imprimir' type='checkbox' value=1' /></div>");*/
 			if (!mostrarForm) $("#dialeg").find('.club-dialog-row').hide();
 			
 		    

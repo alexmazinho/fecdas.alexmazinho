@@ -260,8 +260,16 @@ class BaseController extends Controller {
 	const ORGANISME_CMAS		= 'CMAS';
 	
 	// Títols cerca números de carnet
+	const TITOL_B1EJ	        = 49;
+	const TITOL_B1EO	        = 251;
 	const TITOL_B1E		        = 48;
+	const TITOL_B2EO	        = 252;
+	const TITOL_B2ESVBO	        = 254;
+	const TITOL_B2ESVB	        = 248;
 	const TITOL_B2E		        = 50;
+	const TITOL_B3EO	        = 253;
+	const TITOL_B3EAOO	        = 255;
+	const TITOL_B3EAO	        = 249;
 	const TITOL_B3E		        = 51;
 	const TITOL_B4E		        = 243;
 	const TITOL_I1E		        = 53;
@@ -306,7 +314,13 @@ class BaseController extends Controller {
 	
 	
 	public static function getTitolsCercaNumCarnets() {
-	    return array(self::TITOL_I3E, self::TITOL_I2E, self::TITOL_I1E, self::TITOL_B4E, self::TITOL_B3E, self::TITOL_B2E, self::TITOL_B1E);
+	    return array(  self::TITOL_I3E, 
+	                   self::TITOL_I2E, 
+	                   self::TITOL_I1E, 
+	                   self::TITOL_B4E, 
+	                   self::TITOL_B3E, self::TITOL_B3EAO, self::TITOL_B3EAOO, self::TITOL_B3EO, 
+	                   self::TITOL_B2E, self::TITOL_B2ESVB, self::TITOL_B2ESVBO, self::TITOL_B2EO,
+	                   self::TITOL_B1E, self::TITOL_B1EO, self::TITOL_B1EJ);
 	}
 	
 	

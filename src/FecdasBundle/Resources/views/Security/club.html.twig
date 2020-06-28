@@ -277,6 +277,10 @@
 		        <div id="formclub-dades-tab3" class="formclub-tab" >
 		        	<div class="row">
 						<div class="col-md-12 form-inline">
+							<div id="formclub-impressio" class="formfield-row">
+								{{ form_label(form.impressio, 'Demanar impressió llicències (plàstic):', { 'label_attr': {'class': 'formlabel-left'} }) }}
+								{{ form_widget(form.impressio, { 'attr': {'class': 'checkbox'} }) }}
+							</div>
 				        	<div id="formclub-enviarllicencia" class="formfield-row">
 								{{ form_label(form.enviarllicencia, 'Enviar llicències per mail:', { 'label_attr': {'class': 'formlabel-left'} }) }}
 								{{ form_widget(form.enviarllicencia, { 'attr': {'class': 'checkbox'} }) }}
@@ -333,10 +337,6 @@
 					</div>
 		        	<div class="row">
 						<div class="col-md-4 form-inline">
-				        	<div id="formclub-impressio" class="formfield-row">
-								{{ form_label(form.impressio, 'Impressió llicències:', { 'label_attr': {'class': 'formlabel-left'} }) }}
-								{{ form_widget(form.impressio, { 'attr': {'class': 'checkbox'} }) }}
-							</div>
 							<div id="formclub-limitcredit" class="formfield-row">
 								{{ form_label(form.limitcredit, 'Límit de crèdit:', { 'label_attr': {'class': 'formlabel-left'} }) }}
 								<div class="form-group">

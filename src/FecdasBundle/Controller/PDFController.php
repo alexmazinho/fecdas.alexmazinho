@@ -806,6 +806,7 @@ class PDFController extends BaseController {
 	    $pdf->Ln();
 	}
 	
+	/*
 	public function licensetopdfAction(Request $request) {
 	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest())) return $redirect;
 	    
@@ -931,30 +932,6 @@ class PDFController extends BaseController {
 				}
 				//$pdf->SetFont('dejavusans', 'B', 4.5, '', true);
 				
-				/*$x = $x_ini + 54.2;
-				$y = $y_ini + 38.6; // 39.2
-				$pdf->writeHTMLCell(0, 0, $x, $y, $persona->getNom() . " " . $persona->getCognoms(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 62.5;
-				$y = $y_ini + 42.4;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $persona->getDni(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 65;
-				$y = $y_ini + 46.1;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $llicencia->getCategoria()->getCategoria(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 63.6;
-				$y = $y_ini + 49.9;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $persona->getDatanaixement()->format('d/m/Y'), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 56;
-				$y = $y_ini + 53.7;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $club->getNom(), 0, 0, 0, true, 'L', true);
-				
-				$x = $x_ini + 60;
-				$y = $y_ini + 57.5;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $club->getTelefon(), 0, 0, 0, true, 'L', true);*/
-				
 				//$datacaduca = $llicencia->getParte()->getDataalta();
 				// Caducat 30 dies des de data impressió
 				$datacaduca = $this->getCurrentDate();
@@ -970,11 +947,9 @@ class PDFController extends BaseController {
 				}
 				    
 				$pdf->writeHTMLCell(0, 0, $x, $y + 4, "Carnet provisional vàlid fins al " . $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);
-				/*$x += 41;
-				$pdf->writeHTMLCell(0, 0, $x, $y, $datacaduca->format('d/m/Y'), 0, 0, 0, true, 'L', true);*/
 				
-				/* Tipus de llicència
-				 * Taula TipoParte LL_L1 + LL_L1 + LL_L3 */
+				// Tipus de llicència
+				// Taula TipoParte LL_L1 + LL_L1 + LL_L3 
 				$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 
 				$pdf->SetFont('helvetica', 'B', 9, '', true);
@@ -1023,6 +998,7 @@ class PDFController extends BaseController {
 		}
 		return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
+	*/
 
 	public function imprimirllicenciaAction(Request $request) {
 	    if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;

@@ -82,7 +82,7 @@
             			   			<td class="data-detall-cell data-detall-cell-right club-limit" data-limit="{{ club.limitcredit }}">{{ club.limitcredit|number_format(2, ',', '.') }} €</td>
             			   			<td class="data-detall-cell data-detall-cell-left club-estat">
             			   			    {{ club.estat.descripcio }}
-            			   			    {% if club.impressio == 1 %}<br/><span>(Pot imprimir sempre)</span>{% endif %}
+            			   			    {% if club.impressio == 1 %}<br/><span>(Pot demanar plàstic)</span>{% endif %}
             			   			</td>
             			   			<td class="data-detall-cell data-detall-cell-right club-saldo {% if saldos[club.codi] >= 0 %} green {% else %} red {% endif %}">
             			   			    {{ saldos[club.codi]|number_format(2, ',', '.') }} €

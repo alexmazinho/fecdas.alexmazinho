@@ -216,10 +216,10 @@
 						{% set llicenciaVigent = persona.llicenciaVigent %}
 				   		{% if llicenciaVigent is not null and llicenciaVigent.parte is not null %}
 				   		    {% set parte = llicenciaVigent.parte %}
-							{% if parte.allowPrintLlicencia == true %}
+							{# if parte.allowPrintLlicencia == true %}
 								<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': llicenciaVigent.id}) }}" alt="Llicència provisional" title="Llicència provisional">
 									<i class="fa fa-list-alt fa-1x orange"></i></a>
-							{% endif %}
+							{% endif #}
 							{% if admin == true %}
 								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': llicenciaVigent.id}) }}" 
 									data-club="{{ parte.clubparte.nom }}"

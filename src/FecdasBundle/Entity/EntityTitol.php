@@ -73,9 +73,15 @@ class EntityTitol {
 	 * @ORM\Column(type="boolean")
 	 */
 	protected $curs;
+	
+	/**
+	 * @ORM\Column(type="boolean")
+	 */
+	protected $online;
 
 	public function __construct() {
 		$this->curs = true;
+		$this->online = true;
 		
 		$this->requeriments = new \Doctrine\Common\Collections\ArrayCollection();
 	}
@@ -377,6 +383,20 @@ class EntityTitol {
 	 */
 	public function setCurs($curs) {
 		$this->curs = $curs;
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function getOnline() {
+	    return $this->online;
+	}
+	
+	/**
+	 * @param boolean $online
+	 */
+	public function setOnline($online) {
+	    $this->online = $online;
 	}
 
 	public static function getTitolsSortedBy(&$titols, $sort = 'id', $direction = 'asc')

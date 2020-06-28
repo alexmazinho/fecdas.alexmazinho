@@ -1935,8 +1935,8 @@ GROUP BY c.nom
 		switch ($estat) {
 			case BaseController::CLUB_PAGAMENT_DIFERIT:  // Pagament diferit
 
-				if ($request->query->get('imprimir') == 'true') $club->setImpressio(true);
-				else $club->setImpressio(false);
+				/*if ($request->query->get('imprimir') == 'true') $club->setImpressio(true);
+				else $club->setImpressio(false);*/
 
 				break;
 			case BaseController::CLUB_PAGAMENT_IMMEDIAT:  // Pagament immediat

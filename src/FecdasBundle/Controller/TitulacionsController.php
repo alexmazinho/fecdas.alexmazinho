@@ -2422,7 +2422,7 @@ class TitulacionsController extends BaseController {
 
 	public function jsonpersonaAction(Request $request) {
 		//fecdas.dev/jsonfactures?cerca=dni&admin=1&club=CATXXX
-		
+
 		$response = new Response();
 		$em = $this->getDoctrine()->getManager();
 	
@@ -2479,7 +2479,7 @@ class TitulacionsController extends BaseController {
 		}
 		
 		if ($tecnic == true) {
-// CAL AFEGIR LLIÈNCIA VIGENT TêCNIC !!!!!!!!!!!!!!!!	
+            // CAL AFEGIR LLIÈNCIA VIGENT TêCNIC !!!!!!!!!!!!!!!!	
 			// Consulta persones amb llicència durant tot el periode desde -> fins
 			// iniciada abans de la data desde i acabada després de la data fins
 			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e  ";
@@ -2510,10 +2510,10 @@ class TitulacionsController extends BaseController {
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('cerca', '%'.$cerca.'%');
 		}		
-		
 		$search = array( );
 		if ($query != null) {
 			$result = $query->getResult();
+
 			foreach ($result as $metapersona) {
 				$persona = $metapersona->getPersona($club);
 				

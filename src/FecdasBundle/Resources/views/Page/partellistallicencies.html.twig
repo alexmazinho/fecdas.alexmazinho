@@ -117,9 +117,9 @@
            					</td>
        					{% endif %}
        					<td class="data-detall-cell data-detall-cell-right llicenciaactions">
-       						{% if not parte.esNova() and parte.allowPrintLlicencia == true %}
+       						{# if not parte.esNova() and parte.allowPrintLlicencia == true %}
            						<a href="{{ path('FecdasBundle_licensetopdf', { 'id': llicencia.id}) }}" alt="llicència" title="llicència"><i class="fa fa-credit-card fa-1x orange"></i></a>
-           					{% endif %}
+           					{% endif #}
            					<a class="label-edit-llicencia link" href="javascript:loadLlicencia({{ llicencia.id }});" alt="editar" title="editar"><i class="fa fa-search fa-1x blue"></i></a>
            					{% if not parte.esNova() and admin %}
            						<a href="{{ path('FecdasBundle_llicencia') }}" value="{{ llicencia.id }}" class="link remove-llicencia" name="remove-llicencia" alt="esborrar" title="esborrar"><i class="fa fa-remove fa-1x red"></i></a>

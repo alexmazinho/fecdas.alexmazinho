@@ -211,7 +211,7 @@ class EntityParte extends EntityComanda {
 		
 		return $this->tipus->getTemplate() != '';*/
 		
-		return $this->tipus->getImprimible();
+	    return $this->tipus->getImprimible() && $this->club->getImpressio();
 	}
 	
 	/**
@@ -856,7 +856,7 @@ class EntityParte extends EntityComanda {
      *
      * @return boolean
      */
-    public function allowPrintLlicencia()
+    /*public function allowPrintLlicencia()
     {
     	if (!$this->web) return false;  // No web no permet imprimir
     	
@@ -869,7 +869,7 @@ class EntityParte extends EntityComanda {
     	if ($this->club->pendentPagament() && !$this->pendent) return true;   // IMMEDIAT si el parte no està pendent és que tenia saldo quan es va pagar 
     	
     	return false;     // DIFE sense impressió
-    }
+    }*/
  
  	/**
 	 * Get datapreu. Reescriptura

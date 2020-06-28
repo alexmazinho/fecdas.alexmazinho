@@ -139,11 +139,11 @@ FecdasBundle_duplicatsform:
         methods:  GET
         
         
-FecdasBundle_licensetopdf:
-    path:  /license
-    defaults: { _controller: "FecdasBundle:PDF:licensetopdf" }
-    requirements:
-        methods:  GET
+#FecdasBundle_licensetopdf:
+#    path:  /license
+#    defaults: { _controller: "FecdasBundle:PDF:licensetopdf" }
+#    requirements:
+#        methods:  GET
 
 FecdasBundle_llicenciadigital:
     path:  /llicenciadigital

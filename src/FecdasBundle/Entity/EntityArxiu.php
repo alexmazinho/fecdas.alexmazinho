@@ -24,12 +24,12 @@ class EntityArxiu {
 	protected $id;	
 	
 	/**
-	 * @ORM\Column(type="string", length=50)
+	 * @ORM\Column(type="text")
 	 */
 	protected $path;
 
 	/**
-	 * @ORM\Column(type="string", length=50, nullable=true)
+	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $titol;
 	

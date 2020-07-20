@@ -3306,15 +3306,16 @@ class BaseController extends Controller {
 	        
 	}
 	
-	protected function crearComanda($data, $comentaris = '', $factura = null) {
+	protected function crearComanda($data, $comentaris = '', $club = null, $factura = null) {
 		if ($data == null) $data = $this->getCurrentDate();
 	
+		if ($club == null) $club = $this->getCurrentClub();
+		
 		$em = $this->getDoctrine()->getManager();
 	
 		$maxNumComanda = $this->getMaxNumEntity($data->format('Y'), BaseController::COMANDES) + 1;
 
-		$comanda = new EntityComanda($maxNumComanda, $factura, $this->getCurrentClub(), $comentaris);
-
+		$comanda = new EntityComanda($maxNumComanda, $factura, $club, $comentaris);
 		
 		$em->persist($comanda);
 

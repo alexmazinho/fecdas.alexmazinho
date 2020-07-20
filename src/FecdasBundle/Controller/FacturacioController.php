@@ -2195,7 +2195,7 @@ error_log("CONTA"." ==> 4 ");
 			$cartcheckout = $this->get('fecdas.cartcheckout');
 			if ($action == 'desar' || $action == 'pagar') {
 				// Comanda nova. Crear factura
-			    $comanda = $this->crearComanda($datafacturacio, $comentaris);
+			    $comanda = $this->crearComanda($datafacturacio, $comentaris, $club);
 				
 			    $cart = $cartcheckout->getSessionCart();
 				

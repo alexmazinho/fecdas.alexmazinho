@@ -1368,6 +1368,7 @@ class PageController extends BaseController {
 	        }
 	        // Tramitar comanda
 	        $request->query->set('tipus', BaseController::TIPUS_PRODUCTE_ALTRES);
+	        $request->query->set('club', $parte->getClub()->getCodi());
 	        
 	        $response = $this->forward('FecdasBundle:Facturacio:tramitarcistella', array(
 	            'request'  => $request

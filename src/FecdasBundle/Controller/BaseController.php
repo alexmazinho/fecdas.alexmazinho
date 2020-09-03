@@ -51,7 +51,7 @@ class BaseController extends Controller {
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
 	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_ANUAL_MES = 12; //12; // a partir de 15/12 any en curs
-	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = '09'; // a partir de 09/09 any en curs
+	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = '01'; // a partir de 01/09 any en curs
 	const INICI_TRAMITACIO_QUATRIMESTRE_MES = '09'; // a partir de 09/09 any en curs
 	const INICI_REVISAR_CLUBS_DAY = '01';
 	const INICI_REVISAR_CLUBS_MONTH = '04';

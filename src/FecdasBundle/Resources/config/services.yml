@@ -16,5 +16,5 @@ services:
         
     fecdas.cartcheckout:
         class:     FecdasBundle\Service\CartCheckOut
-        arguments: ["@session", "@request_stack","@doctrine", "@form.factory"]
+        arguments: ["@session", "@request_stack","@doctrine", "@form.factory", "@fecdas.rolechecker"]
         

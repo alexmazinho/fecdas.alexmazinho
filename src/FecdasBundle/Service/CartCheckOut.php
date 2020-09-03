@@ -17,14 +17,16 @@ class CartCheckOut
 	protected $requestStack;
 	protected $formfactory;
 	protected $cart;
+	protected $checkRole;
 	protected static $em;
 	
 
-	public function __construct(Session $session, RequestStack $requestStack, Registry $doctrine, FormFactory $formfactory)
+	public function __construct(Session $session, RequestStack $requestStack, Registry $doctrine, FormFactory $formfactory, RoleChecker $checkRole)
     {
         $this->session = $session;	
         $this->requestStack = $requestStack;
         $this->formfactory = $formfactory;
+        $this->checkRole = $checkRole;
         $this->getSessionCart();
 		self::$em = $doctrine->getManager();
     }
@@ -53,7 +55,8 @@ class CartCheckOut
         
         if ($unitats == 0) throw new \Exception("Cal indicar el nombre d'unitats del producte");
         
-        if ($unitats < 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
+        // if ($unitats < 0 && !$this->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
+        if ($unitats < 0 && !$this->checkRole->isCurrentAdmin()) throw new \Exception("El nombre d'unitats és incorrecte");
         
         // Comprovar que tots els detalls siguin d'abonament o normals
         if (count($this->cart['productes']) > 0) {
@@ -90,7 +93,7 @@ class CartCheckOut
         if ($producte->getTransport() && $unitats > 0) $this->cart['productes'][$idProducte]['pes'] = $unitats * $producte->getPes();
         
         if ($this->cart['productes'][$idProducte]['unitats'] == 0 ||
-            ($this->cart['productes'][$idProducte]['unitats'] < 0  && !$this->isCurrentAdmin())) {
+            ($this->cart['productes'][$idProducte]['unitats'] < 0  && !$this->checkRole->isCurrentAdmin())) {
                 // Afegir unitats < 0
             unset( $this->cart['productes'][$idProducte] );
         }

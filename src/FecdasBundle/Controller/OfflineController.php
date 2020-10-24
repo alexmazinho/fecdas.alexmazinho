@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use FecdasBundle\Entity\EntityMetaPersona;
 use FecdasBundle\Entity\EntitySaldos;
 use FecdasBundle\Entity\EntityCurs;
+use FecdasBundle\Entity\EntityStock;
 use FecdasBundle\Entity\EntityTitulacio;
 use FecdasBundle\Entity\EntityPersona;
 
@@ -712,6 +713,7 @@ class OfflineController extends BaseController {
         
         try {
             for ($i = 0; $i < count($titolsfederats); $i++) {
+
                 $currentTitolFederat = $titolsfederats[$i];
                 $dni = $currentTitolFederat['dni'];
                 
@@ -734,16 +736,96 @@ class OfflineController extends BaseController {
                 
                 if ($club == null) continue;    // ERROR
                 
+                $nacionalitat = 'ESP';
+                $comarca = null;
+                $cp = null;
+                if ($currentTitolFederat['cp'] != '' &&
+                    $currentTitolFederat['cp'] != null) {
+                    
+                    $cp = $currentTitolFederat['cp'];
+                    if (is_numeric($currentTitolFederat['cp'])) {
+                        
+                        // Provincia catalana => cercar comarca
+                        if (substr($currentTitolFederat['cp']."", 0, 2) == '17' ||
+                            substr($currentTitolFederat['cp']."", 0, 2) == '08' ||
+                            substr($currentTitolFederat['cp']."", 0, 2) == '25' ||
+                            substr($currentTitolFederat['cp']."", 0, 2) == '43') {
+                                
+                                $municipis = $this->consultaAjaxPoblacions($currentTitolFederat['cp'], 'cp');
+                                
+                                if ($municipis == null) throw new \Exception($id.'#ERROR. Municipi / Comarca persona  no trobat: '.$currentTitolFederat['cp']);
+                                $municipi = $municipis[0];
+                                
+                                $comarca = $municipi['comarca'];
+                            }
+                    } else {
+                        switch (strtoupper($currentTitolFederat['cp'])) {
+                            case 'AD200':
+                            case 'AD300':
+                            case 'AD500':
+                                $nacionalitat = 'AND';
+                                break;
+                            case 'BH228':
+                                $nacionalitat = 'GBR';
+                                break;
+                            case '3114T':
+                                $nacionalitat = 'GER';
+                                break;
+                            case 'L5531':
+                                $nacionalitat = 'FRA';
+                                break;
+                            case 'SE50S':
+                            case 'GH15':
+                                $nacionalitat = 'GBR';
+                                break;
+                            case 'L8031':
+                                $nacionalitat = 'LUX';
+                                break;
+                            case '2332P':
+                                $nacionalitat = 'NLD';
+                                break;
+                                
+                            default:
+                                throw new \Exception($id.'#ERROR. Persona estrangera ?: '.$currentTitolFederat['cp']);
+                        }
+                    }
+                }
+                
+                if (substr($dni."", 0, 1) == 'X' ||
+                    substr($dni."", 0, 1) == 'Y' ||
+                    substr($dni."", 0, 1) == 'Z') {
+                        // NIE empieza por X, Y o Z
+                        $dni = str_replace("-", "", $dni);
+                        $nacionalitat = 'XXX';  // Sense especificar
+                }
+                    
+                if ($nacionalitat == 'ESP') {
+                    // Només DNI vàlid
+                    $dniLletra = $dni;
+                    if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
+                        
+                    if (strlen($dniLletra) != 9) {
+                        $nacionalitat = 'XXX';  // Sense especificar
+                        $html .= "DNI incorrecte ".$dni." afegit com estranger. Revisar<br/>";
+                        //continue;
+                    } else {
+                        $dni = $dniLletra;
+                    }
+                }
+                
                 // Cercar meta persona
-                $persona = $this->cercarPersonaDNI($currentTitolFederat['dni']);
+                $persona = $this->cercarPersonaDNI($dni);
                 
                 if ($persona != null) continue;
-    
                 $metapersona = new EntityMetaPersona( $dni );
                 $em->persist($metapersona);
                                 
                 $persona = new EntityPersona($metapersona, $club);
                 $persona->setVAlidat(true);
+                $persona->setAddrnacionalitat($nacionalitat);
+                if ($comarca != null) $persona->setAddrcomarca($comarca);
+                if ($cp != null) $persona->setAddrcp($cp);
+                
                 $nomCognoms = $currentTitolFederat['federado'];
                 $nomArray = explode(",", $nomCognoms); // Cognoms + Nom
                                 
@@ -773,89 +855,13 @@ class OfflineController extends BaseController {
                 if ($currentTitolFederat['direccion'] != '' &&
                     $currentTitolFederat['direccion'] != null) $persona->setAddradreca($currentTitolFederat['direccion']);
                 
-                if ($currentTitolFederat['cp'] != '' &&
-                    $currentTitolFederat['cp'] != null) {
-                                                        
-                    $persona->setAddrcp($currentTitolFederat['cp']);
-                    
-                    if (is_numeric($currentTitolFederat['cp'])) {
-                        $persona->setAddrnacionalitat('ESP');
-                                                            
-                        // Provincia catalana => cercar comarca
-                        if (substr($currentTitolFederat['cp']."", 0, 2) == '17' ||
-                            substr($currentTitolFederat['cp']."", 0, 2) == '08' ||
-                            substr($currentTitolFederat['cp']."", 0, 2) == '25' ||
-                            substr($currentTitolFederat['cp']."", 0, 2) == '43') {
-                                 
-                            $municipis = $this->consultaAjaxPoblacions($currentTitolFederat['cp'], 'cp');
-                                                                    
-                            if ($municipis == null) throw new \Exception($id.'#ERROR. Municipi / Comarca persona  no trobat: '.$currentTitolFederat['cp']);
-                            $municipi = $municipis[0];
-                                                                    
-                            $persona->setAddrcomarca($municipi['comarca']);
-                        }
-                    } else {
-                        switch (strtoupper($currentTitolFederat['cp'])) {
-                            case 'AD200':
-                            case 'AD300':
-                            case 'AD500':
-                                $persona->setAddrnacionalitat('AND');
-                                break;
-                            case 'BH228':
-                                $persona->setAddrnacionalitat('GBR');
-                                break;
-                            case '3114T':
-                                $persona->setAddrnacionalitat('GER');
-                                break;
-                            case 'L5531':
-                                $persona->setAddrnacionalitat('FRA');
-                                break;
-                            case 'SE50S':
-                            case 'GH15':
-                                $persona->setAddrnacionalitat('GBR');
-                                break;
-                            case 'L8031':
-                                $persona->setAddrnacionalitat('LUX');
-                                break;
-                            case '2332P':
-                                $persona->setAddrnacionalitat('NLD');
-                                break;
-                                
-                            default:
-                                throw new \Exception($id.'#ERROR. Persona estrangera ?: '.$currentTitolFederat['cp']);
-                        }
-                    }
-                }
-                
-                if (substr($dni."", 0, 1) == 'X' ||
-                    substr($dni."", 0, 1) == 'Y' ||
-                    substr($dni."", 0, 1) == 'Z') {
-                    // NIE empieza por X, Y o Z
-                    $nie = str_replace("-", "", $dni);
-                    $metapersona->setDni($nie);
-                    $persona->setAddrnacionalitat('XXX'); // Sense especificar
-                } else {
-                    $persona->setAddrnacionalitat('ESP');
-                }
-                                                    
                 if ($currentTitolFederat['poblacion'] != '' &&
                     $currentTitolFederat['poblacion'] != null) $persona->setAddrpob($currentTitolFederat['poblacion']);
                                                         
                 if ($currentTitolFederat['provincia'] != '' &&
                     $currentTitolFederat['provincia'] != null) $persona->setAddrprovincia($currentTitolFederat['provincia']);
 
-                if ($persona->getAddrnacionalitat() == 'ESP') {
-                    // Només DNI vàlid
-                    $dniLletra = $dni;
-                    if (is_numeric($dni) && $dni < 99999999) $dniLletra = str_pad( substr($dni."", 0, 8), 8, "0", STR_PAD_LEFT ).BaseController::getLletraDNI( (int) $dni );
                     
-                    if (strlen($dniLletra) != 9) {
-                        $html .= "DNI incorrecte ".$dni."<br/>";
-                        continue;
-                    }
-                    
-                    $metapersona->setDni($dniLletra);
-                }
                     
                 $em->persist($persona);
                 $personesNoves++;
@@ -954,6 +960,7 @@ class OfflineController extends BaseController {
 		$titulacions = 0;
 		
 		$cursos = array();
+		$stock = array();
 		$errors = array();
 		$ids = array();
 
@@ -1014,17 +1021,18 @@ class OfflineController extends BaseController {
 				// Cercar existent o crear curs sense docents
 				$num = $currentTitol['numcurso'];
 				if (!isset($cursos[ $num ])) {
-					/*$pos = strpos($currentTitol['numcurso'], "/");
-					if ($pos === false) throw new \Exception($id.'#ERROR. Número curs format KO: '.$titol); //ERROR
-					$num = substr( $currentTitol['numcurso'], $pos+1 ); // Treure any */
+				    $pos = strpos($num, "/");
+				    if ($pos === false) throw new \Exception($id.'#ERROR. Número curs format KO: '.$num); //ERROR
+					$numCurs = substr( $currentTitol['numcurso'], $pos+1 ); // Treure any 
 
 					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('numfedas' => $num));
 					
 					if ($curs == null) {
-					    $curs = new EntityCurs(null, 0, $datadesde, $datafins, $club, $clubhistoric, $titol);			
+					    $curs = new EntityCurs(null, $numCurs, $datadesde, $datafins, $club, $clubhistoric, $titol);			
 						$curs->setNumfedas($num);
 						$curs->setValidat(true);
 						$curs->setFinalitzat(true);
+						$curs->setEditable(false);
 						
 						$em->persist($curs);
 						
@@ -1046,6 +1054,19 @@ class OfflineController extends BaseController {
 				
 				$em->persist($titulacio); 
 					
+				// !!!!!!!!!!!!!!!!!!!!!!!!
+				//  AFEGIR REGISTRE STOCK SI ESCAU 
+				// !!!!!!!!!!!!!!!!!!!!!!!!
+				// Registrar sortida de kits
+				
+				if ($titol->esKitNecessari()) {
+				    if (!isset($stock[ $num ])) {
+				        $stock[ $num ] = array('curs' => $curs, 'kits' => 1);
+				    } else {
+				        $stock[ $num ]['kits']++;
+				    }
+				}
+				
 				$titulacions++;
 			
 			} catch (\Exception $e) {
@@ -1054,9 +1075,42 @@ class OfflineController extends BaseController {
 				
 				$errors[ $id ] = $e->getMessage();
 			}
-			
 		}
-	
+		
+		// Registre stock
+		foreach ($stock as $num => $registre) {
+		    $curs = $registre['curs'];
+		    $unitats = $registre['kits'];
+		    
+		    $titol = $curs->getTitol();
+		    $club = $curs->getClub();
+		    $kit = $titol->getKit();
+		    
+		    $stock = $this->consultaStockClubPerProducteData($kit, $club); // stock disponible
+		    
+		    try {
+    		    if ($stock < $unitats) {
+    		        throw new \Exception('#WARN. Curs '.$curs->getNumActa().' l\'stock del club '.($club==null?'NULL':$club->getNom()).' de kits \''.$kit->getDescripcio().'\' és de '.$stock.' disponibles però són necessaris '.$unitats); //ERROR
+    		    } 
+    		    $em = $this->getDoctrine()->getManager();
+    		    
+    		    $descripcio = $kit->getAbreviatura()=='KGG'?'GG Kit  Guia de Grup':$kit->getDescripcio();
+    		    
+    		    $comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$descripcio;
+    		        
+    		    $registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, $curs->getDatafins(), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
+    		        
+    		    $em->persist($registreStockClub);
+    		        
+    		    $curs->setStock($registreStockClub);
+    		} catch (\Exception $e) {
+		        //$em->getConnection()->rollback();
+		        //echo "Problemes durant la transacció : ". $e->getMessage();
+		        
+		        $errors[ $id ] = $e->getMessage();
+		    }
+		}
+		
 		if (count($ids) != 0) {	
 			$sql = "UPDATE importtitulacions SET error = null WHERE id IN (".implode(",", $ids).") ";
 			$stmt = $em->getConnection()->prepare($sql);
@@ -1070,7 +1124,7 @@ class OfflineController extends BaseController {
 					$stmt->execute();
 				}
 				$em->flush();	
-				return new Response("KO <br/>".implode("<br/>",$errors));
+				return new Response("KO <br/>".implode("<br/>",$errors)."<br/>cursos nous ".$cursosNous." i titulacions ".$titulacions);
 			}
 		}
 		$em->flush();

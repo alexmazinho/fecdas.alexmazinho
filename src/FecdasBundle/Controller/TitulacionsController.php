@@ -709,8 +709,8 @@ class TitulacionsController extends BaseController {
 		}
 		
 		if (!$persona) return new Response("");
-						
-		$llicencies = $persona->getLlicenciesSortedByDate(true, false); // Incloure baixes
+		
+		$llicencies = $persona->getLlicenciesSortedByDate($this->isCurrentAdmin(), false); // Incloure baixes
 		
 		// Ordre
 		usort($llicencies, function($a, $b) {

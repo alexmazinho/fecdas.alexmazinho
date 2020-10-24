@@ -304,7 +304,7 @@ class PDFController extends BaseController {
 		// Màxim 60 caràcters, 30 per línia
 		$professions = array(); 
 		if ($professio != "") {
-            $professions = split(PHP_EOL, wordwrap($professio, 30, PHP_EOL, false));  // línies màxim 30 caràcters, sense tallar-los al final, i línies a un array
+		    $professions = explode(PHP_EOL, wordwrap($professio, 30, PHP_EOL, false));  // línies màxim 30 caràcters, sense tallar-los al final, i línies a un array
 		}
 		if (count($professions) > 2) $professions[1] = $professions[1]."..."; // Elipsis
 		$professions = array_slice($professions, 0, 2);   // Màxim 2 línies professió

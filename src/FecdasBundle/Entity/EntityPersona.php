@@ -324,7 +324,7 @@ class EntityPersona {
     	/* Ordenades de última a primera */
     	$arr = array();
     	foreach ($llicencies as $llicencia) {
-    	    if ((!$llicencia->isBaixa() || $baixes) &&
+    	    if ((!$llicencia->isBaixa() || $baixes) ||
     		    ($llicencia->isValida() || $pendents)) {
     			$parte = $llicencia->getParte();
 				

@@ -218,7 +218,8 @@ class BaseController extends Controller {
 	
 	// Duplicats llicències
 	//const CODI_DUPLICAT_LLICENCIA = 7090000;
-	const CODI_DUPLICAT_LLICENCIA = 7050102; 	
+	//const CODI_DUPLICAT_LLICENCIA = 7050102;
+	const ID_DUPLICAT_LLICENCIA = 229; 	
 
 	// Diario Contasol
 	const INDEX_DIARI_CONTASOL = 1;
@@ -275,7 +276,7 @@ class BaseController extends Controller {
 	const TITOL_I1E		        = 53;
 	const TITOL_I2E		        = 54;
 	const TITOL_I3E		        = 55;
-	
+
 	
 	// Rols docents
 	const DOCENT_DIRECTOR		= 'Director';

@@ -833,7 +833,7 @@ class OfflineController extends BaseController {
                 if (!isset($nomArray[1])) throw new \Exception($id.'#ERROR. Persona sense nom: '.$nomCognoms);
                 if (count($nomArray) != 2) throw new \Exception($id.'#ERROR. Persona nom incorrecte: '.$nomCognoms);
                 $persona->setCognoms(mb_strtoupper($nomArray[0]));
-                $persona->setNom($nomArray[1]);
+                $persona->setNom(ucwords(strtolower($nomArray[1])));
                                 
                 $persona->setSexe($currentTitolFederat['sexo']);  // H o M
                                 
@@ -925,6 +925,60 @@ class OfflineController extends BaseController {
         return null;
     }
     
+    /*private function cercarCurs($club, $titol, $datadesde, $datafins) {
+        $em = $this->getDoctrine()->getManager();
+        
+        $strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityCurs c ";
+        $strQuery .= " WHERE  c.club = :club ";
+        $strQuery .= " AND  c.titol = :titol ";
+        //$strQuery .= " AND  c.datadesde < :datafins ";
+        //$strQuery .= " AND  c.datafins >= :datadesde ";
+        $strQuery .= " AND  (c.datadesde = :datadesde OR c.datafins = :datafins)";
+        $strQuery .= " AND  c.databaixa IS NULL ";
+        $query = $em->createQuery($strQuery);
+        $query->setParameter('club', $club->getCodi() );
+        $query->setParameter('titol', $titol->getId() );
+        $query->setParameter('datafins', $datafins->format('Y-m-d') );
+        $query->setParameter('datadesde', $datadesde->format('Y-m-d') );
+        $cursos = $query->getResult();
+        
+        if ($cursos != null && count($cursos) == 1) {
+            $cursos = array_values($cursos);
+            return $cursos[0];
+        }
+        
+        return null;
+    }*/
+    
+    private function cercarCursPerFederatClub($id, $club, $titol, $datadesde, $datafins, $metapersona) {
+        $em = $this->getDoctrine()->getManager();
+        
+        $strQuery  = " SELECT c FROM FecdasBundle\Entity\EntityCurs c JOIN c.participants p JOIN p.metapersona m ";
+        $strQuery .= " WHERE  c.club = :club ";
+        $strQuery .= " AND  c.titol = :titol ";
+        /*$strQuery .= " AND  c.datadesde < :datafins ";
+        $strQuery .= " AND  c.datafins >= :datadesde ";*/
+        $strQuery .= " AND  (c.datadesde = :datadesde AND c.datafins = :datafins)";
+        $strQuery .= " AND  m.dni = :dni ";
+        $strQuery .= " AND  c.databaixa IS NULL ";
+        $query = $em->createQuery($strQuery);
+        $query->setParameter('club', $club->getCodi() );
+        $query->setParameter('titol', $titol->getId() );
+        $query->setParameter('datafins', $datafins->format('Y-m-d') );
+        $query->setParameter('datadesde', $datadesde->format('Y-m-d') );
+        $query->setParameter('dni', $metapersona->getDni() );
+        $cursos = $query->getResult();
+        
+        if ($cursos != null && count($cursos) == 1) {
+            $cursos = array_values($cursos);
+            return $cursos[0];
+        }
+        
+        if (count($cursos) > 1) throw new \Exception($id.'#ERROR. Varis canditats a curs existent '.$metapersona->getId().'-'.$club->getCodi().'-'.$titol->getId().'-'.$datadesde->format('Y-m-d'));
+        
+        return null;
+    }
+        
 	public function historictitolsAction(Request $request) {
 		// http://www.fecdas.dev/historictitols?max=10&pag=1
 		// http://www.fecdas.dev/historictitols?id=1234
@@ -949,7 +1003,8 @@ class OfflineController extends BaseController {
 		$strQuery  = " SELECT id, federado, dni, numcurso, iniciocurso, fincurso, ";
 		$strQuery .= " club, abreviatura, numtitulo ";
 		$strQuery .= " FROM importtitulacions ";
-		if ($id > 0) $strQuery .= " WHERE id = ".$id;
+		$strQuery .= " WHERE error IS NULL ";
+		if ($id > 0) $strQuery .= " AND id = ".$id;
 		$strQuery .= " ORDER BY numcurso, numtitulo ";
 		if ($id == 0) $strQuery .= " LIMIT ".$max. " OFFSET ".$offset;
 		$stmt = $em->getConnection()->prepare($strQuery);
@@ -957,11 +1012,14 @@ class OfflineController extends BaseController {
 		$titols = $stmt->fetchAll();
 
 		$cursosNous = 0;
+		$cursosExistents = 0;
 		$titulacions = 0;
+		$titulacionsExistents = 0;
 		
 		$cursos = array();
 		$stock = array();
 		$errors = array();
+		$missatges = array();
 		$ids = array();
 
 		for ($i = 0; $i < count($titols); $i++) {
@@ -971,7 +1029,6 @@ class OfflineController extends BaseController {
 			$ids[] = $id; 
 			$dni = $currentTitol['dni'];
 			try {
-	
 				// Cercar meta persona
 			    $metapersona = $this->cercarPersonaDNI($dni);
 				
@@ -990,7 +1047,7 @@ class OfflineController extends BaseController {
 				}
 				
 				// Cercar títol (NO pot ser null i només pot trobar un) 
-				$titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->findOneBy(array('codi' => $currentTitol['abreviatura']));
+				$titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->findOneBy(array('codi' => $currentTitol['abreviatura'], 'online' => 0));
 				
 				if ($titol == null || count($titol) != 1) throw new \Exception($id.'#ERROR. Títol no trobat: #'.$currentTitol['abreviatura']); //ERROR
 				
@@ -1003,13 +1060,17 @@ class OfflineController extends BaseController {
 				    $club = $this->cercarClubNOM($currentTitol['club']);
 				    
 				    if ($club == null) {
-  						$errors[ $id ] = $id.'#WARN. Club no trobat: '.$currentTitol['club'];// WARN CONTINUA
-       					$clubhistoric = $currentTitol['club'];
+				        throw new \Exception($id.'#ERROR. Club no trobat: '.$currentTitol['club']); //ERROR
+  						//$errors[ $id ] = $id.'#WARN. Club no trobat: '.$currentTitol['club'];// WARN CONTINUA
+       					//$clubhistoric = $currentTitol['club'];
 					}
 				} else {
 				    // Mirar si llicència tipus tècnic => club sense informar FECDAS
 				    // Validar Federació per a cursos Instructors  => Titols tipus 'TE'
-				    if (!$titol->esInstructor() && !$titol->esCompeticio()) $clubhistoric = 'Sense informació del club';
+				    if (!$titol->esInstructor() && !$titol->esCompeticio()) {
+				        //$clubhistoric = 'Sense informació del club';
+				        throw new \Exception($id.'#ERROR. Sense informació del club curs no instructors ni competició: '.$titol->getTitol()); // ERROR
+				    }
 				    else $club = $federacio;
 				}
 				
@@ -1019,56 +1080,144 @@ class OfflineController extends BaseController {
 				if ($datadesde == null || $datafins == null) throw new \Exception($id.'#ERROR. Dates del curs incorrectes: '.$currentTitol['iniciocurso'].'-'.$currentTitol['fincurso']); //ERROR
 				
 				// Cercar existent o crear curs sense docents
-				$num = $currentTitol['numcurso'];
-				if (!isset($cursos[ $num ])) {
-				    $pos = strpos($num, "/");
-				    if ($pos === false) throw new \Exception($id.'#ERROR. Número curs format KO: '.$num); //ERROR
-					$numCurs = substr( $currentTitol['numcurso'], $pos+1 ); // Treure any 
+				$registreStock = false;
+				
+				if (!isset($cursos[ $currentTitol['numcurso'] ])) {
 
-					$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('numfedas' => $num));
+				    //$curs = $this->cercarCurs($club, $titol, $datadesde, $datafins);
+					//$curs = $this->getDoctrine()->getRepository('FecdasBundle:EntityCurs')->findOneBy(array('numfedas' => $num));
+
+					// Cercar curs federat
+				    $curs = $this->cercarCursPerFederatClub($id, $club, $titol, $datadesde, $datafins, $metapersona);
+
+				    if ($curs == null) {
+
+				        // Provar titulacions online
+				        // 'AO', 'B1E', 'B2E', 'B3E', 'B2S', 'B3O', 'BA', 'BSG', 'BNIB', 'BVS', 'BRE', 'BN', 'GGE', 'IT', 'ML', 'NS', 'ND', 'ENT', 'SR', 'RCP', 'BTN'
+				        /*$titolOnline = -1;
+				        if ($titol->getId() == 1) $titolOnline = 250;   //	AO
+				        if ($titol->getId() == 48) $titolOnline = 251;	//  B1E
+				        if ($titol->getId() == 50) $titolOnline = 252;	//  B2E
+				        if ($titol->getId() == 51) $titolOnline = 253;    //	B3E
+				        if ($titol->getId() == 248) $titolOnline = 254;    //		B2S
+				        if ($titol->getId() == 249) $titolOnline = 255;    //		B3O
+				        if ($titol->getId() == 10) $titolOnline = 256;    //		BA
+				        if ($titol->getId() == 11) $titolOnline = 257;    //		BSG
+				        if ($titol->getId() == 6) $titolOnline = 258;    //		BNIB
+				        if ($titol->getId() == 9) $titolOnline = 259;    //		BVS
+				        if ($titol->getId() == 13) $titolOnline = 260;    //		BRE
+				        if ($titol->getId() == 14) $titolOnline = 261;    //		BN
+				        if ($titol->getId() == 19) $titolOnline = 262;    //		GGE
+				        if ($titol->getId() == 73) $titolOnline = 263;    //		IT
+				        if ($titol->getId() == 81) $titolOnline = 264;    //		ML
+				        if ($titol->getId() == 41) $titolOnline = 265;    //		NS
+				        if ($titol->getId() == 246) $titolOnline = 266;    //		ND
+				        if ($titol->getId() == 7) $titolOnline = 267;    //		ENT
+				        if ($titol->getId() == 44) $titolOnline = 268;    //		SR
+				        if ($titol->getId() == 45) $titolOnline = 269;    //		RCP
+				        if ($titol->getId() == 5) $titolOnline = 270;    //		BTN
+				        */
+				        $titolOnline = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->findOneBy(array('codi' => $currentTitol['abreviatura'], 'online' => 1));
+				        
+				        if ($titolOnline != null) {
+				            $curs = $this->cercarCursPerFederatClub($id, $club, $titolOnline, $datadesde, $datafins, $metapersona);
+				        }
+					}
+
+					$pos = strpos($currentTitol['numcurso'], "/");
+					if ($pos === false) throw new \Exception($id.'#ERROR. Número curs format KO: '.$currentTitol['numcurso']); //ERROR
+					$numCurs = substr( $currentTitol['numcurso'], $pos+1 ); // Treure any
 					
 					if ($curs == null) {
 					    $curs = new EntityCurs(null, $numCurs, $datadesde, $datafins, $club, $clubhistoric, $titol);			
-						$curs->setNumfedas($num);
+					    $curs->setNumfedas($currentTitol['numcurso']);
 						$curs->setValidat(true);
 						$curs->setFinalitzat(true);
 						$curs->setEditable(false);
 						
 						$em->persist($curs);
 						
+						$registreStock = $titol->esKitNecessari();
+						
 						$cursosNous++;
+					} else {
+					    $missatges[ $id ] = '#SMS Curs existent '.$currentTitol['numcurso']; 
+					    
+					    if (!$curs->finalitzat()) {
+					        // Stock es registra quan el curs es valida
+					        //throw new \Exception($id.'#ERROR. El curs no està finalitzat a FECDAS: '.$currentTitol['numcurso'].'-'.$curs->getId()); //ERROR
+					        
+					        if (!$curs->validat()) $registreStock = $titol->esKitNecessari();
+					        
+					        $curs->setEditable(false);
+					        $curs->setValidat(true);
+					        $curs->setFinalitzat(true);
+					    }
+					    $curs->setNumfedas($currentTitol['numcurso']);
+					    $curs->setNum($numCurs);
+					    $curs->setDatadesde($datadesde);
+					    $curs->setDatafins($datafins);
+					    $curs->setDatamodificacio($this->getCurrentDate());
+					    $cursosExistents++;
 					}
-					$cursos[$curs->getNumfedas()] = $curs;  // Afegir als cursos consultats
+					$cursos[$curs->getNumfedas()] = array('curs' => $curs, 'stock' => $registreStock);  // Afegir als cursos consultats
 					
 				} else {
-					$curs = $cursos[ $num ];
+				    // Comprovació
+				    $cursCheck = $this->cercarCursPerFederatClub($id, $club, $titol, $datadesde, $datafins, $metapersona);
+				    
+				    if ($cursCheck != null && $cursCheck->getId() != $curs->getId()) throw new \Exception($id.'#ERROR. Participants repartits en diferents cursos: '.$currentTitol['numcurso'].'-'.$cursCheck->getId().'-'.$curs->getId()); //ERROR
+				    
+				    $curs = $cursos[ $currentTitol['numcurso'] ]['curs'];
+				    $registreStock = $cursos[ $currentTitol['numcurso'] ]['stock'];
 				}
 
-				if ($curs->getParticipantByMetaId($metapersona->getId()) != null) 
-				    throw new \Exception($id.'#WARN. Persona ja està dins aquest curs: '.$currentTitol['numcurso'].'-'.$currentTitol['federado']); //ERROR
+				$titulacio = $curs->getParticipantByMetaId($metapersona->getId());
+
+				$numTitolArray = preg_split("/[\/-]+/", $currentTitol['numtitulo']);
+				if (!is_array($numTitolArray)) throw new \Exception($id.'#ERROR. Format títol incorrecte: '.$currentTitol['numtitulo']); //ERROR
 				
-				// Crear titulacions 
-				$titulacio = new EntityTitulacio($metapersona, $curs);
+				$numTitol = $numTitolArray[count($numTitolArray) - 1];   // Darrer element
+				if (!is_numeric($numTitol)) throw new \Exception($id.'#ERROR. Número títol no numèric: '.$numTitol); //ERROR
+				
+				if ($titulacio == null) {
+    				// Crear titulacions 
+    				$titulacio = new EntityTitulacio($metapersona, $curs);
+    				
+    				if ($curs->getId() != 0) throw new \Exception($id.'#ERROR. Titulació no trobada a curs existent: '.$currentTitol['numcurso'].' - '.$currentTitol['numtitulo'].'-'.$club->getCodi().'-'.$curs->getId()); //ERROR
+    				
+    				$registreStock = $titol->esKitNecessari();
+    				
+    				$em->persist($titulacio); 
+    					
+    				$titulacions++;
+				} else {
+				    if ($curs->getId() == 0) throw new \Exception($id.'#ERROR. Titulació duplicada a curs: '.$currentTitol['numcurso'].' - '.$currentTitol['numtitulo']); //ERROR
+				    
+				    $missatges[ $id ] = '#SMS titulacio existent '.$currentTitol['numtitulo']; 
+
+				    $titulacio->setDatamodificacio($this->getCurrentDate());
+				    $titulacionsExistents++;
+				}
 				$titulacio->setNumfedas($currentTitol['numtitulo']);
+				$titulacio->setNum($numTitol);
 				$titulacio->setDatasuperacio($datafins);
-				
-				$em->persist($titulacio); 
-					
+			
 				// !!!!!!!!!!!!!!!!!!!!!!!!
-				//  AFEGIR REGISTRE STOCK SI ESCAU 
+				//  AFEGIR REGISTRE STOCK SI ESCAU
 				// !!!!!!!!!!!!!!!!!!!!!!!!
 				// Registrar sortida de kits
 				
-				if ($titol->esKitNecessari()) {
-				    if (!isset($stock[ $num ])) {
-				        $stock[ $num ] = array('curs' => $curs, 'kits' => 1);
+				if ($registreStock) {
+				    $missatges[ $id ] = '#SMS Nova titulació descomptar stock '.$currentTitol['numcurso'].' - '.$currentTitol['numtitulo'];
+				    
+				    if (!isset($stock[ $currentTitol['numcurso'] ])) {
+				        $stock[ $currentTitol['numcurso'] ] = array('curs' => $curs, 'kits' => 1);
 				    } else {
-				        $stock[ $num ]['kits']++;
+				        $stock[ $currentTitol['numcurso'] ]['kits']++;
 				    }
 				}
 				
-				$titulacions++;
-			
 			} catch (\Exception $e) {
 				//$em->getConnection()->rollback();
 				//echo "Problemes durant la transacció : ". $e->getMessage();
@@ -1076,7 +1225,7 @@ class OfflineController extends BaseController {
 				$errors[ $id ] = $e->getMessage();
 			}
 		}
-		
+
 		// Registre stock
 		foreach ($stock as $num => $registre) {
 		    $curs = $registre['curs'];
@@ -1090,19 +1239,32 @@ class OfflineController extends BaseController {
 		    
 		    try {
     		    if ($stock < $unitats) {
-    		        throw new \Exception('#WARN. Curs '.$curs->getNumActa().' l\'stock del club '.($club==null?'NULL':$club->getNom()).' de kits \''.$kit->getDescripcio().'\' és de '.$stock.' disponibles però són necessaris '.$unitats); //ERROR
+    		        //throw new \Exception('#WARN. Curs '.$curs->getNumActa().' l\'stock del club '.($club==null?'NULL':$club->getNom()).' de kits \''.$kit->getDescripcio().'\' és de '.$stock.' disponibles però són necessaris '.$unitats); //ERROR
+    		        $missatges[ $id ] = '#SMS Curs '.$num.' l\'stock del club '.($club==null?'NULL':$club->getNom()).' de kits \''.$kit->getDescripcio().'\' és de '.$stock.' disponibles però són necessaris '.$unitats;
     		    } 
     		    $em = $this->getDoctrine()->getManager();
     		    
     		    $descripcio = $kit->getAbreviatura()=='KGG'?'GG Kit  Guia de Grup':$kit->getDescripcio();
+    		    $comentaris = 'Tramitació curs '.$curs->getNumActa().'. ';
     		    
-    		    $comentaris = 'Tramitació curs '.$curs->getNumActa().'. '.$unitats.'x'.$descripcio;
+    		    $registreStockClub = $curs->getStock();
+    		    if ($registreStockClub == null) {
+    		        $comentaris .= $unitats.'x'.$descripcio;
     		        
-    		    $registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, $curs->getDatafins(), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
+    		        $registreStockClub = new EntityStock($club, $kit, $unitats, $comentaris, $curs->getDatafins(), BaseController::REGISTRE_STOCK_SORTIDA, null, $curs);
     		        
-    		    $em->persist($registreStockClub);
+    		        $em->persist($registreStockClub);
     		        
-    		    $curs->setStock($registreStockClub);
+    		        $curs->setStock($registreStockClub);
+    		    } else {
+    		        $missatges[ $id ] = '#SMS Registre stock existent '.$currentTitol['numcurso'].' - '.$currentTitol['numtitulo'].' - '.$curs->getId().' Increment '.$unitats.' unitats';
+    		        
+    		        $unitats += $registreStockClub->getUnitats();
+    		        $comentaris .= $unitats.'x'.$descripcio;
+    		        $registreStockClub->setUnitats($unitats);
+    		        $registreStockClub->setComentaris($comentaris);
+    		        $registreStockClub->setDatamodificacio($this->getCurrentDate());
+    		    }
     		} catch (\Exception $e) {
 		        //$em->getConnection()->rollback();
 		        //echo "Problemes durant la transacció : ". $e->getMessage();
@@ -1110,6 +1272,11 @@ class OfflineController extends BaseController {
 		        $errors[ $id ] = $e->getMessage();
 		    }
 		}
+		
+		$response = '';
+		$response .= implode("<br/>",$missatges)."<br/>";
+		$response .= "OK cursos existents ".$cursosExistents." i titulacions actualitzades ".$titulacionsExistents;
+		$response .= "OK cursos nous ".$cursosNous." i titulacions ".$titulacions;
 		
 		if (count($ids) != 0) {	
 			$sql = "UPDATE importtitulacions SET error = null WHERE id IN (".implode(",", $ids).") ";
@@ -1124,12 +1291,14 @@ class OfflineController extends BaseController {
 					$stmt->execute();
 				}
 				$em->flush();	
-				return new Response("KO <br/>".implode("<br/>",$errors)."<br/>cursos nous ".$cursosNous." i titulacions ".$titulacions);
+				$response .= "KO <br/>".implode("<br/>",$errors)."<br/>";
+				
+				return new Response( $response );
 			}
 		}
 		$em->flush();
-			
-		return new Response("OK cursos nous ".$cursosNous." i titulacions ".$titulacions );
+		
+		return new Response( $response );
 	}
 	
 	

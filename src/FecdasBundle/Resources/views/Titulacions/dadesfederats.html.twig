@@ -220,7 +220,7 @@
 								<a class="llicencia-imprimir link" href="{{ path('FecdasBundle_licensetopdf', { 'id': llicenciaVigent.id}) }}" alt="Llicència provisional" title="Llicència provisional">
 									<i class="fa fa-list-alt fa-1x orange"></i></a>
 							{% endif #}
-							{% if admin == true %}
+							{% if admin == true and parte.perImprimir == true %}
 								<a class="llicencia-duplicat link" href="{{ path('FecdasBundle_duplicatllicencia', { 'id': llicenciaVigent.id}) }}" 
 									data-club="{{ parte.clubparte.nom }}"
 									data-persona="{{ persona.nomcognoms }}" alt="Imprimir llicència plàstic" title="Imprimir llicència plàstic">

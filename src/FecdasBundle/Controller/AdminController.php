@@ -2166,7 +2166,7 @@ GROUP BY c.nom
 		
 		$llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaid);
 		
-		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::CODI_DUPLICAT_LLICENCIA);
+		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneById(BaseController::ID_DUPLICAT_LLICENCIA);
 		
 		$factura = false;
 		if ($request->query->has('factura') && $request->query->get('factura') == 1) $factura = true;
@@ -2183,7 +2183,7 @@ GROUP BY c.nom
 		
 			if ($llicencia == null) throw new \Exception('Llicència '.$llicenciaid.' no trobada' );
 			
-			if ($producte == null) throw new \Exception('Producte '.BaseController::CODI_DUPLICAT_LLICENCIA.' no trobat' );
+			if ($producte == null) throw new \Exception('Producte '.BaseController::ID_DUPLICAT_LLICENCIA.' no trobat' );
 			
 			$carnet = $this->getDoctrine()->getRepository('FecdasBundle:EntityCarnet')->findOneByProducte($producte);
 			

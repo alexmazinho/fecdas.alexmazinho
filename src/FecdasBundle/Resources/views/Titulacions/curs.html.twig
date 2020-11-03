@@ -401,6 +401,80 @@
 			}
             holder.data('index', max);
 		};
+
+		function initSelect2CerquesPersones() {
+
+			$("#curs_auxdirector").select2("destroy");
+			$("#curs_auxcodirector").select2("destroy");
+			$("#curs_auxinstructor").select2("destroy");
+			$("#curs_auxcollaborador").select2("destroy");
+			$("#curs_auxalumne").select2("destroy");
+			
+			// Select per dni
+			var urlConsultaPerDni = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
+			urlConsultaPerDni += '&club='+$('#curs_club').val();
+			urlConsultaPerDni += '&desde='+$('#curs_datadesde').val();  // data inici del curs, per validar llicència
+			urlConsultaPerDni += '&fins='+$('#curs_datafins').val();  // data final del curs, per validar llicència
+			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&nom=1&tecnic=1';
+
+			callbackPropagate = function(elem_sel, added) {
+				// added = {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP", "numcarnet": "ES/F01/M2/..."}
+				$(".alert.alert-dismissible, .alert.field-error-alert").remove();
+
+				switch(elem_sel) {
+    				case '#curs_auxdirector':
+    					$('#curs_auxcarnet').val(added.numcarnet);					    
+    			    	break;
+    			  	case '#curs_auxcodirector':
+    			  		$('#curs_auxcocarnet').val(added.numcarnet);
+    			    	break;
+    			  	default:
+    			    
+				} 
+		    };
+			selectionFormat = function(item) {
+		        return item.text+"-"+item.nomcognoms;
+		    };
+
+		    resultFormat = function(item) {
+		        return item.text+"-"+item.nomcognoms;
+		    };
+
+		    noFuntion = function( e ) { };
+
+		    openingFuntion = function( e ) {
+  
+				if ($('select#curs_titol').val().trim() == "") {
+					e.preventDefault();
+					dialegError('Error', 'Cal escollir la titulació del curs', 400, 0);
+					return false;
+				}
+			    
+				if ($('#curs_datadesde').datetimepicker('getValue') == null ||
+					$('#curs_datadesde').val().trim() == "" || 
+					$('#curs_datafins').datetimepicker('getValue') == null ||
+					$('#curs_datafins').val().trim() == "") {
+
+					e.preventDefault();
+					dialegError('Error', 'Cal indicar les dates d\'inici i finalització del curs', 450, 0);
+					return false;
+				}
+			};
+			
+			//								elem_sel, 				placeholder, 			minInput, allowclear, url, callbackPropagateValues, selectionFunction, selectionFormat, resultFormat, onclearingFunction, loadedFunction										
+			init_cercapernomdnimail_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', 4, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat, noFuntion, noFuntion, openingFuntion );
+
+			init_cercapernomdnimail_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', 4, true, urlConsultaDocentPerDniNom,  callbackPropagate, selectionFormat, resultFormat, noFuntion, noFuntion, openingFuntion );	
+						
+			init_cercapernomdnimail_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 4, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat, noFuntion, noFuntion, openingFuntion );
+
+			init_cercapernomdnimail_JSON('#curs_auxcollaborador', 'Cercar col·laborador per nom o DNI', 4, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat, noFuntion, noFuntion, openingFuntion );
+
+			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 4, true, urlConsultaPerDni, callbackPropagate, selectionFormat, resultFormat, noFuntion, noFuntion, openingFuntion );
+			
+
+		};
+		
 		
 		$(document).ready(function(){
 			setMenuActive("menu-cursos");
@@ -498,6 +572,8 @@
 				minimumInputLength: 2,
 				allowClear: true,
 				placeholder: 'Escollir títol'
+			}).on("change", function ( e ) { 
+				initSelect2CerquesPersones();
 			});
 
 			var current = new Date();
@@ -513,6 +589,7 @@
 				function (ct, $input) {  // current_time i $input el control
 					/*if ( $input.val() == '') {
 					}*/
+					initSelect2CerquesPersones();
 				}
 			);
 
@@ -530,6 +607,7 @@
 				function (ct, $input) {
 					/*if ( $input.val() == '') {
 					}*/
+					initSelect2CerquesPersones();
 				}
 			);
 
@@ -539,49 +617,9 @@
 				
 			$( "#tabs-docents" ).tabs();
 
-			// Select per dni
-			var urlConsultaPerDni = "{{ path('FecdasBundle_jsonpersona', { 'admin': admin }) }}";
-			urlConsultaPerDni += '&club='+$('#curs_club').val();
-			urlConsultaPerDni += '&desde='+$('#curs_datadesde').val();  // data inici del curs, per validar llicència
-			urlConsultaPerDni += '&fins='+$('#curs_datafins').val();  // data final del curs, per validar llicència
-			var urlConsultaDocentPerDniNom = urlConsultaPerDni+'&nom=1&tecnic=1';
-
-
-			callbackPropagate = function(elem_sel, added) {
-				// added = {"id":52052,"text":"52628669F","nomcognoms":"Alex2 MACIA PEREZ","mail":null,"telf":"","nascut":"21/12/1972","poblacio":null,"nacionalitat":"ESP", "numcarnet": "ES/F01/M2/..."}
-				$(".alert.alert-dismissible, .alert.field-error-alert").remove();
-
-				switch(elem_sel) {
-    				case '#curs_auxdirector':
-    					$('#curs_auxcarnet').val(added.numcarnet);					    
-    			    	break;
-    			  	case '#curs_auxcodirector':
-    			  		$('#curs_auxcocarnet').val(added.numcarnet);
-    			    	break;
-    			  	default:
-    			    
-				} 
-		    };
-			selectionFormat = function(item) {
-		        return item.text+"-"+item.nomcognoms;
-		    };
-
-		    resultFormat = function(item) {
-		        return item.text+"-"+item.nomcognoms;
-		    };
+			initSelect2CerquesPersones();
 			
-			//								elem_sel, 				placeholder, 			minInput, allowclear, url, callbackPropagateValues, selectionFunction, selectionFormat, resultFormat, onclearingFunction, loadedFunction										
-			init_cercapernomdnimail_JSON('#curs_auxdirector', 'Cercar al director per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat );
 
-			init_cercapernomdnimail_JSON('#curs_auxcodirector', 'Cercar al co-director per nom o DNI', 5, true, urlConsultaDocentPerDniNom,  callbackPropagate, selectionFormat, resultFormat );	
-			
-			
-			init_cercapernomdnimail_JSON('#curs_auxinstructor', 'Cercar instructor per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
-
-			init_cercapernomdnimail_JSON('#curs_auxcollaborador', 'Cercar col·laborador per nom o DNI', 5, true, urlConsultaDocentPerDniNom, callbackPropagate, selectionFormat, resultFormat);
-
-			init_cercapernomdnimail_JSON('#curs_auxalumne', 'Cercar DNI alumne', 5, true, urlConsultaPerDni, callbackPropagate, selectionFormat, resultFormat);
-			
 			// Delegate
 			$( "#llista-alumnes" ).on( "click", ".remove-alumne", function( e ) {
 		        //Cancel the link behavior

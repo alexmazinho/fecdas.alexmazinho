@@ -361,7 +361,7 @@
 	//Cercador select2 genèric cal que existeixi mètode al Controller que gestioni params 'cerca' i 'id'
 	init_cercapernomdnimail_JSON = function(elem_sel, placeholder_txt, minInput, allowclear, url, 
 											callbackPropagateValues, selectionFormat, resultFormat, onclearingFunction, 
-											loadedFunction) {
+											loadedFunction, openingFuncion) {
 
 		if (typeof selectionFormat === "undefined") {
 			selectionFormat = function(item) {
@@ -384,6 +384,12 @@
 			//e.val, e.added, e.removed
 			onclearingFunction = function( e ) { };	// e.preventDefault() to avoid clearing
 		}
+		
+		if (typeof openingFuncion === "undefined") {
+			//e.val, e.added, e.removed
+			openingFuncion = function( e ) { };	
+		}
+		
 		// Inicialitza el control de cerca (input hidden) 
 		$(elem_sel).select2({
 			minimumInputLength: minInput,
@@ -425,7 +431,10 @@
 				//e.val, e.added, e.removed
 				callbackPropagateValues(elem_sel, e.added);
 			}
-		}).on("select2-clearing", onclearingFunction).on("select2-loaded", loadedFunction);		
+		})
+		.on("select2-clearing", onclearingFunction)
+		.on("select2-loaded", loadedFunction)
+		.on("select2-opening", openingFuncion);		
 	};
     
 	/********** Selectors de dates ***************/

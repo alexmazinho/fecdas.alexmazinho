@@ -125,8 +125,10 @@ class EntityCurs {
 		$this->dataentrada = new \DateTime();
 		$this->datamodificacio = new \DateTime();
 		
-		$this->datadesde = $datadesde == null?new \DateTime():$datadesde;
-		$this->datafins = $datafins == null?new \DateTime():$datafins;
+		/*$this->datadesde = $datadesde == null?new \DateTime():$datadesde;
+		$this->datafins = $datafins == null?new \DateTime():$datafins;*/
+		$this->datadesde = $datadesde;
+		$this->datafins = $datafins;
 		
 		$this->editable = true;
 		$this->validat = false;

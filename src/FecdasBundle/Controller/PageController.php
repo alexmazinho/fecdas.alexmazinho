@@ -28,9 +28,52 @@ class PageController extends BaseController {
 	public function indexAction() {
 	    if ($this->isAuthenticated()) if($redirect = $this->frontEndLoginCheck()) return $redirect;
 	    
+	    if ($this->isCurrentClub()) {
+    	    /*$current = $this->getCurrentDate();
+    	    $current->setTime(00, 00);
+    	    $current->sub(new \DateInterval('P6M')); // 6 Months before*/
+    	    $desde = \DateTime::createFromFormat('Y-m-d', date("Y") . "-01-01");
+    	    $desde->setTime(00, 00);
+    	    
+    	    $senseLlicencia = "";
+    	    $query = $this->consultaFederatsSenseLlicencia($desde);
+    	    foreach ($query->getResult() as $persona) {
+                // Sense darrera llicència
+    	        if ($persona->getLastLlicencia() == null && 
+    	            count($persona->getMetapersona()->getTitulacionsClubAny($this->getCurrentClub(), date("Y"))) == 0) {
+    
+    	            $senseLlicencia .= " - ".$persona->getNomCognoms()." (".$persona->getDni().")".BR;
+    	        }
+    	    }
+    	    
+    	    if ($senseLlicencia != "") {
+    	        $senseLlicencia = 'Persones registrades aquest any pendents de tramitació de la llicència vigent i'.BR.'que tampoc han fet cap curs:'.BR.BR.$senseLlicencia;
+    	        $this->get('session')->getFlashBag()->add('error-notice',$senseLlicencia); // error-notice sms-notice
+    	    }
+	    }
 		return $this->render('FecdasBundle:Page:index.html.twig', $this->getCommonRenderArrayOptions()); 
 	}
 
+	private function consultaFederatsSenseLlicencia($desde) {
+	    $em = $this->getDoctrine()->getManager();
+	    
+	    $club = $this->getCurrentClub();
+	    
+	    $strQuery = "SELECT e FROM FecdasBundle\Entity\EntityPersona e ";
+	    $strQuery .= " WHERE e.databaixa IS NULL ";
+	    $strQuery .= " AND e.club = :club ";
+	    $strQuery .= " AND e.dataentrada >= :desde ";
+	    $strQuery .= " ORDER BY e.cognoms, e.nom ";
+	    
+	    $query = $em->createQuery($strQuery);
+	    
+	    $query->setParameter('club', $club->getCodi());
+	    $query->setParameter('desde', $desde->format('Y-m-d').' 00:00:00');
+	    
+	    return $query;
+	}
+	
+	
 	public function contactAction(Request $request) {
 	    if ($this->isAuthenticated()) if($redirect = $this->frontEndLoginCheck()) return $redirect;
 	    
@@ -1807,7 +1850,7 @@ class PageController extends BaseController {
 			$persona = new EntityPersona($metapersona, $club);
 			$em->persist($persona);
 			$options['edit'] = true;
-			$persona->setSexe("H");
+			//$persona->setSexe("H");
 			$persona->setAddrnacionalitat("ESP");
 		}	
 		if ($formpersona == null) $formpersona = $this->createForm(new FormPersona($options), $persona);

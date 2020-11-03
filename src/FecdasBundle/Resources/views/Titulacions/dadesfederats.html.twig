@@ -181,7 +181,9 @@
 					
 			   		<li class="data-detall">
 				   		<div class="data-detall-cell dadesfederats-id">{{ personaId }}</div>
-				   		<div class="data-detall-cell dadesfederats-dni col-noresponsive">{{ persona.dni }}</div>
+				   		<div class="data-detall-cell dadesfederats-dni col-noresponsive">
+				   		    {{ persona.dni }}
+				   		</div>
 				   		<div class="data-detall-cell dadesfederats-cognomsnom col-noresponsive">
 				   		    {{ persona.cognomsnom }}
 				   		    {% if persona.usuari is not null %}
@@ -198,6 +200,7 @@
 				   		</div>
 				   		<div class="data-detall-cell dadesfederats-naixement col-noresponsive">{% if persona.datanaixement is not null %} {{ persona.datanaixement|date('d/m/Y') }}{% endif %}</div>
 				   		<div class="data-detall-cell dadesfederats-historialllicencies">
+				   		    {% if admin == true %}<span class="subtitle">Dades del club: {{ persona.club.nom }}</span>{% endif %}	
 				   			<a class="link-historial historial-llicencies nolink" href="{{ path('FecdasBundle_historialllicencies', { 'id': personaId }) }}"  alt="Historial de llicències" title="Historial de llicències">
 				   			<i class="fa fa-history orange"></i><span>{{ persona.getInfoHistorialLlicencies(admin, persones.params.desde, persones.params.fins) }}</span>
 			   				</a>

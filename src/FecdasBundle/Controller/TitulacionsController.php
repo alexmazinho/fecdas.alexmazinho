@@ -923,7 +923,9 @@ class TitulacionsController extends BaseController {
     		
     		$maxNumCurs = $this->getMaxNumEntity($this->getCurrentDate()->format('Y'), BaseController::CURSOS) + 1;
     		
-    		$curs = new EntityCurs($checkRole->getCurrentUser(), $maxNumCurs, $this->getCurrentDate(), $this->getCurrentDate(), $club);
+    		//$curs = new EntityCurs($checkRole->getCurrentUser(), $maxNumCurs, $this->getCurrentDate(), $this->getCurrentDate(), $club);
+    		// Sense indicar les dates per obligar a que les indiquin els instructors 
+    		$curs = new EntityCurs($checkRole->getCurrentUser(), $maxNumCurs, null, null, $club);
     		$em->persist($curs);
     		
     		if ($checkRole->isCurrentInstructor()) {
@@ -951,7 +953,7 @@ class TitulacionsController extends BaseController {
 		$form = $this->createForm(new FormCurs( array('currentuser' => $checkRole->getCurrentUser(), 'admin' => $this->isCurrentAdmin(), 'stock' => $stock )), $curs);
     	try {
     		if ($request->getMethod() == 'POST') {
-    		   
+
     		    // Refer numeració seqüencial docencies pq handle funciona malament si s'esborra una docencia del mig
     		    $arrayInstructors = array();
     		    if (isset($data['instructors'])) {
@@ -976,7 +978,7 @@ class TitulacionsController extends BaseController {
 			 	$form->handleRequest($request);
 			 	
 			 	if (!$form->isValid()) throw new \Exception('Dades del formulari incorrectes '.$form->getErrors(true, true) );
-				
+
 				// Comprovacions genèriques
 				$this->validacionsCurs($curs, $stock, $form, $action);
 
@@ -1031,6 +1033,7 @@ class TitulacionsController extends BaseController {
     		// Ko, mostra form amb errors
     		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     	}
+  	
     	if (!$curs->finalitzat() && $action != 'remove') {
 			// Resultat check Requeriments titulació
 			$resultat = $this->comprovaRequerimentsCurs($curs);
@@ -1247,7 +1250,6 @@ class TitulacionsController extends BaseController {
 			$form->get('titol')->addError(new FormError('Obligatori'));
 			throw new \Exception('Cal escollir el títol que s\'impartirà en aquest curs');
 		}
-
 		$desde = $curs->getDatadesde();
 		$fins = $curs->getDatafins();
 		if ($desde == null || $fins == null) throw new \Exception('Cal indicar les dates d\'inici i final del curs');  // Per validar llicència tècnic 
@@ -1257,7 +1259,6 @@ class TitulacionsController extends BaseController {
 		// Validar instructor repetit
 		$director = $curs->getDirector();
 		$codirector = $curs->getCodirector();
-		
 		if ($director == null) {
 			$form->get('auxdirector')->addError(new FormError('Obligatori'));
 			throw new \Exception('Cal indicar un director per al curs');
@@ -1339,6 +1340,7 @@ class TitulacionsController extends BaseController {
 			// El club no té prous kits per tots els alumnes del curs. No es pot validar
 			if ($action == 'validate' && count($participants) > $stock) throw new \Exception('El club no disposa de prou kits "'.$kit->getDescripcio().'" per a tots els alumnes. Cal demanar-ne més per poder validar el curs ');
 		}
+		
 	}
 
 	private function getFormDocencia($tipus = 'instructors', $docencia, $form) {
@@ -1826,10 +1828,12 @@ class TitulacionsController extends BaseController {
 		
 		switch ($tipus->getId()) {
 			case 300:  // Director títols suficients
-			    $metapersona = $curs->getDirector()->getMetadocent();
-			        
-			    $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
-			    if ($resultat != '') $res['errors'][] = $text.'. Director del curs, '.$resultat.'; suficients per la direcció del curs. ';
+			    if ($curs->getDirector() != null) {
+    			    $metapersona = $curs->getDirector()->getMetadocent();
+    			        
+    			    $resultat = $this->comprovarTitulacionsSuficients($metapersona, $valors);
+    			    if ($resultat != '') $res['errors'][] = $text.'. Director del curs, '.$resultat.'; suficients per la direcció del curs. ';
+			    }
 			    
 			    if ($curs->getCodirector() != null) {
     			    $metapersona = $curs->getCodirector()->getMetadocent();
@@ -1840,10 +1844,12 @@ class TitulacionsController extends BaseController {
 			    break;
 			    
 			case 301:  // Director títols necessaris
-			    $metapersona = $curs->getDirector()->getMetadocent();
-			    
-			    $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
-			    if ($resultat != '') $res['errors'][] = $text.'. Director del curs, '.$resultat.'; necessàries per la direcció del curs. ';
+			    if ($curs->getDirector() != null) {
+    			    $metapersona = $curs->getDirector()->getMetadocent();
+    			    
+    			    $resultat = $this->comprovarTitulacionsNecessaries($metapersona, $valors);
+    			    if ($resultat != '') $res['errors'][] = $text.'. Director del curs, '.$resultat.'; necessàries per la direcció del curs. ';
+			    }
 			    
 			    if ($curs->getCodirector() != null) {
 			        $metapersona = $curs->getCodirector()->getMetadocent();
@@ -2349,7 +2355,6 @@ class TitulacionsController extends BaseController {
 		$query = $em->createQuery($strQuery);
 				 
 		// Algun filtre
-		$query = $em->createQuery($strQuery);
 		if ($club != null) $query->setParameter('club', $club->getCodi());
 		if ($titol != null) $query->setParameter('titol', $titol->getId());
 		if ($titolExtern != null) $query->setParameter('titolextern', $titolExtern->getId());
@@ -2477,8 +2482,9 @@ class TitulacionsController extends BaseController {
 			$response->setContent(json_encode(array()));
 			return $response;
 		}
-		
-		if ($tecnic == true) {
+
+		if ($tecnic) {
+
             // CAL AFEGIR LLIÈNCIA VIGENT TêCNIC !!!!!!!!!!!!!!!!	
 			// Consulta persones amb llicència durant tot el periode desde -> fins
 			// iniciada abans de la data desde i acabada després de la data fins
@@ -2488,18 +2494,15 @@ class TitulacionsController extends BaseController {
 			$strQuery .= " AND r.dataalta <= :desde ";
 			$strQuery .= " AND l.datacaducitat >= :fins ";
 			$strQuery .= " AND a.simbol = :categoria ";
-			
 			$strQuery .= " AND ((p.dni LIKE :cerca) ";
 			if ($cercanom) $strQuery .= " OR (CONCAT(e.nom,' ',e.cognoms) LIKE :cerca) ";
 			if ($cercamail) $strQuery .= " OR (e.mail LIKE :cerca) ";
 			$strQuery .= " ) ORDER BY e.cognoms, e.nom";  
-
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('cerca', '%'.$cerca.'%');
 			$query->setParameter('desde', $desde->format('Y-m-d H:i:s'));
 			$query->setParameter('fins', $fins->format('Y-m-d'));
 			$query->setParameter('categoria', BaseController::SIMBOL_TECNIC);
-			
 		} else {	
 			$strQuery = " SELECT p FROM FecdasBundle\Entity\EntityMetaPersona p INNER JOIN p.persones e WHERE ";
 			$strQuery .= " (p.dni LIKE :cerca) ";
@@ -2509,8 +2512,10 @@ class TitulacionsController extends BaseController {
 		
 			$query = $em->createQuery($strQuery);
 			$query->setParameter('cerca', '%'.$cerca.'%');
-		}		
+		}	
+
 		$search = array( );
+
 		if ($query != null) {
 			$result = $query->getResult();
 

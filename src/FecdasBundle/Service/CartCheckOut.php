@@ -170,12 +170,13 @@ class CartCheckOut
     
     public function getUnitatsTarifaTransport()
     {
+        /*  Anul·lat, sempre tarifa 1
         $pes = $this->getPesComandaCart();
         if (!is_numeric($pes)) return 1;
         if ($pes <= 0) return 1;
         
         if ($pes > BaseController::TARIFA_MINPES3) return 3;
-        if ($pes > BaseController::TARIFA_MINPES2) return 2;
+        if ($pes > BaseController::TARIFA_MINPES2) return 2;*/
         
         return 1;
     }

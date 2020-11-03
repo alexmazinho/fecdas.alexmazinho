@@ -224,7 +224,7 @@ class EntityPersona {
 				 		$this->getAddrprovincia(), 
 				 		$this->getAddrnacionalitat(),
 						$this->getInfoHistorialTitulacions(),
-						$this->getInfoHistorialLlicencies(FALSE, $desde, $fins)		// No adjuntar club
+    	                $this->getInfoHistorialLlicencies($admin, $desde, $fins)
 					 ));
 		
 		return $csvRow;
@@ -412,6 +412,8 @@ class EntityPersona {
     }
 
     public function getInfoHistorialLlicencies($admin = false, $desde = '', $fins = '') {
+        if ($admin && $this->metapersona!=null) return $this->metapersona->getInfoHistorialLlicencies($admin, $desde, $fins);
+    
     	return EntityPersona::getInfoHistorialLlicenciesStatic($this->llicencies, $admin, $desde, $fins, $this->club);
 	}
 

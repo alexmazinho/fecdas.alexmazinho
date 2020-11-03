@@ -224,6 +224,36 @@ class EntityMetaPersona {
         return $arr;
     }
     
+    public function getTitulacionsClub($club)
+    {
+        /* Ordenades de última a primera */
+        $arr = array();
+        if ($club == null) return $arr;
+        foreach ($this->getTitulacionsSortedByDate() as $titulacio) {
+            $clubCurs = $titulacio->getCurs()->getClub();
+            if ($clubCurs != null && $clubCurs->getCodi() == $club->getCodi()) {
+                $arr[] = $titulacio;
+            }
+        }
+        
+        return $arr;
+    }
+    
+    public function getTitulacionsClubAny($club, $any)
+    {
+        /* Ordenades de última a primera */
+        $arr = array();
+        if ($club == null || !is_numeric($any)) return $arr;
+        
+        foreach ($this->getTitulacionsClub($club) as $titulacio) {
+            if ($titulacio->getDatasuperacio()->format("Y") == $any) {
+                $arr[] = $titulacio;
+            }
+        }
+        
+        return $arr;
+    }
+    
     
 	public function teTitulacions() {
 		return count($this->getTitulacionsSortedByDate(false));

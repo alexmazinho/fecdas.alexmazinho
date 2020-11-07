@@ -52,19 +52,19 @@
 				   	{{ form_label(form.titols, 'Titols CMAS', { 'label_attr': {'class': ''} }) }}
 					{{ form_widget(form.titols, { 'attr': {'class': 'form-control'} }) }}
 				</div>
-			</div>			
+			</div>
 		</div>
 		<div class="row">
-			<div class="col-md-3 col-sm-4 col-xs-6">
+			<div class="col-md-2 col-sm-4 col-xs-6">
 				<div class="form-group">
-					{{ form_label(form.desde, 'des de') }}
+					{{ form_label(form.desde, 'Des de') }}
 					<div class="input-group" >
 						{{ form_widget(form.desde, { 'attr': {'class': 'form-control formtime-calendar'} }) }}
 						<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
 					</div>
 				</div>
 			</div>
-		   	<div class="col-md-3 col-sm-4 col-xs-6">
+		   	<div class="col-md-2 col-sm-4 col-xs-6">
 				<div class="form-group">
 					{{ form_label(form.fins, 'fins') }}
 					<div class="input-group" >
@@ -73,24 +73,13 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2 col-sm-2 col-xs-4">
+			<div class="col-md-3 col-sm-4">
 				<div class="form-group">
-					<label>&nbsp;</label>
-					<div class="checkbox">
-				    	<label>
-				      		{{ form_widget(form.pervalidar, { 'attr': {'class': 'checkbox-right'} }) }} Pendents de validació
-				    	</label>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-2 col-sm-2 col-xs-4">
-				<div class="form-group">
-					<label>&nbsp;</label>
-					<div class="checkbox">
-				    	<label>
-				      		{{ form_widget(form.finalitzat, { 'attr': {'class': 'checkbox-right'} }) }} Finalitzat
-				    	</label>
-					</div>
+				    {{ form_label(form.estat, 'Estat de la tramitació') }}
+				    <div class="input-group" >
+				    	<span class="input-group-addon">&nbsp;</span>
+			            {{ form_widget(form.estat, { 'attr': {'class': 'form-control'} }) }}
+			        </div>
 				</div>
 			</div>
 		</div> 
@@ -177,14 +166,13 @@
 	
 	getUrlWithFilterParams = function(url) {
 		var club = $( "#form_clubs" ).val();
-		var pervalidar = ($( '#form_pervalidar' ).is(':checked')?1:0);
-		var finalitzat = ($( '#form_finalitzat' ).is(':checked')?1:0);
+		var estat = $( "#form_estat" ).val();
 		var desde = $( "#form_desde" ).val();
 		var fins = $( "#form_fins" ).val();
 		var titol = $( "#form_titols" ).val();
 		var participant = $( "#form_participant" ).val();  
 
-		return url + "&clubs="+club+"&pervalidar="+pervalidar+"&finalitzat="+finalitzat+"&desde="+desde+"&fins="+fins+"&titols="+titol+"&participant="+participant;
+		return url + "&clubs="+club+"&estat="+estat+"&desde="+desde+"&fins="+fins+"&titols="+titol+"&participant="+participant;
 	}
 
 	filtreLlistacursos = function() {
@@ -197,7 +185,7 @@
 		setMenuActive("menu-cursos");
 		
 		
-		$("#form_clubs, #form_titols, #form_desde, #form_fins, #form_pervalidar, #form_finalitzat, #form_participant ").change(function() {
+		$("#form_clubs, #form_titols, #form_desde, #form_fins, #form_estat, #form_participant ").change(function() {
 			filtreLlistacursos();
 	    });
 

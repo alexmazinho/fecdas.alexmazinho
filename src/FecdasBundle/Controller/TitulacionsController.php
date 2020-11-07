@@ -788,16 +788,12 @@ class TitulacionsController extends BaseController {
 		$titol = null;
 		if ($currentTitol != '') $titol = $this->getDoctrine()->getRepository('FecdasBundle:EntityTitol')->find($currentTitol);
 		
-		$currentPerValidar = false;
-		if ($request->query->has('pervalidar') && $request->query->get('pervalidar') == 1) $currentPerValidar = true;
-		
-		$currentFinalitzat = false;
-		if ($request->query->has('finalitzat') && $request->query->get('finalitzat') == 1) $currentFinalitzat = true;
+		$currentEstat = $request->query->get('estat', 0);
 		
 		$this->logEntryAuth('VIEW CURSOS', "rol ".$rol. " club: " . $currentClub." "." titol ".$currentTitol.
 											"des de ".($desde != null?$desde->format('Y-m-d'):'--')." fins ".($fins != null?$fins->format('Y-m-d'):'--'));
 		
-		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $cerca, $desde, $fins, $currentPerValidar, $currentFinalitzat, $sort.' '.$direction);
+		$query = $this->consultaCursos($rol, $checkRole->getCurrentUser(), $club, $titol, $cerca, $desde, $fins, $currentEstat, $sort.' '.$direction);
 		
 		
 		if ($format == 'csv') {
@@ -814,8 +810,7 @@ class TitulacionsController extends BaseController {
 		        'alumne' 		=> $cerca,
 		        'desde'			=> $desde,
 		        'fins'			=> $fins,
-		        'pervalidar'	=> $currentPerValidar,
-		        'finalitzat'	=> $currentFinalitzat,
+		        'estat'         => $currentEstat
 		    ));
 		}
 		
@@ -827,8 +822,11 @@ class TitulacionsController extends BaseController {
 				10 /*limit per page*/
 		); 
 
-		$formBuilder = $this->createFormBuilder()->add('pervalidar', 'checkbox', array('required'  => false, 'data' => $currentPerValidar));
-		$formBuilder->add('finalitzat', 'checkbox', array('required'  => false, 'data' => $currentFinalitzat));
+		$formBuilder = $this->createFormBuilder()->add('estat', 'choice', array(
+		    'choices'   => BaseController::CURS_ESTATS,
+		    'preferred_choices' => array(0),  // tots
+		    'data' => $currentEstat
+		));
 		$formBuilder->add('desde', 'text', array('required'  => false, 'data' => ($desde != null?$desde->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('fins', 'text', array('required'  => false, 'data' => ($fins != null?$fins->format('d/m/Y'):''), 'attr' => array( 'placeholder' => '--', 'readonly' => false)));
 		$formBuilder->add('participant', 'text', array('required'  => false, 'data' => $cerca, 'attr' => array( 'placeholder' => 'Alumne: dni, nom o mail', 'readonly' => false)));
@@ -1034,7 +1032,8 @@ class TitulacionsController extends BaseController {
     		$this->get('session')->getFlashBag()->add('error-notice',	$e->getMessage());
     	}
   	
-    	if (!$curs->finalitzat() && $action != 'remove') {
+    	//if (!$curs->finalitzat() && $action != 'remove') {
+    	if ($action != 'remove') {
 			// Resultat check Requeriments titulació
 			$resultat = $this->comprovaRequerimentsCurs($curs);
 			// Dades estructurades requeriments
@@ -2375,7 +2374,7 @@ class TitulacionsController extends BaseController {
 	}
 
 
-	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $participant = '', $desde = null, $fins = null, $pervalidar = false, $finalitzat = false, $strOrderBY = '') {
+	private function consultaCursos($rol = '', $editor = null, $club = null, $titol = null, $participant = '', $desde = null, $fins = null, $estat = 0, $strOrderBY = '') {
 
 		$em = $this->getDoctrine()->getManager();
 	
@@ -2386,16 +2385,25 @@ class TitulacionsController extends BaseController {
 		if ($participant != '') $strQuery .= " JOIN c.participants p JOIN p.metapersona m JOIN m.persones e ";
 		
 		$strQuery .= " WHERE 1 = 1 ";
-		if ($this->isCurrentAdmin()) {
+		if (!$this->isCurrentAdmin() || $estat > 0) {
 			$strQuery .= " AND c.databaixa IS NULL ";
 		}
 		
-		if ($pervalidar == true) {
-			$strQuery .= " AND c.validat = 0 ";
-		}
-		
-		if ($finalitzat == true) {
-		    $strQuery .= " AND c.finalitzat = 1 ";
+		// Estats 
+		// 0 - Tots
+		// 1 - En tramitació  => editable == 1 || (editable == 0 && validat == 0)
+		// 2 - Pendent de validació  => validat == 1 && finalitzat == 0
+		// 3 - Finalitzat => finalitzat == 1
+		switch ($estat) {
+		    case 1:
+		        $strQuery .= " AND (c.editable = 1 OR (c.editable = 0 AND c.validat = 0)) ";
+		        break;
+		    case 2:
+		        $strQuery .= " AND c.validat = 1 AND c.finalitzat = 0 ";
+		        break;
+		    case 3:
+		        $strQuery .= " AND c.finalitzat = 1 ";
+		        break;
 		}
 		
 		if ($desde != null) $strQuery .= " AND c.datafins >= :desde ";

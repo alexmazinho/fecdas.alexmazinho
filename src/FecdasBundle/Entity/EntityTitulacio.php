@@ -115,16 +115,22 @@ class EntityTitulacio {
 	}
 	
 	/**
-	 * Retorna número titulacio format XXXXX/20XX
+	 * NO => Retorna número titulacio format XXXXX/20XX
+	 * Retorna el número de titulació FEDAS o 'pendent' si encara no s'ha importat 
 	 *
 	 * @return string
 	 */
 	public function getNumTitulacio() {
+        /*   
 	    if ($this->num == null || $this->num == 0) return 'Pendent';
 	    $prefix = $this->getTitol()->getPrefix();
 	    $prefix = str_replace("<YY>", $this->datasuperacio->format('y'), $prefix);
 	    
 	    return $prefix.str_pad($this->num, 7,"0", STR_PAD_LEFT);
+	    */
+	    if ($this->getNumfedas() == null || $this->getNumfedas() == "") return 'Pendent';
+	    
+	    return $this->getNumfedas();
 	}
 	
 	/**

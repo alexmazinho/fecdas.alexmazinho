@@ -166,8 +166,9 @@
 				<h2 class="blue">Equip docent del curs</h2>
 			</div>
 			<div class="col-md-8 col-last-right">
-				{% if not curs.finalitzat and requeriments.titol != '' %}
-    				<p class="title-info for-title-h2">Hi ha <strong class="highlight">{{ requeriments.errors.total }} problemes</strong>. Consulta l'informe del compliment de requeriments del curs 
+				{# if not curs.finalitzat and requeriments.titol != '' #}
+				{% if requeriments.titol != '' %}
+    				<p class="title-info for-title-h2">Hi ha <strong class="highlight">{{ requeriments.errors.total }} avisos</strong>. Consulta l'informe del compliment de requeriments del curs 
     					<a class="link open-informe" href="javascript:void(0)" alt="Informe requeriments del curs" title="Informe requeriments del curs"><b>aquí</b>&nbsp;&nbsp;<i class="fa fa-external-link-square fa-1x blue"></i></a>
     				</p>
     				<div id="informe-requeriments" class="hidden container-fluid">{% include 'FecdasBundle:Titulacions:cursinformerequeriments.html.twig'  %}</div>

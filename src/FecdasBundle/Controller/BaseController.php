@@ -245,6 +245,7 @@ class BaseController extends Controller {
     const CURS_TANCAT       = array('lletra' => 'T', 'text' => 'Tancat pel director. Pendent de validar pel club');
     const CURS_EDICIO       = array('lletra' => 'E', 'text' => 'El director està omplint les dades');
     
+    const CURS_ESTATS = array(0 => 'Tots', 1 => 'En tramitació', 2 => 'Pendent de validació', 3 => 'Finalitzats');
     
     const PROVINCIES_ALTRES = array("Albacete", "Alacant", "Almería", "Araba", "Álava", "Asturias", "Ávila", "Badajoz", "Illes Balears",
                                     "Bizkaia", "Burgos", "Cáceres", "Cádiz", "Cantabria", "Castelló", "Ciudad Real", "Córdoba", "A Coruña", 

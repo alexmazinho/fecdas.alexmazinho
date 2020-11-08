@@ -209,7 +209,7 @@ class TitulacionsController extends BaseController {
 	}
 	
 	private function exportCursos($request, $cursos, $club, $titol, $cerca, $desde, $fins) {
-	    /* CSV Llistat de dades personals filtrades */
+	    /* CSV Llistat de cursos filtrats */
 	    $filename = "export_cursos";
 	    if ($club != null) $filename .= "_".Funcions::netejarPath($club->getNom());
 	    if ($titol != null) $filename .= "_".Funcions::netejarPath($titol->getTitol());

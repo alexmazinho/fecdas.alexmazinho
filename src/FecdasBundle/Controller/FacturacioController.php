@@ -2122,7 +2122,7 @@ error_log("CONTA"." ==> 4 ");
 			if ($tipus == BaseController::TIPUS_PRODUCTE_LLICENCIES ||
 				$tipus == BaseController::TIPUS_PRODUCTE_DUPLICATS) $sort = 'p.id';
 			
-			$query = $this->consultaProductes(0, $compte, $tipus, false, $sort, $direction);
+			$query = $this->consultaProductes('', $compte, $tipus, false, $sort, $direction);
 		
 			$productes = $query->getResult();
 		}
@@ -2558,10 +2558,10 @@ error_log("CONTA"." ==> 4 ");
 		// Llista de productes i edició massiva
         if($redirect = $this->frontEndLoginCheck($request->isXmlHttpRequest(), false, true)) return $redirect;
 		
-		$idproducte = $request->query->get('cerca', 0);
-
 		$this->logEntryAuth('VIEW PRODUCTES', $this->get('session')->get('username'));
 
+		$format = $request->query->get('format', '');
+		$cerca = $request->query->get('cerca', '');
 		$tipus = $request->query->get('tipus', 0);
 		$compte = $request->query->get('compte', '');
 		$baixes = $request->query->get('baixes', 0);
@@ -2571,14 +2571,24 @@ error_log("CONTA"." ==> 4 ");
 		$sort = $request->query->get('sort', 'p.descripcio');
 		$direction = $request->query->get('direction', 'asc');
 		
-		if ($idproducte > 0) {
-			$tipus = 0;
-			$baixes = true;
-			$page = 1;
-		}	
-
-		$query = $this->consultaProductes($idproducte, $compte, $tipus, $baixes, $sort, $direction);
-			
+		$query = $this->consultaProductes($cerca, $compte, $tipus, $baixes, $sort, $direction);
+		
+		if ($format == 'csv') {
+		    // Generar CSV
+		    return $this->exportProductes($request, $query->getResult(), $cerca, $compte, $tipus, $baixes);
+		}
+		
+		if ($format == 'pdf') {
+		    // Generar PDF
+		    return $this->forward('FecdasBundle:PDF:productestopdf', array(
+		        'productes'   => $query->getResult(),
+		        'cerca'       => $cerca,
+		        'compte' 	  => $compte,
+		        'tipus' 	  => $tipus,
+		        'baixes'	  => $baixes
+		    ));
+		}
+		
 		$paginator  = $this->get('knp_paginator');
 			
 		$productes = $paginator->paginate(
@@ -2594,8 +2604,8 @@ error_log("CONTA"." ==> 4 ");
 		}
 		
 		$formBuilder = $this->createFormBuilder()
-			->add('cerca', 'hidden', array(
-				'data' => ($idproducte>0?$idproducte:"")
+			->add('cerca', 'text', array(
+				'data' => $cerca
 		));
 		
 		$formBuilder
@@ -3042,23 +3052,16 @@ error_log("CONTA"." ==> 4 ");
 		return $response;
 	}
 	
-	protected function consultaProductes($idproducte, $compte, $tipus, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
+	protected function consultaProductes($cerca = '', $compte = '', $tipus = 0, $baixes = false, $strOrderBY = 'p.description' , $direction = 'asc' ) {
 		$em = $this->getDoctrine()->getManager();
 	
-		if ($idproducte > 0) {
-			$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
-			$strQuery .= "WHERE p.id = :idproducte ";
-			$query = $em->createQuery($strQuery);
-			$query->setParameter('idproducte', $idproducte);
-			return $query;
-		}
-		
 		// Consultar no només les vigents sinó totes
 		$strQuery = "SELECT p FROM FecdasBundle\Entity\EntityProducte p ";
 		$strQuery .= "WHERE 1 = 1 ";
 		if (! $baixes) $strQuery .= " AND p.databaixa IS NULL ";
 		if ($tipus > 0) $strQuery .= " AND p.tipus = :tipus";
 		if ($compte != '') $strQuery .= " AND p.codi = :compte";
+		if ($cerca != '') $strQuery .= " AND p.descripcio LIKE :cerca";
 		if (! $this->isCurrentAdmin() ) $strQuery .= " AND p.visible = 1";
 
 		$strQuery .= " ORDER BY " .implode(" ".$direction.", ",explode(",",$strOrderBY)). " ".$direction;
@@ -3067,9 +3070,33 @@ error_log("CONTA"." ==> 4 ");
 		
 		if ($tipus > 0) $query->setParameter('tipus', $tipus);
 		if ($compte != '') $query->setParameter('compte', $compte);
+		if ($cerca != '') $query->setParameter('cerca', '%'.$cerca.'%');
 		return $query;
 	}
 	
+	private function exportProductes($request, $productes = array(), $cerca = '', $compte = '', $tipus = 0, $baixes = false) {
+	    /* CSV Llistat de productes filtrades */
+	    $filename = "export_productes";
+	    if ($cerca != '') $filename .= "_".$cerca;
+	    if ($tipus > 0) $filename .= "_".Funcions::netejarPath(BaseController::getTipusProducte($tipus));
+	    if ($compte != '') $filename .= "_".$compte;
+	    if (! $baixes) $filename .= "_inclou_baixes";
+	    	    
+	    $filename .= ".csv";
+	    
+	    $header = EntityProducte::csvHeader( );
+	    
+	    $data = array(); // Get only data matrix
+	    $i = 1;
+	    
+	    foreach ($productes as $curs) {
+	        $data[] = $curs->csvRow($i);
+	        $i++;
+	    }
+	    
+	    $response = $this->exportCSV($request, $header, $data, $filename);
+	    return $response;
+	}
 	
 	protected function consultaIngresos($codi, $nr, $ar, $strOrderBY = 'r.datapagament', $direction = 'desc' ) {
 		$em = $this->getDoctrine()->getManager();

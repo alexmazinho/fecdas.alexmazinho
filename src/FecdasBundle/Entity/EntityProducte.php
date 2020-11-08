@@ -119,6 +119,59 @@ class EntityProducte {
 		return $this->getId()."".$this->getCodi();
 	}
 	
+	public static function csvHeader() {
+	    
+	    return array (
+	        'num',
+	        'codi',
+	        'abrev.',
+	        'descripció',
+	        'tipus',
+	        'any preu',
+	        'preu',
+	        'iva',
+	        'transport',
+	        'stock',
+	        'mínim',
+	        'avís',
+	        'pes',
+	        'visible',
+	        'departament',
+	        'subdepartament',
+	        'baixa'
+	    );
+	}
+	
+	/**
+	 * Get curs info. as csv data
+	 *
+	 * @return string
+	 */
+	public function csvRow($i = 0)
+	{
+	    return array (
+	        $i,
+	        $this->getCodi(),
+	        $this->getAbreviatura(),
+	        $this->getDescripcio(),
+	        $this->getTipusText(),
+	        $this->getCurrentAny(),
+	        number_format($this->getCurrentPreu(), 2, ',', '.'),
+	        number_format($this->getCurrentIva(), 2, ',', '.'),
+	        $this->getTransport()?"Si":"No",
+	        $this->getStockable()?"Si":"No",
+	        $this->getMinim(),
+	        $this->getLimitnotifica(),
+	        $this->getPes(),
+	        $this->getVisible()?"Si":"No",
+	        $this->getDepartament(),
+	        $this->getSubdepartament(),
+	        $this->esBaixa()?$this->getDatabaixa()->format("d/m/Y"):""
+	    );
+	}
+	
+	
+	
 	public function esBaixa()
 	{
 		return $this->databaixa != null;

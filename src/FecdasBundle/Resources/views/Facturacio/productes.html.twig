@@ -15,50 +15,66 @@
 {% block title %}Aplicació gestió FECDAS. Llistat de productes {% endblock %}
 
 {% block body %}
-	<header>
-        <h1>Llistat de productes</h1>
-    </header>
-	{% include 'FecdasBundle:Includes:messages.html.twig' %}
-        
+    <header>
+		<div class="row">
+			<div class="col-md-8"><h1>Llistat de productes</h1></div>
+	        <div class="col-md-4 col-last-right">
+				<div class="buttons-top-bootstrap">
+					<div class="button-top"><a class="link export-pdf" href="{{ path('FecdasBundle_productes', { 'format': 'pdf' } ) }}" alt="Descarregar els productes" 
+							title="Descarregar els productes"><i class="fa fa-file-pdf-o fa-1x red"></i></a></div> 
+					<div class="button-top"><a class="link export-csv" href="{{ path('FecdasBundle_productes', { 'format': 'csv' } ) }}" alt="Exportar dades dels productes" 
+							title="Exportar dades dels productes"><i class="fa fa-file-excel-o fa-1x green"></i></a></div>
+				</div> 
+			</div>
+		</div>
+   	</header>
+    
     <div id="productes-main">
-	    <div id="list-forms">
-	    	{{ form_start(form, {'action': path('FecdasBundle_nouproducte'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_productes'}}) }}
-		    	<div class="row">
-		    	  <div class="col-md-3">
-				  	<div class="form-group">
-				    	{{ form_label(form.compte, 'Compte', { 'label_attr': {'class': 'sr-only'} }) }}
-						{{ form_widget(form.compte, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				  </div>
-				  <div class="col-md-3">
-				  	<div class="form-group">
-				    	{{ form_label(form.cerca, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
-						{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}
-					</div>
-				  </div>
-				  <div class="col-md-3">
-				    <div class="form-group">
-				    	{{ form_label(form.tipus, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
-						<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
-					</div>
-				  </div>
-				  <div class="col-md-1">
-					  <div class="checkbox">
-					    <label>
-					      {{ form_widget(form.baixes) }} Baixes
-					    </label>
-					  </div>
-				  </div>
-				  <div class="col-md-2 col-last-right">
-						<button type="submit" class="btn btn-default"><i class="fa fa-plus-circle"></i> afegir</button>
-				  </div>
-				</div>
-		   	{{ form_end(form) }}
+    	<div class="row">
+			<div class="col-md-12 col-xs-12">
+		   		{% include 'FecdasBundle:Includes:messages.html.twig' %}
+		   	</div>
+		</div>
+		<div class="row">
+    	    <div id="list-forms" class="col-md-12 col-xs-12">
+    	    	{{ form_start(form, {'action': path('FecdasBundle_nouproducte'), 'method': 'POST', 'attr': {'class': 'appform', 'id':'form_productes'}}) }}
+    		    	<div class="row">
+    		    	  <div class="col-md-2">
+    				  	<div class="form-group">
+    				    	{{ form_label(form.compte, 'Compte', { 'label_attr': {'class': 'sr-only'} }) }}
+    						{{ form_widget(form.compte, { 'attr': {'class': 'form-control'} }) }}
+    					</div>
+    				  </div>
+    				  <div class="col-md-4">
+    				  	<div class="form-group">
+    				    	{{ form_label(form.cerca, 'Descripció', { 'label_attr': {'class': 'sr-only'} }) }}
+    						<div class="input-group"><div class="input-group-addon">Descripció</div>{{ form_widget(form.cerca, { 'attr': {'class': 'form-control'} }) }}</div>
+    					</div>
+    				  </div>
+    				  <div class="col-md-3">
+    				    <div class="form-group">
+    				    	{{ form_label(form.tipus, 'Cercar', { 'label_attr': {'class': 'sr-only'} }) }}
+    						<div class="input-group"><div class="input-group-addon">tipus</div>{{ form_widget(form.tipus, { 'attr': {'class': 'form-control'} }) }}</div>
+    					</div>
+    				  </div>
+    				  <div class="col-md-1">
+    					  <div class="checkbox">
+    					    <label>
+    					      {{ form_widget(form.baixes) }} Baixes
+    					    </label>
+    					  </div>
+    				  </div>
+    				  <div class="col-md-2 col-last-right">
+    						<button type="submit" class="btn btn-default"><i class="fa fa-plus-circle"></i> afegir</button>
+    				  </div>
+    				</div>
+    		   	{{ form_end(form) }}
+    	    </div>
 	    </div>
 	    <div class="table-header">	
 		   	<div id="list-header">
 				<div id="header-producte-id" class="col-listheader hidden">&nbsp;</div>
-				<div id="header-producte-estat" class="col-listheader collistheader-noorder">Estat</div>
+				<!-- <div id="header-producte-estat" class="col-listheader collistheader-noorder">Estat</div> -->
 		   		<div id="header-producte-codi" class="col-listheader">{{ knp_pagination_sortable(productes, 'Codi', 'p.codi') }}
 		   			<span class="listheader-icon {% if productes.isSorted('p.codi') %} listheader-icon-{{ sortparams['direction'] }} {% endif %}"></span></div>
 		   		<div id="header-producte-nomcurt" class="col-listheader col-listheader-sortable">{{ knp_pagination_sortable(productes, 'Abr.', 'p.abreviatura') }}
@@ -85,8 +101,11 @@
 			{% for producte in productes %} 
 		   		<li class="data-detall {% if producte.esBaixa %} data-detall-fosc {% endif %}">
 		   			<div class="data-detall-cell producte-id hidden">{{ producte.id }}</div>
-		   			<div class="data-detall-cell producte-estat">{{ producte.estat }}</div>
-		   			<div class="data-detall-cell producte-codi">{{ producte.codi }}</div>
+		   			<!-- <div class="data-detall-cell producte-estat">{# producte.estat #}</div> -->
+		   			<div class="data-detall-cell producte-codi">
+		   			    {{ producte.codi }}
+		   			    {% if producte.esBaixa %}<span class="subtitle">({{ producte.estat }})</span>{% endif %}
+		   			</div>
 		   			<div class="data-detall-cell producte-nomcurt">{{ producte.abreviatura }}</div>
 		   			<div class="data-detall-cell producte-descripcio">{{ producte.descripcio }}</div>
 		   			<div class="data-detall-cell producte-tipus">{{ producte.tipustext }}</div>
@@ -121,42 +140,49 @@
 
 	{{ parent() }}
 	<script type="text/javascript">
-	
-	filtreLlistaProductes = function(id, tipusproducte, baixes) {
-		
-		window.location = "{{ path('FecdasBundle_productes', sortparams)|raw }}"+"&cerca="+id+"&tipus="+tipusproducte+"&baixes="+(baixes?1:0);
-	}; 
+
+	getUrlWithFilterParams = function(url) {
+		var cerca = $( "#form_cerca" ).val();
+		var compte = $( "#form_compte" ).val();
+		var tipusproducte = $( "#form_tipus" ).val();
+		var baixes = $( '#form_baixes' ).is(':checked');
+
+		return url + "&cerca="+cerca+"&compte="+compte+"&tipus="+tipusproducte+"&baixes="+(baixes?1:0);
+	}
+
+	filtreLlistaProductes = function() {
+
+		window.location = getUrlWithFilterParams("{{ path('FecdasBundle_productes', sortparams)|raw }}");
+	}
 	
 	$(document).ready(function(){
 		setMenuActive("menu-admproductes");
 		
 		$("#form_tipus").change(function() {
-			var id = 0;
-			if ($( "#form_cerca" ).val() > 0) id = $( "#form_cerca" ).val();
-			if ($( "#form_compte" ).val() > 0) id = $( "#form_compte" ).val();
-			filtreLlistaProductes(id, $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes();
 	    });
 
 		$("#form_compte").change(function() {
-			filtreLlistaProductes($( "#form_compte" ).val(), $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes();
 	    });
 		
 		$("#form_cerca").change(function() {
-			filtreLlistaProductes($( "#form_cerca" ).val(), "", $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes();
 	    });
 	
 		$( '#form_baixes' ).change(function(e) {
-			var id = 0;
-			if ($( "#form_cerca" ).val() > 0) id = $( "#form_cerca" ).val();
-			if ($( "#form_compte" ).val() > 0) id = $( "#form_compte" ).val();
-			filtreLlistaProductes(id, $( "#form_tipus" ).val(), $(this).is(':checked'));
+			filtreLlistaProductes();
 		});
 		
-		// Descripcio producte
-		init_cercaproducte_JSON('#form_cerca', 'descripcio', 'Cercar descripció del producte', "{{  path('FecdasBundle_jsonproductes') }}", 1);
-
 		// Compte contable producte
 		init_cercaproducte_JSON('#form_compte', 'compte', 'Compte...', "{{  path('FecdasBundle_jsonproductes') }}", 1);
+
+		$('.export-pdf, .export-csv').click( function(e) {
+			e.preventDefault();
+
+			var url = getUrlWithFilterParams($(this).attr('href'));
+			window.location = url;
+		});
 	});
 	
 	</script>

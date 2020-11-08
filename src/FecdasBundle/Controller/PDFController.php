@@ -2011,4 +2011,226 @@ class PDFController extends BaseController {
 
 		return $tbl;	  
 	}
+	
+	public function productestopdfAction($productes, $cerca = '', $compte = '', $tipus = 0, $baixes = false) {
+	    /* PDF Llistat de dades productes filtrades */
+	    $pdf = new TcpdfBridge('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	    $pdf->init(array('author' => 'FECDAS', 'title' => "Llista de productes"), true, "ADMINISTRADOR");
+	    
+	    $pdf->AddPage();
+	    
+	    // set color for background
+	    $pdf->SetFillColor(255, 255, 255); //Blanc
+	    // set color for text
+	    $pdf->SetTextColor(0, 0, 0); // Negre
+	    
+	    $y_ini = $pdf->getY();
+	    $x_ini = $pdf->getX();
+	    
+	    $y = $y_ini;
+	    $x = $x_ini;
+	    
+	    $pdf->SetFont('dejavusans', '', 12, '', true);
+	    $pdf->Ln();
+	    
+	    if ($cerca != '' || $compte != '' || $tipus != 0 || $baixes) {
+	        // Afegir dades del filtre
+	        $y += 10;
+	        $pdf->SetFont('dejavusans', 'I', 10, '', true);
+	        $pdf->writeHTMLCell(0, 0, $x, $y, 'Opcions de filtre', 'B', 1, 1, true, '', true);
+	        $pdf->SetFont('dejavusans', '', 9, '', true);
+	        if ($cerca != '') { 
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Descripció conté: "<b>'.$cerca.'</b>"', '', 1, 1, true, '', true);
+	        }
+	        if ($compte != '') { 
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Compte comptable: '.$compte, '', 1, 1, true, '', true);
+	        }
+	        if ($tipus != 0) {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Tipus: '.BaseController::getTipusProducte($tipus), '', 1, 1, true, '', true);
+	        }
+	        if ($baixes) {
+	            $y += 7;
+	            $pdf->writeHTMLCell(0, 0, $x, $y, 'Baixes incloses', '', 1, 1, true, '', true);
+	        }
+	        $y += 2;
+	        $pdf->writeHTMLCell(0, 0, $x, $y, '', 'B', 1, 1, true, '', true);
+        
+	    }
+	    
+	    $pdf->Ln(15); // Total
+	    
+	    $w = array(8, 15, 13, 35, 23, 25, 11, 11, 11, 12, 18); // Amplades 180
+	    
+	    
+	    $this->dadesproducteHeader($pdf, $w);
+	    $pdf->SetFillColor(255, 255, 255); //Blanc
+	    $pdf->SetFont('dejavusans', '', 6.5, '', true);
+	    
+	    $total = 0;
+	    
+	    foreach ($productes as $producte) {
+	        $total++;
+	        
+	        $num_pages = $pdf->getNumPages();
+	        $pdf->startTransaction();
+	        
+	        $this->dadesproducteRow($pdf, $w, $total, $producte);
+	        
+	        if($num_pages < $pdf->getNumPages()) {
+	            
+	            //Undo adding the row.
+	            $pdf->rollbackTransaction(true);
+	            
+	            $pdf->AddPage();
+	            $this->dadesproducteHeader($pdf, $w);
+	            $pdf->SetFillColor(255, 255, 255); //Blanc
+	            $pdf->SetFont('dejavusans', '', 6.5, '', true);
+	            
+	            $this->dadesproducteRow($pdf, $w, $total, $producte);
+	            
+	        } else {
+	            //Otherwise we are fine with this row, discard undo history.
+	            $pdf->commitTransaction();
+	        }
+	        
+	    }
+	    
+	    $pdf->Ln(10);
+	    
+	    $pdf->SetTextColor(0, 0, 0); // Negre
+	    
+	    $pdf->setPage(1); // Move to first page
+	    
+	    $pdf->setY($y_ini);
+	    $pdf->setX($pdf->getPageWidth() - 100);
+	    
+	    $pdf->SetFont('dejavusans', '', 13, '', true);
+	    $text = '<b>Total : '. $total . '</b>';
+	    $pdf->writeHTMLCell(0, 0, $pdf->getX(), $pdf->getY(), $text, '', 1, 1, true, 'R', true);
+	    
+	    // reset pointer to the last page
+	    $pdf->lastPage();
+	    
+	    $filename = "productes_".date("Ymd").".pdf";
+	    
+	    // Close and output PDF document
+	    $response = new Response($pdf->Output($filename, "D")); // save as...
+	    
+	    $response->headers->set('Content-Type', 'application/pdf');
+	    return $response;
+	    
+	}
+	
+	private function dadesproducteHeader($pdf, $w) {
+	    $pdf->SetFont('dejavusans', 'B', 8, '', true);
+	    $pdf->SetFillColor(221, 221, 221); //Gris
+	    
+	    $h = 8;
+	    $ini = $pdf->getX();
+	    $x = $ini;
+	    $y = $pdf->getY();
+	    
+	    $pdf->setCellPaddings(1, 2, 1, 2);
+	    
+	    //$pdf->multiCell(w, h, txt, border = 0, align = 'J', fill = 0, ln = 1, x = '', y = '', reseth = true, stretch = 0, ishtml = false, autopadding = true, maxh = 0, valign = '', adjusttext)
+	    $pdf->multiCell($w[0], $h, '#', 1, 'C', 1, 0, $x, $y, true, 0, false, true, $h, 'M', true);
+	    $x += $w[0];
+	    
+	    $pdf->multiCell($w[1], $h, 'Codi', 1, 'C', 1, 0, $x, $y, true, 0, false, true, $h, 'M', true);
+	    $x += $w[1];
+	    
+	    $pdf->multiCell($w[2], $h, 'Abrev.', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[2];
+	    
+	    $pdf->multiCell($w[3], $h, 'Descripció', 1, 'L', 1, 0, $x, $y, true, 1, false, true, $h, 'M', false);
+	    $x += $w[3];
+	    
+	    $pdf->multiCell($w[4], $h, 'Tipus', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', false);
+	    $x += $w[4];
+	    
+	    $pdf->multiCell($w[5], $h, 'Preu', 1, 'R', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[5];
+	    
+	    $pdf->multiCell($w[6], $h, 'Trans.', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[6];
+	    
+	    $pdf->multiCell($w[7], $h, 'Stock', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', false);
+	    $x += $w[7];
+	    
+	    $pdf->multiCell($w[8], $h, 'Visible', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[8];
+	    
+	    $pdf->multiCell($w[9], $h, 'Dpt.', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    $x += $w[9];
+	    
+	    $pdf->multiCell($w[10], $h, 'Baixa', 1, 'C', 1, 0, $x, $y, true, 1, false, true, $h, 'M', true);
+	    
+	    $pdf->setY($y+$h);
+	    $pdf->setX($ini);
+	    
+	}
+	
+	private function dadesproducteRow($pdf, $w, $i, $producte) {
+	    
+	    $h = 9;
+	    $ini = $pdf->getX();
+	    $x = $ini;
+	    $y = $pdf->getY();
+	    
+	    $pdf->setCellPaddings(1, 2, 1, 2);
+	    
+	    //$pdf->multiCell(w, h, txt, border = 0, align = 'J', fill = 0, ln = 1, x = '', y = '', reseth = true, stretch = 0, ishtml = false, autopadding = true, maxh = 0, valign = '', adjusttext)
+	    $pdf->multiCell($w[0], $h, $i, 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[0];
+	    
+	    $pdf->multiCell($w[1], $h, $producte->getCodi(), 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[1];
+	    
+	    $pdf->multiCell($w[2], $h, $producte->getAbreviatura(), 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[2];
+	    
+	    $pdf->SetFont('dejavusans', '', 5.5, '', true);
+	    $pdf->multiCell($w[3], $h, $producte->getDescripcio(), 1, 'L', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[3];
+	    
+	    $pdf->SetFont('dejavusans', '', 6.5, '', true);
+	    $pdf->multiCell($w[4], $h, $producte->getTipusText(), 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[4];
+	    
+	    $txtPreu = number_format($producte->getCurrentPreu(), 2, ',', '.').'€'.' ('.$producte->getCurrentAny().')';
+	    if ($producte->getCurrentIva() != null && $producte->getCurrentIva() > 0) {
+	        $txtPreu .= LF.'IVA: '.($producte->getCurrentIva()*100).'%';
+	        $pdf->setCellHeightRatio(1.3);
+	    }
+	    
+	    $pdf->multiCell($w[5], $h, $txtPreu, 1, 'R', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[5];
+	    
+	    $pdf->setCellHeightRatio(1);
+	    $pdf->multiCell($w[6], $h, $producte->getTransport()?"Si":"No", 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[6];
+	    
+	    $pdf->multiCell($w[7], $h, $producte->getStockable()?"Si":"No", 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[7];
+	    
+	    $pdf->multiCell($w[8], $h, $producte->getVisible()?"Si":"No", 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[8];
+	    
+	    $pdf->setCellHeightRatio(1.3);
+	    $pdf->multiCell($w[9], $h, $producte->getDepartament().LF.' ('.$producte->getSubdepartament().')', 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[9];
+	    
+	    $pdf->setCellHeightRatio(1);
+	    $pdf->multiCell($w[10], $h, $producte->esBaixa()?$producte->getDatabaixa()->format("d/m/Y"):"", 1, 'C', 0, 0, $x, $y, true, 1, false, false, 0, 'M', true);
+	    $x += $w[10];
+	    
+	    $pdf->setCellHeightRatio(1);
+	    $pdf->setY($y+$h);
+	    $pdf->setX($ini);
+	    
+	}
+	
 }

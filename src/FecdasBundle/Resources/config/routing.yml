@@ -572,6 +572,12 @@ FecdasBundle_productes:
     requirements:
         methods:  GET|POST
 
+FecdasBundle_productestopdf:
+    path:  /productestopdf
+    defaults: { _controller: "FecdasBundle:PDF:productestopdf" }
+    requirements:
+        methods:  GET
+
 FecdasBundle_graellaproductes:
     path:  /graellaproductes
     defaults: { _controller: "FecdasBundle:Facturacio:graellaproductes" }

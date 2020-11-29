@@ -401,13 +401,14 @@ class AdminController extends BaseController {
     	    if ($zip->open($zipPathFilename, \ZipArchive::CREATE)!==TRUE) throw new \Exception("No es pot crear l'arxiu ".$zipPathFilename);
     	    $header = array('Num.', 'Alta', 'Caduca', 'Categoria', 'DNI', 'Nom', 'Cognoms');
     	    
-    	    $filename1 = "TECNO1ER_POL_121426_".date("Ymd").".csv";   // Tecnocampus 1er des de  01/09     TIPUS_TECNOCAMPUS_1 = 9
-    	    $filename2 = "ESCOLAR_POL_121425_".date("Ymd").".csv";    // AC Any Escolar des de  01/09     TIPUS_MUTUACAT = 4
+    	    $filenameTecnocampus = "TECNO_POL_121426_".date("Ymd").".csv";   // Tecnocampus 1er des de  01/09     TIPUS_TECNOCAMPUS_1 = 9 + TIPUS_TECNOCAMPUS_2 = 12
+    	    $filename2 = "ESCOLAR_POL_121425_".date("Ymd").".csv";    // AC Any Escolar des de  01/09     TIPUS_ESCOLAR = 4
     	    $filenameHelv1 = "POL_HELVETIA_1DIA_".date("Ymd").".csv";      // helvetia 1 dia des de 01/01  TIPUS_D_1DIA = 11 + TIPUS_CENTRES_1DIA = 18
     	    $filenameHelv7 = "POL_HELVETIA_7DIES_".date("Ymd").".csv";      // helvetia 7 dies des de 01/01    TIPUS_FEDE_7DIES = 16 + TIPUS_CENTRES_7DIES = 19
-    	    $filenameHelv30 = "POL_HELVETIA_30DIES_".date("Ymd").".csv";      // helvetia 30 dies des de 01/01 TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20
-    	    $filenameHelvA = "POL_HELVETIA_ANUAL_".date("Ymd").".csv";      // helvetia Anual des de 01/01     Tipus: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 14 FE, 21 CENTRES 365
-    	    $filenameHelvE = "POL_HELVETIA_ESCOLAR_".date("Ymd").".csv";   // helvetia Escolar des de 09/01     Tipus: 12 AG 2n, 13 ACS, 15 AEB
+    	    $filenameHelv30 = "POL_HELVETIA_30DIES_".date("Ymd").".csv";      // helvetia 30 dies des de 01/01 TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20 + TIPUS_COVID_30DIES = 23
+    	    $filenameHelvA = "POL_HELVETIA_ANUAL_".date("Ymd").".csv";      // helvetia Anual des de 01/01     Tipus: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 14 FE, 21 CENTRES 365 
+    	    //$filenameHelvE = "POL_HELVETIA_ESCOLAR_".date("Ymd").".csv";   // helvetia Escolar des de 09/01     Tipus: 12 AG 2n, 13 ACS, 15 AEB
+    	    $filenameTM = "TECNOMASTER_".date("Ymd").".csv";   // Tecnocampus Master     TIPUS_TECNOCAMPUS_TM = 24
     	    
     	    $strQueryBase = "SELECT p, t, l, a, e, c FROM FecdasBundle\Entity\EntityLlicencia l
 						 JOIN l.parte p JOIN p.tipus t JOIN l.categoria a JOIN l.persona e JOIN p.clubparte c WHERE 
@@ -438,21 +439,27 @@ class AdminController extends BaseController {
     	    else $fianual = \DateTime::createFromFormat('Y-m-d H:i:s', $anyconsulta . '-12-31 23:59:59');
     	    $fianual = $fianual->format('Y-m-d H:i:s');
     	    
-    	    
-    	    // Tecnocampus 1er
-    	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_TECNOCAMPUS_1." ".$strQueryOrder;
+    	    // Tecnocampus 1er i 2n
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_TECNOCAMPUS_1.", ".BaseController::TIPUS_TECNOCAMPUS_2.") ".$strQueryOrder;
     	    
     	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs);
    	        
-    	    $zip->addFile($this->writeCSV($header, $dades, $filename1), $filename1);
-   	        
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameTecnocampus), $filenameTecnocampus);
+    	    
     	    // Escolar Mutuacat ACS
-    	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_MUTUACAT." ".$strQueryOrder;
+    	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_ESCOLAR." ".$strQueryOrder;
 
     	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs);
     	    
     	    $zip->addFile($this->writeCSV($header, $dades, $filename2), $filename2);
-
+    	    
+    	    // Tecnocampus MASTER
+    	    $strQuery = $strQueryBase." AND t.id = ".BaseController::TIPUS_TECNOCAMPUS_TM." ".$strQueryOrder;
+    	    
+    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
+    	    
+    	    $zip->addFile($this->writeCSV($header, $dades, $filenameTM), $filenameTM);
+    	    
     	    // 1 Dia.  TIPUS_D_1DIA = 11 + TIPUS_CENTRES_1DIA = 18
     	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_D_1DIA.", ".BaseController::TIPUS_CENTRES_1DIA.") ".$strQueryOrder;
     	    
@@ -467,41 +474,44 @@ class AdminController extends BaseController {
     	    
     	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelv7), $filenameHelv7);
     	    
-    	    // 30 Dies.  TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20
-    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_FEDE_30DIES.", ".BaseController::TIPUS_CENTRES_30DIES.") ".$strQueryOrder;
+    	    // 30 Dies.  TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20 + TIPUS_COVID_30DIES = 23
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_FEDE_30DIES.", ".BaseController::TIPUS_CENTRES_30DIES.", ".BaseController::TIPUS_COVID_30DIES.") ".$strQueryOrder;
     	    
     	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
     	    
     	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelv30), $filenameHelv30);
     	    
-    	    // Altres. Helvetia cursos:  
-    	    //     Tipus cursos: TIPUS_TECNOCAMPUS_2 = 12 + TIPUS_ESCOLESBUSSEIG = 13 + TIPUS_AEBESCOLES = 15
-    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_TECNOCAMPUS_2.", ".
-        	                                           BaseController::TIPUS_ESCOLESBUSSEIG.", ".
-        	                                           BaseController::TIPUS_AEBESCOLES.") ".$strQueryOrder; 
-    	    
-    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs);
-
-    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelvE), $filenameHelvE);
-    	    
     	    // Altres. Helvetia anual
     	    //     Tipus anuals: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 12 AG 2n, 13 ACS, 14 FE, 15 AEB, 21 CENTRES 365
     	    $strQuery = $strQueryBase." AND t.id NOT IN (".BaseController::TIPUS_TECNOCAMPUS_1.", ".
+        	                                               BaseController::TIPUS_TECNOCAMPUS_TM.", ".
+        	                                               BaseController::TIPUS_ESCOLAR.", ".
         	                                               BaseController::TIPUS_TECNOCAMPUS_2.", ".
         	                                               BaseController::TIPUS_ESCOLESBUSSEIG.", ".
-        	                                               BaseController::TIPUS_MUTUACAT.", ".
+        	                                               BaseController::TIPUS_AEBESCOLES.", ".
         	                                               BaseController::TIPUS_D_1DIA.", ".
         	                                               BaseController::TIPUS_CENTRES_1DIA.", ".
         	                                               BaseController::TIPUS_FEDE_7DIES.", ".
         	                                               BaseController::TIPUS_CENTRES_7DIES.", ".
         	                                               BaseController::TIPUS_FEDE_30DIES.", ".
         	                                               BaseController::TIPUS_CENTRES_30DIES.", ".
-        	                                               BaseController::TIPUS_AEBESCOLES.
+        	                                               BaseController::TIPUS_COVID_30DIES.
     	                                                   ") ".$strQueryOrder;
 
-    	    $dades = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
+    	    $dadesAnuals = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual);
     	    
-    	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelvA), $filenameHelvA);
+    	    
+    	    // Altres. Helvetia cursos:
+    	    //     Tipus cursos: TIPUS_TECNOCAMPUS_2 = 12 + TIPUS_ESCOLESBUSSEIG = 13 + TIPUS_AEBESCOLES = 15
+    	    $strQuery = $strQueryBase." AND t.id IN (".BaseController::TIPUS_TECNOCAMPUS_2.", ".
+                                                	    BaseController::TIPUS_ESCOLESBUSSEIG.", ".
+                                                	    BaseController::TIPUS_AEBESCOLES.") ".$strQueryOrder;
+      	    
+            $dadesEscoles = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs, count($dadesAnuals) + 1);
+        	    
+      	    //$zip->addFile($this->writeCSV($header, $dades, $filenameHelvE), $filenameHelvE);
+    	    
+    	    $zip->addFile($this->writeCSV($header, array_merge($dadesAnuals, $dadesEscoles), $filenameHelvA), $filenameHelvA);
     	    
     	    $zip->close();
     	    
@@ -527,7 +537,7 @@ class AdminController extends BaseController {
 	    return $this->redirect($this->generateUrl('FecdasBundle_homepage'));
 	}
 	
-	private function dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta) {
+	private function dadesConsultaAsseguranca($strQuery, $inianual, $ficonsulta, $index = 1) {
 	    $em = $this->getDoctrine()->getManager();
 	    
 	    $query = $em->createQuery($strQuery);
@@ -539,7 +549,7 @@ class AdminController extends BaseController {
 	    
 	    $resultat = $query->getResult();
 	    
-	    $index = 1;
+	    //$index = 1;
 	    $dades = array ();
 	    
 	    foreach ($resultat as $llicencia) {
@@ -2168,8 +2178,8 @@ GROUP BY c.nom
 		
 		$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneById(BaseController::ID_DUPLICAT_LLICENCIA);
 		
-		$factura = false;
-		if ($request->query->has('factura') && $request->query->get('factura') == 1) $factura = true;
+		$hasFactura = false;
+		if ($request->query->has('factura') && $request->query->get('factura') == 1) $hasFactura = true;
 		
 		$strDatafacturacio = $request->query->get('datafacturacio', '');
 		$dataFacturacio = null;
@@ -2178,7 +2188,7 @@ GROUP BY c.nom
 		$duplicat = null;
 		$detall = null;
 		$factura = null;
-		
+
 		try {
 		
 			if ($llicencia == null) throw new \Exception('Llicència '.$llicenciaid.' no trobada' );
@@ -2189,8 +2199,8 @@ GROUP BY c.nom
 			
 			if ($carnet == null) throw new \Exception('Tipus de duplicat: '.$producte->getDescripcio().', no trobat' );
 			
-			if ($factura == true) { // Crear comanda
-			
+			if ($hasFactura == true) { // Crear comanda
+
 				$persona = $llicencia->getPersona();
 				
 				$duplicat = $this->crearComandaDuplicat('Petició duplicat de llicència '.$persona->getNomCognoms(), $llicencia->getParte()->getClubparte());
@@ -2217,7 +2227,7 @@ GROUP BY c.nom
 			$response = $this->redirect($this->generateUrl('FecdasBundle_imprimirllicencia', array( 'id' => $llicenciaid)));
 			
 		} catch (\Exception $e) {
-			
+
 			if ($duplicat != null) $em->detach($duplicat);
 			if ($detall != null) $em->detach($detall);
 			if ($factura != null) $em->detach($factura);

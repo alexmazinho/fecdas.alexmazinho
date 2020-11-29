@@ -1266,13 +1266,13 @@ class FacturacioController extends BaseController {
 	private function generarFitxerAssentamentsContasol($enviament) {
 
 		$num = 0;
-error_log("CONTA"." ==> 1 ");
+
 		$apuntsFactures = $this->generarAssentamentsFactures($enviament, $num);
-error_log("CONTA"." ==> 2 ");
+
 		$apuntsRebuts = $this->generarAssentamentsRebuts($enviament, $num);
-error_log("CONTA"." ==> 3 ");
+
 		$assentaments = array_merge($apuntsFactures, $apuntsRebuts);
-error_log("CONTA"." ==> 4 ");
+
 		return $assentaments; 
 	}
 

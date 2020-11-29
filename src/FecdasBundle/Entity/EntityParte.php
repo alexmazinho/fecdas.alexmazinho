@@ -223,6 +223,7 @@ class EntityParte extends EntityComanda {
 	{
 		return $this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 || 
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 ||
+				$this->tipus->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_MASTER ||
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR ||
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_ESCOLAR_SUBMARINISME ||
 				$this->tipus->getTemplate() == BaseController::TEMPLATE_GENERAL ||

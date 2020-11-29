@@ -150,7 +150,7 @@ class BaseController extends Controller {
 	
 	// Tipus de partes 
 	const TIPUS_TECNOCAMPUS_1 = 9;
-	const TIPUS_MUTUACAT = 4;
+	const TIPUS_ESCOLAR = 4;
 	const TIPUS_D_1DIA = 11;
 	const TIPUS_CENTRES_1DIA = 18;
 	const TIPUS_FEDE_7DIES = 16;
@@ -162,12 +162,16 @@ class BaseController extends Controller {
 	const TIPUS_ESCOLESBUSSEIG = 13;
 	const TIPUS_AEBESCOLES = 15;
 	
+	const TIPUS_COVID_30DIES = 23;
+	const TIPUS_TECNOCAMPUS_TM = 24;
+	
 	
 	// Templates plàstic
 	const TEMPLATE_GENERAL = 'G0';
 	const TEMPLATE_PESCA = 'F0';
 	const TEMPLATE_TECNOCAMPUS_1 = 'T1';
 	const TEMPLATE_TECNOCAMPUS_2 = 'T2';
+	const TEMPLATE_TECNOCAMPUS_MASTER = 'TM';
 	const TEMPLATE_ESCOLAR = 'ES';
 	const TEMPLATE_ESCOLAR_SUBMARINISME = 'CS';
 	
@@ -2450,6 +2454,11 @@ class BaseController extends Controller {
 		);
 	}
 	
+	protected function textLlicenciaTMmail( $curs ) {
+	    return $this->textLlicenciaG0mail( $curs );
+	    
+	}
+	
 	private function getAnyPolissa($llicencia) {
 	    if ($llicencia == null || $llicencia->getParte() == null) return date('Y');
 	    
@@ -2745,6 +2754,18 @@ class BaseController extends Controller {
 		return $pdf;
 	}
 	
+	protected function printLlicenciaTMpdf( $request, $llicencia ) {
+	    
+	    $yLinks = 70;
+	    $links = array(	array('text' => 'pòlissa', 'link'=> $request->getUriForPath('/media/asseguranca/'.str_replace("%%YEAR%%", $this->getAnyPolissa($llicencia), BaseController::POLISSA_BUSSEIG))),
+	        array('text'=> 'protocol', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::PROTOCOL_INCIDENTS_POLISSA_BUSSEIG)),
+	        array('text' => 'comunicat', 'link'=> $request->getUriForPath('/media/asseguranca/'.BaseController::COMUNICAT_INCIDENT_POLISSA_BUSSEIG)));
+	    
+	    $pdf = $this->printDigitalTecnocampus( $llicencia, $links, $yLinks );
+	    
+	    return $pdf;
+	}
+	
 	private function printDigitalTecnocampus( $llicencia, $links, $yLinks ) {
 		// Paper cordinates are calculated in this way: (inches * 72) where (1 inch = 25.4 mm)
 		// Definir paper 13,3'' => 29cmx17cm (WxH) en 16:9
@@ -2921,7 +2942,8 @@ class BaseController extends Controller {
 			}
 				
 			if ($parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_1 ||
-				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2) {
+				$parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_2 ||
+			    $parte->getTipus()->getTemplate() == BaseController::TEMPLATE_TECNOCAMPUS_MASTER) {
 					//$this->printPlasticGeneral($pdf, $llicencia);
 					$this->printPlasticTecnocampus($pdf, $llicencia);
 			}

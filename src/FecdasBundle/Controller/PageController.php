@@ -28,7 +28,7 @@ class PageController extends BaseController {
 	public function indexAction() {
 	    if ($this->isAuthenticated()) if($redirect = $this->frontEndLoginCheck()) return $redirect;
 	    
-	    if ($this->isCurrentClub()) {
+	    if ($this->isCurrentClub() || $this->isCurrentAdmin()) {
     	    /*$current = $this->getCurrentDate();
     	    $current->setTime(00, 00);
     	    $current->sub(new \DateInterval('P6M')); // 6 Months before*/

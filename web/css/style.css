@@ -1178,15 +1178,15 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 .data-detall-cell .input-group .input-group-addon { font-size: 0.9em; }
 
 .comanda-detall-form-header .col-id {  }
-.comanda-detall-form-header .col-listheader.col-producte { width: 20%; text-align: left; min-width: 200px;  }
-.comanda-detall-form-header .col-listheader.col-unitats { width: 7%; text-align: center; min-width: 60px; }
+.comanda-detall-form-header .col-listheader.col-producte { width: 30%; text-align: left; min-width: 200px;  }
+.comanda-detall-form-header .col-listheader.col-unitats { width: 9%; text-align: center; min-width: 60px; }
 .comanda-detall-form-header .col-listheader.col-descompte { width: 10%; text-align: center; font-size: 0.9em; min-width: 80px;  }
 .comanda-detall-form-header .col-listheader.col-ivaunitat { width: 10%; text-align: center; min-width: 60px; }
-.comanda-detall-form-header .col-listheader.col-preuunitat { width: 7%; text-align: center; min-width: 50px;  }
+.comanda-detall-form-header .col-listheader.col-preuunitat { width: 9%; text-align: center; min-width: 50px;  }
 .comanda-detall-form-header .col-listheader.col-totalnet { width: 9%; text-align: center; min-width: 50px;  }
-.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; min-width: 50px; }
-.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; min-width: 120px; }
-.comanda-detall-form-header .col-listheader.col-comentaris { width: 13%; text-align: left; min-width: 150px; }
+/*.comanda-detall-form-header .col-listheader.col-totaliva { width: 9%; text-align: center; min-width: 50px; }
+.comanda-detall-form-header .col-listheader.col-total { width: 11%; text-align: center; min-width: 120px; }*/
+.comanda-detall-form-header .col-listheader.col-comentaris { width: 20%; text-align: left; min-width: 150px; }
 .comanda-detall-form-header .col-listheader.col-actions  { width: 3%; min-width: 30px; }
 
 .comanda-detall-form .col-id {  }
@@ -1200,18 +1200,18 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 }
 
 .comanda-detall-form .data-detall-cell { font-size: 13px; }
-.comanda-detall-form .data-detall-cell.col-producte { width: 20%; font-size: 0.9em; text-align: left; min-width: 200px; }
-.comanda-detall-form .data-detall-cell.col-unitats { width: 7%; min-width: 50px; }
+.comanda-detall-form .data-detall-cell.col-producte { width: 30%; font-size: 0.9em; text-align: left; min-width: 200px; }
+.comanda-detall-form .data-detall-cell.col-unitats { width: 9%; min-width: 50px; }
 .comanda-detall-form .data-detall-cell.col-descompte { width: 10%; min-width: 60px; }
 .comanda-detall-form .data-detall-cell.col-descompte .input-group-addon { width: auto; padding: 6px 3px; }
 .comanda-detall-form .data-detall-cell.col-ivaunitat { width: 10%; min-width: 60px; }
 .comanda-detall-form .data-detall-cell.col-ivaunitat .input-group-addon { width: auto; padding: 6px 3px; }
-.comanda-detall-form .data-detall-cell.col-preuunitat { width: 7%; min-width: 50px; }
+.comanda-detall-form .data-detall-cell.col-preuunitat { width: 9%; min-width: 50px; }
 .comanda-detall-form .data-detall-cell.col-totalnet { width: 9%;  min-width: 50px; }
-.comanda-detall-form .data-detall-cell.col-totaliva { width: 9%;  min-width: 50px; }
+/*.comanda-detall-form .data-detall-cell.col-totaliva { width: 9%;  min-width: 50px; }
 .comanda-detall-form .data-detall-cell.col-total { width: 11%; text-align: center; min-width: 120px; }
-.comanda-detall-form .data-detall-cell.col-total input.form-control { font-size: 1em; font-style:italic; color: #1240a0; } 
-.comanda-detall-form .data-detall-cell.col-comentaris { width: 13%; min-width: 150px; }
+.comanda-detall-form .data-detall-cell.col-total input.form-control { font-size: 1em; font-style:italic; color: #1240a0; }*/ 
+.comanda-detall-form .data-detall-cell.col-comentaris { width: 20%; min-width: 150px; }
 .comanda-detall-form .data-detall-cell.col-comentaris textarea { width: 100%; max-width: 150px;  text-align: left;  }
 .comanda-detall-form .data-detall-cell.col-actions { width: 3%; text-align: right;  width: 30px;  }
 
@@ -1231,7 +1231,7 @@ p.graella-item-admin-comment { font-style: normal; text-align: center; color: #1
 	{ background: #f4f4f4; color: #AAAAAA; /*border:none; border-color: #ffffff; border-color: transparent; box-shadow: none;*/ }
 
 
-.data-detall-cell.col-producte .select2-choice { max-width: 240px; }
+.data-detall-cell.col-producte .select2-choice { max-width: 300px; }
 
 .detall-form-header, .detall-form-row { /*margin: -6px 6px;*/}
 
@@ -2887,8 +2887,8 @@ input#formuserclub-randompassword { width: 150px; }
 }
 
 .factdetall-totalparcial,
-.factdetall-iva { font-style: italic;}
-.factdetall-total {	font-weight: bold; font-size: 1.2em;}
+.factdetall-iva { font-style: italic;font-size: 1.1em;}
+.factdetall-total {	font-weight: bold; font-size: 1.3em;}
 
 .sms-footer { text-align: justify; font-style: italic; color: #555555; line-height: 20px; /*margin-top: 30px;*/}
 

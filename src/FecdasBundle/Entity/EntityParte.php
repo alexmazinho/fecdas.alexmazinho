@@ -318,9 +318,9 @@ class EntityParte extends EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getDetallsAcumulats($baixes = false)
+	public function getDetallsAcumulats()
 	{
-		$acumulades = parent::getDetallsAcumulats( $baixes );	
+		$acumulades = parent::getDetallsAcumulats( );	
 
  	  	/*foreach ($this->llicencies as $llicencia) {
     		if (!$llicencia->esBaixa() || $baixes == true) {
@@ -347,7 +347,7 @@ class EntityParte extends EntityComanda {
     	}*/
 
     	foreach ($this->llicencies as $llicencia) {
-    		if (!$llicencia->esBaixa() || $baixes == true) {
+    		if (!$llicencia->esBaixa()) {
     			$producte = $llicencia->getCategoria()->getProducte();
 
     			if (isset($acumulades[$producte->getId()]) &&
@@ -360,7 +360,7 @@ class EntityParte extends EntityComanda {
 							'totalbaixa' => 0, 
 							'preuunitat' => $producte->getPreuAny($this->dataalta->format('Y')),
 							'ivaunitat' => $producte->getIvaAny($this->dataalta->format('Y')), 
-							'import' => $producte->getPreuAny($this->dataalta->format('Y')),
+							//'import' => $producte->getPreuAny($this->dataalta->format('Y')),
 							'producte' => $producte->getDescripcio(),
 							'extra'		=> array($llicencia->getPersona()->getNomCognoms()),
 							'abreviatura' => $producte->getAbreviatura(), 
@@ -568,7 +568,7 @@ class EntityParte extends EntityComanda {
     	return $count;
     }
     
-    public function getPreuTotalNet() {
+    /*public function getPreuTotalNet() {
     	// Retorna el preu total sense IVA de totes les llicències actives del Parte
     	$preu = 0;
     	foreach ($this->getLlicencies() as $llicencia_iter) {
@@ -587,7 +587,7 @@ class EntityParte extends EntityComanda {
     		$factor = ($iva/100) + 1;
 		}
     	return $this->getPreuTotalNet() * $factor;
-    }
+    }*/
     
     public function getDataCaducitat() {
 

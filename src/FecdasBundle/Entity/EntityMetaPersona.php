@@ -246,7 +246,7 @@ class EntityMetaPersona {
         if ($club == null || !is_numeric($any)) return $arr;
         
         foreach ($this->getTitulacionsClub($club) as $titulacio) {
-            if ($titulacio->getDatasuperacio()->format("Y") == $any) {
+            if ($titulacio->getDatasuperacio() != null && $titulacio->getDatasuperacio()->format("Y") == $any) {
                 $arr[] = $titulacio;
             }
         }

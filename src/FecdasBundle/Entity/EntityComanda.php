@@ -616,7 +616,7 @@ class EntityComanda {
 	 *
 	 * @return string
 	 */
-	public function getDetallsAcumulats($baixes = false)
+	public function getDetallsAcumulats()
 	{
 		$acumulades = array();
 		
@@ -647,7 +647,7 @@ class EntityComanda {
 						'totalbaixa' => $d->totalbaixa,	 
 						'preuunitat' => $d->preuunitat,
 						'ivaunitat' => $d->ivaunitat,
-						'import' => round($d->import, 2),
+						//'import' => round($d->import, 2),
 						'producte' => $d->producte,
 						'extra'		=> '', //$d->extra
 						'abreviatura' => $d->abreviatura,
@@ -658,34 +658,40 @@ class EntityComanda {
 			return $acumulades;
 		}
 		
-		foreach ($this->detalls as $d) {
-			if ( (!$d->esBaixa() || $baixes == true) && 
-					$d->getProducte() != null) {
-				
-				$id = $d->getProducte()->getId();
-				if (isset($acumulades[$id])) {
-					$acumulades[$id]['total'] += $d->getUnitats();
-					if ($baixes == true) $acumulades[$id]['total'] += $d->getUnitatsbaixa();
-					$acumulades[$id]['import'] += $d->getTotal($baixes);
-				}
-				else {
-					$acumulades[$id] = $d->getDetallsArray($baixes);
-				}
-			}
-		}
-		
-		// Ordre  codi > producte
-		uasort($acumulades, function($a, $b) {
-			if ($a === $b) {
-				return 0;
-			}
-			if ($a['codi'] == $b['codi']) ($a['producte'] > $b['producte'])? -1:1;
-			return ($a['codi'] > $b['codi'])? -1:1;
-		});
-		
-		return $acumulades;
+		return $this->getDetallsArray();
 		
 	}
+	
+	private function getDetallsArray()
+	{
+	    $acumulades = array();
+	    
+	    foreach ($this->detalls as $d) {
+	        if (!$d->esBaixa() && $d->getProducte() != null) {
+                $id = $d->getProducte()->getId();
+                if (isset($acumulades[$id])) {
+                    $acumulades[$id]['total'] += $d->getUnitats();
+                    //$acumulades[$id]['import'] += $d->getTotal($baixes);
+                }
+                else {
+                    $acumulades[$id] = $d->getDetallsArray();
+                }
+            }
+	    }
+	    
+	    // Ordre  codi > producte
+	    uasort($acumulades, function($a, $b) {
+	        if ($a === $b) {
+	            return 0;
+	        }
+	        if ($a['codi'] == $b['codi']) ($a['producte'] > $b['producte'])? -1:1;
+	        return ($a['codi'] > $b['codi'])? -1:1;
+	    });
+	        
+	    return $acumulades;
+	}
+	
+	
 	
 	/**
 	 * Get concepte comanda (Factura / Rebut)
@@ -729,7 +735,6 @@ class EntityComanda {
 	 */
 	public function getTotalComanda()
 	{
-
 		if ($this->factura == null) return $this->getTotalDetalls();
 		
 		$total = $this->factura->getImport();
@@ -741,15 +746,16 @@ class EntityComanda {
 	
 	
 	/**
-	 * Get total suma dels detalls
+	 * Get total comanda incloent IVA
 	 *
 	 * @return double
 	 */
 	public function getTotalDetalls()
 	{
-		$total = 0;
+		/*$total = 0;
 		foreach ($this->detalls as $d) $total += $d->getTotal();
-		return $total;
+		return $total;*/
+	    return round($this->getTotalNetDetalls() + $this->getTotalIVADetalls(), 2);
 	}
 
 	/**
@@ -759,21 +765,19 @@ class EntityComanda {
 	 */
 	public function getTotalNetDetalls()
 	{
-		$total = 0;
-		foreach ($this->detalls as $d) $total += $d->getTotalNet();
-		return $total;
+	    return round(BaseController::getTotalNetDetalls($this->getDetallsArray()),2);
 	}
 
 	/**
-	 * Get total suma IVA dels detalls
+	 * Get total suma IVA dels detalls acumulats per tipus d'IVA
 	 *
 	 * @return double
 	 */
 	public function getTotalIVADetalls()
 	{
-		return round($this->getTotalDetalls() - $this->getTotalNetDetalls(), 2); 	
+	    return round(BaseController::getTotalIVADetalls($this->getDetallsArray()),2);
 	}
-
+	
 	/**
 	 * Get total dels detalls no baixa
 	 *

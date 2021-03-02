@@ -16,15 +16,17 @@ class SecurityController extends BaseController
 {
 	
 	public function changeroleAction(Request $request) {
+	    
 		if (!$request->query->has('currentrole') || $request->query->get('currentrole') == '') return "";
 		
 		$currentrole = $request->query->get('currentrole');		// Usuaris: parella role;codi	Admin: només role
 		
 		$checkRole = $this->get('fecdas.rolechecker');	
-		
+	
 		if ($this->isCurrentAdmin()) {
+
 			if (!$request->query->has('currentclub') || $request->query->get('currentclub') == '') return "";
-			
+
 			$currentclub = $request->query->get('currentclub');
 		} else {
 			$currentroleArray = explode(";", $currentrole);
@@ -33,10 +35,8 @@ class SecurityController extends BaseController
 			$currentclub = isset($currentroleArray[1])?$currentroleArray[1]:"";
 		}
 		$checkRole->setCurrentClubRole( $currentclub, $currentrole );
-
 		if ($this->frontEndLoginCheck($request->isXmlHttpRequest())) return new Response("reload"); //return $redirect;
 		// Params => currentrole: role, currentclub: club
-		
 		if (!$this->isCurrentAdmin()) return new Response("reload");
 		return new Response("");
 	}

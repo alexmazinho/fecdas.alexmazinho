@@ -126,7 +126,7 @@
         	</div>
         	<div class="col-md-4 col-md-offset-4 col-sm-6 col-xs-12">
         		<div class="factura-dadesfederacio">
-            		<h3 class="underline blue bottom25">Factura</h3>
+            		<h3 class="underline blue bottom25">{% if comanda.numFactures(true) > 1 %}Factures{% else %}Factura{% endif %}</h3>
        				<table class="table">
                		   	<tbody class="table-noscroll">
           					<tr class="data-detall">
@@ -140,6 +140,24 @@
                    		</tbody>
        		   		</table> 
     			</div>
+    			{% if comanda.numFactures(true) > 1 %}
+    			<div class="factura-dadesfederacio">
+            		<h3 class="underline blue bottom25">Anul·lacions</h3>
+       				<table class="table">
+               		   	<tbody class="table-noscroll">
+          					<tr class="data-detall">
+                  				<td class="data-detall-cell fact-titol data-detall-cell-right">
+                  				{% set numAnulacions = [] %}
+                  				{% for anulacio in comanda.facturesanulacions %}
+                  					{% set numAnulacions = numAnulacions|merge(['(-)'~anulacio.numFactura]) %}
+                  				{% endfor %}
+                  				{{ numAnulacions|join(', ') }}
+                  				</td>
+               			   	</tr>
+                   		</tbody>
+       		   		</table> 
+    			</div>
+    			{% endif %}
         	</div>
         </div>
         
@@ -153,8 +171,8 @@
     		   		<th scope="col" id="header-factdetallquantitat" class="col-listheader col-noresponsive">Quantitat</th>
     		   		<th scope="col" id="header-factdetallpreuunitat" class="col-listheader data-detall-cell-right col-noresponsive">Preu<br/>Unitat</th>
     		   		<th scope="col" id="header-factdetallpreusiva" class="col-listheader data-detall-cell-right col-noresponsive">Preu<br/>Total</th>
-    		   		<th scope="col" id="header-factdetalliva" class="col-listheader data-detall-cell-right col-noresponsive">I.V.A.</th>
-    		   		<th scope="col" id="header-factdetallpreutotal" class="col-listheader data-detall-cell-right col-noresponsive">Total</th>
+    		   		<!-- <th scope="col" id="header-factdetalliva" class="col-listheader data-detall-cell-right col-noresponsive">I.V.A.</th>
+    		   		<th scope="col" id="header-factdetallpreutotal" class="col-listheader data-detall-cell-right col-noresponsive">Total</th> -->
     		   	</tr>
     		</thead>
 			<tbody class="table-noscroll table-noscroll-large">	
@@ -165,24 +183,36 @@
 			   		<td class="data-detall-cell data-detall-cell-left factdetall-desc col-noresponsive">{{ lineadetall.producte|raw }}</td>
 			   		<td class="data-detall-cell factdetall-quantitat col-noresponsive">{{ lineadetall.total }}</td>
 			   		<td class="data-detall-cell data-detall-cell-right factdetall-preuunitat col-noresponsive">{{ lineadetall.preuunitat|number_format(2, '.', ',') }}€</td>
-			   		<td class="data-detall-cell data-detall-cell-right factdetall-preusiva col-noresponsive">{{ (lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }}€</td>
-			   		<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ (lineadetall.ivaunitat*lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') }}€</td>
-			   		<td class="data-detall-cell data-detall-cell-right factdetall-preutotal col-noresponsive">{{ lineadetall.import|number_format(2, '.', ',') }}€</td>
+			   		<td class="data-detall-cell data-detall-cell-right factdetall-preusiva col-noresponsive">{{ (lineadetall.preuunitat*lineadetall.total)|number_format(2, '.', ',') }}€</td>
+			   		<!-- <td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{# (lineadetall.ivaunitat*lineadetall.total*lineadetall.preuunitat)|number_format(2, '.', ',') #}€</td>
+			   		<td class="data-detall-cell data-detall-cell-right factdetall-preutotal col-noresponsive">{# lineadetall.import|number_format(2, '.', ',') #}€</td> -->
 				</tr>
 				{% endfor %}
 				<tr id="factdetall-totals" class="data-detall">
 					<td class="data-detall-cell hidden">&nbsp;</td>
-					<td class="data-detall-cell factdetall-tab" colspan="4">&nbsp;</td>
-					{% if comanda.isFacturaModificada == true %}
-    			   		<td class="data-detall-cell data-detall-cell-right factdetall-totalparcial col-noresponsive">{{ comanda.totalComanda|number_format(2, '.', ',') }}€</td>
-    			   		<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ 0|number_format(2, '.', ',') }}€</td>
-    			   		<td class="data-detall-cell data-detall-cell-right factdetall-total col-noresponsive">{{ comanda.totalComanda|number_format(2, '.', ',') }}€</td>
-			   		{% else %}
-    			   		<td class="data-detall-cell data-detall-cell-right factdetall-totalparcial col-noresponsive">{{ comanda.totalDetalls|number_format(2, '.', ',') }}€</td>
-    			   		<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ comanda.totalIVADetalls|number_format(2, '.', ',') }}€</td>
-    			   		<td class="data-detall-cell data-detall-cell-right factdetall-total col-noresponsive">{{ comanda.totalDetalls|number_format(2, '.', ',') }}€</td>
-			   		{% endif %}
+					<td class="data-detall-cell data-detall-cell-right col-noresponsive" colspan="4">B.Imposable</td>
+					<td class="data-detall-cell data-detall-cell-right factdetall-totalparcial col-noresponsive">{{ baseimponible|number_format(2, '.', ',') }}€</td>
 				</tr>
+				{% if ivaDetalls|length > 0 %}
+				    {% for iva, acumulatIva in ivaDetalls %}
+    				    <tr id="factdetall-totals" class="data-detall">
+        					<td class="data-detall-cell hidden">&nbsp;</td>
+        					<td class="data-detall-cell data-detall-cell-right col-noresponsive" colspan="4">IVA {{ (iva*100)|number_format(0, '.', ',') }}%</td>
+        					<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">{{ (acumulatIva*iva)|number_format(2, '.', ',') }}€</td>
+        				</tr>
+				    {% endfor %}
+    			{% else %}
+        			<tr id="factdetall-totals" class="data-detall">
+    					<td class="data-detall-cell hidden">&nbsp;</td>
+    					<td class="data-detall-cell data-detall-cell-right col-noresponsive" colspan="4">IVA</td>
+    					<td class="data-detall-cell data-detall-cell-right factdetall-iva col-noresponsive">--</td>
+    				</tr>
+                {% endif %}
+       			<tr id="factdetall-totals" class="data-detall">
+   					<td class="data-detall-cell hidden">&nbsp;</td>
+   					<td class="data-detall-cell data-detall-cell-right col-noresponsive" colspan="4">TOTAL COMANDA</td>
+   					<td class="data-detall-cell data-detall-cell-right factdetall-total col-noresponsive">{{ comanda.totalComanda|number_format(2, '.', ',') }}€</td>
+   				</tr>
 			</tbody>
 		</table>
    

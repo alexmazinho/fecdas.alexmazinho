@@ -117,54 +117,53 @@ class EntityComandaDetall {
 	 *
 	 * @return double
 	 */
-	public function getTotalNet($baixes = false)
+	/*public function getTotalNet()
 	{
 		if ($this->producte == null) return 0;	
 
-		if ($this->esBaixa() == true && $baixes == false) return 0; 
-		/*$preu 	= $this->producte->getCurrentPreu();
-		$iva 	= $this->producte->getCurrentIva();*/
+		if ($this->esBaixa()) return 0; 
+		//$preu 	= $this->producte->getCurrentPreu();
+		//$iva 	= $this->producte->getCurrentIva();
 		
 		$total = $this->unitats;
-		if ($baixes == true) $total += $this->unitatsbaixa;
 	
 		return $this->preuunitat * $total * (1 - $this->descomptedetall);
-	}
+	}*/
 	
 	/**
 	 * Get total
 	 *
 	 * @return double
 	 */
-	public function getTotal($baixes = false)
+	/*public function getTotal($baixes = false)
 	{
 		return $this->getTotalNet($baixes)*(1 + $this->ivaunitat);	
-	}
+	}*/
 
 	/**
 	 * Get iva
 	 *
 	 * @return double
 	 */
-	public function getIva($baixes = false)
+	/*public function getIva($baixes = false)
 	{
 	    return $this->getTotalNet($baixes)*$this->ivaunitat;
-	}
+	}*/
 	
 	/**
 	 * Get detalls 
 	 *
 	 * @return array
 	 */
-	public function getDetallsArray($baixes = false)
+	public function getDetallsArray()
 	{
-		$total = $this->unitats;
-		if ($baixes == true) $total += $this->unitatsbaixa;
-		return array('total' => $total,
+		//$total = $this->unitats;
+		//if ($baixes == true) $total += $this->unitatsbaixa;
+		return array('total' => $this->unitats,
 					'totalbaixa' => $this->unitatsbaixa,	 
 					'preuunitat' => $this->preuunitat,
 					'ivaunitat' => $this->ivaunitat,
-					'import' => round($this->getTotal($baixes), 2),
+					//'import' => round($this->getTotal($baixes), 2),
 					//'producte' => mb_convert_encoding($this->producte->getDescripcio(), 'UTF-8'),
 					'producte' => $this->producte->getDescripcio(),
 					'extra'		=> '',

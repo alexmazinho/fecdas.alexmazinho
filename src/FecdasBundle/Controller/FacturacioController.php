@@ -1555,7 +1555,8 @@ class FacturacioController extends BaseController {
 			    //$ivaDetalls += $d->total*$d->preuunitat*$d->ivaunitat;
 			    //$importDetall = $d->import - $d->total*$d->preuunitat*$d->ivaunitat;  // Detall sense IVA
 			    $importDetall = $d->total*$d->preuunitat;
-			    $ivaDetalls += ($d->import-$importDetall);
+			    //$ivaDetalls += ($d->import-$importDetall);
+			    $ivaDetalls += $importDetall*$d->ivaunitat;
 			} else {
 			    $importDetall = $d->import;
 			}
@@ -2515,7 +2516,7 @@ class FacturacioController extends BaseController {
 				$desc = $comanda->getDescripcioPagament();
 				
 				// Get factura detall
-				$detallfactura = $comanda->getDetallsAcumulats(); 
+				$detallsfactura = $comanda->getDetallsAcumulats(); 
 				
                 $url = $this->getComercRedsysParam( 'COMERC_REDSYS_URL' ); // Real
                 $urlmerchant = $this->getComercRedsysParam( 'COMERC_REDSYS_URLMER' );
@@ -2538,10 +2539,21 @@ class FacturacioController extends BaseController {
 				
 				$this->logEntryAuth('PAGAMENT VIEW', $comandaid);
 				
+				
+				$baseimponible = $comanda->getTotalComanda();
+				$ivaDetalls = array();
+				
+				if ($comanda->getTotalIVADetalls() > 0 && $detallsfactura) {
+				    $baseimponible = self::getTotalNetDetalls($detallsfactura);
+				    $ivaDetalls = self::getIVADetalls($detallsfactura);
+				}
+				
 				return $this->render('FecdasBundle:Facturacio:pagament.html.twig',
 						$this->getCommonRenderArrayOptions(array('formpayment' => $formpayment->createView(),
 								'comanda' => $comanda, 'payment' => $payment, 
-								'detall' => $detallfactura,
+								'detall' => $detallsfactura,
+						        'baseimponible' => $baseimponible,
+						        'ivaDetalls' => $ivaDetalls,
 								'backurl' => $this->generateUrl($comanda->getBackURLPagament())
 						)));
 			}
@@ -3153,22 +3165,24 @@ class FacturacioController extends BaseController {
 		if ($club == null) $club = $this->getCurrentClub();
 
 		if ($request->getMethod() != 'POST')  $this->logEntryAuth('INGRES NOU',$request->getMethod().' '.$codi);
-		 
-		$query = $this->consultaComandes($club->getCodi(), 0, 0, 0, 0, 0, 0, false, true);
-		
-		$comandesPendents = $query->getResult(); // Comandes pendents rebut del club
 		
 		$comandes = array(); // Filter comandes amb anul·lacions
-
-		// Només mostra comandes un any endarrera
-		$datadesde = $this->getCurrentDate(); 
-		$datadesde->sub(new \DateInterval('P1Y')); // Substract 1 year	
 		
-		foreach ($comandesPendents as $comanda) {
-			if (//$comanda->getNumFactures(true) == 1 &&
-				$comanda->getTotalComanda() > 0 &&
-			    $comanda->getDataentrada()->format('Y-m-d') > $datadesde->format('Y-m-d')) $comandes[] = $comanda;
-
+		if ($club->getSaldo() < 0) {
+    		$query = $this->consultaComandes($club->getCodi(), 0, 0, 0, 0, 0, 0, false, true);
+    		
+    		$comandesPendents = $query->getResult(); // Comandes pendents rebut del club
+    
+    		// Només mostra comandes un any endarrera
+    		$datadesde = $this->getCurrentDate(); 
+    		$datadesde->sub(new \DateInterval('P1Y')); // Substract 1 year	
+    		
+    		foreach ($comandesPendents as $comanda) {
+    			if (//$comanda->getNumFactures(true) == 1 &&
+    				$comanda->getTotalComanda() > 0 &&
+    			    $comanda->getDataentrada()->format('Y-m-d') > $datadesde->format('Y-m-d')) $comandes[] = $comanda;
+    
+    		}
 		}
 		
 		// Nou rebut
@@ -3813,12 +3827,14 @@ class FacturacioController extends BaseController {
 				    if ($parte->perEnviarFederat()) {
 				    
     				    $enviades = 0;
+    				    $llicenciesBulk = array();
     				    foreach ($parte->getLlicenciesSortedByName() as $llicencia) {
     				        if (!$llicencia->getMailenviat()) {
     				            $enviades++;
-    				            $this->enviarMailLlicencia($request, $llicencia);
+    				            $llicenciesBulk[] = $llicencia;
     				        }
     				    }
+    				    $this->enviarMailLlicenciesBulk($request, $llicenciesBulk);
     				    // Marcar el parte com modificat
     				    $parte->setDatamodificacio($this->getCurrentDate());
 				    }
@@ -3934,12 +3950,14 @@ class FacturacioController extends BaseController {
 			    
 			    $parte = $comanda;
 			    $enviades = 0;
+			    $llicenciesBulk = array();
 			    foreach ($parte->getLlicenciesSortedByName() as $llicencia) {
 			        if (!$llicencia->getMailenviat()) {
 			            $enviades++;
-			            $this->enviarMailLlicencia($request, $llicencia);
+			            $llicenciesBulk[] = $llicencia;
 			        }
 			    }
+			    $this->enviarMailLlicenciesBulk($request, $llicenciesBulk);
 			    
 			    $this->get('session')->getFlashBag()->add('sms-notice', 'S\'ha enviat '.$enviades.' llicències digitals');
 			    // Marcar el parte com modificat 

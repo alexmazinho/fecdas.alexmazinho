@@ -14,10 +14,10 @@
 			<div class="input-group">{{ form_widget(detall.ivaunitat, { 'attr': {'class': 'form-control form-control-center'} }) }}
 				<span class="input-group-addon input-group-addon-icon">%</span></div></div>
 		<div class="data-detall-cell col-totalnet">{{ form_widget(detall.totalnet, { 'attr': {'class': 'form-control form-control-center blue'} }) }}</div>
-		<div class="data-detall-cell col-totaliva">{{ form_widget(detall.totaliva, { 'attr': {'class': 'form-control form-control-center blue'} }) }}</div>
+		<!-- <div class="data-detall-cell col-totaliva">{# form_widget(detall.totaliva, { 'attr': {'class': 'form-control form-control-center blue'} }) #}</div>
 		<div class="data-detall-cell col-total">
-			<div class="input-group">{{ form_widget(detall.total, { 'attr': {'class': 'form-control form-control-center blue'} }) }}
-				<span class="input-group-addon input-group-addon-icon">€</span></div></div>
+			<div class="input-group">{# form_widget(detall.total, { 'attr': {'class': 'form-control form-control-center blue'} }) #}
+				<span class="input-group-addon input-group-addon-icon">€</span></div></div> -->
 		<div class="data-detall-cell col-comentaris">{{ form_widget(detall.anotacions, { 'attr': {'class': 'form-control'} }) }}</div>
 		<div class="data-detall-cell col-actions">
 			{# if comanda.detallsEditables == true #}
@@ -38,8 +38,8 @@
 		<div class="data-detall-cell col-descompte">{{ detall.descomptedetall }}</div>
 		<div class="data-detall-cell col-ivaunitat">{{ detall.ivaunitat  }}</div>
 		<div class="data-detall-cell col-totalnet">{{ detall.totalnet }}</div>
-		<div class="data-detall-cell col-totaliva">{{ detall.total - detall.totalnet }}</div>
-		<div class="data-detall-cell col-total">{{ detall.total }}</div>
+		<!-- <div class="data-detall-cell col-totaliva">{# detall.total - detall.totalnet #}</div>
+		<div class="data-detall-cell col-total">{# detall.total #}</div> -->
 		<div class="data-detall-cell col-comentaris">{{ detall.anotacions }}</div>
 		<div class="data-detall-cell col-actions"></div>
 	</div>

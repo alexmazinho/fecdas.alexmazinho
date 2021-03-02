@@ -22,7 +22,7 @@ class FormComandaDetall extends AbstractType {
 					$iva = 0;
 					$unitats = 1;
 					$descompte = 0;
-					$total = 0;
+					/*$total = 0;*/
 						
 					$detall = $event->getData();
 					$comanda = null;
@@ -35,7 +35,7 @@ class FormComandaDetall extends AbstractType {
 						//if ($iva == 0 && $producte != null) $iva = $producte->getCurrentIva(); // Si no té cap IVA, afegir el del producte
 						$unitats = $detall->getUnitats();
 						$descompte = $detall->getDescomptedetall();
-						$total = $detall->getTotal();
+						/*$total = $detall->getTotal();*/
 						$comanda = $detall->getComanda();
 						
 						if ($detall != null && $detall->esBaixa()) $disabledFields = true;
@@ -82,12 +82,12 @@ class FormComandaDetall extends AbstractType {
 							'disabled' 	=> $disabledFields,
 					));
 					
-					$form->add ( 'total', 'number', array (
+					/*$form->add ( 'total', 'number', array (
 							'required' => true,
 							'disabled' 	=> true,
 							'scale' 	=> 2,
 							'data'		=> $total
-					));
+					));*/
 					
 					$form->add('anotacions', 'textarea', array(
 							'required' 	=> false,
@@ -108,13 +108,13 @@ class FormComandaDetall extends AbstractType {
 				'data'		=> 0
 		));
 		
-		$builder->add ( 'totaliva', 'number', array (
+		/*$builder->add ( 'totaliva', 'number', array (
 				'required' => true,
 				'disabled' 	=> true,
 				'mapped' 	=> false,
 				'scale' 	=> 2,
 				'data'		=> 0
-		));
+		));*/
 		
 		
 		

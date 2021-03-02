@@ -406,7 +406,7 @@ class AdminController extends BaseController {
     	    $filenameHelv1 = "POL_HELVETIA_1DIA_".date("Ymd").".csv";      // helvetia 1 dia des de 01/01  TIPUS_D_1DIA = 11 + TIPUS_CENTRES_1DIA = 18
     	    $filenameHelv7 = "POL_HELVETIA_7DIES_".date("Ymd").".csv";      // helvetia 7 dies des de 01/01    TIPUS_FEDE_7DIES = 16 + TIPUS_CENTRES_7DIES = 19
     	    $filenameHelv30 = "POL_HELVETIA_30DIES_".date("Ymd").".csv";      // helvetia 30 dies des de 01/01 TIPUS_FEDE_30DIES = 17 + TIPUS_CENTRES_30DIES = 20 + TIPUS_COVID_30DIES = 23
-    	    $filenameHelvA = "POL_HELVETIA_ANUAL_".date("Ymd").".csv";      // helvetia Anual des de 01/01     Tipus: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 14 FE, 21 CENTRES 365 
+    	    $filenameHelvA = "POL_HELVETIA_ANUAL_".date("Ymd").".csv";      // helvetia Anual des de 01/01     Tipus: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 14 FE, 21 CENTRES 365, 22 LDP
     	    //$filenameHelvE = "POL_HELVETIA_ESCOLAR_".date("Ymd").".csv";   // helvetia Escolar des de 09/01     Tipus: 12 AG 2n, 13 ACS, 15 AEB
     	    $filenameTM = "TECNOMASTER_".date("Ymd").".csv";   // Tecnocampus Master     TIPUS_TECNOCAMPUS_TM = 24
     	    
@@ -482,7 +482,7 @@ class AdminController extends BaseController {
     	    $zip->addFile($this->writeCSV($header, $dades, $filenameHelv30), $filenameHelv30);
     	    
     	    // Altres. Helvetia anual
-    	    //     Tipus anuals: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 12 AG 2n, 13 ACS, 14 FE, 15 AEB, 21 CENTRES 365
+    	    //     Tipus anuals: 1 A, 2 B, 5 AQ, 7 AE, 8 AF, 12 AG 2n, 13 ACS, 14 FE, 15 AEB, 21 CENTRES 365, 22 LDP
     	    $strQuery = $strQueryBase." AND t.id NOT IN (".BaseController::TIPUS_TECNOCAMPUS_1.", ".
         	                                               BaseController::TIPUS_TECNOCAMPUS_TM.", ".
         	                                               BaseController::TIPUS_ESCOLAR.", ".
@@ -507,7 +507,9 @@ class AdminController extends BaseController {
                                                 	    BaseController::TIPUS_ESCOLESBUSSEIG.", ".
                                                 	    BaseController::TIPUS_AEBESCOLES.") ".$strQueryOrder;
       	    
-            $dadesEscoles = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs, count($dadesAnuals) + 1);
+            // Consulta periode anual en comptes del curs
+            //$dadesEscoles = $this->dadesConsultaAsseguranca($strQuery, $inicurs, $ficurs, count($dadesAnuals) + 1);
+            $dadesEscoles = $this->dadesConsultaAsseguranca($strQuery, $inianual, $fianual, count($dadesAnuals) + 1);
         	    
       	    //$zip->addFile($this->writeCSV($header, $dades, $filenameHelvE), $filenameHelvE);
     	    
@@ -1536,7 +1538,7 @@ GROUP BY c.nom
 						 				'cpcorreu'			=> array('hidden' => false, 'val' => $club->getAddrcpcorreu(), 'align' => 'center'),
 						 				'comarcacorreu'		=> array('hidden' => false, 'val' => $club->getAddrcomarcacorreu(), 'align' => 'left'),
 						 				'provinciacorreu'	=> array('hidden' => false, 'val' => $club->getAddrprovinciacorreu(), 'align' => 'center'),
-						 				'tipuspagament'		=> array('hidden' => false, 'val' => $estat->getDescripcio(), 'align' => 'center'),
+				                        'tipuspagament'		=> array('hidden' => false, 'val' => ($estat!=null?$estat->getDescripcio():''), 'align' => 'center'), 
 						 				'limitcredit'		=> array('hidden' => false, 'val' => number_format($club->getLimitcredit(), 2, ',', '.').$modeda, 'align' => 'right'),
 				                        'saldo'				=> array('hidden' => false, 'val' => number_format($saldoComptableClub, 2, ',', '.').$modeda, 'align' => 'right'),
 						 				'saldooper'			=> array('hidden' => false, 'val' => number_format($club->getSaldo(), 2, ',', '.').$modeda, 'align' => 'right'),

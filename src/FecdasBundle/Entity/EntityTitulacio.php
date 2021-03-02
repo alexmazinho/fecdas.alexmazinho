@@ -109,7 +109,7 @@ class EntityTitulacio {
 	        $this->getTitol()->getOrganisme(),
 	        $this->curs->getClubInfo(),
 	        $this->curs->getNumActa().' ('.$this->curs->getDatadesde()->format('d/m/y').' - '.$this->curs->getDatafins()->format('d/m/y').')',
-	        $this->datasuperacio->format("d/m/Y"),
+	        $this->datasuperacio==null?'':$this->datasuperacio->format("d/m/Y"),
 	        $this->num
 	    );
 	}

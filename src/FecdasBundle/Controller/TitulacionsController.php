@@ -63,7 +63,8 @@ class TitulacionsController extends BaseController {
 			
 		// Permetre enviar llicències per mail global d'un club
 		$enviarLlicencies = false;
-		if ($currentVigent && $currentClub != '') {
+		//if ($currentVigent && $currentClub != '') {
+		if ($club != null) {
 		    if ($this->isCurrentAdmin() || 
 		        ($this->isCurrentClub() && $this->getCurrentClub()->getEnviarllicencia()))  {
 		        

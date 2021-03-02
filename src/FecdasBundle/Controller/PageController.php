@@ -285,7 +285,7 @@ class PageController extends BaseController {
 		/* Registre abans de tractar fitxer per evitar flush en cas d'error */
 		$this->logEntryAuth('CONFIRM CSV', $request->query->get('tempfile'));
 		
-		
+		$currentClub = null;
 		$codi = $request->query->get('club', ''); // Admin filtra club
 		if ($this->isCurrentAdmin() && $codi != '') {  // Users normals només consulten comandes pròpies
 		    $currentClub = $this->getDoctrine()->getRepository('FecdasBundle:EntityClub')->find($codi);
@@ -344,6 +344,15 @@ class PageController extends BaseController {
 				$fila++;
 				
 				$row = $reader->getRow();
+				
+				if (!isset($row['categoria'])) throw new \Exception('Falta la columna categoria a l\'arxiu per importar');
+				if (!isset($row['dni'])) throw new \Exception('Falta la columna dni a l\'arxiu per importar');
+				if (!isset($row['nom'])) throw new \Exception('Falta la columna nom a l\'arxiu per importar');
+				if (!isset($row['cognoms'])) throw new \Exception('Falta la columna cognoms a l\'arxiu per importar');
+				if (!isset($row['naixement'])) throw new \Exception('Falta la columna naixement a l\'arxiu per importar');
+				if (!isset($row['sexe'])) throw new \Exception('Falta la columna sexe a l\'arxiu per importar');
+				if (!isset($row['nacionalitat'])) throw new \Exception('Falta la columna nacionalitat a l\'arxiu per importar');
+				
 				//our logic here
 				$categoria = $em->getRepository('FecdasBundle:EntityCategoria')
 						->findOneBy(array('tipusparte' => $parte->getTipus()->getId(), 'simbol' => $row['categoria']));
@@ -1378,6 +1387,8 @@ class PageController extends BaseController {
 	        $arrayIdsLlicencies = json_decode($idsLlicencies); // Array
 	    }
 	    
+	    $this->logEntryAuth('PLASTIC LLICENCIES', $action. ' parte '. $parteid.' llicencies '.$idsLlicencies);
+	    	    
 	    $parte = $this->getDoctrine()->getRepository('FecdasBundle:EntityParte')->find($parteid);
 	    
 	    $total = 0;
@@ -1570,8 +1581,10 @@ class PageController extends BaseController {
 	        
         try {
             //if ($parte == null) throw new \Exception ('Llista no trobada');
-	            
-            if (!$this->isCurrentAdmin() && $parte != null && !$parte->comandaPagada() && $club->getSaldo() < 0) throw new \Exception ('Llista pendent de pagament. Poseu-vos en contacte amb la Federació');
+	        
+            if (!$this->isCurrentAdmin() && !$club->getEnviarllicencia()) {
+                if ($parte != null && !$parte->comandaPagada() && $club->getSaldo() < 0) throw new \Exception ('Llista pendent de pagament. Poseu-vos en contacte amb la Federació');
+            }
             
             if ($parte != null && !$parte->perEnviarFederat()) throw new \Exception ('Aquest tipus de llicència no es pot enviar per correu. Poseu-vos en contacte amb la Federació');
 	            
@@ -1583,6 +1596,14 @@ class PageController extends BaseController {
                 $enviades = 0;
                 $res = '';
                 $log = '';
+                
+                // Use AntiFlood to re-connect after 10 emails And specify a time in seconds to pause for (20 secs)
+                $this->get('mailer')->registerPlugin(new \Swift_Plugins_AntiFloodPlugin(10, 20));
+                
+                // And specify a time in seconds to pause for (30 secs)
+                //$this->get('mailer')->registerPlugin(new \Swift_Plugins_AntiFloodPlugin(100, 30));
+                
+                $llicenciesBulk = array();
                 foreach ($llicencies as $llicenciaArray) {
                     $llicenciaId = $llicenciaArray['id'];
                     
@@ -1591,17 +1612,20 @@ class PageController extends BaseController {
                         $llicencia = $this->getDoctrine()->getRepository('FecdasBundle:EntityLlicencia')->find($llicenciaId);
 	                        
                         if ($llicencia != null) {
-                            $this->enviarMailLlicencia($request, $llicencia);
-	                            
                             $enviades++;
                             $res .= $llicenciaArray['nom']. ' '.($llicenciaArray['mail'] != ''?$llicenciaArray['mail']:'(Correu del club) '.$club->getMail()).'</br>';
                             $log .= $llicenciaArray['id'].' - '.$llicenciaArray['nom']. ' '.$llicenciaArray['mail'].' ; ';
+                            
+                            $llicenciesBulk[] = $llicencia;
                         }
                         
                     }
                 }
                 
                 if ($enviades == 0)  throw new \Exception ('No s\'ha enviat cap llicència digital');
+                
+                $this->enviarMailLlicenciesBulk($request, $llicenciesBulk);
+                
                 // Marcar el parte com enviat (imprès)
                 if ($parte != null) $parte->setDatamodificacio($this->getCurrentDate());
                 $em->flush();

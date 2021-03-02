@@ -214,14 +214,16 @@ class RoleChecker
 	}
 	
 	public function setCurrentClubRole( $club, $role ) {
+
 		if (!$this->isAuthenticated() || $role == '') return;
 		// json	=> {'admin':true, 'roles': [{'role': 'administrador', 'club': 'CAT999', 'nom': 'FECDAS' }, ...] }
 		$roles = $this->getUserRoles();
 
 		foreach ($roles->roles as $userClubRole) {
+
 			if ($roles->admin) {
 			    // Només valida role. Pot canviar a qualsevol club 	
-				if ($userClubRole->role == $role) {
+                if ($userClubRole->role == $role) {
 				    $this->session->set('currentclub', $club);
 					$this->session->set('currentrole', $role);
 					return;

@@ -363,6 +363,21 @@ class EntityClub {
 	    return implode(", ", $tlfs);
 	}
 	
+	
+	/**
+	 * Get telefon format 93 123 45 67
+	 *
+	 * @return String
+	 */
+	public function getTelefonFormat() {
+	    $tlf = $this->getTelefon();
+	    if ($tlf == null || $tlf == '') $tlf = $this->getMobil();
+	    
+	    if ($tlf == null || $tlf == '') return "";
+	    
+	    return BaseController::formatPhoneNumber($tlf);
+	}
+	
 	/**
      * Get mails
      *

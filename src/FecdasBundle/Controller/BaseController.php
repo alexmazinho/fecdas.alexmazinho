@@ -48,8 +48,9 @@ class BaseController extends Controller {
 	const DIES_PENDENT_AVIS = 8;
 	const DIES_PENDENT_MAX = 20;
 	const PREFIX_MAIL_BCC = '{bcc}';
+	const MAILER_RESET_SESSION = 10;
     const INICI_VALIDACIO_MAIL = '2016-09-01'; // A partir d'aquesta data cal indicar mail per tramitar (excepte llicència dia)
-	const INICI_TRAMITACIO_ANUAL_DIA = 15; // a partir de 15/12 any en curs
+	const INICI_TRAMITACIO_ANUAL_DIA = 16; // a partir de 16/12 any en curs
 	const INICI_TRAMITACIO_ANUAL_MES = 12; //12; // a partir de 15/12 any en curs
 	const INICI_TRAMITACIO_QUATRIMESTRE_DIA = '01'; // a partir de 01/09 any en curs
 	const INICI_TRAMITACIO_QUATRIMESTRE_MES = '09'; // a partir de 09/09 any en curs
@@ -176,13 +177,16 @@ class BaseController extends Controller {
 	const TEMPLATE_ESCOLAR_SUBMARINISME = 'CS';
 	
 	//const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664.jpg';
-	const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664_2020.jpg';
+	//const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664_2020.jpg';
+	const IMATGE_ANVERS_GENERAL        = 'images/fonsgeneral_1024x664_2021.jpg';
 	//const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664.jpg';
 	const IMATGE_REVERS_GENERAL        = 'images/federativa_revers_1024x664_2020.jpg';
-	const IMATGE_ANVERS_ESCOLAR        = 'images/fonsanysescolar_1024x664.jpg';
+	//const IMATGE_ANVERS_ESCOLAR        = 'images/fonsanysescolar_1024x664.jpg';
+	const IMATGE_ANVERS_ESCOLAR        = 'images/fonsanysescolar_1024x664_2021.jpg';
 	const IMATGE_ANVERS_TECNOCAMPUS    = 'images/fonstecnocampus_910x600.jpg';
 	//const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602.jpg';
-	const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602_2020.jpg';
+	//const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x602_2020.jpg';
+	const IMATGE_ANVERS_PESCA          = 'images/fonstipusf_1024x664_2021.jpg';
 	
 	const IMATGE_LOGO_FECDAS       = 'images/fecdaslogopdf.gif';
 	const IMATGE_LOGO_GENE         = 'images/logo-generalitat.jpg';
@@ -605,8 +609,8 @@ class BaseController extends Controller {
     					$final = '12-31';
     					if ($tipusparte->getInici() != null) $inici = $tipusparte->getInici();
     					if ($tipusparte->getFinal() != null) $final = $tipusparte->getFinal();
-    						
-    					if ($currentmonthday >= $inici and $currentmonthday <= $final) {
+
+    					if ($currentmonthday >= $inici && $currentmonthday <= $final) {
     						array_push($llistatipus, $tipusparte->getId());
     					}
     				}
@@ -1735,9 +1739,9 @@ class BaseController extends Controller {
 						<tr>
 						<td width="96" align="center" style="border: 1px solid #003366; color:#003366;">REFERÈNCIA</td>
 						<td width="240" align="center" style="border: 1px solid #003366; color:#003366;">CONCEPTE</td>
-						<td width="58" align="center" style="border: 1px solid #003366; color:#003366;">QUANT.</td>
+						<td width="58" align="center" style="border: 1px solid #003366; color:#003366;"> QUANT.</td>
 						<td width="81" align="center" style="border: 1px solid #003366; color:#003366;">PREU</td>
-						<td width="86" align="center" style="border: 1px solid #003366; color:#003366;">IMPORT</td>
+						<td width="86" align="right" style="border: 1px solid #003366; color:#003366;">TOTAL</td>
 						</tr>';
 				
 				// En blanc
@@ -1745,7 +1749,7 @@ class BaseController extends Controller {
 				$tbl .= '<td style="height: 257px; border: 1px solid #003366;" align="center">&nbsp;</td>';
 				$tbl .= '<td style="border: 1px solid #003366;" align="left">&nbsp;</td>';
 				$tbl .= '<td style="border: 1px solid #003366;" align="center">&nbsp;</td>';
-				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
+				$tbl .= '<td style="border: 1px solid #003366;" align="center">&nbsp;</td>';
 				$tbl .= '<td style="border: 1px solid #003366;" align="right">&nbsp;</td>';
 				$tbl .= '</tr>';
 			
@@ -1753,7 +1757,7 @@ class BaseController extends Controller {
 				
 				$pdf->writeHTMLCell(0, 0, $x_taula, $y_taula, $tbl, '', 2, false, true, 'L', false);
 				
-				$tbl = '<table border="0" cellpadding="2" cellspacing="0" style="border-color: #003366; border-collapse: collapse; ">
+				/*$tbl = '<table border="0" cellpadding="2" cellspacing="0" style="border-color: #003366; border-collapse: collapse; ">
 						<tr>
 						<td width="96" align="left" style="height: 41px;border: 1px solid #003366; color:#003366;">&nbsp;&nbsp;&nbsp;TOTAL</td>
 						<!-- 240 entre els dos -->
@@ -1770,7 +1774,7 @@ class BaseController extends Controller {
 				$tbl .= '</table>';
 				
 				//$y_taula2 = $pdf->getY();
-				$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 1, false, true, 'L', false);
+				$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 1, false, true, 'L', false);*/
 			}
 			
 			// Sistema nou del 2015.
@@ -1822,18 +1826,27 @@ class BaseController extends Controller {
 					$pdf->MultiCell($w_total, $row_h, $lineafactura['total'], 0, 'C', true, 0, $x_total, $row_y, 
 									true, 0, false, true, $row_h, 'T', true);
 					
-				    $pdf->MultiCell($w_preuu, $row_h, number_format($lineafactura['preuunitat'], 2, ',', '.').'€', 0, 'C', true, 0, $x_preuu, $row_y, 
+				    $pdf->MultiCell($w_preuu, $row_h, number_format($lineafactura['preuunitat'], 2, ',', '.').' €', 0, 'C', true, 0, $x_preuu, $row_y, 
 									true, 0, false, true, $row_h, 'T', true);
 	
 					$pdf->SetFont('', 'B');
-					$pdf->MultiCell($w_import, $row_h, number_format($lineafactura['import'], 2, ',', '.').'€', 0, 'C', true, 2, $x_import, $row_y, 
-									true, 0, false, true, $row_h, 'T', true);
-	
-					$pdf->SetFont('', 'I', 7);
+					/*$pdf->MultiCell($w_import, $row_h, number_format($lineafactura['import'], 2, ',', '.').'€', 0, 'C', true, 2, $x_import, $row_y, 
+									true, 0, false, true, $row_h, 'T', true);*/
+					$pdf->MultiCell($w_import, $row_h, number_format(self::getImportNetDetall($lineafactura), 2, ',', '.').' €', 0, 'R', true, 2, $x_import, $row_y,
+					    true, 0, false, true, $row_h, 'T', true);
+					
+					/*$pdf->SetFont('', 'I', 7);
 					if (is_numeric($lineafactura['ivaunitat']) && $lineafactura['ivaunitat'] > 0) {
 					    $row_y = $pdf->getY() + 0.8;
 					    $preuivaunitat =  number_format($lineafactura['preuunitat']*$lineafactura['ivaunitat'], 2, ',', '.').'€';
 					    $pdf->MultiCell($w_preuu, $row_h, 'IVA '.$preuivaunitat, 0, 'C', true, 0, $x_preuu, $row_y,
+					        true, 0, false, true, $row_h, 'T', true);
+					}*/
+					$pdf->SetFont('', 'I', 7);
+					if (is_numeric($lineafactura['descompte']) && $lineafactura['descompte'] > 0) {
+					    $row_y = $pdf->getY() + 0.8;
+					    $descompte =  number_format($lineafactura['descompte']*100, 0, ',', '.').'%';
+					    $pdf->MultiCell($w_preuu, $row_h, 'Descompte '.$descompte, 0, 'R', true, 0, $x_preuu, $row_y,
 					        true, 0, false, true, $row_h, 'T', true);
 					}
 					
@@ -1929,36 +1942,53 @@ class BaseController extends Controller {
 								true, 0, false, true, $row_h, 'T', true);
 			}
 			
-			$pdf->SetFont('', '', 12);
+			$pdf->SetFont('', '', 11);
 			//$pdf->SetFontSize(12);
-			// PEU 1 TOTAL PARCIAL
-			$pdf->setY($y_taula2+5);
 			
-			$baseimponible = '';
-			$iva = '';
+			// PEU 1 BASE IMPONIBLE
+			$pdf->setY($y_taula2+1);
 
-			if ($factura->getIva() != 0) {
-			    $baseimponible = number_format($factura->getImport()-$factura->getIva(), 2, ',', '.').' €';
-			    $iva = number_format($factura->getIva(), 2, ',', '.').' €';
+			$baseimponible = $factura->getImport();
+			$ivaDetalls = array();
+			
+			if ($factura->getIva() > 0 && $detallsArray) {
+		        $baseimponible = self::getTotalNetDetalls($detallsArray);
+		        $ivaDetalls = self::getIVADetalls($detallsArray);
 			}
 			
-			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-					<td width="96" align="center">'.number_format($factura->getImport(), 2, ',', '.').' €</td>
-					<td width="95" align="center">--</td>
-					<td width="145" align="center">'.$baseimponible.'</td>
-					<td width="90" align="center">'.$iva.'</td>
-					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
-					</tr></table>';	
+			$tbl = '<table border="0" cellpadding="5" cellspacing="0">';
+			// 96 + 240 = 336     58 + 81 = 139
+            $tbl .= '<tr><td colspan="2" width="336" align="center">&nbsp;</td>
+					<td colspan="2" width="139" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366; color:#003366;">B.Imposable</td>
+					<td width="86" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366;">'.number_format($baseimponible, 2, ',', '.').' €</td>
+					</tr>';	
+                
+            if (count($ivaDetalls) > 0) {
+                foreach ($ivaDetalls as $iva => $acumulatIva) {
+                    $tbl .= '<tr><td colspan="2" width="336" align="center">&nbsp;</td>
+    		          	<td colspan="2" width="139" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366; color:#003366;">IVA '.number_format($iva*100, 0, ',', '.').' %</td>
+    					<td width="86" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366; ">'.number_format($iva*$acumulatIva, 2, ',', '.').' €</td>
+    					</tr>';	
+                }
+            } else {
+                $tbl .= '<tr><td colspan="2" width="336" align="center">&nbsp;</td>
+    					<td colspan="2" width="139" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366; color:#003366;">IVA</td>
+    					<td width="86" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366; ">--</td>
+    					</tr>';	
+            }
+            $tbl .= '</table>';
+                
+            $pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
+               
 			
-			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
-			
-			$pdf->SetFontSize(16);
+			//$pdf->SetFontSize(13);
 			// PEU 2 - TOTAL FINAL
-			$pdf->setY($y_taula2+26);
+			//$pdf->setY($y_taula2+26);
 			$tbl = '<table border="0" cellpadding="5" cellspacing="0"><tr>
-					<td width="96">&nbsp;</td><td width="95">&nbsp;</td><td width="145">&nbsp;</td><td width="90">&nbsp;</td>
-					<td width="135" align="center"><span style="font-weight:bold;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
+					<td colspan="2" width="336">&nbsp;</td><td colspan="2" align="right" width="139" style="height: 41px; line-height: 30px; border: 1px solid #003366; color:#003366;"><span style="font-weight:bold; ">TOTAL FACTURA</span></td>
+					<td width="86" align="right" style="height: 41px; line-height: 30px; border: 1px solid #003366;"><span style="font-weight:bold; font-size: large;">'.number_format($factura->getImport(), 2, ',', '.').' €</span></td>
 					</tr></table>';	
+			
 			$pdf->writeHTMLCell($w_half*2 -5, 0, $x_taula, $pdf->getY(), $tbl, '', 2, false, true, 'L', false);
 
 			$pdf->SetTextColor(0, 51, 102); // Blau fosc 003366	
@@ -1978,20 +2008,20 @@ class BaseController extends Controller {
 		if ($factura->getIva() == 0) {
 			// set color for text
 			$pdf->SetTextColor(0, 51, 102); // Blau
-			$pdf->SetFont('dejavusans', '', 7.5, '', true);
+			$pdf->SetFont('dejavusans', '', 7, '', true);
 			//$text = '<p>Factura exempta d\'I.V.A. segons la llei 49/2002</p>';
 			$text = '<p>Factura exempta d\'I.V.A. d\'acord a l\'article UNO 20.13 de la llei de l\'IVA</p>';
-			$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+26, $text, '', 1, false, true, 'L', false);
+			$pdf->writeHTMLCell($w_codi + $w_producte - 5, 0, $x_taula, $y_taula2+2, $text, '', 1, false, true, 'L', false);
 		}
 		
 		$pdf->SetTextColor(0, 0, 0); // Negre
-		$pdf->SetFontSize(8);
+		$pdf->SetFontSize(10);
 
 		$compte = $factura->getNumcompte() != ''?$factura->getNumcompte():$this->getIbanGeneral();
 
-		$text = 'Número de compte corrent LA CAIXA IBAN '.$compte;
+		$text = 'Número de compte corrent<br/>LA CAIXA IBAN '.$compte;
 		
-		$pdf->writeHTMLCell($w_half*2, 0, $x_taula, $y_taula2+31, $text, '', 1, false, true, 'L', false);
+		$pdf->writeHTMLCell($w_codi + $w_producte - 5, 0, $x_taula, $y_taula2+20, $text, '', 1, false, true, 'L', false);
 
 		
 		/* ESPAI REBUT */	
@@ -2283,6 +2313,17 @@ class BaseController extends Controller {
 	
 	}
 	
+	protected function enviarMailLlicenciesBulk($request, $llicencies) {
+	
+	    // Use AntiFlood to re-connect after 10 emails And specify a time in seconds to pause for (20 secs)
+	    $this->get('mailer')->registerPlugin(new \Swift_Plugins_AntiFloodPlugin(10));
+	    //$this->get('mailer')->registerPlugin(new \Swift_Plugins_AntiFloodPlugin(10, 20));
+	    
+	    foreach ($llicencies as $llicencia) {
+   	        $this->enviarMailLlicencia($request, $llicencia);
+    	}
+	}
+	
 	protected function enviarMailLlicencia($request, $llicencia) {
 	    
 	    if ($llicencia == null) throw new \Exception("Error en les dades de la llicència");
@@ -2552,8 +2593,8 @@ class BaseController extends Controller {
 	    switch ($template) {
 	        case BaseController::TEMPLATE_ESCOLAR:
 	        case BaseController::TEMPLATE_ESCOLAR_SUBMARINISME:
-	            $yTit =	8*$factor_h;
-	            $offset = 5*$factor_h;
+	            $yTit =	16*$factor_h;
+	            $offset = 7*$factor_h;
 	            $yNai =	58*$factor_h-$offset;
 	            $title = 'Llicència Curs Escolar FECDAS' . date("Y");
 	            $image = BaseController::IMATGE_ANVERS_ESCOLAR;
@@ -2566,7 +2607,7 @@ class BaseController extends Controller {
 	            break;
 	            
 	        case BaseController::TEMPLATE_PESCA:
-	            $yTit =	16*$factor_h;
+	            $yTit =	20*$factor_h;
 	            $offset = 3*$factor_h;
 	            $yCad = 71*$factor_h-$offset;
 	            $yNai =	58*$factor_h-$offset;
@@ -2580,7 +2621,7 @@ class BaseController extends Controller {
 	            break;
 	            
 	        default:       //  case BaseController::TEMPLATE_GENERAL:
-	            $yTit =	14*$factor_h;
+	            $yTit =	19*$factor_h;
 	            $offset = 3*$factor_h;
 	            $yCad = 71*$factor_h-$offset;
 	            $yNai =	58*$factor_h-$offset;
@@ -2681,10 +2722,11 @@ class BaseController extends Controller {
 		if ($marginRight != "") $pdf->SetRightMargin($marginRight);
 		$pdf->writeHTMLCell(0, 0, $x_titols, $yCad, '<span style="font-size: small;">Vàlida fins/Valid until: </span>'. $datacaduca->format('d/m/Y'), 0, 0, false, true, 'R', true);
 		
-		$pdf->SetFont('dejavusans', 'B', 6);
-		
-		$pdf->writeHTMLCell(0, 0, $x_titols, $yTlf, '<span style="font-size: small;">Telf. Entitat: </span>'.$club->getTelefon(), 0, 0, false, true, 'R', true);
-
+		if ($club->getTelefon() != null) {
+    		$pdf->SetFont('dejavusans', 'B', 6);
+    		
+    		$pdf->writeHTMLCell(0, 0, $x_titols, $yTlf, '<span style="font-size: small;">Telf. Entitat: </span>'.$club->getTelefon(), 0, 0, false, true, 'R', true);
+    	}
 		//$pdf->setFontSpacing(0.5);
     	//$pdf->setFontStretching(80);
 
@@ -2960,21 +3002,21 @@ class BaseController extends Controller {
 	protected function printPlasticGeneral($pdf, $llicencia) {
 		// Posicions
 		$xTit = 0;
-		$yTit =	15.2-1.1;		
-		$xNom = 8.5-1.2;
-		$yNom =	28.1+2.5;		
-		$xDni = 18-2.4;
-		$yDni =	32.1+3.0;		
-		$xCat = 19.5-19.5;
-		$yCat =	36.4-13.4;		
-		$xNai = 19.5-2.7;
-		$yNai =	40.6-1.0;	
-		$xClu = 9.5-1.1;
-		$yClu =	46.6-2.6;		
-		//$xTlf = 9.5;
-		//$yTlf =	58.8;		
-		$xCad = 57+8.0;
-		$yCad =	48.8-1.4;
+		$yTit =	14.1 + 0.8;		
+		$xCat = 0.0;
+		$yCat =	23.0 - 3.5;
+		$xNom = 7.3 + 2.0;
+		$yNom =	30.6 - 2.8;		
+		$xDni = 15.6 + 2.8;
+		$yDni =	35.1 - 3.6;		
+		$xNai = 16.8 + 4.6;
+		$yNai =	39.6 - 3.8;	
+		$xClu = 8.4 + 2.4;
+		$yClu =	44.0 - 4.4;		
+		$xTlf = 14.5 + 0.8;
+		$yTlf =	45.0 - 1.4;		
+		$xCad = 65.0 - 0.6;
+		$yCad =	47.4 - 3.7;
 		
 		/*********** Alex Test  *************/
 		
@@ -3002,6 +3044,11 @@ class BaseController extends Controller {
 		$datacaduca = $parte->getDatacaducitat();
 		$titolPlastic = $this->getTitolPlastic($parte, $datacaduca);
 
+		// Treure la primera frase que ja està impresa
+		$titolPlasticArray = explode(LF, $titolPlastic);
+		array_shift($titolPlasticArray);
+		$titolPlastic = implode(LF, $titolPlasticArray);
+		
 		//$pdf->SetFont('helvetica', 'B', 10, '', true);
 		$pdf->SetFont('helvetica', 'B', 10);
 		//$pdf->setFontSpacing(0.5);
@@ -3019,7 +3066,7 @@ class BaseController extends Controller {
 		$pdf->setFontStretching(100);
 
 		$pdf->SetXY($xNom, $yNom);
-		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L', 0, '', 3);
 
 		$pdf->SetXY($xDni, $yDni);
 		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
@@ -3028,10 +3075,16 @@ class BaseController extends Controller {
 		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
 				
 		$pdf->SetXY($xClu, $yClu);
-		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
+		// $w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=0, $link='', $stretch=0, $ignore_min_height=false, $calign='T', $valign='M'
+		// $stretch 0  no stretch
+		//          1  scaling        OK
+		//          2  force scaling
+		//          3  spacing        OK
+		//          4  force spacing
+		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L', 0, '', 3);
 
-		//$pdf->SetXY($xTlf, $yTlf);
-		//$pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
+		$pdf->SetXY($xTlf, $yTlf);
+		$pdf->Cell(0, 0, $club->getTelefonFormat(), 0, 1, 'L');
 		
 		$pdf->SetFont('helvetica', 'B', 8);
 		$pdf->setFontStretching(90);
@@ -3045,20 +3098,19 @@ class BaseController extends Controller {
 	    // Posicions
 	    $xTit = 0;
 	    $yTit =	15.2;
-	    $xNom = 8.5;
-	    $yNom =	28.1-0.5;
-	    $xDni = 18;
-	    $yDni =	32.1-0.5;
-	    $xCat = 19.5+1.4;
-	    $yCat =	36.4-1.0;
-	    $xNai = 19.5-0.3;
-	    $yNai =	40.6-1.2;
-	    $xClu = 9.5;
-	    $yClu =	46.6-3.1;
-	    $xTlf = 15;
-	    $yTlf =	49.8-2.4;
-	    $xCad = 57;
-	    $yCad =	49.8-2.4;
+	    
+	    $xCat = 0.0;
+	    $yCat =	23.0;
+	    $xNom = 7.3;
+	    $yNom =	30.6 + 0.9;
+	    $xDni = 15.6;
+	    $yDni =	35.1 + 1.0;
+	    $xNai = 16.8;
+	    $yNai =	39.6 + 1.0;
+	    $xClu = 8.4;
+	    $yClu =	44.0 + 1.6;
+	    $xCad = 66.0;
+	    $yCad =	49.0 - 0.2;
 	    
 	    /*********** Alex Test  *************/
 	    
@@ -3094,19 +3146,19 @@ class BaseController extends Controller {
 	    $pdf->SetXY($xTit, $yTit);
 	    $pdf->MultiCell(0,0,$titolPlastic,0,'C',false);
 	    
+	    $pdf->SetXY($xCat, $yCat);
+	    $pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'C');
+	    
 	    //$pdf->SetFont('dejavusans', 'B', 8);
 	    $pdf->SetFont('helvetica', 'B', 9);
 	    $pdf->setFontStretching(100);
 
 	    $pdf->SetXY($xNom, $yNom);
-	    $pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+	    $pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L', 0, '', 3);
 	    
 	    $pdf->SetXY($xDni, $yDni);
 	    $pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
 
-	    $pdf->SetXY($xCat, $yCat);
-	    $pdf->Cell(0, 0, $llicencia->getCategoria()->getCategoria(), 0, 1, 'L');
-	    
 	    $pdf->SetXY($xNai, $yNai);
 	    $pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
 	    
@@ -3114,10 +3166,10 @@ class BaseController extends Controller {
 	    $pdf->setFontStretching(90);
 
 	    $pdf->SetXY($xClu, $yClu);
-	    $pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
+	    $pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L', 0, '', 3);
 	    
-	    $pdf->SetXY($xTlf, $yTlf);
-	    $pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');
+	    /*$pdf->SetXY($xTlf, $yTlf);
+	    $pdf->Cell(0, 0, $club->getTelefon(), 0, 1, 'L');*/
 	    
 	    $pdf->SetXY($xCad, $yCad);
 	    $pdf->Cell(0, 0, $datacaduca->format('d/m/Y'), 0, 1, 'L');
@@ -3170,7 +3222,7 @@ class BaseController extends Controller {
 		$pdf->SetFont('dejavusans', 'B', 8);
 
 		$pdf->SetXY($xNom, $yNom);
-		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $persona->getNomCognoms(), 0, 1, 'L', 0, '', 3);
 
 		$pdf->SetXY($xDni, $yDni);
 		$pdf->Cell(0, 0, $persona->getDni(), 0, 1, 'L');
@@ -3182,7 +3234,7 @@ class BaseController extends Controller {
 		$pdf->Cell(0, 0, $persona->getDatanaixement()->format('d/m/Y'), 0, 1, 'L');
 				
 		$pdf->SetXY($xClu, $yClu);
-		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L');
+		$pdf->Cell(0, 0, $club->getNom(), 0, 1, 'L', 0, '', 3);
 
 		$pdf->SetFont('dejavusans', 'B', 7);
 		$pdf->SetXY($xTlf, $yTlf);
@@ -3738,13 +3790,15 @@ class BaseController extends Controller {
 			$producte = $detall->getProducte();
 			$unitats = $detall->getUnitats();
 			
-			$import += $detall->getTotal(true);
-			$iva += $detall->getIva(true);
+			// Calcular des de la comanda  
+			//$import += $detall->getTotal(true);
+			//$iva += $detall->getIva(true);
 			
 			$concepte .= $unitats.'x'.$producte->getDescripcio().' ';
 			
 			//$detallsFactura[$producte->getCodi()] = $detall->getDetallsArray(true);
-			$detallsFactura[$producte->getId()] = $detall->getDetallsArray(true);
+			//$detallsFactura[$producte->getId()] = $detall->getDetallsArray(true);
+			$detallsFactura[$producte->getId()] = $detall->getDetallsArray();
 	
 			if ($extra != '' && is_array($extra) && isset($extra[$producte->getId()])) {
 			//if ($extra != '' && is_array($extra) && isset($extra[$producte->getCodi()])) {
@@ -4715,7 +4769,6 @@ class BaseController extends Controller {
 		    });
 		}
 		
-		
 		$message = \Swift_Message::newInstance()
 		->setSubject($subject)
 		->setFrom($this->getParameter('MAIL_FECDASGESTIO'))
@@ -4903,6 +4956,139 @@ class BaseController extends Controller {
         ));
 	    
         return $this->render('FecdasBundle:Titulacions:formclubscurso.html.twig', array( 'form' => $formBuilder->getForm()->createView() ));
+	}
+	
+	
+	public function formatPhoneNumber($phone) {
+	    // note: strip out everything but numbers
+	    $phone = preg_replace("/[^0-9]/", "", $phone);
+	    $length = strlen($phone);
+	    switch($length) {
+	        /*case 7:
+	            // 372 56 19
+	            return preg_replace("/([0-9]{3})([0-9]{2})([0-9]{2})/", "$1 $2 $3", $phone);
+	            break;*/
+	        case 9:
+
+	            if ($phone[0] == "9") {
+	                // 93 372 56 19
+	                if (substr($phone, 0, 2) == "93") return preg_replace("/([0-9]{2})([0-9]{3})([0-9]{2})([0-9]{2})/", "($1) $2 $3 $4", $phone);
+	                // 972 257 003
+	                return preg_replace("/([0-9]{3})([0-9]{3})([0-9]{3})/", "$1 $2 $3", $phone);
+	            }
+	            // 620 39 83 23
+	            if ($phone[0] == "6") return preg_replace("/([0-9]{3})([0-9]{2})([0-9]{2})([0-9]{2})/", "$1 $2 $3 $4", $phone);
+	            
+	            return $phone;
+	            break;
+	        default:
+	            return $phone;
+	            break;
+	    }
+	}
+	
+	/**
+	 * Retorna array detalls agrupats/acumulats per IVA
+	 * 
+	 * $detalls = array(
+	 *   array('total' => 999,
+	 *		 'preuunitat' => 9.99,
+	 *		 'ivaunitat' => 9.99,
+	 *     	 'descompte' => 9.99,
+	 *       ....
+     *	 ))
+	 * 
+	 * Get array detalls agrupats per IVA
+	 *
+	 *     {
+	 *         '0.4' => 9.999
+	 *         '0.21' => 9.999,
+	 *     }
+	 *
+	 * @return array()
+	 */
+	public static function getIVADetalls($detalls) {
+	    
+	    $acumulat = array();
+	    foreach ($detalls as $d) {
+	        $iva = isset($d['ivaunitat'])?$d['ivaunitat']:0;
+	        if ($iva != 0) {
+	            if (isset($acumulat[$iva])) {
+	                // Iva existent
+	                $acumulat[$iva] += self::getImportNetDetall($d);
+	            } else {
+	                $acumulat[$iva] = self::getImportNetDetall($d);
+	            }
+	        }
+	    }
+	    return $acumulat;
+	}
+	
+	/**
+	 * Retorna IVA total dels detalls calculat agrupant IVA productes
+	 *
+	 * $detalls = array(
+	 *   array('total' => 999,
+	 *		 'preuunitat' => 9.99,
+	 *		 'ivaunitat' => 9.99,
+	 *     	 'descompte' => 9.99,
+	 *       ....
+     *	 ))
+	 *
+	 * @return double
+	 */
+	public static function getTotalIVADetalls($detalls) {
+	    
+	    $acumulat = self::getIVADetalls($detalls);
+	    
+	    $total = 0;
+	    foreach ($acumulat as $iva => $net) {
+	        $total += $net * $iva;
+	    }
+
+	    return $total;
+	}
+	
+	
+    /**
+	 * Retorna import tota net dels detalls incloent descompte
+	 * 
+	 * $detalls = array(
+	 *   array('total' => 999,
+	 *		 'preuunitat' => 9.99,
+	 *		 'ivaunitat' => 9.99,
+	 *     	 'descompte' => 9.99,
+	 *       ....
+     *	 ))
+     *
+	 * @return double
+	 */
+	public static function getTotalNetDetalls($detalls) {
+	    
+	    $total = 0;
+	    foreach ($detalls as $d) {
+	        $total += self::getImportNetDetall($d);
+	    }
+        return $total;	    
+	}
+	
+	/**
+	 * Retorna import tota net detall
+     * $detall =
+	 *   array('total' => 999,
+	 *		 'preuunitat' => 9.99,
+	 *		 'ivaunitat' => 9.99,
+	 *     	 'descompte' => 9.99,
+	 *       ....
+     *	 )
+	 * @return double
+	 */
+	private static function getImportNetDetall($detall) {
+	    if (!is_array($detall)) return 0;
+	    $preuunitat = isset($detall['preuunitat'])?$detall['preuunitat']:0;
+	    $total = isset($detall['total'])?$detall['total']:0;
+	    $descompte = isset($detall['descompte'])?$detall['descompte']:0;
+	    return $preuunitat * $total * (1 - $descompte);
 	}
 	
 	

@@ -1717,15 +1717,18 @@
 	
 	transportCistella = function() {
 		$( ".cistella-resum" ).on( "click", "#form_transport_0", function(e) {
+			var totalNet = $('#form_importnetcomanda').val()*1 + $('#form_tarifatransport').val()*1; 
+			$('#totalnetcomanda').html(  totalNet.toFixed(2) );
 			var total = $('#form_importcomanda').val()*1 + $('#form_tarifatransport').val()*1; 
 			$('#totalcomanda').html(  total.toFixed(2) );
 		});
 		
 		$( ".cistella-resum" ).on( "click", "#form_transport_1", function(e) {
 			//e.preventDefault();			
+			var totalNet = $('#form_importnetcomanda').val()*1;
+			$('#totalnetcomanda').html( totalNet.toFixed(2) );
 			var total = $('#form_importcomanda').val()*1;
 			$('#totalcomanda').html( total.toFixed(2) );
-			
 		});
 	};
 	

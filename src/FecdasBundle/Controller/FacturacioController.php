@@ -1448,6 +1448,13 @@ class FacturacioController extends BaseController {
 		$separadorCSV = ';'; 
 		$altreSeparadorCSV = ',';
 		
+		// Canvi DEBE <--> HABER imports negatius
+		if ($import < 0) {
+		    $import = -$import;
+		    if ($tipus == BaseController::DEBE) $tipus = BaseController::HABER;
+		    else $tipus = BaseController::DEBE;
+		}
+		
 		$import = number_format($import, 2, ',', '');
 		$conc = $this->netejarNom($conc, false);
 		$conc = str_replace($separadorCSV, ' ', $conc);  // separador csv
@@ -1539,51 +1546,60 @@ class FacturacioController extends BaseController {
 		$linia++;
 		$importAcumula = 0;
 		$iva = $factura->getIva();
-		$ivaDetalls = 0;
-		$index = 1;
+		$ivaDetalls = array();
+		//$index = 1;
 		//$numApunts = count(json_decode($factura->getDetalls(), true)); // Compta en format array
 		//$detallsArray = json_decode($factura->getDetalls(), false, 512, JSON_UNESCAPED_UNICODE);
 		
-		$detallsArray = json_decode($factura->getDetalls(), false, 512);
+		$detallsArray = json_decode($factura->getDetalls(), true, 512);
 		foreach ($detallsArray as $id => $d) {
 		// APUNT/S PRODUCTE/S
 			//$desc = $this->netejarNom($d->producte, false); 								// Descripció del compte KIT ESCAFADRISTA B2E/SVB
 			//$conc = $doc."(".$index."-".$numApunts.") ".$d->total." ".mb_convert_encoding($d->producte, 'UTF-8',  'auto');
 			
-			$conc = $d->total.' '.utf8_decode($d->producte);
-			if (is_numeric($d->ivaunitat) && $d->ivaunitat > 0) {
-			    //$ivaDetalls += $d->total*$d->preuunitat*$d->ivaunitat;
-			    //$importDetall = $d->import - $d->total*$d->preuunitat*$d->ivaunitat;  // Detall sense IVA
-			    $importDetall = $d->total*$d->preuunitat;
-			    //$ivaDetalls += ($d->import-$importDetall);
-			    $ivaDetalls += $importDetall*$d->ivaunitat;
-			} else {
-			    $importDetall = $d->import;
-			}
-				
-			$importAcumula += $importDetall;	
+			$conc = $d['total'].' '.utf8_decode($d['producte']);
+			
+			$importDetall = BaseController::getImportNetDetall($d);
+			$importAcumula += $importDetall;
+			
 			//$producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneByCodi($compte);
             $producte = $this->getDoctrine()->getRepository('FecdasBundle:EntityProducte')->findOneById($id);
          
-            if ($producte == null) throw new \Exception("Factura ".$factura->getNumfactura()." incorrecte. Producte ".$d->codi." incorrecte (".$id.")");
+            if ($producte == null) throw new \Exception("Factura ".$factura->getNumfactura()." incorrecte. Producte ".$d['codi']." incorrecte (".$id.")");
             
 			//$assentament[] = $this->crearLiniaAssentament($data, $num, $linia, $compte, $desc, $conc, '', $importDetall, BaseController::HABER);
 			$assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $producte->getCodi(), 'FRA/ '.$conc, $producte->getDepartament(), $producte->getSubdepartament(), $doc, $importDetall, BaseController::HABER);
 						
 			$linia++;
-			$index++;
+			//$index++;
 		}
 
-		if ($iva != 0 || $ivaDetalls != 0) {
-		    // Validar que quadren ivas
-		    if (abs($iva - $ivaDetalls) > 0.01) throw new \Exception("IVA de la factura ".$doc." no quadra ".$iva." ".$ivaDetalls);
-		    
-		    // Assentament IVA
-		    $assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, BaseController::COMPTE_COMPTA_IVA, 'FRA/ '.' IVA REPERCUTIT', $producte->getDepartament(), $producte->getSubdepartament(), $doc, $iva, BaseController::HABER);
-		    
-		    $importAcumula += $iva;
-		}
+		$ivaDetalls = BaseController::getIVADetalls($detallsArray);
 		
+		if (count($ivaDetalls) > 0) {
+		    // Validar que quadren ivas
+		    //if (abs($iva - $ivaDetalls) > 0.01) throw new \Exception("IVA de la factura ".$doc." no quadra ".$iva." ".$ivaDetalls);
+		    foreach ($ivaDetalls as $iva => $acumulatIva) {
+		        // Assentament IVA
+		        $importDetall = $iva*$acumulatIva;
+		        $importAcumula += $importDetall;
+		        
+		        $compte = 0;
+		        switch ($iva) {
+		            case 0.21:
+		                $compte = BaseController::COMPTE_COMPTA_IVA;
+                        break;
+
+		            case 0.04:
+		                $compte = BaseController::COMPTE_COMPTA_IVA_RED;
+		                break;
+		        }
+		        if ($compte == 0) throw new \Exception("L'IVA ".number_format($iva*100, 0, ',', '.')."% no té compte comptable associat");
+		        
+		        $assentament[] = $this->crearLiniaAssentamentContasol($data, $num, $linia, $compte, 'FRA/ '.'IVA '.number_format($iva*100, 0, ',', '.').'% REPERCUTIT', $producte->getDepartament(), $producte->getSubdepartament(), $doc, $importDetall, BaseController::HABER);
+		        $linia++;
+		    }
+		}
 		
 		// Validar que quadren imports		
 		if (abs($import - $importAcumula) > 0.01) throw new \Exception("Imports detall de la factura ".$doc." no quadren");

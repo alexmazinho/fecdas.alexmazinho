@@ -873,6 +873,12 @@ a.link.footer-link { padding: 0 10px; }
 
 .cistella-resum .cistella-transport input { margin-left: 30px; margin-top: 0;}
 
+.cistella-resum .cistella-partial  { text-align: right;   }
+.cistella-resum .cistella-iva  { text-align: right;   }
+
+.cistella-resum .cistella-partial td,
+.cistella-resum .cistella-iva  td { padding: 5px 5px;   }
+
 .cistella-resum .cistella-summary  { text-align: right; font-weight: bold;  }
 
 .cistella-resum .cistella-summary td { padding: 10px 5px; /*border-top: 1px solid #cccccc;*/ }

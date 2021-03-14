@@ -82,7 +82,8 @@ class BaseController extends Controller {
 	const TARIFA_MINPES2 = 5000; // 5 Kg
 	const PRODUCTE_CORREUS = 7590004;	// Abans juliol 2016 => 6290900 / 6290004
 	const PRODUCTE_IMPRESS_PLASTIC_ID = 3;	
-	const COMPTE_COMPTA_IVA = 4770000;	 
+	const COMPTE_COMPTA_IVA = 4770000;
+	const COMPTE_COMPTA_IVA_RED = 4770001; // 4%	 
 	
 	const PREFIX_ASSENTAMENTS = 'APU';  // Prefix del fitxer
 	// Fitxer domiciliacions
@@ -5083,7 +5084,7 @@ class BaseController extends Controller {
      *	 )
 	 * @return double
 	 */
-	private static function getImportNetDetall($detall) {
+	protected static function getImportNetDetall($detall) {
 	    if (!is_array($detall)) return 0;
 	    $preuunitat = isset($detall['preuunitat'])?$detall['preuunitat']:0;
 	    $total = isset($detall['total'])?$detall['total']:0;

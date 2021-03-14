@@ -110,10 +110,9 @@ class CartCheckOut
         // Revisar si cal transport
         $this->getSessionCart();
         $tarifa = 0;
-        $total = 0;
+        $total = BaseController::getTotalNetDetalls($this->convertCartToDetalls());
+        $iva = BaseController::getTotalIVADetalls($this->convertCartToDetalls());
         if (count($this->cart['productes']) > 0) {
-            $total = $this->getTotalComandaCart();
-            
             $producte = self::$em->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
             $unitats = $this->getUnitatsTarifaTransport();
             $tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
@@ -127,8 +126,14 @@ class CartCheckOut
         ->add('tarifatransport', 'hidden', array(
             'data' => $tarifa
         ));
-        $formBuilder->add('importcomanda', 'hidden', array(
+        $formBuilder->add('importnetcomanda', 'hidden', array(
             'data' => $total
+        ));
+        $formBuilder->add('ivacomanda', 'hidden', array(
+            'data' => $iva
+        ));
+        $formBuilder->add('importcomanda', 'hidden', array(
+            'data' => $total + $iva
         ));
         $formBuilder->add('transport', 'choice', array(
             'choices'   => array(0 => 'Incloure enviament', 1 => 'Recollir a la federació'),
@@ -153,19 +158,19 @@ class CartCheckOut
         return $pesComanda;
     }
     
-    public function getTotalComandaCart()
+    private function convertCartToDetalls()
     {
         $this->getSessionCart();
         
-        $total = 0;
+        $detalls = array();
         foreach ($this->cart['productes'] as $info) {
-            $factorIVA = 1;
-            if (isset($info['iva']) && is_numeric($info['iva'])) $factorIVA += $info['iva'];
-            
-            $total += $info['unitats']*$info['import']*$factorIVA;
-            
+            $detalls[] = array('total' => $info['unitats'],
+                'preuunitat' => $info['import'],
+                'ivaunitat' => $info['iva'],
+                'descompte' => 0);
         }
-        return $total;
+        
+        return $detalls;
     }
     
     public function getUnitatsTarifaTransport()

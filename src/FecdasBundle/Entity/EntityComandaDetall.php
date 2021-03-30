@@ -117,6 +117,9 @@ class EntityComandaDetall {
 	 *
 	 * @return double
 	 */
+	public function getTotalNet() {
+	    return BaseController::getImportNetDetall($this->getDetallsArray());
+	}
 	/*public function getTotalNet()
 	{
 		if ($this->producte == null) return 0;	

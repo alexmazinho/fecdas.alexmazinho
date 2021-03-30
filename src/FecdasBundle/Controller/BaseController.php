@@ -1952,7 +1952,7 @@ class BaseController extends Controller {
 			$baseimponible = $factura->getImport();
 			$ivaDetalls = array();
 			
-			if ($factura->getIva() > 0 && $detallsArray) {
+			if ($factura->getIva() != 0 && $detallsArray) {
 		        $baseimponible = self::getTotalNetDetalls($detallsArray);
 		        $ivaDetalls = self::getIVADetalls($detallsArray);
 			}
@@ -3783,8 +3783,6 @@ class BaseController extends Controller {
 		
 		$em = $this->getDoctrine()->getManager();
 
-		$import = 0;
-		$iva = 0;
 		$concepte = 'Anul·lació. ';
 		$detallsFactura = array();
 		foreach ($detalls as $detall) {
@@ -3808,6 +3806,10 @@ class BaseController extends Controller {
 			}
 		}
 
+		$totalNet = round(BaseController::getTotalNetDetalls($detallsFactura),2); 
+		$iva = round(BaseController::getTotalIVADetalls($detallsFactura),2);
+		$import = round($totalNet + $iva, 2);
+		
 		// Revisar data factura és posterior a $data i posar data factura a la factura d'anul·lació
 		/*$datafactura = $data;
 		$persist = false;
@@ -5084,7 +5086,7 @@ class BaseController extends Controller {
      *	 )
 	 * @return double
 	 */
-	protected static function getImportNetDetall($detall) {
+	public static function getImportNetDetall($detall) {
 	    if (!is_array($detall)) return 0;
 	    $preuunitat = isset($detall['preuunitat'])?$detall['preuunitat']:0;
 	    $total = isset($detall['total'])?$detall['total']:0;

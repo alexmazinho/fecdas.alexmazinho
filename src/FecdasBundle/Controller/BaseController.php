@@ -4695,7 +4695,7 @@ class BaseController extends Controller {
 	protected function logEntryAuth($accio = null, $extrainfo = '') {
 		//$request = $this->container->get('request_stack')->getCurrentRequest();
 		$checkRole = $this->get('fecdas.rolechecker');
-		
+
 		$this->logEntry($checkRole->getCurrentUserName(), $accio, $checkRole->getCurrentRemoteAddr(), $checkRole->getCurrentHTTPAgent(), $extrainfo);
 	}
 	
@@ -4715,8 +4715,8 @@ class BaseController extends Controller {
 			//$em = $this->getDoctrine()->resetManager();
 			//$em = $this->getDoctrine()->getManager();
 		} 
-		
-		$logentry = new EntityUserLog(substr($user,0,50), substr($accio,0,20), substr($remoteaddr,0,20), substr($useragent,0,100), substr($extrainfo,0,100));
+		//$logentry = new EntityUserLog(substr($user,0,50), substr($accio,0,20), substr($remoteaddr,0,20), substr($useragent,0,100), substr($extrainfo,0,100));
+        $logentry = new EntityUserLog(substr($user,0,50), substr($accio,0,20), substr($remoteaddr,0,20), mb_substr($useragent,0,100), mb_substr($extrainfo,0,100));
 		$em->persist($logentry);
 		try {
 			$em->flush();

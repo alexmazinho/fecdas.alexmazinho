@@ -932,7 +932,7 @@ class TitulacionsController extends BaseController {
     	    }
     	} else {
     	    $club = $curs->getClub();
-    	    
+
 	    	$this->logEntryAuth($request->getMethod() != 'POST'?'CURS VIEW':'CURS EDIT', ($request->getMethod() != 'POST'?'GET':'POST').' curs : ' . $curs->getId().' '.$curs->getTitol().' '.$curs->getClubInfo());
 
 			if (!$curs->finalitzat()) {			

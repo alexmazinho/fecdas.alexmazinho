@@ -23,6 +23,7 @@ class EntityClubType {
 	 */
 	protected $tipus;
 
+	
     /**
      * Set id
      *
@@ -43,6 +44,7 @@ class EntityClubType {
         return $this->id;
     }
 
+    
     /**
      * Set tipus
      *

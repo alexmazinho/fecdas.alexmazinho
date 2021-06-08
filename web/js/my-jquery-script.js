@@ -2273,7 +2273,7 @@
 	};
 	
 	
-	saveClub = function( admin ) {
+	saveClub = function( admin, personaFisica ) {
 		/* desar club */
 		$('.formclub-save')
 	    .off('click')
@@ -2336,7 +2336,7 @@
 	        	}
 	        }
 	       
-	        if (admin == true && $("#club_tipusparte :selected").length < 1) {
+	        if (admin && !personaFisica && $("#club_tipusparte :selected").length < 1) {
 	        	dialegConfirmacio( "El club no té assignat cap tipus de llicència", "Abans de continuar...", 0, 400, function() {
 	        		$('#formclub').submit();
 	        		

@@ -41,6 +41,7 @@ class FormClubAdmin extends FormClub {
 
 				$form->add('activat', 'checkbox', array(
 					'required'  => false,
+				    'disabled'  => $club->esPersonaFisica(),    // No deixar modificar aquest valor
 					'data'		=> ($club->getActivat()?true:false)
 				));
 
@@ -64,7 +65,7 @@ class FormClubAdmin extends FormClub {
 		));
 		
 		$builder->add('notes', 'textarea', array(
-		          'required'            => false,
+		          'required'    => false,
 		          'attr' 		=> array('rows' => 2, 'resize' => 'vertical')
 		));
 		

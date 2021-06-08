@@ -2186,7 +2186,7 @@ class FacturacioController extends BaseController {
 	
 		$action = $request->query->get('action', '');
 		$tipus = $request->query->get('tipus', 0);
-		$transport = $request->query->get('transport', 1);
+		$transport = $request->query->get('transport', 0);
 		$transport = ($transport == 1?true:false);
 		$comentaris = $request->query->get('comentaris', '');
 		$comptefactura = $request->query->get('comptefactura', $this->getIbanGeneral());

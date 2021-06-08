@@ -113,11 +113,15 @@ class CartCheckOut
         $total = BaseController::getTotalNetDetalls($this->convertCartToDetalls());
         $iva = BaseController::getTotalIVADetalls($this->convertCartToDetalls());
         if (count($this->cart['productes']) > 0) {
-            $producte = self::$em->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
-            $unitats = $this->getUnitatsTarifaTransport();
-            $tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
+            if ($this->checkAddTransportToCart()) {
+                $producte = self::$em->getRepository('FecdasBundle:EntityProducte')->findOneByCodi(BaseController::PRODUCTE_CORREUS);
+                $unitats = $this->getUnitatsTarifaTransport();
+                $tarifa = $unitats * ($producte != null?$producte->getCurrentPreu():0);
  
-            $this->cart['tarifatransport'] = $tarifa;
+                $this->cart['tarifatransport'] = $tarifa;
+            } else {
+                $this->cart['tarifatransport'] = 0;
+            }
             
             $this->session->set('cart', $this->cart);
         }
@@ -144,6 +148,18 @@ class CartCheckOut
         
         return $formBuilder->getForm()->createView();
     }
+    
+    private function checkAddTransportToCart()
+    {
+        $this->getSessionCart();
+        
+        foreach ($this->cart['productes'] as $producte) {
+            if ($producte['transport']) return true;
+        }
+        
+        return false;
+    }
+    
     
     public function getPesComandaCart()
     {

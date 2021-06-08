@@ -311,6 +311,16 @@ class EntityClub {
     }
 	
     /**
+     * Indica si es persona física
+     *
+     * @return boolean
+     */
+    public function esPersonaFisica() {
+        return $this->tipus->getId() == BaseController::TIPUS_CLUB_PERSONA_FISICA;
+    }
+    
+    
+    /**
      * Get nom factura, si está informat nomfiscal, en cas contrari nom 
      *
      * @return string

@@ -12,7 +12,7 @@
     		    	<div class="buttons-top-bootstrap">
 						<div class="button-top"><a class="link formclub-save" href="javascript:void(0);" alt="Desar dades" 
 							title="Desar dades"><i class="fa fa-save fa-1x green"></i></a></div> 
-						{% if admin == true %}
+						{% if admin %}
 						<div class="button-top"><a class="link formclub-baixa" href="{{ path('FecdasBundle_baixaclub', { 'club' : club.codi }) }}" alt="Baixa club" 
 							title="Baixa club"><i class="fa fa-trash-o fa-1x red"></i></a></div> 
 						<div class="button-top"><a id="formclub-nou" class="link" target="_blank" href="javascript:void(0);" alt="Nou club" 
@@ -25,7 +25,7 @@
    
 		<div class="row"><div class="col-md-12 block-errors">{% include 'FecdasBundle:Includes:messages.html.twig' %}</div></div>
 
-		{% if admin == true %}
+		{% if admin %}
 	   		<div class="row">
 				{{ form_widget(form.nouclub) }}
 				{% if nouclub != true %}
@@ -52,11 +52,20 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-2">
+				<div class="col-md-1">
 					<div class="checkbox">
 				    	<label>
-				      		{{ form_widget(form.activat) }} Accés actiu
+				      		{{ form_widget(form.activat, { 'attr': {'class': 'form-control, checkbox'} }) }} Actiu
 				    	</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="form-group">
+						<div class="input-group">
+							<span class="input-group-addon">Baixa</span>
+							{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
+							<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -67,9 +76,9 @@
 		<div id="tabs-club">
 			<ul>
 				<li><a href="#formclub-dades-tab1">Dades</a></li>
-				{% if admin == true %} <li><a href="#formclub-dades-tab3">Llicències</a></li>{% endif %}
-				{% if admin == true %} <li><a href="#formclub-dades-tab4">Saldos</a></li>{% endif %}
-				<li><a href="#formclub-dades-tab5">Dates i càrrecs</a></li>
+				{% if admin and not club.esPersonaFisica %} <li><a href="#formclub-dades-tab3">Llicències</a></li>{% endif %}
+				{% if admin %} <li><a href="#formclub-dades-tab4">Saldos</a></li>{% endif %}
+				{% if not club.esPersonaFisica %}<li><a href="#formclub-dades-tab5">Dates i càrrecs</a></li>{% endif %}
 			</ul>
 			
 			<div id="formclub-dades-tab1" class="formclub-tab">		
@@ -273,7 +282,7 @@
 					</div>
 				</div>
 	        </div>
-	        {% if admin == true %} 
+	        {% if admin and not club.esPersonaFisica %} 
 		        <div id="formclub-dades-tab3" class="formclub-tab" >
 		        	<div class="row">
 						<div class="col-md-12 form-inline">
@@ -435,6 +444,7 @@
 					</div>
 		        </div>
 			{% endif %}
+			{% if not club.esPersonaFisica %}
 			<div id="formclub-dades-tab5" class="formclub-tab">		
 				<div class="row">
 					<div class="col-md-12">
@@ -451,13 +461,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-md-7"><div class="col-md-comment">Número de registre al Consell Català de l'Esport</div></div>
-					<div class="col-md-2 col-last-right">
-						<div class="checkbox">
-					    	<label>{{ form_widget(form.estatuts) }} Estatuts </label>
-						</div>
-			        	
-					</div>
+					<div class="col-md-9"><div class="col-md-comment">Número de registre al Consell Català de l'Esport</div></div>
 				</div>
 				<div class="row">
 					<div class="col-md-7">
@@ -489,13 +493,9 @@
 									</div>
 								</div>
 							</div>
-							<div class="col-md-6">
-							 	<div class="form-group">
-									<div class="input-group">
-										<span class="input-group-addon">Baixa</span>
-										{{ form_widget(form.databaixa, { 'attr': {'class': 'form-control form-control-center'} }) }}
-										<span class="input-group-addon input-group-addon-icon open-calendar"><span class="fa fa-calendar fa-1x"></span></span>
-									</div>
+							<div class="col-md-2">
+								<div class="checkbox">
+					    			<label>{{ form_widget(form.estatuts) }} Estatuts </label>
 								</div>
 							</div>
 						</div>
@@ -546,27 +546,30 @@
 						{% include "FecdasBundle:Security:clubtaulajunta.html.twig" %}
 					</div>
 				</div>
-			</div>	        
+			</div>
+			{% endif %}	        
         </div>
 				
 		<div id="formclub-rest" class="hidden">{{ form_rest(form) }}</div>
 
-		<div id="gestio-usuarisclub" class="row">
-			<div class="col-md-8"><h4 class="blue">Llista d'usuaris</h4></div>
-			<div class="col-md-4 col-last-right">
-				<div class="form-group" >
-					<a id="add-userclub" class="btn btn-default" href="{{ path('FecdasBundle_usuariclub', { 'action': 'open' }) }}" data-role="" data-user="" data-id="" name="add-userclub">
-						<i class="fa fa-user fa-1x blue"></i>  Afegir usuari
-					</a>
-				</div>
-			</div>
-			<div class="col-md-12">
-				<!-- <div id="llista-usuarisclub" class="table-responsive table-scroll table-fixheader"> -->
-				<div id="llista-usuarisclub" class="table-scroll table-fixheader">
-				{% include "FecdasBundle:Security:clubllistausers.html.twig" %}
-				</div>
-			</div>
-		</div> 
+        {% if not club.esPersonaFisica %}
+    		<div id="gestio-usuarisclub" class="row">
+    			<div class="col-md-8"><h4 class="blue">Llista d'usuaris</h4></div>
+    			<div class="col-md-4 col-last-right">
+    				<div class="form-group" >
+    					<a id="add-userclub" class="btn btn-default" href="{{ path('FecdasBundle_usuariclub', { 'action': 'open' }) }}" data-role="" data-user="" data-id="" name="add-userclub">
+    						<i class="fa fa-user fa-1x blue"></i>  Afegir usuari
+    					</a>
+    				</div>
+    			</div>
+    			<div class="col-md-12">
+    				<!-- <div id="llista-usuarisclub" class="table-responsive table-scroll table-fixheader"> -->
+    				<div id="llista-usuarisclub" class="table-scroll table-fixheader">
+    				{% include "FecdasBundle:Security:clubllistausers.html.twig" %}
+    				</div>
+    			</div>
+    		</div> 
+		{% endif %}	 
 
     {{ form_end(form) }}
 
@@ -629,7 +632,7 @@
 		
 		reloadClub();
 	
-		saveClub( {% if admin == true %}true{% else %}false{% endif %} );
+		saveClub( {% if admin == true %}true{% else %}false{% endif %}, {% if club.esPersonaFisica %}true{%else%}false{% endif %} );
 
 		baixaClub( "{{ path('FecdasBundle_club', { 'codiclub' : club.codi }) }}"  );
 		

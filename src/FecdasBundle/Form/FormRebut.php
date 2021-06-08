@@ -68,7 +68,7 @@ class FormRebut extends AbstractType {
 								return $repository->createQueryBuilder('c')
 										->orderBy('c.nom', 'ASC')
 										->where('c.databaixa IS NULL')
-										->where('c.activat = 1');
+										->join('c.tipus', 't', 'WITH', 't.id != \''.BaseController::TIPUS_CLUB_PERSONA_FISICA.'\'');
 								}, 
 						'choice_label' 	=> 'nom',
 						//'placeholder' 	=> 'Seleccionar club',  

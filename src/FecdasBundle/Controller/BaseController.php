@@ -75,6 +75,7 @@ class BaseController extends Controller {
     const ID_TIPUS_PARTE_LLICENCIES_F = 8;
     
 	//const TIPUS_CLUBS_NO_COMANDES = array(6, 7);
+    const TIPUS_CLUB_PERSONA_FISICA = 8;
 	const REGISTRE_STOCK_ENTRADA = 'E';
 	const REGISTRE_STOCK_SORTIDA = 'S';
 	
@@ -739,7 +740,8 @@ class BaseController extends Controller {
     	        return $repository->createQueryBuilder('c')
     	        ->orderBy('c.nom', 'ASC')
     	        ->where('c.databaixa IS NULL')
-    	        ->where('c.activat = 1');
+    	        ->join('c.tipus', 't', 'WITH', 't.id != \''.BaseController::TIPUS_CLUB_PERSONA_FISICA.'\'');
+    	        //->where('c.activat = 1');
 	        },
 	        'choice_label' 	=> 'nom',
 	        'required'  	=> false,

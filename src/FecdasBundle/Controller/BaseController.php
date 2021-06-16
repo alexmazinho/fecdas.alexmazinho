@@ -739,8 +739,8 @@ class BaseController extends Controller {
 	        'query_builder' => function($repository) {
     	        return $repository->createQueryBuilder('c')
     	        ->orderBy('c.nom', 'ASC')
-    	        ->where('c.databaixa IS NULL')
-    	        ->join('c.tipus', 't', 'WITH', 't.id != \''.BaseController::TIPUS_CLUB_PERSONA_FISICA.'\'');
+    	        ->where('c.databaixa IS NULL');
+    	        //->join('c.tipus', 't', 'WITH', 't.id != \''.BaseController::TIPUS_CLUB_PERSONA_FISICA.'\'');
     	        //->where('c.activat = 1');
 	        },
 	        'choice_label' 	=> 'nom',
